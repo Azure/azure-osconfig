@@ -233,6 +233,122 @@ void MI_CALL OsConfigResource_DeleteInstance(
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
 
+// Converts from "auditFoo" to "initFoo" (there may or may be not such an initFoo object, depends on the MIM)
+static char* GetInitObjectNameFromReportedObjectName(const char* who, MI_Context* context)
+{
+    const char* audit = "audit";
+    const char* init = "init";
+   
+    char* result = NULL;
+    size_t resultLength = 0;
+    size_t length = 0;
+
+    if (NULL != g_reportedObjectName)
+    {
+        if (strlen(audit) < (resultLength = strlen(g_reportedObjectName)))
+        {
+            resultLength += strlen(init) - strlen(audit) + 1;
+            if (NULL != (result = malloc(resultLength)))
+            {
+                memset(result, 0, resultLength);
+                snprintf(result, resultLength, "%s%s", init, (char*)(g_reportedObjectName - strlen(audit)));
+            }
+            else
+            {
+                LogError(context, MI_RESULT_FAILED, GetLog(), "[%s] GetInitObjectNameFromReportedObjectName failed to allocate memory", who);
+            }
+        }
+        else
+        {
+            LogError(context, MI_RESULT_FAILED, GetLog(), "[%s] GetInitObjectNameFromReportedObjectName: invalid reported object name %s", who, g_reportedObjectName);
+        }
+    }
+
+    return result;
+}
+
+static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName, MI_Context* context)
+{
+    char* payloadString = NULL;
+    int payloadSize = 0;
+
+    JSON_Value* jsonValue = NULL;
+    char* serializedValue = NULL;
+
+    MI_Result miResult = MI_RESULT_OK;
+    int mpiResult = MPI_OK;
+
+    if (NULL == g_mpiHandle)
+    {
+        LogError(context, miResult, GetLog(), "[%s] SetDesiredObjectValueToDevice(%s, %s) called outside of a valid MPI session", who, g_componentName, g_desiredObjectName);
+        return ENOENT;
+    }
+    else if ((NULL == objectName) || (NULL == g_desiredObjectValue))
+    {
+        LogError(context, miResult, GetLog(), "[%s] SetDesiredObjectValueToDevice called with an invalid object name and/or desired object value", who);
+        return EINVAL;
+    }
+
+    if (NULL == (jsonValue = json_value_init_string(g_desiredObjectValue)))
+    {
+        miResult = MI_RESULT_FAILED;
+        mpiResult = ENOMEM;
+        LogError(context, miResult, GetLog(), "[%s] json_value_init_string('%s') failed", who, g_desiredObjectValue);
+    }
+    else if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
+    {
+        miResult = MI_RESULT_FAILED;
+        mpiResult = ENOMEM;
+        LogError(context, miResult, GetLog(), "[%s] json_serialize_to_string('%s') failed", who, g_desiredObjectValue);
+    }
+    else
+    {
+        payloadSize = (int)strlen(serializedValue);
+        if (NULL != (payloadString = malloc(payloadSize + 1)))
+        {
+            memset(payloadString, 0, payloadSize + 1);
+            memcpy(payloadString, serializedValue, payloadSize);
+
+            if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, objectName, payloadString, payloadSize, GetLog())))
+            {
+                LogInfo(context, GetLog(), "[%s] CallMpiSet(%s, %s, '%.*s', %d) ok",
+                    who, g_componentName, objectName, payloadSize, payloadString, payloadSize);
+            }
+            else
+            {
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[%s] CallMpiSet(%s, %s, '%.*s', %d) failed with %d, miResult %d",
+                    who, g_componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult, miResult);
+            }
+
+            FREE_MEMORY(payloadString);
+        }
+        else
+        {
+            miResult = MI_RESULT_FAILED;
+            mpiResult = ENOMEM;
+            LogError(context, miResult, GetLog(), "[%s] Failed to allocate %d bytes", who, payloadSize);
+        }
+    }
+
+    if (NULL != serializedValue)
+    {
+        json_free_serialized_string(serializedValue);
+    }
+
+    if (NULL != jsonValue)
+    {
+        json_value_free(jsonValue);
+    }
+
+    if (MPI_OK != mpiResult)
+    {
+        g_reportedMpiResult = mpiResult;
+    }
+
+    return miResult;
+}
+
 static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* context)
 {
     JSON_Value* jsonValue = NULL;
@@ -240,6 +356,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     char* objectValue = NULL;
     int objectValueLength = 0;
     char* payloadString = NULL;
+    char* initObjectName = NULL;
     int mpiResult = MPI_OK;
     MI_Result miResult = MI_RESULT_OK;
 
@@ -250,6 +367,12 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
 
     if (NULL != g_mpiHandle)
     {
+        // If this reported object has a corresponding init object, initalize it with the desired object value
+        if (NULL != (initObjectName = GetInitObjectNameFromReportedObjectName(who, context)))
+        {
+            SetDesiredObjectValueToDevice(who, initObjectName, context);
+        }
+        
         if (MPI_OK == (mpiResult = CallMpiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog())))
         {
             if (NULL == objectValue)
@@ -314,6 +437,8 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
             miResult = MI_RESULT_FAILED;
             LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s) failed with %d", who, g_componentName, g_reportedObjectName, mpiResult);
         }
+
+        FREE_MEMORY(initObjectName);
     }
     else
     {
@@ -877,15 +1002,9 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
-    char* payloadString = NULL;
-    int payloadSize = 0;
-    
-    JSON_Value* jsonValue = NULL;
-    char* serializedValue = NULL;
-    
     MI_Result miResult = MI_RESULT_OK;
     int mpiResult = MPI_OK;
-    
+
     OsConfigResource_SetTargetResource set_result_object = {0};
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
@@ -992,62 +1111,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
     if (NULL != g_mpiHandle)
     {
-        if (NULL == (jsonValue = json_value_init_string(g_desiredObjectValue)))
-        {
-            miResult = MI_RESULT_FAILED;
-            mpiResult = ENOMEM;
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] json_value_init_string('%s') failed", g_desiredObjectValue);
-        }
-        else if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
-        {
-            miResult = MI_RESULT_FAILED;
-            mpiResult = ENOMEM;
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] json_serialize_to_string('%s') failed", g_desiredObjectValue);
-        }
-        else
-        {
-            payloadSize = (int)strlen(serializedValue);
-            if (NULL != (payloadString = malloc(payloadSize + 1)))
-            {
-                memset(payloadString, 0, payloadSize + 1);
-                memcpy(payloadString, serializedValue, payloadSize);
-
-                if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, g_desiredObjectName, payloadString, payloadSize, GetLog())))
-                {
-                    LogInfo(context, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, '%.*s', %d) ok",
-                        g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize);
-                }
-                else
-                {
-                    miResult = MI_RESULT_FAILED;
-                    LogError(context, miResult, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, '%.*s', %d) failed with %d, miResult %d",
-                        g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize, mpiResult, miResult);
-                }
-
-                FREE_MEMORY(payloadString);
-            }
-            else
-            {
-                miResult = MI_RESULT_FAILED;
-                mpiResult = ENOMEM;
-                LogError(context, miResult, GetLog(), "[OsConfigResource.Set] Failed to allocate %d bytes", payloadSize);
-            }
-        }
-
-        if (NULL != serializedValue)
-        {
-            json_free_serialized_string(serializedValue);
-        }
-
-        if (NULL != jsonValue)
-        {
-            json_value_free(jsonValue);
-        }
-
-        if (MPI_OK != mpiResult)
-        {
-            g_reportedMpiResult = mpiResult;
-        }
+        miResult = SetDesiredObjectValueToDevice("OsConfigResource.Set", g_desiredObjectName, context);
     }
     else
     {
@@ -1060,12 +1124,8 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         {
             miResult = MI_RESULT_FAILED;
             LogError(context, miResult, GetLog(), "[OsConfigResource.Set] ProcessSshAuditCheck(%s, '%s') failed with %d", g_desiredObjectName, g_desiredObjectValue, mpiResult);
-            g_reportedMpiResult = mpiResult;
         }
     }
-
-    // Set results to report back
-    g_reportedMpiResult = 0;
 
 Exit:
     if (MI_RESULT_OK != miResult)
@@ -1073,7 +1133,7 @@ Exit:
         g_reportedMpiResult = miResult;
     }
 
-    if (MI_RESULT_OK != (miResult =OsConfigResource_SetTargetResource_Destruct(&set_result_object)))
+    if (MI_RESULT_OK != (miResult = OsConfigResource_SetTargetResource_Destruct(&set_result_object)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Set] SetTargetResource_Destruct failed");
     }
