@@ -251,7 +251,7 @@ static char* GetInitObjectNameFromDesiredObjectName(MI_Context* context)
         }
         else
         {
-            LogError(context, miResult, GetLog(), "GetInitObjectNameFromDesiredObjectName failed to allocate memory");
+            LogError(context, MI_RESULT_FAILED, GetLog(), "GetInitObjectNameFromDesiredObjectName failed to allocate memory");
         }
     }
 
@@ -994,7 +994,8 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     MI_UNREFERENCED_PARAMETER(instanceName);
 
     MI_Result miResult = MI_RESULT_OK;
-    
+    int mpiResult = MPI_OK;
+
     OsConfigResource_SetTargetResource set_result_object = {0};
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
