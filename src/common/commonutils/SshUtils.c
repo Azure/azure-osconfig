@@ -627,6 +627,7 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
                 snprintf(command, commandLength, commandTemplate, g_sshServerService, lowercase, value);
 
                 status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
+                OsConfigLogInfo(log, "CheckAllowDenyUsersGroups: '%s' returned %d", command, status);
 
                 FREE_MEMORY(textResult);
                 FREE_MEMORY(command);
