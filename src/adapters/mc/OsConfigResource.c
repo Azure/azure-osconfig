@@ -260,7 +260,7 @@ static char* GetInitObjectNameFromReportedObjectName(const char* who, MI_Context
         }
         else
         {
-            LogError(context, MI_RESULT_FAILED, GetLog(), "[%s] GetInitObjectNameFromReportedObjectName: invalid reported object name %s", who, );
+            LogError(context, MI_RESULT_FAILED, GetLog(), "[%s] GetInitObjectNameFromReportedObjectName: invalid reported object name %s", who, g_reportedObjectName);
         }
     }
 
