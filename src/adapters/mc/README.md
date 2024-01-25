@@ -246,6 +246,8 @@ Run this command on the Arc device in PowerShell. This will produce a JSON holdi
 
 Save a copy of the generated policy definition JSON in case the policy will need to be updated later (for example, because of an updated artifacts ZIP package).
 
+An example of a generated policy definition JSON (with the SAS token and file hash removed) for the above example is available here: [OsConfigPolicy_DeployIfNotExists.json](OsConfigPolicy_DeployIfNotExists.json)
+
 #### 7.1.2. Creating the new policy
 
 Next, go to Azure Portal | Policy | Definitions, select the subscription, then create a new Policy Definition and fill out:  

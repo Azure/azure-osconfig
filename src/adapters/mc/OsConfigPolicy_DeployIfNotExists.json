@@ -1,0 +1,507 @@
+{
+    "properties": {
+        "displayName": "Ensure that the SSH Server is securely configured on the Linux device",
+        "policyType": "Custom",
+        "mode": "Indexed",
+        "description": "This policy ensures that the SSH Server is securely configured on the Linux device",
+        "metadata": {
+            "category": "Guest Configuration",
+            "version": "1.0.0.0",
+            "requiredProviders": [
+                "Microsoft.GuestConfiguration"
+            ],
+            "guestConfiguration": {
+                "name": "OsConfigPolicy",
+                "version": "1.0.0",
+                "contentType": "Custom",
+                "contentUri": "<SAS token URL for the artifacts package>",
+                "contentHash": "<file hash for the artifacts package>",
+                "configurationParameter": {
+                    "AllowUsers": "Ensure allowed users for SSH access are configured;DesiredObjectValue",
+                    "DenyUsers": "Ensure denied users for SSH are configured;DesiredObjectValue",
+                    "AllowGroups": "Ensure allowed groups for SSH are configured;DesiredObjectValue",
+                    "DenyGroups": "Ensure denied groups for SSH are configured;DesiredObjectValue"
+                }
+            }
+        },
+        "parameters": {
+            "IncludeArcMachines": {
+                "type": "string",
+                "metadata": {
+                    "displayName": "Include Arc connected machines",
+                    "description": "By selecting this option, you agree to be charged monthly per Arc connected machine.",
+                    "portalReview": "true"
+                },
+                "allowedValues": [
+                    "true",
+                    "false"
+                ],
+                "defaultValue": "false"
+            },
+            "AllowUsers": {
+                "type": "string",
+                "metadata": {
+                    "displayName": "Allowed users for SSH",
+                    "description": "List of users to be allowed to connect with SSH. Default is all authenticated users ('*@*')"
+                },
+                "defaultValue": "*@*"
+            },
+            "DenyUsers": {
+                "type": "string",
+                "metadata": {
+                    "displayName": "Denied users for SSH",
+                    "description": "List of users to be denied to connect with SSH. Default is root"
+                },
+                "defaultValue": "root"
+            },
+            "AllowGroups": {
+                "type": "string",
+                "metadata": {
+                    "displayName": "Allowed groups for SSH",
+                    "description": "List of user groups to be allowed to connect with SSH. Default is all groups ('*')"
+                },
+                "defaultValue": "*"
+            },
+            "DenyGroups": {
+                "type": "string",
+                "metadata": {
+                    "displayName": "Denied groups for SSH",
+                    "description": "List of user groups to be denied to connect with SSH. Default is root"
+                },
+                "defaultValue": "root"
+            }
+        },
+        "policyRule": {
+            "if": {
+                "anyOf": [
+                    {
+                        "allOf": [
+                            {
+                                "anyOf": [
+                                    {
+                                        "field": "type",
+                                        "equals": "Microsoft.Compute/virtualMachines"
+                                    },
+                                    {
+                                        "field": "type",
+                                        "equals": "Microsoft.Compute/virtualMachineScaleSets"
+                                    }
+                                ]
+                            },
+                            {
+                                "field": "tags['aks-managed-orchestrator']",
+                                "exists": "false"
+                            },
+                            {
+                                "field": "tags['aks-managed-poolName']",
+                                "exists": "false"
+                            },
+                            {
+                                "anyOf": [
+                                    {
+                                        "field": "Microsoft.Compute/imagePublisher",
+                                        "in": [
+                                            "microsoft-aks",
+                                            "qubole-inc",
+                                            "datastax",
+                                            "couchbase",
+                                            "scalegrid",
+                                            "checkpoint",
+                                            "paloaltonetworks",
+                                            "debian",
+                                            "credativ"
+                                        ]
+                                    },
+                                    {
+                                        "allOf": [
+                                            {
+                                                "field": "Microsoft.Compute/imagePublisher",
+                                                "equals": "OpenLogic"
+                                            },
+                                            {
+                                                "field": "Microsoft.Compute/imageSKU",
+                                                "notLike": "6*"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "allOf": [
+                                            {
+                                                "field": "Microsoft.Compute/imagePublisher",
+                                                "equals": "Oracle"
+                                            },
+                                            {
+                                                "field": "Microsoft.Compute/imageSKU",
+                                                "notLike": "6*"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "allOf": [
+                                            {
+                                                "field": "Microsoft.Compute/imagePublisher",
+                                                "equals": "RedHat"
+                                            },
+                                            {
+                                                "field": "Microsoft.Compute/imageSKU",
+                                                "notLike": "6*"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "allOf": [
+                                            {
+                                                "field": "Microsoft.Compute/imagePublisher",
+                                                "equals": "center-for-internet-security-inc"
+                                            },
+                                            {
+                                                "field": "Microsoft.Compute/imageOffer",
+                                                "notLike": "cis-windows*"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "allOf": [
+                                            {
+                                                "field": "Microsoft.Compute/imagePublisher",
+                                                "equals": "Suse"
+                                            },
+                                            {
+                                                "field": "Microsoft.Compute/imageSKU",
+                                                "notLike": "11*"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "allOf": [
+                                            {
+                                                "field": "Microsoft.Compute/imagePublisher",
+                                                "equals": "Canonical"
+                                            },
+                                            {
+                                                "field": "Microsoft.Compute/imageSKU",
+                                                "notLike": "12*"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "allOf": [
+                                            {
+                                                "field": "Microsoft.Compute/imagePublisher",
+                                                "equals": "microsoft-dsvm"
+                                            },
+                                            {
+                                                "field": "Microsoft.Compute/imageOffer",
+                                                "notLike": "dsvm-win*"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "allOf": [
+                                            {
+                                                "field": "Microsoft.Compute/imagePublisher",
+                                                "equals": "cloudera"
+                                            },
+                                            {
+                                                "field": "Microsoft.Compute/imageSKU",
+                                                "notLike": "6*"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "allOf": [
+                                            {
+                                                "field": "Microsoft.Compute/imagePublisher",
+                                                "equals": "microsoft-ads"
+                                            },
+                                            {
+                                                "field": "Microsoft.Compute/imageOffer",
+                                                "like": "linux*"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "allOf": [
+                                            {
+                                                "anyOf": [
+                                                    {
+                                                        "field": "Microsoft.Compute/virtualMachines/osProfile.linuxConfiguration",
+                                                        "exists": true
+                                                    },
+                                                    {
+                                                        "field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.osType",
+                                                        "like": "Linux*"
+                                                    },
+                                                    {
+                                                        "field": "Microsoft.Compute/virtualMachineScaleSets/osProfile.linuxConfiguration",
+                                                        "exists": true
+                                                    },
+                                                    {
+                                                        "field": "Microsoft.Compute/virtualMachineScaleSets/virtualMachineProfile.storageProfile.osDisk.osType",
+                                                        "like": "Linux*"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "anyOf": [
+                                                    {
+                                                        "field": "Microsoft.Compute/imagePublisher",
+                                                        "exists": false
+                                                    },
+                                                    {
+                                                        "field": "Microsoft.Compute/imagePublisher",
+                                                        "notIn": [
+                                                            "OpenLogic",
+                                                            "RedHat",
+                                                            "credativ",
+                                                            "Suse",
+                                                            "Canonical",
+                                                            "microsoft-dsvm",
+                                                            "cloudera",
+                                                            "microsoft-ads",
+                                                            "center-for-internet-security-inc",
+                                                            "Oracle",
+                                                            "AzureDatabricks",
+                                                            "azureopenshift"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "value": "[parameters('IncludeArcMachines')]",
+                                "equals": true
+                            },
+                            {
+                                "anyOf": [
+                                    {
+                                        "allOf": [
+                                            {
+                                                "field": "type",
+                                                "equals": "Microsoft.HybridCompute/machines"
+                                            },
+                                            {
+                                                "field": "Microsoft.HybridCompute/imageOffer",
+                                                "like": "linux*"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "allOf": [
+                                            {
+                                                "field": "type",
+                                                "equals": "Microsoft.ConnectedVMwarevSphere/virtualMachines"
+                                            },
+                                            {
+                                                "field": "Microsoft.ConnectedVMwarevSphere/virtualMachines/osProfile.osType",
+                                                "like": "linux*"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "then": {
+                "effect": "deployIfNotExists",
+                "details": {
+                    "roleDefinitionIds": [
+                        "/providers/Microsoft.Authorization/roleDefinitions/088ab73d-1256-47ae-bea9-9de8e7131f31"
+                    ],
+                    "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
+                    "name": "[concat('OsConfigPolicy$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
+                    "existenceCondition": {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/complianceStatus",
+                                "equals": "Compliant"
+                            },
+                            {
+                                "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/parameterHash",
+                                "equals": "[base64(concat('Ensure allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('AllowUsers'), ',', 'Ensure denied users for SSH are configured;DesiredObjectValue', '=', parameters('DenyUsers'), ',', 'Ensure allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('AllowGroups'), ',', 'Ensure denied groups for SSH are configured;DesiredObjectValue', '=', parameters('DenyGroups')))]"
+                            }
+                        ]
+                    },
+                    "deployment": {
+                        "properties": {
+                            "mode": "incremental",
+                            "parameters": {
+                                "vmName": {
+                                    "value": "[field('name')]"
+                                },
+                                "location": {
+                                    "value": "[field('location')]"
+                                },
+                                "type": {
+                                    "value": "[field('type')]"
+                                },
+                                "assignmentName": {
+                                    "value": "[concat('OsConfigPolicy$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
+                                },
+                                "AllowUsers": {
+                                    "value": "[parameters('AllowUsers')]"
+                                },
+                                "DenyUsers": {
+                                    "value": "[parameters('DenyUsers')]"
+                                },
+                                "AllowGroups": {
+                                    "value": "[parameters('AllowGroups')]"
+                                },
+                                "DenyGroups": {
+                                    "value": "[parameters('DenyGroups')]"
+                                }
+                            },
+                            "template": {
+                                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                                "contentVersion": "1.0.0.0",
+                                "parameters": {
+                                    "vmName": {
+                                        "type": "string"
+                                    },
+                                    "location": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "assignmentName": {
+                                        "type": "string"
+                                    },
+                                    "AllowUsers": {
+                                        "type": "string"
+                                    },
+                                    "DenyUsers": {
+                                        "type": "string"
+                                    },
+                                    "AllowGroups": {
+                                        "type": "string"
+                                    },
+                                    "DenyGroups": {
+                                        "type": "string"
+                                    }
+                                },
+                                "resources": [
+                                    {
+                                        "condition": "[equals(toLower(parameters('type')), toLower('Microsoft.Compute/virtualMachines'))]",
+                                        "apiVersion": "2018-11-20",
+                                        "type": "Microsoft.Compute/virtualMachines/providers/guestConfigurationAssignments",
+                                        "name": "[concat(parameters('vmName'), '/Microsoft.GuestConfiguration/', parameters('assignmentName'))]",
+                                        "location": "[parameters('location')]",
+                                        "properties": {
+                                            "guestConfiguration": {
+                                                "name": "OsConfigPolicy",
+                                                "version": "1.0.0",
+                                                "contentType": "Custom",
+                                                "contentUri": "<SAS token URL for the artifacts package>",
+                                                "contentHash": "<file hash for the artifacts package>",
+                                                "assignmentType": "ApplyAndAutoCorrect",
+                                                "configurationParameter": [
+                                                    {
+                                                        "name": "Ensure allowed users for SSH access are configured;DesiredObjectValue",
+                                                        "value": "[parameters('AllowUsers')]"
+                                                    },
+                                                    {
+                                                        "name": "Ensure denied users for SSH are configured;DesiredObjectValue",
+                                                        "value": "[parameters('DenyUsers')]"
+                                                    },
+                                                    {
+                                                        "name": "Ensure allowed groups for SSH are configured;DesiredObjectValue",
+                                                        "value": "[parameters('AllowGroups')]"
+                                                    },
+                                                    {
+                                                        "name": "Ensure denied groups for SSH are configured;DesiredObjectValue",
+                                                        "value": "[parameters('DenyGroups')]"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "condition": "[equals(toLower(parameters('type')), toLower('Microsoft.HybridCompute/machines'))]",
+                                        "apiVersion": "2018-11-20",
+                                        "type": "Microsoft.HybridCompute/machines/providers/guestConfigurationAssignments",
+                                        "name": "[concat(parameters('vmName'), '/Microsoft.GuestConfiguration/', parameters('assignmentName'))]",
+                                        "location": "[parameters('location')]",
+                                        "properties": {
+                                            "guestConfiguration": {
+                                                "name": "OsConfigPolicy",
+                                                "version": "1.0.0",
+                                                "contentType": "Custom",
+                                                "contentUri": "<SAS token URL for the artifacts package>",
+                                                "contentHash": "<file hash for the artifacts package>",
+                                                "assignmentType": "ApplyAndAutoCorrect",
+                                                "configurationParameter": [
+                                                    {
+                                                        "name": "Ensure allowed users for SSH access are configured;DesiredObjectValue",
+                                                        "value": "[parameters('AllowUsers')]"
+                                                    },
+                                                    {
+                                                        "name": "Ensure denied users for SSH are configured;DesiredObjectValue",
+                                                        "value": "[parameters('DenyUsers')]"
+                                                    },
+                                                    {
+                                                        "name": "Ensure allowed groups for SSH are configured;DesiredObjectValue",
+                                                        "value": "[parameters('AllowGroups')]"
+                                                    },
+                                                    {
+                                                        "name": "Ensure denied groups for SSH are configured;DesiredObjectValue",
+                                                        "value": "[parameters('DenyGroups')]"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "condition": "[equals(toLower(parameters('type')), toLower('Microsoft.Compute/virtualMachineScaleSets'))]",
+                                        "apiVersion": "2018-11-20",
+                                        "type": "Microsoft.Compute/virtualMachineScaleSets/providers/guestConfigurationAssignments",
+                                        "name": "[concat(parameters('vmName'), '/Microsoft.GuestConfiguration/', parameters('assignmentName'))]",
+                                        "location": "[parameters('location')]",
+                                        "properties": {
+                                            "guestConfiguration": {
+                                                "name": "OsConfigPolicy",
+                                                "version": "1.0.0",
+                                                "contentType": "Custom",
+                                                "contentUri": "<SAS token URL for the artifacts package>",
+                                                "contentHash": "<file hash for the artifacts package>",
+                                                "assignmentType": "ApplyAndAutoCorrect",
+                                                "configurationParameter": [
+                                                    {
+                                                        "name": "Ensure allowed users for SSH access are configured;DesiredObjectValue",
+                                                        "value": "[parameters('AllowUsers')]"
+                                                    },
+                                                    {
+                                                        "name": "Ensure denied users for SSH are configured;DesiredObjectValue",
+                                                        "value": "[parameters('DenyUsers')]"
+                                                    },
+                                                    {
+                                                        "name": "Ensure allowed groups for SSH are configured;DesiredObjectValue",
+                                                        "value": "[parameters('AllowGroups')]"
+                                                    },
+                                                    {
+                                                        "name": "Ensure denied groups for SSH are configured;DesiredObjectValue",
+                                                        "value": "[parameters('DenyGroups')]"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "name": "6d76c6e7-0670-4931-8741-16cff3fbfa3e"
+}
