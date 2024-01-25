@@ -186,14 +186,52 @@ Read about [creating an Azure Policy definition](https://learn.microsoft.com/en-
 
 #### 7.1.1. Generating the policy definition
 
-Customize the following command with the package SAS token URL and a new GUID for this policy:
+Customize the following command with the package SAS token URL and a new GUID for this policy and to optionally allow certain parameters to be editable at policy assignment time, as in this example:
 
 ```bash
 sudo pwsh
+$PolicyParameterInfo = @(
+    @{
+        Name = 'AllowUsers'
+        DisplayName = 'Allowed users for SSH'
+        Description = "List of users to be allowed to connect with SSH. Default is all authenticated users ('*@*')"
+        ResourceType = "OsConfigResource"
+        ResourceId = 'Ensure allowed users for SSH access are configured'
+        ResourcePropertyName = "DesiredObjectValue"
+        DefaultValue = '*@*'
+    },
+    @{
+        Name = 'DenyUsers'
+        DisplayName = 'Denied users for SSH'
+        Description = "List of users to be denied to connect with SSH. Default is root"
+        ResourceType = "OsConfigResource"
+        ResourceId = 'Ensure denied users for SSH are configured'
+        ResourcePropertyName = "DesiredObjectValue"
+        DefaultValue = 'root'
+    },
+    @{
+        Name = 'AllowGroups'
+        DisplayName = 'Allowed groups for SSH'
+        Description = "List of user groups to be allowed to connect with SSH. Default is all groups ('*')"
+        ResourceType = "OsConfigResource"
+        ResourceId = 'Ensure allowed groups for SSH are configured'
+        ResourcePropertyName = "DesiredObjectValue"
+        DefaultValue = '*'
+    },
+    @{
+        Name = 'DenyGroups'
+        DisplayName = 'Denied groups for SSH'
+        Description = "List of user groups to be denied to connect with SSH. Default is root"
+        ResourceType = "OsConfigResource"
+        ResourceId = 'Ensure denied groups for SSH are configured'
+        ResourcePropertyName = "DesiredObjectValue"
+        DefaultValue = 'root'
+    }
+)
 New-GuestConfigurationPolicy `
     -ContentUri '<SAS token URL for the artifacts package>' `
-    -DisplayName 'Ensure that the Linux device is compliant with the Azure Security Baseline.' `
-    -Description 'Ensure that the Linux device is compliant with the Azure Security Baseline.' `
+    -DisplayName 'Ensure that the SSH Server is securely configured on the Linux device' `
+    -Description 'This policy ensures that the SSH Server is securely configured on the Linux device' `
     -Path .\policies\ `
     -Platform Linux `
     -Verbose -PolicyId '<GUID for this policy>' -PolicyVersion 1.0.0.0 -Parameter $PolicyParameterInfo -Mode ApplyAndAutoCorrect
@@ -204,7 +242,9 @@ The last argument (`-Mode ApplyAndAutoCorrect`) is for remediation, without this
 Run this command on the Arc device in PowerShell. This will produce a JSON holding the policy definition, copy that JSON, it will be needed for creating the new policy in Azure Portal.
 
 > **Important** 
-> Save a copy of the generated JSON (with the policy definition) in case the policy definition will need to be updated later (because of a new artifacts ZIP package, for example).
+> In the generated policy definition JSON, before creating a new policy with it, manually search and remove all instances of prefixes with the resource type wrapped in square brakets (for example: `[OsConfigResource]`).
+
+Save a copy of the generated policy definition JSON in case the policy will need to be updated later (for example, because of an updated artifacts ZIP package).
 
 #### 7.1.2. Creating the new policy
 

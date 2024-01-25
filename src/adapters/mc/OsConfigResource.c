@@ -251,7 +251,7 @@ static char* GetInitObjectNameFromReportedObjectName(const char* who, MI_Context
             if (NULL != (result = malloc(resultLength)))
             {
                 memset(result, 0, resultLength);
-                snprintf(result, resultLength, "%s%s", init, (char*)(g_reportedObjectName - strlen(audit)));
+                snprintf(result, resultLength, "%s%s", init, (char*)(g_reportedObjectName + strlen(audit)));
             }
             else
             {
@@ -260,7 +260,7 @@ static char* GetInitObjectNameFromReportedObjectName(const char* who, MI_Context
         }
         else
         {
-            LogError(context, MI_RESULT_FAILED, GetLog(), "[%s] GetInitObjectNameFromReportedObjectName: invalid reported object name %s", who, g_reportedObjectName);
+            LogError(context, MI_RESULT_FAILED, GetLog(), "[%s] GetInitObjectNameFromReportedObjectName called with an invalid reported object name '%s'", who, g_reportedObjectName);
         }
     }
 
