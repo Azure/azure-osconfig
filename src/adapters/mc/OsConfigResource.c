@@ -365,10 +365,12 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
         RefreshMpiClientSession();
     }
 
+    initObjectName = GetInitObjectNameFromReportedObjectName(who, context);
+
     if (NULL != g_mpiHandle)
     {
         // If this reported object has a corresponding init object, initalize it with the desired object value
-        if (NULL != (initObjectName = GetInitObjectNameFromReportedObjectName(who, context)))
+        if (NULL != initObjectName)
         {
             SetDesiredObjectValueToDevice(who, initObjectName, context);
         }
@@ -437,13 +439,11 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
             miResult = MI_RESULT_FAILED;
             LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s) failed with %d", who, g_componentName, g_reportedObjectName, mpiResult);
         }
-
-        FREE_MEMORY(initObjectName);
     }
     else
     {
         // Fallback for SSH policy
-        if (0 == (mpiResult = InitializeSshAuditCheck(g_reportedObjectName, g_desiredObjectValue, GetLog())))
+        if (0 == (mpiResult = InitializeSshAuditCheck(initObjectName ? initObjectName : g_desiredObjectName, g_desiredObjectValue, GetLog())))
         {
             if (0 == (mpiResult = ProcessSshAuditCheck(g_reportedObjectName, NULL, &objectValue, GetLog())))
             {
@@ -481,6 +481,8 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
             LogError(context, miResult, GetLog(), "[%s] InitializeSshAuditCheck(%s) failed with %d", who, g_reportedObjectName, mpiResult);
         }
     }
+
+    FREE_MEMORY(initObjectName);
 
     g_reportedMpiResult = mpiResult;
 
