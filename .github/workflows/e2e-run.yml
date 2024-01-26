@@ -30,7 +30,7 @@ jobs:
   package:
     uses: ./.github/workflows/package-build.yml
     with:
-      os: ${{ inputs.target }}
+      target: ${{ inputs.target }}
       arch: ${{ inputs.arch }}
       artifact: ${{ inputs.target }}
       test: true
