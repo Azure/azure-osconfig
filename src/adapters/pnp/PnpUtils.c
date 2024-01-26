@@ -160,7 +160,7 @@ static char* CopyPayloadToString(const unsigned char* payload, size_t size)
         }
         else
         {
-            OsConfigLogError(GetLog(), "CopyPayloadToString: out pof memory allocating %d bytes", (int)sizeToAllocate);
+            OsConfigLogError(GetLog(), "CopyPayloadToString: out of memory allocating %d bytes", (int)sizeToAllocate);
         }
     }
     else
