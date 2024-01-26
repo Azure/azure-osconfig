@@ -322,7 +322,7 @@ static void QueueDesiredTwinUpdate(DEVICE_TWIN_UPDATE_STATE updateState, const u
 
     int queueSize = (int)ARRAY_SIZE(g_desiredTwinUpdates);
 
-    if ((NULL == payload) || (0 >= size) || (size >= SIZE_MAX))
+    if ((NULL == payload) || (0 >= size) || (SIZE_MAX <= size))
     {
         OsConfigLogError(GetLog(), "QueueDesiredTwinUpdate failed, no payload to queue or invalid payload size (%p, %d)", payload,  (int)size);
         return;
