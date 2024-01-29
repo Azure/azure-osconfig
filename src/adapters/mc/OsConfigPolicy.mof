@@ -288,6 +288,6 @@ instance of OMI_ConfigurationDocument
     Version="1.0.0";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="11/17/2023 12:17:00 PM PST";
+    GenerationDate="1/29/2024 3:29:00 PM PST";
     Name="OsConfigSshServerSecurity";
 };
