@@ -9,7 +9,7 @@ instance of OsConfigResource as $OsConfigResource0ref
     DesiredObjectValue = "600";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -24,7 +24,7 @@ instance of OsConfigResource as $OsConfigResource1ref
     DesiredObjectValue = "2";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -39,7 +39,7 @@ instance of OsConfigResource as $OsConfigResource2ref
     DesiredObjectValue = "yes";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -54,7 +54,7 @@ instance of OsConfigResource as $OsConfigResource3ref
     DesiredObjectValue = "INFO";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -69,7 +69,7 @@ instance of OsConfigResource as $OsConfigResource4ref
     DesiredObjectValue = "6";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -84,7 +84,7 @@ instance of OsConfigResource as $OsConfigResource5ref
     DesiredObjectValue = "*@*";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -99,7 +99,7 @@ instance of OsConfigResource as $OsConfigResource6ref
     DesiredObjectValue = "root";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -114,7 +114,7 @@ instance of OsConfigResource as $OsConfigResource7ref
     DesiredObjectValue = "*";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -129,7 +129,7 @@ instance of OsConfigResource as $OsConfigResource8ref
     DesiredObjectValue = "root";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -144,7 +144,7 @@ instance of OsConfigResource as $OsConfigResource9ref
     DesiredObjectValue = "no";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -159,7 +159,7 @@ instance of OsConfigResource as $OsConfigResource10ref
     DesiredObjectValue = "no";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -174,7 +174,7 @@ instance of OsConfigResource as $OsConfigResource11ref
     DesiredObjectValue = "no";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -189,7 +189,7 @@ instance of OsConfigResource as $OsConfigResource12ref
     DesiredObjectValue = "0";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -204,7 +204,7 @@ instance of OsConfigResource as $OsConfigResource13ref
     DesiredObjectValue = "3600";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -219,7 +219,7 @@ instance of OsConfigResource as $OsConfigResource14ref
     DesiredObjectValue = "60";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -234,7 +234,7 @@ instance of OsConfigResource as $OsConfigResource15ref
     DesiredObjectValue = "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -249,7 +249,7 @@ instance of OsConfigResource as $OsConfigResource16ref
     DesiredObjectValue = "#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -264,7 +264,7 @@ instance of OsConfigResource as $OsConfigResource17ref
     DesiredObjectValue = "no";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -279,7 +279,7 @@ instance of OsConfigResource as $OsConfigResource118ref
     DesiredObjectValue = "aes128-ctr,aes192-ctr,aes256-ctr";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -288,6 +288,6 @@ instance of OMI_ConfigurationDocument
     Version="1.0.0";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="11/17/2023 12:17:00 PM PST";
+    GenerationDate="1/29/2024 3:29:00 PM PST";
     Name="OsConfigSshServerSecurity";
 };
