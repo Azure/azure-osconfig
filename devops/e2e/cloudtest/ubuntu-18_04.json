@@ -9,7 +9,7 @@
         {
             "name": "linux-add-repository",
             "parameters": {
-                "repository": "https://packages.microsoft.com/ubuntu/20.04/prod"
+                "repository": "https://packages.microsoft.com/ubuntu/18.04/multiarch/prod"
             }
         },
         {
