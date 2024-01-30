@@ -781,7 +781,7 @@ static int IncludeRemediationSshConfFile(void* log)
                 status = 0;
             }
 
-            SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
+            SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log);
 
             FREE_MEMORY(originalConfiguration);
         }
@@ -1161,7 +1161,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     else if (0 == strcmp(name, g_auditEnsureSshWarningBannerIsEnabledObject))
     {
         CheckSshWarningBanner(g_sshBannerFile, g_desiredSshWarningBannerIsEnabled ? g_desiredSshWarningBannerIsEnabled : g_sshDefaultSshBannerText, 
-            atoi(g_desiredPermissionsOnEtcSshSshdConfig), reason, log);
+            atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), reason, log);
     }
     else if (0 == strcmp(name, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
     {
@@ -1176,7 +1176,8 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     {
         if (0 == (status = InitializeSshAuditCheck(name, value, log)))
         {
-            status = SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig), log);
+            status = SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? 
+                g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
         }
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject)) ||
@@ -1203,7 +1204,8 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     {
         if (0 == (status = InitializeSshAuditCheck(name, value, log)))
         {
-            status = SetSshWarningBanner(atoi(g_desiredPermissionsOnEtcSshSshdConfig), g_desiredSshWarningBannerIsEnabled, log);
+            status = SetSshWarningBanner(atoi(g_desiredPermissionsOnEtcSshSshdConfig ? 
+                g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), g_desiredSshWarningBannerIsEnabled, log);
         }
     }
     else
