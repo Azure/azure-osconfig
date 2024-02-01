@@ -2937,7 +2937,7 @@ static int InitEnsureDenyGroupsConfigured(char* value)
 
 static int InitEnsureSshHostbasedAuthenticationIsDisabled(char* value)
 {
-    return InitializeSshAuditCheck(g_initEnsurePermissionsOnEtcSshSshdConfigObject, value, SecurityBaselineGetLog());
+    return InitializeSshAuditCheck(g_initEnsureEnsureSshHostbasedAuthenticationIsDisabledObject, value, SecurityBaselineGetLog());
 }
 
 static int InitEnsureSshPermitRootLoginIsDisabled(char* value)
