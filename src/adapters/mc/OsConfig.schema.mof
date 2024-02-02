@@ -22,6 +22,9 @@ class OsConfigResource : OMI_BaseResource
   [write, Description("MIM Component (for audit and remediation)")]
   string ComponentName;
 
+  [write, Description("Initialization MIM Object (for audit and remediation)")]
+  string InitObjectName;
+
   [write, Description("Reported MIM Object (for audit)")]
   string ReportedObjectName;
 
