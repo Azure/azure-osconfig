@@ -9,6 +9,7 @@ on:
       - main
     paths:
       - devops/docker/**/Dockerfile
+  workflow_dispatch:  # TODO: Remove before checkin
 
 env:
   REGISTRY: ghcr.io
@@ -114,7 +115,7 @@ jobs:
       - name: Push image to ACR
         # Only push the image when a pull request is merged to main
         # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        if: false
+        # if: false
         run: |
           docker buildx imagetools create \
             --tag osconfig.azurecr.io/${{ steps.image.outputs.name }}:latest \
