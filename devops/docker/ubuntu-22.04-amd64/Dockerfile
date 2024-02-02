@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/mirror/docker/library/ubuntu:20.04
+FROM mcr.microsoft.com/mirror/docker/library/ubuntu:22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -20,7 +20,8 @@ RUN apt -y update && apt-get -y install \
     wget \
     gcovr\
     jq \
-    bc
+    bc \
+    file
 
 WORKDIR /git
 

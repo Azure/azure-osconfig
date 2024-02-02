@@ -233,25 +233,34 @@ void MI_CALL OsConfigResource_DeleteInstance(
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
 
-// Converts from "remediateFoo" to "initFoo" (there may or may be not such an initFoo object, depends on the MIM)
-static char* GetInitObjectNameFromDesiredObjectName(const char* who, MI_Context* context)
+// Converts from "auditFoo" to "initFoo" (there may or may be not such an initFoo object, depends on the MIM)
+static char* GetInitObjectNameFromReportedObjectName(const char* who, MI_Context* context)
 {
-    const char* remediate = "remediate";
+    const char* audit = "audit";
     const char* init = "init";
+   
     char* result = NULL;
     size_t resultLength = 0;
+    size_t length = 0;
 
-    if (NULL != g_desiredObjectName)
+    if (NULL != g_reportedObjectName)
     {
-        resultLength = strlen(g_desiredObjectName) + strlen(init) - strlen(remediate) + 1;
-        if (NULL != (result = malloc(resultLength)))
+        if (strlen(audit) < (resultLength = strlen(g_reportedObjectName)))
         {
-            memset(result, 0, resultLength);
-            snprintf(result, resultLength, "%s%s", init, (char*)(g_desiredObjectName - strlen(remediate)));
+            resultLength += strlen(init) - strlen(audit) + 1;
+            if (NULL != (result = malloc(resultLength)))
+            {
+                memset(result, 0, resultLength);
+                snprintf(result, resultLength, "%s%s", init, (char*)(g_reportedObjectName + strlen(audit)));
+            }
+            else
+            {
+                LogError(context, MI_RESULT_FAILED, GetLog(), "[%s] GetInitObjectNameFromReportedObjectName failed to allocate memory", who);
+            }
         }
         else
         {
-            LogError(context, MI_RESULT_FAILED, GetLog(), "[%s] GetInitObjectNameFromDesiredObjectName failed to allocate memory", who);
+            LogError(context, MI_RESULT_FAILED, GetLog(), "[%s] GetInitObjectNameFromReportedObjectName called with an invalid reported object name '%s'", who, g_reportedObjectName);
         }
     }
 
@@ -356,6 +365,8 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
         RefreshMpiClientSession();
     }
 
+    initObjectName = GetInitObjectNameFromReportedObjectName(who, context);
+
     if (NULL != g_mpiHandle)
     {
         // If this reported object has a corresponding init object, initalize it with the desired object value
@@ -434,7 +445,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     else
     {
         // Fallback for SSH policy
-        if (0 == (mpiResult = InitializeSshAuditCheck(g_reportedObjectName, g_desiredObjectValue, GetLog())))
+        if (0 == (mpiResult = InitializeSshAuditCheck(initObjectName ? initObjectName : g_desiredObjectName, g_desiredObjectValue, GetLog())))
         {
             if (0 == (mpiResult = ProcessSshAuditCheck(g_reportedObjectName, NULL, &objectValue, GetLog())))
             {
@@ -472,6 +483,8 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
             LogError(context, miResult, GetLog(), "[%s] InitializeSshAuditCheck(%s) failed with %d", who, g_reportedObjectName, mpiResult);
         }
     }
+
+    FREE_MEMORY(initObjectName);
 
     g_reportedMpiResult = mpiResult;
 

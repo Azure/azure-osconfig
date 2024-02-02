@@ -148,16 +148,24 @@ static IOTHUB_CLIENT_RESULT PropertyUpdateFromIotHubCallback(const char* compone
 static char* CopyPayloadToString(const unsigned char* payload, size_t size)
 {
     char* jsonStr = NULL;
-    size_t sizeToAllocate = size + 1;
-
-    if (NULL != (jsonStr = (char*)malloc(sizeToAllocate)))
+    size_t sizeToAllocate = 0; 
+    
+    if ((NULL != payload) && (size > 0) && (size < SIZE_MAX))
     {
-        memcpy(jsonStr, payload, size);
-        jsonStr[size] = '\0';
+        sizeToAllocate = size + 1;
+        if (NULL != (jsonStr = (char*)malloc(sizeToAllocate)))
+        {
+            memcpy(jsonStr, payload, size);
+            jsonStr[size] = '\0';
+        }
+        else
+        {
+            OsConfigLogError(GetLog(), "CopyPayloadToString: out of memory allocating %d bytes", (int)sizeToAllocate);
+        }
     }
     else
     {
-        OsConfigLogError(GetLog(), "CopyPayloadToString: out pof memory allocating %d bytes", (int)sizeToAllocate);
+        OsConfigLogError(GetLog(), "CopyPayloadToString: invalid payload or payload size");
     }
 
     return jsonStr;
@@ -314,9 +322,9 @@ static void QueueDesiredTwinUpdate(DEVICE_TWIN_UPDATE_STATE updateState, const u
 
     int queueSize = (int)ARRAY_SIZE(g_desiredTwinUpdates);
 
-    if ((NULL == payload) || (0 == size))
+    if ((NULL == payload) || (0 >= size) || (SIZE_MAX <= size))
     {
-        OsConfigLogError(GetLog(), "QueueDesiredTwinUpdate failed, no payload to queue (%p, %d)", payload,  (int)size);
+        OsConfigLogError(GetLog(), "QueueDesiredTwinUpdate failed, no payload to queue or invalid payload size (%p, %d)", payload,  (int)size);
         return;
     }
    
