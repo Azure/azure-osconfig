@@ -14,12 +14,6 @@
 #ifndef _OsConfigResource_h
 #define _OsConfigResource_h
 
-#include <MI.h>
-#include "OMI_BaseResource.h"
-#include "MSFT_Credential.h"
-#include "ReasonClass.h"
-#include "OsConfigResource.h"
-
 /*
 **==============================================================================
 **
