@@ -21,6 +21,7 @@ static const char* g_failValue = SECURITY_AUDIT_FAIL;
 // Desired (write; also reported together with read group)
 static char* g_classKey = NULL;
 static char* g_componentName = NULL;
+static char* g_initObjectName = NULL;
 static char* g_reportedObjectName = NULL;
 static char* g_expectedObjectValue = NULL;
 static char* g_desiredObjectName = NULL;
@@ -79,6 +80,7 @@ void __attribute__((constructor)) Initialize()
 
     g_classKey = DuplicateString(g_defaultValue);
     g_componentName = DuplicateString(g_defaultValue);
+    g_initObjectName = DuplicateString(g_defaultValue);
     g_reportedObjectName = DuplicateString(g_defaultValue);
     g_expectedObjectValue = DuplicateString(g_passValue);
     g_desiredObjectName = DuplicateString(g_defaultValue);
@@ -108,6 +110,7 @@ void __attribute__((destructor)) Destroy()
 
     FREE_MEMORY(g_classKey);
     FREE_MEMORY(g_componentName);
+    FREE_MEMORY(g_initObjectName);
     FREE_MEMORY(g_reportedObjectName);
     FREE_MEMORY(g_expectedObjectValue);
     FREE_MEMORY(g_desiredObjectName);
@@ -233,40 +236,6 @@ void MI_CALL OsConfigResource_DeleteInstance(
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
 
-// Converts from "auditFoo" to "initFoo" (there may or may be not such an initFoo object, depends on the MIM)
-static char* GetInitObjectNameFromReportedObjectName(const char* who, MI_Context* context)
-{
-    const char* audit = "audit";
-    const char* init = "init";
-   
-    char* result = NULL;
-    size_t resultLength = 0;
-    size_t length = 0;
-
-    if (NULL != g_reportedObjectName)
-    {
-        if (strlen(audit) < (resultLength = strlen(g_reportedObjectName)))
-        {
-            resultLength += strlen(init) - strlen(audit) + 1;
-            if (NULL != (result = malloc(resultLength)))
-            {
-                memset(result, 0, resultLength);
-                snprintf(result, resultLength, "%s%s", init, (char*)(g_reportedObjectName + strlen(audit)));
-            }
-            else
-            {
-                LogError(context, MI_RESULT_FAILED, GetLog(), "[%s] GetInitObjectNameFromReportedObjectName failed to allocate memory", who);
-            }
-        }
-        else
-        {
-            LogError(context, MI_RESULT_FAILED, GetLog(), "[%s] GetInitObjectNameFromReportedObjectName called with an invalid reported object name '%s'", who, g_reportedObjectName);
-        }
-    }
-
-    return result;
-}
-
 static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName, MI_Context* context)
 {
     char* payloadString = NULL;
@@ -365,14 +334,12 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
         RefreshMpiClientSession();
     }
 
-    initObjectName = GetInitObjectNameFromReportedObjectName(who, context);
-
     if (NULL != g_mpiHandle)
     {
         // If this reported object has a corresponding init object, initalize it with the desired object value
-        if (NULL != initObjectName)
+        if ((NULL != g_initObjectName) && (0 != strcmp(g_initObjectName, g_defaultValue)))
         {
-            SetDesiredObjectValueToDevice(who, initObjectName, context);
+            SetDesiredObjectValueToDevice(who, g_initObjectName, context);
         }
         
         if (MPI_OK == (mpiResult = CallMpiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog())))
@@ -561,6 +528,24 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No ComponentName");
         miResult = MI_RESULT_FAILED;
         goto Exit;
+    }
+
+    // Read the MIM initialization object name from the input resource values
+    if ((MI_TRUE == in->InputResource.value->InitObjectName.exists) && (NULL != in->InputResource.value->InitObjectName.value))
+    {
+        FREE_MEMORY(g_initObjectName);
+        if (NULL == (g_initObjectName = DuplicateString(in->InputResource.value->InitObjectName.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->InitObjectName.value);
+            g_initObjectName = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
+    {
+        // Not an error
+        LogInfo(context, GetLog(), "[OsConfigResource.Get] No InitObjectName");
     }
 
     // Read the MIM reported object name from the input resource values
@@ -908,6 +893,24 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No ComponentName");
         miResult = MI_RESULT_FAILED;
         goto Exit;
+    }
+
+    // Read the MIM initialization object name from the input resource values
+    if ((MI_TRUE == in->InputResource.value->InitObjectName.exists) && (NULL != in->InputResource.value->InitObjectName.value))
+    {
+        FREE_MEMORY(g_initObjectName);
+        if (NULL == (g_initObjectName = DuplicateString(in->InputResource.value->InitObjectName.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->InitObjectName.value);
+            g_initObjectName = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
+    {
+        // Not an error
+        LogInfo(context, GetLog(), "[OsConfigResource.Test] No InitObjectName");
     }
 
     // Read the MIM reported object name from the input resource values
