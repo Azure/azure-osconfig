@@ -455,7 +455,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
     const char* mimObjects[] = {
         // Initialization
         m_initEnsurePermissionsOnEtcSshSshdConfigObject,
-        m_initEnsureSshPortIsConfigured,
+        m_initEnsureSshPortIsConfiguredObject,
         m_initEnsureSshBestPracticeProtocolObject,
         m_initEnsureSshBestPracticeIgnoreRhostsObject,
         m_initEnsureSshLogLevelIsSetObject,
@@ -605,7 +605,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsureRcprshServiceIsDisabledObject,
         m_remediateEnsureTftpServiceisDisabledObject,
         m_remediateEnsureAtCronIsRestrictedToAuthorizedUsersObject,
-        m_remediateEnsureSshPortIsConfigured,
+        m_remediateEnsureSshPortIsConfiguredObject,
         m_remediateEnsureSshBestPracticeProtocolObject,
         m_remediateEnsureSshBestPracticeIgnoreRhostsObject,
         m_remediateEnsureSshLogLevelIsSetObject,
@@ -831,7 +831,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureRcprshServiceIsDisabledObject,
         m_auditEnsureTftpServiceisDisabledObject,
         m_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject,
-        m_auditEnsureSshPortIsConfigured,
+        m_auditEnsureSshPortIsConfiguredObject,
         m_auditEnsureSshBestPracticeProtocolObject,
         m_auditEnsureSshBestPracticeIgnoreRhostsObject,
         m_auditEnsureSshLogLevelIsSetObject,
