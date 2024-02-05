@@ -682,6 +682,10 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshPortIsConfigured"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsureSshBestPracticeProtocol"
     },
     {

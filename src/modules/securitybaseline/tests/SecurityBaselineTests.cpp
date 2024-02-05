@@ -155,6 +155,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureRcprshServiceIsDisabledObject = "auditEnsureRcprshServiceIsDisabled";
         const char* m_auditEnsureTftpServiceisDisabledObject = "auditEnsureTftpServiceisDisabled";
         const char* m_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject = "auditEnsureAtCronIsRestrictedToAuthorizedUsers";
+        const char* m_auditEnsureSshPortIsConfiguredObject = "auditEnsureSshPortIsConfigured";
         const char* m_auditEnsureSshBestPracticeProtocolObject = "auditEnsureSshBestPracticeProtocol";
         const char* m_auditEnsureSshBestPracticeIgnoreRhostsObject = "auditEnsureSshBestPracticeIgnoreRhosts";
         const char* m_auditEnsureSshLogLevelIsSetObject = "auditEnsureSshLogLevelIsSet";
@@ -324,6 +325,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsureRcprshServiceIsDisabledObject = "remediateEnsureRcprshServiceIsDisabled";
         const char* m_remediateEnsureTftpServiceisDisabledObject = "remediateEnsureTftpServiceisDisabled";
         const char* m_remediateEnsureAtCronIsRestrictedToAuthorizedUsersObject = "remediateEnsureAtCronIsRestrictedToAuthorizedUsers";
+        const char* m_remediateEnsureSshPortIsConfiguredObject = "remediateEnsureSshPortIsConfigured";
         const char* m_remediateEnsureSshBestPracticeProtocolObject = "remediateEnsureSshBestPracticeProtocol";
         const char* m_remediateEnsureSshBestPracticeIgnoreRhostsObject = "remediateEnsureSshBestPracticeIgnoreRhosts";
         const char* m_remediateEnsureSshLogLevelIsSetObject = "remediateEnsureSshLogLevelIsSet";
@@ -364,6 +366,7 @@ class SecurityBaselineTest : public ::testing::Test
 
         // Initialization for audit before remediation
         const char* m_initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
+        const char* m_initEnsureSshPortIsConfiguredObject = "initEnsureSshPortIsConfigured";
         const char* m_initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
         const char* m_initEnsureSshBestPracticeIgnoreRhostsObject = "initEnsureSshBestPracticeIgnoreRhosts";
         const char* m_initEnsureSshLogLevelIsSetObject = "initEnsureSshLogLevelIsSet";
@@ -452,6 +455,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
     const char* mimObjects[] = {
         // Initialization
         m_initEnsurePermissionsOnEtcSshSshdConfigObject,
+        m_initEnsureSshPortIsConfigured,
         m_initEnsureSshBestPracticeProtocolObject,
         m_initEnsureSshBestPracticeIgnoreRhostsObject,
         m_initEnsureSshLogLevelIsSetObject,
@@ -601,6 +605,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsureRcprshServiceIsDisabledObject,
         m_remediateEnsureTftpServiceisDisabledObject,
         m_remediateEnsureAtCronIsRestrictedToAuthorizedUsersObject,
+        m_remediateEnsureSshPortIsConfigured,
         m_remediateEnsureSshBestPracticeProtocolObject,
         m_remediateEnsureSshBestPracticeIgnoreRhostsObject,
         m_remediateEnsureSshLogLevelIsSetObject,
@@ -826,6 +831,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureRcprshServiceIsDisabledObject,
         m_auditEnsureTftpServiceisDisabledObject,
         m_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject,
+        m_auditEnsureSshPortIsConfigured,
         m_auditEnsureSshBestPracticeProtocolObject,
         m_auditEnsureSshBestPracticeIgnoreRhostsObject,
         m_auditEnsureSshLogLevelIsSetObject,

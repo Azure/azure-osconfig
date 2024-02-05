@@ -23,6 +23,11 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshPortIsConfigured"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureSshBestPracticeProtocol"
   },
   {
@@ -767,6 +772,11 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureAtCronIsRestrictedToAuthorizedUsers"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshPortIsConfigured"
   },
   {
     "ObjectType": "Desired",
@@ -1724,6 +1734,11 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureAtCronIsRestrictedToAuthorizedUsers",
     "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshPortIsConfigured"
   },
   {
     "ObjectType": "Reported",
