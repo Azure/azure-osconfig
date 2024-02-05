@@ -3137,7 +3137,7 @@ RemediationCall g_remediateChecks[] =
     &RemediateEnsureRcprshServiceIsDisabled,
     &RemediateEnsureTftpServiceisDisabled,
     &RemediateEnsureAtCronIsRestrictedToAuthorizedUsers,
-    $RemediateEnsureSshPortIsConfigured,
+    &RemediateEnsureSshPortIsConfigured,
     &RemediateEnsureSshBestPracticeProtocol,
     &RemediateEnsureSshBestPracticeIgnoreRhosts,
     &RemediateEnsureSshLogLevelIsSet,
