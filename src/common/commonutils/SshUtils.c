@@ -224,6 +224,7 @@ static int IsSshConfigIncludeSupported(void* log)
 
     if (NULL != textResult)
     {
+        // Extracts the two version digits from a string that starts like this: "unknown option -- V OpenSSH_8.9p1..."
         if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult)))
         {
             textCursor = textResult + strlen(expectedPrefix) + 1;
@@ -232,7 +233,6 @@ static int IsSshConfigIncludeSupported(void* log)
             versionMinorString[0] = textCursor[0];
             versionMajor = atoi(versionMajorString);
             versionMinor = atoi(versionMinorString);
-            OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server reports version %d.%d (%s, %s)", versionMajor, versionMinor, versionMajorString, versionMinorString); ////////////
 
             if ((versionMajor <= 0) || (versionMinor <= 0))
             {
@@ -241,12 +241,12 @@ static int IsSshConfigIncludeSupported(void* log)
             }
             else if ((versionMajor < 8) || (versionMinor < 2))
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server with version %d.%d does not support Include", versionMajor, versionMinor);
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server has version %d.%d and appears to not support Include", versionMajor, versionMinor);
                 result = ENOENT;
             }
             else
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server with version %d.%d appears to support Include", versionMajor, versionMinor);
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server has version %d.%d and appears to support Include", versionMajor, versionMinor);
                 result = 0;
             }
         }
