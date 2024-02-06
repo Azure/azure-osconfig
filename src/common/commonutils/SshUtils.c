@@ -9,6 +9,7 @@ static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
 static const char* g_osconfigRemediationConf = "/etc/ssh/sshd_config.d/osconfig_remediation.conf";
 static const char* g_sshdConfigRemediationHeader = "# Azure OSConfig Remediation\nInclude /etc/ssh/sshd_config.d/osconfig_remediation.conf\n";
 
+static const char* g_sshPort = "Port";
 static const char* g_sshProtocol = "Protocol";
 static const char* g_sshIgnoreHosts = "IgnoreRhosts";
 static const char* g_sshLogLevel = "LogLevel";
@@ -29,6 +30,7 @@ static const char* g_sshBanner = "Banner";
 static const char* g_sshCiphers = "Ciphers";
 
 static const char* g_sshDefaultSshSshdConfigAccess = "600";
+static const char* g_sshDefaultSshPort = "22";
 static const char* g_sshDefaultSshProtocol = "2";
 static const char* g_sshDefaultSshYes = "yes";
 static const char* g_sshDefaultSshNo = "no";
@@ -51,6 +53,7 @@ static const char* g_sshDefaultSshBannerText =
     "#######################################################################\n";
 
 static const char* g_auditEnsurePermissionsOnEtcSshSshdConfigObject = "auditEnsurePermissionsOnEtcSshSshdConfig";
+static const char* g_auditEnsureSshPortIsConfiguredObject = "auditEnsureSshPortIsConfigured";
 static const char* g_auditEnsureSshBestPracticeProtocolObject = "auditEnsureSshBestPracticeProtocol";
 static const char* g_auditEnsureSshBestPracticeIgnoreRhostsObject = "auditEnsureSshBestPracticeIgnoreRhosts";
 static const char* g_auditEnsureSshLogLevelIsSetObject = "auditEnsureSshLogLevelIsSet";
@@ -71,6 +74,7 @@ static const char* g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject = "aud
 static const char* g_auditEnsureAppropriateCiphersForSshObject = "auditEnsureAppropriateCiphersForSsh";
 
 static const char* g_remediateEnsurePermissionsOnEtcSshSshdConfigObject = "remediateEnsurePermissionsOnEtcSshSshdConfig";
+static const char* g_remediateEnsureSshPortIsConfiguredObject = "remediateEnsureSshPortIsConfigured";
 static const char* g_remediateEnsureSshBestPracticeProtocolObject = "remediateEnsureSshBestPracticeProtocol";
 static const char* g_remediateEnsureSshBestPracticeIgnoreRhostsObject = "remediateEnsureSshBestPracticeIgnoreRhosts";
 static const char* g_remediateEnsureSshLogLevelIsSetObject = "remediateEnsureSshLogLevelIsSet";
@@ -91,6 +95,7 @@ static const char* g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject = 
 static const char* g_remediateEnsureAppropriateCiphersForSshObject = "remediateEnsureAppropriateCiphersForSsh";
 
 static const char* g_initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
+static const char* g_initEnsureSshPortIsConfiguredObject = "initEnsureSshPortIsConfigured";
 static const char* g_initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
 static const char* g_initEnsureSshBestPracticeIgnoreRhostsObject = "initEnsureSshBestPracticeIgnoreRhosts";
 static const char* g_initEnsureSshLogLevelIsSetObject = "initEnsureSshLogLevelIsSet";
@@ -111,6 +116,7 @@ static const char* g_initEnsureUsersCannotSetSshEnvironmentOptionsObject = "init
 static const char* g_initEnsureAppropriateCiphersForSshObject = "initEnsureAppropriateCiphersForSsh";
 
 static char* g_desiredPermissionsOnEtcSshSshdConfig = NULL;
+static char* g_desiredSshPort = NULL;
 static char* g_desiredSshBestPracticeProtocol = NULL;
 static char* g_desiredSshBestPracticeIgnoreRhosts = NULL;
 static char* g_desiredSshLogLevelIsSet = NULL;
@@ -798,7 +804,7 @@ static int IncludeRemediationSshConfFile(void* log)
 static int SaveRemediationSshConfFile(void* log)
 {
     // 'UsePAM yes' blocks Ciphers and MACs so we need also to set this to 'no' here as other .conf files can set it
-    const char* confFileTemplate = "%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\nUsePAM no";
+    const char* confFileTemplate = "%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\nUsePAM no";
 
     char* newRemediation = NULL;
     char* currentRemediation = NULL;
@@ -806,6 +812,7 @@ static int SaveRemediationSshConfFile(void* log)
     int status = 0;
 
     newRemediationSize = strlen(confFileTemplate) +
+        strlen(g_sshPort) + strlen(g_desiredSshPort ? g_desiredSshPort : g_sshDefaultSshPort) +
         strlen(g_sshProtocol) + strlen(g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol) +
         strlen(g_sshIgnoreHosts) + strlen(g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : g_sshDefaultSshYes) +
         strlen(g_sshLogLevel) + strlen(g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : g_sshDefaultSshLogLevel) +
@@ -829,6 +836,7 @@ static int SaveRemediationSshConfFile(void* log)
     {
         memset(newRemediation, 0, newRemediationSize);
         snprintf(newRemediation, newRemediationSize, confFileTemplate,
+            g_sshPort, g_desiredSshPort ? g_desiredSshPort : g_sshDefaultSshPort,
             g_sshProtocol, g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol,
             g_sshIgnoreHosts, g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : g_sshDefaultSshYes,
             g_sshLogLevel, g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : g_sshDefaultSshLogLevel,
@@ -888,6 +896,7 @@ int InitializeSshAudit(void* log)
     g_auditOnlySession = true;
 
     if ((NULL == (g_desiredPermissionsOnEtcSshSshdConfig = DuplicateString(g_sshDefaultSshSshdConfigAccess))) ||
+        (NULL == (g_desiredSshPort = DuplicateString(g_sshDefaultSshPort))) ||
         (NULL == (g_desiredSshBestPracticeProtocol = DuplicateString(g_sshDefaultSshProtocol))) ||
         (NULL == (g_desiredSshBestPracticeIgnoreRhosts = DuplicateString(g_sshDefaultSshYes))) ||
         (NULL == (g_desiredSshLogLevelIsSet = DuplicateString(g_sshDefaultSshLogLevel))) ||
@@ -931,6 +940,7 @@ void SshAuditCleanup(void* log)
     }
     
     FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
+    FREE_MEMORY(g_desiredSshPort);
     FREE_MEMORY(g_desiredSshBestPracticeProtocol);
     FREE_MEMORY(g_desiredSshBestPracticeIgnoreRhosts);
     FREE_MEMORY(g_desiredSshLogLevelIsSet);
@@ -967,6 +977,11 @@ int InitializeSshAuditCheck(const char* name, char* value, void* log)
     {
         FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
         status = (NULL != (g_desiredPermissionsOnEtcSshSshdConfig = DuplicateString(value ? value : g_sshDefaultSshSshdConfigAccess))) ? 0 : ENOMEM;
+    }
+    else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject)) || (0 == strcmp(name, g_initEnsureSshPortIsConfiguredObject)))
+    {
+        FREE_MEMORY(g_desiredSshPort);
+        status = (NULL != (g_desiredSshPort = DuplicateString(value ? value : g_sshDefaultSshPort))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject)) || (0 == strcmp(name, g_initEnsureSshBestPracticeProtocolObject)))
     {
@@ -1087,6 +1102,11 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
         CheckFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? 
             g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), reason, log);
     }
+    else if (0 == strcmp(name, g_auditEnsureSshPortIsConfiguredObject))
+    {
+        lowercase = DuplicateStringToLowercase(g_sshPort);
+        CheckSshOptionIsSet(lowercase, g_desiredSshPort ? g_desiredSshPort : g_sshDefaultSshPort, NULL, reason, log);
+    }
     else if (0 == strcmp(name, g_auditEnsureSshBestPracticeProtocolObject))
     {
         CheckSshProtocol(reason, log);
@@ -1180,7 +1200,8 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
                 g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
         }
     }
-    else if ((0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject)) ||
+    else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject)) ||
+        (0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshBestPracticeIgnoreRhostsObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshLogLevelIsSetObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshMaxAuthTriesIsSetObject)) ||

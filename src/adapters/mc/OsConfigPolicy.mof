@@ -286,7 +286,7 @@ instance of OsConfigResource as $OsConfigResource17ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource118ref
+instance of OsConfigResource as $OsConfigResource18ref
 {
     ResourceID = "Ensure that appropriate ciphers are used for SSH";
     PayloadKey = "EnsureAppropriateCiphersForSsh";
@@ -302,11 +302,27 @@ instance of OsConfigResource as $OsConfigResource118ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
+instance of OsConfigResource as $OsConfigResource19ref
+{
+    ResourceID = "Ensure that the SSH port is configured to meet best practices";
+    PayloadKey = "EnsureSshPortIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshPortIsConfigured";
+    ReportedObjectName = "auditEnsureSshPortIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshPortIsConfigured";
+    DesiredObjectValue = "22";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
 instance of OMI_ConfigurationDocument
 {
-    Version="1.0.1";
+    Version="1.0.2";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="2/2/2024 2:35:00 PM PST";
+    GenerationDate="2/5/2024 9:32:00 AM PST";
     Name="OsConfigSshServerSecurity";
 };
