@@ -200,6 +200,64 @@ static int IsSshServerActive(void* log)
     return result;
 }
 
+static int IsSshConfigIncludeSupported(void* log)
+{
+    const char* expectedPrefix = "unknown option -- V OpenSSH_";
+    const char* command = "sshd -V";
+    char* textResult = NULL;
+    size_t textResultLength = 0;
+    size_t textPrefixLength = 0;
+    char* textCursor = NULL;
+    int versionMajor = 0;
+    int versionMinor = 0;
+    int result = 0;
+    
+    if (false == IsDaemonActive(g_sshServerService, log))
+    {
+        OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the OpenSSH Server service '%s' is not active on this device, assuming Include is not supported", g_sshServerService);
+        result = EEXIST;
+    }
+
+    if (0 == (result = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
+    {
+        if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult)))
+        {
+            textCursor = textResult + strlen(expectedPrefix);
+
+            versionMajor = atoi(textCursor);
+            versionMinor = atoi(textCursor + 2);
+
+            OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server reports version %d.%d", versionMajor, versionMinor); ////////////
+
+            if ((versionMajor <= 0) || (versionMinor <= 0))
+            {
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected prefix in response to '%s' ('%s'), assuming Include is not supported", command, textCursor);
+                result = ENOENT;
+            }
+            else if ((versionMajor < 8) || (minorVersion < 2))
+            {
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server with version %d.%d does not support Include", versionMajor, versionMinor);
+                result = ENOENT;
+            }
+            else
+            {
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server with version %d.%d appears to support Include", versionMajor, versionMinor);
+                result = 0;
+            }
+        }
+        else
+        {
+            OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' ('%s'), assuming Include is not supported", command, textResult);
+            result = ENOENT;
+        }
+    }
+    
+    FREE_MEMORY(textResult);
+    
+    return result;
+}
+
+
 static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, void* log)
 {
     char* sshMacs = DuplicateStringToLowercase(g_sshMacs);
@@ -927,6 +985,8 @@ void SshAuditCleanup(void* log)
 {
     OsConfigLogInfo(log, "SshAuditCleanup: %s", g_auditOnlySession ? "audit only" : "audit and remediate");
     
+    IsSshConfigIncludeSupported(log); ///////////
+
     if (false == g_auditOnlySession)
     {
         // Even if we cannot include the remediation .conf file, we still want to go ahead and create/update it
