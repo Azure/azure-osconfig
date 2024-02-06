@@ -234,7 +234,7 @@ static int IsSshConfigIncludeSupported(void* log)
                 OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected prefix in response to '%s' ('%s'), assuming Include is not supported", command, textCursor);
                 result = ENOENT;
             }
-            else if ((versionMajor < 8) || (minorVersion < 2))
+            else if ((versionMajor < 8) || (versionMinor < 2))
             {
                 OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server with version %d.%d does not support Include", versionMajor, versionMinor);
                 result = ENOENT;
