@@ -218,7 +218,9 @@ static int IsSshConfigIncludeSupported(void* log)
         result = EEXIST;
     }
 
-    if (0 == (result = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
+    ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
+
+    if (NULL != textResult)
     {
         if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult)))
         {
@@ -250,6 +252,11 @@ static int IsSshConfigIncludeSupported(void* log)
             OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' ('%s'), assuming Include is not supported", command, textResult);
             result = ENOENT;
         }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s', assuming Include is not supported", command);
+        result = ENOENT;
     }
     
     FREE_MEMORY(textResult);
