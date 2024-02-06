@@ -208,6 +208,8 @@ static int IsSshConfigIncludeSupported(void* log)
     size_t textResultLength = 0;
     size_t textPrefixLength = 0;
     char* textCursor = NULL;
+    char versionMajorString[2] = {0};
+    char versionMinorString[2] = {0};
     int versionMajor = 0;
     int versionMinor = 0;
     int result = 0;
@@ -224,12 +226,13 @@ static int IsSshConfigIncludeSupported(void* log)
     {
         if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult)))
         {
-            textCursor = textResult + strlen(expectedPrefix);
-
-            versionMajor = atoi(textCursor);
-            versionMinor = atoi(textCursor + 2);
-
-            OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server reports version %d.%d", versionMajor, versionMinor); ////////////
+            textCursor = textResult + strlen(expectedPrefix) + 1;
+            versionMajorString[0] = textCursor[0];
+            textCursor += 2;
+            versionMinorString[0] = textCursor[0];
+            versionMajor = atoi(versionMajorString);
+            versionMinor = atoi(versionMinorString);
+            OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server reports version %d.%d (%s, %s)", versionMajor, versionMinor, versionMajorString, versionMinorString); ////////////
 
             if ((versionMajor <= 0) || (versionMinor <= 0))
             {
