@@ -638,35 +638,51 @@ int CheckSshProtocol(char** reason, void* log)
         OsConfigLogError(log, "CheckSshProtocol: FormatAllocateString failed");
         status = ENOMEM;
     }
-    else if (false == FileExists(g_osconfigRemediationConf))
-    {
-        OsConfigLogError(log, "CheckSshProtocol: the OSConfig remediation file '%s' is not present on this device", g_osconfigRemediationConf);
-        OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_osconfigRemediationConf);
-        status = EEXIST;
-    }
     else if (false == FileExists(g_sshServerConfiguration))
     {
         OsConfigLogError(log, "CheckSshProtocol: the SSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
         OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_sshServerConfiguration);
         status = EEXIST;
     }
-    else if (0 != FindTextInFile(g_sshServerConfiguration, g_sshdConfigRemediationHeader, log))
-    {
-        OsConfigLogError(log, "CheckSshProtocol: '%s' is not found included in '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
-        OsConfigCaptureReason(reason, "'%s' is not found included in %s",
-            "%s, also '%s' is not found included in %s", g_osconfigRemediationConf, g_sshServerConfiguration);
-        status = ENOENT;
-    }
-    else if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_osconfigRemediationConf, '#', protocol, log)))
-    {
-        OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
-        OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
-        status = 0;
-    }
     else
     {
+        if (0 == IsSshConfigIncludeSupported(log))
+        {
+            if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log)))
+            {
+                OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
+                OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
+                status = 0;
+            }
+        }
+        else
+        {
+            if (false == FileExists(g_osconfigRemediationConf))
+            {
+                OsConfigLogError(log, "CheckSshProtocol: the OSConfig remediation file '%s' is not present on this device", g_osconfigRemediationConf);
+                OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_osconfigRemediationConf);
+                status = EEXIST;
+            }
+            else if (0 != FindTextInFile(g_sshServerConfiguration, g_sshdConfigRemediationHeader, log))
+            {
+                OsConfigLogError(log, "CheckSshProtocol: '%s' is not found included in '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
+                OsConfigCaptureReason(reason, "'%s' is not found included in %s",
+                    "%s, also '%s' is not found included in %s", g_osconfigRemediationConf, g_sshServerConfiguration);
+                status = ENOENT;
+            }
+            else if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_osconfigRemediationConf, '#', protocol, log)))
+            {
+                OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
+                OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
+                status = 0;
+            }
+        }
+    }
+    
+    if (0 != status)
+    {
         OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
-        OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",  
+        OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",
             "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
         status = ENOENT;
     }
