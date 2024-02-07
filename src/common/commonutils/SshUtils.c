@@ -975,13 +975,13 @@ static int SaveRemediationToConfFile(void* log)
     
     if ((NULL != (currentRemediation = LoadStringFromFile(g_osconfigRemediationConf, false, log))) && (0 == strncmp(currentRemediation, newRemediation, newRemediationSize)))
     {
-        OsConfigLogInfo(log, "SaveRemediationToConfFile: '%s' already contains the correct remediation values:\n---\n%s---\n", g_osconfigRemediationConf, newRemediation);
+        OsConfigLogInfo(log, "SaveRemediationToConfFile: '%s' already contains the correct remediation values:\n---\n%s---", g_osconfigRemediationConf, newRemediation);
     }
     else
     {
         if (true == SavePayloadToFile(g_osconfigRemediationConf, newRemediation, newRemediationSize, log))
         {
-            OsConfigLogInfo(log, "SaveRemediationToConfFile: '%s' is now updated to the following remediation values:\n---\n%s---\n", g_osconfigRemediationConf, newRemediation);
+            OsConfigLogInfo(log, "SaveRemediationToConfFile: '%s' is now updated to the following remediation values:\n---\n%s---", g_osconfigRemediationConf, newRemediation);
         }
         else
         {
@@ -1033,7 +1033,7 @@ static int SaveRemediationToSshdConfig(void* log)
 
                 if (true == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log))
                 {
-                    OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' is now updated to include the following remediation values:\n---\n%s---\n", g_sshServerConfiguration, remediation);
+                    OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' is now updated to include the following remediation values:\n---\n%s---", g_sshServerConfiguration, remediation);
                     status = 0;
                 }
                 else
@@ -1052,7 +1052,7 @@ static int SaveRemediationToSshdConfig(void* log)
         }
         else
         {
-            OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' already contains the correct remediation values:\n---\n%s---\n", g_sshServerConfiguration, remediation);
+            OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' already contains the correct remediation values:\n---\n%s---", g_sshServerConfiguration, remediation);
             status = 0;
         }
 
@@ -1113,7 +1113,7 @@ void SshAuditCleanup(void* log)
     
     //if (false == g_auditOnlySession)
     {
-        if (0 == IsSshConfigIncludeSupported(log))
+        if (0 != IsSshConfigIncludeSupported(log)) //==
         {
             IncludeRemediationSshConfFile(log);
             if (0 == SaveRemediationToConfFile(log))
