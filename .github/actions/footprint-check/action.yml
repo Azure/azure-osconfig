@@ -11,6 +11,10 @@ inputs:
   arch:
     description: The architecture of the binary
     required: true
+  package-type:
+    description: The type of package (deb | rpm).
+    type: string
+    required: true
 
 runs:
   using: composite
@@ -23,6 +27,7 @@ runs:
       run: |
         distroName=${{ inputs.distroName }}
         arch=${{ inputs.arch }}
+        packageType=$(echo ${{ inputs.package-type }} | awk '{print tolower($0)}')
 
         # Normalize distro name
         case $distroName in
@@ -30,6 +35,7 @@ runs:
           ("ubuntu20.04") distroName="ubuntu-20.04";;
           ("ubuntu22.04") distroName="ubuntu-22.04";;
           ("debian9")     distroName="debian-9";;
+          ("mariner2")     distroName="mariner-2";;
         esac
 
         # Normalize architecture
@@ -41,6 +47,7 @@ runs:
 
         echo "distroName=${distroName}" >> $GITHUB_OUTPUT
         echo "arch=${arch}" >> $GITHUB_OUTPUT
+        echo "packageType=${packageType}" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Footprint delta validation
@@ -51,7 +58,7 @@ runs:
         remoteSize=`echo $target | jq .sizeBytes | tr -d \"`
 
         # Get local file
-        file=$(find ./build -name "*.deb" | head -n 1)
+        file=$(find ./build -name "*.${{ steps.normalize-distro-arch.outputs.packageType }}" | head -n 1)
         echo Using $file
         localSize=$(wc -c $file | awk '{print $1}')
 

@@ -1,6 +1,7 @@
 name: CI
 
-on: [pull_request]
+on:
+  pull_request:
 
 env:
   BUILD_TYPE: Release
@@ -14,12 +15,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, debian-10, debian-11]
+        # os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, debian-10, debian-11, mariner-2]
+        os: [mariner-2]
         arch: [arm, arm64, amd64]
         exclude:
           - os: ubuntu-22.04
-            arch: arm 
+            arch: arm
           - os: ubuntu-22.04
+            arch: arm64
+          - os: mariner-2
+            arch: arm
+          - os: mariner-2
             arch: arm64
 
     steps:
@@ -49,7 +55,7 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           cmd: |
             mkdir build && cd build
-            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -G Ninja
+            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON ${{ matrix.os == 'mariner-2' && '-Duse_default_uuid=ON' || '' }} -G Ninja
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
