@@ -224,14 +224,15 @@ static int IsSshConfigIncludeSupported(void* log)
 
     if (NULL != textResult)
     {
-        // Extracts the two version digits from a string that starts like this: "unknown option -- V OpenSSH_8.9p1..."
+        // Extracts the two version digits from the SSH server response to -V. For example, version 8.9 from response "unknown option -- V OpenSSH_8.9p1..."
         if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult)))
         {
             textCursor = textResult + strlen(expectedPrefix) + 1;
             versionMajorString[0] = textCursor[0];
+            versionMajor = atoi(versionMajorString);
+
             textCursor += 2;
             versionMinorString[0] = textCursor[0];
-            versionMajor = atoi(versionMajorString);
             versionMinor = atoi(versionMinorString);
 
             if ((versionMajor <= 0) || (versionMinor <= 0))
@@ -241,12 +242,13 @@ static int IsSshConfigIncludeSupported(void* log)
             }
             else if ((versionMajor < 8) || (versionMinor < 2))
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server has version %d.%d and appears to not support Include", versionMajor, versionMinor);
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server reports OpenSSH version %d.%d and appears to not support Include", versionMajor, versionMinor);
                 result = ENOENT;
             }
             else
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server has version %d.%d and appears to support Include", versionMajor, versionMinor);
+                // SSH servers implementing OpenSSH version 8.2 or newer support Include
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server reports OpenSSH version %d.%d and appears to support Include", versionMajor, versionMinor);
                 result = 0;
             }
         }
