@@ -799,7 +799,6 @@ static char* FormatRemediationValues(void* log)
     const char* remediationTemplate = "%s%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\nUsePAM no\n";
     char* remediation = NULL;
     size_t remediationSize = 0;
-    int status = 0;
 
     remediationSize = strlen(remediationTemplate) + strlen(g_sshdConfigRemediationHeader) +
         strlen(g_sshPort) + strlen(g_desiredSshPort ? g_desiredSshPort : g_sshDefaultSshPort) +
@@ -861,11 +860,11 @@ static char* FormatInclusionForRemediation(void* log)
     char* inclusion = NULL;
     size_t inclusionSize = 0;
 
-    inclusionSize = strlen(inclusionTemplate) + strlen(g_sshdConfiginclusionHeader) + strlen(g_osconfigRemediationConf) + 1;
+    inclusionSize = strlen(inclusionTemplate) + strlen(g_sshdConfigRemediationHeader) + strlen(g_osconfigRemediationConf) + 1;
     if (NULL != (inclusion = malloc(inclusionSize)))
     {
         memset(inclusion, 0, inclusionSize);
-        snprintf(inclusion, inclusionSize, inclusionTemplate, g_sshdConfiginclusionHeader, g_osconfigRemediationConf);
+        snprintf(inclusion, inclusionSize, inclusionTemplate, g_sshdConfigRemediationHeader, g_osconfigRemediationConf);
     }
     else
     {
@@ -1123,19 +1122,16 @@ void SshAuditCleanup(void* log)
                 configurationChanged = true;
             }
         }
-    }
-    else
-    {
-        if (0 == SaveRemediationToSshdConfig(log))
+        else if (0 == SaveRemediationToSshdConfig(log))
         {
             configurationChanged = true;
         }
-    }
 
-    if (configurationChanged)
-    {
-        // Signal to the SSH Server service to reload configuration
-        RestartDaemon(g_sshServerService, log);
+        if (configurationChanged)
+        {
+            // Signal to the SSH Server service to reload configuration
+            RestartDaemon(g_sshServerService, log);
+        }
     }
     
     FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
