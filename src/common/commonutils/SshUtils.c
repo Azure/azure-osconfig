@@ -848,7 +848,6 @@ static char* FormatRemediationValues(void* log)
     else
     {
         OsConfigLogError(log, "GetRemediationToSaveToFile: out of memory");
-        status = ENOMEM;
     }
 
     return remediation;
