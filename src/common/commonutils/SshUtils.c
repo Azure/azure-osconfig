@@ -220,24 +220,27 @@ static int IsSshConfigIncludeSupported(void* log)
         return EEXIST;
     }
 
+    // Extract the two version digits from the SSH server response to unsupported command -V (the OpenSSH way)
+    // For example, version 8.9 from response "unknown option -- V OpenSSH_8.9p1..."
+
     ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
 
     if (NULL != textResult)
     {
-        // Extracts the two version digits from the SSH server response to -V. For example, version 8.9 from response "unknown option -- V OpenSSH_8.9p1..."
-        if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult)))
+        if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult))) 
         {
             textCursor = textResult + strlen(expectedPrefix) + 1;
-            versionMajorString[0] = textCursor[0];
-            versionMajor = atoi(versionMajorString);
-
-            textCursor += 2;
-            versionMinorString[0] = textCursor[0];
-            versionMinor = atoi(versionMinorString);
+            if (isdigit(textCursor[0]) && ('.' == textCursor[1]) && isdigit(textCursor[2]))
+            {
+                versionMajorString[0] = textCursor[0];
+                versionMinorString[0] = textCursor[2];
+                versionMajor = atoi(versionMajorString);
+                versionMinor = atoi(versionMinorString);
+            }
 
             if ((versionMajor <= 0) || (versionMinor <= 0))
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected prefix in response to '%s' ('%s'), assuming Include is not supported", command, textCursor);
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' ('%s'), assuming Include is not supported", command, textCursor);
                 result = ENOENT;
             }
             else if ((versionMajor < 8) || (versionMinor < 2))
@@ -1014,7 +1017,7 @@ static int SaveRemediationToSshdConfig(void* log)
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' is not present on this device", g_sshServerConfiguration);
         return EEXIST;
     }
-    else if ((NULL == (remediation = FormatInclusionForRemediation(log))) || (0 == (remediationSize = strlen(remediation))))
+    else if ((NULL == (remediation = FormatRemediationValues(log))) || (0 == (remediationSize = strlen(remediation))))
     {
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: failed formatting, cannot save remediation values to '%s'", g_sshServerConfiguration);
         return ENOMEM;
