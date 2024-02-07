@@ -1116,7 +1116,7 @@ void SshAuditCleanup(void* log)
     
     //if (false == g_auditOnlySession)
     {
-        if (0 != IsSshConfigIncludeSupported(log)) //==
+        if (0 == IsSshConfigIncludeSupported(log))
         {
             IncludeRemediationSshConfFile(log);
             if (0 == SaveRemediationToConfFile(log))
