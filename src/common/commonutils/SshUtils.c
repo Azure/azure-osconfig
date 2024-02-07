@@ -946,8 +946,6 @@ static int IncludeRemediationSshConfFile(void* log)
                 status = 0;
             }
 
-            SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log);
-
             FREE_MEMORY(originalConfiguration);
         }
         else
@@ -956,6 +954,8 @@ static int IncludeRemediationSshConfFile(void* log)
             status = EEXIST;
         }
     }
+
+    SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log);
 
     FREE_MEMORY(inclusion);
 
@@ -967,7 +967,6 @@ static int SaveRemediationToConfFile(void* log)
     char* newRemediation = NULL;
     char* currentRemediation = NULL;
     size_t newRemediationSize = 0;
-    int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
     int status = 0;
 
     if ((NULL == (newRemediation = FormatRemediationValues(log))) || (0 == (newRemediationSize = strlen(newRemediation))))
@@ -993,7 +992,7 @@ static int SaveRemediationToConfFile(void* log)
         }
     }
 
-    SetFileAccess(g_osconfigRemediationConf, 0, 0, desiredAccess, log);
+    SetFileAccess(g_osconfigRemediationConf, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
 
     FREE_MEMORY(newRemediation);
     FREE_MEMORY(currentRemediation);
@@ -1009,7 +1008,6 @@ static int SaveRemediationToSshdConfig(void* log)
     char* remediation = NULL;
     size_t remediationSize = 0;
     size_t newConfigurationSize = 0;
-    int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
     int status = 0;
 
     if (false == FileExists(g_sshServerConfiguration))
@@ -1059,8 +1057,6 @@ static int SaveRemediationToSshdConfig(void* log)
             status = 0;
         }
 
-        SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log);
-
         FREE_MEMORY(originalConfiguration);
     }
     else
@@ -1068,6 +1064,8 @@ static int SaveRemediationToSshdConfig(void* log)
         OsConfigLogError(log, "SaveRemediationToSshdConfig: failed to read from '%s'", g_sshServerConfiguration);
         status = EEXIST;
     }
+
+    SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
 
     FREE_MEMORY(remediation);
 
@@ -1114,7 +1112,7 @@ void SshAuditCleanup(void* log)
     
     OsConfigLogInfo(log, "SshAuditCleanup: %s", g_auditOnlySession ? "audit only" : "audit and remediate");
     
-    //if (false == g_auditOnlySession)
+    if (false == g_auditOnlySession)
     {
         if (0 == IsSshConfigIncludeSupported(log))
         {
