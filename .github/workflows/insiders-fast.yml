@@ -53,6 +53,6 @@ jobs:
       arch: ${{ matrix.arch }}
       repo: ${{ matrix.repo }}
       dist: ${{ matrix.dist }}
-      channel: insiders-fast
+      channel: ''
       package-type: ${{ matrix.target.package-type }}
     secrets: inherit
