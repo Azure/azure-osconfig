@@ -217,7 +217,7 @@ static int IsSshConfigIncludeSupported(void* log)
     if (false == IsDaemonActive(g_sshServerService, log))
     {
         OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the OpenSSH Server service '%s' is not active on this device, assuming Include is not supported", g_sshServerService);
-        result = EEXIST;
+        return EEXIST;
     }
 
     ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
@@ -959,6 +959,33 @@ static int SaveRemediationSshConfFile(void* log)
     return status;
 }
 
+int SaveRemediationToSshdConfig(void* log)
+{
+    // TBD
+
+    //char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log);
+    //bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
+    //static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
+    //static const char* g_osconfigRemediationConf = "/etc/ssh/sshd_config.d/osconfig_remediation.conf";
+    //static const char* g_sshdConfigRemediationHeader = "# Azure OSConfig Remediation\nInclude /etc/ssh/sshd_config.d/osconfig_remediation.conf\n";
+
+    const char* configurationTemplate = "%s\n\n%s";
+    char* originalConfiguration = NULL;
+    char* newConfiguration = NULL;
+    size_t newConfigurationSize = 0;
+    int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
+    int status = 0;
+
+    if (false == FileExists(g_sshServerConfiguration))
+    {
+        OsConfigLogInfo(log, "IncludeRemediationSshConfFile: '%s' is not present on this device", g_sshServerConfiguration);
+        return EEXIST;
+    }
+
+
+    return status;
+}
+
 int InitializeSshAudit(void* log)
 {
     int status = 0;
@@ -995,20 +1022,33 @@ int InitializeSshAudit(void* log)
 
 void SshAuditCleanup(void* log)
 {
+    bool configurationChanged = false;
+    
     OsConfigLogInfo(log, "SshAuditCleanup: %s", g_auditOnlySession ? "audit only" : "audit and remediate");
     
-    IsSshConfigIncludeSupported(log); ///////////
-
     if (false == g_auditOnlySession)
     {
-        // Even if we cannot include the remediation .conf file, we still want to go ahead and create/update it
-        IncludeRemediationSshConfFile(log);
-
-        if (0 == SaveRemediationSshConfFile(log))
+        if (0 == IsSshConfigIncludeSupported(log))
         {
-            // Signal to the SSH Server service to reload configuration
-            RestartDaemon(g_sshServerService, log);
+            IncludeRemediationSshConfFile(log);
+            if (0 == SaveRemediationSshConfFile(log))
+            {
+                configurationChanged = true;
+            }
         }
+    }
+    else
+    {
+        if (0 == SaveRemediationToSshdConfig(log))
+        {
+            configurationChanged = true;
+        }
+    }
+
+    if (restartSshd)
+    {
+        // Signal to the SSH Server service to reload configuration
+        RestartDaemon(g_sshServerService, log);
     }
     
     FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
