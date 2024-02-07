@@ -272,7 +272,6 @@ static int IsSshConfigIncludeSupported(void* log)
     return result;
 }
 
-
 static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, void* log)
 {
     char* sshMacs = DuplicateStringToLowercase(g_sshMacs);
@@ -798,7 +797,7 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
 
 static char* FormatRemediationValues(void* log)
 {
-    // 'UsePAM yes' blocks Ciphers and MACs so we need also to set this to 'no' here as other .conf files can set it
+    // 'UsePAM yes' blocks Ciphers and MACs so we need to set this to 'no' here as other .conf files can set it
     const char* remediationTemplate = "%s%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\nUsePAM no\n";
     char* remediation = NULL;
     size_t remediationSize = 0;
