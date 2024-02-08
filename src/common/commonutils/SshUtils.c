@@ -622,6 +622,26 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
     return status;
 }
 
+static char* FormatInclusionForRemediation(void* log)
+{
+    const char* inclusionTemplate = "%s\nInclude %s\n";
+    char* inclusion = NULL;
+    size_t inclusionSize = 0;
+
+    inclusionSize = strlen(inclusionTemplate) + strlen(g_sshdConfigRemediationHeader) + strlen(g_osconfigRemediationConf) + 1;
+    if (NULL != (inclusion = malloc(inclusionSize)))
+    {
+        memset(inclusion, 0, inclusionSize);
+        snprintf(inclusion, inclusionSize, inclusionTemplate, g_sshdConfigRemediationHeader, g_osconfigRemediationConf);
+    }
+    else
+    {
+        OsConfigLogError(log, "FormatInclusionForRemediation: out of memory");
+    }
+
+    return inclusion;
+}
+
 int CheckSshProtocol(char** reason, void* log)
 {
     const char* protocolTemplate = "%s %s";
@@ -875,26 +895,6 @@ static char* FormatRemediationValues(void* log)
     }
 
     return remediation;
-}
-
-static char* FormatInclusionForRemediation(void* log)
-{
-    const char* inclusionTemplate = "%s\nInclude %s\n";
-    char* inclusion = NULL;
-    size_t inclusionSize = 0;
-
-    inclusionSize = strlen(inclusionTemplate) + strlen(g_sshdConfigRemediationHeader) + strlen(g_osconfigRemediationConf) + 1;
-    if (NULL != (inclusion = malloc(inclusionSize)))
-    {
-        memset(inclusion, 0, inclusionSize);
-        snprintf(inclusion, inclusionSize, inclusionTemplate, g_sshdConfigRemediationHeader, g_osconfigRemediationConf);
-    }
-    else
-    {
-        OsConfigLogError(log, "FormatInclusionForRemediation: out of memory");
-    }
-
-    return inclusion;
 }
 
 static int IncludeRemediationSshConfFile(void* log)
