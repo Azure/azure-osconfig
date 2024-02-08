@@ -648,15 +648,6 @@ int CheckSshProtocol(char** reason, void* log)
     {
         if (0 == IsSshConfigIncludeSupported(log))
         {
-            if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log)))
-            {
-                OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
-                OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
-                status = 0;
-            }
-        }
-        else
-        {
             if (false == FileExists(g_osconfigRemediationConf))
             {
                 OsConfigLogError(log, "CheckSshProtocol: the OSConfig remediation file '%s' is not present on this device", g_osconfigRemediationConf);
@@ -674,6 +665,15 @@ int CheckSshProtocol(char** reason, void* log)
             {
                 OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
                 OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
+                status = 0;
+            }
+        }
+        else
+        {
+            if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log)))
+            {
+                OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
+                OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
                 status = 0;
             }
         }
