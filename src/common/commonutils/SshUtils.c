@@ -245,13 +245,13 @@ static int IsSshConfigIncludeSupported(void* log)
             }
             else if ((versionMajor < 8) || (versionMinor < 2))
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server reports OpenSSH version %d.%d and appears to not support Include", versionMajor, versionMinor);
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to not support Include", g_sshServerService, versionMajor, versionMinor);
                 result = ENOENT;
             }
             else
             {
                 // SSH servers implementing OpenSSH version 8.2 or newer support Include
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server reports OpenSSH version %d.%d and appears to support Include", versionMajor, versionMinor);
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to support Include", g_sshServerService, versionMajor, versionMinor);
                 result = 0;
             }
         }
@@ -606,8 +606,8 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
             }
             else if (0 == (status = CheckFileAccess(bannerFile, 0, 0, desiredAccess, reason, log)))
             {
-                OsConfigCaptureSuccessReason(reason, "%sThe sshd service reports that '%s' is set to '%s', this file has access '%u' and contains the expected banner text", 
-                    banner, actualValue, desiredAccess);
+                OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%s', this file has access '%u' and contains the expected banner text", 
+                    g_sshServerService, banner, actualValue, desiredAccess);
             }
         }
 
