@@ -675,7 +675,7 @@ int CheckSshProtocol(char** reason, void* log)
                 OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_osconfigRemediationConf);
                 status = EEXIST;
             }
-            else if (NULL == (inclusion = FormatInclusionForRemediation(log))
+            else if (NULL == (inclusion = FormatInclusionForRemediation(log)))
             {
                 OsConfigLogError(log, "CheckSshProtocol: FormatInclusionForRemediation failed");
                 status = ENOMEM;
