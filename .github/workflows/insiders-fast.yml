@@ -51,8 +51,8 @@ jobs:
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.arch }}
-      repo: ${{ matrix.repo }}
-      dist: ${{ matrix.dist }}
+      repo: ${{ matrix.target.repo }}
+      dist: ${{ matrix.target.dist }}
       channel: ''
       package-type: ${{ matrix.target.package-type }}
     secrets: inherit
