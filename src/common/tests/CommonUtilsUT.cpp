@@ -19,6 +19,7 @@ using namespace std;
 class CommonUtilsTest : public ::testing::Test
 {
     protected:
+        const char* m_osId = "/etc/os-release";
         const char* m_path = "~test.test";
         const char* m_data = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM";
         const char* m_dataWithEol = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
@@ -54,6 +55,11 @@ class CommonUtilsTest : public ::testing::Test
             }
 
             return true;
+        }
+
+        bool IsMarinerDistro()
+        {
+            return 0 == FindTextInFile(m_osId, "CBL-Mariner/Linux", nullptr);
         }
 };
 
@@ -236,7 +242,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     char* textResult = nullptr;
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "hh", false, true, 100, 0, &textResult, nullptr, nullptr));
-    EXPECT_NE(nullptr, strstr(textResult, "sh: 1: hh: not found\n"));
+    EXPECT_NE(nullptr, strstr(textResult, "not found")) << "Text result: '" << textResult << "'";
 
     if (nullptr != textResult)
     {
@@ -244,7 +250,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     }
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "blah", true, true, 100, 0, &textResult, nullptr, nullptr));
-    EXPECT_NE(nullptr, strstr(textResult, "sh: 1: blah: not found "));
+    EXPECT_NE(nullptr, strstr(textResult, "not found")) << "Text result: '" << textResult << "'";
 
     FREE_MEMORY(textResult);
 }
@@ -1178,6 +1184,11 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 {
+    if (IsMarinerDistro())
+    {
+        GTEST_SKIP() << "Skipping test on CBL-Mariner (RPM-based)";
+    }
+
     EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
     EXPECT_EQ(EINVAL, InstallPackage(nullptr, nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage(nullptr, nullptr));

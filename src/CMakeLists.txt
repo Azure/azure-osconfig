@@ -69,6 +69,7 @@ set(OsConfigProjectName "osconfig")
 set(OsConfigProjectLongName "Azure OSConfig")
 set(OsConfigProjectVendor "Microsoft")
 set(OsConfigProjectEmail "osconfigsupport@microsoft.com")
+set(OsConfigProjectUrl "https://github.com/Azure/azure-osconfig/")
 set(OsConfigHashAlgorithm "SHA256")
 set(OsConfigVersionString ${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}.${CMAKE_PROJECT_VERSION_TWEAK})
 set(OsConfigProjectSourceArchiveFileNoExt "${OsConfigProjectName}-${OsConfigVersionString}-Source")
@@ -111,13 +112,13 @@ if (BUILD_MODULES)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-set(CPACK_GENERATOR "DEB")
 
 set(CPACK_PACKAGE_VENDOR ${OsConfigProjectVendor})
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${OsConfigProjectEmail})
 
 # Common packaging
 set(CPACK_PACKAGE_NAME ${OsConfigProjectName})
+set(CPACK_PACKAGE_HOMEPAGE_URL $(OsConfigProjectUrl))
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${OsConfigProjectLongName})
 set(CPACK_PACKAGE_VERSION ${OsConfigVersionString})
 set(CPACK_PACKAGE_VENDOR ${OsConfigProjectVendor})
@@ -135,31 +136,27 @@ set(CPACK_SOURCE_GENERATOR "TGZ")
 set(CPACK_SOURCE_IGNORE_FILES ${CPACK_EXCLUDES})
 set(CPACK_VERBATIM_VARIABLES YES)
 
-# RPM packaging
+# RPM packaging - see /devops/rpm for postinst/postun/preun scripts
+set(CPACK_RPM_BUILDREQUIRES "systemd, cmake, build-essential, tar, gcc, gtest, gtest-devel, gmock, gmock-devel, curl-devel, openssl, rapidjson")
+set(CPACK_RPM_CHANGELOG_FILE "${CMAKE_SOURCE_DIR}/../devops/rpm/changelog")
+set(CPACK_RPM_PACKAGE_AUTOREQ 1)
+set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 set(CPACK_RPM_PACKAGE_NAME ${OsConfigProjectName})
 set(CPACK_RPM_PACKAGE_VERSION ${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH})
-set(CPACK_RPM_PACKAGE_REQUIRES "")
-set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST ${CPACK_EXCLUDES})
+set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/../devops/rpm/postinst")
+set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/../devops/rpm/postun")
+set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/../devops/rpm/preun")
 
-# Debian packaging - see /debian for postinst/prerm scripts
+# Debian packaging - see /devops/debian for postinst/postrm/prerm scripts
 # https://www.debian.org/doc/manuals/maint-guide/
-set(CPACK_DEBIAN_PACKAGE_NAME ${OsConfigProjectName})
-set(CPACK_DEBIAN_PACKAGE_VERSION ${OsConfigVersionString})
-set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
-set(CPACK_DEBIAN_PACKAGE_SUGGESTS "aziot-identity-service (>= 1.2.0)")
-set(CPACK_DEBIAN_PACKAGE_PREDEPENDS "")
-set(CPACK_DEBIAN_FILE_NAME ${OsConfigProjectName}_${OsConfigVersionString}_${LSB_RELEASE_CODENAME_SHORT}_${CMAKE_SYSTEM_PROCESSOR}.deb)
 set(CPACK_DEBIAN_EXCLUDE_FROM_AUTO_FILELIST ${CPACK_EXCLUDES})
-set(CPACK_PACKAGE_VENDOR ${OsConfigProjectVendor})
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${OsConfigProjectEmail})
+set(CPACK_DEBIAN_FILE_NAME ${OsConfigProjectName}_${OsConfigVersionString}_${LSB_RELEASE_CODENAME_SHORT}_${CMAKE_SYSTEM_PROCESSOR}.deb)
 set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_SOURCE_DIR}/../devops/debian/postinst;${CMAKE_SOURCE_DIR}/../devops/debian/prerm;${CMAKE_SOURCE_DIR}/../devops/debian/postrm;")
+set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${OsConfigProjectEmail})
+set(CPACK_DEBIAN_PACKAGE_NAME ${OsConfigProjectName})
+set(CPACK_DEBIAN_PACKAGE_PREDEPENDS "")
+set(CPACK_DEBIAN_PACKAGE_SUGGESTS "aziot-identity-service (>= 1.2.0)")
+set(CPACK_DEBIAN_PACKAGE_VERSION ${OsConfigVersionString})
 
 include(CPack)
-include(GenerateSourceDistribution)
-
-generate_source_distribution(
-    NAME ${OsConfigProjectName}
-    LONG_NAME ${OsConfigProjectLongName}
-    OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/dist
-    SOURCES
-        "${OsConfigProjectSourceArchiveFile}")
