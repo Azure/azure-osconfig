@@ -781,6 +781,12 @@
           "schema": "string"
         },
         {
+          "name": "auditEnsureSshPortIsConfigured",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
           "name": "auditEnsureSshBestPracticeProtocol",
           "type": "mimObject",
           "desired": false,
@@ -1789,6 +1795,12 @@
           "schema": "string"
         },
         {
+          "name": "remediateEnsureSshPortIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
           "name": "remediateEnsureSshBestPracticeProtocol",
           "type": "mimObject",
           "desired": true,
@@ -2018,6 +2030,12 @@
         },
         {
           "name": "initEnsurePermissionsOnEtcSshSshdConfig",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureSshPortIsConfigured",
           "type": "mimObject",
           "desired": true,
           "schema": "string"

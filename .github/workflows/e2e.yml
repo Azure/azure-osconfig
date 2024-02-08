@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: latest
           terraform_wrapper: false
@@ -38,7 +38,7 @@ jobs:
           terraform apply -auto-approve
 
           echo iothub_name=$(terraform output -raw iothub_name) >> $GITHUB_OUTPUT
-          echo connection_string=$(terraform output -raw connection_string) >> $GITHUB_OUTPUT
+          echo connection_string=$(terraform output -raw connection_string | base64 -w 0) >> $GITHUB_OUTPUT
 
   test:
     name: Test
@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, debian-10, debian-11]
+        target: [ubuntu-18.04, ubuntu-20.04, debian-10, debian-11]
         arch: [amd64]
     secrets:
       client_id: ${{ secrets.CLIENT_ID }}

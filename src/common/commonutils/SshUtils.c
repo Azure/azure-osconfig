@@ -7,8 +7,9 @@
 static const char* g_sshServerService = "sshd";
 static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
 static const char* g_osconfigRemediationConf = "/etc/ssh/sshd_config.d/osconfig_remediation.conf";
-static const char* g_sshdConfigRemediationHeader = "# Azure OSConfig Remediation\nInclude /etc/ssh/sshd_config.d/osconfig_remediation.conf\n";
+static const char* g_sshdConfigRemediationHeader = "# Azure OSConfig Remediation";
 
+static const char* g_sshPort = "Port";
 static const char* g_sshProtocol = "Protocol";
 static const char* g_sshIgnoreHosts = "IgnoreRhosts";
 static const char* g_sshLogLevel = "LogLevel";
@@ -29,6 +30,7 @@ static const char* g_sshBanner = "Banner";
 static const char* g_sshCiphers = "Ciphers";
 
 static const char* g_sshDefaultSshSshdConfigAccess = "600";
+static const char* g_sshDefaultSshPort = "22";
 static const char* g_sshDefaultSshProtocol = "2";
 static const char* g_sshDefaultSshYes = "yes";
 static const char* g_sshDefaultSshNo = "no";
@@ -51,6 +53,7 @@ static const char* g_sshDefaultSshBannerText =
     "#######################################################################\n";
 
 static const char* g_auditEnsurePermissionsOnEtcSshSshdConfigObject = "auditEnsurePermissionsOnEtcSshSshdConfig";
+static const char* g_auditEnsureSshPortIsConfiguredObject = "auditEnsureSshPortIsConfigured";
 static const char* g_auditEnsureSshBestPracticeProtocolObject = "auditEnsureSshBestPracticeProtocol";
 static const char* g_auditEnsureSshBestPracticeIgnoreRhostsObject = "auditEnsureSshBestPracticeIgnoreRhosts";
 static const char* g_auditEnsureSshLogLevelIsSetObject = "auditEnsureSshLogLevelIsSet";
@@ -71,6 +74,7 @@ static const char* g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject = "aud
 static const char* g_auditEnsureAppropriateCiphersForSshObject = "auditEnsureAppropriateCiphersForSsh";
 
 static const char* g_remediateEnsurePermissionsOnEtcSshSshdConfigObject = "remediateEnsurePermissionsOnEtcSshSshdConfig";
+static const char* g_remediateEnsureSshPortIsConfiguredObject = "remediateEnsureSshPortIsConfigured";
 static const char* g_remediateEnsureSshBestPracticeProtocolObject = "remediateEnsureSshBestPracticeProtocol";
 static const char* g_remediateEnsureSshBestPracticeIgnoreRhostsObject = "remediateEnsureSshBestPracticeIgnoreRhosts";
 static const char* g_remediateEnsureSshLogLevelIsSetObject = "remediateEnsureSshLogLevelIsSet";
@@ -91,6 +95,7 @@ static const char* g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject = 
 static const char* g_remediateEnsureAppropriateCiphersForSshObject = "remediateEnsureAppropriateCiphersForSsh";
 
 static const char* g_initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
+static const char* g_initEnsureSshPortIsConfiguredObject = "initEnsureSshPortIsConfigured";
 static const char* g_initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
 static const char* g_initEnsureSshBestPracticeIgnoreRhostsObject = "initEnsureSshBestPracticeIgnoreRhosts";
 static const char* g_initEnsureSshLogLevelIsSetObject = "initEnsureSshLogLevelIsSet";
@@ -111,6 +116,7 @@ static const char* g_initEnsureUsersCannotSetSshEnvironmentOptionsObject = "init
 static const char* g_initEnsureAppropriateCiphersForSshObject = "initEnsureAppropriateCiphersForSsh";
 
 static char* g_desiredPermissionsOnEtcSshSshdConfig = NULL;
+static char* g_desiredSshPort = NULL;
 static char* g_desiredSshBestPracticeProtocol = NULL;
 static char* g_desiredSshBestPracticeIgnoreRhosts = NULL;
 static char* g_desiredSshLogLevelIsSet = NULL;
@@ -191,6 +197,78 @@ static int IsSshServerActive(void* log)
         result = EEXIST;
     }
 
+    return result;
+}
+
+static int IsSshConfigIncludeSupported(void* log)
+{
+    const char* expectedPrefix = "unknown option -- V OpenSSH_";
+    const char* command = "sshd -V";
+    char* textResult = NULL;
+    size_t textResultLength = 0;
+    size_t textPrefixLength = 0;
+    char* textCursor = NULL;
+    char versionMajorString[2] = {0};
+    char versionMinorString[2] = {0};
+    int versionMajor = 0;
+    int versionMinor = 0;
+    int result = 0;
+    
+    if (false == IsDaemonActive(g_sshServerService, log))
+    {
+        OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the OpenSSH Server service '%s' is not active on this device, assuming Include is not supported", g_sshServerService);
+        return EEXIST;
+    }
+
+    // Extract the two version digits from the SSH server response to unsupported command -V (the OpenSSH way)
+    // For example, version 8.9 from response "unknown option -- V OpenSSH_8.9p1..."
+
+    ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
+
+    if (NULL != textResult)
+    {
+        if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult))) 
+        {
+            textCursor = textResult + strlen(expectedPrefix) + 1;
+            if (isdigit(textCursor[0]) && ('.' == textCursor[1]) && isdigit(textCursor[2]))
+            {
+                versionMajorString[0] = textCursor[0];
+                versionMinorString[0] = textCursor[2];
+                versionMajor = atoi(versionMajorString);
+                versionMinor = atoi(versionMinorString);
+            }
+
+            if ((versionMajor <= 0) || (versionMinor <= 0))
+            {
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' ('%s'), assuming Include is not supported", command, textCursor);
+                result = ENOENT;
+            }
+            else if ((versionMajor < 8) || (versionMinor < 2))
+            {
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server reports OpenSSH version %d.%d and appears to not support Include", versionMajor, versionMinor);
+                result = ENOENT;
+            }
+            else
+            {
+                // SSH servers implementing OpenSSH version 8.2 or newer support Include
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server reports OpenSSH version %d.%d and appears to support Include", versionMajor, versionMinor);
+                result = 0;
+            }
+        }
+        else
+        {
+            OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' ('%s'), assuming Include is not supported", command, textResult);
+            result = ENOENT;
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s', assuming Include is not supported", command);
+        result = ENOENT;
+    }
+    
+    FREE_MEMORY(textResult);
+    
     return result;
 }
 
@@ -560,35 +638,51 @@ int CheckSshProtocol(char** reason, void* log)
         OsConfigLogError(log, "CheckSshProtocol: FormatAllocateString failed");
         status = ENOMEM;
     }
-    else if (false == FileExists(g_osconfigRemediationConf))
-    {
-        OsConfigLogError(log, "CheckSshProtocol: the OSConfig remediation file '%s' is not present on this device", g_osconfigRemediationConf);
-        OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_osconfigRemediationConf);
-        status = EEXIST;
-    }
     else if (false == FileExists(g_sshServerConfiguration))
     {
         OsConfigLogError(log, "CheckSshProtocol: the SSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
         OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_sshServerConfiguration);
         status = EEXIST;
     }
-    else if (0 != FindTextInFile(g_sshServerConfiguration, g_sshdConfigRemediationHeader, log))
-    {
-        OsConfigLogError(log, "CheckSshProtocol: '%s' is not found included in '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
-        OsConfigCaptureReason(reason, "'%s' is not found included in %s",
-            "%s, also '%s' is not found included in %s", g_osconfigRemediationConf, g_sshServerConfiguration);
-        status = ENOENT;
-    }
-    else if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_osconfigRemediationConf, '#', protocol, log)))
-    {
-        OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
-        OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
-        status = 0;
-    }
     else
     {
+        if (0 == IsSshConfigIncludeSupported(log))
+        {
+            if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log)))
+            {
+                OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
+                OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
+                status = 0;
+            }
+        }
+        else
+        {
+            if (false == FileExists(g_osconfigRemediationConf))
+            {
+                OsConfigLogError(log, "CheckSshProtocol: the OSConfig remediation file '%s' is not present on this device", g_osconfigRemediationConf);
+                OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_osconfigRemediationConf);
+                status = EEXIST;
+            }
+            else if (0 != FindTextInFile(g_sshServerConfiguration, g_sshdConfigRemediationHeader, log))
+            {
+                OsConfigLogError(log, "CheckSshProtocol: '%s' is not found included in '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
+                OsConfigCaptureReason(reason, "'%s' is not found included in %s",
+                    "%s, also '%s' is not found included in %s", g_osconfigRemediationConf, g_sshServerConfiguration);
+                status = ENOENT;
+            }
+            else if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_osconfigRemediationConf, '#', protocol, log)))
+            {
+                OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
+                OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
+                status = 0;
+            }
+        }
+    }
+    
+    if (0 != status)
+    {
         OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
-        OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",  
+        OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",
             "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
         status = ENOENT;
     }
@@ -717,21 +811,107 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
     return status;
 }
 
+static char* FormatRemediationValues(void* log)
+{
+    // 'UsePAM yes' blocks Ciphers and MACs so we need to set this to 'no' here as other .conf files can set it
+    const char* remediationTemplate = "%s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\nUsePAM no\n";
+    char* remediation = NULL;
+    size_t remediationSize = 0;
+
+    remediationSize = strlen(remediationTemplate) + strlen(g_sshdConfigRemediationHeader) +
+        strlen(g_sshPort) + strlen(g_desiredSshPort ? g_desiredSshPort : g_sshDefaultSshPort) +
+        strlen(g_sshProtocol) + strlen(g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol) +
+        strlen(g_sshIgnoreHosts) + strlen(g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : g_sshDefaultSshYes) +
+        strlen(g_sshLogLevel) + strlen(g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : g_sshDefaultSshLogLevel) +
+        strlen(g_sshMaxAuthTries) + strlen(g_desiredSshMaxAuthTriesIsSet ? g_desiredSshMaxAuthTriesIsSet : g_sshDefaultSshMaxAuthTries) +
+        strlen(g_sshAllowUsers) + strlen(g_desiredAllowUsersIsConfigured ? g_desiredAllowUsersIsConfigured : g_sshDefaultSshAllowUsers) +
+        strlen(g_sshDenyUsers) + strlen(g_desiredDenyUsersIsConfigured ? g_desiredDenyUsersIsConfigured : g_sshDefaultSshDenyUsers) +
+        strlen(g_sshAllowGroups) + strlen(g_desiredAllowGroupsIsConfigured ? g_desiredAllowGroupsIsConfigured : g_sshDefaultSshAllowGroups) +
+        strlen(g_sshDenyGroups) + strlen(g_desiredDenyGroupsConfigured ? g_desiredDenyGroupsConfigured : g_sshDefaultSshDenyGroups) +
+        strlen(g_sshHostBasedAuthentication) + strlen(g_desiredSshHostbasedAuthenticationIsDisabled ? g_desiredSshHostbasedAuthenticationIsDisabled : g_sshDefaultSshNo) +
+        strlen(g_sshPermitRootLogin) + strlen(g_desiredSshPermitRootLoginIsDisabled ? g_desiredSshPermitRootLoginIsDisabled : g_sshDefaultSshNo) +
+        strlen(g_sshPermitEmptyPasswords) + strlen(g_desiredSshPermitEmptyPasswordsIsDisabled ? g_desiredSshPermitEmptyPasswordsIsDisabled : g_sshDefaultSshNo) +
+        strlen(g_sshClientAliveCountMax) + strlen(g_desiredSshClientIntervalCountMaxIsConfigured ? g_desiredSshClientIntervalCountMaxIsConfigured : g_sshDefaultSshClientIntervalCountMax) +
+        strlen(g_sshClientAliveInterval) + strlen(g_desiredSshClientAliveIntervalIsConfigured ? g_desiredSshClientAliveIntervalIsConfigured : g_sshDefaultSshClientAliveInterval) +
+        strlen(g_sshLoginGraceTime) + strlen(g_desiredSshLoginGraceTimeIsSet ? g_desiredSshLoginGraceTimeIsSet : g_sshDefaultSshLoginGraceTime) +
+        strlen(g_sshPermitUserEnvironment) + strlen(g_desiredUsersCannotSetSshEnvironmentOptions ? g_desiredUsersCannotSetSshEnvironmentOptions : g_sshDefaultSshNo) +
+        strlen(g_sshBanner) + strlen(g_sshBannerFile) +
+        strlen(g_sshMacs) + strlen(g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : g_sshDefaultSshMacs) +
+        strlen(g_sshCiphers) + strlen(g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : g_sshDefaultSshCiphers) + 1;
+
+    if (NULL != (remediation = malloc(remediationSize)))
+    {
+        memset(remediation, 0, remediationSize);
+        snprintf(remediation, remediationSize, remediationTemplate, g_sshdConfigRemediationHeader,
+            g_sshPort, g_desiredSshPort ? g_desiredSshPort : g_sshDefaultSshPort,
+            g_sshProtocol, g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol,
+            g_sshIgnoreHosts, g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : g_sshDefaultSshYes,
+            g_sshLogLevel, g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : g_sshDefaultSshLogLevel,
+            g_sshMaxAuthTries, g_desiredSshMaxAuthTriesIsSet ? g_desiredSshMaxAuthTriesIsSet : g_sshDefaultSshMaxAuthTries,
+            g_sshAllowUsers, g_desiredAllowUsersIsConfigured ? g_desiredAllowUsersIsConfigured : g_sshDefaultSshAllowUsers,
+            g_sshDenyUsers, g_desiredDenyUsersIsConfigured ? g_desiredDenyUsersIsConfigured : g_sshDefaultSshDenyUsers,
+            g_sshAllowGroups, g_desiredAllowGroupsIsConfigured ? g_desiredAllowGroupsIsConfigured : g_sshDefaultSshAllowGroups,
+            g_sshDenyGroups, g_desiredDenyGroupsConfigured ? g_desiredDenyGroupsConfigured : g_sshDefaultSshDenyGroups,
+            g_sshHostBasedAuthentication, g_desiredSshHostbasedAuthenticationIsDisabled ? g_desiredSshHostbasedAuthenticationIsDisabled : g_sshDefaultSshNo,
+            g_sshPermitRootLogin, g_desiredSshPermitRootLoginIsDisabled ? g_desiredSshPermitRootLoginIsDisabled : g_sshDefaultSshNo,
+            g_sshPermitEmptyPasswords, g_desiredSshPermitEmptyPasswordsIsDisabled ? g_desiredSshPermitEmptyPasswordsIsDisabled : g_sshDefaultSshNo,
+            g_sshClientAliveCountMax, g_desiredSshClientIntervalCountMaxIsConfigured ? g_desiredSshClientIntervalCountMaxIsConfigured : g_sshDefaultSshClientIntervalCountMax,
+            g_sshClientAliveInterval, g_desiredSshClientAliveIntervalIsConfigured ? g_desiredSshClientAliveIntervalIsConfigured : g_sshDefaultSshClientAliveInterval,
+            g_sshLoginGraceTime, g_desiredSshLoginGraceTimeIsSet ? g_desiredSshLoginGraceTimeIsSet : g_sshDefaultSshLoginGraceTime,
+            g_sshPermitUserEnvironment, g_desiredUsersCannotSetSshEnvironmentOptions ? g_desiredUsersCannotSetSshEnvironmentOptions : g_sshDefaultSshNo,
+            g_sshBanner, g_sshBannerFile,
+            g_sshMacs, g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : g_sshDefaultSshMacs,
+            g_sshCiphers, g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : g_sshDefaultSshCiphers);
+    }
+    else
+    {
+        OsConfigLogError(log, "GetRemediationToSaveToFile: out of memory");
+    }
+
+    return remediation;
+}
+
+static char* FormatInclusionForRemediation(void* log)
+{
+    const char* inclusionTemplate = "%s\nInclude %s\n";
+    char* inclusion = NULL;
+    size_t inclusionSize = 0;
+
+    inclusionSize = strlen(inclusionTemplate) + strlen(g_sshdConfigRemediationHeader) + strlen(g_osconfigRemediationConf) + 1;
+    if (NULL != (inclusion = malloc(inclusionSize)))
+    {
+        memset(inclusion, 0, inclusionSize);
+        snprintf(inclusion, inclusionSize, inclusionTemplate, g_sshdConfigRemediationHeader, g_osconfigRemediationConf);
+    }
+    else
+    {
+        OsConfigLogError(log, "FormatInclusionForRemediation: out of memory");
+    }
+
+    return inclusion;
+}
+
 static int IncludeRemediationSshConfFile(void* log)
 {
     const char* etcSshSshdConfigD = "/etc/ssh/sshd_config.d";
     const char* configurationTemplate = "%s%s";
-    
-    int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
     char* originalConfiguration = NULL;
     char* newConfiguration = NULL;
+    char* inclusion = NULL;
     size_t newConfigurationSize = 0;
+    size_t inclusionSize = 0;
+    int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
     int status = 0;
 
     if (false == FileExists(g_sshServerConfiguration))
     {
         OsConfigLogInfo(log, "IncludeRemediationSshConfFile: '%s' is not present on this device", g_sshServerConfiguration);
         return EEXIST;
+    }
+    else if ((NULL == (inclusion = FormatInclusionForRemediation(log))) || (0 == (inclusionSize = strlen(inclusion))))
+    {
+        OsConfigLogInfo(log, "IncludeRemediationSshConfFile: failed preparing the inclusion statement, cannot include '%s' into '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
+        return ENOMEM;
     }
 
     if (false == DirectoryExists(etcSshSshdConfigD))
@@ -747,18 +927,18 @@ static int IncludeRemediationSshConfFile(void* log)
     {
         if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
         {
-            if (0 != strncmp(originalConfiguration, g_sshdConfigRemediationHeader, strlen(g_sshdConfigRemediationHeader)))
+            if (0 != strncmp(originalConfiguration, inclusion, inclusionSize))
             {
-                newConfigurationSize = strlen(configurationTemplate) + strlen(g_sshdConfigRemediationHeader) + strlen(originalConfiguration) + 1;
+                newConfigurationSize = strlen(configurationTemplate) + inclusionSize + strlen(originalConfiguration) + 1;
 
                 if (NULL != (newConfiguration = malloc(newConfigurationSize)))
                 {
                     memset(newConfiguration, 0, newConfigurationSize);
-                    snprintf(newConfiguration, newConfigurationSize, configurationTemplate, g_sshdConfigRemediationHeader, originalConfiguration);
+                    snprintf(newConfiguration, newConfigurationSize, configurationTemplate, inclusion, originalConfiguration);
 
                     if (true == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log))
                     {
-                        OsConfigLogInfo(log, "IncludeRemediationSshConfFile: '%s' is now included by '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
+                        OsConfigLogInfo(log, "IncludeRemediationSshConfFile: '%s' is now included into '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
                         status = 0;
                     }
                     else
@@ -781,8 +961,6 @@ static int IncludeRemediationSshConfFile(void* log)
                 status = 0;
             }
 
-            SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
-
             FREE_MEMORY(originalConfiguration);
         }
         else
@@ -792,91 +970,119 @@ static int IncludeRemediationSshConfFile(void* log)
         }
     }
 
+    SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log);
+
+    FREE_MEMORY(inclusion);
+
     return status;
 }
 
-static int SaveRemediationSshConfFile(void* log)
+static int SaveRemediationToConfFile(void* log)
 {
-    // 'UsePAM yes' blocks Ciphers and MACs so we need also to set this to 'no' here as other .conf files can set it
-    const char* confFileTemplate = "%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\nUsePAM no";
-
     char* newRemediation = NULL;
     char* currentRemediation = NULL;
     size_t newRemediationSize = 0;
     int status = 0;
 
-    newRemediationSize = strlen(confFileTemplate) +
-        strlen(g_sshProtocol) + strlen(g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol) +
-        strlen(g_sshIgnoreHosts) + strlen(g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : g_sshDefaultSshYes) +
-        strlen(g_sshLogLevel) + strlen(g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : g_sshDefaultSshLogLevel) +
-        strlen(g_sshMaxAuthTries) + strlen(g_desiredSshMaxAuthTriesIsSet ? g_desiredSshMaxAuthTriesIsSet : g_sshDefaultSshMaxAuthTries) +
-        strlen(g_sshAllowUsers) + strlen(g_desiredAllowUsersIsConfigured ? g_desiredAllowUsersIsConfigured : g_sshDefaultSshAllowUsers) +
-        strlen(g_sshDenyUsers) + strlen(g_desiredDenyUsersIsConfigured ? g_desiredDenyUsersIsConfigured : g_sshDefaultSshDenyUsers) +
-        strlen(g_sshAllowGroups) + strlen(g_desiredAllowGroupsIsConfigured ? g_desiredAllowGroupsIsConfigured : g_sshDefaultSshAllowGroups) +
-        strlen(g_sshDenyGroups) + strlen(g_desiredDenyGroupsConfigured ? g_desiredDenyGroupsConfigured : g_sshDefaultSshDenyGroups) +
-        strlen(g_sshHostBasedAuthentication) + strlen(g_desiredSshHostbasedAuthenticationIsDisabled ? g_desiredSshHostbasedAuthenticationIsDisabled : g_sshDefaultSshNo) +
-        strlen(g_sshPermitRootLogin) + strlen(g_desiredSshPermitRootLoginIsDisabled ? g_desiredSshPermitRootLoginIsDisabled : g_sshDefaultSshNo) +
-        strlen(g_sshPermitEmptyPasswords) + strlen(g_desiredSshPermitEmptyPasswordsIsDisabled ? g_desiredSshPermitEmptyPasswordsIsDisabled : g_sshDefaultSshNo) +
-        strlen(g_sshClientAliveCountMax) + strlen(g_desiredSshClientIntervalCountMaxIsConfigured ? g_desiredSshClientIntervalCountMaxIsConfigured : g_sshDefaultSshClientIntervalCountMax) +
-        strlen(g_sshClientAliveInterval) + strlen(g_desiredSshClientAliveIntervalIsConfigured ? g_desiredSshClientAliveIntervalIsConfigured : g_sshDefaultSshClientAliveInterval) +
-        strlen(g_sshLoginGraceTime) + strlen(g_desiredSshLoginGraceTimeIsSet ? g_desiredSshLoginGraceTimeIsSet : g_sshDefaultSshLoginGraceTime) +
-        strlen(g_sshPermitUserEnvironment) + strlen(g_desiredUsersCannotSetSshEnvironmentOptions ? g_desiredUsersCannotSetSshEnvironmentOptions : g_sshDefaultSshNo) +
-        strlen(g_sshBanner) + strlen(g_sshBannerFile) +
-        strlen(g_sshMacs) + strlen(g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : g_sshDefaultSshMacs) +
-        strlen(g_sshCiphers) + strlen(g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : g_sshDefaultSshCiphers) + 1;
-
-    if (NULL != (newRemediation = malloc(newRemediationSize)))
+    if ((NULL == (newRemediation = FormatRemediationValues(log))) || (0 == (newRemediationSize = strlen(newRemediation))))
     {
-        memset(newRemediation, 0, newRemediationSize);
-        snprintf(newRemediation, newRemediationSize, confFileTemplate,
-            g_sshProtocol, g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol,
-            g_sshIgnoreHosts, g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : g_sshDefaultSshYes,
-            g_sshLogLevel, g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : g_sshDefaultSshLogLevel,
-            g_sshMaxAuthTries, g_desiredSshMaxAuthTriesIsSet ? g_desiredSshMaxAuthTriesIsSet : g_sshDefaultSshMaxAuthTries,
-            g_sshAllowUsers, g_desiredAllowUsersIsConfigured ? g_desiredAllowUsersIsConfigured : g_sshDefaultSshAllowUsers,
-            g_sshDenyUsers, g_desiredDenyUsersIsConfigured ? g_desiredDenyUsersIsConfigured : g_sshDefaultSshDenyUsers,
-            g_sshAllowGroups, g_desiredAllowGroupsIsConfigured ? g_desiredAllowGroupsIsConfigured : g_sshDefaultSshAllowGroups,
-            g_sshDenyGroups, g_desiredDenyGroupsConfigured ? g_desiredDenyGroupsConfigured : g_sshDefaultSshDenyGroups,
-            g_sshHostBasedAuthentication, g_desiredSshHostbasedAuthenticationIsDisabled ? g_desiredSshHostbasedAuthenticationIsDisabled : g_sshDefaultSshNo,
-            g_sshPermitRootLogin, g_desiredSshPermitRootLoginIsDisabled ? g_desiredSshPermitRootLoginIsDisabled : g_sshDefaultSshNo,
-            g_sshPermitEmptyPasswords, g_desiredSshPermitEmptyPasswordsIsDisabled ? g_desiredSshPermitEmptyPasswordsIsDisabled : g_sshDefaultSshNo,
-            g_sshClientAliveCountMax, g_desiredSshClientIntervalCountMaxIsConfigured ? g_desiredSshClientIntervalCountMaxIsConfigured : g_sshDefaultSshClientIntervalCountMax,
-            g_sshClientAliveInterval, g_desiredSshClientAliveIntervalIsConfigured ? g_desiredSshClientAliveIntervalIsConfigured : g_sshDefaultSshClientAliveInterval,
-            g_sshLoginGraceTime, g_desiredSshLoginGraceTimeIsSet ? g_desiredSshLoginGraceTimeIsSet : g_sshDefaultSshLoginGraceTime,
-            g_sshPermitUserEnvironment, g_desiredUsersCannotSetSshEnvironmentOptions ? g_desiredUsersCannotSetSshEnvironmentOptions : g_sshDefaultSshNo,
-            g_sshBanner, g_sshBannerFile,
-            g_sshMacs, g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : g_sshDefaultSshMacs,
-            g_sshCiphers, g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : g_sshDefaultSshCiphers);
-
-        if ((NULL != (currentRemediation = LoadStringFromFile(g_osconfigRemediationConf, false, log))) && (0 == strncmp(currentRemediation, newRemediation, strlen(newRemediation))))
-        {
-            OsConfigLogInfo(log, "SaveRemediationSshConfFile: '%s' already contains the correct remediation values:\n---\n%s\n---\n", g_osconfigRemediationConf, newRemediation);
-            status = 0;
-        }
-        else
-        {
-            if (true == SavePayloadToFile(g_osconfigRemediationConf, newRemediation, newRemediationSize, log))
-            {
-                OsConfigLogInfo(log, "SaveRemediationSshConfFile: '%s' is now updated to the following remediation values:\n---\n%s\n---\n", g_osconfigRemediationConf, newRemediation);
-                status = 0;
-            }
-            else
-            {
-                OsConfigLogError(log, "SaveRemediationSshConfFile: failed to save remediation values to '%s'", g_osconfigRemediationConf);
-                status = ENOENT;
-            }
-        }
-
-        FREE_MEMORY(newRemediation);
-        FREE_MEMORY(currentRemediation);
+        OsConfigLogInfo(log, "SaveRemediationToConfFile: failed formatting, cannot save remediation to '%s'", g_osconfigRemediationConf);
+        return ENOMEM;
+    }
+    
+    if ((NULL != (currentRemediation = LoadStringFromFile(g_osconfigRemediationConf, false, log))) && (0 == strncmp(currentRemediation, newRemediation, newRemediationSize)))
+    {
+        OsConfigLogInfo(log, "SaveRemediationToConfFile: '%s' already contains the correct remediation values:\n---\n%s---", g_osconfigRemediationConf, newRemediation);
     }
     else
     {
-        OsConfigLogError(log, "SaveRemediationSshConfFile: out of memory, cannot save remediation values to '%s'", g_osconfigRemediationConf);
-        status = ENOMEM;
+        if (true == SavePayloadToFile(g_osconfigRemediationConf, newRemediation, newRemediationSize, log))
+        {
+            OsConfigLogInfo(log, "SaveRemediationToConfFile: '%s' is now updated to the following remediation values:\n---\n%s---", g_osconfigRemediationConf, newRemediation);
+        }
+        else
+        {
+            OsConfigLogError(log, "SaveRemediationToConfFile: failed to save remediation values to '%s'", g_osconfigRemediationConf);
+            status = ENOENT;
+        }
     }
 
     SetFileAccess(g_osconfigRemediationConf, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
+
+    FREE_MEMORY(newRemediation);
+    FREE_MEMORY(currentRemediation);
+
+    return status;
+}
+
+static int SaveRemediationToSshdConfig(void* log)
+{
+    const char* configurationTemplate = "%s%s";
+    char* originalConfiguration = NULL;
+    char* newConfiguration = NULL;
+    char* remediation = NULL;
+    size_t remediationSize = 0;
+    size_t newConfigurationSize = 0;
+    int status = 0;
+
+    if (false == FileExists(g_sshServerConfiguration))
+    {
+        OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' is not present on this device", g_sshServerConfiguration);
+        return EEXIST;
+    }
+    else if ((NULL == (remediation = FormatRemediationValues(log))) || (0 == (remediationSize = strlen(remediation))))
+    {
+        OsConfigLogInfo(log, "SaveRemediationToSshdConfig: failed formatting, cannot save remediation values to '%s'", g_sshServerConfiguration);
+        return ENOMEM;
+    }
+
+    if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
+    {
+        if (0 != strncmp(originalConfiguration, remediation, remediationSize))
+        {
+            newConfigurationSize = strlen(configurationTemplate) + remediationSize + strlen(originalConfiguration) + 1;
+
+            if (NULL != (newConfiguration = malloc(newConfigurationSize)))
+            {
+                memset(newConfiguration, 0, newConfigurationSize);
+                snprintf(newConfiguration, newConfigurationSize, configurationTemplate, remediation, originalConfiguration);
+
+                if (true == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log))
+                {
+                    OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' is now updated to include the following remediation values:\n---\n%s---", g_sshServerConfiguration, remediation);
+                    status = 0;
+                }
+                else
+                {
+                    OsConfigLogError(log, "SaveRemediationToSshdConfig: failed to save remediation values to '%s'", g_sshServerConfiguration);
+                    status = ENOENT;
+                }
+
+                FREE_MEMORY(newConfiguration);
+            }
+            else
+            {
+                OsConfigLogError(log, "SaveRemediationToSshdConfig: out of memory, cannot save remediation values to '%s'", g_sshServerConfiguration);
+                status = ENOMEM;
+            }
+        }
+        else
+        {
+            OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' already contains the correct remediation values:\n---\n%s---", g_sshServerConfiguration, remediation);
+            status = 0;
+        }
+
+        FREE_MEMORY(originalConfiguration);
+    }
+    else
+    {
+        OsConfigLogError(log, "SaveRemediationToSshdConfig: failed to read from '%s'", g_sshServerConfiguration);
+        status = EEXIST;
+    }
+
+    SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
+
+    FREE_MEMORY(remediation);
 
     return status;
 }
@@ -888,6 +1094,7 @@ int InitializeSshAudit(void* log)
     g_auditOnlySession = true;
 
     if ((NULL == (g_desiredPermissionsOnEtcSshSshdConfig = DuplicateString(g_sshDefaultSshSshdConfigAccess))) ||
+        (NULL == (g_desiredSshPort = DuplicateString(g_sshDefaultSshPort))) ||
         (NULL == (g_desiredSshBestPracticeProtocol = DuplicateString(g_sshDefaultSshProtocol))) ||
         (NULL == (g_desiredSshBestPracticeIgnoreRhosts = DuplicateString(g_sshDefaultSshYes))) ||
         (NULL == (g_desiredSshLogLevelIsSet = DuplicateString(g_sshDefaultSshLogLevel))) ||
@@ -916,14 +1123,26 @@ int InitializeSshAudit(void* log)
 
 void SshAuditCleanup(void* log)
 {
+    bool configurationChanged = false;
+    
     OsConfigLogInfo(log, "SshAuditCleanup: %s", g_auditOnlySession ? "audit only" : "audit and remediate");
     
     if (false == g_auditOnlySession)
     {
-        // Even if we cannot include the remediation .conf file, we still want to go ahead and create/update it
-        IncludeRemediationSshConfFile(log);
+        if (0 == IsSshConfigIncludeSupported(log))
+        {
+            IncludeRemediationSshConfFile(log);
+            if (0 == SaveRemediationToConfFile(log))
+            {
+                configurationChanged = true;
+            }
+        }
+        else if (0 == SaveRemediationToSshdConfig(log))
+        {
+            configurationChanged = true;
+        }
 
-        if (0 == SaveRemediationSshConfFile(log))
+        if (configurationChanged)
         {
             // Signal to the SSH Server service to reload configuration
             RestartDaemon(g_sshServerService, log);
@@ -931,6 +1150,7 @@ void SshAuditCleanup(void* log)
     }
     
     FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
+    FREE_MEMORY(g_desiredSshPort);
     FREE_MEMORY(g_desiredSshBestPracticeProtocol);
     FREE_MEMORY(g_desiredSshBestPracticeIgnoreRhosts);
     FREE_MEMORY(g_desiredSshLogLevelIsSet);
@@ -967,6 +1187,11 @@ int InitializeSshAuditCheck(const char* name, char* value, void* log)
     {
         FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
         status = (NULL != (g_desiredPermissionsOnEtcSshSshdConfig = DuplicateString(value ? value : g_sshDefaultSshSshdConfigAccess))) ? 0 : ENOMEM;
+    }
+    else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject)) || (0 == strcmp(name, g_initEnsureSshPortIsConfiguredObject)))
+    {
+        FREE_MEMORY(g_desiredSshPort);
+        status = (NULL != (g_desiredSshPort = DuplicateString(value ? value : g_sshDefaultSshPort))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject)) || (0 == strcmp(name, g_initEnsureSshBestPracticeProtocolObject)))
     {
@@ -1087,6 +1312,11 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
         CheckFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? 
             g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), reason, log);
     }
+    else if (0 == strcmp(name, g_auditEnsureSshPortIsConfiguredObject))
+    {
+        lowercase = DuplicateStringToLowercase(g_sshPort);
+        CheckSshOptionIsSet(lowercase, g_desiredSshPort ? g_desiredSshPort : g_sshDefaultSshPort, NULL, reason, log);
+    }
     else if (0 == strcmp(name, g_auditEnsureSshBestPracticeProtocolObject))
     {
         CheckSshProtocol(reason, log);
@@ -1161,7 +1391,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     else if (0 == strcmp(name, g_auditEnsureSshWarningBannerIsEnabledObject))
     {
         CheckSshWarningBanner(g_sshBannerFile, g_desiredSshWarningBannerIsEnabled ? g_desiredSshWarningBannerIsEnabled : g_sshDefaultSshBannerText, 
-            atoi(g_desiredPermissionsOnEtcSshSshdConfig), reason, log);
+            atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), reason, log);
     }
     else if (0 == strcmp(name, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
     {
@@ -1176,10 +1406,12 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     {
         if (0 == (status = InitializeSshAuditCheck(name, value, log)))
         {
-            status = SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig), log);
+            status = SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? 
+                g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
         }
     }
-    else if ((0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject)) ||
+    else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject)) ||
+        (0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshBestPracticeIgnoreRhostsObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshLogLevelIsSetObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshMaxAuthTriesIsSetObject)) ||
@@ -1203,7 +1435,8 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     {
         if (0 == (status = InitializeSshAuditCheck(name, value, log)))
         {
-            status = SetSshWarningBanner(atoi(g_desiredPermissionsOnEtcSshSshdConfig), g_desiredSshWarningBannerIsEnabled, log);
+            status = SetSshWarningBanner(atoi(g_desiredPermissionsOnEtcSshSshdConfig ? 
+                g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), g_desiredSshWarningBannerIsEnabled, log);
         }
     }
     else

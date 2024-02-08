@@ -152,6 +152,7 @@ static const char* g_auditEnsureTelnetServiceIsDisabledObject = "auditEnsureTeln
 static const char* g_auditEnsureRcprshServiceIsDisabledObject = "auditEnsureRcprshServiceIsDisabled";
 static const char* g_auditEnsureTftpServiceisDisabledObject = "auditEnsureTftpServiceisDisabled";
 static const char* g_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject = "auditEnsureAtCronIsRestrictedToAuthorizedUsers";
+static const char* g_auditEnsureSshPortIsConfiguredObject = "auditEnsureSshPortIsConfigured";
 static const char* g_auditEnsureSshBestPracticeProtocolObject = "auditEnsureSshBestPracticeProtocol";
 static const char* g_auditEnsureSshBestPracticeIgnoreRhostsObject = "auditEnsureSshBestPracticeIgnoreRhosts";
 static const char* g_auditEnsureSshLogLevelIsSetObject = "auditEnsureSshLogLevelIsSet";
@@ -322,6 +323,7 @@ static const char* g_remediateEnsureTelnetServiceIsDisabledObject = "remediateEn
 static const char* g_remediateEnsureRcprshServiceIsDisabledObject = "remediateEnsureRcprshServiceIsDisabled";
 static const char* g_remediateEnsureTftpServiceisDisabledObject = "remediateEnsureTftpServiceisDisabled";
 static const char* g_remediateEnsureAtCronIsRestrictedToAuthorizedUsersObject = "remediateEnsureAtCronIsRestrictedToAuthorizedUsers";
+static const char* g_remediateEnsureSshPortIsConfiguredObject = "remediateEnsureSshPortIsConfigured";
 static const char* g_remediateEnsureSshBestPracticeProtocolObject = "remediateEnsureSshBestPracticeProtocol";
 static const char* g_remediateEnsureSshBestPracticeIgnoreRhostsObject = "remediateEnsureSshBestPracticeIgnoreRhosts";
 static const char* g_remediateEnsureSshLogLevelIsSetObject = "remediateEnsureSshLogLevelIsSet";
@@ -363,6 +365,7 @@ static const char* g_remediateEnsureUnnecessaryAccountsAreRemovedObject = "remed
 
 // Initialization for audit before remediation
 static const char* g_initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
+static const char* g_initEnsureSshPortIsConfiguredObject = "initEnsureSshPortIsConfigured";
 static const char* g_initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
 static const char* g_initEnsureSshBestPracticeIgnoreRhostsObject = "initEnsureSshBestPracticeIgnoreRhosts";
 static const char* g_initEnsureSshLogLevelIsSetObject = "initEnsureSshLogLevelIsSet";
@@ -1422,6 +1425,13 @@ static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
     return status;
 }
 
+static char* AuditEnsureSshPortIsConfigured(void)
+{
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureSshPortIsConfiguredObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
+}
+
 static char* AuditEnsureSshBestPracticeProtocol(void)
 {
     char* reason = NULL;
@@ -1817,6 +1827,7 @@ AuditCall g_auditChecks[] =
     &AuditEnsureRcprshServiceIsDisabled,
     &AuditEnsureTftpServiceisDisabled,
     &AuditEnsureAtCronIsRestrictedToAuthorizedUsers,
+    &AuditEnsureSshPortIsConfigured,
     &AuditEnsureSshBestPracticeProtocol,
     &AuditEnsureSshBestPracticeIgnoreRhosts,
     &AuditEnsureSshLogLevelIsSet,
@@ -2664,6 +2675,11 @@ static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value)
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
+static int RemediateEnsureSshPortIsConfigured(char* value)
+{
+    return ProcessSshAuditCheck(g_remediateEnsureSshPortIsConfiguredObject, value, NULL, SecurityBaselineGetLog());
+}
+
 static int RemediateEnsureSshBestPracticeProtocol(char* value)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshBestPracticeProtocolObject, value, NULL, SecurityBaselineGetLog());
@@ -2895,6 +2911,11 @@ static int InitEnsurePermissionsOnEtcSshSshdConfig(char* value)
     return InitializeSshAuditCheck(g_initEnsurePermissionsOnEtcSshSshdConfigObject, value, SecurityBaselineGetLog());
 }
 
+static int InitEnsureSshPortIsConfigured(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshPortIsConfiguredObject, value, SecurityBaselineGetLog());
+}
+
 static int InitEnsureSshBestPracticeProtocol(char* value)
 {
     return InitializeSshAuditCheck(g_initEnsureSshBestPracticeProtocolObject, value, SecurityBaselineGetLog());
@@ -2937,7 +2958,7 @@ static int InitEnsureDenyGroupsConfigured(char* value)
 
 static int InitEnsureSshHostbasedAuthenticationIsDisabled(char* value)
 {
-    return InitializeSshAuditCheck(g_initEnsurePermissionsOnEtcSshSshdConfigObject, value, SecurityBaselineGetLog());
+    return InitializeSshAuditCheck(g_initEnsureSshHostbasedAuthenticationIsDisabledObject, value, SecurityBaselineGetLog());
 }
 
 static int InitEnsureSshPermitRootLoginIsDisabled(char* value)
@@ -3116,6 +3137,7 @@ RemediationCall g_remediateChecks[] =
     &RemediateEnsureRcprshServiceIsDisabled,
     &RemediateEnsureTftpServiceisDisabled,
     &RemediateEnsureAtCronIsRestrictedToAuthorizedUsers,
+    &RemediateEnsureSshPortIsConfigured,
     &RemediateEnsureSshBestPracticeProtocol,
     &RemediateEnsureSshBestPracticeIgnoreRhosts,
     &RemediateEnsureSshLogLevelIsSet,
@@ -3780,6 +3802,10 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject))
         {
             result = AuditEnsureAtCronIsRestrictedToAuthorizedUsers();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshPortIsConfiguredObject))
+        {
+            result = AuditEnsureSshPortIsConfigured();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeProtocolObject))
         {
@@ -4568,6 +4594,10 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         {
             status = RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(jsonString);
         }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshPortIsConfiguredObject))
+        {
+            status = RemediateEnsureSshPortIsConfigured(jsonString);
+        }
         else if (0 == strcmp(objectName, g_remediateEnsureSshBestPracticeProtocolObject))
         {
             status = RemediateEnsureSshBestPracticeProtocol(jsonString);
@@ -4724,6 +4754,10 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcSshSshdConfigObject))
         {
             status = InitEnsurePermissionsOnEtcSshSshdConfig(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureSshPortIsConfiguredObject))
+        {
+            status = InitEnsureSshPortIsConfigured(jsonString);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshBestPracticeProtocolObject))
         {
