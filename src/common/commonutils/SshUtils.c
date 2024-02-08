@@ -7,7 +7,7 @@
 static const char* g_sshServerService = "sshd";
 static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
 static const char* g_osconfigRemediationConf = "/etc/ssh/sshd_config.d/osconfig_remediation.conf";
-static const char* g_sshdConfigRemediationHeader = "# Azure OSConfig Remediation\n";
+static const char* g_sshdConfigRemediationHeader = "# Azure OSConfig Remediation";
 
 static const char* g_sshPort = "Port";
 static const char* g_sshProtocol = "Protocol";
@@ -814,7 +814,7 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
 static char* FormatRemediationValues(void* log)
 {
     // 'UsePAM yes' blocks Ciphers and MACs so we need to set this to 'no' here as other .conf files can set it
-    const char* remediationTemplate = "%s%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\nUsePAM no\n";
+    const char* remediationTemplate = "%s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\nUsePAM no\n";
     char* remediation = NULL;
     size_t remediationSize = 0;
 
@@ -873,7 +873,7 @@ static char* FormatRemediationValues(void* log)
 
 static char* FormatInclusionForRemediation(void* log)
 {
-    const char* inclusionTemplate = "%sInclude %s\n";
+    const char* inclusionTemplate = "%s\nInclude %s\n";
     char* inclusion = NULL;
     size_t inclusionSize = 0;
 
