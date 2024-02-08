@@ -693,6 +693,8 @@ int CheckSshProtocol(char** reason, void* log)
                 OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
                 status = 0;
             }
+
+            FREE_MEMORY(inclusion);
         }
         else
         {
