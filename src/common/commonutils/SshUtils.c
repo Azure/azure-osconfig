@@ -626,6 +626,7 @@ int CheckSshProtocol(char** reason, void* log)
 {
     const char* protocolTemplate = "%s %s";
     char* protocol = NULL;
+    char* inclusion = NULL;
     int status = 0;
 
     if (0 != IsSshServerActive(log))
@@ -654,7 +655,12 @@ int CheckSshProtocol(char** reason, void* log)
                 OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_osconfigRemediationConf);
                 status = EEXIST;
             }
-            else if (0 != FindTextInFile(g_sshServerConfiguration, g_sshdConfigRemediationHeader, log))
+            else if (NULL == (inclusion = FormatInclusionForRemediation(log))
+            {
+                OsConfigLogError(log, "CheckSshProtocol: FormatInclusionForRemediation failed");
+                status = ENOMEM;
+            }
+            else if (0 != FindTextInFile(g_sshServerConfiguration, inclusion, log))
             {
                 OsConfigLogError(log, "CheckSshProtocol: '%s' is not found included in '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
                 OsConfigCaptureReason(reason, "'%s' is not found included in %s",
