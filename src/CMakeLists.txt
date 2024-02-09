@@ -25,13 +25,12 @@ add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-W
 if (CMAKE_COMPILER_IS_GNUCC)
     add_compile_options("-Wno-psabi;-fPIC")
 
-    # GCC 4.8 - Only build for NRP support
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.9")
-        message(STATUS "GCC 4.8.x detected! Building for NRP support only.")
+    # Special Ubuntu 14/gcc 4.8 build configuration for the Universal NRP adapter
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.7" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.9")
         set(BUILD_MODULES OFF)
         set(BUILD_PLATFORM OFF)
         set(BUILD_TESTS OFF)
-        set(BUILD_ADAPTERS OFF)
+        set(BUILD_MODULETEST OFF)
     endif()
 
     if(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.3.0")

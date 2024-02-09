@@ -19,7 +19,6 @@ using namespace std;
 class CommonUtilsTest : public ::testing::Test
 {
     protected:
-        const char* m_osId = "/etc/os-release";
         const char* m_path = "~test.test";
         const char* m_data = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM";
         const char* m_dataWithEol = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
@@ -57,9 +56,9 @@ class CommonUtilsTest : public ::testing::Test
             return true;
         }
 
-        bool IsMarinerDistro()
+        bool IsMariner()
         {
-            return (0 == FindTextInFile(m_osId, "CBL-Mariner/Linux", nullptr));
+            return (0 == FindTextInFile("/etc/os-release", "CBL-Mariner/Linux", nullptr));
         }
 };
 
@@ -242,14 +241,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     char* textResult = nullptr;
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "hh", false, true, 100, 0, &textResult, nullptr, nullptr));
-    if (IsMarinerDistro())
-    {
-        EXPECT_NE(nullptr, strstr(textResult, "sh: line 1: hh: command not found")) << "Text result: '" << textResult << "'";
-    }
-    else
-    {
-        EXPECT_NE(nullptr, strstr(textResult, "sh: 1: hh: not found")) << "Text result: '" << textResult << "'";
-    }
+    EXPECT_NE(nullptr, strstr(textResult, IsMariner() ? "sh: line 1: hh: command not found" : "sh: 1: hh: not found")) << "textResult: '" << textResult << "'";
 
     if (nullptr != textResult)
     {
@@ -257,14 +249,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     }
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "blah", true, true, 100, 0, &textResult, nullptr, nullptr));
-    if (IsMarinerDistro())
-    {
-        EXPECT_NE(nullptr, strstr(textResult, "sh: line 1: blah: command not found")) << "Text result: '" << textResult << "'";
-    }
-    else
-    {
-        EXPECT_NE(nullptr, strstr(textResult, "sh: 1: blah: not found")) << "Text result: '" << textResult << "'";
-    }
+    EXPECT_NE(nullptr, strstr(textResult, IsMariner() ? "sh: line 1: blah: command not found" : "sh: 1: blah: not found")) << "textResult: '" << textResult << "'";
 
     FREE_MEMORY(textResult);
 }
@@ -1198,11 +1183,6 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 {
-    if (IsMarinerDistro())
-    {
-        GTEST_SKIP() << "Skipping test on CBL-Mariner";
-    }
-
     EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
     EXPECT_EQ(EINVAL, InstallPackage(nullptr, nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage(nullptr, nullptr));
@@ -1211,22 +1191,25 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_EQ(EINVAL, InstallPackage("", nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage("", nullptr));
 
-    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
-    EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
-    
-    // Nothing to uninstall
-    EXPECT_EQ(0, UninstallPackage("~package_that_does_not_exist", nullptr));
+    if (IsMariner())
+    {
+        EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
+        EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
+        
+        // Nothing to uninstall
+        EXPECT_EQ(0, UninstallPackage("~package_that_does_not_exist", nullptr));
 
-    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr));
-    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
-    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
-    
-    EXPECT_EQ(0, CheckPackageInstalled("apt", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("ap*", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
+        
+        EXPECT_EQ(0, CheckPackageInstalled("apt", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("ap*", nullptr));
 
-    EXPECT_EQ(0, InstallPackage("rolldice", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr));
-    EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
+        EXPECT_EQ(0, InstallPackage("rolldice", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr));
+        EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
+    }
 }
 
 TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
