@@ -34,7 +34,6 @@ if (CMAKE_COMPILER_IS_GNUCC)
         set(BUILD_ADAPTERS OFF)
     endif()
 
-    # GCC 5.3.0 and later support -Wunused-const-variable
     if(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.3.0")
         add_compile_options("-unused-const-variable=2")
     endif()
