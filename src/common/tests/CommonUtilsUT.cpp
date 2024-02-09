@@ -59,7 +59,7 @@ class CommonUtilsTest : public ::testing::Test
 
         bool IsMarinerDistro()
         {
-            return 0 == FindTextInFile(m_osId, "CBL-Mariner/Linux", nullptr);
+            return (0 == FindTextInFile(m_osId, "CBL-Mariner/Linux", nullptr));
         }
 };
 
