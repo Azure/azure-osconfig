@@ -24,6 +24,20 @@ add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-W
 
 if (CMAKE_COMPILER_IS_GNUCC)
     add_compile_options("-Wno-psabi;-fPIC")
+
+    # GCC 4.8 - Only build for NRP support
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.9")
+        message(STATUS "GCC 4.8.x detected! Building for NRP support only.")
+        set(BUILD_MODULES OFF)
+        set(BUILD_PLATFORM OFF)
+        set(BUILD_TESTS OFF)
+        set(BUILD_ADAPTERS OFF)
+    endif()
+
+    # GCC 5.3.0 and later support -Wunused-const-variable
+    if(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.3.0")
+        add_compile_options("-unused-const-variable=2")
+    endif()
 endif()
 
 # Defaults to /usr/local - systemd requires binaries in /usr/(bin)

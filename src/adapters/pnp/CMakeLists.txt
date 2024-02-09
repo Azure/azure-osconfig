@@ -58,13 +58,6 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
 else()
     target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-macros)
 
-    if (CMAKE_COMPILER_IS_GNUCC)
-        # GCC 5.3.0 and later support -Wunused-const-variable
-        if(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.3.0")
-            target_compile_options(${target_name} PRIVATE -unused-const-variable=2)
-        endif()
-    endif()
-
     find_package (azure_c_shared_utility REQUIRED)
     find_package (azure_macro_utils_c REQUIRED)
     find_package (IotHubClient REQUIRED)

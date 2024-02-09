@@ -242,7 +242,14 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     char* textResult = nullptr;
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "hh", false, true, 100, 0, &textResult, nullptr, nullptr));
-    EXPECT_NE(nullptr, strstr(textResult, "not found")) << "Text result: '" << textResult << "'";
+    if (IsMarinerDistro())
+    {
+        EXPECT_NE(nullptr, strstr(textResult, "sh: line 1: hh: command not found")) << "Text result: '" << textResult << "'";
+    }
+    else
+    {
+        EXPECT_NE(nullptr, strstr(textResult, "sh: 1: hh: not found")) << "Text result: '" << textResult << "'";
+    }
 
     if (nullptr != textResult)
     {
@@ -250,7 +257,14 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     }
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "blah", true, true, 100, 0, &textResult, nullptr, nullptr));
-    EXPECT_NE(nullptr, strstr(textResult, "not found")) << "Text result: '" << textResult << "'";
+    if (IsMarinerDistro())
+    {
+        EXPECT_NE(nullptr, strstr(textResult, "sh: line 1: blah: command not found")) << "Text result: '" << textResult << "'";
+    }
+    else
+    {
+        EXPECT_NE(nullptr, strstr(textResult, "sh: 1: blah: not found")) << "Text result: '" << textResult << "'";
+    }
 
     FREE_MEMORY(textResult);
 }
@@ -1186,7 +1200,7 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 {
     if (IsMarinerDistro())
     {
-        GTEST_SKIP() << "Skipping test on CBL-Mariner (RPM-based)";
+        GTEST_SKIP() << "Skipping test on CBL-Mariner";
     }
 
     EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));

@@ -18,13 +18,6 @@ add_library(commonutils STATIC
 
 add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-nonnull;-Wno-unused-result;>")
 
-if (CMAKE_COMPILER_IS_GNUCC)
-    # GCC 5.3.0 and later support -Wunused-const-variable
-    if(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.3.0")
-        add_compile_options("-Wunused-const-variable=2")
-    endif()
-endif()
-
 target_include_directories(commonutils
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
