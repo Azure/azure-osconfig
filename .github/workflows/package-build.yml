@@ -21,6 +21,10 @@ on:
         description: The architecture to build for.
         type: string
         required: true
+      package-type:
+        description: The type of package to build (deb | rpm).
+        type: string
+        required: true
       test:
         description: Include test collateral in the artifact.
         type: boolean
@@ -75,7 +79,7 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
           cmd: |
-            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -DBUILD_ADAPTERS=ON -G Ninja
+            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF ${{ inputs.target == 'mariner-2' && '-Duse_default_uuid=ON' || '' }} -DBUILD_ADAPTERS=ON -G Ninja
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
@@ -89,7 +93,7 @@ jobs:
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
-          cmd: cpack -G DEB
+          cmd: cpack -G ${{ inputs.package-type }}
 
       - name: Binary footprint delta validation
         uses: ./.github/actions/footprint-check
@@ -97,13 +101,14 @@ jobs:
           allowedDelta: 10
           distroName: ${{ matrix.os }}
           arch: ${{ matrix.variant.arch }}
+          package-type: ${{ inputs.package-type }}
 
       - uses: actions/upload-artifact@v3
         if: ${{ inputs.test }}
         with:
           name: ${{ inputs.artifact }}
           path: |
-            ./build/osconfig_*
+            ./build/osconfig*
             ./build/modules/test/moduletest
             ./build/modules/bin/*.so
 
@@ -111,4 +116,4 @@ jobs:
         if: ${{ !inputs.test }}
         with:
           name: ${{ inputs.artifact }}
-          path: ./build/osconfig_*
+          path: ./build/osconfig*
