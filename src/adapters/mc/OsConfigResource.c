@@ -325,7 +325,6 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     char* objectValue = NULL;
     int objectValueLength = 0;
     char* payloadString = NULL;
-    char* initObjectName = NULL;
     int mpiResult = MPI_OK;
     MI_Result miResult = MI_RESULT_OK;
 
@@ -410,46 +409,43 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     else
     {
         // Fallback for SSH policy
-        if (0 == (mpiResult = InitializeSshAuditCheck(initObjectName ? initObjectName : g_desiredObjectName, g_desiredObjectValue, GetLog())))
+
+        // If this reported object has a corresponding init object, initalize it with the desired object value
+        if ((NULL != g_initObjectName) && (0 != strcmp(g_initObjectName, g_defaultValue)))
         {
-            if (0 == (mpiResult = ProcessSshAuditCheck(g_reportedObjectName, NULL, &objectValue, GetLog())))
+            InitializeSshAuditCheck(g_initObjectName, g_desiredObjectValue, GetLog());
+        }
+
+        if (0 == (mpiResult = ProcessSshAuditCheck(g_reportedObjectName, NULL, &objectValue, GetLog())))
+        {
+            if (NULL == objectValue)
             {
-                if (NULL == objectValue)
-                {
-                    mpiResult = ENODATA;
-                    miResult = MI_RESULT_FAILED;
-                    LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s): no payload (%s, %d) (%d)",
-                        who, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
-                }
-                else
-                {
-                    LogInfo(context, GetLog(), "[%s] ProcessSshAuditCheck(%s): '%s'", who, g_reportedObjectName, objectValue);
-
-                    FREE_MEMORY(g_reportedObjectValue);
-                    if (NULL == (g_reportedObjectValue = DuplicateString(objectValue)))
-                    {
-                        mpiResult = ENOMEM;
-                        miResult = MI_RESULT_FAILED;
-                        LogError(context, miResult, GetLog(), "[%s] DuplicateString(%s) failed", who, objectValue);
-                    }
-
-                    FREE_MEMORY(objectValue);
-                }
+                mpiResult = ENODATA;
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s): no payload (%s, %d) (%d)",
+                    who, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
             }
             else
             {
-                miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s) failed with %d", who, g_reportedObjectName, mpiResult);
+                LogInfo(context, GetLog(), "[%s] ProcessSshAuditCheck(%s): '%s'", who, g_reportedObjectName, objectValue);
+
+                FREE_MEMORY(g_reportedObjectValue);
+                if (NULL == (g_reportedObjectValue = DuplicateString(objectValue)))
+                {
+                    mpiResult = ENOMEM;
+                    miResult = MI_RESULT_FAILED;
+                    LogError(context, miResult, GetLog(), "[%s] DuplicateString(%s) failed", who, objectValue);
+                }
+
+                FREE_MEMORY(objectValue);
             }
         }
         else
         {
             miResult = MI_RESULT_FAILED;
-            LogError(context, miResult, GetLog(), "[%s] InitializeSshAuditCheck(%s) failed with %d", who, g_reportedObjectName, mpiResult);
+            LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s) failed with %d", who, g_reportedObjectName, mpiResult);
         }
     }
-
-    FREE_MEMORY(initObjectName);
 
     g_reportedMpiResult = mpiResult;
 
