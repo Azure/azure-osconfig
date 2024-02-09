@@ -56,7 +56,7 @@ class CommonUtilsTest : public ::testing::Test
             return true;
         }
 
-        bool IsMariner()
+        bool IsMariner(void)
         {
             return (0 == FindTextInFile("/etc/os-release", "CBL-Mariner/Linux", nullptr));
         }
@@ -241,7 +241,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     char* textResult = nullptr;
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "hh", false, true, 100, 0, &textResult, nullptr, nullptr));
-    EXPECT_NE(nullptr, strstr(textResult, IsMariner() ? "sh: line 1: hh: command not found" : "sh: 1: hh: not found")) << "textResult: '" << textResult << "'";
+    EXPECT_NE(nullptr, strstr(textResult, IsMariner() ? "sh: line 1: hh: command not found" : "sh: 1: hh: not found"));
 
     if (nullptr != textResult)
     {
@@ -249,9 +249,12 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     }
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "blah", true, true, 100, 0, &textResult, nullptr, nullptr));
-    EXPECT_NE(nullptr, strstr(textResult, IsMariner() ? "sh: line 1: blah: command not found" : "sh: 1: blah: not found")) << "textResult: '" << textResult << "'";
+    EXPECT_NE(nullptr, strstr(textResult, IsMariner() ? "sh: line 1: blah: command not found" : "sh: 1: blah: not found"));
 
-    FREE_MEMORY(textResult);
+    if (nullptr != textResult)
+    {
+        FREE_MEMORY(textResult);
+    }
 }
 
 void* TestTimeoutCommand(void*)
