@@ -245,13 +245,13 @@ static int IsSshConfigIncludeSupported(void* log)
             }
             else if ((versionMajor < 8) || (versionMinor < 2))
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server reports OpenSSH version %d.%d and appears to not support Include", versionMajor, versionMinor);
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to not support Include", g_sshServerService, versionMajor, versionMinor);
                 result = ENOENT;
             }
             else
             {
                 // SSH servers implementing OpenSSH version 8.2 or newer support Include
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the SSH server reports OpenSSH version %d.%d and appears to support Include", versionMajor, versionMinor);
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to support Include", g_sshServerService, versionMajor, versionMinor);
                 result = 0;
             }
         }
@@ -606,8 +606,8 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
             }
             else if (0 == (status = CheckFileAccess(bannerFile, 0, 0, desiredAccess, reason, log)))
             {
-                OsConfigCaptureSuccessReason(reason, "%sThe sshd service reports that '%s' is set to '%s', this file has access '%u' and contains the expected banner text", 
-                    banner, actualValue, desiredAccess);
+                OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%s', this file has access '%u' and contains the expected banner text", 
+                    g_sshServerService, banner, actualValue, desiredAccess);
             }
         }
 
@@ -622,10 +622,31 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
     return status;
 }
 
+static char* FormatInclusionForRemediation(void* log)
+{
+    const char* inclusionTemplate = "%s\nInclude %s\n";
+    char* inclusion = NULL;
+    size_t inclusionSize = 0;
+
+    inclusionSize = strlen(inclusionTemplate) + strlen(g_sshdConfigRemediationHeader) + strlen(g_osconfigRemediationConf) + 1;
+    if (NULL != (inclusion = malloc(inclusionSize)))
+    {
+        memset(inclusion, 0, inclusionSize);
+        snprintf(inclusion, inclusionSize, inclusionTemplate, g_sshdConfigRemediationHeader, g_osconfigRemediationConf);
+    }
+    else
+    {
+        OsConfigLogError(log, "FormatInclusionForRemediation: out of memory");
+    }
+
+    return inclusion;
+}
+
 int CheckSshProtocol(char** reason, void* log)
 {
     const char* protocolTemplate = "%s %s";
     char* protocol = NULL;
+    char* inclusion = NULL;
     int status = 0;
 
     if (0 != IsSshServerActive(log))
@@ -648,22 +669,18 @@ int CheckSshProtocol(char** reason, void* log)
     {
         if (0 == IsSshConfigIncludeSupported(log))
         {
-            if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log)))
-            {
-                OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
-                OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
-                status = 0;
-            }
-        }
-        else
-        {
             if (false == FileExists(g_osconfigRemediationConf))
             {
                 OsConfigLogError(log, "CheckSshProtocol: the OSConfig remediation file '%s' is not present on this device", g_osconfigRemediationConf);
                 OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_osconfigRemediationConf);
                 status = EEXIST;
             }
-            else if (0 != FindTextInFile(g_sshServerConfiguration, g_sshdConfigRemediationHeader, log))
+            else if (NULL == (inclusion = FormatInclusionForRemediation(log)))
+            {
+                OsConfigLogError(log, "CheckSshProtocol: FormatInclusionForRemediation failed");
+                status = ENOMEM;
+            }
+            else if (0 != FindTextInFile(g_sshServerConfiguration, inclusion, log))
             {
                 OsConfigLogError(log, "CheckSshProtocol: '%s' is not found included in '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
                 OsConfigCaptureReason(reason, "'%s' is not found included in %s",
@@ -674,6 +691,17 @@ int CheckSshProtocol(char** reason, void* log)
             {
                 OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
                 OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
+                status = 0;
+            }
+
+            FREE_MEMORY(inclusion);
+        }
+        else
+        {
+            if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log)))
+            {
+                OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
+                OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
                 status = 0;
             }
         }
@@ -869,26 +897,6 @@ static char* FormatRemediationValues(void* log)
     }
 
     return remediation;
-}
-
-static char* FormatInclusionForRemediation(void* log)
-{
-    const char* inclusionTemplate = "%s\nInclude %s\n";
-    char* inclusion = NULL;
-    size_t inclusionSize = 0;
-
-    inclusionSize = strlen(inclusionTemplate) + strlen(g_sshdConfigRemediationHeader) + strlen(g_osconfigRemediationConf) + 1;
-    if (NULL != (inclusion = malloc(inclusionSize)))
-    {
-        memset(inclusion, 0, inclusionSize);
-        snprintf(inclusion, inclusionSize, inclusionTemplate, g_sshdConfigRemediationHeader, g_osconfigRemediationConf);
-    }
-    else
-    {
-        OsConfigLogError(log, "FormatInclusionForRemediation: out of memory");
-    }
-
-    return inclusion;
 }
 
 static int IncludeRemediationSshConfFile(void* log)
