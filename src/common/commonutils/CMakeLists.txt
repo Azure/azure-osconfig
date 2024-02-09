@@ -16,8 +16,6 @@ add_library(commonutils STATIC
     UrlUtils.c
     UserUtils.c)
 
-add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-nonnull;-Wno-unused-result;>")
-
 target_include_directories(commonutils
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
