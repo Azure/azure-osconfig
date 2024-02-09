@@ -1188,7 +1188,7 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_EQ(EINVAL, InstallPackage("", nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage("", nullptr));
 
-    if (IsMariner())
+    if (!IsMariner())
     {
         EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
         EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
