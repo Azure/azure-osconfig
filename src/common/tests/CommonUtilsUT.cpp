@@ -243,18 +243,12 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     EXPECT_EQ(127, ExecuteCommand(nullptr, "hh", false, true, 100, 0, &textResult, nullptr, nullptr));
     EXPECT_NE(nullptr, strstr(textResult, IsMariner() ? "sh: line 1: hh: command not found" : "sh: 1: hh: not found"));
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(textResult);
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "blah", true, true, 100, 0, &textResult, nullptr, nullptr));
     EXPECT_NE(nullptr, strstr(textResult, IsMariner() ? "sh: line 1: blah: command not found" : "sh: 1: blah: not found"));
 
-    if (nullptr != textResult)
-    {
-        FREE_MEMORY(textResult);
-    }
+    FREE_MEMORY(textResult);
 }
 
 void* TestTimeoutCommand(void*)
