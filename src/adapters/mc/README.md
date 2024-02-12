@@ -26,21 +26,20 @@ Install the miminal set of dependencies necessary:
 ```bash
 sudo apt-get install -y gcc git cmake build-essential
 ```
-Clone OSConfig, checkout the 'MariusNi/OsConfig_Ubuntu14_NrpBuild' branch and refresh it with latest source code from main:
+
+Verify that gcc is 4.8:
 
 ```bash
-git checkout MariusNi/OsConfig_Ubuntu14_NrpBuild
-git pull origin main
+gcc --version
 ```
-
-Build using the following simplified commands:
+Clone OSConfig locally and build from the main branch using the following simplified commands:
 
 ```bash
 $ cmake ../src -DCMAKE_BUILD_TYPE=Release
 $ cmake --build . --config Release  --target all
 ```
 
-This builds the libOsConfigResource.so binary and the OsConfigPolicy.zip package, for example: 
+This builds the libOsConfigResource.so binary and the ZIP artifacts package, for example: 
 
 ```bash
 $ cmake ../src -DCMAKE_BUILD_TYPE=Release
