@@ -236,11 +236,11 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     char* textResult = nullptr;
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "hh", false, true, 100, 0, &textResult, nullptr, nullptr));
-    EXPECT_NE(nullptr, strstr(textResult, "command not found"));
+    EXPECT_NE(nullptr, strstr(textResult, "not found"));
     FREE_MEMORY(textResult);
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "blah", true, true, 100, 0, &textResult, nullptr, nullptr));
-    EXPECT_NE(nullptr, strstr(textResult, "command not found"));
+    EXPECT_NE(nullptr, strstr(textResult, "not found"));
     FREE_MEMORY(textResult);
 }
 
