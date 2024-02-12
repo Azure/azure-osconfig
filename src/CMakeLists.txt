@@ -20,6 +20,7 @@ option(BUILD_MODULETEST "Build the moduletest tool" ON)
 option(BUILD_SAMPLES "Build samples" OFF)
 option(COVERAGE "Enable code coverage" OFF)
 
+add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-nonnull;-Wno-unused-result>")
 add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wreorder;-Wno-nonnull;-Wno-unused-result;-Wunused-macros>")
 
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -108,6 +109,7 @@ set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform/inc)
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
 
 if (BUILD_TESTS)
+    add_compile_options(-D TEST_CODE)
     enable_testing()
     set (GTEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/gtest-output)
 endif()
