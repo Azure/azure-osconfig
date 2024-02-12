@@ -141,7 +141,7 @@ static bool g_auditOnlySession = true;
 static char* GetSshServerState(const char* name, void* log)
 {
     const char* sshdDashTCommand = "sshd -T";
-    const char* commandTemplateForOne = "%s | grep  -m 1 %s";
+    const char* commandTemplateForOne = "%s | grep  -m 1 -w %s";
     char* command = NULL;
     char* textResult = NULL;
     int status = 0;
@@ -841,8 +841,7 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
 
 static char* FormatRemediationValues(void* log)
 {
-    // 'UsePAM yes' blocks Ciphers and MACs so we need to set this to 'no' here as other .conf files can set it
-    const char* remediationTemplate = "%s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\nUsePAM no\n";
+    const char* remediationTemplate = "%s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n";
     char* remediation = NULL;
     size_t remediationSize = 0;
 
