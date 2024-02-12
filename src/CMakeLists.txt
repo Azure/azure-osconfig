@@ -113,7 +113,15 @@ if (BUILD_TESTS)
 endif()
 
 add_subdirectory(common)
-add_subdirectory(adapters)
+if (BUILD_ADAPTERS)
+    add_subdirectory(adapters)
+endif()
+if (BUILD_PLATFORM)
+    add_subdirectory(platform)
+endif()
+if (BUILD_MODULES)
+    add_subdirectory(modules)
+endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
