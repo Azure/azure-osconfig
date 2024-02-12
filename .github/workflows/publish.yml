@@ -9,10 +9,16 @@ on:
       arch:
         type: string
         required: true
+      dist:
+        type: string
+        required: true
       repo:
         type: string
         required: true
-      dist:
+      channel:
+        type: string
+        required: true
+      package-type:
         type: string
         required: true
 
@@ -23,6 +29,7 @@ jobs:
       target: ${{ inputs.target }}
       arch: ${{ inputs.arch }}
       artifact: ${{ inputs.target }}-${{ inputs.arch }}
+      package-type: ${{ inputs.package-type }}
       release: true
 
   sign:
@@ -30,6 +37,8 @@ jobs:
     needs: package
     with:
       artifact: ${{ inputs.target }}-${{ inputs.arch }}
+      key-code: ${{ inputs.dist == 'azurelinux' && 'CP-459159-Pgp' || 'CP-450779-Pgp' }}
+      package-type: ${{ inputs.package-type }}
     secrets: inherit
 
   publish:
@@ -37,6 +46,6 @@ jobs:
     needs: sign
     with:
       repo: ${{ inputs.repo }}
-      dist: ${{ inputs.dist }}
+      channel: ${{ inputs.channel }}
       artifact: ${{ inputs.target }}-${{ inputs.arch }}-signed
     secrets: inherit

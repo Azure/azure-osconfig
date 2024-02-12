@@ -7,6 +7,13 @@ on:
         description: The artifact containing the packages to be signed.
         type: string
         required: true
+      key-code:
+        description: The signing key-code to use.
+        type: string
+        required: true
+      package-type:
+        type: string
+        required: true
 
 jobs:
   sign:
@@ -37,7 +44,8 @@ jobs:
         uses: ./.github/actions/sign-package
         env:
           AAD_ID: ${{ secrets.ESRP_AAD_ID }}
-          LINUX_KEY_CODE: ${{ secrets.ESRP_LINUX_KEY_CODE }}
+          LINUX_KEY_CODE: ${{ inputs.key-code }}
           LINUX_OP_CODE: ${{ secrets.ESRP_LINUX_OP_CODE }}
         with:
           artifact: ${{ inputs.artifact }}
+          package-type: ${{ inputs.package-type }}

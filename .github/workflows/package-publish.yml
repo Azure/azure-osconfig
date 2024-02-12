@@ -6,7 +6,7 @@ on:
       repo:
         required: true
         type: string
-      dist:
+      channel:
         required: true
         type: string
       artifact:
@@ -51,7 +51,7 @@ jobs:
       - name: Update repo
         uses: ./.github/actions/pmc
         with:
-          command: repo package update --add-packages ${{ steps.upload.outputs.result }} ${{ inputs.repo }} ${{ inputs.dist }}
+          command: repo package update --add-packages ${{ steps.upload.outputs.result }} ${{ inputs.repo }} ${{ inputs.channel }}
 
       - name: Publish package
         uses: ./.github/actions/pmc

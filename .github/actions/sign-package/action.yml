@@ -5,6 +5,9 @@ inputs:
   artifact:
     description: The artifact containing packages to sign
     required: true
+  package-type:
+    description: The type of package to sign (deb | rpm)
+    required: true
 
 runs:
   using: composite
@@ -33,7 +36,8 @@ runs:
         opcode = os.environ['LINUX_OP_CODE'].strip()
 
         source_location = 'unsigned'
-        files = glob.glob(os.path.join(source_location, "*.deb"))
+        package_filter = '*.${{ inputs.package-type }}'
+        files = glob.glob(os.path.join(source_location, package_filter.lower()))
 
         print("Found files:")
         pprint.pp(files)

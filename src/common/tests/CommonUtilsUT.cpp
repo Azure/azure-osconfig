@@ -55,6 +55,11 @@ class CommonUtilsTest : public ::testing::Test
 
             return true;
         }
+
+        bool IsMariner(void)
+        {
+            return (0 == FindTextInFile("/etc/os-release", "CBL-Mariner/Linux", nullptr));
+        }
 };
 
 TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
@@ -236,15 +241,12 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     char* textResult = nullptr;
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "hh", false, true, 100, 0, &textResult, nullptr, nullptr));
-    EXPECT_NE(nullptr, strstr(textResult, "sh: 1: hh: not found\n"));
+    EXPECT_NE(nullptr, strstr(textResult, IsMariner() ? "sh: line 1: hh: command not found" : "sh: 1: hh: not found"));
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(textResult);
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "blah", true, true, 100, 0, &textResult, nullptr, nullptr));
-    EXPECT_NE(nullptr, strstr(textResult, "sh: 1: blah: not found "));
+    EXPECT_NE(nullptr, strstr(textResult, IsMariner() ? "sh: line 1: blah: command not found" : "sh: 1: blah: not found"));
 
     FREE_MEMORY(textResult);
 }
@@ -1186,22 +1188,25 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_EQ(EINVAL, InstallPackage("", nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage("", nullptr));
 
-    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
-    EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
-    
-    // Nothing to uninstall
-    EXPECT_EQ(0, UninstallPackage("~package_that_does_not_exist", nullptr));
+    if (!IsMariner())
+    {
+        EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
+        EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
+        
+        // Nothing to uninstall
+        EXPECT_EQ(0, UninstallPackage("~package_that_does_not_exist", nullptr));
 
-    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr));
-    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
-    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
-    
-    EXPECT_EQ(0, CheckPackageInstalled("apt", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("ap*", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
+        
+        EXPECT_EQ(0, CheckPackageInstalled("apt", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("ap*", nullptr));
 
-    EXPECT_EQ(0, InstallPackage("rolldice", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr));
-    EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
+        EXPECT_EQ(0, InstallPackage("rolldice", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr));
+        EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
+    }
 }
 
 TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)

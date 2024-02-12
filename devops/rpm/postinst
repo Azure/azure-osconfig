@@ -1,0 +1,12 @@
+# postinst script for osconfig
+#
+if [ ! -e /etc/aziot/identityd/config.d/osconfig.toml ]; then
+    mkdir -p /etc/aziot/identityd/config.d
+    cp /etc/osconfig/osconfig.toml /etc/aziot/identityd/config.d/
+fi
+%systemd_post osconfig-platform.service
+%systemd_post osconfig.service
+systemctl enable osconfig-platform.service
+systemctl start osconfig-platform.service
+systemctl enable osconfig.service
+systemctl start osconfig.service

@@ -13,21 +13,22 @@ jobs:
       matrix:
         target:
           [
-            { os: ubuntu, version: 18.04, dist: bionic },
-            { os: ubuntu, version: 20.04, dist: focal },
-            { os: ubuntu, version: 22.04, dist: jammy },
-            { os: debian, version: 10, dist: buster },
-            { os: debian, version: 11, dist: bullseye },
+            { os: ubuntu, version: 18.04, dist: bionic, package-type: DEB },
+            { os: ubuntu, version: 20.04, dist: focal, package-type: DEB },
+            { os: ubuntu, version: 22.04, dist: jammy, package-type: DEB },
+            { os: debian, version: 10, dist: buster, package-type: DEB },
+            { os: debian, version: 11, dist: bullseye, package-type: DEB },
           ]
         arch: [arm, arm64, amd64]
         exclude:
-          - target: { os: ubuntu, version: 22.04, dist: jammy }
+          - target: { os: ubuntu, version: 22.04, dist: jammy, package-type: DEB }
             arch: arm
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.arch }}
       repo: microsoft-${{ matrix.target.os }}-${{ matrix.target.dist }}-prod-apt
       dist: ${{ matrix.target.dist }}
+      package-type: ${{ matrix.target.package-type }}
     secrets: inherit
 
   release:

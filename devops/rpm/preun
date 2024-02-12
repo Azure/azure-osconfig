@@ -1,0 +1,4 @@
+# pre-uninstall script for osconfig
+#
+%systemd_preun osconfig.service
+%systemd_preun osconfig-platform.service
