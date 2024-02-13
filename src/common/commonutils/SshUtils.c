@@ -242,7 +242,8 @@ static int IsSshConfigIncludeSupported(void* log)
             // SSH servers implementing OpenSSH version 8.2 or newer support Include
             // See https://www.openssh.com/txt/release-8.2, quote: "add an Include sshd_config keyword that allows including additional configuration files"
 
-            if ((versionMajor >= 8) && (versionMinor >= 2))
+            //if ((versionMajor >= 8) && (versionMinor >= 2))
+            if ((versionMajor >= 10) && (versionMinor >= 10))
             {
                 OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to support Include", g_sshServerService, versionMajor, versionMinor);
                 result = 0;
