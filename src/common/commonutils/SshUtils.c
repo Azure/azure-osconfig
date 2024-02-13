@@ -6,6 +6,7 @@
 
 static const char* g_sshServerService = "sshd";
 static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
+static const char* g_sshServerConfigurationBackup = "/etc/ssh/sshd_config.bak";
 static const char* g_osconfigRemediationConf = "/etc/ssh/sshd_config.d/osconfig_remediation.conf";
 static const char* g_sshdConfigRemediationHeader = "# Azure OSConfig Remediation";
 
@@ -1021,6 +1022,22 @@ static int SaveRemediationToConfFile(void* log)
     return status;
 }
 
+static char* BackupSshdConfig(const char* configuration)
+{
+    size_t configurationSize = 0;
+    int status = 0;
+
+    if ((false == FileExists(g_sshServerConfigurationBackup)) && (NULL != configuration) && (0 < (configurationSize = strlen(configuration))))
+    {
+        if (false == SavePayloadToFile(g_sshServerConfigurationBackup, configuration, configurationSize, log))
+        {
+            status = ENOENT;
+        }
+    }
+
+    return status;
+}
+
 static int SaveRemediationToSshdConfig(void* log)
 {
     const char* configurationTemplate = "%s%s";
@@ -1029,25 +1046,40 @@ static int SaveRemediationToSshdConfig(void* log)
     char* remediation = NULL;
     size_t remediationSize = 0;
     size_t newConfigurationSize = 0;
+    int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
     int status = 0;
 
     if (false == FileExists(g_sshServerConfiguration))
     {
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' is not present on this device", g_sshServerConfiguration);
-        return EEXIST;
+        status = EEXIST;
     }
     else if ((NULL == (remediation = FormatRemediationValues(log))) || (0 == (remediationSize = strlen(remediation))))
     {
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: failed formatting, cannot save remediation values to '%s'", g_sshServerConfiguration);
-        return ENOMEM;
+        status = ENOMEM;
     }
-
-    if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
+    else if (NULL == (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
     {
-        if (0 != strncmp(originalConfiguration, remediation, remediationSize))
+        OsConfigLogError(log, "SaveRemediationToSshdConfig: failed to read from '%s'", g_sshServerConfiguration);
+        status = EEXIST;
+    }
+    else if (0 != (status = BackupSshdConfig(originalConfiguration)))
+    {
+        OsConfigLogInfo(log, "SaveRemediationToSshdConfig: failed to make a backup copy of '%s'", g_sshServerConfiguration);
+    }
+    else if (0 == strncmp(originalConfiguration, remediation, remediationSize))
+    {
+        OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' already contains the correct remediation values:\n---\n%s---", g_sshServerConfiguration, remediation);
+        status = 0;
+    }
+    else
+    {
+        FREE_MEMORY(originalConfiguration);
+
+        if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfigurationBackup, false, log)))
         {
             newConfigurationSize = strlen(configurationTemplate) + remediationSize + strlen(originalConfiguration) + 1;
-
             if (NULL != (newConfiguration = malloc(newConfigurationSize)))
             {
                 memset(newConfiguration, 0, newConfigurationSize);
@@ -1063,8 +1095,6 @@ static int SaveRemediationToSshdConfig(void* log)
                     OsConfigLogError(log, "SaveRemediationToSshdConfig: failed to save remediation values to '%s'", g_sshServerConfiguration);
                     status = ENOENT;
                 }
-
-                FREE_MEMORY(newConfiguration);
             }
             else
             {
@@ -1074,21 +1104,17 @@ static int SaveRemediationToSshdConfig(void* log)
         }
         else
         {
-            OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' already contains the correct remediation values:\n---\n%s---", g_sshServerConfiguration, remediation);
-            status = 0;
+            OsConfigLogError(log, "SaveRemediationToSshdConfig: failed to read from '%s'", g_sshServerConfigurationBackup);
+            status = EEXIST;
         }
-
-        FREE_MEMORY(originalConfiguration);
     }
-    else
-    {
-        OsConfigLogError(log, "SaveRemediationToSshdConfig: failed to read from '%s'", g_sshServerConfiguration);
-        status = EEXIST;
-    }
-
-    SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
 
     FREE_MEMORY(remediation);
+    FREE_MEMORY(originalConfiguration);
+    FREE_MEMORY(newConfiguration);
+
+    SetFileAccess(g_sshServerConfigurationBackup, 0, 0, desiredAccess, log);
+    SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log);
 
     return status;
 }
