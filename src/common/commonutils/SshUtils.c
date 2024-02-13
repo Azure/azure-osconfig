@@ -238,22 +238,21 @@ static int IsSshConfigIncludeSupported(void* log)
                 versionMinor = atoi(versionMinorString);
             }
 
-            if ((versionMajor <= 0) || (versionMinor <= 0))
+            // SSH servers implementing OpenSSH version 8.2 or newer support Include
+            // See https://www.openssh.com/txt/release-8.2, quote: "add an Include sshd_config keyword that allows including additional configuration files"
+
+            if ((versionMajor >= 8) && (versionMinor >= 2))
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' ('%s'), assuming Include is not supported", command, textCursor);
-                result = ENOENT;
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to support Include", g_sshServerService, versionMajor, versionMinor);
+                result = 0;
             }
-            else if ((versionMajor < 8) || (versionMinor < 2))
+            else
             {
                 OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to not support Include", g_sshServerService, versionMajor, versionMinor);
                 result = ENOENT;
             }
             else
-            {
-                // SSH servers implementing OpenSSH version 8.2 or newer support Include
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to support Include", g_sshServerService, versionMajor, versionMinor);
-                result = 0;
-            }
+            
         }
         else
         {
