@@ -252,8 +252,6 @@ static int IsSshConfigIncludeSupported(void* log)
                 OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to not support Include", g_sshServerService, versionMajor, versionMinor);
                 result = ENOENT;
             }
-            else
-            
         }
         else
         {
