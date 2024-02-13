@@ -692,6 +692,13 @@ int CheckSshProtocol(char** reason, void* log)
                 OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
                 status = 0;
             }
+            else
+            {
+                OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_osconfigRemediationConf);
+                OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",
+                    "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_osconfigRemediationConf);
+                status = ENOENT;
+            }
 
             FREE_MEMORY(inclusion);
         }
@@ -703,17 +710,16 @@ int CheckSshProtocol(char** reason, void* log)
                 OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
                 status = 0;
             }
+            else
+            {
+                OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
+                OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",
+                    "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
+                status = ENOENT;
+            }
         }
     }
     
-    if (0 != status)
-    {
-        OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
-        OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",
-            "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
-        status = ENOENT;
-    }
-
     FREE_MEMORY(protocol);
 
     OsConfigLogInfo(log, "CheckSshProtocol: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
