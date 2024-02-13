@@ -201,10 +201,14 @@ static int IsSshServerActive(void* log)
     return result;
 }
 
+// SSH servers that implement OpenSSH version 8.2 or newer support Include
+// See https://www.openssh.com/txt/release-8.2, quote: "add an Include sshd_config keyword that allows including additional configuration files"
 static int IsSshConfigIncludeSupported(void* log)
 {
     const char* expectedPrefix = "unknown option -- V OpenSSH_";
     const char* command = "sshd -V";
+    const int minVersionMajor = 8;
+    const int minVersionMinor = 2;
     char* textResult = NULL;
     size_t textResultLength = 0;
     size_t textPrefixLength = 0;
@@ -239,18 +243,16 @@ static int IsSshConfigIncludeSupported(void* log)
                 versionMinor = atoi(versionMinorString);
             }
 
-            // SSH servers implementing OpenSSH version 8.2 or newer support Include
-            // See https://www.openssh.com/txt/release-8.2, quote: "add an Include sshd_config keyword that allows including additional configuration files"
-
-            //if ((versionMajor >= 8) && (versionMinor >= 2))
-            if ((versionMajor >= 10) && (versionMinor >= 10))
+            if ((versionMajor >= minVersionMajor) && (versionMinor >= minVersionMinor))
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to support Include", g_sshServerService, versionMajor, versionMinor);
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d (%d.%d or newer) and appears to support Include", 
+                    g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
                 result = 0;
             }
             else
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to not support Include", g_sshServerService, versionMajor, versionMinor);
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d (older than %d.%d) and appears to not support Include", 
+                    g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
                 result = ENOENT;
             }
         }
