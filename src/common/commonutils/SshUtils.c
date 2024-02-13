@@ -1020,7 +1020,7 @@ static int SaveRemediationToConfFile(void* log)
     return status;
 }
 
-static char* BackupSshdConfig(const char* configuration)
+static int BackupSshdConfig(const char* configuration)
 {
     size_t configurationSize = 0;
     int status = 0;
