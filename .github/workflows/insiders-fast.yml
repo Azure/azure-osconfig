@@ -54,6 +54,6 @@ jobs:
       dist: ${{ matrix.target.dist }}
       # ESRP debian based repos (deb) have channels/rings on repos.
       # ESRP yum based repos (rpm) have no channels
-      channel: ${{ matrix.target.dist == 'azurelinux' && '' || 'insiders-fast' }}
+      channel: ${{ matrix.target.package-type == 'DEB' && 'insiders-fast' || '' }}
       package-type: ${{ matrix.target.package-type }}
     secrets: inherit
