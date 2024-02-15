@@ -1,6 +1,6 @@
 {
     "properties": {
-        "displayName": "Ensure that the SSH Server is securely configured on the Linux device",
+        "displayName": "[Preview] SSH Posture Control policy",
         "policyType": "Custom",
         "mode": "Indexed",
         "description": "This policy ensures that the SSH Server is securely configured on the Linux device",
