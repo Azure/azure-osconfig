@@ -6,6 +6,7 @@
 
 static const char* g_sshServerService = "sshd";
 static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
+static const char* g_sshServerConfigurationBackup = "/etc/ssh/sshd_config.bak";
 static const char* g_osconfigRemediationConf = "/etc/ssh/sshd_config.d/osconfig_remediation.conf";
 static const char* g_sshdConfigRemediationHeader = "# Azure OSConfig Remediation";
 
@@ -141,7 +142,7 @@ static bool g_auditOnlySession = true;
 static char* GetSshServerState(const char* name, void* log)
 {
     const char* sshdDashTCommand = "sshd -T";
-    const char* commandTemplateForOne = "%s | grep  -m 1 %s";
+    const char* commandTemplateForOne = "%s | grep  -m 1 -w %s";
     char* command = NULL;
     char* textResult = NULL;
     int status = 0;
@@ -200,10 +201,14 @@ static int IsSshServerActive(void* log)
     return result;
 }
 
+// SSH servers that implement OpenSSH version 8.2 or newer support Include
+// See https://www.openssh.com/txt/release-8.2, quote: "add an Include sshd_config keyword that allows including additional configuration files"
 static int IsSshConfigIncludeSupported(void* log)
 {
     const char* expectedPrefix = "unknown option -- V OpenSSH_";
     const char* command = "sshd -V";
+    const int minVersionMajor = 8;
+    const int minVersionMinor = 2;
     char* textResult = NULL;
     size_t textResultLength = 0;
     size_t textPrefixLength = 0;
@@ -238,21 +243,17 @@ static int IsSshConfigIncludeSupported(void* log)
                 versionMinor = atoi(versionMinorString);
             }
 
-            if ((versionMajor <= 0) || (versionMinor <= 0))
+            if ((versionMajor >= minVersionMajor) && (versionMinor >= minVersionMinor))
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' ('%s'), assuming Include is not supported", command, textCursor);
-                result = ENOENT;
-            }
-            else if ((versionMajor < 8) || (versionMinor < 2))
-            {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to not support Include", g_sshServerService, versionMajor, versionMinor);
-                result = ENOENT;
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d (%d.%d or newer) and appears to support Include", 
+                    g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
+                result = 0;
             }
             else
             {
-                // SSH servers implementing OpenSSH version 8.2 or newer support Include
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d and appears to support Include", g_sshServerService, versionMajor, versionMinor);
-                result = 0;
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d (older than %d.%d) and appears to not support Include", 
+                    g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
+                result = ENOENT;
             }
         }
         else
@@ -693,6 +694,13 @@ int CheckSshProtocol(char** reason, void* log)
                 OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
                 status = 0;
             }
+            else
+            {
+                OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_osconfigRemediationConf);
+                OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",
+                    "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_osconfigRemediationConf);
+                status = ENOENT;
+            }
 
             FREE_MEMORY(inclusion);
         }
@@ -704,17 +712,16 @@ int CheckSshProtocol(char** reason, void* log)
                 OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
                 status = 0;
             }
+            else
+            {
+                OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
+                OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",
+                    "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
+                status = ENOENT;
+            }
         }
     }
     
-    if (0 != status)
-    {
-        OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
-        OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",
-            "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
-        status = ENOENT;
-    }
-
     FREE_MEMORY(protocol);
 
     OsConfigLogInfo(log, "CheckSshProtocol: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
@@ -841,8 +848,7 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
 
 static char* FormatRemediationValues(void* log)
 {
-    // 'UsePAM yes' blocks Ciphers and MACs so we need to set this to 'no' here as other .conf files can set it
-    const char* remediationTemplate = "%s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\nUsePAM no\n";
+    const char* remediationTemplate = "%s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n";
     char* remediation = NULL;
     size_t remediationSize = 0;
 
@@ -1023,6 +1029,22 @@ static int SaveRemediationToConfFile(void* log)
     return status;
 }
 
+static int BackupSshdConfig(const char* configuration)
+{
+    size_t configurationSize = 0;
+    int status = 0;
+
+    if ((false == FileExists(g_sshServerConfigurationBackup)) && (NULL != configuration) && (0 < (configurationSize = strlen(configuration))))
+    {
+        if (false == SavePayloadToFile(g_sshServerConfigurationBackup, configuration, configurationSize, log))
+        {
+            status = ENOENT;
+        }
+    }
+
+    return status;
+}
+
 static int SaveRemediationToSshdConfig(void* log)
 {
     const char* configurationTemplate = "%s%s";
@@ -1031,25 +1053,40 @@ static int SaveRemediationToSshdConfig(void* log)
     char* remediation = NULL;
     size_t remediationSize = 0;
     size_t newConfigurationSize = 0;
+    int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
     int status = 0;
 
     if (false == FileExists(g_sshServerConfiguration))
     {
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' is not present on this device", g_sshServerConfiguration);
-        return EEXIST;
+        status = EEXIST;
     }
     else if ((NULL == (remediation = FormatRemediationValues(log))) || (0 == (remediationSize = strlen(remediation))))
     {
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: failed formatting, cannot save remediation values to '%s'", g_sshServerConfiguration);
-        return ENOMEM;
+        status = ENOMEM;
     }
-
-    if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
+    else if (NULL == (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
     {
-        if (0 != strncmp(originalConfiguration, remediation, remediationSize))
+        OsConfigLogError(log, "SaveRemediationToSshdConfig: failed to read from '%s'", g_sshServerConfiguration);
+        status = EEXIST;
+    }
+    else if (0 != (status = BackupSshdConfig(originalConfiguration)))
+    {
+        OsConfigLogInfo(log, "SaveRemediationToSshdConfig: failed to make a backup copy of '%s'", g_sshServerConfiguration);
+    }
+    else if (0 == strncmp(originalConfiguration, remediation, remediationSize))
+    {
+        OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' already contains the correct remediation values:\n---\n%s---", g_sshServerConfiguration, remediation);
+        status = 0;
+    }
+    else
+    {
+        FREE_MEMORY(originalConfiguration);
+
+        if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfigurationBackup, false, log)))
         {
             newConfigurationSize = strlen(configurationTemplate) + remediationSize + strlen(originalConfiguration) + 1;
-
             if (NULL != (newConfiguration = malloc(newConfigurationSize)))
             {
                 memset(newConfiguration, 0, newConfigurationSize);
@@ -1065,8 +1102,6 @@ static int SaveRemediationToSshdConfig(void* log)
                     OsConfigLogError(log, "SaveRemediationToSshdConfig: failed to save remediation values to '%s'", g_sshServerConfiguration);
                     status = ENOENT;
                 }
-
-                FREE_MEMORY(newConfiguration);
             }
             else
             {
@@ -1076,21 +1111,17 @@ static int SaveRemediationToSshdConfig(void* log)
         }
         else
         {
-            OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' already contains the correct remediation values:\n---\n%s---", g_sshServerConfiguration, remediation);
-            status = 0;
+            OsConfigLogError(log, "SaveRemediationToSshdConfig: failed to read from '%s'", g_sshServerConfigurationBackup);
+            status = EEXIST;
         }
-
-        FREE_MEMORY(originalConfiguration);
     }
-    else
-    {
-        OsConfigLogError(log, "SaveRemediationToSshdConfig: failed to read from '%s'", g_sshServerConfiguration);
-        status = EEXIST;
-    }
-
-    SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
 
     FREE_MEMORY(remediation);
+    FREE_MEMORY(originalConfiguration);
+    FREE_MEMORY(newConfiguration);
+
+    SetFileAccess(g_sshServerConfigurationBackup, 0, 0, desiredAccess, log);
+    SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log);
 
     return status;
 }

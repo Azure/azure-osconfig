@@ -20,17 +20,17 @@ option(BUILD_MODULETEST "Build the moduletest tool" ON)
 option(BUILD_SAMPLES "Build samples" OFF)
 option(COVERAGE "Enable code coverage" OFF)
 
-add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wreorder;-Wno-nonnull;-Wno-unused-result;-Wunused-macros;>")
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wreorder;-Wno-nonnull;-Wno-unused-result;-Wunused-macros>")
 
-if (CMAKE_COMPILER_IS_GNUCC)
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
     add_compile_options("-Wno-psabi;-fPIC")
     
-    if(NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.3.0")
+    if ((NOT CMAKE_C_COMPILER_VERSION VERSION_LESS "5.3.0") AND (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.3.0"))
         add_compile_options("-unused-const-variable=2")
     endif()
 
-    # Special Ubuntu 14/gcc 4.8 build configuration for the Universal NRP adapter
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.7" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.9")
+    # Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Universal NRP adapter
+    if (CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.7" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4.9")
         set(BUILD_MODULES OFF)
         set(BUILD_PLATFORM OFF)
         set(BUILD_TESTS OFF)
@@ -154,7 +154,6 @@ set(CPACK_RPM_CHANGELOG_FILE "${CMAKE_SOURCE_DIR}/../devops/rpm/changelog")
 set(CPACK_RPM_PACKAGE_AUTOREQ 1)
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 set(CPACK_RPM_PACKAGE_NAME ${OsConfigProjectName})
-set(CPACK_RPM_PACKAGE_VERSION ${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH})
 set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/../devops/rpm/postinst")
 set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/../devops/rpm/postun")
 set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/../devops/rpm/preun")
@@ -169,6 +168,5 @@ set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${OsConfigProjectEmail})
 set(CPACK_DEBIAN_PACKAGE_NAME ${OsConfigProjectName})
 set(CPACK_DEBIAN_PACKAGE_PREDEPENDS "")
 set(CPACK_DEBIAN_PACKAGE_SUGGESTS "aziot-identity-service (>= 1.2.0)")
-set(CPACK_DEBIAN_PACKAGE_VERSION ${OsConfigVersionString})
 
 include(CPack)
