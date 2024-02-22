@@ -1214,13 +1214,8 @@ void SshAuditCleanup(void* log)
 
 static char* CleanDoubleBackslashes(char* value, void* log)
 {
-    const char* oldSequence = "\\n";
-    const char* newSequence = "\n";
-    char* cursor = value;
     char* result = NULL;
     size_t length = 0;
-    size_t cursorLength = 0;
-    size_t resultLength = 0;
     size_t i = 0;
 
     if ((NULL == value) || (strlen(old) >= (length = strlen(value))) || (NULL == (result = malloc(length + 1))
@@ -1235,7 +1230,7 @@ static char* CleanDoubleBackslashes(char* value, void* log)
 
     for (i = 0; i < length; i++)
     {
-        OsConfigLogError(log, "### value[%d]: '%c'", i, value[i]);
+        OsConfigLogError(log, "### value[%d]: '%c'", (int)i, value[i]);
     }
 
     FREE_MEMORY(result); //
