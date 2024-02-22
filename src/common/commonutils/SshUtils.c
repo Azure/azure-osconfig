@@ -1473,6 +1473,11 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     }
     else if (0 == strcmp(name, g_remediateEnsureSshWarningBannerIsEnabledObject))
     {
+        if (NULL != strstr(value, "\\n"))
+        {
+            OsConfigLogError(log, "########## double backslahes!!! ####");
+        }
+        
         if (0 == (status = InitializeSshAuditCheck(name, value, log)))
         {
             status = SetSshWarningBanner(atoi(g_desiredPermissionsOnEtcSshSshdConfig ? 
