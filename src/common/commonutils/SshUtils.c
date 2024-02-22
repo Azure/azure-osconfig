@@ -1230,7 +1230,7 @@ static char* CleanDoubleBackslashes(char* value, void* log)
 
     memset(result, 0, length + 1);
     
-    for (i = 0, j = 0; i < (length - 1), j < length; i++, j++)
+    for (i = 0, j = 0; (i < (length - 1)) && (j < length); i++, j++)
     {
         if ((value[i] == '\\') && (value[i + 1] == 'n'))
         {
