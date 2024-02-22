@@ -1212,7 +1212,7 @@ void SshAuditCleanup(void* log)
     g_auditOnlySession = true;
 }
 
-static char* CleanDoubleBackslashes(char* value, void* log)
+static char* CleanDoubleBackslashes(char* value)
 {
     char* result = NULL;
     size_t length = 0;
@@ -1220,11 +1220,7 @@ static char* CleanDoubleBackslashes(char* value, void* log)
 
     if ((NULL == value) || (2 >= (length = strlen(value))) || (NULL == (result = malloc(length + 1))))
     {
-        if (NULL == result)
-        {
-            OsConfigLogError(log, "Out of memory");
-        }
-        
+        FREE_MEMORY(result);
         return result; 
     }
 
@@ -1241,11 +1237,7 @@ static char* CleanDoubleBackslashes(char* value, void* log)
         {
             result[j] = value[i];
         }
-        
-        OsConfigLogError(log, "### result[%d]: '%c'", (int)j, result[j]);
     }
-
-    FREE_MEMORY(result); //
 
     return result;
 }
@@ -1348,14 +1340,9 @@ int InitializeSshAuditCheck(const char* name, char* value, void* log)
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshWarningBannerIsEnabledObject)) || (0 == strcmp(name, g_initEnsureSshWarningBannerIsEnabledObject)))
     {
-        if (NULL != strstr(value, "\\n"))
-        {
-            OsConfigLogError(log, "########## double backslahes!!! ####");
-            CleanDoubleBackslashes(value, log);
-        }
-
         FREE_MEMORY(g_desiredSshWarningBannerIsEnabled);
-        status = (NULL != (g_desiredSshWarningBannerIsEnabled = DuplicateString(isValidValue ? value : g_sshDefaultSshBannerText))) ? 0 : ENOMEM;
+        status = (NULL != (g_desiredSshWarningBannerIsEnabled = (isValidValue && (NULL != strstr(value, "\\n"))) ? 
+            CleanDoubleBackslashes(value) : DuplicateString(isValidValue ? value : g_sshDefaultSshBannerText))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject)) || (0 == strcmp(name, g_initEnsureUsersCannotSetSshEnvironmentOptionsObject)))
     {
