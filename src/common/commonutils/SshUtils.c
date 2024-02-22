@@ -1338,7 +1338,7 @@ int InitializeSshAuditCheck(const char* name, char* value, void* log)
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshWarningBannerIsEnabledObject)) || (0 == strcmp(name, g_initEnsureSshWarningBannerIsEnabledObject)))
     {
-        if (NULL != strstr(value, "\\n"))
+        if (NULL != strstr(value, "\\\\"))
         {
             OsConfigLogError(log, "########## double backslahes!!! ####");
             CleanDoubleBackslashes(value, log);
