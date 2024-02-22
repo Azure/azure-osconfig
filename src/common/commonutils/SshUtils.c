@@ -1310,6 +1310,11 @@ int InitializeSshAuditCheck(const char* name, char* value, void* log)
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshWarningBannerIsEnabledObject)) || (0 == strcmp(name, g_initEnsureSshWarningBannerIsEnabledObject)))
     {
+        if (NULL != strstr(value, "\\n"))
+        {
+            OsConfigLogError(log, "########## double backslahes!!! ####");
+        }
+
         FREE_MEMORY(g_desiredSshWarningBannerIsEnabled);
         status = (NULL != (g_desiredSshWarningBannerIsEnabled = DuplicateString(isValidValue ? value : g_sshDefaultSshBannerText))) ? 0 : ENOMEM;
     }
