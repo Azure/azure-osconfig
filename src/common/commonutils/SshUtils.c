@@ -1216,9 +1216,9 @@ static char* CleanDoubleBackslashes(char* value, void* log)
 {
     char* result = NULL;
     size_t length = 0;
-    size_t i = 0;
+    size_t i = 0, j = 0;
 
-    if ((NULL == value) || (strlen("\\n") >= (length = strlen(value))) || (NULL == (result = malloc(length + 1))))
+    if ((NULL == value) || (2 >= (length = strlen(value))) || (NULL == (result = malloc(length + 1))))
     {
         if (NULL == result)
         {
@@ -1228,11 +1228,21 @@ static char* CleanDoubleBackslashes(char* value, void* log)
         return result; 
     }
 
-    memcpy(result, value, length);
+    memset(result, 0, length + 1);
     
-    for (i = 0; i < length; i++)
+    for (i = 0, j = 0; i < (length - 1), j < length; i++, j++)
     {
-        OsConfigLogError(log, "### result[%d]: '%c'", (int)i, result[i]);
+        if ((value[i] == '\\') && (value[i + 1] == 'n'))
+        {
+            result[j] = '\n';
+            i += 1;
+        }
+        else
+        {
+            result[j] = value[i];
+        }
+        
+        OsConfigLogError(log, "### result[%d]: '%c'", (int)j, result[j]);
     }
 
     FREE_MEMORY(result); //
