@@ -17,26 +17,25 @@
                 "contentUri": "<SAS token URL for the artifacts package>",
                 "contentHash": "<file hash for the artifacts package>",
                 "configurationParameter": {
-                    "AccessPermissionsForSshdConfig": "[OsConfigResource]Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
-                    "Protocol": "[OsConfigResource]Ensure that the SSH protocol is configured;DesiredObjectValue",
-                    "IgnoreHosts": "[OsConfigResource]Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
-                    "LogLevel": "[OsConfigResource]Ensure that the SSH LogLevel is configured;DesiredObjectValue",
-                    "MaxAuthTries": "[OsConfigResource]Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
-                    "AllowUsers": "[OsConfigResource]Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
-                    "DenyUsers": "[OsConfigResource]Ensure that the denied users for SSH are configured;DesiredObjectValue",
-                    "AllowGroups": "[OsConfigResource]Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
-                    "DenyGroups": "[OsConfigResource]Ensure that the denied groups for SSH are configured;DesiredObjectValue",
-                    "HostBasedAuthentication": "[OsConfigResource]Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
-                    "PermitRootLogin": "[OsConfigResource]Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
-                    "PermitEmptyPasswords": "[OsConfigResource]Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
-                    "ClientAliveCountMax": "[OsConfigResource]Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
-                    "ClientAliveInterval": "[OsConfigResource]Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
-                    "LoginGraceTime": "[OsConfigResource]Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
-                    "MACs": "[OsConfigResource]Ensure that only approved MAC algorithms are used;DesiredObjectValue",
-                    "Banner": "[OsConfigResource]Ensure that the SSH warning banner is configured;DesiredObjectValue",
-                    "PermitUserEnvironment": "[OsConfigResource]Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
-                    "Ciphers": "[OsConfigResource]Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
-                    "Port": "[OsConfigResource]Ensure that the SSH port is configured;DesiredObjectValue"
+                    "AccessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
+                    "IgnoreHosts": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
+                    "LogLevel": "Ensure that the SSH LogLevel is configured;DesiredObjectValue",
+                    "MaxAuthTries": "Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
+                    "AllowUsers": "Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
+                    "DenyUsers": "Ensure that the denied users for SSH are configured;DesiredObjectValue",
+                    "AllowGroups": "Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
+                    "DenyGroups": "Ensure that the denied groups for SSH are configured;DesiredObjectValue",
+                    "HostBasedAuthentication": "Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
+                    "PermitRootLogin": "Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
+                    "PermitEmptyPasswords": "Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
+                    "ClientAliveCountMax": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
+                    "ClientAliveInterval": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
+                    "LoginGraceTime": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
+                    "MACs": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
+                    "Banner": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
+                    "PermitUserEnvironment": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
+                    "Ciphers": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
+                    "Port": "Ensure that the SSH port is configured;DesiredObjectValue"
                 }
             }
         },
@@ -61,14 +60,6 @@
                     "description": "File access permissions for /etc/ssh/sshd_config. Default is '600'"
                 },
                 "defaultValue": "600"
-            },
-            "Protocol": {
-                "type": "string",
-                "metadata": {
-                    "displayName": "Protocol",
-                    "description": "The SSH protocol for sshd. Default is '2'"
-                },
-                "defaultValue": "2"
             },
             "IgnoreHosts": {
                 "type": "string",
@@ -172,7 +163,7 @@
                     "displayName": "The time in seconds after which the server disconnects if the user has not successfully logged in",
                     "description": "The time in seconds after which the server disconnects if the user has not successfully logged in. Default is 1 minute ('60')"
                 },
-                "defaultValue": ""
+                "defaultValue": "60"
             },
             "MACs": {
                 "type": "string",
@@ -186,9 +177,9 @@
                 "type": "string",
                 "metadata": {
                     "displayName": "The contents of the banner file that is sent to the remote user before authentication is allowed",
-                    "description": "The contents of the banner file that is sent to the remote user before authentication is allowed. Default is '#######################################################################\\n\\nAuthorized access only!\\n\\nIf you are not authorized to access or use this system, disconnect now!\\n\\n#######################################################################\\n'"
+                    "description": "The contents of the banner file that is sent to the remote user before authentication is allowed. Default is '#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n'"
                 },
-                "defaultValue": "#######################################################################\\n\\nAuthorized access only!\\n\\nIf you are not authorized to access or use this system, disconnect now!\\n\\n#######################################################################\\n"
+                "defaultValue": "#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n"
             },
             "PermitUserEnvironment": {
                 "type": "string",
@@ -471,7 +462,7 @@
                             },
                             {
                                 "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/parameterHash",
-                                "equals": "[base64(concat('[OsConfigResource]Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue', '=', parameters('AccessPermissionsForSshdConfig'), ',', '[OsConfigResource]Ensure that the SSH protocol is configured;DesiredObjectValue', '=', parameters('Protocol'), ',', '[OsConfigResource]Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue', '=', parameters('IgnoreHosts'), ',', '[OsConfigResource]Ensure that the SSH LogLevel is configured;DesiredObjectValue', '=', parameters('LogLevel'), ',', '[OsConfigResource]Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue', '=', parameters('MaxAuthTries'), ',', '[OsConfigResource]Ensure that the allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('AllowUsers'), ',', '[OsConfigResource]Ensure that the denied users for SSH are configured;DesiredObjectValue', '=', parameters('DenyUsers'), ',', '[OsConfigResource]Ensure that the allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('AllowGroups'), ',', '[OsConfigResource]Ensure that the denied groups for SSH are configured;DesiredObjectValue', '=', parameters('DenyGroups'), ',', '[OsConfigResource]Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue', '=', parameters('HostBasedAuthentication'), ',', '[OsConfigResource]Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue', '=', parameters('PermitRootLogin'), ',', '[OsConfigResource]Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue', '=', parameters('PermitEmptyPasswords'), ',', '[OsConfigResource]Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue', '=', parameters('ClientAliveCountMax'), ',', '[OsConfigResource]Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue', '=', parameters('ClientAliveInterval'), ',', '[OsConfigResource]Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue', '=', parameters('LoginGraceTime'), ',', '[OsConfigResource]Ensure that only approved MAC algorithms are used;DesiredObjectValue', '=', parameters('MACs'), ',', '[OsConfigResource]Ensure that the SSH warning banner is configured;DesiredObjectValue', '=', parameters('Banner'), ',', '[OsConfigResource]Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue', '=', parameters('PermitUserEnvironment'), ',', '[OsConfigResource]Ensure that appropriate ciphers are used for SSH;DesiredObjectValue', '=', parameters('Ciphers'), ',', '[OsConfigResource]Ensure that the SSH port is configured;DesiredObjectValue', '=', parameters('Port')))]"
+                                "equals": "[base64(concat('Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue', '=', parameters('AccessPermissionsForSshdConfig'), ',', 'Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue', '=', parameters('IgnoreHosts'), ',', 'Ensure that the SSH LogLevel is configured;DesiredObjectValue', '=', parameters('LogLevel'), ',', 'Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue', '=', parameters('MaxAuthTries'), ',', 'Ensure that the allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('AllowUsers'), ',', 'Ensure that the denied users for SSH are configured;DesiredObjectValue', '=', parameters('DenyUsers'), ',', 'Ensure that the allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('AllowGroups'), ',', 'Ensure that the denied groups for SSH are configured;DesiredObjectValue', '=', parameters('DenyGroups'), ',', 'Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue', '=', parameters('HostBasedAuthentication'), ',', 'Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue', '=', parameters('PermitRootLogin'), ',', 'Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue', '=', parameters('PermitEmptyPasswords'), ',', 'Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue', '=', parameters('ClientAliveCountMax'), ',', 'Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue', '=', parameters('ClientAliveInterval'), ',', 'Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue', '=', parameters('LoginGraceTime'), ',', 'Ensure that only approved MAC algorithms are used;DesiredObjectValue', '=', parameters('MACs'), ',', 'Ensure that the SSH warning banner is configured;DesiredObjectValue', '=', parameters('Banner'), ',', 'Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue', '=', parameters('PermitUserEnvironment'), ',', 'Ensure that appropriate ciphers are used for SSH;DesiredObjectValue', '=', parameters('Ciphers'), ',', 'Ensure that the SSH port is configured;DesiredObjectValue', '=', parameters('Port')))]"
                             }
                         ]
                     },
@@ -493,9 +484,6 @@
                                 },
                                 "AccessPermissionsForSshdConfig": {
                                     "value": "[parameters('AccessPermissionsForSshdConfig')]"
-                                },
-                                "Protocol": {
-                                    "value": "[parameters('Protocol')]"
                                 },
                                 "IgnoreHosts": {
                                     "value": "[parameters('IgnoreHosts')]"
@@ -571,9 +559,6 @@
                                     "AccessPermissionsForSshdConfig": {
                                         "type": "string"
                                     },
-                                    "Protocol": {
-                                        "type": "string"
-                                    },
                                     "IgnoreHosts": {
                                         "type": "string"
                                     },
@@ -646,83 +631,79 @@
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
+                                                        "name": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
                                                         "value": "[parameters('AccessPermissionsForSshdConfig')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH protocol is configured;DesiredObjectValue",
-                                                        "value": "[parameters('Protocol')]"
-                                                    },
-                                                    {
-                                                        "name": "[OsConfigResource]Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
                                                         "value": "[parameters('IgnoreHosts')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH LogLevel is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH LogLevel is configured;DesiredObjectValue",
                                                         "value": "[parameters('LogLevel')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
                                                         "value": "[parameters('MaxAuthTries')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
+                                                        "name": "Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
                                                         "value": "[parameters('AllowUsers')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the denied users for SSH are configured;DesiredObjectValue",
+                                                        "name": "Ensure that the denied users for SSH are configured;DesiredObjectValue",
                                                         "value": "[parameters('DenyUsers')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
+                                                        "name": "Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
                                                         "value": "[parameters('AllowGroups')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the denied groups for SSH are configured;DesiredObjectValue",
+                                                        "name": "Ensure that the denied groups for SSH are configured;DesiredObjectValue",
                                                         "value": "[parameters('DenyGroups')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
                                                         "value": "[parameters('HostBasedAuthentication')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
                                                         "value": "[parameters('PermitRootLogin')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
                                                         "value": "[parameters('PermitEmptyPasswords')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
                                                         "value": "[parameters('ClientAliveCountMax')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
                                                         "value": "[parameters('ClientAliveInterval')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
                                                         "value": "[parameters('LoginGraceTime')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that only approved MAC algorithms are used;DesiredObjectValue",
+                                                        "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
                                                         "value": "[parameters('MACs')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH warning banner is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
                                                         "value": "[parameters('Banner')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
                                                         "value": "[parameters('PermitUserEnvironment')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
+                                                        "name": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
                                                         "value": "[parameters('Ciphers')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH port is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH port is configured;DesiredObjectValue",
                                                         "value": "[parameters('Port')]"
                                                     }
                                                 ]
@@ -741,87 +722,83 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "<SAS token URL for the artifacts package>",
-                                                "contentHash": "<file hash for the artifacts package>",
+                                                "contentHash": "<file hash for the artifacts package>",                                                
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
+                                                        "name": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
                                                         "value": "[parameters('AccessPermissionsForSshdConfig')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH protocol is configured;DesiredObjectValue",
-                                                        "value": "[parameters('Protocol')]"
-                                                    },
-                                                    {
-                                                        "name": "[OsConfigResource]Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
                                                         "value": "[parameters('IgnoreHosts')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH LogLevel is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH LogLevel is configured;DesiredObjectValue",
                                                         "value": "[parameters('LogLevel')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
                                                         "value": "[parameters('MaxAuthTries')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
+                                                        "name": "Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
                                                         "value": "[parameters('AllowUsers')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the denied users for SSH are configured;DesiredObjectValue",
+                                                        "name": "Ensure that the denied users for SSH are configured;DesiredObjectValue",
                                                         "value": "[parameters('DenyUsers')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
+                                                        "name": "Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
                                                         "value": "[parameters('AllowGroups')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the denied groups for SSH are configured;DesiredObjectValue",
+                                                        "name": "Ensure that the denied groups for SSH are configured;DesiredObjectValue",
                                                         "value": "[parameters('DenyGroups')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
                                                         "value": "[parameters('HostBasedAuthentication')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
                                                         "value": "[parameters('PermitRootLogin')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
                                                         "value": "[parameters('PermitEmptyPasswords')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
                                                         "value": "[parameters('ClientAliveCountMax')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
                                                         "value": "[parameters('ClientAliveInterval')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
                                                         "value": "[parameters('LoginGraceTime')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that only approved MAC algorithms are used;DesiredObjectValue",
+                                                        "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
                                                         "value": "[parameters('MACs')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH warning banner is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
                                                         "value": "[parameters('Banner')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
                                                         "value": "[parameters('PermitUserEnvironment')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
+                                                        "name": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
                                                         "value": "[parameters('Ciphers')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH port is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH port is configured;DesiredObjectValue",
                                                         "value": "[parameters('Port')]"
                                                     }
                                                 ]
@@ -844,83 +821,79 @@
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
+                                                        "name": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
                                                         "value": "[parameters('AccessPermissionsForSshdConfig')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH protocol is configured;DesiredObjectValue",
-                                                        "value": "[parameters('Protocol')]"
-                                                    },
-                                                    {
-                                                        "name": "[OsConfigResource]Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
                                                         "value": "[parameters('IgnoreHosts')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH LogLevel is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH LogLevel is configured;DesiredObjectValue",
                                                         "value": "[parameters('LogLevel')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
                                                         "value": "[parameters('MaxAuthTries')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
+                                                        "name": "Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
                                                         "value": "[parameters('AllowUsers')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the denied users for SSH are configured;DesiredObjectValue",
+                                                        "name": "Ensure that the denied users for SSH are configured;DesiredObjectValue",
                                                         "value": "[parameters('DenyUsers')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
+                                                        "name": "Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
                                                         "value": "[parameters('AllowGroups')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the denied groups for SSH are configured;DesiredObjectValue",
+                                                        "name": "Ensure that the denied groups for SSH are configured;DesiredObjectValue",
                                                         "value": "[parameters('DenyGroups')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
                                                         "value": "[parameters('HostBasedAuthentication')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
                                                         "value": "[parameters('PermitRootLogin')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
                                                         "value": "[parameters('PermitEmptyPasswords')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
                                                         "value": "[parameters('ClientAliveCountMax')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
                                                         "value": "[parameters('ClientAliveInterval')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
                                                         "value": "[parameters('LoginGraceTime')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that only approved MAC algorithms are used;DesiredObjectValue",
+                                                        "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
                                                         "value": "[parameters('MACs')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH warning banner is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
                                                         "value": "[parameters('Banner')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
                                                         "value": "[parameters('PermitUserEnvironment')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
+                                                        "name": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
                                                         "value": "[parameters('Ciphers')]"
                                                     },
                                                     {
-                                                        "name": "[OsConfigResource]Ensure that the SSH port is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH port is configured;DesiredObjectValue",
                                                         "value": "[parameters('Port')]"
                                                     }
                                                 ]
