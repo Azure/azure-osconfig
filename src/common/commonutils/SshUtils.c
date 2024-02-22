@@ -1228,9 +1228,11 @@ static char* CleanDoubleBackslashes(char* value, void* log)
         return result; 
     }
 
+    memcpy(result, value, length);
+    
     for (i = 0; i < length; i++)
     {
-        OsConfigLogError(log, "### value[%d]: '%c'", (int)i, value[i]);
+        OsConfigLogError(log, "### result[%d]: '%c'", (int)i, result[i]);
     }
 
     FREE_MEMORY(result); //
