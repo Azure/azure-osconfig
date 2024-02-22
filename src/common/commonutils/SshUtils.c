@@ -1212,6 +1212,37 @@ void SshAuditCleanup(void* log)
     g_auditOnlySession = true;
 }
 
+static char* CleanDoubleBackslashes(char* value, void* log)
+{
+    const char* oldSequence = "\\n";
+    const char* newSequence = "\n";
+    char* cursor = value;
+    char* result = NULL;
+    size_t length = 0;
+    size_t cursorLength = 0;
+    size_t resultLength = 0;
+    size_t i = 0;
+
+    if ((NULL == value) || (strlen(old) >= (length = strlen(value))) || (NULL == (result = malloc(length + 1))
+    {
+        if (NULL == result)
+        {
+            OsConfigLogError(log, "Out of memory");
+        }
+        
+        return result; 
+    }
+
+    for (i = 0; i < length; i++)
+    {
+        OsConfigLogError(log, "### value[%d]: '%c'", i, value[i]);
+    }
+
+    FREE_MEMORY(result); //
+
+    return result;
+}
+
 int InitializeSshAuditCheck(const char* name, char* value, void* log)
 {
     bool isValidValue = ((NULL == value) || (0 == value[0])) ? false : true;
@@ -1313,6 +1344,7 @@ int InitializeSshAuditCheck(const char* name, char* value, void* log)
         if (NULL != strstr(value, "\\n"))
         {
             OsConfigLogError(log, "########## double backslahes!!! ####");
+            CleanDoubleBackslashes(value, log);
         }
 
         FREE_MEMORY(g_desiredSshWarningBannerIsEnabled);
@@ -1478,11 +1510,6 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     }
     else if (0 == strcmp(name, g_remediateEnsureSshWarningBannerIsEnabledObject))
     {
-        if (NULL != strstr(value, "\\n"))
-        {
-            OsConfigLogError(log, "########## double backslahes!!! ####");
-        }
-        
         if (0 == (status = InitializeSshAuditCheck(name, value, log)))
         {
             status = SetSshWarningBanner(atoi(g_desiredPermissionsOnEtcSshSshdConfig ? 
