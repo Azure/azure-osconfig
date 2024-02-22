@@ -17,7 +17,7 @@ jobs:
       connection_string: ${{ steps.terraform.outputs.connection_string }}
       resource_group_name: ${{ steps.terraform.outputs.resource_group_name }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: hashicorp/setup-terraform@v3
         with:
@@ -47,7 +47,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [ubuntu-18.04, ubuntu-20.04, debian-10, debian-11]
+        target:
+          [
+            { os: ubuntu, version: 18.04, package-type: DEB },
+            { os: ubuntu, version: 20.04, package-type: DEB },
+            { os: ubuntu, version: 22.04, package-type: DEB },
+            { os: debian, version: 10, package-type: DEB },
+            { os: debian, version: 11, package-type: DEB },
+          ]
         arch: [amd64]
     secrets:
       client_id: ${{ secrets.CLIENT_ID }}
@@ -56,8 +63,9 @@ jobs:
       iothub: ${{ needs.hub.outputs.name }}
       iothub_connection_string: ${{ needs.hub.outputs.connection_string }}
     with:
-      target: ${{ matrix.target }}
+      target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.arch }}
+      package-type: ${{ matrix.target.package-type }}
 
   cleanup:
     name: Delete IoT Hub

@@ -9,8 +9,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, debian-10, debian-11]
+        target:
+          [
+            { os: ubuntu, version: 18.04, package-type: DEB, excluded-tests: "SecurityBaseline|Sample" },
+            { os: ubuntu, version: 20.04, package-type: DEB, excluded-tests: "SecurityBaseline|Sample" },
+            { os: ubuntu, version: 22.04, package-type: DEB, excluded-tests: "SecurityBaseline|Sample" },
+            { os: debian, version: 10, package-type: DEB, excluded-tests: "SecurityBaseline|Sample" },
+            { os: debian, version: 11, package-type: DEB, excluded-tests: "SecurityBaseline|Sample" },
+            { os: mariner, version: 2, package-type: RPM, excluded-tests: "Pmc|SecurityBaseline|Sample" },
+          ]
         arch: [amd64]
     with:
-      target: ${{ matrix.target }}
+      target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.arch }}
+      package-type: ${{ matrix.target.package-type }}
+      excluded-tests: ${{ matrix.target.excluded-tests }}
