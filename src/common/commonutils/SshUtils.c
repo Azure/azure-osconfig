@@ -1218,7 +1218,7 @@ static char* CleanDoubleBackslashes(char* value, void* log)
     size_t length = 0;
     size_t i = 0;
 
-    if ((NULL == value) || (strlen(old) >= (length = strlen(value))) || (NULL == (result = malloc(length + 1))
+    if ((NULL == value) || (strlen(old) >= (length = strlen(value))) || (NULL == (result = malloc(length + 1))))
     {
         if (NULL == result)
         {
