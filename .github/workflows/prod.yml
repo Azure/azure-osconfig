@@ -13,7 +13,6 @@ jobs:
       matrix:
         target:
           [
-            { os: ubuntu, version: 18.04, dist: bionic, package-type: DEB },
             { os: ubuntu, version: 20.04, dist: focal, package-type: DEB },
             { os: ubuntu, version: 22.04, dist: jammy, package-type: DEB },
             { os: debian, version: 10, dist: buster, package-type: DEB },
@@ -38,11 +37,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: ubuntu-18.04-signed
-          path: packages
 
       - uses: actions/download-artifact@v4
         with:
