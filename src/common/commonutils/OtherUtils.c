@@ -147,7 +147,7 @@ bool FreeAndReturnTrue(void* value)
     return true;
 }
 
-char* CleanDoubleBackslashes(char* value)
+char* CleanDoubleBackslashes(const char* value)
 {
     char* result = NULL;
     size_t length = 0;

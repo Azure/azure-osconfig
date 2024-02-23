@@ -179,7 +179,7 @@ bool RestartDaemon(const char* daemonName, void* log);
 
 char* GetHttpProxyData(void* log);
 
-char* CleanDoubleBackslashes(char* value);
+char* CleanDoubleBackslashes(const char* value);
 
 typedef struct REPORTED_PROPERTY
 {
