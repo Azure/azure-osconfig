@@ -1666,26 +1666,26 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
     }
 }
 
-TEST_F(CommonUtilsTest, CleanDoubleBackslashes)
+TEST_F(CommonUtilsTest, RepairBrokenEolCharactersIfAny)
 {
     const char* expected = "\nThis is a test\n\nHere is another line\nAnd another\n\n\nEnd\n";
     char* value = NULL;
 
-    EXPECT_EQ(nullptr, CleanDoubleBackslashes(nullptr));
-    EXPECT_EQ(nullptr, CleanDoubleBackslashes(""));
+    EXPECT_EQ(nullptr, RepairBrokenEolCharactersIfAny(nullptr));
+    EXPECT_EQ(nullptr, RepairBrokenEolCharactersIfAny(""));
         
-    EXPECT_STREQ(expected, value = CleanDoubleBackslashes("\\nThis is a test\\n\\nHere is another line\\nAnd another\\n\\n\\nEnd\\n"));
+    EXPECT_STREQ(expected, value = RepairBrokenEolCharactersIfAny("\\nThis is a test\\n\\nHere is another line\\nAnd another\\n\\n\\nEnd\\n"));
     FREE_MEMORY(value);
 
-    EXPECT_STREQ(expected, value = CleanDoubleBackslashes("\nThis is a test\n\nHere is another line\nAnd another\n\n\nEnd\n"));
+    EXPECT_STREQ(expected, value = RepairBrokenEolCharactersIfAny("\nThis is a test\n\nHere is another line\nAnd another\n\n\nEnd\n"));
     FREE_MEMORY(value);
 
-    EXPECT_STREQ(expected, value = CleanDoubleBackslashes("\\nThis is a test\n\nHere is another line\nAnd another\\n\n\\nEnd\\n"));
+    EXPECT_STREQ(expected, value = RepairBrokenEolCharactersIfAny("\\nThis is a test\n\nHere is another line\nAnd another\\n\n\\nEnd\\n"));
     FREE_MEMORY(value);
 
-    EXPECT_STREQ(expected, value = CleanDoubleBackslashes("\nThis is a test\\n\\nHere is another line\\nAnd another\\n\n\\nEnd\n"));
+    EXPECT_STREQ(expected, value = RepairBrokenEolCharactersIfAny("\nThis is a test\\n\\nHere is another line\\nAnd another\\n\n\\nEnd\n"));
     FREE_MEMORY(value);
 
-    EXPECT_STREQ("\n\\Test\\123\n", value = CleanDoubleBackslashes("\n\\Test\\123\\n"));
+    EXPECT_STREQ("\n\\Test\\123\n", value = RepairBrokenEolCharactersIfAny("\n\\Test\\123\\n"));
     FREE_MEMORY(value);
 }

@@ -1312,7 +1312,7 @@ int InitializeSshAuditCheck(const char* name, char* value, void* log)
     {
         FREE_MEMORY(g_desiredSshWarningBannerIsEnabled);
         status = (NULL != (g_desiredSshWarningBannerIsEnabled = (isValidValue && (NULL != strstr(value, "\\n"))) ? 
-            CleanDoubleBackslashes(value) : DuplicateString(isValidValue ? value : g_sshDefaultSshBannerText))) ? 0 : ENOMEM;
+            RepairBrokenEolCharactersIfAny(value) : DuplicateString(isValidValue ? value : g_sshDefaultSshBannerText))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject)) || (0 == strcmp(name, g_initEnsureUsersCannotSetSshEnvironmentOptionsObject)))
     {
