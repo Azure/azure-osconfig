@@ -80,6 +80,7 @@ jobs:
         if: success() || failure()
         with:
           name: unit-test
+          overwrite: true
           path: |
             ${{ matrix.os }}-${{ matrix.arch }}.log
             ${{ matrix.os }}-${{ matrix.arch }}.xml
