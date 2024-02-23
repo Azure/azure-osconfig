@@ -1683,6 +1683,6 @@ TEST_F(CommonUtilsTest, CleanDoubleBackslashes)
     EXPECT_STREQ(expected, value = CleanDoubleBackslashes("\\nThis is a test\n\nHere is another line\nAnd another\\n\n\\nEnd\\n"));
     FREE_MEMORY(value);
 
-    EXPECT_STREQ("Test\\123\\n", value = CleanDoubleBackslashes("Test\\123\\\n"));
+    EXPECT_STREQ("Test\\123\n", value = CleanDoubleBackslashes("Test\\123\\n"));
     FREE_MEMORY(value);
 }
