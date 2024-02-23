@@ -1,6 +1,6 @@
 [
   {
-    "RunCommand": "[ -f /etc/osconfig/osconfig_commandrunner.cache ] && cp /etc/osconfig/osconfig_commandrunner.cache /tmp/commandrunner-cache.cache.bak && rm -f /etc/osconfig/osconfig_commandrunner.cache"
+    "RunCommand": "cat /dev/null > /etc/osconfig/osconfig_commandrunner.cache && cp /etc/osconfig/osconfig_commandrunner.cache /tmp/commandrunner-cache.cache.bak && rm -f /etc/osconfig/osconfig_commandrunner.cache"
   },
   {
     "Action": "LoadModule",
@@ -159,6 +159,6 @@
     "Action": "UnloadModule"
   },
   {
-    "RunCommand": "[ -f /tmp/commandrunner-cache.cache.bak ] && cp /tmp/commandrunner-cache.cache.bak /etc/osconfig/osconfig_commandrunner.cache && rm -f /tmp/commandrunner-cache.cache.bak"
+    "RunCommand": "cat /dev/null > /tmp/commandrunner-cache.cache.bak && cp /tmp/commandrunner-cache.cache.bak /etc/osconfig/osconfig_commandrunner.cache && rm -f /tmp/commandrunner-cache.cache.bak"
   }
 ]

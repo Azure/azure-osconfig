@@ -44,7 +44,7 @@ jobs:
   package:
     runs-on: ${{ inputs.release == true && fromJSON('["self-hosted", "1ES.Pool=release-pool", "1ES.ImageOverride=ubuntu-22.04"]') || 'ubuntu-latest' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
           clean: true
@@ -103,7 +103,7 @@ jobs:
           arch: ${{ matrix.variant.arch }}
           package-type: ${{ inputs.package-type }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ inputs.test }}
         with:
           name: ${{ inputs.artifact }}
@@ -112,7 +112,7 @@ jobs:
             ./build/modules/test/moduletest
             ./build/modules/bin/*.so
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ !inputs.test }}
         with:
           name: ${{ inputs.artifact }}

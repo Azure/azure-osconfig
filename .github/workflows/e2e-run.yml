@@ -9,6 +9,9 @@ on:
       arch:
         required: true
         type: string
+      package-type:
+        required: true
+        type: string
     secrets:
       client_id:
         description: 'Azure Client ID'
@@ -33,15 +36,16 @@ jobs:
       target: ${{ inputs.target }}
       arch: ${{ inputs.arch }}
       artifact: ${{ inputs.target }}
+      package-type: ${{ inputs.package-type }}
       test: true
 
   test:
     runs-on: [self-hosted, 1ES.Pool=e2e-pool, '1ES.ImageOverride=${{ inputs.target }}']
     needs: package
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.target }}
           path: package
@@ -125,14 +129,14 @@ jobs:
             ${{ runner.temp }}/osconfig_platform.log
 
       - name: Upload logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: ${{ inputs.target }}-logs
           path: ${{ runner.temp }}/osconfig*
 
       - name: Upload report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: e2e-report

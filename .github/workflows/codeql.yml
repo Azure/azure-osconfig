@@ -24,13 +24,13 @@ jobs:
         language: [cpp, csharp]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: matrix.language == 'cpp'
         with:
           submodules: recursive
           clean: true
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: matrix.language == 'csharp'
 
       - name: Initialize CodeQL

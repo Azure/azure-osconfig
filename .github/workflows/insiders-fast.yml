@@ -11,7 +11,7 @@ jobs:
     outputs:
       new: ${{ steps.commits.outputs.new }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Check last commit
         id: commits
@@ -32,7 +32,6 @@ jobs:
       matrix:
         target:
           [
-            { os: ubuntu, version: 18.04, dist: bionic, package-type: DEB, repo: microsoft-ubuntu-bionic-prod-apt },
             { os: ubuntu, version: 20.04, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt },
             { os: ubuntu, version: 22.04, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt },
             { os: debian, version: 10, dist: buster, package-type: DEB, repo: microsoft-debian-buster-prod-apt },
