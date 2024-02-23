@@ -161,9 +161,9 @@ char* CleanDoubleBackslashes(const char* value)
 
     memset(result, 0, length + 1);
 
-    for (i = 0, j = 0; (i < (length - 1)) && (j < length); i++, j++)
+    for (i = 0, j = 0; (i < length) && (j < length); i++, j++)
     {
-        if ((value[i] == '\\') && (value[i + 1] == 'n'))
+        if ((i < (length - 1)) && (value[i] == '\\') && (value[i + 1] == 'n'))
         {
             result[j] = '\n';
             i += 1;
