@@ -1665,3 +1665,24 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         EXPECT_TRUE(Cleanup(m_path));
     }
 }
+
+TEST_F(CommonUtilsTest, CleanDoubleBackslashes)
+{
+    const char* expected = "\nThis is a test\n\nHere is another line\nAnd another\n\n\nEnd\n";
+    char* value = NULL;
+
+    EXPECT_EQ(nullptr, CleanDoubleBackslashes(nullptr));
+    EXPECT_EQ(nullptr, CleanDoubleBackslashes(""));
+        
+    EXPECT_STREQ(expected, value = CleanDoubleBackslashes("\\nThis is a test\\n\\nHere is another line\\nAnd another\\n\\n\\nEnd\\n"));
+    FREE_MEMORY(value);
+
+    EXPECT_STREQ(expected, value = CleanDoubleBackslashes("\nThis is a test\n\nHere is another line\nAnd another\n\n\nEnd\n"));
+    FREE_MEMORY(value);
+
+    EXPECT_STREQ(expected, value = CleanDoubleBackslashes("\\nThis is a test\n\nHere is another line\nAnd another\\n\n\\nEnd\\n"));
+    FREE_MEMORY(value);
+
+    EXPECT_STREQ("Test\\123\\n", value = CleanDoubleBackslashes("Test\\123\\\n"));
+    FREE_MEMORY(value);
+}

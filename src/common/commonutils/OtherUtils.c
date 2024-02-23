@@ -146,3 +146,33 @@ bool FreeAndReturnTrue(void* value)
     FREE_MEMORY(value);
     return true;
 }
+
+char* CleanDoubleBackslashes(char* value)
+{
+    char* result = NULL;
+    size_t length = 0;
+    size_t i = 0, j = 0;
+
+    if ((NULL == value) || (2 >= (length = strlen(value))) || (NULL == (result = malloc(length + 1))))
+    {
+        FREE_MEMORY(result);
+        return result;
+    }
+
+    memset(result, 0, length + 1);
+
+    for (i = 0, j = 0; (i < (length - 1)) && (j < length); i++, j++)
+    {
+        if ((value[i] == '\\') && (value[i + 1] == 'n'))
+        {
+            result[j] = '\n';
+            i += 1;
+        }
+        else
+        {
+            result[j] = value[i];
+        }
+    }
+
+    return result;
+}

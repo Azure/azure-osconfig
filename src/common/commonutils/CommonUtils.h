@@ -179,6 +179,8 @@ bool RestartDaemon(const char* daemonName, void* log);
 
 char* GetHttpProxyData(void* log);
 
+char* CleanDoubleBackslashes(char* value);
+
 typedef struct REPORTED_PROPERTY
 {
     char componentName[MAX_COMPONENT_NAME];
