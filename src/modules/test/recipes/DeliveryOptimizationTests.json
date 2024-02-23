@@ -1,6 +1,6 @@
 [
   {
-    "RunCommand": "[ -f /etc/deliveryoptimization-agent/admin-config.json ] && cp /etc/deliveryoptimization-agent/admin-config.json /tmp/admin-config.json.bak"
+    "RunCommand": "mkdir -p /etc/deliveryoptimization-agent/ && cat /dev/null > /etc/deliveryoptimization-agent/admin-config.json && cp /etc/deliveryoptimization-agent/admin-config.json /tmp/admin-config.json.bak"
   },
   {
     "Action": "LoadModule",
@@ -81,6 +81,6 @@
     "Module": "deliveryoptimization.so"
   },
   {
-    "RunCommand": "[ -f /tmp/admin-config.json.bak ] && cp /tmp/admin-config.json.bak /etc/deliveryoptimization-agent/admin-config.json"
+    "RunCommand": "cat /dev/null > /tmp/admin-config.json.bak && cp /tmp/admin-config.json.bak /etc/deliveryoptimization-agent/admin-config.json"
   }
 ]

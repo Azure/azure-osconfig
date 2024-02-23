@@ -24,9 +24,9 @@ jobs:
       PMC_CLI_MSAL_CERT_PATH: auth.pem
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.artifact }}
           path: packages

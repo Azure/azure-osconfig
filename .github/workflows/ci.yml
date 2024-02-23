@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, debian-10, debian-11, mariner-2]
+        os: [ubuntu-20.04, ubuntu-22.04, debian-10, debian-11, mariner-2]
         arch: [arm, arm64, amd64]
         exclude:
           - os: ubuntu-22.04
@@ -27,13 +27,13 @@ jobs:
             arch: arm64
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
           clean: true
 
       - name: Docker login
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -76,10 +76,11 @@ jobs:
           path: ./build/gtest-output
           output: ${{ matrix.os }}-${{ matrix.arch }}.xml
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: unit-test
+          overwrite: true
           path: |
             ${{ matrix.os }}-${{ matrix.arch }}.log
             ${{ matrix.os }}-${{ matrix.arch }}.xml

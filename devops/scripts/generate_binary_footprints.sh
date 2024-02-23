@@ -13,15 +13,13 @@ SCRIPT=$(readlink -f $0)
 SCRIPTPATH=`dirname $SCRIPT`
 BaseDir=`realpath $SCRIPTPATH/../binary-footprint-baseline`
 
-distros=("ubuntu-18.04", "ubuntu-20.04", "debian-9")
-distroPathUbuntu1804="https://packages.microsoft.com/ubuntu/18.04/prod/pool/main/o/osconfig/"
+distros=("ubuntu-20.04", "debian-9")
 distroPathUbuntu2004="https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/o/osconfig/"
 distroPathDebian9="https://packages.microsoft.com/debian/9/multiarch/prod/pool/main/o/osconfig/"
 JSON="[]"
 for distro in ${distros[@]}; do distro=$(echo $distro | tr -d ',');
 
   case $distro in
-    ("ubuntu-18.04") distroPath=$distroPathUbuntu1804;;
     ("ubuntu-20.04") distroPath=$distroPathUbuntu2004;;
     ("debian-9")     distroPath=$distroPathDebian9;;
   esac
