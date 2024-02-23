@@ -179,6 +179,8 @@ bool RestartDaemon(const char* daemonName, void* log);
 
 char* GetHttpProxyData(void* log);
 
+char* RepairBrokenEolCharactersIfAny(const char* value);
+
 typedef struct REPORTED_PROPERTY
 {
     char componentName[MAX_COMPONENT_NAME];
