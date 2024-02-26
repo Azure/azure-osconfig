@@ -1,5 +1,325 @@
 instance of OsConfigResource as $OsConfigResource0ref
 {
+    ResourceID = "Ensure that permissions on /etc/ssh/sshd_config are configured";
+    PayloadKey = "EnsurePermissionsOnEtcSshSshdConfig";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsurePermissionsOnEtcSshSshdConfig";
+    ReportedObjectName = "auditEnsurePermissionsOnEtcSshSshdConfig";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsurePermissionsOnEtcSshSshdConfig";
+    DesiredObjectValue = "600";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource1ref
+{
+    ResourceID = "Ensure that the SSH protocol is configured";
+    PayloadKey = "EnsureSshBestPracticeProtocol";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshBestPracticeProtocol";
+    ReportedObjectName = "auditEnsureSshBestPracticeProtocol";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshBestPracticeProtocol";
+    DesiredObjectValue = "2";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource2ref
+{
+    ResourceID = "Ensure that the SSH IgnoreRhosts is configured";
+    PayloadKey = "EnsureSshBestPracticeIgnoreRhosts";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshBestPracticeIgnoreRhosts";
+    ReportedObjectName = "auditEnsureSshBestPracticeIgnoreRhosts";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshBestPracticeIgnoreRhosts";
+    DesiredObjectValue = "yes";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource3ref
+{
+    ResourceID = "Ensure that the SSH LogLevel is configured";
+    PayloadKey = "EnsureSshLogLevelIsSet";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshLogLevelIsSet";
+    ReportedObjectName = "auditEnsureSshLogLevelIsSet";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshLogLevelIsSet";
+    DesiredObjectValue = "INFO";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource4ref
+{
+    ResourceID = "Ensure that the SSH MaxAuthTries is configured";
+    PayloadKey = "EnsureSshMaxAuthTriesIsSet";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshMaxAuthTriesIsSet";
+    ReportedObjectName = "auditEnsureSshMaxAuthTriesIsSet";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshMaxAuthTriesIsSet";
+    DesiredObjectValue = "6";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource5ref
+{
+    ResourceID = "Ensure that the allowed users for SSH access are configured";
+    PayloadKey = "EnsureAllowUsersIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureAllowUsersIsConfigured";
+    ReportedObjectName = "auditEnsureAllowUsersIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureAllowUsersIsConfigured";
+    DesiredObjectValue = "*@*";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource6ref
+{
+    ResourceID = "Ensure that the denied users for SSH are configured";
+    PayloadKey = "EnsureDenyUsersIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureDenyUsersIsConfigured";
+    ReportedObjectName = "auditEnsureDenyUsersIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureDenyUsersIsConfigured";
+    DesiredObjectValue = "root";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource7ref
+{
+    ResourceID = "Ensure that the allowed groups for SSH are configured";
+    PayloadKey = "EnsureAllowGroupsIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureAllowGroupsIsConfigured";
+    ReportedObjectName = "auditEnsureAllowGroupsIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureAllowGroupsIsConfigured";
+    DesiredObjectValue = "*";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource8ref
+{
+    ResourceID = "Ensure that the denied groups for SSH are configured";
+    PayloadKey = "EnsureDenyGroupsConfigured";
+    ComponentName = "SecurityBaseline";
+    ExpectedObjectValue = "PASS";
+    InitObjectName = "initEnsureDenyGroupsConfigured";
+    ReportedObjectName = "auditEnsureDenyGroupsConfigured";
+    DesiredObjectName = "remediateEnsureDenyGroupsConfigured";
+    DesiredObjectValue = "root";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource9ref
+{
+    ResourceID = "Ensure that the SSH HostBasedAuthentication is configured";
+    PayloadKey = "EnsureSshHostbasedAuthenticationIsDisabled";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshHostbasedAuthenticationIsDisabled";
+    ReportedObjectName = "auditEnsureSshHostbasedAuthenticationIsDisabled";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshHostbasedAuthenticationIsDisabled";
+    DesiredObjectValue = "no";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource10ref
+{
+    ResourceID = "Ensure that the SSH PermitRootLogin is configured";
+    PayloadKey = "EnsureSshPermitRootLoginIsDisabled";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshPermitRootLoginIsDisabled";
+    ReportedObjectName = "auditEnsureSshPermitRootLoginIsDisabled";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshPermitRootLoginIsDisabled";
+    DesiredObjectValue = "no";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource11ref
+{
+    ResourceID = "Ensure that the SSH PermitEmptyPasswords is configured";
+    PayloadKey = "EnsureSshPermitEmptyPasswordsIsDisabled";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshPermitEmptyPasswordsIsDisabled";
+    ReportedObjectName = "auditEnsureSshPermitEmptyPasswordsIsDisabled";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshPermitEmptyPasswordsIsDisabled";
+    DesiredObjectValue = "no";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource12ref
+{
+    ResourceID = "Ensure that the SSH ClientAliveCountMax is configured";
+    PayloadKey = "EnsureSshClientIntervalCountMaxIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshClientIntervalCountMaxIsConfigured";
+    ReportedObjectName = "auditEnsureSshClientIntervalCountMaxIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshClientIntervalCountMaxIsConfigured";
+    DesiredObjectValue = "0";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource13ref
+{
+    ResourceID = "Ensure that the SSH ClientAliveInterval is configured";
+    PayloadKey = "EnsureSshClientAliveIntervalIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshClientAliveIntervalIsConfigured";
+    ReportedObjectName = "auditEnsureSshClientAliveIntervalIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshClientAliveIntervalIsConfigured";
+    DesiredObjectValue = "3600";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource14ref
+{
+    ResourceID = "Ensure that the SSH LoginGraceTime is configured";
+    PayloadKey = "EnsureSshLoginGraceTimeIsSet";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshLoginGraceTimeIsSet";
+    ReportedObjectName = "auditEnsureSshLoginGraceTimeIsSet";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshLoginGraceTimeIsSet";
+    DesiredObjectValue = "60";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource15ref
+{
+    ResourceID = "Ensure that only approved MAC algorithms are used";
+    PayloadKey = "EnsureOnlyApprovedMacAlgorithmsAreUsed";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureOnlyApprovedMacAlgorithmsAreUsed";
+    ReportedObjectName = "auditEnsureOnlyApprovedMacAlgorithmsAreUsed";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureOnlyApprovedMacAlgorithmsAreUsed";
+    DesiredObjectValue = "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource16ref
+{
+    ResourceID = "Ensure that the SSH warning banner is configured";
+    PayloadKey = "EnsureSshWarningBannerIsEnabled";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshWarningBannerIsEnabled";
+    ReportedObjectName = "auditEnsureSshWarningBannerIsEnabled";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshWarningBannerIsEnabled";
+    DesiredObjectValue = "#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource17ref
+{
+    ResourceID = "Ensure that the SSH PermitUserEnvironment is configured";
+    PayloadKey = "EnsureUsersCannotSetSshEnvironmentOptions";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureUsersCannotSetSshEnvironmentOptions";
+    ReportedObjectName = "auditEnsureUsersCannotSetSshEnvironmentOptions";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureUsersCannotSetSshEnvironmentOptions";
+    DesiredObjectValue = "no";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource18ref
+{
+    ResourceID = "Ensure that appropriate ciphers are used for SSH";
+    PayloadKey = "EnsureAppropriateCiphersForSsh";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureAppropriateCiphersForSsh";
+    ReportedObjectName = "auditEnsureAppropriateCiphersForSsh";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureAppropriateCiphersForSsh";
+    DesiredObjectValue = "aes128-ctr,aes192-ctr,aes256-ctr";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource19ref
+{
+    ResourceID = "Ensure that the SSH port is configured";
+    PayloadKey = "EnsureSshPortIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshPortIsConfigured";
+    ReportedObjectName = "auditEnsureSshPortIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshPortIsConfigured";
+    DesiredObjectValue = "22";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource20ref
+{
     ResourceID = "Ensure nodev option set on /home partition";
     PayloadKey = "EnsureNodevOptionOnHomePartition";
     ComponentName = "SecurityBaseline";
@@ -8,11 +328,11 @@ instance of OsConfigResource as $OsConfigResource0ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource1ref
+instance of OsConfigResource as $OsConfigResource21ref
 {
     ResourceID = "Ensure nodev option set on /tmp partition";
     PayloadKey = "EnsureNodevOptionOnTmpPartition";
@@ -22,11 +342,11 @@ instance of OsConfigResource as $OsConfigResource1ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource2ref
+instance of OsConfigResource as $OsConfigResource22ref
 {
     ResourceID = "Ensure nodev option set on /var/tmp partition";
     PayloadKey = "EnsureNodevOptionOnVarTmpPartition";
@@ -36,11 +356,11 @@ instance of OsConfigResource as $OsConfigResource2ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource3ref
+instance of OsConfigResource as $OsConfigResource23ref
 {
     ResourceID = "Ensure nosuid option set on /tmp partition";
     PayloadKey = "EnsureNosuidOptionOnTmpPartition";
@@ -50,11 +370,11 @@ instance of OsConfigResource as $OsConfigResource3ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource4ref
+instance of OsConfigResource as $OsConfigResource24ref
 {
     ResourceID = "Ensure nosuid option set on /var/tmp partition";
     PayloadKey = "EnsureNosuidOptionOnVarTmpPartition";
@@ -64,11 +384,11 @@ instance of OsConfigResource as $OsConfigResource4ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource5ref
+instance of OsConfigResource as $OsConfigResource25ref
 {
     ResourceID = "Ensure noexec option set on /var/tmp partition";
     PayloadKey = "EnsureNoexecOptionOnVarTmpPartition";
@@ -78,11 +398,11 @@ instance of OsConfigResource as $OsConfigResource5ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource6ref
+instance of OsConfigResource as $OsConfigResource26ref
 {
     ResourceID = "Ensure noexec option set on /dev/shm partition";
     PayloadKey = "EnsureNoexecOptionOnDevShmPartition";
@@ -92,11 +412,11 @@ instance of OsConfigResource as $OsConfigResource6ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource7ref
+instance of OsConfigResource as $OsConfigResource27ref
 {
     ResourceID = "Ensure automounting is disabled";
     PayloadKey = "EnsureAutomountingDisabled";
@@ -106,11 +426,11 @@ instance of OsConfigResource as $OsConfigResource7ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource8ref
+instance of OsConfigResource as $OsConfigResource28ref
 {
     ResourceID = "Ensure mounting of USB storage devices is disabled";
     PayloadKey = "EnsureMountingOfUsbStorageDevicesIsDisabled";
@@ -120,11 +440,11 @@ instance of OsConfigResource as $OsConfigResource8ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource9ref
+instance of OsConfigResource as $OsConfigResource29ref
 {
     ResourceID = "Ensure core dumps are restricted";
     PayloadKey = "EnsureCoreDumpsAreRestricted";
@@ -134,11 +454,11 @@ instance of OsConfigResource as $OsConfigResource9ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource10ref
+instance of OsConfigResource as $OsConfigResource30ref
 {
     ResourceID = "Ensure prelink is disabled";
     PayloadKey = "EnsurePrelinkIsDisabled";
@@ -148,11 +468,11 @@ instance of OsConfigResource as $OsConfigResource10ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource11ref
+instance of OsConfigResource as $OsConfigResource31ref
 {
     ResourceID = "Ensure permissions on /etc/motd are configured";
     PayloadKey = "EnsurePermissionsOnEtcMotd";
@@ -162,11 +482,11 @@ instance of OsConfigResource as $OsConfigResource11ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource12ref
+instance of OsConfigResource as $OsConfigResource32ref
 {
     ResourceID = "Ensure permissions on /etc/issue are configured";
     PayloadKey = "EnsurePermissionsOnEtcIssue";
@@ -176,11 +496,11 @@ instance of OsConfigResource as $OsConfigResource12ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource13ref
+instance of OsConfigResource as $OsConfigResource33ref
 {
     ResourceID = "Ensure permissions on /etc/issue.net are configured";
     PayloadKey = "EnsurePermissionsOnEtcIssueNet";
@@ -190,11 +510,11 @@ instance of OsConfigResource as $OsConfigResource13ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource14ref
+instance of OsConfigResource as $OsConfigResource34ref
 {
     ResourceID = "Ensure the nodev option is enabled for all removable media";
     PayloadKey = "EnsureNodevOptionEnabledForAllRemovableMedia";
@@ -204,11 +524,11 @@ instance of OsConfigResource as $OsConfigResource14ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource15ref
+instance of OsConfigResource as $OsConfigResource35ref
 {
     ResourceID = "Ensure the noexec option is enabled for all removable media";
     PayloadKey = "EnsureNoexecOptionEnabledForAllRemovableMedia";
@@ -218,11 +538,11 @@ instance of OsConfigResource as $OsConfigResource15ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource16ref
+instance of OsConfigResource as $OsConfigResource36ref
 {
     ResourceID = "Ensure the nosuid option is enabled for all removable media";
     PayloadKey = "EnsureNosuidOptionEnabledForAllRemovableMedia";
@@ -232,11 +552,11 @@ instance of OsConfigResource as $OsConfigResource16ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource17ref
+instance of OsConfigResource as $OsConfigResource37ref
 {
     ResourceID = "Ensure talk client is not installed";
     PayloadKey = "EnsureTalkClientIsNotInstalled";
@@ -246,11 +566,11 @@ instance of OsConfigResource as $OsConfigResource17ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource18ref
+instance of OsConfigResource as $OsConfigResource38ref
 {
     ResourceID = "Ensure permissions on /etc/hosts.allow are configured";
     PayloadKey = "EnsurePermissionsOnEtcHostsAllow";
@@ -260,11 +580,11 @@ instance of OsConfigResource as $OsConfigResource18ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource19ref
+instance of OsConfigResource as $OsConfigResource39ref
 {
     ResourceID = "Ensure permissions on /etc/hosts.deny are configured";
     PayloadKey = "EnsurePermissionsOnEtcHostsDeny";
@@ -274,11 +594,11 @@ instance of OsConfigResource as $OsConfigResource19ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource20ref
+instance of OsConfigResource as $OsConfigResource40ref
 {
     ResourceID = "Ensure default deny firewall policy is set";
     PayloadKey = "EnsureDefaultDenyFirewallPolicyIsSet";
@@ -288,11 +608,11 @@ instance of OsConfigResource as $OsConfigResource20ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource21ref
+instance of OsConfigResource as $OsConfigResource41ref
 {
     ResourceID = "Ensure the nodev/nosuid option is enabled for all NFS mounts";
     PayloadKey = "EnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
@@ -302,25 +622,11 @@ instance of OsConfigResource as $OsConfigResource21ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource22ref
-{
-    ResourceID = "Ensure permissions on /etc/ssh/sshd_config are configured";
-    PayloadKey = "EnsurePermissionsOnEtcSshSshdConfig";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsurePermissionsOnEtcSshSshdConfig";
-    DesiredObjectName = "remediateEnsurePermissionsOnEtcSshSshdConfig";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource23ref
+instance of OsConfigResource as $OsConfigResource42ref
 {
     ResourceID = "Ensure password creation requirements are configured";
     PayloadKey = "EnsurePasswordCreationRequirements";
@@ -330,11 +636,11 @@ instance of OsConfigResource as $OsConfigResource23ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource24ref
+instance of OsConfigResource as $OsConfigResource43ref
 {
     ResourceID = "Ensure lockout for failed password attempts is configured";
     PayloadKey = "EnsureLockoutForFailedPasswordAttempts";
@@ -344,11 +650,11 @@ instance of OsConfigResource as $OsConfigResource24ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource25ref
+instance of OsConfigResource as $OsConfigResource44ref
 {
     ResourceID = "Ensure the cramfs file system is disabled";
     PayloadKey = "EnsureDisabledInstallationOfCramfsFileSystem";
@@ -358,11 +664,11 @@ instance of OsConfigResource as $OsConfigResource25ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource26ref
+instance of OsConfigResource as $OsConfigResource45ref
 {
     ResourceID = "Ensure the freevxfs file system is disabled";
     PayloadKey = "EnsureDisabledInstallationOfFreevxfsFileSystem";
@@ -372,11 +678,11 @@ instance of OsConfigResource as $OsConfigResource26ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource27ref
+instance of OsConfigResource as $OsConfigResource46ref
 {
     ResourceID = "Ensure all users' home directories exist";
     PayloadKey = "EnsureAllUsersHomeDirectoriesExist";
@@ -386,11 +692,11 @@ instance of OsConfigResource as $OsConfigResource27ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource28ref
+instance of OsConfigResource as $OsConfigResource47ref
 {
     ResourceID = "Ensure users own their home directories";
     PayloadKey = "EnsureUsersOwnTheirHomeDirectories";
@@ -400,11 +706,11 @@ instance of OsConfigResource as $OsConfigResource28ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource29ref
+instance of OsConfigResource as $OsConfigResource48ref
 {
     ResourceID = "Ensure users' dot files aren't group or world writable";
     PayloadKey = "EnsureUsersDotFilesArentGroupOrWorldWritable";
@@ -414,11 +720,11 @@ instance of OsConfigResource as $OsConfigResource29ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource30ref
+instance of OsConfigResource as $OsConfigResource49ref
 {
     ResourceID = "Ensure no users have .forward files";
     PayloadKey = "EnsureNoUsersHaveDotForwardFiles";
@@ -428,11 +734,11 @@ instance of OsConfigResource as $OsConfigResource30ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource31ref
+instance of OsConfigResource as $OsConfigResource50ref
 {
     ResourceID = "Ensure no users have .netrc files";
     PayloadKey = "EnsureNoUsersHaveDotNetrcFiles";
@@ -442,11 +748,11 @@ instance of OsConfigResource as $OsConfigResource31ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource32ref
+instance of OsConfigResource as $OsConfigResource51ref
 {
     ResourceID = "Ensure no users have .rhosts files";
     PayloadKey = "EnsureNoUsersHaveDotRhostsFiles";
@@ -456,11 +762,11 @@ instance of OsConfigResource as $OsConfigResource32ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource33ref
+instance of OsConfigResource as $OsConfigResource52ref
 {
     ResourceID = "Ensure all groups in /etc/passwd exist in /etc/group";
     PayloadKey = "EnsureAllEtcPasswdGroupsExistInEtcGroup";
@@ -470,11 +776,11 @@ instance of OsConfigResource as $OsConfigResource33ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource34ref
+instance of OsConfigResource as $OsConfigResource53ref
 {
     ResourceID = "Ensure no duplicate UIDs exist";
     PayloadKey = "EnsureNoDuplicateUidsExist";
@@ -484,11 +790,11 @@ instance of OsConfigResource as $OsConfigResource34ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource35ref
+instance of OsConfigResource as $OsConfigResource54ref
 {
     ResourceID = "Ensure no duplicate GIDs exist";
     PayloadKey = "EnsureNoDuplicateGidsExist";
@@ -498,11 +804,11 @@ instance of OsConfigResource as $OsConfigResource35ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource36ref
+instance of OsConfigResource as $OsConfigResource55ref
 {
     ResourceID = "Ensure no duplicate user names exist";
     PayloadKey = "EnsureNoDuplicateUserNamesExist";
@@ -512,11 +818,11 @@ instance of OsConfigResource as $OsConfigResource36ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource37ref
+instance of OsConfigResource as $OsConfigResource56ref
 {
     ResourceID = "Ensure no duplicate groups exist";
     PayloadKey = "EnsureNoDuplicateGroupsExist";
@@ -526,11 +832,11 @@ instance of OsConfigResource as $OsConfigResource37ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource38ref
+instance of OsConfigResource as $OsConfigResource57ref
 {
     ResourceID = "Ensure shadow group is empty";
     PayloadKey = "EnsureShadowGroupIsEmpty";
@@ -540,11 +846,11 @@ instance of OsConfigResource as $OsConfigResource38ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource39ref
+instance of OsConfigResource as $OsConfigResource58ref
 {
     ResourceID = "Ensure the hfs file system is disabled";
     PayloadKey = "EnsureDisabledInstallationOfHfsFileSystem";
@@ -554,11 +860,11 @@ instance of OsConfigResource as $OsConfigResource39ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource40ref
+instance of OsConfigResource as $OsConfigResource59ref
 {
     ResourceID = "Ensure the hfsplus file systems is disabled";
     PayloadKey = "EnsureDisabledInstallationOfHfsplusFileSystem";
@@ -568,11 +874,11 @@ instance of OsConfigResource as $OsConfigResource40ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource41ref
+instance of OsConfigResource as $OsConfigResource60ref
 {
     ResourceID = "Ensure the jffs2 file systems is disabled";
     PayloadKey = "EnsureDisabledInstallationOfJffs2FileSystem";
@@ -582,11 +888,11 @@ instance of OsConfigResource as $OsConfigResource41ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource42ref
+instance of OsConfigResource as $OsConfigResource61ref
 {
     ResourceID = "Ensure the kernel is compiled from approved sources";
     PayloadKey = "EnsureKernelCompiledFromApprovedSources";
@@ -596,11 +902,11 @@ instance of OsConfigResource as $OsConfigResource42ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource43ref
+instance of OsConfigResource as $OsConfigResource62ref
 {
     ResourceID = "Ensure file permissions on /etc/shadow are configured";
     PayloadKey = "EnsurePermissionsOnEtcShadow";
@@ -610,11 +916,11 @@ instance of OsConfigResource as $OsConfigResource43ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource44ref
+instance of OsConfigResource as $OsConfigResource63ref
 {
     ResourceID = "Ensure file permissions on /etc/shadow- are configured";
     PayloadKey = "EnsurePermissionsOnEtcShadowDash";
@@ -624,11 +930,11 @@ instance of OsConfigResource as $OsConfigResource44ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource45ref
+instance of OsConfigResource as $OsConfigResource64ref
 {
     ResourceID = "Ensure file permissions on /etc/gshadow are configured";
     PayloadKey = "EnsurePermissionsOnEtcGShadow";
@@ -638,11 +944,11 @@ instance of OsConfigResource as $OsConfigResource45ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource46ref
+instance of OsConfigResource as $OsConfigResource65ref
 {
     ResourceID = "Ensure file permissions on /etc/gshadow- are configured";
     PayloadKey = "EnsurePermissionsOnEtcGShadowDash";
@@ -652,11 +958,11 @@ instance of OsConfigResource as $OsConfigResource46ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource47ref
+instance of OsConfigResource as $OsConfigResource66ref
 {
     ResourceID = "Ensure file permissions on /etc/passwd are configured";
     PayloadKey = "EnsurePermissionsOnEtcPasswd";
@@ -666,11 +972,11 @@ instance of OsConfigResource as $OsConfigResource47ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource48ref
+instance of OsConfigResource as $OsConfigResource67ref
 {
     ResourceID = "Ensure file permissions on /etc/group are configured";
     PayloadKey = "EnsurePermissionsOnEtcGroup";
@@ -680,11 +986,11 @@ instance of OsConfigResource as $OsConfigResource48ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource49ref
+instance of OsConfigResource as $OsConfigResource68ref
 {
     ResourceID = "Ensure file permissions on /etc/passwd- are configured";
     PayloadKey = "EnsurePermissionsOnEtcPasswdDash";
@@ -694,11 +1000,11 @@ instance of OsConfigResource as $OsConfigResource49ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource50ref
+instance of OsConfigResource as $OsConfigResource69ref
 {
     ResourceID = "Ensure file permissions on /etc/group- are configured";
     PayloadKey = "EnsurePermissionsOnEtcGroupDash";
@@ -708,11 +1014,11 @@ instance of OsConfigResource as $OsConfigResource50ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource51ref
+instance of OsConfigResource as $OsConfigResource70ref
 {
     ResourceID = "Ensure that access to the root account via su is restricted to the 'root' group";
     PayloadKey = "EnsureSuRestrictedToRootGroup";
@@ -722,11 +1028,11 @@ instance of OsConfigResource as $OsConfigResource51ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource52ref
+instance of OsConfigResource as $OsConfigResource71ref
 {
     ResourceID = "Ensure the 'root' group exists, and contain all members who can su to root";
     PayloadKey = "EnsureRootGroupExists";
@@ -736,11 +1042,11 @@ instance of OsConfigResource as $OsConfigResource52ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource53ref
+instance of OsConfigResource as $OsConfigResource72ref
 {
     ResourceID = "Ensure that all user accounts that can login have a password set";
     PayloadKey = "EnsureAllAccountsHavePasswords";
@@ -750,11 +1056,11 @@ instance of OsConfigResource as $OsConfigResource53ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource54ref
+instance of OsConfigResource as $OsConfigResource73ref
 {
     ResourceID = "Ensure that all user accounts other than root have unique UIDs greater than zero (0)";
     PayloadKey = "EnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
@@ -764,11 +1070,11 @@ instance of OsConfigResource as $OsConfigResource54ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource55ref
+instance of OsConfigResource as $OsConfigResource74ref
 {
     ResourceID = "Ensure that randomized placement of virtual memory regions is enabled";
     PayloadKey = "EnsureVirtualMemoryRandomizationIsEnabled";
@@ -778,11 +1084,11 @@ instance of OsConfigResource as $OsConfigResource55ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource56ref
+instance of OsConfigResource as $OsConfigResource75ref
 {
     ResourceID = "Ensure that kernel support for the XD/NX processor feature is enabled";
     PayloadKey = "EnsureKernelSupportForCpuNx";
@@ -792,11 +1098,11 @@ instance of OsConfigResource as $OsConfigResource56ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource57ref
+instance of OsConfigResource as $OsConfigResource76ref
 {
     ResourceID = "Ensure '.' does not appear in root's $PATH";
     PayloadKey = "EnsureDotDoesNotAppearInRootsPath";
@@ -806,11 +1112,11 @@ instance of OsConfigResource as $OsConfigResource57ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource58ref
+instance of OsConfigResource as $OsConfigResource77ref
 {
     ResourceID = "Ensure access to user home directories is restricted";
     PayloadKey = "EnsureRestrictedUserHomeDirectories";
@@ -820,11 +1126,11 @@ instance of OsConfigResource as $OsConfigResource58ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource59ref
+instance of OsConfigResource as $OsConfigResource78ref
 {
     ResourceID = "Ensure the default umask for all users is configured";
     PayloadKey = "EnsureDefaultUmaskForAllUsers";
@@ -834,11 +1140,11 @@ instance of OsConfigResource as $OsConfigResource59ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource60ref
+instance of OsConfigResource as $OsConfigResource79ref
 {
     ResourceID = "Ensure all bootloaders have password protection enabled";
     PayloadKey = "EnsureAllBootloadersHavePasswordProtectionEnabled";
@@ -848,11 +1154,11 @@ instance of OsConfigResource as $OsConfigResource60ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource61ref
+instance of OsConfigResource as $OsConfigResource80ref
 {
     ResourceID = "Ensure permissions on bootloader config are configured";
     PayloadKey = "EnsurePermissionsOnBootloaderConfig";
@@ -862,11 +1168,11 @@ instance of OsConfigResource as $OsConfigResource61ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource62ref
+instance of OsConfigResource as $OsConfigResource81ref
 {
     ResourceID = "Ensure authentication is required for single user mode";
     PayloadKey = "EnsureAuthenticationRequiredForSingleUserMode";
@@ -876,11 +1182,11 @@ instance of OsConfigResource as $OsConfigResource62ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource63ref
+instance of OsConfigResource as $OsConfigResource82ref
 {
     ResourceID = "Ensure packet redirect sending is disabled";
     PayloadKey = "EnsurePacketRedirectSendingIsDisabled";
@@ -890,11 +1196,11 @@ instance of OsConfigResource as $OsConfigResource63ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource64ref
+instance of OsConfigResource as $OsConfigResource83ref
 {
     ResourceID = "Ensure sending ICMP redirects is disabled for all interfaces";
     PayloadKey = "EnsureIcmpRedirectsIsDisabled";
@@ -904,11 +1210,11 @@ instance of OsConfigResource as $OsConfigResource64ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource65ref
+instance of OsConfigResource as $OsConfigResource84ref
 {
     ResourceID = "Ensure accepting source routed packets is disabled for all interfaces";
     PayloadKey = "EnsureSourceRoutedPacketsIsDisabled";
@@ -918,11 +1224,11 @@ instance of OsConfigResource as $OsConfigResource65ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource66ref
+instance of OsConfigResource as $OsConfigResource85ref
 {
     ResourceID = "Ensure the default setting for accepting source routed packets is disabled for network interfaces";
     PayloadKey = "EnsureAcceptingSourceRoutedPacketsIsDisabled";
@@ -932,11 +1238,11 @@ instance of OsConfigResource as $OsConfigResource66ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource67ref
+instance of OsConfigResource as $OsConfigResource86ref
 {
     ResourceID = "Ensure ignoring bogus ICMP responses to broadcasts is enabled";
     PayloadKey = "EnsureIgnoringBogusIcmpBroadcastResponses";
@@ -946,11 +1252,11 @@ instance of OsConfigResource as $OsConfigResource67ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource68ref
+instance of OsConfigResource as $OsConfigResource87ref
 {
     ResourceID = "Ensure ignoring ICMP echo requests (pings) sent to broadcast/multicast addresses is enabled";
     PayloadKey = "EnsureIgnoringIcmpEchoPingsToMulticast";
@@ -960,11 +1266,11 @@ instance of OsConfigResource as $OsConfigResource68ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource69ref
+instance of OsConfigResource as $OsConfigResource88ref
 {
     ResourceID = "Ensure logging of martian packets (those with impossible addresses) is enabled for all interfaces";
     PayloadKey = "EnsureMartianPacketLoggingIsEnabled";
@@ -974,11 +1280,11 @@ instance of OsConfigResource as $OsConfigResource69ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource70ref
+instance of OsConfigResource as $OsConfigResource89ref
 {
     ResourceID = "Ensure performing source validation by reverse path is enabled for all interfaces";
     PayloadKey = "EnsureReversePathSourceValidationIsEnabled";
@@ -988,11 +1294,11 @@ instance of OsConfigResource as $OsConfigResource70ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource71ref
+instance of OsConfigResource as $OsConfigResource90ref
 {
     ResourceID = "Ensure TCP SYN cookies are enabled";
     PayloadKey = "EnsureTcpSynCookiesAreEnabled";
@@ -1002,11 +1308,11 @@ instance of OsConfigResource as $OsConfigResource71ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource72ref
+instance of OsConfigResource as $OsConfigResource91ref
 {
     ResourceID = "Ensure the system does not act as a network sniffer";
     PayloadKey = "EnsureSystemNotActingAsNetworkSniffer";
@@ -1016,11 +1322,11 @@ instance of OsConfigResource as $OsConfigResource72ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource73ref
+instance of OsConfigResource as $OsConfigResource92ref
 {
     ResourceID = "Ensure all wireless interfaces are disabled";
     PayloadKey = "EnsureAllWirelessInterfacesAreDisabled";
@@ -1030,11 +1336,11 @@ instance of OsConfigResource as $OsConfigResource73ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource74ref
+instance of OsConfigResource as $OsConfigResource93ref
 {
     ResourceID = "Ensure the IPv6 protocol is enabled";
     PayloadKey = "EnsureIpv6ProtocolIsEnabled";
@@ -1044,11 +1350,11 @@ instance of OsConfigResource as $OsConfigResource74ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource75ref
+instance of OsConfigResource as $OsConfigResource94ref
 {
     ResourceID = "Ensure DCCP is disabled";
     PayloadKey = "EnsureDccpIsDisabled";
@@ -1058,11 +1364,11 @@ instance of OsConfigResource as $OsConfigResource75ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource76ref
+instance of OsConfigResource as $OsConfigResource95ref
 {
     ResourceID = "Ensure SCTP is disabled";
     PayloadKey = "EnsureSctpIsDisabled";
@@ -1072,11 +1378,11 @@ instance of OsConfigResource as $OsConfigResource76ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource77ref
+instance of OsConfigResource as $OsConfigResource96ref
 {
     ResourceID = "Ensure support for RDS is disabled";
     PayloadKey = "EnsureDisabledSupportForRds";
@@ -1086,11 +1392,11 @@ instance of OsConfigResource as $OsConfigResource77ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource78ref
+instance of OsConfigResource as $OsConfigResource97ref
 {
     ResourceID = "Ensure TIPC is disabled";
     PayloadKey = "EnsureTipcIsDisabled";
@@ -1100,11 +1406,11 @@ instance of OsConfigResource as $OsConfigResource78ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource79ref
+instance of OsConfigResource as $OsConfigResource98ref
 {
     ResourceID = "Ensure logging is configured";
     PayloadKey = "EnsureLoggingIsConfigured";
@@ -1114,11 +1420,11 @@ instance of OsConfigResource as $OsConfigResource79ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource80ref
+instance of OsConfigResource as $OsConfigResource99ref
 {
     ResourceID = "Ensure the syslog package is installed";
     PayloadKey = "EnsureSyslogPackageIsInstalled";
@@ -1128,11 +1434,11 @@ instance of OsConfigResource as $OsConfigResource80ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource81ref
+instance of OsConfigResource as $OsConfigResource100ref
 {
     ResourceID = "Ensure the systemd-journald service persists log messages";
     PayloadKey = "EnsureSystemdJournaldServicePersistsLogMessages";
@@ -1142,11 +1448,11 @@ instance of OsConfigResource as $OsConfigResource81ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource82ref
+instance of OsConfigResource as $OsConfigResource101ref
 {
     ResourceID = "Ensure a logging service is enabled";
     PayloadKey = "EnsureALoggingServiceIsEnabled";
@@ -1156,11 +1462,11 @@ instance of OsConfigResource as $OsConfigResource82ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource83ref
+instance of OsConfigResource as $OsConfigResource102ref
 {
     ResourceID = "Ensure file permissions for all rsyslog log files are configured";
     PayloadKey = "EnsureFilePermissionsForAllRsyslogLogFiles";
@@ -1170,11 +1476,11 @@ instance of OsConfigResource as $OsConfigResource83ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource84ref
+instance of OsConfigResource as $OsConfigResource103ref
 {
     ResourceID = "Ensure logger configuration files are restricted";
     PayloadKey = "EnsureLoggerConfigurationFilesAreRestricted";
@@ -1184,11 +1490,11 @@ instance of OsConfigResource as $OsConfigResource84ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource85ref
+instance of OsConfigResource as $OsConfigResource104ref
 {
     ResourceID = "Ensure that all rsyslog log files are owned by the 'adm' group";
     PayloadKey = "EnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
@@ -1198,11 +1504,11 @@ instance of OsConfigResource as $OsConfigResource85ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource86ref
+instance of OsConfigResource as $OsConfigResource105ref
 {
     ResourceID = "Ensure all rsyslog log files are owned by the syslog user";
     PayloadKey = "EnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
@@ -1212,11 +1518,11 @@ instance of OsConfigResource as $OsConfigResource86ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource87ref
+instance of OsConfigResource as $OsConfigResource106ref
 {
     ResourceID = "Ensure rsyslog does not accept remote messages";
     PayloadKey = "EnsureRsyslogNotAcceptingRemoteMessages";
@@ -1226,11 +1532,11 @@ instance of OsConfigResource as $OsConfigResource87ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource88ref
+instance of OsConfigResource as $OsConfigResource107ref
 {
     ResourceID = "Ensure the logrotate (syslog rotater) service is enabled";
     PayloadKey = "EnsureSyslogRotaterServiceIsEnabled";
@@ -1240,11 +1546,11 @@ instance of OsConfigResource as $OsConfigResource88ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource89ref
+instance of OsConfigResource as $OsConfigResource108ref
 {
     ResourceID = "Ensure the rlogin service is disabled";
     PayloadKey = "EnsureRloginServiceIsDisabled";
@@ -1254,11 +1560,11 @@ instance of OsConfigResource as $OsConfigResource89ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource90ref
+instance of OsConfigResource as $OsConfigResource109ref
 {
     ResourceID = "Ensure inetd is not installed";
     PayloadKey = "EnsureInetdNotInstalled";
@@ -1268,11 +1574,11 @@ instance of OsConfigResource as $OsConfigResource90ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource91ref
+instance of OsConfigResource as $OsConfigResource110ref
 {
     ResourceID = "Ensure xinetd is not installed";
     PayloadKey = "EnsureXinetdNotInstalled";
@@ -1282,11 +1588,11 @@ instance of OsConfigResource as $OsConfigResource91ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource92ref
+instance of OsConfigResource as $OsConfigResource111ref
 {
     ResourceID = "Ensure the telnet service is disabled";
     PayloadKey = "EnsureTelnetServiceIsDisabled";
@@ -1296,11 +1602,11 @@ instance of OsConfigResource as $OsConfigResource92ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource93ref
+instance of OsConfigResource as $OsConfigResource112ref
 {
     ResourceID = "Ensure all telnetd packages are uninstalled";
     PayloadKey = "EnsureAllTelnetdPackagesUninstalled";
@@ -1310,11 +1616,11 @@ instance of OsConfigResource as $OsConfigResource93ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource94ref
+instance of OsConfigResource as $OsConfigResource113ref
 {
     ResourceID = "Ensure the rcp/rsh service is disabled";
     PayloadKey = "EnsureRcprshServiceIsDisabled";
@@ -1324,11 +1630,11 @@ instance of OsConfigResource as $OsConfigResource94ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource95ref
+instance of OsConfigResource as $OsConfigResource114ref
 {
     ResourceID = "Ensure the rsh-server package is uninstalled";
     PayloadKey = "EnsureRshServerNotInstalled";
@@ -1338,11 +1644,11 @@ instance of OsConfigResource as $OsConfigResource95ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource96ref
+instance of OsConfigResource as $OsConfigResource115ref
 {
     ResourceID = "Ensure the ypbind service is disabled and the nis package is not installed";
     PayloadKey = "EnsureNisNotInstalled";
@@ -1352,11 +1658,11 @@ instance of OsConfigResource as $OsConfigResource96ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource97ref
+instance of OsConfigResource as $OsConfigResource116ref
 {
     ResourceID = "Ensure the tftp service is disabled";
     PayloadKey = "EnsureTftpServiceisDisabled";
@@ -1366,11 +1672,11 @@ instance of OsConfigResource as $OsConfigResource97ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource98ref
+instance of OsConfigResource as $OsConfigResource117ref
 {
     ResourceID = "Ensure the tftpd package is not installed";
     PayloadKey = "EnsureTftpdNotInstalled";
@@ -1380,11 +1686,11 @@ instance of OsConfigResource as $OsConfigResource98ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource99ref
+instance of OsConfigResource as $OsConfigResource118ref
 {
     ResourceID = "Ensure the readahead-fedora package is not installed";
     PayloadKey = "EnsureReadaheadFedoraNotInstalled";
@@ -1394,11 +1700,11 @@ instance of OsConfigResource as $OsConfigResource99ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource100ref
+instance of OsConfigResource as $OsConfigResource119ref
 {
     ResourceID = "Ensure the bluetooth package is not installed";
     PayloadKey = "EnsureBluetoothHiddNotInstalled";
@@ -1408,11 +1714,11 @@ instance of OsConfigResource as $OsConfigResource100ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource101ref
+instance of OsConfigResource as $OsConfigResource120ref
 {
     ResourceID = "Ensure the isdnutils-base package is not installed";
     PayloadKey = "EnsureIsdnUtilsBaseNotInstalled";
@@ -1422,11 +1728,11 @@ instance of OsConfigResource as $OsConfigResource101ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource102ref
+instance of OsConfigResource as $OsConfigResource121ref
 {
     ResourceID = "Ensure the kdump-tools package is not installed";
     PayloadKey = "EnsureIsdnUtilsKdumpToolsNotInstalled";
@@ -1436,11 +1742,11 @@ instance of OsConfigResource as $OsConfigResource102ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource103ref
+instance of OsConfigResource as $OsConfigResource122ref
 {
     ResourceID = "Ensure zeroconf networking is disabled";
     PayloadKey = "EnsureZeroconfNetworkingIsDisabled";
@@ -1450,11 +1756,11 @@ instance of OsConfigResource as $OsConfigResource103ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource104ref
+instance of OsConfigResource as $OsConfigResource123ref
 {
     ResourceID = "Ensure the cron service is enabled";
     PayloadKey = "EnsureCronServiceIsEnabled";
@@ -1464,11 +1770,11 @@ instance of OsConfigResource as $OsConfigResource104ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource105ref
+instance of OsConfigResource as $OsConfigResource124ref
 {
     ResourceID = "Ensure File permissions on /etc/anacrontab are configured";
     PayloadKey = "EnsurePermissionsOnEtcAnacronTab";
@@ -1478,11 +1784,11 @@ instance of OsConfigResource as $OsConfigResource105ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource106ref
+instance of OsConfigResource as $OsConfigResource125ref
 {
     ResourceID = "Ensure permissions on /etc/cron.d are configured";
     PayloadKey = "EnsurePermissionsOnEtcCronD";
@@ -1492,11 +1798,11 @@ instance of OsConfigResource as $OsConfigResource106ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource107ref
+instance of OsConfigResource as $OsConfigResource126ref
 {
     ResourceID = "Ensure permissions on  /etc/cron.daily are configured";
     PayloadKey = "EnsurePermissionsOnEtcCronDaily";
@@ -1506,11 +1812,11 @@ instance of OsConfigResource as $OsConfigResource107ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource108ref
+instance of OsConfigResource as $OsConfigResource127ref
 {
     ResourceID = "Ensure permissions on  /etc/cron.hourly are configured";
     PayloadKey = "EnsurePermissionsOnEtcCronHourly";
@@ -1520,11 +1826,11 @@ instance of OsConfigResource as $OsConfigResource108ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource109ref
+instance of OsConfigResource as $OsConfigResource128ref
 {
     ResourceID = "Ensure permissions on  /etc/cron.monthly are configured";
     PayloadKey = "EnsurePermissionsOnEtcCronMonthly";
@@ -1534,11 +1840,11 @@ instance of OsConfigResource as $OsConfigResource109ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource110ref
+instance of OsConfigResource as $OsConfigResource129ref
 {
     ResourceID = "Ensure permissions on  /etc/cron.weekly are configured";
     PayloadKey = "EnsurePermissionsOnEtcCronWeekly";
@@ -1548,11 +1854,11 @@ instance of OsConfigResource as $OsConfigResource110ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource111ref
+instance of OsConfigResource as $OsConfigResource130ref
 {
     ResourceID = "Ensure at/cron is restricted to authorized users";
     PayloadKey = "EnsureAtCronIsRestrictedToAuthorizedUsers";
@@ -1562,221 +1868,11 @@ instance of OsConfigResource as $OsConfigResource111ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource112ref
-{
-    ResourceID = "Ensure SSH is configured to meet best practices (protocol 2)";
-    PayloadKey = "EnsureSshBestPracticeProtocol";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshBestPracticeProtocol";
-    DesiredObjectName = "remediateEnsureSshBestPracticeProtocol";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource113ref
-{
-    ResourceID = "Ensure SSH is configured to ignore rhosts";
-    PayloadKey = "EnsureSshBestPracticeIgnoreRhosts";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshBestPracticeIgnoreRhosts";
-    DesiredObjectName = "remediateEnsureSshBestPracticeIgnoreRhosts";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource114ref
-{
-    ResourceID = "Ensure SSH LogLevel is set to INFO";
-    PayloadKey = "EnsureSshLogLevelIsSet";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshLogLevelIsSet";
-    DesiredObjectName = "remediateEnsureSshLogLevelIsSet";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource115ref
-{
-    ResourceID = "Ensure SSH MaxAuthTries is configured";
-    PayloadKey = "EnsureSshMaxAuthTriesIsSet";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshMaxAuthTriesIsSet";
-    DesiredObjectName = "remediateEnsureSshMaxAuthTriesIsSet";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource116ref
-{
-    ResourceID = "Ensure allowed users for SSH access are configured";
-    PayloadKey = "EnsureAllowUsersIsConfigured";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureAllowUsersIsConfigured";
-    DesiredObjectName = "remediateEnsureAllowUsersIsConfigured";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource117ref
-{
-    ResourceID = "Ensure denied users for SSH are configured";
-    PayloadKey = "EnsureDenyUsersIsConfigured";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureDenyUsersIsConfigured";
-    DesiredObjectName = "remediateEnsureDenyUsersIsConfigured";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource118ref
-{
-    ResourceID = "Ensure allowed groups for SSH are configured";
-    PayloadKey = "EnsureAllowGroupsIsConfigured";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureAllowGroupsIsConfigured";
-    DesiredObjectName = "remediateEnsureAllowGroupsIsConfigured";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource119ref
-{
-    ResourceID = "Ensure denied groups for SSH are configured";
-    PayloadKey = "EnsureDenyGroupsConfigured";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureDenyGroupsConfigured";
-    DesiredObjectName = "remediateEnsureDenyGroupsConfigured";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource120ref
-{
-    ResourceID = "Ensure SSH host-based authenticationis disabled";
-    PayloadKey = "EnsureSshHostbasedAuthenticationIsDisabled";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshHostbasedAuthenticationIsDisabled";
-    DesiredObjectName = "remediateEnsureSshHostbasedAuthenticationIsDisabled";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource121ref
-{
-    ResourceID = "Ensure root login via SSH is disabled";
-    PayloadKey = "EnsureSshPermitRootLoginIsDisabled";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshPermitRootLoginIsDisabled";
-    DesiredObjectName = "remediateEnsureSshPermitRootLoginIsDisabled";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource122ref
-{
-    ResourceID = "Ensure that remote connection from accounts with empty passwords is disabled";
-    PayloadKey = "EnsureSshPermitEmptyPasswordsIsDisabled";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshPermitEmptyPasswordsIsDisabled";
-    DesiredObjectName = "remediateEnsureSshPermitEmptyPasswordsIsDisabled";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource123ref
-{
-    ResourceID = "Ensure the SSH Client Interval Count Maximum is configured";
-    PayloadKey = "EnsureSshClientIntervalCountMaxIsConfigured";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshClientIntervalCountMaxIsConfigured";
-    DesiredObjectName = "remediateEnsureSshClientIntervalCountMaxIsConfigured";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource124ref
-{
-    ResourceID = "Ensure the SSH Client Alive interval Interval is configured";
-    PayloadKey = "EnsureSshClientAliveIntervalIsConfigured";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshClientAliveIntervalIsConfigured";
-    DesiredObjectName = "remediateEnsureSshClientAliveIntervalIsConfigured";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource125ref
-{
-    ResourceID = "Ensure the SSH LoginGraceTime is configured";
-    PayloadKey = "EnsureSshLoginGraceTimeIsSet";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshLoginGraceTimeIsSet";
-    DesiredObjectName = "remediateEnsureSshLoginGraceTimeIsSet";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource126ref
-{
-    ResourceID = "Ensure that only approved MAC algorithms are used";
-    PayloadKey = "EnsureOnlyApprovedMacAlgorithmsAreUsed";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureOnlyApprovedMacAlgorithmsAreUsed";
-    DesiredObjectName = "remediateEnsureOnlyApprovedMacAlgorithmsAreUsed";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource127ref
+instance of OsConfigResource as $OsConfigResource131ref
 {
     ResourceID = "Ensure the remote login warning banner is properly configured";
     PayloadKey = "EnsureRemoteLoginWarningBannerIsConfigured";
@@ -1786,11 +1882,11 @@ instance of OsConfigResource as $OsConfigResource127ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource128ref
+instance of OsConfigResource as $OsConfigResource132ref
 {
     ResourceID = "Ensure the local login warning banner is properly configured";
     PayloadKey = "EnsureLocalLoginWarningBannerIsConfigured";
@@ -1800,53 +1896,11 @@ instance of OsConfigResource as $OsConfigResource128ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource129ref
-{
-    ResourceID = "Ensure the SSH warning banner is enabled";
-    PayloadKey = "EnsureSshWarningBannerIsEnabled";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshWarningBannerIsEnabled";
-    DesiredObjectName = "remediateEnsureSshWarningBannerIsEnabled";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource130ref
-{
-    ResourceID = "Ensure that users cannot set environment options for SSH";
-    PayloadKey = "EnsureUsersCannotSetSshEnvironmentOptions";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureUsersCannotSetSshEnvironmentOptions";
-    DesiredObjectName = "remediateEnsureUsersCannotSetSshEnvironmentOptions";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource131ref
-{
-    ResourceID = "Ensure that appropriate ciphers are used for SSH";
-    PayloadKey = "EnsureAppropriateCiphersForSsh";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureAppropriateCiphersForSsh";
-    DesiredObjectName = "remediateEnsureAppropriateCiphersForSsh";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
-
-instance of OsConfigResource as $OsConfigResource132ref
+instance of OsConfigResource as $OsConfigResource133ref
 {
     ResourceID = "Ensure the avahi-daemon service is disabled";
     PayloadKey = "EnsureAvahiDaemonServiceIsDisabled";
@@ -1856,11 +1910,11 @@ instance of OsConfigResource as $OsConfigResource132ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource133ref
+instance of OsConfigResource as $OsConfigResource134ref
 {
     ResourceID = "Ensure the cups service is disabled";
     PayloadKey = "EnsureCupsServiceisDisabled";
@@ -1870,11 +1924,11 @@ instance of OsConfigResource as $OsConfigResource133ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource134ref
+instance of OsConfigResource as $OsConfigResource135ref
 {
     ResourceID = "Ensure the isc-dhcp-server package is not installed";
     PayloadKey = "EnsureIscDhcpdServerNotInstalled";
@@ -1884,11 +1938,11 @@ instance of OsConfigResource as $OsConfigResource134ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource135ref
+instance of OsConfigResource as $OsConfigResource136ref
 {
     ResourceID = "Ensure the sendmail package is not installed";
     PayloadKey = "EnsureSendmailNotInstalled";
@@ -1898,11 +1952,11 @@ instance of OsConfigResource as $OsConfigResource135ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource136ref
+instance of OsConfigResource as $OsConfigResource137ref
 {
     ResourceID = "Ensure the postfix package is not installed";
     PayloadKey = "EnsurePostfixPackageIsUninstalled";
@@ -1912,11 +1966,11 @@ instance of OsConfigResource as $OsConfigResource136ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource137ref
+instance of OsConfigResource as $OsConfigResource138ref
 {
     ResourceID = "Ensure that postfix network listening is disabled";
     PayloadKey = "EnsurePostfixNetworkListeningIsDisabled";
@@ -1926,11 +1980,11 @@ instance of OsConfigResource as $OsConfigResource137ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource138ref
+instance of OsConfigResource as $OsConfigResource139ref
 {
     ResourceID = "Ensure the sldapd package is not installed";
     PayloadKey = "EnsureSldapdNotInstalled";
@@ -1940,11 +1994,11 @@ instance of OsConfigResource as $OsConfigResource138ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource139ref
+instance of OsConfigResource as $OsConfigResource140ref
 {
     ResourceID = "Ensure the rpcgssd service is disabled";
     PayloadKey = "EnsureRpcgssdServiceIsDisabled";
@@ -1954,11 +2008,11 @@ instance of OsConfigResource as $OsConfigResource139ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource140ref
+instance of OsConfigResource as $OsConfigResource141ref
 {
     ResourceID = "Ensure the rpcidmapd service is disabled";
     PayloadKey = "EnsureRpcidmapdServiceIsDisabled";
@@ -1968,11 +2022,11 @@ instance of OsConfigResource as $OsConfigResource140ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource141ref
+instance of OsConfigResource as $OsConfigResource142ref
 {
     ResourceID = "Ensure the portmap service is disabled";
     PayloadKey = "EnsurePortmapServiceIsDisabled";
@@ -1982,11 +2036,11 @@ instance of OsConfigResource as $OsConfigResource141ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource142ref
+instance of OsConfigResource as $OsConfigResource143ref
 {
     ResourceID = "Ensure the Network File System (NFS) service is disabled";
     PayloadKey = "EnsureNetworkFileSystemServiceIsDisabled";
@@ -1996,11 +2050,11 @@ instance of OsConfigResource as $OsConfigResource142ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource143ref
+instance of OsConfigResource as $OsConfigResource144ref
 {
     ResourceID = "Ensure the rpcsvcgssd service is disabled";
     PayloadKey = "EnsureRpcsvcgssdServiceIsDisabled";
@@ -2010,11 +2064,11 @@ instance of OsConfigResource as $OsConfigResource143ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource144ref
+instance of OsConfigResource as $OsConfigResource145ref
 {
     ResourceID = "Ensure the bind9 package is not installed";
     PayloadKey = "EnsureBind9NotInstalled";
@@ -2024,11 +2078,11 @@ instance of OsConfigResource as $OsConfigResource144ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource145ref
+instance of OsConfigResource as $OsConfigResource146ref
 {
     ResourceID = "Ensure the dovecot-core package is not installed";
     PayloadKey = "EnsureDovecotCoreNotInstalled";
@@ -2038,11 +2092,11 @@ instance of OsConfigResource as $OsConfigResource145ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource146ref
+instance of OsConfigResource as $OsConfigResource147ref
 {
     ResourceID = "Ensure no legacy + entries exist in /etc/passwd";
     PayloadKey = "EnsureNoLegacyPlusEntriesInEtcPasswd";
@@ -2052,11 +2106,11 @@ instance of OsConfigResource as $OsConfigResource146ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource147ref
+instance of OsConfigResource as $OsConfigResource148ref
 {
     ResourceID = "Ensure no legacy + entries exist in /etc/shadow";
     PayloadKey = "EnsureNoLegacyPlusEntriesInEtcShadow";
@@ -2066,11 +2120,11 @@ instance of OsConfigResource as $OsConfigResource147ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource148ref
+instance of OsConfigResource as $OsConfigResource149ref
 {
     ResourceID = "Ensure no legacy + entries exist in /etc/group";
     PayloadKey = "EnsureNoLegacyPlusEntriesInEtcGroup";
@@ -2080,11 +2134,11 @@ instance of OsConfigResource as $OsConfigResource148ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource149ref
+instance of OsConfigResource as $OsConfigResource150ref
 {
     ResourceID = "Ensure password expiration is configured";
     PayloadKey = "EnsurePasswordExpiration";
@@ -2094,11 +2148,11 @@ instance of OsConfigResource as $OsConfigResource149ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource150ref
+instance of OsConfigResource as $OsConfigResource151ref
 {
     ResourceID = "Ensure password expiration warning days is configured";
     PayloadKey = "EnsurePasswordExpirationWarning";
@@ -2108,11 +2162,11 @@ instance of OsConfigResource as $OsConfigResource150ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource151ref
+instance of OsConfigResource as $OsConfigResource152ref
 {
     ResourceID = "Ensure password reuse is limited";
     PayloadKey = "EnsurePasswordReuseIsLimited";
@@ -2122,11 +2176,11 @@ instance of OsConfigResource as $OsConfigResource151ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource152ref
+instance of OsConfigResource as $OsConfigResource153ref
 {
     ResourceID = "Ensure the password hashing algorithm is SHA-512";
     PayloadKey = "EnsurePasswordHashingAlgorithm";
@@ -2136,11 +2190,11 @@ instance of OsConfigResource as $OsConfigResource152ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource153ref
+instance of OsConfigResource as $OsConfigResource154ref
 {
     ResourceID = "Ensure the minimum days between password changes is configured";
     PayloadKey = "EnsureMinDaysBetweenPasswordChanges";
@@ -2150,11 +2204,11 @@ instance of OsConfigResource as $OsConfigResource153ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource154ref
+instance of OsConfigResource as $OsConfigResource155ref
 {
     ResourceID = "Ensure the maximum days between password changes is configured";
     PayloadKey = "EnsureMaxDaysBetweenPasswordChanges";
@@ -2164,11 +2218,11 @@ instance of OsConfigResource as $OsConfigResource154ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource155ref
+instance of OsConfigResource as $OsConfigResource156ref
 {
     ResourceID = "Ensure the inactive password lock period is configured";
     PayloadKey = "EnsureInactivePasswordLockPeriod";
@@ -2178,11 +2232,11 @@ instance of OsConfigResource as $OsConfigResource155ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource156ref
+instance of OsConfigResource as $OsConfigResource157ref
 {
     ResourceID = "Ensure all system accounts are non-login";
     PayloadKey = "EnsureSystemAccountsAreNonLogin";
@@ -2192,11 +2246,11 @@ instance of OsConfigResource as $OsConfigResource156ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource157ref
+instance of OsConfigResource as $OsConfigResource158ref
 {
     ResourceID = "Ensure default group for the root account is GID 0";
     PayloadKey = "EnsureDefaultRootAccountGroupIsGidZero";
@@ -2206,11 +2260,11 @@ instance of OsConfigResource as $OsConfigResource157ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource158ref
+instance of OsConfigResource as $OsConfigResource159ref
 {
     ResourceID = "Ensure root is the only UID 0 account";
     PayloadKey = "EnsureRootIsOnlyUidZeroAccount";
@@ -2220,11 +2274,11 @@ instance of OsConfigResource as $OsConfigResource158ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource159ref
+instance of OsConfigResource as $OsConfigResource160ref
 {
     ResourceID = "Ensure unnecessary accounts are removed";
     PayloadKey = "EnsureUnnecessaryAccountsAreRemoved";
@@ -2234,11 +2288,11 @@ instance of OsConfigResource as $OsConfigResource159ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource160ref
+instance of OsConfigResource as $OsConfigResource161ref
 {
     ResourceID = "Ensure the auditd package is installed";
     PayloadKey = "EnsureAuditdInstalled";
@@ -2248,11 +2302,11 @@ instance of OsConfigResource as $OsConfigResource160ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource161ref
+instance of OsConfigResource as $OsConfigResource162ref
 {
     ResourceID = "Ensure the auditd service is running";
     PayloadKey = "EnsureAuditdServiceIsRunning";
@@ -2262,11 +2316,11 @@ instance of OsConfigResource as $OsConfigResource161ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource162ref
+instance of OsConfigResource as $OsConfigResource163ref
 {
     ResourceID = "Ensure the SNMP Server is not enabled";
     PayloadKey = "EnsureSnmpServerIsDisabled";
@@ -2276,11 +2330,11 @@ instance of OsConfigResource as $OsConfigResource162ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource163ref
+instance of OsConfigResource as $OsConfigResource164ref
 {
     ResourceID = "Ensure the rsync service is not enabled";
     PayloadKey = "EnsureRsynServiceIsDisabled";
@@ -2290,11 +2344,11 @@ instance of OsConfigResource as $OsConfigResource163ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource164ref
+instance of OsConfigResource as $OsConfigResource165ref
 {
     ResourceID = "Ensure the NIS server is not enabled";
     PayloadKey = "EnsureNisServerIsDisabled";
@@ -2304,11 +2358,11 @@ instance of OsConfigResource as $OsConfigResource164ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource165ref
+instance of OsConfigResource as $OsConfigResource166ref
 {
     ResourceID = "Ensure the rsh client is not installed";
     PayloadKey = "EnsureRshClientNotInstalled";
@@ -2318,11 +2372,11 @@ instance of OsConfigResource as $OsConfigResource165ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource166ref
+instance of OsConfigResource as $OsConfigResource167ref
 {
     ResourceID = "Ensure SMB V1 with Samba is disabled";
     PayloadKey = "EnsureSmbWithSambaIsDisabled";
@@ -2332,15 +2386,15 @@ instance of OsConfigResource as $OsConfigResource166ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "LinuxSecurityBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
 instance of OMI_ConfigurationDocument
 {
-    Version="2.0.0";
+    Version="0.0.1";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="11/10/2023 09:07:00 AM PST";
-    Name="OsConfigSecurityBaseline";
+    GenerationDate="26/2/2024 10:36:00 AM PST";
+    Name="LinuxSecurityBaseline";
 };
