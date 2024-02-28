@@ -141,7 +141,7 @@
   {
     "Action": "LoadModule",
     "Module": "securitybaseline.so",
-    "Delay": 30
+    "WaitSeconds": 30
   },
   {
     "ObjectType": "Desired",
