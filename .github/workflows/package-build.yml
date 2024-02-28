@@ -103,7 +103,7 @@ jobs:
           arch: ${{ matrix.variant.arch }}
           package-type: ${{ inputs.package-type }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         if: ${{ inputs.test }}
         with:
           name: ${{ inputs.artifact }}
@@ -112,7 +112,7 @@ jobs:
             ./build/modules/test/moduletest
             ./build/modules/bin/*.so
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         if: ${{ !inputs.test }}
         with:
           name: ${{ inputs.artifact }}
