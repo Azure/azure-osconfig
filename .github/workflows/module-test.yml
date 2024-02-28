@@ -11,11 +11,11 @@ jobs:
       matrix:
         target:
           [
-            { os: ubuntu, version: 20.04, package-type: DEB, excluded-tests: "SecurityBaseline|Sample" },
-            { os: ubuntu, version: 22.04, package-type: DEB, excluded-tests: "SecurityBaseline|Sample" },
-            { os: debian, version: 10, package-type: DEB, excluded-tests: "SecurityBaseline|Sample" },
-            { os: debian, version: 11, package-type: DEB, excluded-tests: "SecurityBaseline|Sample" },
-            { os: mariner, version: 2, package-type: RPM, excluded-tests: "Pmc|SecurityBaseline|Sample" },
+            { os: ubuntu, version: 20.04, package-type: DEB, excluded-tests: "Sample" },
+            { os: ubuntu, version: 22.04, package-type: DEB, excluded-tests: "Sample" },
+            { os: debian, version: 10, package-type: DEB, excluded-tests: "Sample" },
+            { os: debian, version: 11, package-type: DEB, excluded-tests: "Sample" },
+            { os: mariner, version: 2, package-type: RPM, excluded-tests: "Pmc|Sample" },
           ]
         arch: [amd64]
     with:
