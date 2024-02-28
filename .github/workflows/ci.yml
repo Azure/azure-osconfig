@@ -76,11 +76,10 @@ jobs:
           path: ./build/gtest-output
           output: ${{ matrix.os }}-${{ matrix.arch }}.xml
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         if: success() || failure()
         with:
           name: unit-test
-          overwrite: true
           path: |
             ${{ matrix.os }}-${{ matrix.arch }}.log
             ${{ matrix.os }}-${{ matrix.arch }}.xml
