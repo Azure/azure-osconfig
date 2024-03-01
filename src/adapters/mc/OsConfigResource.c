@@ -954,7 +954,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     else
     {
         LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: no ExpectedObjectValue, assuming '%s' is expected", g_classKey, g_ExpectedObjectValue);
-        isCompliant = (g_reportedObjectValue && (0 == strncmp(g_ExpectedObjectValue, g_reportedObjectValue, strlen(g_ExpectedObjectValue)))) ? MI_TRUE : MI_FALSE;
+        isCompliant = (g_reportedObjectValue && (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue)))) ? MI_TRUE : MI_FALSE;
     }
 
     LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: %s", g_classKey, isCompliant ? "compliant" : "incompliant");
