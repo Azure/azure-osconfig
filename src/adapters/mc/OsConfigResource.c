@@ -542,6 +542,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     {
         // Not an error
         LogInfo(context, GetLog(), "[OsConfigResource.Get] No InitObjectName");
+        FREE_MEMORY(g_initObjectName);
     }
 
     // Read the MIM reported object name from the input resource values
@@ -604,14 +605,13 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ExpectedObjectValue.value);
             g_expectedObjectValue = DuplicateString(g_passValue);
         }
-
-        isCompliant = (g_expectedObjectValue && (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue)))) ? MI_TRUE : MI_FALSE;
     }
     else
     {
-        isCompliant = MI_TRUE;
-        LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no ExpectedObjectValue, assuming compliance", g_classKey);
+        LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no ExpectedObjectValue, assuming '%s' is expected", g_classKey, g_passValue);
     }
+
+    isCompliant = (g_expectedObjectValue && (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue)))) ? MI_TRUE : MI_FALSE;
 
     // Create the output resource
 
@@ -907,6 +907,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     {
         // Not an error
         LogInfo(context, GetLog(), "[OsConfigResource.Test] No InitObjectName");
+        FREE_MEMORY(g_initObjectName);
     }
 
     // Read the MIM reported object name from the input resource values
@@ -949,13 +950,14 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     if ((in->InputResource.value->ExpectedObjectValue.exists == MI_TRUE) && (in->InputResource.value->ExpectedObjectValue.value != NULL))
     {
         isCompliant = (g_reportedObjectValue && (0 == strncmp(in->InputResource.value->ExpectedObjectValue.value, g_reportedObjectValue, strlen(in->InputResource.value->ExpectedObjectValue.value)))) ? MI_TRUE : MI_FALSE;
-        LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: %s", g_classKey, isCompliant ? "compliant" : "incompliant");
     }
     else
     {
-        isCompliant = MI_TRUE;
-        LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: no ExpectedObjectValue, assuming compliance", g_classKey);
+        LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: no ExpectedObjectValue, assuming '%s' is expected", g_classKey, g_ExpectedObjectValue);
+        isCompliant = (g_reportedObjectValue && (0 == strncmp(g_ExpectedObjectValue, g_reportedObjectValue, strlen(g_ExpectedObjectValue)))) ? MI_TRUE : MI_FALSE;
     }
+
+    LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: %s", g_classKey, isCompliant ? "compliant" : "incompliant");
 
     if (MI_RESULT_OK != (miResult = OsConfigResource_TestTargetResource_Construct(&test_result_object, context)))
     {
