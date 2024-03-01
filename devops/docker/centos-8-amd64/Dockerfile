@@ -1,4 +1,4 @@
-# TODO: Add MSFT mirror
+# TODO: Add mcr.io retagged images
 FROM centos:latest
 
 # CentOS Linux 8 had reached the End Of Life (EOL) on December 31st, 2021. 

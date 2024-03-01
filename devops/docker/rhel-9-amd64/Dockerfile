@@ -1,4 +1,4 @@
-# TODO: Add MSFT mirror
+# TODO: Add mcr.io retagged images
 FROM registry.access.redhat.com/ubi9/ubi
 
 RUN yum install -y --disableplugin=subscription-manager \

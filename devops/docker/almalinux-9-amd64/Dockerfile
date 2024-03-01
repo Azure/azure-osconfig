@@ -1,4 +1,4 @@
-# TODO: Add MSFT mirror
+# TODO: Add mcr.io retagged images
 FROM almalinux:9
 
 RUN dnf install -y \

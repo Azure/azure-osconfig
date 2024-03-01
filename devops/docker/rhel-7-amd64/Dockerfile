@@ -2,7 +2,7 @@
 FROM centos:centos7 as centos
 RUN yum update -y && yumdownloader rpm-build && yumdownloader elfutils
 
-# TODO: Add MSFT mirror
+# TODO: Add mcr.io retagged images
 FROM registry.access.redhat.com/ubi7/ubi
 COPY --from=centos /rpm-build*.rpm /rpm-build.rpm
 COPY --from=centos /elfutils*.rpm /elfutils.rpm

@@ -1,4 +1,4 @@
-# TODO: Add MSFT mirror
+# TODO: Add mcr.io retagged images
 FROM centos:7
 
 RUN yum install -y \

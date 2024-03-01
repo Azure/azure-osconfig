@@ -1,4 +1,4 @@
-# TODO: Add MSFT mirror
+# TODO: Add mcr.io retagged images
 FROM registry.suse.com/bci/bci-base:15.5
 
 RUN zypper install -y \
