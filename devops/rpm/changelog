@@ -6,7 +6,7 @@
 - Drop tracelogging
 - Expanded CommonUtils
 - Misc. module bug fixes
-* Fri Sept 30 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.4.20220930
+* Fri Sep 30 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.4.20220930
 - DTMI model moved to this repo
 - Support for MIM enumerations of strings
 - New Firewall v3
