@@ -1869,7 +1869,7 @@ instance of OsConfigResource as $OsConfigResource123ref
     PayloadKey = "EnsureCronServiceIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureCronServiceIsEnabled";
-    ExpectedObjectValue = "PASS";4
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureCronServiceIsEnabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
