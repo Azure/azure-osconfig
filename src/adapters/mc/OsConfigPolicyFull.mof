@@ -324,6 +324,7 @@ instance of OsConfigResource as $OsConfigResource20ref
     PayloadKey = "EnsureNodevOptionOnHomePartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNodevOptionOnHomePartition";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNodevOptionOnHomePartition";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -338,6 +339,7 @@ instance of OsConfigResource as $OsConfigResource21ref
     PayloadKey = "EnsureNodevOptionOnTmpPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNodevOptionOnTmpPartition";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNodevOptionOnTmpPartition";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -352,6 +354,7 @@ instance of OsConfigResource as $OsConfigResource22ref
     PayloadKey = "EnsureNodevOptionOnVarTmpPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNodevOptionOnVarTmpPartition";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNodevOptionOnVarTmpPartition";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -366,6 +369,7 @@ instance of OsConfigResource as $OsConfigResource23ref
     PayloadKey = "EnsureNosuidOptionOnTmpPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNosuidOptionOnTmpPartition";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNosuidOptionOnTmpPartition";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -380,6 +384,7 @@ instance of OsConfigResource as $OsConfigResource24ref
     PayloadKey = "EnsureNosuidOptionOnVarTmpPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNosuidOptionOnVarTmpPartition";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNosuidOptionOnVarTmpPartition";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -394,6 +399,7 @@ instance of OsConfigResource as $OsConfigResource25ref
     PayloadKey = "EnsureNoexecOptionOnVarTmpPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoexecOptionOnVarTmpPartition";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoexecOptionOnVarTmpPartition";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -408,6 +414,7 @@ instance of OsConfigResource as $OsConfigResource26ref
     PayloadKey = "EnsureNoexecOptionOnDevShmPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoexecOptionOnDevShmPartition";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoexecOptionOnDevShmPartition";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -422,6 +429,7 @@ instance of OsConfigResource as $OsConfigResource27ref
     PayloadKey = "EnsureAutomountingDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAutomountingDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAutomountingDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -436,6 +444,7 @@ instance of OsConfigResource as $OsConfigResource28ref
     PayloadKey = "EnsureMountingOfUsbStorageDevicesIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureMountingOfUsbStorageDevicesIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureMountingOfUsbStorageDevicesIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -450,6 +459,7 @@ instance of OsConfigResource as $OsConfigResource29ref
     PayloadKey = "EnsureCoreDumpsAreRestricted";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureCoreDumpsAreRestricted";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureCoreDumpsAreRestricted";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -464,6 +474,7 @@ instance of OsConfigResource as $OsConfigResource30ref
     PayloadKey = "EnsurePrelinkIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePrelinkIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePrelinkIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -478,6 +489,7 @@ instance of OsConfigResource as $OsConfigResource31ref
     PayloadKey = "EnsurePermissionsOnEtcMotd";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcMotd";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcMotd";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -492,6 +504,7 @@ instance of OsConfigResource as $OsConfigResource32ref
     PayloadKey = "EnsurePermissionsOnEtcIssue";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcIssue";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcIssue";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -506,6 +519,7 @@ instance of OsConfigResource as $OsConfigResource33ref
     PayloadKey = "EnsurePermissionsOnEtcIssueNet";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcIssueNet";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcIssueNet";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -520,6 +534,7 @@ instance of OsConfigResource as $OsConfigResource34ref
     PayloadKey = "EnsureNodevOptionEnabledForAllRemovableMedia";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNodevOptionEnabledForAllRemovableMedia";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNodevOptionEnabledForAllRemovableMedia";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -534,6 +549,7 @@ instance of OsConfigResource as $OsConfigResource35ref
     PayloadKey = "EnsureNoexecOptionEnabledForAllRemovableMedia";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoexecOptionEnabledForAllRemovableMedia";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -548,6 +564,7 @@ instance of OsConfigResource as $OsConfigResource36ref
     PayloadKey = "EnsureNosuidOptionEnabledForAllRemovableMedia";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNosuidOptionEnabledForAllRemovableMedia";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -562,6 +579,7 @@ instance of OsConfigResource as $OsConfigResource37ref
     PayloadKey = "EnsureTalkClientIsNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureTalkClientIsNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureTalkClientIsNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -576,6 +594,7 @@ instance of OsConfigResource as $OsConfigResource38ref
     PayloadKey = "EnsurePermissionsOnEtcHostsAllow";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcHostsAllow";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcHostsAllow";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -590,6 +609,7 @@ instance of OsConfigResource as $OsConfigResource39ref
     PayloadKey = "EnsurePermissionsOnEtcHostsDeny";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcHostsDeny";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcHostsDeny";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -604,6 +624,7 @@ instance of OsConfigResource as $OsConfigResource40ref
     PayloadKey = "EnsureDefaultDenyFirewallPolicyIsSet";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDefaultDenyFirewallPolicyIsSet";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDefaultDenyFirewallPolicyIsSet";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -618,6 +639,7 @@ instance of OsConfigResource as $OsConfigResource41ref
     PayloadKey = "EnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -632,6 +654,7 @@ instance of OsConfigResource as $OsConfigResource42ref
     PayloadKey = "EnsurePasswordCreationRequirements";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePasswordCreationRequirements";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePasswordCreationRequirements";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -646,6 +669,7 @@ instance of OsConfigResource as $OsConfigResource43ref
     PayloadKey = "EnsureLockoutForFailedPasswordAttempts";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureLockoutForFailedPasswordAttempts";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureLockoutForFailedPasswordAttempts";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -660,6 +684,7 @@ instance of OsConfigResource as $OsConfigResource44ref
     PayloadKey = "EnsureDisabledInstallationOfCramfsFileSystem";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDisabledInstallationOfCramfsFileSystem";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDisabledInstallationOfCramfsFileSystem";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -674,6 +699,7 @@ instance of OsConfigResource as $OsConfigResource45ref
     PayloadKey = "EnsureDisabledInstallationOfFreevxfsFileSystem";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDisabledInstallationOfFreevxfsFileSystem";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDisabledInstallationOfFreevxfsFileSystem";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -688,6 +714,7 @@ instance of OsConfigResource as $OsConfigResource46ref
     PayloadKey = "EnsureAllUsersHomeDirectoriesExist";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllUsersHomeDirectoriesExist";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAllUsersHomeDirectoriesExist";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -702,6 +729,7 @@ instance of OsConfigResource as $OsConfigResource47ref
     PayloadKey = "EnsureUsersOwnTheirHomeDirectories";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureUsersOwnTheirHomeDirectories";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureUsersOwnTheirHomeDirectories";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -716,6 +744,7 @@ instance of OsConfigResource as $OsConfigResource48ref
     PayloadKey = "EnsureUsersDotFilesArentGroupOrWorldWritable";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureUsersDotFilesArentGroupOrWorldWritable";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureUsersDotFilesArentGroupOrWorldWritable";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -730,6 +759,7 @@ instance of OsConfigResource as $OsConfigResource49ref
     PayloadKey = "EnsureNoUsersHaveDotForwardFiles";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoUsersHaveDotForwardFiles";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoUsersHaveDotForwardFiles";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -744,6 +774,7 @@ instance of OsConfigResource as $OsConfigResource50ref
     PayloadKey = "EnsureNoUsersHaveDotNetrcFiles";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoUsersHaveDotNetrcFiles";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoUsersHaveDotNetrcFiles";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -758,6 +789,7 @@ instance of OsConfigResource as $OsConfigResource51ref
     PayloadKey = "EnsureNoUsersHaveDotRhostsFiles";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoUsersHaveDotRhostsFiles";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoUsersHaveDotRhostsFiles";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -772,6 +804,7 @@ instance of OsConfigResource as $OsConfigResource52ref
     PayloadKey = "EnsureAllEtcPasswdGroupsExistInEtcGroup";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllEtcPasswdGroupsExistInEtcGroup";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAllEtcPasswdGroupsExistInEtcGroup";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -786,6 +819,7 @@ instance of OsConfigResource as $OsConfigResource53ref
     PayloadKey = "EnsureNoDuplicateUidsExist";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoDuplicateUidsExist";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoDuplicateUidsExist";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -800,6 +834,7 @@ instance of OsConfigResource as $OsConfigResource54ref
     PayloadKey = "EnsureNoDuplicateGidsExist";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoDuplicateGidsExist";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoDuplicateGidsExist";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -814,6 +849,7 @@ instance of OsConfigResource as $OsConfigResource55ref
     PayloadKey = "EnsureNoDuplicateUserNamesExist";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoDuplicateUserNamesExist";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoDuplicateUserNamesExist";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -828,6 +864,7 @@ instance of OsConfigResource as $OsConfigResource56ref
     PayloadKey = "EnsureNoDuplicateGroupsExist";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoDuplicateGroupsExist";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoDuplicateGroupsExist";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -842,6 +879,7 @@ instance of OsConfigResource as $OsConfigResource57ref
     PayloadKey = "EnsureShadowGroupIsEmpty";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureShadowGroupIsEmpty";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureShadowGroupIsEmpty";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -856,6 +894,7 @@ instance of OsConfigResource as $OsConfigResource58ref
     PayloadKey = "EnsureDisabledInstallationOfHfsFileSystem";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDisabledInstallationOfHfsFileSystem";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDisabledInstallationOfHfsFileSystem";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -870,6 +909,7 @@ instance of OsConfigResource as $OsConfigResource59ref
     PayloadKey = "EnsureDisabledInstallationOfHfsplusFileSystem";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDisabledInstallationOfHfsplusFileSystem";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDisabledInstallationOfHfsplusFileSystem";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -884,6 +924,7 @@ instance of OsConfigResource as $OsConfigResource60ref
     PayloadKey = "EnsureDisabledInstallationOfJffs2FileSystem";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDisabledInstallationOfJffs2FileSystem";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDisabledInstallationOfJffs2FileSystem";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -898,6 +939,7 @@ instance of OsConfigResource as $OsConfigResource61ref
     PayloadKey = "EnsureKernelCompiledFromApprovedSources";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureKernelCompiledFromApprovedSources";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureKernelCompiledFromApprovedSources";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -912,6 +954,7 @@ instance of OsConfigResource as $OsConfigResource62ref
     PayloadKey = "EnsurePermissionsOnEtcShadow";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcShadow";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcShadow";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -926,6 +969,7 @@ instance of OsConfigResource as $OsConfigResource63ref
     PayloadKey = "EnsurePermissionsOnEtcShadowDash";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcShadowDash";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcShadowDash";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -940,6 +984,7 @@ instance of OsConfigResource as $OsConfigResource64ref
     PayloadKey = "EnsurePermissionsOnEtcGShadow";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcGShadow";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcGShadow";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -954,6 +999,7 @@ instance of OsConfigResource as $OsConfigResource65ref
     PayloadKey = "EnsurePermissionsOnEtcGShadowDash";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcGShadowDash";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcGShadowDash";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -968,6 +1014,7 @@ instance of OsConfigResource as $OsConfigResource66ref
     PayloadKey = "EnsurePermissionsOnEtcPasswd";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcPasswd";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcPasswd";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -982,6 +1029,7 @@ instance of OsConfigResource as $OsConfigResource67ref
     PayloadKey = "EnsurePermissionsOnEtcGroup";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcGroup";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcGroup";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -996,6 +1044,7 @@ instance of OsConfigResource as $OsConfigResource68ref
     PayloadKey = "EnsurePermissionsOnEtcPasswdDash";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcPasswdDash";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcPasswdDash";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1010,6 +1059,7 @@ instance of OsConfigResource as $OsConfigResource69ref
     PayloadKey = "EnsurePermissionsOnEtcGroupDash";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcGroupDash";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcGroupDash";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1024,6 +1074,7 @@ instance of OsConfigResource as $OsConfigResource70ref
     PayloadKey = "EnsureSuRestrictedToRootGroup";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSuRestrictedToRootGroup";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSuRestrictedToRootGroup";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1038,6 +1089,7 @@ instance of OsConfigResource as $OsConfigResource71ref
     PayloadKey = "EnsureRootGroupExists";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRootGroupExists";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureRootGroupExists";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1052,6 +1104,7 @@ instance of OsConfigResource as $OsConfigResource72ref
     PayloadKey = "EnsureAllAccountsHavePasswords";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllAccountsHavePasswords";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAllAccountsHavePasswords";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1066,6 +1119,7 @@ instance of OsConfigResource as $OsConfigResource73ref
     PayloadKey = "EnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1080,6 +1134,7 @@ instance of OsConfigResource as $OsConfigResource74ref
     PayloadKey = "EnsureVirtualMemoryRandomizationIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureVirtualMemoryRandomizationIsEnabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureVirtualMemoryRandomizationIsEnabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1094,6 +1149,7 @@ instance of OsConfigResource as $OsConfigResource75ref
     PayloadKey = "EnsureKernelSupportForCpuNx";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureKernelSupportForCpuNx";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureKernelSupportForCpuNx";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1108,6 +1164,7 @@ instance of OsConfigResource as $OsConfigResource76ref
     PayloadKey = "EnsureDotDoesNotAppearInRootsPath";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDotDoesNotAppearInRootsPath";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDotDoesNotAppearInRootsPath";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1122,6 +1179,7 @@ instance of OsConfigResource as $OsConfigResource77ref
     PayloadKey = "EnsureRestrictedUserHomeDirectories";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRestrictedUserHomeDirectories";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureRestrictedUserHomeDirectories";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1136,6 +1194,7 @@ instance of OsConfigResource as $OsConfigResource78ref
     PayloadKey = "EnsureDefaultUmaskForAllUsers";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDefaultUmaskForAllUsers";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDefaultUmaskForAllUsers";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1150,6 +1209,7 @@ instance of OsConfigResource as $OsConfigResource79ref
     PayloadKey = "EnsureAllBootloadersHavePasswordProtectionEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllBootloadersHavePasswordProtectionEnabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAllBootloadersHavePasswordProtectionEnabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1164,6 +1224,7 @@ instance of OsConfigResource as $OsConfigResource80ref
     PayloadKey = "EnsurePermissionsOnBootloaderConfig";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnBootloaderConfig";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnBootloaderConfig";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1178,6 +1239,7 @@ instance of OsConfigResource as $OsConfigResource81ref
     PayloadKey = "EnsureAuthenticationRequiredForSingleUserMode";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAuthenticationRequiredForSingleUserMode";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAuthenticationRequiredForSingleUserMode";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1192,6 +1254,7 @@ instance of OsConfigResource as $OsConfigResource82ref
     PayloadKey = "EnsurePacketRedirectSendingIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePacketRedirectSendingIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePacketRedirectSendingIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1206,6 +1269,7 @@ instance of OsConfigResource as $OsConfigResource83ref
     PayloadKey = "EnsureIcmpRedirectsIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIcmpRedirectsIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureIcmpRedirectsIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1220,6 +1284,7 @@ instance of OsConfigResource as $OsConfigResource84ref
     PayloadKey = "EnsureSourceRoutedPacketsIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSourceRoutedPacketsIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSourceRoutedPacketsIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1234,6 +1299,7 @@ instance of OsConfigResource as $OsConfigResource85ref
     PayloadKey = "EnsureAcceptingSourceRoutedPacketsIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAcceptingSourceRoutedPacketsIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAcceptingSourceRoutedPacketsIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1248,6 +1314,7 @@ instance of OsConfigResource as $OsConfigResource86ref
     PayloadKey = "EnsureIgnoringBogusIcmpBroadcastResponses";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIgnoringBogusIcmpBroadcastResponses";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureIgnoringBogusIcmpBroadcastResponses";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1262,6 +1329,7 @@ instance of OsConfigResource as $OsConfigResource87ref
     PayloadKey = "EnsureIgnoringIcmpEchoPingsToMulticast";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIgnoringIcmpEchoPingsToMulticast";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureIgnoringIcmpEchoPingsToMulticast";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1276,6 +1344,7 @@ instance of OsConfigResource as $OsConfigResource88ref
     PayloadKey = "EnsureMartianPacketLoggingIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureMartianPacketLoggingIsEnabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureMartianPacketLoggingIsEnabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1290,6 +1359,7 @@ instance of OsConfigResource as $OsConfigResource89ref
     PayloadKey = "EnsureReversePathSourceValidationIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureReversePathSourceValidationIsEnabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureReversePathSourceValidationIsEnabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1304,6 +1374,7 @@ instance of OsConfigResource as $OsConfigResource90ref
     PayloadKey = "EnsureTcpSynCookiesAreEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureTcpSynCookiesAreEnabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureTcpSynCookiesAreEnabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1318,6 +1389,7 @@ instance of OsConfigResource as $OsConfigResource91ref
     PayloadKey = "EnsureSystemNotActingAsNetworkSniffer";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSystemNotActingAsNetworkSniffer";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSystemNotActingAsNetworkSniffer";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1332,6 +1404,7 @@ instance of OsConfigResource as $OsConfigResource92ref
     PayloadKey = "EnsureAllWirelessInterfacesAreDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllWirelessInterfacesAreDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAllWirelessInterfacesAreDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1346,6 +1419,7 @@ instance of OsConfigResource as $OsConfigResource93ref
     PayloadKey = "EnsureIpv6ProtocolIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIpv6ProtocolIsEnabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureIpv6ProtocolIsEnabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1360,6 +1434,7 @@ instance of OsConfigResource as $OsConfigResource94ref
     PayloadKey = "EnsureDccpIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDccpIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDccpIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1374,6 +1449,7 @@ instance of OsConfigResource as $OsConfigResource95ref
     PayloadKey = "EnsureSctpIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSctpIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSctpIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1388,6 +1464,7 @@ instance of OsConfigResource as $OsConfigResource96ref
     PayloadKey = "EnsureDisabledSupportForRds";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDisabledSupportForRds";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDisabledSupportForRds";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1402,6 +1479,7 @@ instance of OsConfigResource as $OsConfigResource97ref
     PayloadKey = "EnsureTipcIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureTipcIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureTipcIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1416,6 +1494,7 @@ instance of OsConfigResource as $OsConfigResource98ref
     PayloadKey = "EnsureLoggingIsConfigured";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureLoggingIsConfigured";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureLoggingIsConfigured";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1430,6 +1509,7 @@ instance of OsConfigResource as $OsConfigResource99ref
     PayloadKey = "EnsureSyslogPackageIsInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSyslogPackageIsInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSyslogPackageIsInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1444,6 +1524,7 @@ instance of OsConfigResource as $OsConfigResource100ref
     PayloadKey = "EnsureSystemdJournaldServicePersistsLogMessages";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSystemdJournaldServicePersistsLogMessages";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSystemdJournaldServicePersistsLogMessages";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1458,6 +1539,7 @@ instance of OsConfigResource as $OsConfigResource101ref
     PayloadKey = "EnsureALoggingServiceIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureALoggingServiceIsEnabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureALoggingServiceIsEnabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1472,6 +1554,7 @@ instance of OsConfigResource as $OsConfigResource102ref
     PayloadKey = "EnsureFilePermissionsForAllRsyslogLogFiles";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureFilePermissionsForAllRsyslogLogFiles";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureFilePermissionsForAllRsyslogLogFiles";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1486,6 +1569,7 @@ instance of OsConfigResource as $OsConfigResource103ref
     PayloadKey = "EnsureLoggerConfigurationFilesAreRestricted";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureLoggerConfigurationFilesAreRestricted";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureLoggerConfigurationFilesAreRestricted";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1500,6 +1584,7 @@ instance of OsConfigResource as $OsConfigResource104ref
     PayloadKey = "EnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1514,6 +1599,7 @@ instance of OsConfigResource as $OsConfigResource105ref
     PayloadKey = "EnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1528,6 +1614,7 @@ instance of OsConfigResource as $OsConfigResource106ref
     PayloadKey = "EnsureRsyslogNotAcceptingRemoteMessages";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRsyslogNotAcceptingRemoteMessages";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateRsyslogNotAcceptingRemoteMessages";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1542,6 +1629,7 @@ instance of OsConfigResource as $OsConfigResource107ref
     PayloadKey = "EnsureSyslogRotaterServiceIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSyslogRotaterServiceIsEnabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSyslogRotaterServiceIsEnabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1556,6 +1644,7 @@ instance of OsConfigResource as $OsConfigResource108ref
     PayloadKey = "EnsureRloginServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRloginServiceIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureRloginServiceIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1570,6 +1659,7 @@ instance of OsConfigResource as $OsConfigResource109ref
     PayloadKey = "EnsureInetdNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureInetdNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureInetdNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1584,6 +1674,7 @@ instance of OsConfigResource as $OsConfigResource110ref
     PayloadKey = "EnsureXinetdNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureXinetdNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureXinetdNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1598,6 +1689,7 @@ instance of OsConfigResource as $OsConfigResource111ref
     PayloadKey = "EnsureTelnetServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureTelnetServiceIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureTelnetServiceIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1612,6 +1704,7 @@ instance of OsConfigResource as $OsConfigResource112ref
     PayloadKey = "EnsureAllTelnetdPackagesUninstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllTelnetdPackagesUninstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAllTelnetdPackagesUninstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1626,6 +1719,7 @@ instance of OsConfigResource as $OsConfigResource113ref
     PayloadKey = "EnsureRcprshServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRcprshServiceIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureRcprshServiceIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1640,6 +1734,7 @@ instance of OsConfigResource as $OsConfigResource114ref
     PayloadKey = "EnsureRshServerNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRshServerNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureRshServerNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1654,6 +1749,7 @@ instance of OsConfigResource as $OsConfigResource115ref
     PayloadKey = "EnsureNisNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNisNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNisNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1668,6 +1764,7 @@ instance of OsConfigResource as $OsConfigResource116ref
     PayloadKey = "EnsureTftpServiceisDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureTftpServiceisDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureTftpServiceisDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1682,6 +1779,7 @@ instance of OsConfigResource as $OsConfigResource117ref
     PayloadKey = "EnsureTftpdNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureTftpdNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureTftpdNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1696,6 +1794,7 @@ instance of OsConfigResource as $OsConfigResource118ref
     PayloadKey = "EnsureReadaheadFedoraNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureReadaheadFedoraNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureReadaheadFedoraNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1710,6 +1809,7 @@ instance of OsConfigResource as $OsConfigResource119ref
     PayloadKey = "EnsureBluetoothHiddNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureBluetoothHiddNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureBluetoothHiddNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1724,6 +1824,7 @@ instance of OsConfigResource as $OsConfigResource120ref
     PayloadKey = "EnsureIsdnUtilsBaseNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIsdnUtilsBaseNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureIsdnUtilsBaseNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1738,6 +1839,7 @@ instance of OsConfigResource as $OsConfigResource121ref
     PayloadKey = "EnsureIsdnUtilsKdumpToolsNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIsdnUtilsKdumpToolsNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureIsdnUtilsKdumpToolsNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1752,6 +1854,7 @@ instance of OsConfigResource as $OsConfigResource122ref
     PayloadKey = "EnsureZeroconfNetworkingIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureZeroconfNetworkingIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureZeroconfNetworkingIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1766,6 +1869,7 @@ instance of OsConfigResource as $OsConfigResource123ref
     PayloadKey = "EnsureCronServiceIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureCronServiceIsEnabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureCronServiceIsEnabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1780,6 +1884,7 @@ instance of OsConfigResource as $OsConfigResource124ref
     PayloadKey = "EnsurePermissionsOnEtcAnacronTab";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcAnacronTab";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcAnacronTab";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1794,6 +1899,7 @@ instance of OsConfigResource as $OsConfigResource125ref
     PayloadKey = "EnsurePermissionsOnEtcCronD";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcCronD";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcCronD";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1808,6 +1914,7 @@ instance of OsConfigResource as $OsConfigResource126ref
     PayloadKey = "EnsurePermissionsOnEtcCronDaily";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcCronDaily";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcCronDaily";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1822,6 +1929,7 @@ instance of OsConfigResource as $OsConfigResource127ref
     PayloadKey = "EnsurePermissionsOnEtcCronHourly";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcCronHourly";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcCronHourly";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1836,6 +1944,7 @@ instance of OsConfigResource as $OsConfigResource128ref
     PayloadKey = "EnsurePermissionsOnEtcCronMonthly";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcCronMonthly";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcCronMonthly";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1850,6 +1959,7 @@ instance of OsConfigResource as $OsConfigResource129ref
     PayloadKey = "EnsurePermissionsOnEtcCronWeekly";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcCronWeekly";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcCronWeekly";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1864,6 +1974,7 @@ instance of OsConfigResource as $OsConfigResource130ref
     PayloadKey = "EnsureAtCronIsRestrictedToAuthorizedUsers";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAtCronIsRestrictedToAuthorizedUsers";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAtCronIsRestrictedToAuthorizedUsers";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1878,6 +1989,7 @@ instance of OsConfigResource as $OsConfigResource131ref
     PayloadKey = "EnsureRemoteLoginWarningBannerIsConfigured";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRemoteLoginWarningBannerIsConfigured";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureRemoteLoginWarningBannerIsConfigured";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1892,6 +2004,7 @@ instance of OsConfigResource as $OsConfigResource132ref
     PayloadKey = "EnsureLocalLoginWarningBannerIsConfigured";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureLocalLoginWarningBannerIsConfigured";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureLocalLoginWarningBannerIsConfigured";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1906,6 +2019,7 @@ instance of OsConfigResource as $OsConfigResource133ref
     PayloadKey = "EnsureAvahiDaemonServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAvahiDaemonServiceIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAvahiDaemonServiceIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1920,6 +2034,7 @@ instance of OsConfigResource as $OsConfigResource134ref
     PayloadKey = "EnsureCupsServiceisDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureCupsServiceisDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureCupsServiceisDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1934,6 +2049,7 @@ instance of OsConfigResource as $OsConfigResource135ref
     PayloadKey = "EnsureIscDhcpdServerNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIscDhcpdServerNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureIscDhcpdServerNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1948,6 +2064,7 @@ instance of OsConfigResource as $OsConfigResource136ref
     PayloadKey = "EnsureSendmailNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSendmailNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSendmailNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1962,6 +2079,7 @@ instance of OsConfigResource as $OsConfigResource137ref
     PayloadKey = "EnsurePostfixPackageIsUninstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePostfixPackageIsUninstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePostfixPackageIsUninstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1976,6 +2094,7 @@ instance of OsConfigResource as $OsConfigResource138ref
     PayloadKey = "EnsurePostfixNetworkListeningIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePostfixNetworkListeningIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePostfixNetworkListeningIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -1990,6 +2109,7 @@ instance of OsConfigResource as $OsConfigResource139ref
     PayloadKey = "EnsureSldapdNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSldapdNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSldapdNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2004,6 +2124,7 @@ instance of OsConfigResource as $OsConfigResource140ref
     PayloadKey = "EnsureRpcgssdServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRpcgssdServiceIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureRpcgssdServiceIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2018,6 +2139,7 @@ instance of OsConfigResource as $OsConfigResource141ref
     PayloadKey = "EnsureRpcidmapdServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRpcidmapdServiceIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureRpcidmapdServiceIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2032,6 +2154,7 @@ instance of OsConfigResource as $OsConfigResource142ref
     PayloadKey = "EnsurePortmapServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePortmapServiceIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePortmapServiceIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2046,6 +2169,7 @@ instance of OsConfigResource as $OsConfigResource143ref
     PayloadKey = "EnsureNetworkFileSystemServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNetworkFileSystemServiceIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNetworkFileSystemServiceIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2060,6 +2184,7 @@ instance of OsConfigResource as $OsConfigResource144ref
     PayloadKey = "EnsureRpcsvcgssdServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRpcsvcgssdServiceIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureRpcsvcgssdServiceIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2074,6 +2199,7 @@ instance of OsConfigResource as $OsConfigResource145ref
     PayloadKey = "EnsureBind9NotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureBind9NotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureBind9NotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2088,6 +2214,7 @@ instance of OsConfigResource as $OsConfigResource146ref
     PayloadKey = "EnsureDovecotCoreNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDovecotCoreNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDovecotCoreNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2102,6 +2229,7 @@ instance of OsConfigResource as $OsConfigResource147ref
     PayloadKey = "EnsureNoLegacyPlusEntriesInEtcPasswd";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoLegacyPlusEntriesInEtcPasswd";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoLegacyPlusEntriesInEtcPasswd";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2116,6 +2244,7 @@ instance of OsConfigResource as $OsConfigResource148ref
     PayloadKey = "EnsureNoLegacyPlusEntriesInEtcShadow";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoLegacyPlusEntriesInEtcShadow";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoLegacyPlusEntriesInEtcShadow";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2130,6 +2259,7 @@ instance of OsConfigResource as $OsConfigResource149ref
     PayloadKey = "EnsureNoLegacyPlusEntriesInEtcGroup";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoLegacyPlusEntriesInEtcGroup";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNoLegacyPlusEntriesInEtcGroup";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2144,6 +2274,7 @@ instance of OsConfigResource as $OsConfigResource150ref
     PayloadKey = "EnsurePasswordExpiration";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePasswordExpiration";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePasswordExpiration";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2158,6 +2289,7 @@ instance of OsConfigResource as $OsConfigResource151ref
     PayloadKey = "EnsurePasswordExpirationWarning";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePasswordExpirationWarning";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePasswordExpirationWarning";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2172,6 +2304,7 @@ instance of OsConfigResource as $OsConfigResource152ref
     PayloadKey = "EnsurePasswordReuseIsLimited";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePasswordReuseIsLimited";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePasswordReuseIsLimited";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2186,6 +2319,7 @@ instance of OsConfigResource as $OsConfigResource153ref
     PayloadKey = "EnsurePasswordHashingAlgorithm";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePasswordHashingAlgorithm";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePasswordHashingAlgorithm";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2200,6 +2334,7 @@ instance of OsConfigResource as $OsConfigResource154ref
     PayloadKey = "EnsureMinDaysBetweenPasswordChanges";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureMinDaysBetweenPasswordChanges";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureMinDaysBetweenPasswordChanges";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2214,6 +2349,7 @@ instance of OsConfigResource as $OsConfigResource155ref
     PayloadKey = "EnsureMaxDaysBetweenPasswordChanges";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureMaxDaysBetweenPasswordChanges";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureMaxDaysBetweenPasswordChanges";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2228,6 +2364,7 @@ instance of OsConfigResource as $OsConfigResource156ref
     PayloadKey = "EnsureInactivePasswordLockPeriod";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureInactivePasswordLockPeriod";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureInactivePasswordLockPeriod";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2242,6 +2379,7 @@ instance of OsConfigResource as $OsConfigResource157ref
     PayloadKey = "EnsureSystemAccountsAreNonLogin";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSystemAccountsAreNonLogin";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSystemAccountsAreNonLogin";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2256,6 +2394,7 @@ instance of OsConfigResource as $OsConfigResource158ref
     PayloadKey = "EnsureDefaultRootAccountGroupIsGidZero";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDefaultRootAccountGroupIsGidZero";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDefaultRootAccountGroupIsGidZero";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2270,6 +2409,7 @@ instance of OsConfigResource as $OsConfigResource159ref
     PayloadKey = "EnsureRootIsOnlyUidZeroAccount";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRootIsOnlyUidZeroAccount";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureRootIsOnlyUidZeroAccount";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2284,6 +2424,7 @@ instance of OsConfigResource as $OsConfigResource160ref
     PayloadKey = "EnsureUnnecessaryAccountsAreRemoved";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureUnnecessaryAccountsAreRemoved";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureUnnecessaryAccountsAreRemoved";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2298,6 +2439,7 @@ instance of OsConfigResource as $OsConfigResource161ref
     PayloadKey = "EnsureAuditdInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAuditdInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAuditdInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2312,6 +2454,7 @@ instance of OsConfigResource as $OsConfigResource162ref
     PayloadKey = "EnsureAuditdServiceIsRunning";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAuditdServiceIsRunning";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAuditdServiceIsRunning";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2326,6 +2469,7 @@ instance of OsConfigResource as $OsConfigResource163ref
     PayloadKey = "EnsureSnmpServerIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSnmpServerIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSnmpServerIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2340,6 +2484,7 @@ instance of OsConfigResource as $OsConfigResource164ref
     PayloadKey = "EnsureRsynServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRsynServiceIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureRsynServiceIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2354,6 +2499,7 @@ instance of OsConfigResource as $OsConfigResource165ref
     PayloadKey = "EnsureNisServerIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNisServerIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureNisServerIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2368,6 +2514,7 @@ instance of OsConfigResource as $OsConfigResource166ref
     PayloadKey = "EnsureRshClientNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRshClientNotInstalled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureRshClientNotInstalled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2382,6 +2529,7 @@ instance of OsConfigResource as $OsConfigResource167ref
     PayloadKey = "EnsureSmbWithSambaIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSmbWithSambaIsDisabled";
+    ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSmbWithSambaIsDisabled";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
@@ -2395,6 +2543,6 @@ instance of OMI_ConfigurationDocument
     Version="0.0.1";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="26/2/2024 10:36:00 AM PST";
+    GenerationDate="29/2/2024 16:12:00 PST";
     Name="LinuxSecurityBaseline";
 };
