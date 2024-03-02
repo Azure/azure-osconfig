@@ -8,6 +8,7 @@ RUN yum install -y --disableplugin=subscription-manager \
     git \
     jq \
     libtool \
+    libcurl-devel \
     make \
     ninja-build \
     openssl-devel \
