@@ -32,23 +32,25 @@ jobs:
       matrix:
         target:
           [
-            { os: ubuntu, version: 20.04, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt },
-            { os: ubuntu, version: 22.04, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt },
-            { os: debian, version: 10, dist: buster, package-type: DEB, repo: microsoft-debian-buster-prod-apt },
-            { os: debian, version: 11, dist: bullseye, package-type: DEB, repo: microsoft-debian-bullseye-prod-apt },
-            { os: mariner, version: 2, dist: azurelinux, package-type: RPM, repo: cbl-mariner-2.0-preview-Microsoft-x86_64-yum },
+            # TODO: Add support for almalinux9 publishing
+            # { os: almalinux, version: 9, arch: amd64, dist: almalinux9, package-type: RPM, repo: <find repo> },
+            { os: amazonlinux, version: 2, arch: amd64, dist: amazonlinux2, package-type: RPM, repo: microsoft-amazonlinux2-insiders-fast-prod-yum },
+            { os: centos, version: 7, arch: amd64, dist: centos7, package-type: RPM, repo: microsoft-centos7-insiders-fast-prod-yum },
+            { os: centos, version: 8, arch: amd64, dist: centos8, package-type: RPM, repo: microsoft-centos8-insiders-fast-prod-yum },
+            { os: debian, version: 10, arch: amd64, dist: buster, package-type: DEB, repo: microsoft-debian-buster-prod-apt },
+            { os: debian, version: 11, arch: amd64, dist: bullseye, package-type: DEB, repo: microsoft-debian-bullseye-prod-apt },
+            { os: debian, version: 12, arch: amd64, dist: bookworm, package-type: DEB, repo: microsoft-debian-bookworm-prod-apt },
+            { os: mariner, version: 2, arch: amd64, dist: azurelinux, package-type: RPM, repo: cbl-mariner-2.0-preview-Microsoft-x86_64-yum },
+            { os: rhel, version: 7, arch: amd64, dist: rhel7, package-type: RPM, repo: microsoft-rhel7.4-insiders-fast-prod-yum },
+            { os: rhel, version: 8, arch: amd64, dist: rhel8, package-type: RPM, repo: microsoft-rhel8.0-insiders-fast-prod-yum },
+            { os: rhel, version: 9, arch: amd64, dist: rhel9, package-type: RPM, repo: microsoft-rhel9.0-insiders-fast-prod-yum },
+            { os: sles, version: 15, arch: amd64, dist: sles15, package-type: RPM, repo: microsoft-sles15-insiders-fast-prod-yum },
+            { os: ubuntu, version: 20.04, arch: amd64, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt },
+            { os: ubuntu, version: 22.04, arch: amd64, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt },
           ]
-        arch: [arm, arm64, amd64]
-        exclude:
-          - target: { os: ubuntu, version: 22.04, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt }
-            arch: arm
-          - target: { os: mariner, version: 2, dist: azurelinux, package-type: RPM, repo: cbl-mariner-2.0-preview-Microsoft-x86_64-yum }
-            arch: arm
-          - target: { os: mariner, version: 2, dist: azurelinux, package-type: RPM, repo: cbl-mariner-2.0-preview-Microsoft-x86_64-yum }
-            arch: arm64
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
-      arch: ${{ matrix.arch }}
+      arch: ${{ matrix.target.arch }}
       repo: ${{ matrix.target.repo }}
       dist: ${{ matrix.target.dist }}
       # ESRP debian based repos (deb) have channels/rings on repos.
