@@ -14,17 +14,38 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, debian-10, debian-11, mariner-2]
-        arch: [arm, arm64, amd64]
-        exclude:
-          - os: ubuntu-22.04
-            arch: arm
-          - os: ubuntu-22.04
-            arch: arm64
-          - os: mariner-2
-            arch: arm
-          - os: mariner-2
-            arch: arm64
+        target:
+          [
+            { name: almalinux-9, arch: amd64 },
+            { name: amazonlinux-2, arch: amd64 },
+            { name: centos-7, arch: amd64 },
+            { name: centos-8, arch: amd64 },
+            { name: debian-9, arch: amd64 },
+            { name: debian-9, arch: arm },
+            { name: debian-9, arch: arm64 },
+            { name: debian-10, arch: amd64 },
+            { name: debian-10, arch: arm },
+            { name: debian-10, arch: arm64 },
+            { name: debian-11, arch: amd64 },
+            { name: debian-11, arch: arm },
+            { name: debian-11, arch: arm64 },
+            { name: debian-12, arch: amd64 },
+            { name: debian-12, arch: arm64 },
+            { name: mariner-2, arch: amd64 },
+            { name: oraclelinux-7, arch: amd64 },
+            { name: oraclelinux-8, arch: amd64 },
+            { name: rhel-7, arch: amd64 },
+            { name: rhel-8, arch: amd64 },
+            { name: rhel-9, arch: amd64 },
+            { name: sles-15, arch: amd64 },
+            { name: ubuntu-18.04, arch: amd64 },
+            { name: ubuntu-18.04, arch: arm },
+            { name: ubuntu-18.04, arch: arm64 },
+            { name: ubuntu-20.04, arch: amd64 },
+            { name: ubuntu-20.04, arch: arm },
+            { name: ubuntu-20.04, arch: arm64 },
+            { name: ubuntu-22.04, arch: amd64 },
+          ]
 
     steps:
       - uses: actions/checkout@v4
@@ -44,7 +65,7 @@ jobs:
         uses: ./.github/actions/container-run
         with:
           registry: ${{ env.REGISTRY }}
-          container: azure/azure-osconfig/${{ matrix.os }}-${{ matrix.arch }}
+          container: azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
 
       - name: Generate build
@@ -53,33 +74,33 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           cmd: |
             mkdir build && cd build
-            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON ${{ matrix.os == 'mariner-2' && '-Duse_default_uuid=ON' || '' }} -G Ninja
+            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -Duse_default_uuid=ON
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
-          cmd: cmake --build . --config ${{ env.BUILD_TYPE }}
+          cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Run ctest
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
-          cmd: ctest --verbose > ../${{ matrix.os }}-${{ matrix.arch }}.log
+          cmd: ctest --verbose > ../${{ matrix.target.name }}-${{ matrix.target.arch }}.log
 
       - name: Generate test report
         uses: ./.github/actions/gtest-xml
         if: success() || failure()
         with:
           path: ./build/gtest-output
-          output: ${{ matrix.os }}-${{ matrix.arch }}.xml
+          output: ${{ matrix.target.name }}-${{ matrix.target.arch }}.xml
 
       - uses: actions/upload-artifact@v3
         if: success() || failure()
         with:
           name: unit-test
           path: |
-            ${{ matrix.os }}-${{ matrix.arch }}.log
-            ${{ matrix.os }}-${{ matrix.arch }}.xml
+            ${{ matrix.target.name }}-${{ matrix.target.arch }}.log
+            ${{ matrix.target.name }}-${{ matrix.target.arch }}.xml
