@@ -16,7 +16,6 @@ jobs:
       matrix:
         target:
           [
-            { name: almalinux-9, arch: amd64 },
             { name: amazonlinux-2, arch: amd64 },
             { name: centos-7, arch: amd64 },
             { name: centos-8, arch: amd64 },
