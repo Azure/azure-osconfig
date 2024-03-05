@@ -4,7 +4,7 @@ Author: [MariusNi](https://github.com/MariusNi)
 
 # 1. Introduction
 
-Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI, GitOps, as well as local management.
+Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI, GitOps, as well as local management.
 
 <img src="assets/bigpicture.png" alt="OSConfig" width=80%/>
 
@@ -51,7 +51,7 @@ The RC/DC files are written in JSON and follow the [MIM schema](../src/modules/s
 
 To protect against unauthorized access, the RC/DC files are restricted to root user read and write access only.
 
-The  RC/DC files by default reside under `/etc/osconfig/` as `/etc/osconfig/osconfig_desired.json` (the DC file) and `/etc/osconfig/osconfig_reported.json` (the RC file).
+The RC/DC files by default reside under `/etc/osconfig/` as `/etc/osconfig/osconfig_desired.json` (the DC file) and `/etc/osconfig/osconfig_reported.json` (the RC file).
 
 ## 3.3. GitOps Watcher
 
