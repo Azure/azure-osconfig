@@ -47,11 +47,11 @@ The agent is completely decoupled from the platform and the modules. A new modul
 
 The RC/DC Watcher monitors the Desired Configuration (DC) file and acts on detected file changes by making MpiSetDesired calls to the Management Platform. The Watcher also makes MpiGetReported calls to the Management Platform and writes the reported configuration to the Reported Configuration (RC) file. 
 
-The RC/DC files are written in MIM JSON format.
+The RC/DC files are written in JSON and follow the [MIM schema](../src/modules/schema/mim.schema.json).
 
 To protect against unauthorized access, the RC/DC files are restricted to root user read and write access only.
 
-The  RC/DC files by default reside under /etc/osconfig/ as `/etc/osconfig/osconfig_desired.json` (the DC file) and `/etc/osconfig/osconfig_reported.json` (the RC file).
+The  RC/DC files by default reside under `/etc/osconfig/` as `/etc/osconfig/osconfig_desired.json` (the DC file) and `/etc/osconfig/osconfig_reported.json` (the RC file).
 
 ## 3.3. GitOps Watcher
 
@@ -59,7 +59,7 @@ The RC/DC Watcher clones a Git repository, monitors the GitOps Desired Configura
 
 The GitOps DC file by default is named `osconfig_desired.json` and is located in the root of the repository at `/etc/osconfig/gitops/osconfig_desired.json`.
 
-The GitOps DC file is written in MIM JSON format.
+The GitOps DC file is written in JSON and follows the [MIM schema](../src/modules/schema/mim.schema.json).
 
 The Git clone is automatically deleted when the GitOps Watcher terminates. While active, the cloned DC file is protected for root user access only.
 
@@ -97,7 +97,7 @@ The platform communicates to the OSConfig Management Modules over the Management
  
 The platform includes the following main components:
 
-- Management Platform Interface (MPI): MPI as an IPC REST API over HTTP and UDS. This is the main adapter interface,.
+- Management Platform Interface (MPI): MPI as an IPC REST API over HTTP and UDS. This is the main adapter interface.
 - Watcher: monitors for desired configuration file for updates. This is the other adapter interface, for both agentless and agent management authorities.
 - Orchestrator: receives, orchestrates, serializes requests for modules into the Modules Manager. The management authorities and their adapters can make their own MPI requests. The Orchestrator's role is to orchestrate between local and remote management authorities and also help orchestrate for each authority following the Module Interface Model (MIM) contracts and for PnP without modifying passing-through requests in either direction. 
 - Modules Manager: receives serialized requests over the MPI C API, dispatches the requests to Module Hosts over the MMI REST API.
