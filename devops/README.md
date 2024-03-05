@@ -11,23 +11,24 @@ Channels | Description
 
 | Platform | Architecture | Package Repository
 -----|-----|-----
-Amazon Linux 2 | x86_64 | [insiders-fast](#amazon-linux-9---insiders-fast-amd64)
-Azure Linux 2 (mariner-2) | x86_64 | [insiders-fast](#azure-linux-2-cbl-mariner2-mariner2---insiders-fast-amd64)
-CentOS 7 | x86_64 | [insiders-fast](#centos-7---insiders-fast-amd64)
-CentOS 8 | x86_64 | [insiders-fast](#centos-8---insiders-fast-amd64)
-Debian 10 | x86_64 | [insiders-fast](#debian-10---insiders-fast-amd64) / [prod](#debian-10---prod-amd64)
-Debian 11 | x86_64 | [insiders-fast](#debian-11---insiders-fast-amd64) / [prod](#debian-11---prod-amd64)
-Debian 12 | x86_64 | [insiders-fast](#debian-12---insiders-fast-amd64)
-Red Hat Enterprise Linux 7 | x86_64 | [insiders-fast](#red-hat-enterprise-linux-7---insiders-fast-amd64)
-Red Hat Enterprise Linux 8 | x86_64 | [insiders-fast](#red-hat-enterprise-linux-8---insiders-fast-amd64)
-Red Hat Enterprise Linux 9 | x86_64 | [insiders-fast](#red-hat-enterprise-linux-9---insiders-fast-amd64)
-Rocky Linux 9 | x86_64 | [insiders-fast](#rocky-linux-9---insiders-fast-amd64)
-SUSE Linux Enterprise Server 15 | x86_64 | [insiders-fast](#suse-linux-enterprise-server-15---insiders-fast-amd64)
-Ubuntu 20.04 | x86_64 | [insiders-fast](#ubuntu-2004---insiders-fast-amd64) / [prod](#ubuntu-2004---prod-amd64)
-Ubuntu 22.04 | x86_64 | [insiders-fast](#ubuntu-2204---insiders-fast-amd64) / [prod](#ubuntu-2204---prod-amd64)
+Amazon Linux 2 | x86_64 | [insiders-fast](#amazonlinux-insiders-fast)
+Azure Linux 2 (mariner-2) | x86_64 | [insiders-fast](#azurelinux-insiders-fast)
+CentOS 7 | x86_64 | [insiders-fast](#centos7-insiders-fast)
+CentOS 8 | x86_64 | [insiders-fast](#centos8-insiders-fast)
+Debian 10 | x86_64 | [insiders-fast](#debian10-insiders-fast) / [prod](#debian10-prod)
+Debian 11 | x86_64 | [insiders-fast](#debian11-insiders-fast) / [prod](#debian11-prod)
+Debian 12 | x86_64 | [insiders-fast](#debian12-insiders-fast)
+Red Hat Enterprise Linux 7 | x86_64 | [insiders-fast](#rhel7-insiders-fast)
+Red Hat Enterprise Linux 8 | x86_64 | [insiders-fast](#rhel8-insiders-fast)
+Red Hat Enterprise Linux 9 | x86_64 | [insiders-fast](#rhel9-insiders-fast)
+Rocky Linux 9 | x86_64 | [insiders-fast](#rockylinux9-insiders-fast)
+SUSE Linux Enterprise Server 15 | x86_64 | [insiders-fast](#sles15-insiders-fast)
+Ubuntu 20.04 | x86_64 | [insiders-fast](#ubuntu2004-insiders-fast) / [prod](#ubuntu2004-prod)
+Ubuntu 22.04 | x86_64 | [insiders-fast](#ubuntu2204-insiders-fast) / [prod](#ubuntu2204-prod)
 
-## Amazon Linux 9 - insiders-fast (AMD64)
+## Amazon Linux 9
 ### Install
+#### <a name="amazonlinux-insiders-fast"></a>insiders-fast
 ```bash
 yum install yum-utils
 yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-amazonlinux2-insiders-fast-prod/config.repo
@@ -38,8 +39,9 @@ yum install osconfig
 yum remove osconfig
 ```
 
-## Azure Linux 2 (cbl-mariner2, mariner2) - insiders-fast (AMD64)
+## Azure Linux 2 (cbl-mariner2, mariner2)
 ### Install
+#### <a name="azurelinux-insiders-fast"></a>insiders-fast / preview
 ```bash
 tdnf install dnf-plugins-core
 dnf config-manager --add-repo https://packages.microsoft.com/yumrepos/cbl-mariner-2.0-preview-Microsoft-x86_64/config.repo
@@ -50,8 +52,9 @@ tdnf install osconfig
 tdnf erase osconfig
 ```
 
-## CentOS 7 - insiders-fast (AMD64)
+## CentOS 7
 ### Install
+#### <a name="centos7-insiders-fast"></a>insiders-fast
 ```bash
 yum install yum-utils
 yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-centos7-insiders-fast-prod/config.repo
@@ -62,8 +65,9 @@ yum install osconfig
 yum remove osconfig
 ```
 
-## CentOS 8 - insiders-fast (AMD64)
+## CentOS 8
 ### Install
+#### <a name="centos8-insiders-fast">insiders-fast
 ```bash
 yum install yum-utils
 yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-centos8-insiders-fast-prod/config.repo
@@ -74,23 +78,18 @@ yum install osconfig
 yum remove osconfig
 ```
 
-## Debian 10 - insiders-fast (AMD64)
+## Debian 10
 ### Install
+#### <a name="debian10-insiders-fast">insiders-fast
 ```bash
-wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 wget https://packages.microsoft.com/config/debian/10/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list
-apt install osconfig
 ```
-### Remove
+#### <a name="debian10-prod">prod
 ```bash
-apt remove osconfig
+wget https://packages.microsoft.com/config/debian/10/prod.list -O /etc/apt/sources.list.d/packages-microsoft-com_prod.list
 ```
-
-## Debian 10 - prod (AMD64)
-### Install
 ```bash
 wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-wget https://packages.microsoft.com/config/debian/10/prod.list -O /etc/apt/sources.list.d/packages-microsoft-com_prod.list
 apt update
 apt install osconfig
 ```
@@ -99,8 +98,16 @@ apt install osconfig
 apt remove osconfig
 ```
 
-## Debian 11 - insiders-fast (AMD64)
+## Debian 11
 ### Install
+#### <a name="debian11-insiders-fast">insiders-fast
+```bash
+wget https://packages.microsoft.com/config/debian/11/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list
+```
+#### <a name="debian11-prod">prod
+```bash
+wget https://packages.microsoft.com/config/debian/11/prod.list -O /etc/apt/sources.list.d/packages-microsoft-com_prod.list
+```
 ```bash
 wget -qO - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/packages-microsoft-com_key.asc
 wget https://packages.microsoft.com/config/debian/11/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list
@@ -111,21 +118,12 @@ apt install osconfig
 apt remove osconfig
 ```
 
-## Debian 11 - prod (AMD64)
+## Debian 12
 ### Install
+#### <a name="debian12-insiders-fast">insiders-fast
 ```bash
-wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-wget https://packages.microsoft.com/config/debian/11/prod.list -O /etc/apt/sources.list.d/packages-microsoft-com_prod.list
-apt update
-apt install osconfig
+wget https://packages.microsoft.com/config/debian/12/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list
 ```
-### Remove
-```bash
-apt remove osconfig
-```
-
-## Debian 12 - insiders-fast (AMD64)
-### Install
 ```bash
 wget -qO - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/packages-microsoft-com_key.asc
 wget https://packages.microsoft.com/config/debian/12/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list
@@ -136,8 +134,9 @@ apt install osconfig
 apt remove osconfig
 ```
 
-## Red Hat Enterprise Linux 7 - insiders-fast (AMD64)
+## Red Hat Enterprise Linux 7
 ### Install
+#### <a name="rhel7-insiders-fast">insiders-fast
 ```bash
 yum install yum-utils
 yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-rhel7.4-insiders-fast-prod/config.repo
@@ -148,8 +147,9 @@ yum install osconfig
 yum remove osconfig
 ```
 
-## Red Hat Enterprise Linux 8 - insiders-fast (AMD64)
+## Red Hat Enterprise Linux 8
 ### Install
+#### <a name="rhel8-insiders-fast">insiders-fast
 ```bash
 yum install yum-utils
 yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-rhel8.0-insiders-fast-prod/
@@ -160,8 +160,9 @@ yum install osconfig
 yum remove osconfig
 ```
 
-## Red Hat Enterprise Linux 9 - insiders-fast (AMD64)
+## Red Hat Enterprise Linux 9
 ### Install
+#### <a name="rhel9-insiders-fast">insiders-fast
 ```bash
 yum install yum-utils
 yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-rhel9.0-insiders-fast-prod/config.repo
@@ -172,8 +173,9 @@ yum install osconfig
 yum remove osconfig
 ```
 
-## Rocky Linux 9 - insiders-fast (AMD64)
+## Rocky Linux 9
 ### Install
+#### <a name="rockylinux9-insiders-fast">insiders-fast
 ```bash
 yum install yum-utils
 yum-config-manager --add-repo https://packages.microsoft.com/config/rocky/9/insiders-fast.repo
@@ -184,8 +186,9 @@ yum install osconfig
 yum remove osconfig
 ```
 
-## SUSE Linux Enterprise Server 15 - insiders-fast (AMD64)
+## SUSE Linux Enterprise Server 15
 ### Install
+#### <a name="sles15-insiders-fast">insiders-fast
 ```bash
 zypper install yum-utils
 zypper ar -f https://packages.microsoft.com/yumrepos/microsoft-sles15-insiders-fast-prod/config.repo
@@ -196,24 +199,18 @@ zypper install osconfig
 zypper remove osconfig
 ```
 
-## Ubuntu 20.04 - insiders-fast (AMD64)
+## Ubuntu 20.04
 ### Install
+#### <a name="ubuntu2004-insiders-fast">insiders-fast
 ```bash
-wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 wget https://packages.microsoft.com/config/ubuntu/20.04/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list
-apt update
-apt install osconfig
 ```
-### Remove
+#### <a name="ubuntu2004-prod">prod
 ```bash
-apt remove osconfig
-```
-
-## Ubuntu 20.04 - prod (AMD64)
-### Install
-```bash
-wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 wget https://packages.microsoft.com/config/ubuntu/20.04/prod.list -O /etc/apt/sources.list.d/packages-microsoft-com_prod.list
+```
+```bash
+wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 apt update
 apt install osconfig
 ```
@@ -222,24 +219,18 @@ apt install osconfig
 apt remove osconfig
 ```
 
-## Ubuntu 22.04 - insiders-fast (AMD64)
-### Install
+## Ubuntu 22.04
+#### <a name="ubuntu2204-insiders-fast">insiders-fast
 ```bash
-wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 wget https://packages.microsoft.com/config/ubuntu/22.04/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list
-apt update
-apt install osconfig
 ```
-### Remove
+#### <a name="ubuntu2204-prod">prod
 ```bash
-apt remove osconfig
+wget https://packages.microsoft.com/config/ubuntu/22.04/prod.list -O /etc/apt/sources.list.d/packages-microsoft-com_prod.list
 ```
-
-## Ubuntu 22.04 - prod (AMD64)
 ### Install
 ```bash
 wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-wget https://packages.microsoft.com/config/ubuntu/22.04/prod.list -O /etc/apt/sources.list.d/packages-microsoft-com_prod.list
 apt update
 apt install osconfig
 ```
