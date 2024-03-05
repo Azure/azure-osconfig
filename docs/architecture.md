@@ -83,7 +83,7 @@ In the opposite direction, the OSConfig agent periodically updates the Reported 
 
 ## 3.7. MPI Client
 
-The agent implements an MPI Client and it uses it to make Management Platform Interface (MPI) calls to the platform as IPC calls over HTTP and the Unix Domain Sockets (UDS).
+The agent implements an MPI Client and it uses it to make Management Platform Interface (MPI) calls to the platform as IPC REST API calls over HTTP and the Unix Domain Sockets (UDS).
 
 # 4. OSConfig Management Platform
 
