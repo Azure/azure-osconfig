@@ -6,7 +6,7 @@ Channels | Description
 [![insiders-fast](https://github.com/Azure/azure-osconfig/actions/workflows/insiders-fast.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/insiders-fast.yml) | The latest and greatest features and bug fixes. This channel is updated frequently.
 [![prod](https://github.com/Azure/azure-osconfig/actions/workflows/prod.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/prod.yml) | The stable channel. This channel is updated less frequently and is recommended for production use.
 
-*If you see any missing platforms or architectures that would help, please contact osconfigcore@mcirosoft.com.
+*If you see any missing platforms or architectures that would help, please contact osconfigcore@microsoft.com.
 
 | Platform | Architecture | Package Repository | Package Removal
 -----|-----|-----|-----
