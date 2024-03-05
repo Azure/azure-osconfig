@@ -35,7 +35,7 @@ This diagram shows the current North Star architecture of OSConfig. In this diag
 
 ## 3.1. Introduction
 
-The OSConfig agent is a thin client running as a daemon (Linux background service) and implements several adapters: a watcher for the Reported Configuration/Desired Configuration (RC/DC), a watcher for GitOps and a PnP agent for IoT Hub.
+The OSConfig agent is a thin client running as a daemon (Linux background service) and implements several adapters: a watcher for the Reported Configuration/Desired Configuration (RC/DC), a watcher for GitOps and a PnP agent for [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/).
 
 The agent communicates with the OSConfig Management Platform over the Management Platform Interface (MPI) IPC REST API.
 
@@ -57,7 +57,7 @@ The  RC/DC files by default reside under `/etc/osconfig/` as `/etc/osconfig/osco
 
 The RC/DC Watcher clones a Git repository, monitors the GitOps Desired Configuration (DC) file and acts on detected file changes by making MpiSetDesired calls to the Management Platform. 
 
-The GitOps DC file by default is named `osconfig_desired.json` and is located in the root of the repository at `/etc/osconfig/gitops/osconfig_desired.json`.
+The GitOps DC file by default is named `osconfig_desired.json`, is located in the root of the repository and is locally cloned at `/etc/osconfig/gitops/osconfig_desired.json`.
 
 The GitOps DC file is written in JSON and follows the [MIM schema](../src/modules/schema/mim.schema.json).
 
@@ -69,7 +69,7 @@ The agent uses HTTP helper APIs from the [Azure IoT PnP C SDK](https://github.co
 
 ## 3.5. IoT Hub Client
 
-The agent's IoT Hub Client uses the IoT Client APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to connect to the IoT Hub, receives Desired Twin updates, and makes Reported Twin updates.
+The agent's IoT Hub Client uses the IoT Client APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to connect to the [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/), receive Desired Twin updates, and make Reported Twin updates.
 
 The IoT Hub Client does not attempt to parse the property values. 
 
