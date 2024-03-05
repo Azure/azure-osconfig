@@ -4,7 +4,7 @@ Author: [MariusNi](https://github.com/MariusNi)
 
 # 1. Introduction
 
-Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI, GitOps, as well as local management.
+Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI, GitOps, as well as local management.
 
 This document describes the development roadmap of the OSConfig project.
 
