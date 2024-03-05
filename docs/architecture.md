@@ -289,7 +289,7 @@ In summary, each module must:
 - Not require any additional change in the OSConfig stack.
 - Be completely decoupled from other modules and from the rest of the OSConfig stack.
 
-For more information about modules see the [OSConfig Management Modules](modules.md) specification.
+For more information about modules and MIM see the [OSConfig Management Modules](modules.md) specification.
  
 ## 5.2. Module Interface Model (MIM)
 
