@@ -1,6 +1,6 @@
 # Package Installation
 
-We use the [Microsoft repository](https://packages.microsoft.com/) to distribute our packages. Below are the instructions to install the `osconfig` package on our supported Linux distributions.
+Our packages are distributed via the [Microsoft repository](https://packages.microsoft.com/). The following instructions will guide you through the installation of the `osconfig` package on our supported Linux distributions. Additionally, you can find our MSDN documentation on package installation at [docs.microsoft.com](https://learn.microsoft.com/azure/osconfig/howto-install?tabs=package).
 
 Channels | Description
 -----|-----  

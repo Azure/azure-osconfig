@@ -8,7 +8,7 @@ For more information on OSConfig see [OSConfig North Star Architecture](docs/arc
 
 For our code of conduct and contributing instructions see [CONTRIBUTING](CONTRIBUTING.md). For our approach to security see [SECURITY](SECURITY.md).
 
-For the list of our published binary packages and instructions how to install them see [/devops/README.md](./devops/README.md).
+For the list of our published binary packages and instructions how to install them see [devops/README.md](devops/README.md).
 
 ### C Standard
 
