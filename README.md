@@ -8,32 +8,7 @@ For more information on OSConfig see [OSConfig North Star Architecture](docs/arc
 
 For our code of conduct and contributing instructions see [CONTRIBUTING](CONTRIBUTING.md). For our approach to security see [SECURITY](SECURITY.md).
 
-## Pre-built Binary Packages
-We publish packages for all our supported platforms. See below for the list of supported platforms and the package repositories.
-
-Channels | Description
------|-----  
-[![insiders-fast](https://github.com/Azure/azure-osconfig/actions/workflows/insiders-fast.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/insiders-fast.yml) | The latest and greatest features and bug fixes. This channel is updated frequently.
-[![prod](https://github.com/Azure/azure-osconfig/actions/workflows/prod.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/prod.yml) | The stable channel. This channel is updated less frequently and is recommended for production use.
-
-*If you see any missing platforms or architectures that would help, please contact osconfigcore@mcirosoft.com.
-
-| Platform | Architecture | Package Repository
------|-----|-----
-Amazon Linux 2 | x86_64 | [insiders-fast](./devops/README.md#amazon-linux-9---insiders-fast-amd64)
-Azure Linux 2 (mariner-2) | x86_64 | [insiders-fast](./devops/README.md#azure-linux-2-cbl-mariner2-mariner2---insiders-fast-amd64)
-CentOS 7 | x86_64 | [insiders-fast](./devops/README.md#centos-7---insiders-fast-amd64)
-CentOS 8 | x86_64 | [insiders-fast](./devops/README.md#centos-8---insiders-fast-amd64)
-Debian 10 | x86_64 | [insiders-fast](./devops/README.md#debian-10---insiders-fast-amd64) / [prod](./devops/README.md#debian-10---prod-amd64)
-Debian 11 | x86_64 | [insiders-fast](./devops/README.md#debian-11---insiders-fast-amd64) / [prod](./devops/README.md#debian-11---prod-amd64)
-Debian 12 | x86_64 | [insiders-fast](./devops/README.md#debian-12---insiders-fast-amd64)
-Red Hat Enterprise Linux 7 | x86_64 | [insiders-fast](./devops/README.md#red-hat-enterprise-linux-7---insiders-fast-amd64)
-Red Hat Enterprise Linux 8 | x86_64 | [insiders-fast](./devops/README.md#red-hat-enterprise-linux-8---insiders-fast-amd64)
-Red Hat Enterprise Linux 9 | x86_64 | [insiders-fast](./devops/README.md#red-hat-enterprise-linux-9---insiders-fast-amd64)
-Rocky Linux 9 | x86_64 | [insiders-fast](./devops/README.md#rocky-linux-9---insiders-fast-amd64)
-SUSE Linux Enterprise Server 15 | x86_64 | [insiders-fast](./devops/README.md#suse-linux-enterprise-server-15---insiders-fast-amd64)
-Ubuntu 20.04 | x86_64 | [insiders-fast](./devops/README.md#ubuntu-2004---insiders-fast-amd64) / [prod](./devops/README.md#ubuntu-2004---prod-amd64)
-Ubuntu 22.04 | x86_64 | [insiders-fast](./devops/README.md#ubuntu-2204---insiders-fast-amd64) / [prod](./devops/README.md#ubuntu-2204---prod-amd64)
+For the list of our published binary packages and instructions how to install them see [here](./devops/README.md)
 
 ### C Standard
 
