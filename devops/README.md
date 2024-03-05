@@ -1,6 +1,6 @@
 # Package Installation
 
-We use the [Microsoft repository](https://packages.microsoft.com/) to distribute our packages. Below are the instructions to install the `osconfig` package on various operating systems.
+We use the [Microsoft repository](https://packages.microsoft.com/) to distribute our packages. Below are the instructions to install the `osconfig` package on our supported Linux distributions.
 
 Channels | Description
 -----|-----  
