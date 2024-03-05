@@ -110,7 +110,6 @@ wget https://packages.microsoft.com/config/debian/11/prod.list -O /etc/apt/sourc
 ```
 ```bash
 wget -qO - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/packages-microsoft-com_key.asc
-wget https://packages.microsoft.com/config/debian/11/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list
 apt install osconfig
 ```
 ### Remove
@@ -126,7 +125,6 @@ wget https://packages.microsoft.com/config/debian/12/insiders-fast.list -O /etc/
 ```
 ```bash
 wget -qO - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/packages-microsoft-com_key.asc
-wget https://packages.microsoft.com/config/debian/12/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list
 apt install osconfig
 ```
 ### Remove
