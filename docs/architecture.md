@@ -1,10 +1,10 @@
-Azure Device OS Configuration (OSConfig) - North Star Architecture
-==================================================================
+Azure OSConfig - North Star Architecture
+========================================
 Author: [MariusNi](https://github.com/MariusNi)
 
 # 1. Introduction
 
-Azure Device OS Configuration (OSConfig) is a modular configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI (via Azure PnP, IoT Hub, Azure Policy), GitOps, as well as local management (such as from Out Of Box Experience, OOBE).
+Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI, GitOps, as well as local management.
 
 <img src="assets/bigpicture.png" alt="OSConfig" width=80%/>
 
@@ -15,19 +15,13 @@ Core design principles for OSConfig are the following:
 - Modular, decoupled architecture. 
 - Portable and extensible to other management platforms.
 - Simple and focused on what is truly needed.
-- Not permanently tied to Azure IoT.
+- Not permanently tied to any management authority.
 - Declarative style device management.
 
 Modular, decoupled architecture means that each layer in OSConfig can be detached from the other OSConfig layers above it and be directly invoked:
 
-- The OSConfig Management Platform can be directly invoked by any management authority or agent over its Management Platform Interface (MPI). The platform is not permanently attached to the OSConfig Agent and OSConfig is not permanently tied to Azure IoT.
+- The OSConfig Management Platform can be directly invoked by any management authority adapter over its Management Platform Interface (MPI). The platform is not permanently attached to any adapter.
 - Each OSConfig Management Module can be directly invoked over the module's Management Module Interface (MMI), either in-proc or from separate process. The modules are not permanently attached to the platform.
-
-In general:
-
-- If only a module-specific function is needed, that module can be directly invoked over its MMI.
-- If orchestrated functionality of multiple modules is needed, the Platform can be invoked over MPI.
-- If remote reach over Azure and IoT Hub is needed, only then the Agent becomes necessary.
 
 The main way to extend OSConfig is via developing new [OSConfig Management Modules](modules.md).
 
@@ -41,53 +35,61 @@ This diagram shows the current North Star architecture of OSConfig. In this diag
 
 ## 3.1. Introduction
 
-The OSConfig Agent handles communication with IoT Hub and Reported Configuration/Desired Configuration (RC/DC) files. The agent is a thin client running as a daemon (Linux background service) using the IoT Client APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to connect to the IoT Hub that receives Desired Twin updates from and makes Reported Twin updates to the IoT Hub and the RC/DC files. 
-
-The agent relies on the [Azure Identity Services (AIS)](https://azure.github.io/iot-identity-service/) to obtain a module identity that allows it to connect to the IoT Hub alongside other locally present PnP agents. 
+The OSConfig agent is a thin client running as a daemon (Linux background service) and implements several adapters: a watcher for the Reported Configuration/Desired Configuration (RC/DC), a watcher for GitOps and a PnP agent for IoT Hub.
 
 The agent communicates with the OSConfig Management Platform over the Management Platform Interface (MPI) IPC REST API.
 
 <img src="assets/agent.png" alt="OSConfig Agent" width=50%/>
 
-The agent is completely decoupled from the platform and the modules. A new module can be installed, and necessary PnP interface(s) published as part of the OSConfig Model and that will be enough to make OSConfig use the respective module, without the need to recompile the agent or the platform.
+The agent is completely decoupled from the platform and the modules. A new module can be installed, and, optionally, PnP interface(s) published as part of the OSConfig Model and that will be enough to make OSConfig use the respective module, without the need to recompile the agent or the platform.
 
-## 3.2. AIS Client
+## 3.2. RC/DC Watcher
 
-The agent  uses the PnP C SDK's HTTP helper APIs to make GET and POST requests to the [Azure Identity Services (AIS)](https://azure.github.io/iot-identity-service/) (identity, key, certificates) to build the device/module identity to (re)connect to the IoT Hub with. 
+The RC/DC Watcher monitors the Desired Configuration (DC) file and acts on detected file changes by making MpiSetDesired calls to the Management Platform. The Watcher also makes MpiGetReported calls to the Management Platform and writes the reported configuration to the Reported Configuration (RC) file. 
 
-## 3.3. IoT Hub Client
+The RC/DC files are written in MIM JSON format.
 
-The agent's  IoT Hub Client parses the Desired Twin payload received from the IoT Hub to separate individual PnP property values. The agent does not attempt to parse the property values. 
+To protect against unauthorized access, the RC/DC files are restricted to root user read and write access only.
 
-## 3.4. Watcher
+The  RC/DC files by default reside under /etc/osconfig/ as `/etc/osconfig/osconfig_desired.json` (the DC file) and `/etc/osconfig/osconfig_reported.json` (the RC file).
 
-The Watcher monitors the Desired Configuration (DC) file and acts on detected file changes by making MpiSetDesired calls to the Management Platform. The Watcher also makes MpiGetReported calls to the Management Platform and writes the reported configuration to the Reported Configuration (RC) file. 
+## 3.3. GitOps Watcher
 
-The pair of DC and RC files are written in MIM JSON format. The RC/DC files act as local Device Twins. 
+The RC/DC Watcher clones a Git repository, monitors the GitOps Desired Configuration (DC) file and acts on detected file changes by making MpiSetDesired calls to the Management Platform. 
 
-To protect against unauthorized access, the DC and RC files are restricted to root user read and write access only.
+The GitOps DC file by default is named `osconfig_desired.json` and is located in the root of the repository at `/etc/osconfig/gitops/osconfig_desired.json`.
 
-The  DC and RC files by default reside under /etc/osconfig/ as `/etc/osconfig/osconfig_desired.json` (the DC file) and `/etc/osconfig/osconfig_reported.json` (the RC file).
+The GitOps DC file is written in MIM JSON format.
 
-The Watcher can also monitor a Git DC file from a configured Git repository and branch in a similar fashion with the local DC file. 
+The Git clone is automatically deleted when the GitOps Watcher terminates. While active, the cloned DC file is protected for root user access only.
 
-## 3.5. MPI Client
+## 3.4. AIS Client
 
-The agent implements an MPI Client and it uses it to make Management Platform Interface (MPI) calls to the platform as IPC calls over HTTP and the Unix Domain Sockets (UDS) implemented by the platform.
+The agent uses HTTP helper APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to make GET and POST requests to the [Azure Identity Services (AIS)](https://azure.github.io/iot-identity-service/) (identity, key, certificates) to build the device/module identity to connect to the IoT Hub with. 
+
+## 3.5. IoT Hub Client
+
+The agent's IoT Hub Client uses the IoT Client APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to connect to the IoT Hub, receives Desired Twin updates, and makes Reported Twin updates.
+
+The IoT Hub Client does not attempt to parse the property values. 
 
 ## 3.6. Desired and Reported Twins
 
 The twins start empty and gradually get filled in with content (desired, from the remote authority and reported, from the device). 
 
-When the agent starts, it receives the full Desired Twin and dispatches that to the platform for modules. From there on, incremental changes of the Desired Twin are communicated to agent, one (full or partial) property at a time. 
+When the agent starts, it receives the full Desired Twin and dispatches that to the platform. From there on, incremental changes of the Desired Twin are communicated to agent, one (full or partial) property at a time. 
 
-In the opposite direction, OSConfig agent periodically updates the Reported Twin with one property value at a time, reading via the platform from the modules. 
+In the opposite direction, the OSConfig agent periodically updates the Reported Twin with one property value at a time, reading via the platform from the modules. 
+
+## 3.7. MPI Client
+
+The agent implements an MPI Client and it uses it to make Management Platform Interface (MPI) calls to the platform as IPC calls over HTTP and the Unix Domain Sockets (UDS).
 
 # 4. OSConfig Management Platform
 
 ## 4.1. Introduction
 
-The OSConfig Management Platform runs in its own daemon process. The platform communicates with the management authority adapters (such as: the OSConfig Agent, Azure Device Update Agent, a TBD OOBE Agent -a concept of OOBE components calling the OSConfig platform, etc.) over the Management Platform Interface (MPI) REST API. 
+The OSConfig Management Platform runs in its own daemon process. The platform communicates with the management authority adapters (the OSConfig Agent, the Universal NRP, etc) over the Management Platform Interface (MPI) REST API. 
 
 The platform communicates to the OSConfig Management Modules over the Management Modules Interface (MMI) REST API.
 
@@ -95,8 +97,8 @@ The platform communicates to the OSConfig Management Modules over the Management
  
 The platform includes the following main components:
 
-- Management Platform Interface (MPI): MPI as an IPC REST API over HTTP and UDS. This is one of the entry points into the platform for adapters including OSConfig's own.
-- Watcher: monitors for desired configuration file for updates. This is the other entry point into the platform, from both agentless and agent management authorities.
+- Management Platform Interface (MPI): MPI as an IPC REST API over HTTP and UDS. This is the main adapter interface,.
+- Watcher: monitors for desired configuration file for updates. This is the other adapter interface, for both agentless and agent management authorities.
 - Orchestrator: receives, orchestrates, serializes requests for modules into the Modules Manager. The management authorities and their adapters can make their own MPI requests. The Orchestrator's role is to orchestrate between local and remote management authorities and also help orchestrate for each authority following the Module Interface Model (MIM) contracts and for PnP without modifying passing-through requests in either direction. 
 - Modules Manager: receives serialized requests over the MPI C API, dispatches the requests to Module Hosts over the MMI REST API.
 - MMI Client: makes MMI REST API calls to Module Hosts over HTTP and UDS. 
@@ -106,7 +108,7 @@ The platform also includes several utility libraries which are shared with all O
 - Logging: file and console circular logging library.
 - CommonUtils: various utility APIs useful for accesing and working with the Linux OS.
 
-The platform is completely decoupled from the agent and the modules. The platform can function without the agent, invoked over the MPI. New modules can be installed without changing or recompiling the platform.
+The platform is completely decoupled from the adapters and the modules. The platform can function without any particular adapter. New modules can be installed without changing or recompiling the platform.
 
 ## 4.2. Management Platform Interface (MPI)
 
@@ -117,7 +119,7 @@ The MPI has two different implementations:
 - REST API over Unix Domain Sockets (UDS) for inter-process communication (IPC) with the adapters.
 - C API for internal in-process communication between the Orchestrator and the Modules Manager.
 
-The MPI REST API is implemented as a Linux Static Library (.a), either alone or combined with the Orchestrator, linked into the platform's main binary, and exporting the REST API over Unix Domain Sockets (UDS). The agent clients make such MPI REST API calls over HTTP.
+The MPI REST API is implemented as a Linux Static Library (.a), either alone or combined with the Orchestrator, linked into the platform's main binary, and exporting the REST API over Unix Domain Sockets (UDS). The adapter MPI clients make such MPI REST API calls over HTTP.
 
 MPI REST API calls include GET (MpiGet, MpiGetReported) and POST (MpiSet, MpiSetDesired). 
 
@@ -267,10 +269,6 @@ For more details on the Logging library and its use by modules see the [OSConfig
 
 OSConfig has its own Telemetry via its product information submitted to the IoT Hub. OpenTelemetry is a potential future path.
 
-## 4.11. Monitoring
-
-Not shown in diagrams is monitoring for device configuration changes. One way monitoring can be done on Linux is via [OSQuery](https://www.osquery.io/) targeted or device wide snapshots deltas. This can be done with an OSQuery Module.
-
 # 5. OSConfig Management Modules
 
 ## 5.1. Introduction
@@ -309,22 +307,22 @@ The OSQuery Module implements an adapter for [OSQuery](https://www.osquery.io/).
 
 ## 5.5. Orchestrator Module
 
-In general, we can adapt OSConfig Management Modules to MC and Azure Policy by flattening their MIMs (all simple objects, one simple type setting per object) and matching desired with reported.
+In general, we can adapt OSConfig Management Modules to Azure Policy and Machine Configuration by flattening their MIMs (all simple objects, one simple type setting per object) and matching desired with reported.
 
 A new kind of OSConfig Management Module can be added: an Orchestrator Module loads other modules and execute combination of standard OSConfig module scenarios, without dealing itself with any direct OS configuration. There can be one or multiple Orchestrator Modules, each one of them using a different combination of standard modules, and/or using same modules but in different ways. The power of Orchestrator Modules is that they can wrap more complex scenarios in simple MIM models and thus work better with Azure Policy. 
 
 # 6. OSConfig Universal Native Resource Provider (NRP)
 
-The OSConfig Universal Native Resource Provider adapter links OSConfig to the [Azure Automanage Machine Configuration (MC)](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/). 
+The OSConfig Universal Native Resource Provider (NRP) adapter links OSConfig to the [Azure Automanage Machine Configuration (MC)](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/). 
 
-Using MC and the OSConfig Universal NRP, we can create Azure Policies that automatically target for compliance audit or remediation all Arc devices in a particular Azure subscription or Azure resource group. 
+Using MC and the OSConfig Universal NRP, we can create Azure Policies that automatically target for compliance audit or remediation all Linux Arc devices in a particular Azure subscription or Azure resource group. 
 
-The Universal NRP is currently used with the SecurityBaseline module to audit and remediate the [Azure Security Baseline for Linux](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux). In the future the Universal NRP could be used for other scenarios.
+The Universal NRP is used with the SecurityBaseline module to audit and remediate the [Azure Security Baseline for Linux](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux). In the future the Universal NRP could be used for other scenarios.
 
 <img src="assets/5_guestconfig.png" alt="OSConfig NRP" width=70%/>
 
 For more information see [src/adapters/mc/README.md](../src/adapters/mc/README.md) and [src/modules/securitybaseline/README.md](../src/modules/securitybaseline/README.md).
 
-A fallback execution exists for policies that apply to more distros than OSConfig supports. Per each check, if OSConfig is present, the NRP invokes it over the MPI REST API (case A) and if OSConfig is not present, the NRP executes the fallback case B where the NRP executes itself the respective audit and remediation checks:
+A fallback execution exists for policies that apply to more distros than OSConfig has binary packages for. Per each check, if OSConfig is present, the NRP invokes it over the MPI REST API (case A) and if OSConfig is not present, the NRP executes the fallback case B where the NRP executes itself the respective audit and remediation checks:
 
 <img src="assets/6_fallback.png" alt="OSConfig NRP with fallback" width=70%/>
