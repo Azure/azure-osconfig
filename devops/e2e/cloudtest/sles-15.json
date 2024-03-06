@@ -1,0 +1,10 @@
+{
+    "artifacts": [
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo zypper install -y glibc*"
+            }
+        }
+    ]
+}

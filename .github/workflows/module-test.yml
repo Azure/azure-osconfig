@@ -11,11 +11,16 @@ jobs:
       matrix:
         target:
           [
-            { os: ubuntu, version: 20.04, package-type: DEB, excluded-tests: "Sample" },
-            { os: ubuntu, version: 22.04, package-type: DEB, excluded-tests: "Sample" },
+            { os: centos, version: 8, package-type: RPM, excluded-tests: "Pmc|Sample" },
             { os: debian, version: 10, package-type: DEB, excluded-tests: "Sample" },
             { os: debian, version: 11, package-type: DEB, excluded-tests: "Sample" },
             { os: mariner, version: 2, package-type: RPM, excluded-tests: "Pmc|Sample" },
+            { os: oraclelinux, version: 8, package-type: RPM, excluded-tests: "Pmc|Sample" },
+            { os: rhel, version: 8, package-type: RPM, excluded-tests: "Pmc|Sample" },
+            { os: rhel, version: 9, package-type: RPM, excluded-tests: "Pmc|Sample" },
+            { os: sles, version: 15, package-type: RPM, excluded-tests: "Pmc|Sample" },
+            { os: ubuntu, version: 20.04, package-type: DEB, excluded-tests: "Sample" },
+            { os: ubuntu, version: 22.04, package-type: DEB, excluded-tests: "Sample" },
           ]
         arch: [amd64]
     with:
