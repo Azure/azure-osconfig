@@ -1,0 +1,10 @@
+{
+    "artifacts": [
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo yum install -y glibc*"
+            }
+        }
+    ]
+}
