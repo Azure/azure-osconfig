@@ -520,6 +520,49 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     return status;
 }
 
+/*
+    List from most important to find to least: 
+
+    apt-get + dpkg
+    tdnf
+    dnf
+    yum
+    zypper
+    
+    Check with:
+
+    command -v %s
+
+    For each, commands would be (there may be more):
+
+    yum
+    yum install -q %s
+    yum remove -q %s
+    yum list installed %s
+
+    dnf
+    dnf install -q %s
+    dnf remove -q %s
+    dnf list installed %s
+
+    W/o python (better): 
+    tdnf
+    tdnf install -q %s
+    tdnf remove -q %s
+    tdnf list installed %s
+
+
+    apt-get + dpkg
+    apt-get install %s
+    apt-get remove -y --purge %s
+    dpkg -l %s | grep ^ii
+
+    zypper
+    zypper install %s
+    zypper remove %s
+    zypper se -x %s
+*/
+
 int CheckPackageInstalled(const char* packageName, void* log)
 {
     const char* commandTemplate = "dpkg -l %s | grep ^ii";
