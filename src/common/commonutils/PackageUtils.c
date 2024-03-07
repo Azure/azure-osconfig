@@ -24,14 +24,7 @@ static int IsPresent(const char* what, void* log)
 
     if (NULL != (command = FormatAllocateString(commandTemplate, what)))
     {
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-        {
-            OsConfigLogInfo(log, "IsPresent: '%s' is present", what);
-        }
-        else
-        {
-            OsConfigLogInfo(log, "IsPresent: '%s' is not present", what);
-        }
+        status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
     }
     else
     {
@@ -186,18 +179,9 @@ int UninstallPackage(const char* packageName, void* log)
 
         if ((0 == status) && (0 == (status = CheckPackageInstalled(packageName, log))))
         {
-            OsConfigLogInfo(log, "UninstallPackage: '%s' was successfully installed", packageName);
-        }
-        else
-        {
-            OsConfigLogError(log, "UninstallPackage: uninstallation of '%s' failed with %d", packageName, status);
-        }
-
-        if ((0 == status) && (0 == (status = CheckPackageInstalled(packageName, log))))
-        {
             status = ENOENT;
         }
-
+        
         if (0 == status)
         {
             OsConfigLogInfo(log, "UninstallPackage: '%s' was successfully uninstalled", packageName);
