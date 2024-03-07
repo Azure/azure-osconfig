@@ -67,7 +67,7 @@ static int IsPresent(const char* what, void* log)
 
     if (NULL != (command = FormatAllocateString(commandTemplate, what)))
     {
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log))
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
         {
             OsConfigLogInfo(log, "IsPresent: '%s' is present", what);
         }
@@ -90,7 +90,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     char* command = NULL;
     int status = ENOENT;
 
-    if ((NULL == commandTemplate) || (NULL == packageManager) || (NULL == packageName) || ((0 == (packageNameLength = strlen(packageName)))))
+    if ((NULL == commandTemplate) || (NULL == packageManager) || (NULL == packageName) || ((0 == strlen(packageName))))
     {
         OsConfigLogError(log, "CheckOrInstallPackage called with invalid arguments");
         return EINVAL;
@@ -122,19 +122,19 @@ int CheckPackageInstalled(const char* packageName, void* log)
     }
     else if (0 == (status = IsPresent(g_tdnf, log)))
     {
-        status = CheckOrInstallPackage(commandTemplateAllElse, packageName, log);
+        status = CheckOrInstallPackage(commandTemplateAllElse, g_tdnf, packageName, log);
     }
     else if (0 == (status = IsPresent(g_dnf, log)))
     {
-        status = CheckOrInstallPackage(commandTemplateAllElse, packageName, log);
+        status = CheckOrInstallPackage(commandTemplateAllElse, g_dnf, packageName, log);
     }
     else if (0 == (status = IsPresent(g_yum, log)))
     {
-        status = CheckOrInstallPackage(commandTemplateAllElse, packageName, log);
+        status = CheckOrInstallPackage(commandTemplateAllElse, g_yum, packageName, log);
     }
     else if (0 == (status = IsPresent(g_zypper, log)))
     {
-        status = CheckOrInstallPackage(commandTemplateZypper, packageName, log);
+        status = CheckOrInstallPackage(commandTemplateZypper, g_zypper, packageName, log);
     }
 
     if (0 == status)
