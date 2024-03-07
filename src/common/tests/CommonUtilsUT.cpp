@@ -1173,6 +1173,9 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 {
+    const char* realPackage = "gcc";
+    int isInstalled = -1;
+
     EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
     EXPECT_EQ(EINVAL, InstallPackage(nullptr, nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage(nullptr, nullptr));
@@ -1181,23 +1184,27 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_EQ(EINVAL, InstallPackage("", nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage("", nullptr));
 
-    if (0 == CheckPackageInstalled("apt", nullptr))
-    {
-        EXPECT_EQ(0, CheckPackageInstalled("ap*", nullptr));
-
-        EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
-        EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
         
-        // Nothing to uninstall
-        EXPECT_EQ(0, UninstallPackage("~package_that_does_not_exist", nullptr));
+    // Nothing to uninstall
+    EXPECT_EQ(0, UninstallPackage("~package_that_does_not_exist", nullptr));
 
-        EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr));
-        EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
-        EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
     
-        EXPECT_EQ(0, InstallPackage("rolldice", nullptr));
-        EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr));
-        EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
+    if (0 == (isInstalled = CheckPackageInstalled(realPackage, nullptr)))
+    {
+        EXPECT_EQ(0, UninstallPackage(realPackage, nullptr));
+        EXPECT_EQ(0, InstallPackage(realPackage, nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled(realPackage, nullptr));
+    }
+    else
+    {
+        EXPECT_EQ(0, InstallPackage(realPackage, nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled(realPackage, nullptr));
+        EXPECT_EQ(0, UninstallPackage(realPackage, nullptr));
     }
 }
 

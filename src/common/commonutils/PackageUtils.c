@@ -39,6 +39,8 @@ static int IsPresent(const char* what, void* log)
         status = ENOMEM;
     }
 
+    FREE_MEMORY(command);
+
     return status;
 }
 
@@ -66,7 +68,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     return status;
 }
 
-int CheckPackageInstalled(const char* packageName, /*char** reason,*/ void* log)
+int CheckPackageInstalled(const char* packageName, void* log)
 {
     const char* commandTemplateDpkg = "%s -l %s | grep ^ii";
     const char* commandTemplateAllElse = "%s list installed %s";
@@ -106,7 +108,7 @@ int CheckPackageInstalled(const char* packageName, /*char** reason,*/ void* log)
     return status;
 }
 
-int InstallPackage(const char* packageName, /*char** reason,*/ void* log)
+int InstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplateAptGet = "%s install -y %s";
     const char* commandTemplateAllElse = "%s install %s";
@@ -152,7 +154,7 @@ int InstallPackage(const char* packageName, /*char** reason,*/ void* log)
     return status;
 }
 
-int UninstallPackage(const char* packageName, /*char** reason,*/ void* log)
+int UninstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
     const char* commandTemplateAllElse = "% remove %s";
