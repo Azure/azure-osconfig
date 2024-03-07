@@ -196,7 +196,7 @@ int UninstallPackage(const char* packageName, void* log)
             OsConfigLogError(log, "UninstallPackage: uninstallation of '%s' failed with %d", packageName, status);
         }
     }
-    else
+    else if (EINVAL != status)
     {
         OsConfigLogInfo(log, "InstallPackage: '%s' is not found", packageName);
         status = 0;
