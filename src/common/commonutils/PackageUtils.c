@@ -105,7 +105,7 @@ int InstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplateAptGet = "%s install -y %s";
     const char* commandTemplateAllElse = "%s install %s";
-    int status = ENOENT, _status = ENOENT;
+    int status = ENOENT;
 
     if (0 != (status = CheckPackageInstalled(packageName, log)))
     {

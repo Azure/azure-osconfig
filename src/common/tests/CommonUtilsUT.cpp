@@ -1683,6 +1683,10 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     if (0 == InstallPackage("rolldice", nullptr))
     {
         EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr));
+        EXPECT_EQ(0, InstallPackage("rolldice", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr));
+        EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
     }
     EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr));
 
