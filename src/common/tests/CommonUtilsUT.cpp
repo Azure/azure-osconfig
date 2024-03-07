@@ -1173,7 +1173,7 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 {
-    const char* realPackage = "gcc";
+    const char* realPackage = "gzip";
     int isInstalled = -1;
 
     EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
