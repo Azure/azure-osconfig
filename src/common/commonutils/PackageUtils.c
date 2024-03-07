@@ -159,7 +159,7 @@ int UninstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
     const char* commandTemplateAllElse = "% remove %s";
-    int status = 0;
+    int status = ENOENT;
 
     if (0 == (status = CheckPackageInstalled(packageName, log)))
     {
@@ -191,6 +191,11 @@ int UninstallPackage(const char* packageName, void* log)
         else
         {
             OsConfigLogError(log, "UninstallPackage: uninstallation of '%s' failed with %d", packageName, status);
+        }
+
+        if ((0 == status) && (0 == (status = CheckPackageInstalled(packageName, log))))
+        {
+            status = ENOENT;
         }
 
         if (0 == status)
