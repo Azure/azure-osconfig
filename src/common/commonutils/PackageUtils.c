@@ -199,6 +199,7 @@ int UninstallPackage(const char* packageName, void* log)
     else
     {
         OsConfigLogInfo(log, "InstallPackage: '%s' is not found", packageName);
+        status = 0;
     }
 
     return status;
