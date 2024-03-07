@@ -1171,42 +1171,6 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
-{
-    const char* realPackage = "gzip";
-    
-    EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
-    EXPECT_EQ(EINVAL, InstallPackage(nullptr, nullptr));
-    EXPECT_EQ(EINVAL, UninstallPackage(nullptr, nullptr));
-
-    EXPECT_EQ(EINVAL, CheckPackageInstalled("", nullptr));
-    EXPECT_EQ(EINVAL, InstallPackage("", nullptr));
-    EXPECT_EQ(EINVAL, UninstallPackage("", nullptr));
-
-    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
-    EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
-        
-    // Nothing to uninstall
-    EXPECT_EQ(0, UninstallPackage("~package_that_does_not_exist", nullptr));
-
-    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr));
-    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
-    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
-    
-    if (0 == CheckPackageInstalled(realPackage, nullptr))
-    {
-        EXPECT_EQ(0, UninstallPackage(realPackage, nullptr));
-        EXPECT_EQ(0, InstallPackage(realPackage, nullptr));
-        EXPECT_EQ(0, CheckPackageInstalled(realPackage, nullptr));
-    }
-    else
-    {
-        EXPECT_EQ(0, InstallPackage(realPackage, nullptr));
-        EXPECT_EQ(0, CheckPackageInstalled(realPackage, nullptr));
-        EXPECT_EQ(0, UninstallPackage(realPackage, nullptr));
-    }
-}
-
 TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
 {
     EXPECT_EQ(0, GetNumberOfLinesInFile(nullptr));
@@ -1694,4 +1658,40 @@ TEST_F(CommonUtilsTest, RepairBrokenEolCharactersIfAny)
 
     EXPECT_STREQ("\n\\Test\\123\n", value = RepairBrokenEolCharactersIfAny("\n\\Test\\123\\n"));
     FREE_MEMORY(value);
+}
+
+TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
+{
+    const char* realPackage = "gzip";
+
+    EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, InstallPackage(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, UninstallPackage(nullptr, nullptr));
+
+    EXPECT_EQ(EINVAL, CheckPackageInstalled("", nullptr));
+    EXPECT_EQ(EINVAL, InstallPackage("", nullptr));
+    EXPECT_EQ(EINVAL, UninstallPackage("", nullptr));
+
+    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
+
+    // Nothing to uninstall
+    EXPECT_EQ(0, UninstallPackage("~package_that_does_not_exist", nullptr));
+
+    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
+
+    if (0 == CheckPackageInstalled(realPackage, nullptr))
+    {
+        EXPECT_EQ(0, UninstallPackage(realPackage, nullptr));
+        EXPECT_EQ(0, InstallPackage(realPackage, nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled(realPackage, nullptr));
+    }
+    else
+    {
+        EXPECT_EQ(0, InstallPackage(realPackage, nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled(realPackage, nullptr));
+        EXPECT_EQ(0, UninstallPackage(realPackage, nullptr));
+    }
 }
