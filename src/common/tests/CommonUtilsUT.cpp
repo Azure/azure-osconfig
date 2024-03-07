@@ -1174,8 +1174,7 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 {
     const char* realPackage = "gzip";
-    int isInstalled = -1;
-
+    
     EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
     EXPECT_EQ(EINVAL, InstallPackage(nullptr, nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage(nullptr, nullptr));
@@ -1194,7 +1193,7 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
     EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
     
-    if (0 == (isInstalled = CheckPackageInstalled(realPackage, nullptr)))
+    if (0 == CheckPackageInstalled(realPackage, nullptr))
     {
         EXPECT_EQ(0, UninstallPackage(realPackage, nullptr));
         EXPECT_EQ(0, InstallPackage(realPackage, nullptr));
