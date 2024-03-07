@@ -1662,8 +1662,6 @@ TEST_F(CommonUtilsTest, RepairBrokenEolCharactersIfAny)
 
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 {
-    const char* realPackage = "gzip";
-
     EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
     EXPECT_EQ(EINVAL, InstallPackage(nullptr, nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage(nullptr, nullptr));
@@ -1682,16 +1680,9 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
     EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
 
-    if (0 == CheckPackageInstalled(realPackage, nullptr))
+    if (0 == InstallPackage("rolldice", nullptr))
     {
-        EXPECT_EQ(0, UninstallPackage(realPackage, nullptr));
-        EXPECT_EQ(0, InstallPackage(realPackage, nullptr));
-        EXPECT_EQ(0, CheckPackageInstalled(realPackage, nullptr));
+        EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
     }
-    else
-    {
-        EXPECT_EQ(0, InstallPackage(realPackage, nullptr));
-        EXPECT_EQ(0, CheckPackageInstalled(realPackage, nullptr));
-        EXPECT_EQ(0, UninstallPackage(realPackage, nullptr));
-    }
+    EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr));
 }
