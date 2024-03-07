@@ -95,7 +95,7 @@ int CheckPackageInstalled(const char* packageName, void* log)
     }
     else
     {
-        OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is not installed", packageName);
+        OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is not found", packageName);
     }
 
     return status;
@@ -105,7 +105,7 @@ int InstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplateAptGet = "%s install -y %s";
     const char* commandTemplateAllElse = "%s install %s";
-    int status = ENOENT;
+    int status = ENOENT, _status = ENOENT;
 
     if (0 != (status = CheckPackageInstalled(packageName, log)))
     {
@@ -130,7 +130,12 @@ int InstallPackage(const char* packageName, void* log)
             status = CheckOrInstallPackage(commandTemplateAllElse, g_zypper, packageName, log);
         }
 
-        if ((0 == status) && (0 == (status = CheckPackageInstalled(packageName, log))))
+        if (0 == status) 
+        {
+            status = CheckPackageInstalled(packageName, log);
+        }
+
+        if (0 == status)
         {
             OsConfigLogInfo(log, "InstallPackage: '%s' was successfully installed", packageName);
         }
