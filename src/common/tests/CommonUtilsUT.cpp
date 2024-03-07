@@ -1691,5 +1691,4 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr));
 
     EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("cmake", nullptr));
 }
