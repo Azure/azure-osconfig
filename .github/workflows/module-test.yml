@@ -18,6 +18,7 @@ jobs:
             { os: oraclelinux, version: 8, package-type: RPM, excluded-tests: "Pmc|Sample" },
             { os: rhel, version: 8, package-type: RPM, excluded-tests: "Pmc|Sample" },
             { os: rhel, version: 9, package-type: RPM, excluded-tests: "Pmc|Sample" },
+            { os: rockylinux, version: 9, package-type: RPM, excluded-tests: "Pmc|Sample" },
             { os: sles, version: 15, package-type: RPM, excluded-tests: "Pmc|Sample" },
             { os: ubuntu, version: 20.04, package-type: DEB, excluded-tests: "Sample" },
             { os: ubuntu, version: 22.04, package-type: DEB, excluded-tests: "Sample" },
