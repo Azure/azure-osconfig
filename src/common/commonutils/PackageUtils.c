@@ -100,7 +100,7 @@ int CheckPackageInstalled(const char* packageName, void* log)
     {
         OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is installed", packageName);
     }
-    else if (EINVAL != status)
+    else
     {
         OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is not installed", packageName);
     }
@@ -149,6 +149,7 @@ int InstallPackage(const char* packageName, void* log)
     else
     {
         OsConfigLogInfo(log, "InstallPackage: '%s' is already installed", packageName);
+        status = 0;
     }
 
     return status;
@@ -203,8 +204,7 @@ int UninstallPackage(const char* packageName, void* log)
     }
     else
     {
-        // Nothing to uninstall
-        OsConfigLogInfo(log, "UninstallPackage: '%s' appears to be not installed, nothing to uninstall", packageName);
+        OsConfigLogInfo(log, "InstallPackage: '%s' is already uninstalled/not found", packageName);
         status = 0;
     }
 
