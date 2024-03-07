@@ -1690,5 +1690,20 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     }
     EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr));
 
+    if (0 == CheckPackageInstalled("zip", nullptr))
+    {
+        EXPECT_EQ(0, UninstallPackage("zip", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("zip", nullptr));
+        EXPECT_EQ(0, InstallPackage("zip", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("zip", nullptr));
+    }
+    else
+    {
+        EXPECT_EQ(0, InstallPackage("zip", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("zip", nullptr));
+        EXPECT_EQ(0, UninstallPackage("zip", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("zip", nullptr));
+    }
+
     EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr));
 }
