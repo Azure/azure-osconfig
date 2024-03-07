@@ -3,49 +3,6 @@
 
 #include "Internal.h"
 
-/*
-List from most important to find to least:
-
-apt-get + dpkg
-tdnf
-dnf
-yum
-zypper
-
-Check with:
-
-command -v %s
-
-For each, commands would be (there may be more):
-
-yum
-yum install -q %s
-yum remove -q %s
-yum list installed %s
-
-dnf
-dnf install -q %s
-dnf remove -q %s
-dnf list installed %s
-
-W/o python (better):
-tdnf
-tdnf install -q %s
-tdnf remove -q %s
-tdnf list installed %s
-
-
-apt-get + dpkg
-apt-get install %s
-apt-get remove -y --purge %s
-dpkg -l %s | grep ^ii
-
-zypper
-zypper install %s
-zypper remove %s
-zypper se -x %s
-*/
-
 const char* g_aptGet = "apt-get";
 const char* g_dpkg = "dpkg";
 const char* g_tdnf = "tdnf";
@@ -109,7 +66,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     return status;
 }
 
-int CheckPackageInstalled(const char* packageName, void* log)
+int CheckPackageInstalled(const char* packageName, /*char** reason,*/ void* log)
 {
     const char* commandTemplateDpkg = "%s -l %s | grep ^ii";
     const char* commandTemplateAllElse = "%s list installed %s";
@@ -149,7 +106,7 @@ int CheckPackageInstalled(const char* packageName, void* log)
     return status;
 }
 
-int InstallPackage(const char* packageName, void* log)
+int InstallPackage(const char* packageName, /*char** reason,*/ void* log)
 {
     const char* commandTemplateAptGet = "%s install -y %s";
     const char* commandTemplateAllElse = "%s install %s";
@@ -195,7 +152,7 @@ int InstallPackage(const char* packageName, void* log)
     return status;
 }
 
-int UninstallPackage(const char* packageName, void* log)
+int UninstallPackage(const char* packageName, /*char** reason,*/ void* log)
 {
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
     const char* commandTemplateAllElse = "% remove %s";
@@ -226,11 +183,11 @@ int UninstallPackage(const char* packageName, void* log)
 
         if ((0 == status) && (0 == (status = CheckPackageInstalled(packageName, log))))
         {
-            OsConfigLogInfo(log, "InstallPackage: '%s' was successfully installed", packageName);
+            OsConfigLogInfo(log, "UninstallPackage: '%s' was successfully installed", packageName);
         }
         else
         {
-            OsConfigLogError(log, "InstallPackage: uninstallation of '%s' failed with %d", packageName, status);
+            OsConfigLogError(log, "UninstallPackage: uninstallation of '%s' failed with %d", packageName, status);
         }
 
         if (0 == status)
