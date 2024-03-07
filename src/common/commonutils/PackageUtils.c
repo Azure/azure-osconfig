@@ -104,7 +104,7 @@ int CheckPackageInstalled(const char* packageName, void* log)
 int InstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplateAptGet = "%s install -y %s";
-    const char* commandTemplateAllElse = "%s install %s";
+    const char* commandTemplateAllElse = "%s install -y %s";
     int status = ENOENT;
 
     if (0 != (status = CheckPackageInstalled(packageName, log)))
@@ -156,7 +156,7 @@ int InstallPackage(const char* packageName, void* log)
 int UninstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
-    const char* commandTemplateAllElse = "% remove %s";
+    const char* commandTemplateAllElse = "% remove -y %s";
     int status = ENOENT;
 
     if (0 == (status = CheckPackageInstalled(packageName, log)))
