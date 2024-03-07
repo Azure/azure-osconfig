@@ -103,31 +103,30 @@ int CheckPackageInstalled(const char* packageName, void* log)
 
 int InstallPackage(const char* packageName, void* log)
 {
-    const char* commandTemplateAptGet = "%s install -y %s";
-    const char* commandTemplateAllElse = "%s install -y %s";
+    const char* commandTemplate = "%s install -y %s";
     int status = ENOENT;
 
     if (0 != (status = CheckPackageInstalled(packageName, log)))
     {
         if (0 == (status = IsPresent(g_aptGet, log)))
         {
-            status = CheckOrInstallPackage(commandTemplateAptGet, g_aptGet, packageName, log);
+            status = CheckOrInstallPackage(commandTemplate, g_aptGet, packageName, log);
         }
         else if (0 == (status = IsPresent(g_tdnf, log)))
         {
-            status = CheckOrInstallPackage(commandTemplateAllElse, g_tdnf, packageName, log);
+            status = CheckOrInstallPackage(commandTemplate, g_tdnf, packageName, log);
         }
         else if (0 == (status = IsPresent(g_dnf, log)))
         {
-            status = CheckOrInstallPackage(commandTemplateAllElse, g_dnf, packageName, log);
+            status = CheckOrInstallPackage(commandTemplate, g_dnf, packageName, log);
         }
         else if (0 == (status = IsPresent(g_yum, log)))
         {
-            status = CheckOrInstallPackage(commandTemplateAllElse, g_yum, packageName, log);
+            status = CheckOrInstallPackage(commandTemplate, g_yum, packageName, log);
         }
         else if (0 == (status = IsPresent(g_zypper, log)))
         {
-            status = CheckOrInstallPackage(commandTemplateAllElse, g_zypper, packageName, log);
+            status = CheckOrInstallPackage(commandTemplate, g_zypper, packageName, log);
         }
 
         if (0 == status) 
