@@ -42,6 +42,7 @@ jobs:
             { os: rhel, version: 7, arch: amd64, dist: rhel7, package-type: RPM, repo: microsoft-rhel7.4-insiders-fast-prod-yum },
             { os: rhel, version: 8, arch: amd64, dist: rhel8, package-type: RPM, repo: microsoft-rhel8.0-insiders-fast-prod-yum },
             { os: rhel, version: 9, arch: amd64, dist: rhel9, package-type: RPM, repo: microsoft-rhel9.0-insiders-fast-prod-yum },
+            { os: rockylinux, version: 9, arch: amd64, dist: rockylinux9, package-type: RPM, repo: microsoft-el9-insiders-fast-prod-yum },
             { os: sles, version: 15, arch: amd64, dist: sles15, package-type: RPM, repo: microsoft-sles15-insiders-fast-prod-yum },
             { os: ubuntu, version: 20.04, arch: amd64, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt },
             { os: ubuntu, version: 22.04, arch: amd64, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt },
