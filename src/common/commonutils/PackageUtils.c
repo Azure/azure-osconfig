@@ -177,7 +177,7 @@ int UninstallPackage(const char* packageName, void* log)
             status = CheckOrInstallPackage(commandTemplateAllElse, g_zypper, packageName, log);
         }
 
-        if ((0 == status) && (0 == (status = CheckPackageInstalled(packageName, log))))
+        if ((0 == status) && (0 == CheckPackageInstalled(packageName, log)))
         {
             status = ENOENT;
         }
