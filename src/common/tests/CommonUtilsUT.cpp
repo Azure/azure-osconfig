@@ -1698,8 +1698,13 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 
 TEST_F(CommonUtilsTest, IsCurrentOs)
 {
-    char* osName = NULL;
-    EXPECT_NE(nullptr, osName = GetOsName(nullptr));
-    EXPECT_EQ(true, IsCurrentOs(osName, nullptr));
-    FREE_MEMORY(osName);
+    char* name = NULL;
+
+    EXPECT_NE(nullptr, name = GetOsName(nullptr));
+    EXPECT_EQ(true, IsCurrentOs(name, nullptr));
+    FREE_MEMORY(name);
+
+    EXPECT_NE(nullptr, name = GetOsPrettyName(nullptr));
+    EXPECT_EQ(true, IsCurrentOs(name, nullptr));
+    FREE_MEMORY(name);
 }
