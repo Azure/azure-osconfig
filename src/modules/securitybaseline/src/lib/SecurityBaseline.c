@@ -1262,13 +1262,13 @@ static char* AuditEnsurePasswordCreationRequirements(void)
     }
     else
     {
-        result = ((CheckFileExists(g_etcSecurityPwQualityConf, SecurityBaselineGetLog())) && 
-            ((4 == (minclassOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "minclass", '=', SecurityBaselineGetLog())) || 
+        result = ((CheckFileExists(g_etcSecurityPwQualityConf, SecurityBaselineGetLog())) &&
+            ((4 == (minclassOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "minclass", '=', SecurityBaselineGetLog())) ||
             ((-1 == (dcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "dcredit", '=', SecurityBaselineGetLog()))) &&
             (-1 == (ucreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ucredit", '=', SecurityBaselineGetLog()))) &&
             (-1 == (ocreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ocredit", '=', SecurityBaselineGetLog()))) &&
             (-1 == (lcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "lcredit", '=', SecurityBaselineGetLog()))))))) ? DuplicateString(g_pass) :
-            FormatAllocateString("In %s, 'minclass' missing or set to %d instead of 4, or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to %d, %d, %d, %d respectively instead of -1 each",
+            FormatAllocateString("'%s' mising, or 'minclass' missing or set to %d instead of 4, or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to %d, %d, %d, %d respectively instead of -1 each",
                 g_etcSecurityPwQualityConf, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
     }
 
