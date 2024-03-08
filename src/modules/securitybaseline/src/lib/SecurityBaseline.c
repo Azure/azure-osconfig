@@ -1246,10 +1246,11 @@ static char* AuditEnsurePasswordCreationRequirements(void)
     int ucreditOption = 0;
     int ocreditOption = 0;
     int lcreditOption = 0;
+    char* result = NULL;
     
     if (IsCurrentOs(g_suseLinuxEnterpriseServer15, SecurityBaselineGetLog()))
     {
-        return ((14 == (minlenOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minlen", '=', SecurityBaselineGetLog()))) &&
+        result = ((14 == (minlenOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minlen", '=', SecurityBaselineGetLog()))) &&
             ((4 == (minclassOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minclass", '=', SecurityBaselineGetLog()))) ||
             ((-1 == (dcreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "dcredit", '=', SecurityBaselineGetLog()))) &&
             (-1 == (ucreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ucredit", '=', SecurityBaselineGetLog()))) &&
@@ -1261,15 +1262,17 @@ static char* AuditEnsurePasswordCreationRequirements(void)
     }
     else
     {
-        return (CheckFileExists(g_etcSecurityPwQualityConf, SecurityBaselineGetLog()) && 
+        result = ((CheckFileExists(g_etcSecurityPwQualityConf, SecurityBaselineGetLog())) && 
             ((4 == (minclassOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "minclass", '=', SecurityBaselineGetLog())) || 
             ((-1 == (dcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "dcredit", '=', SecurityBaselineGetLog()))) &&
             (-1 == (ucreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ucredit", '=', SecurityBaselineGetLog()))) &&
             (-1 == (ocreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ocredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (lcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "lcredit", '=', SecurityBaselineGetLog())))))) ? DuplicateString(g_pass) :
+            (-1 == (lcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "lcredit", '=', SecurityBaselineGetLog()))))))) ? DuplicateString(g_pass) :
             FormatAllocateString("In %s, 'minclass' missing or set to %d instead of 4, or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to %d, %d, %d, %d respectively instead of -1 each",
                 g_etcSecurityPwQualityConf, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
     }
+
+    return result;
 }
 
 static char* AuditEnsureLockoutForFailedPasswordAttempts(void)
