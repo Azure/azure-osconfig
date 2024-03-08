@@ -127,6 +127,7 @@ char* HashCommand(const char* source, void* log);
 
 bool ParseHttpProxyData(const char* proxyData, char** hostAddress, int* port, char**username, char** password, void* log);
 
+char* GetOsPrettyName(void* log);
 char* GetOsName(void* log);
 char* GetOsVersion(void* log);
 char* GetOsKernelName(void* log);
@@ -150,6 +151,7 @@ int CheckLoginUmask(const char* desired, char** reason, void* log);
 long GetPassMinDays(void* log);
 long GetPassMaxDays(void* log);
 long GetPassWarnAge(void* log);
+bool IsCurrentOs(const char* name, void* log);
 
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);

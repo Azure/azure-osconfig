@@ -98,9 +98,8 @@ void TruncateAtFirst(char* target, char marker)
     }
 }
 
-char* GetOsName(void* log)
+char* GetOsPrettyName(void* log)
 {
-    const char* osNameCommand = "cat /etc/os-release | grep ID=";
     const char* osPrettyNameCommand = "cat /etc/os-release | grep PRETTY_NAME=";
     char* textResult = NULL;
 
@@ -110,14 +109,28 @@ char* GetOsName(void* log)
         RemoveTrailingBlanks(textResult);
         RemovePrefixUpTo(textResult, '=');
         RemovePrefixBlanks(textResult);
-        
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "OS pretty name: '%s'", textResult);
+    }
+
+    return textResult;
+}
+
+char* GetOsName(void* log)
+{
+    const char* osNameCommand = "cat /etc/os-release | grep ID=";
+    char* textResult = NULL;
+
+    if (NULL != (textResult = GetOsPrettyName(log)))
+    {
         // Comment next line to capture the full pretty name including version (example: 'Ubuntu 20.04.3 LTS')
         TruncateAtFirst(textResult, ' ');
     }
     else
     {
-        FREE_MEMORY(textResult);
-
         // PRETTY_NAME did not work, try ID
         if (0 == ExecuteCommand(NULL, osNameCommand, true, true, 0, 0, &textResult, NULL, log))
         {
@@ -725,4 +738,28 @@ long GetPassMaxDays(void* log)
 long GetPassWarnAge(void* log)
 {
     return GetPasswordDays("PASS_WARN_AGE", log);
+}
+
+bool IsCurrentOs(const char* name, void* log)
+{
+    char* prettyName = NULL;
+    bool result = false;
+
+    if (NULL != (prettyName = GetOsPrettyName(log)))
+    {
+        result = (0 == strncmp(name, prettyName, strlen(name)) ? true : false;
+    }
+
+    if (result)
+    {
+        OsConfigLogInfo(log, "This is distro '%s' ('%s')", name, prettyName);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "This is not distro '%s' ('%s')", name, prettyName);
+    }
+
+    FREE_MEMORY(prettyName);
+
+    return result;
 }
