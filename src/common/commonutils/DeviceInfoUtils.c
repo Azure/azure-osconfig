@@ -747,7 +747,7 @@ bool IsCurrentOs(const char* name, void* log)
 
     if (NULL != (prettyName = GetOsPrettyName(log)))
     {
-        result = (0 == strncmp(name, prettyName, strlen(name)) ? true : false;
+        result = (0 == strncmp(name, prettyName, strlen(name))) ? true : false;
     }
 
     if (result)
