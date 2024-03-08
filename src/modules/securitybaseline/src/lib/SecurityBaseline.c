@@ -398,22 +398,22 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-static const char* g_azureLinux2 = "CBL-Mariner/Linux";
-static const char* g_amazonLinux2 = "Amazon Linux 2";
-static const char* g_centOs7 = "CentOS Linux 7";
-static const char* g_centOs8 = "CentOS Stream 8";
-static const char* g_debian10 = "Debian GNU/Linux 10";
-static const char* g_debian11 = "Debian GNU/Linux 11";
-static const char* g_debian12 = "Debian GNU/Linux 12";
-static const char* g_oracleLinuxServer7 = "Oracle Linux Server 7";
-static const char* g_oracleLinuxServer8 = "Oracle Linux Server 8";
-static const char* g_redHatEnterpriseLinux7 = "Red Hat Enterprise Linux Server 7";
-static const char* g_redHatEnterpriseLinux8 = "Red Hat Enterprise Linux 8";
-static const char* g_redHatEnterpriseLinux9 = "Red Hat Enterprise Linux 9";
-static const char* g_rockyLinux9 = "Rocky Linux 9";
+//static const char* g_azureLinux2 = "CBL-Mariner/Linux";
+//static const char* g_amazonLinux2 = "Amazon Linux 2";
+//static const char* g_centOs7 = "CentOS Linux 7";
+//static const char* g_centOs8 = "CentOS Stream 8";
+//static const char* g_debian10 = "Debian GNU/Linux 10";
+//static const char* g_debian11 = "Debian GNU/Linux 11";
+//static const char* g_debian12 = "Debian GNU/Linux 12";
+//static const char* g_oracleLinuxServer7 = "Oracle Linux Server 7";
+//static const char* g_oracleLinuxServer8 = "Oracle Linux Server 8";
+//static const char* g_redHatEnterpriseLinux7 = "Red Hat Enterprise Linux Server 7";
+//static const char* g_redHatEnterpriseLinux8 = "Red Hat Enterprise Linux 8";
+//static const char* g_redHatEnterpriseLinux9 = "Red Hat Enterprise Linux 9";
+//static const char* g_rockyLinux9 = "Rocky Linux 9";
 static const char* g_suseLinuxEnterpriseServer15 = "SUSE Linux Enterprise Server 15";
-static const char* g_ubuntu20_04 = "Ubuntu 20.04";
-static const char* g_ubuntu22_04 = "Ubuntu 22.04";
+//static const char* g_ubuntu20_04 = "Ubuntu 20.04";
+//static const char* g_ubuntu22_04 = "Ubuntu 22.04";
 
 static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
