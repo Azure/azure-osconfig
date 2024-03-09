@@ -398,22 +398,7 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-//static const char* g_azureLinux2 = "CBL-Mariner/Linux";
-//static const char* g_amazonLinux2 = "Amazon Linux 2";
-//static const char* g_centOs7 = "CentOS Linux 7";
-//static const char* g_centOs8 = "CentOS Stream 8";
-//static const char* g_debian10 = "Debian GNU/Linux 10";
-//static const char* g_debian11 = "Debian GNU/Linux 11";
-//static const char* g_debian12 = "Debian GNU/Linux 12";
-//static const char* g_oracleLinuxServer7 = "Oracle Linux Server 7";
-//static const char* g_oracleLinuxServer8 = "Oracle Linux Server 8";
-//static const char* g_redHatEnterpriseLinux7 = "Red Hat Enterprise Linux Server 7";
-//static const char* g_redHatEnterpriseLinux8 = "Red Hat Enterprise Linux 8";
-//static const char* g_redHatEnterpriseLinux9 = "Red Hat Enterprise Linux 9";
-//static const char* g_rockyLinux9 = "Rocky Linux 9";
-static const char* g_suseLinuxEnterpriseServer15 = "SUSE Linux Enterprise Server 15";
-//static const char* g_ubuntu20_04 = "Ubuntu 20.04";
-//static const char* g_ubuntu22_04 = "Ubuntu 22.04";
+static const char* g_suse = "SUSE";
 
 static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
@@ -1248,7 +1233,7 @@ static char* AuditEnsurePasswordCreationRequirements(void)
     int lcreditOption = 0;
     char* result = NULL;
     
-    if (IsCurrentOs(g_suseLinuxEnterpriseServer15, SecurityBaselineGetLog()))
+    if (IsCurrentOs(g_suse, SecurityBaselineGetLog()))
     {
         result = ((14 == (minlenOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minlen", '=', SecurityBaselineGetLog()))) &&
             ((4 == (minclassOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minclass", '=', SecurityBaselineGetLog()))) ||
@@ -1256,9 +1241,9 @@ static char* AuditEnsurePasswordCreationRequirements(void)
             (-1 == (ucreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ucredit", '=', SecurityBaselineGetLog()))) &&
             (-1 == (ocreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ocredit", '=', SecurityBaselineGetLog()))) &&
             (-1 == (lcreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "lcredit", '=', SecurityBaselineGetLog())))))) ? DuplicateString(g_pass) :
-            FormatAllocateString("In %s, 'minlen' missing or set to %d instead of 14, 'minclass' missing or set to %d instead of 4, "
+            FormatAllocateString("%s detected, in %s, 'minlen' missing or set to %d instead of 14, 'minclass' missing or set to %d instead of 4, "
                 "or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to %d, %d, %d, %d respectively instead of -1 each",
-                g_etcPamdCommonPassword, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                g_suse, g_etcPamdCommonPassword, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
     }
     else
     {

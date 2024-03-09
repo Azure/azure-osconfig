@@ -1700,6 +1700,10 @@ TEST_F(CommonUtilsTest, IsCurrentOs)
 {
     char* name = NULL;
 
+    EXPECT_EQ(false, IsCurrentOs(nullptr, nullptr));
+    EXPECT_EQ(false, IsCurrentOs("Test", nullptr));
+    EXPECT_EQ(false, IsCurrentOs("Test Distro That Does Not Exist", nullptr));
+
     EXPECT_NE(nullptr, name = GetOsName(nullptr));
     EXPECT_EQ(true, IsCurrentOs(name, nullptr));
     FREE_MEMORY(name);
@@ -1707,4 +1711,5 @@ TEST_F(CommonUtilsTest, IsCurrentOs)
     EXPECT_NE(nullptr, name = GetOsPrettyName(nullptr));
     EXPECT_EQ(true, IsCurrentOs(name, nullptr));
     FREE_MEMORY(name);
+
 }

@@ -743,20 +743,30 @@ long GetPassWarnAge(void* log)
 bool IsCurrentOs(const char* name, void* log)
 {
     char* prettyName = NULL;
+    size_t prettyNameLength = 0;
+    size_t nameLength = 0;
     bool result = false;
 
-    if (NULL != (prettyName = GetOsPrettyName(log)))
+    if ((NULL == name) || (0 == (nameLength = strlen(name))))
     {
-        result = (0 == strncmp(name, prettyName, strlen(name))) ? true : false;
+        OsConfigLogError(log, "IsCurrentOs called with an invalid argument");
+        return result;
     }
 
-    if (result)
+    if ((NULL == (prettyName = GetOsPrettyName(log))) || (0 == prettyNameLength = strlen(prettyName)))
     {
-        OsConfigLogInfo(log, "This is distro '%s' ('%s')", name, prettyName);
+        OsConfigLogError(log, "IsCurrentOs: no valid PRETTY_NAME found under /etc/*-release");
     }
     else
     {
-        OsConfigLogInfo(log, "This is not distro '%s' ('%s')", name, prettyName);
+        if (result = (0 == strncmp(name, prettyName, ((nameLength <= prettyNameLength) ? nameLength : prettyNameLength) ? true : false)
+        {
+            OsConfigLogInfo(log, "This is distro '%s' ('%s')", name, prettyName);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "This is not distro '%s' ('%s')", name, prettyName);
+        }
     }
 
     FREE_MEMORY(prettyName);
