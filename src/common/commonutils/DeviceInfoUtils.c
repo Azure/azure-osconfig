@@ -753,13 +753,13 @@ bool IsCurrentOs(const char* name, void* log)
         return result;
     }
 
-    if ((NULL == (prettyName = GetOsPrettyName(log))) || (0 == prettyNameLength = strlen(prettyName)))
+    if ((NULL == (prettyName = GetOsPrettyName(log))) || (0 == (prettyNameLength = strlen(prettyName))))
     {
         OsConfigLogError(log, "IsCurrentOs: no valid PRETTY_NAME found under /etc/*-release");
     }
     else
     {
-        if (result = (0 == strncmp(name, prettyName, ((nameLength <= prettyNameLength) ? nameLength : prettyNameLength) ? true : false)
+        if (result = (0 == strncmp(name, prettyName, ((nameLength <= prettyNameLength) ? nameLength : prettyNameLength) ? true : false)))
         {
             OsConfigLogInfo(log, "This is distro '%s' ('%s')", name, prettyName);
         }
