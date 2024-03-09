@@ -110,6 +110,10 @@ char* GetOsPrettyName(void* log)
         RemovePrefixUpTo(textResult, '=');
         RemovePrefixBlanks(textResult);
     }
+    else
+    {
+        FREE_MEMORY(textResult);
+    }
 
     if (IsFullLoggingEnabled())
     {
