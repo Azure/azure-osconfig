@@ -759,7 +759,7 @@ bool IsCurrentOs(const char* name, void* log)
     }
     else
     {
-        if (result = (0 == strncmp(name, prettyName, ((nameLength <= prettyNameLength) ? nameLength : prettyNameLength) ? true : false)))
+        if (true == (result = (0 == strncmp(name, prettyName, ((nameLength <= prettyNameLength) ? nameLength : prettyNameLength) ? true : false))))
         {
             OsConfigLogInfo(log, "This is distro '%s' ('%s')", name, prettyName);
         }
