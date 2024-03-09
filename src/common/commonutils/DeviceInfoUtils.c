@@ -755,7 +755,7 @@ bool IsCurrentOs(const char* name, void* log)
 
     if ((NULL == (prettyName = GetOsPrettyName(log))) || (0 == (prettyNameLength = strlen(prettyName))))
     {
-        OsConfigLogError(log, "IsCurrentOs: no valid PRETTY_NAME found under /etc/*-release");
+        OsConfigLogError(log, "IsCurrentOs: no valid PRETTY_NAME found in /etc/os-release, assuming this is not the '%s' distro", name);
     }
     else
     {
