@@ -796,25 +796,25 @@ Exit:
     // Clean up the reasons class instance
     if ((NULL != reasonObject) && (MI_RESULT_OK != (miCleanup = MI_Instance_Delete(reasonObject))))
     {
-        LogError(context, miCleanup, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(reasonObject) failed with %d", miCleanup);
+        LogError(context, MI_RESULT_OK, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(reasonObject) failed with %d", miCleanup);
     }
 
     // Clean up the Result MI value instance if needed
     if ((NULL != miValueResult.instance) && (MI_RESULT_OK != (miCleanup = MI_Instance_Delete(miValueResult.instance))))
     {
-        LogError(context, miCleanup, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(miValueResult) failed with %d", miCleanup);
+        LogError(context, MI_RESULT_OK, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(miValueResult) failed with %d", miCleanup);
     }
 
     // Clean up the output resource instance
     if ((NULL != resultResourceObject) && (MI_RESULT_OK != (miCleanup = MI_Instance_Delete(resultResourceObject))))
     {
-        LogError(context, miCleanup, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(resultResourceObject) failed with %d", miCleanup);
+        LogError(context, MI_RESULT_OK, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(resultResourceObject) failed with %d", miCleanup);
     }
 
     // Clean up the GetTargetResource instance
     if (MI_RESULT_OK != (miCleanup = OsConfigResource_GetTargetResource_Destruct(&get_result_object)))
     {
-        LogError(context, miCleanup, GetLog(), "[OsConfigResource.Get] GetTargetResource_Destruct failed with %d", miCleanup);
+        LogError(context, MI_RESULT_OK, GetLog(), "[OsConfigResource.Get] GetTargetResource_Destruct failed with %d", miCleanup);
     }
 
     // Post MI result back to MI to finish
@@ -979,12 +979,12 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
 Exit:
     if ((NULL != miValueResult.instance) && (MI_RESULT_OK != (miCleanup = MI_Instance_Delete(miValueResult.instance))))
     {
-        LogError(context, miCleanup, GetLog(), "[OsConfigResource.Test] MI_Instance_Delete failed with %d", miCleanup);
+        LogError(context, MI_RESULT_OK, GetLog(), "[OsConfigResource.Test] MI_Instance_Delete failed with %d", miCleanup);
     }
 
     if (MI_RESULT_OK != (miCleanup = OsConfigResource_TestTargetResource_Destruct(&test_result_object)))
     {
-        LogError(context, miCleanup, GetLog(), "[OsConfigResource.Test] TestTargetResource_Destruct failed with %d", miCleanup);
+        LogError(context, MI_RESULT_OK, GetLog(), "[OsConfigResource.Test] TestTargetResource_Destruct failed with %d", miCleanup);
     }
 
     if (MI_RESULT_OK != miResult)
@@ -1141,7 +1141,7 @@ Exit:
 
     if (MI_RESULT_OK != (miCleanup = OsConfigResource_SetTargetResource_Destruct(&set_result_object)))
     {
-        LogError(context, miCleanup, GetLog(), "[OsConfigResource.Set] SetTargetResource_Destruct failed with %d", miCleanup);
+        LogError(context, MI_RESULT_OK, GetLog(), "[OsConfigResource.Set] SetTargetResource_Destruct failed with %d", miCleanup);
     }
 
     if (MI_RESULT_OK != miResult)
