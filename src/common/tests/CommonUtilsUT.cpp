@@ -621,6 +621,7 @@ TEST_F(CommonUtilsTest, InvalidArgumentsHttpProxyDataParsing)
 
 TEST_F(CommonUtilsTest, OsProperties)
 {
+    char* osPrettyName = NULL;
     char* osName = NULL;
     char* osVersion = NULL;
     char* cpuType = NULL;
@@ -634,6 +635,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     char* kernelRelease = NULL;
     char* umask = NULL;
 
+    EXPECT_NE(nullptr, osPrettyName = GetOsPrettyName(nullptr));
     EXPECT_NE(nullptr, osName = GetOsName(nullptr));
     EXPECT_NE(nullptr, osVersion = GetOsVersion(nullptr));
     EXPECT_NE(nullptr, cpuType = GetCpuType(nullptr));
@@ -650,6 +652,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, kernelRelease = GetOsKernelRelease(nullptr));
     EXPECT_NE(nullptr, umask = GetLoginUmask(nullptr));
 
+    FREE_MEMORY(osPrettyName);
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);
     FREE_MEMORY(cpuType);
@@ -1691,4 +1694,22 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr));
 
     EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr));
+}
+
+TEST_F(CommonUtilsTest, IsCurrentOs)
+{
+    char* name = NULL;
+
+    EXPECT_EQ(false, IsCurrentOs(nullptr, nullptr));
+    EXPECT_EQ(false, IsCurrentOs("Test", nullptr));
+    EXPECT_EQ(false, IsCurrentOs("Test Distro That Does Not Exist", nullptr));
+
+    EXPECT_NE(nullptr, name = GetOsName(nullptr));
+    EXPECT_EQ(true, IsCurrentOs(name, nullptr));
+    FREE_MEMORY(name);
+
+    EXPECT_NE(nullptr, name = GetOsPrettyName(nullptr));
+    EXPECT_EQ(true, IsCurrentOs(name, nullptr));
+    FREE_MEMORY(name);
+
 }

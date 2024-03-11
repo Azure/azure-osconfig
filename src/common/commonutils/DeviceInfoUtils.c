@@ -98,9 +98,8 @@ void TruncateAtFirst(char* target, char marker)
     }
 }
 
-char* GetOsName(void* log)
+char* GetOsPrettyName(void* log)
 {
-    const char* osNameCommand = "cat /etc/os-release | grep ID=";
     const char* osPrettyNameCommand = "cat /etc/os-release | grep PRETTY_NAME=";
     char* textResult = NULL;
 
@@ -110,14 +109,32 @@ char* GetOsName(void* log)
         RemoveTrailingBlanks(textResult);
         RemovePrefixUpTo(textResult, '=');
         RemovePrefixBlanks(textResult);
-        
+    }
+    else
+    {
+        FREE_MEMORY(textResult);
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "OS pretty name: '%s'", textResult);
+    }
+
+    return textResult;
+}
+
+char* GetOsName(void* log)
+{
+    const char* osNameCommand = "cat /etc/os-release | grep ID=";
+    char* textResult = NULL;
+
+    if (NULL != (textResult = GetOsPrettyName(log)))
+    {
         // Comment next line to capture the full pretty name including version (example: 'Ubuntu 20.04.3 LTS')
         TruncateAtFirst(textResult, ' ');
     }
     else
     {
-        FREE_MEMORY(textResult);
-
         // PRETTY_NAME did not work, try ID
         if (0 == ExecuteCommand(NULL, osNameCommand, true, true, 0, 0, &textResult, NULL, log))
         {
@@ -725,4 +742,38 @@ long GetPassMaxDays(void* log)
 long GetPassWarnAge(void* log)
 {
     return GetPasswordDays("PASS_WARN_AGE", log);
+}
+
+bool IsCurrentOs(const char* name, void* log)
+{
+    char* prettyName = NULL;
+    size_t prettyNameLength = 0;
+    size_t nameLength = 0;
+    bool result = false;
+
+    if ((NULL == name) || (0 == (nameLength = strlen(name))))
+    {
+        OsConfigLogError(log, "IsCurrentOs called with an invalid argument");
+        return result;
+    }
+
+    if ((NULL == (prettyName = GetOsPrettyName(log))) || (0 == (prettyNameLength = strlen(prettyName))))
+    {
+        OsConfigLogError(log, "IsCurrentOs: no valid PRETTY_NAME found in /etc/os-release, assuming this is not the '%s' distro", name);
+    }
+    else
+    {
+        if (true == (result = (0 == strncmp(name, prettyName, ((nameLength <= prettyNameLength) ? nameLength : prettyNameLength) ? true : false))))
+        {
+            OsConfigLogInfo(log, "This is distro '%s' ('%s')", name, prettyName);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "This is not distro '%s' ('%s')", name, prettyName);
+        }
+    }
+
+    FREE_MEMORY(prettyName);
+
+    return result;
 }
