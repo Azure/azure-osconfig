@@ -4,9 +4,9 @@ Author: [MariusNi](https://github.com/MariusNi)
 
 # 1. Introduction
 
-Azure Device OS Configuration (OSConfig) is a modular services stack running on a Linux IoT Edge device that facilitates remote device management over Azure as well from local management authorities.
+Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI, GitOps, as well as local management.
 
-Development of OSConfig happens in stages. This document describes the development roadmap of the OSConfig project.
+This document describes the development roadmap of the OSConfig project.
 
 During any of these stages OSConfig can be extended by adding new [OSConfig Management Modules](modules.md).
 
@@ -55,26 +55,35 @@ OSConfig continues to run as a monolithic process and can accept requests from a
  
 # 4. Detached Platform (codename Copper)
 
-The Management Platform runs in its own process, separate of the PnP Agent. OSConfig can accept request from both local and remote management authorities.
+The concept of Adapters is introduced. The Management Platform runs in its own process. OSConfig can accept request from both local and remote management authorities.
 
 - The OSConfig separates the Agent and the Management Platform into two separate daemon processes.
 - The IPC REST API over Unix Domain Sockets (UDS) and HTTP for MPI is introduced.
-- The Management Platform can accept MPI requests from other Agent Authorities (like ADU).
+- The Management Platform can accept MPI requests from other Managament Authority Adapters.
 - Modules continue to work unchanged, same as in previous releases, as Dynamically Loaded Shared Object libraries exporting the MMI C API. The Platform loads these libraries in-proc.
 - Other Management Modules appear (not shown in diagram).
 
 <img src="assets/4_platform.png" alt="Copper" width=70%/>
+
+# 5. GitOps, Azure Policy, Security Baseline (codename Germanium)
+
+The Universal NRP and the Security Modules can be used to audit and remediate the Linux Security Baseline over Azure Policy and AutoManage Machine Configuration.
+
+- A new OSConfig Universal NRP is added for Azure Policy and Machine Configuration.
+- A new GitOps DC Watcher is added for accepting desired configuration from a Git repository.
+- A new SecurityModule module implements the Azure Security Baseline for Linux.
+- Modules continue to work unchanged, same as in previous releases, as Dynamically Loaded Shared Object libraries exporting the MMI C API. The Platform loads these libraries in-proc.
+
+<img src="assets/7_osconfig_ge.png" alt="Germanium" width=70%/>
   
-# 5. Isolated Modules - the current North Star (codename Gallium)
+# 6. Isolated Modules - the current North Star (codename Krypton)
 
 Main target scenario: OSConfig Management Modules run isolated in their own processes, Azure Policy and GitHub
 
 - The IPC REST API over UDS for Management Modules Interface (MMI) is introduced.
 - The Module Host is introduced. The Modules Manager instead of loading in-proc the module libraries, it forks a Module Host process to load each module library out-of-proc of the platform.
 - Modules continue to work unchanged, same as in previous releases, as Dynamically Loaded Shared Object libraries exporting the MMI C API. The Module Host provides the MMI REST API on top.
-- A new OSConfig NRP is added for MC and Azure Policy.
-- The local management RC/DC are complemented with a remote Git DC.
 - New Storage and Downloader utility libraries are introduced for Platform and Modules to use.
 - Other new Management Modules appear (not shown in diagram).
 
-<img src="assets/osconfig.png" alt="Zinc" width=70%/>
+<img src="assets/osconfig.png" alt="Krypton" width=70%/>

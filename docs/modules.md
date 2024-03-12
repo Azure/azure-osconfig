@@ -4,17 +4,17 @@ Author: [MariusNi](https://github.com/MariusNi)
 
 # 1. Introduction
 
-Azure Device OS Configuration (OSConfig) is a modular services stack running on a Linux IoT Edge device that facilitates remote device management over Azure as well from local management authorities. 
+Azure OSConfig is a modular security configuration stack for Linux Edge devices. 
 
-OSConfig contains a PnP Agent, a Management Platform (Modules Manager) and several Management Modules.
+OSConfig contains a set of Adapters, a Management Platform (including a Modules Manager) and several Management Modules.
 
 The main way of contributing to and extending OSConfig is via developing new Management Modules.
 
-Each Management Module typically implements one device OS configuration function. OSConfig isolates the module from the PnP and Digital Twins Definition Language (DTDL) protocols and from the Edge authentication with the IoT Hub. OSConfig communicates with the module via the Module Interface Model (MIM) and the Management Module Interface (MMI) API that each module implements. The module developer is not required to learn Azure IoT technologies like PnP,  DTDL, DPS, AIS, etc. and instead can focus on designing the PnP-agnostic MIM and implement the module. If needed, the MIM can then be easily translated to DTDL with minimal changes.
+Each Management Module typically implements one device OS configuration function. OSConfig isolates the module from the management authority protocols (such as: Digital Twins Definition Language). OSConfig communicates with the module via the Module Interface Model (MIM) and the Management Module Interface (MMI) API that each module implements. The module developer is not required to learn Azure technologies like MC, PnP,  DTDL, DPS, AIS, etc. and instead can focus on designing the MIM and implement the module. If needed, the MIM can then be easily translated to DTDL or other formats with minimal changes.
  
 This document describes the OSConfig Management Modules and it's meant to serve as a guide for the design and development of such modules. 
 
-For more information on OSConfig see the [OSConfig North Star Architecture](architecture.md) and [OSConfig Roadmap](roadmap.md) documents.
+For more information on OSConfig see the [OSConfig North Star Architecture](architecture.md).
 
 # 2. Architecture Overview
 
@@ -26,11 +26,11 @@ This diagram shows the overall OSConfig North Star architecture. Not all compone
 
 ## 3.1. Introduction
 
-This section describes the PnP/DTDL-agnostic Module Interface Model (MIM). 
+This section describes the Module Interface Model (MIM). 
 
 The MIM describes the device configuration the module can perform and defines the valid payload for Management Module Interface (MMI) Get/Set API calls.  
 
-Each module must have its own MIM. Typically development of a new mlodule starts with the MIM. Once the MIM is complete the module can be implemented to follow that MIM.
+Each module must have its own MIM. Typically development of a new module starts with the MIM. Once the MIM is complete the module can be implemented to follow that MIM.
 
 The MIM is composed by one or more MIM components, each component containing one or more MIM objects, each object being either desired or reported and containing one or several MIM settings. In other words a MIM can be described as lists of components, objects and settings.
 

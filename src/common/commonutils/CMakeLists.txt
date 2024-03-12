@@ -10,6 +10,7 @@ add_library(commonutils STATIC
     DeviceInfoUtils.c
     FileUtils.c
     OtherUtils.c
+    PackageUtils.c
     ProxyUtils.c
     SocketUtils.c
     SshUtils.c
