@@ -92,7 +92,7 @@ jobs:
             ${{ matrix.target.name }}-${{ matrix.target.arch }}.xml
 
   universal-nrp-test:
-    name: Test
+    name: Universal NRP Test
     uses: ./.github/workflows/universalnrp-test-run.yml
     strategy:
       fail-fast: false

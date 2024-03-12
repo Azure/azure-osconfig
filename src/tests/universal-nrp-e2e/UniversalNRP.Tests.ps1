@@ -16,9 +16,17 @@ Describe 'Validate Universal NRP' {
             $result.resources | Should -HaveCount 20
         }
 
-        It 'Ensure resons are populated' {
+        It 'Ensure resons are properly populated' {
             foreach ($instance in $result.resources) {
-                $instance.properties.Reasons | Should -Not -BeNullOrEmpty
+                if ($instance.properties.Reasons.Code -eq "PASS") {
+                    $instance.complianceStatus | Should -BeTrue
+                }
+                else if ($instance.properties.Reasons.Code -eq "FAIL") {
+                    $instance.complianceStatus | Should -BeFalse
+                }
+                else {
+                    throw "Reasons are not properly populated"
+                }
             }
         }
 
@@ -40,9 +48,17 @@ Describe 'Validate Universal NRP' {
             $result.resources | Should -HaveCount 20
         }
 
-        It 'Ensure resons are populated' {
+        It 'Ensure resons are properly populated' {
             foreach ($instance in $result.resources) {
-                $instance.properties.Reasons | Should -Not -BeNullOrEmpty
+                if ($instance.properties.Reasons.Code -eq "PASS") {
+                    $instance.complianceStatus | Should -BeTrue
+                }
+                else if ($instance.properties.Reasons.Code -eq "FAIL") {
+                    throw "There should not be any failing resources after remediation"
+                }
+                else {
+                    throw "Reasons are not properly populated"
+                }
             }
         }
 
