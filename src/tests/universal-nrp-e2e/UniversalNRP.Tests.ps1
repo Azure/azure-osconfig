@@ -21,7 +21,7 @@ Describe 'Validate Universal NRP' {
                 if ($instance.properties.Reasons.Code -eq "PASS") {
                     $instance.complianceStatus | Should -BeTrue
                 }
-                else if ($instance.properties.Reasons.Code -eq "FAIL") {
+                elseif ($instance.properties.Reasons.Code -eq "FAIL") {
                     $instance.complianceStatus | Should -BeFalse
                 }
                 else {
@@ -53,7 +53,7 @@ Describe 'Validate Universal NRP' {
                 if ($instance.properties.Reasons.Code -eq "PASS") {
                     $instance.complianceStatus | Should -BeTrue
                 }
-                else if ($instance.properties.Reasons.Code -eq "FAIL") {
+                elseif ($instance.properties.Reasons.Code -eq "FAIL") {
                     throw "There should not be any failing resources after remediation"
                 }
                 else {
