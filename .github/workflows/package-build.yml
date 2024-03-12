@@ -79,14 +79,14 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
           cmd: |
-            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF ${{ inputs.target == 'mariner-2' && '-Duse_default_uuid=ON' || '' }} -DBUILD_ADAPTERS=ON -G Ninja
+            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
-          cmd: cmake --build . --config ${{ env.BUILD_TYPE }}
+          cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Run cpack
         uses: ./.github/actions/container-exec
