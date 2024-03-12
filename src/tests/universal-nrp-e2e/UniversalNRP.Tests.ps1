@@ -9,7 +9,7 @@ Describe 'Validate Universal NRP' {
     # Perform monitoring - Get
     Context "Get" {
         BeforeAll {
-            $result = Get-GuestConfigurationPackageComplianceStatus -Path $PolicyPackage -Verbose
+            $result = Get-GuestConfigurationPackageComplianceStatus -Path $PolicyPackage
         }
 
         It 'Ensure the total resource instances count' {    
@@ -38,10 +38,10 @@ Describe 'Validate Universal NRP' {
     # Perform Remediation - Set
     Context "Set" {
         BeforeAll {
-            Start-GuestConfigurationPackageRemediation -Path $PolicyPackage -Verbose
+            Start-GuestConfigurationPackageRemediation -Path $PolicyPackage
             # Wait for remediation to complete
-            Start-Sleep -Seconds 60
-            $result = Get-GuestConfigurationPackageComplianceStatus -Path $PolicyPackage -Verbose
+            Start-Sleep -Seconds 30
+            $result = Get-GuestConfigurationPackageComplianceStatus -Path $PolicyPackage
         }
 
         It 'Ensure the total resource instances count' {    

@@ -12,6 +12,10 @@ on:
       package-type:
         required: true
         type: string
+      install-agent:
+        required: false
+        type: boolean
+        default: false
       tag:
         required: false
         description: 'Pester tag to include in the test run. If not provided, all tests will be run.'
@@ -44,9 +48,20 @@ jobs:
           sudo mkdir -p /etc/osconfig
           sudo cp -r ./src/adapters/pnp/daemon/osconfig.json /etc/osconfig/osconfig.json
 
+      - name: Install agent
+        if: ${{ inputs.install-agent }}
+        working-directory: ${{ steps.download.outputs.download-path }}/build
+        run: |
+          if [ "${{ inputs.package-type }}" = "DEB" ]; then
+            sudo apt install -y $(ls *.deb)
+          else
+            sudo yum install -y $(ls *.rpm)
+          fi
+
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.download.outputs.download-path }}
         run: |
+          testLogSuffix=${{ inputs.install-agent == true && 'withAgent' || 'noAgent' }}
           script="./universalNRPTest.ps1"
           cat >$script <<EOL
           Install-Module -Name GuestConfiguration -Force
@@ -64,8 +79,8 @@ jobs:
               }
               TestResult = @{
                   Enabled      = \$true
-                  OutputFormat = 'NUnitXml'
-                  OutputPath   = '${{ inputs.target }}-testResult.xml'
+                  OutputFormat = 'JUnitXml'
+                  OutputPath   = '${{ inputs.target }}-testResult-$testLogSuffix.xml'
               }
               Should = @{
                   ErrorAction = 'Continue'
@@ -83,4 +98,4 @@ jobs:
         if: success() || failure()
         with:
           name: universal-nrp-test
-          path: '${{ steps.download.outputs.download-path }}/${{ inputs.target }}-testResult.xml'
+          path: '${{ steps.download.outputs.download-path }}/${{ inputs.target }}-testResult*.xml'
