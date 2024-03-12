@@ -13,8 +13,17 @@ Describe 'Validate Universal NRP' {
         }
 
         It 'Ensure the total resource instances count' {    
-            $result | Should -Not -BeNullOrEmpty
             $result.resources | Should -HaveCount 20
+        }
+
+        It 'Ensure resons are populated' {
+            foreach ($instance in $result.resources) {
+                $instance.properties.Reasons | Should -Not -BeNullOrEmpty
+            }
+        }
+
+        It 'Ensure all resource instances have status' {    
+            $result.resources.complianceStatus | Should -Not -BeNullOrEmpty
         }
     }
 
@@ -28,24 +37,20 @@ Describe 'Validate Universal NRP' {
         }
 
         It 'Ensure the total resource instances count' {    
-            $result | Should -Not -BeNullOrEmpty
             $result.resources | Should -HaveCount 20
         }
 
         It 'Ensure resons are populated' {
-            $result | Should -Not -BeNullOrEmpty
             foreach ($instance in $result.resources) {
                 $instance.properties.Reasons | Should -Not -BeNullOrEmpty
             }
         }
 
         It 'Ensure all resource instances pass audit' {    
-            $result | Should -Not -BeNullOrEmpty
             $result.resources.complianceStatus | Should -BeTrue
         }
 
         It 'Ensure overall audit pass' {
-            $result | Should -Not -BeNullOrEmpty
             $result.complianceStatus | Should -BeTrue
         }
     }
