@@ -5,7 +5,7 @@ on: [workflow_dispatch]
 jobs:
   test:
     name: Test
-    uses: ./.github/workflows/guestconfiguration-test-run.yml
+    uses: ./.github/workflows/universalnrp-test-run.yml
     strategy:
       fail-fast: false
       matrix:

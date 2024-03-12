@@ -18,6 +18,6 @@ jobs:
       - uses: dorny/test-reporter@v1
         with:
           artifact: gc-test
-          name: Guest Configuration Test Report
+          name: Universal NRP Test Report
           path: '*.xml'
           reporter: dotnet-trx
