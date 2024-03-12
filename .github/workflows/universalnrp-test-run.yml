@@ -1,4 +1,4 @@
-name: Guest Configuration Test Run
+name: Universal NRP Test Run
 
 on:
   workflow_call:
@@ -47,13 +47,13 @@ jobs:
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.download.outputs.download-path }}
         run: |
-          script="./guestConfigurationTest.ps1"
+          script="./universalNRPTest.ps1"
           cat >$script <<EOL
           Install-Module -Name GuestConfiguration -Force
           Install-Module Pester -Force -SkipPublisherCheck
           Import-Module Pester -Passthru
 
-          \$container = New-PesterContainer -Path ./src/tests/gc-e2e/GuestConfiguration.Tests.ps1 -Data @{ PolicyPackage = './build/LinuxSshServerSecurityBaselinePolicy.zip' }
+          \$container = New-PesterContainer -Path ./src/tests/universal-nrp-e2e/UniversalNRP.Tests.ps1 -Data @{ PolicyPackage = './build/LinuxSshServerSecurityBaselinePolicy.zip' }
           \$pesterConfig = [PesterConfiguration]@{
               Run = @{
                   Exit = \$false

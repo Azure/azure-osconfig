@@ -1,8 +1,8 @@
-name: Guest Configuration Test Report
+name: Universal NRP Test Report
 
 on:
   workflow_run:
-    workflows: ['Guest Configuration Test Run']
+    workflows: ['Universal NRP Test Run']
     types:
       - completed
 

@@ -1,18 +1,18 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
-# GuestConfiguration.Tests.ps1
+# UniversalNRP.Tests.ps1
 param (
     [Parameter(Mandatory)]
     [string] $PolicyPackage
 )
 
-Describe 'Validate GuestConfiguration NRP' {
+Describe 'Validate Universal NRP' {
     # Perform monitoring - Get
     Context "Get" {
         BeforeAll {
             $result = Get-GuestConfigurationPackageComplianceStatus -Path $PolicyPackage -Verbose
         }
 
-        It 'Correct resource count - 20' {    
+        It 'Ensure the total resource instances count' {    
             $result | Should -Not -BeNullOrEmpty
             $result.resources | Should -HaveCount 20
         }
@@ -21,20 +21,30 @@ Describe 'Validate GuestConfiguration NRP' {
     # Perform Remediation - Set
     Context "Set" {
         BeforeAll {
-            $result = Start-GuestConfigurationPackageRemediation -Path $PolicyPackage -Verbose
+            Start-GuestConfigurationPackageRemediation -Path $PolicyPackage -Verbose
+            # Wait for remediation to complete
+            Start-Sleep -Seconds 60
+            $result = Get-GuestConfigurationPackageComplianceStatus -Path $PolicyPackage -Verbose
         }
 
-        It 'Ensure resource count = 20' {    
+        It 'Ensure the total resource instances count' {    
             $result | Should -Not -BeNullOrEmpty
             $result.resources | Should -HaveCount 20
         }
 
-        It 'Ensure resources are all compliant' {    
+        It 'Ensure resons are populated' {
+            $result | Should -Not -BeNullOrEmpty
+            foreach ($instance in $result.resources) {
+                $instance.properties.Reasons | Should -Not -BeNullOrEmpty
+            }
+        }
+
+        It 'Ensure all resource instances pass audit' {    
             $result | Should -Not -BeNullOrEmpty
             $result.resources.complianceStatus | Should -BeTrue
         }
 
-        It 'Ensure whole policy is compliant' {
+        It 'Ensure overall audit pass' {
             $result | Should -Not -BeNullOrEmpty
             $result.complianceStatus | Should -BeTrue
         }

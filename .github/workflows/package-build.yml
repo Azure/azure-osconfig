@@ -112,7 +112,7 @@ jobs:
             ./build/*.zip
             ./build/modules/test/moduletest
             ./build/modules/bin/*.so
-            ./src/tests/gc-e2e/*.Tests.ps1
+            ./src/tests/universal-nrp-e2e/*.Tests.ps1
 
       - uses: actions/upload-artifact@v3
         if: ${{ !inputs.test }}
