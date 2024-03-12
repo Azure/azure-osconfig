@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: dorny/test-reporter@v1
         with:
-          artifact: gc-test
+          artifact: universal-nrp-test
           name: Universal NRP Test Report
           path: '*.xml'
           reporter: dotnet-trx

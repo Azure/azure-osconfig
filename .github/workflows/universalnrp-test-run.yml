@@ -82,5 +82,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: success() || failure()
         with:
-          name: gc-test
+          name: universal-nrp-test
           path: '${{ steps.download.outputs.download-path }}/${{ inputs.target }}-testResult.xml'
