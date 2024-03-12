@@ -1,0 +1,86 @@
+name: Guest Configuration Test Run
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      arch:
+        required: true
+        type: string
+      package-type:
+        required: true
+        type: string
+      tag:
+        required: false
+        description: 'Pester tag to include in the test run. If not provided, all tests will be run.'
+        default: ''
+        type: string
+
+jobs:
+  package:
+    uses: ./.github/workflows/package-build.yml
+    with:
+      target: ${{ inputs.target }}
+      arch: ${{ inputs.arch }}
+      artifact: ${{ inputs.target }}
+      package-type: ${{ inputs.package-type }}
+      test: true
+
+  test:
+    needs: package
+    runs-on: [self-hosted, 1ES.Pool=e2e-pool, '1ES.ImageOverride=${{ inputs.target }}']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: ${{ inputs.target }}
+
+      - name: Create osconfig.json
+        run: |
+          sudo mkdir -p /etc/osconfig
+          sudo cp -r ./src/adapters/pnp/daemon/osconfig.json /etc/osconfig/osconfig.json
+
+      - name: Run Guest Configuration Test
+        working-directory: ${{ steps.download.outputs.download-path }}
+        run: |
+          script="./guestConfigurationTest.ps1"
+          cat >$script <<EOL
+          Install-Module -Name GuestConfiguration -Force
+          Install-Module Pester -Force -SkipPublisherCheck
+          Import-Module Pester -Passthru
+
+          \$container = New-PesterContainer -Path ./src/tests/gc-e2e/GuestConfiguration.Tests.ps1 -Data @{ PolicyPackage = './build/LinuxSshServerSecurityBaselinePolicy.zip' }
+          \$pesterConfig = [PesterConfiguration]@{
+              Run = @{
+                  Exit = \$false
+                  Container = \$container
+              }
+              Output = @{
+                  Verbosity = 'Detailed'
+              }
+              TestResult = @{
+                  Enabled      = \$true
+                  OutputFormat = 'NUnitXml'
+                  OutputPath   = '${{ inputs.target }}-testResult.xml'
+              }
+              Should = @{
+                  ErrorAction = 'Continue'
+              }
+              Filter = @{
+                  Tag         = '${{ inputs.tag }}'
+              }
+          };
+          Invoke-Pester -Configuration \$pesterConfig
+          EOL
+
+          sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
+
+      - uses: actions/upload-artifact@v3
+        if: success() || failure()
+        with:
+          name: gc-test
+          path: '${{ steps.download.outputs.download-path }}/${{ inputs.target }}-testResult.xml'

@@ -15,7 +15,7 @@
         {
             "name": "linux-install-packages",
             "parameters": {
-                "packages": "aziot-identity-service jq"
+                "packages": "aziot-identity-service jq omi powershell"
             }
         },
         {

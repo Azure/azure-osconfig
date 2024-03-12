@@ -1,0 +1,23 @@
+name: Guest Configuration Test Report
+
+on:
+  workflow_run:
+    workflows: ['Guest Configuration Test Run']
+    types:
+      - completed
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dorny/test-reporter@v1
+        with:
+          artifact: gc-test
+          name: Guest Configuration Test Report
+          path: '*.xml'
+          reporter: dotnet-trx
