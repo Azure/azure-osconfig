@@ -96,8 +96,8 @@ jobs:
 
       - name: Stage OSConfig Logs
         run: |
-          mkdir -p ${{ env.RUNNER_TEMP }}/osconfig
-          sudo cp -r /var/log/osconfig* ${{ env.RUNNER_TEMP }}/osconfig/
+          mkdir -p $RUNNER_TEMP/osconfig
+          sudo cp -r /var/log/osconfig* $RUNNER_TEMP/osconfig/
 
       - uses: actions/upload-artifact@v3
         if: success() || failure()
