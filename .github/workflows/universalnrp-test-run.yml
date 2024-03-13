@@ -48,12 +48,12 @@ jobs:
           sudo mkdir -p /etc/osconfig
           sudo cp -r ./src/adapters/pnp/daemon/osconfig.json /etc/osconfig/osconfig.json
 
-      - name: Install agent
+      - name: Install OSConfig
         if: ${{ inputs.install-agent }}
         working-directory: ${{ steps.download.outputs.download-path }}/build
         run: |
           if [ "${{ inputs.package-type }}" = "DEB" ]; then
-            sudo apt install -y $(ls *.deb)
+            sudo dpkg -i $(ls *.deb)
           else
             sudo yum install -y $(ls *.rpm)
           fi
@@ -94,8 +94,19 @@ jobs:
 
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
 
+      - name: Stage OSConfig Logs
+        run: |
+          mkdir -p ${{ env.RUNNER_TEMP }}/osconfig
+          sudo cp -r /var/log/osconfig* ${{ env.RUNNER_TEMP }}/osconfig/
+
       - uses: actions/upload-artifact@v3
         if: success() || failure()
         with:
           name: universal-nrp-test
           path: '${{ steps.download.outputs.download-path }}/${{ inputs.target }}-testResult*.xml'
+
+      - uses: actions/upload-artifact@v3
+        if: success() || failure()
+        with:
+          name: universal-nrp-test-logs
+          path: '${{ env.RUNNER_TEMP }}/osconfig/osconfig*'

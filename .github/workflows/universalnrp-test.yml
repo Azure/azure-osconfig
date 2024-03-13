@@ -1,6 +1,6 @@
 name: Universal NRP Test
 
-on: [workflow_dispatch]
+on: [push, workflow_dispatch]
 
 jobs:
   test:
