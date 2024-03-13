@@ -61,7 +61,7 @@ jobs:
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.download.outputs.download-path }}
         run: |
-          testLogSuffix=${{ inputs.install-osconfig == true && 'withAgent' || 'noAgent' }}
+          testLogSuffix=${{ inputs.install-osconfig == true && 'withOSConfig' || 'noOSConfig' }}
           script="./universalNRPTest.ps1"
           cat >$script <<EOL
           Install-Module -Name GuestConfiguration -Force
