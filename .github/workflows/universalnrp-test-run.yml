@@ -80,7 +80,7 @@ jobs:
               TestResult = @{
                   Enabled      = \$true
                   OutputFormat = 'JUnitXml'
-                  OutputPath   = '${{ inputs.target }}-testResult-$testLogSuffix.xml'
+                  OutputPath   = '${{ inputs.target }}-UniversalNRP-testResult-$testLogSuffix.xml'
               }
               Should = @{
                   ErrorAction = 'Continue'
