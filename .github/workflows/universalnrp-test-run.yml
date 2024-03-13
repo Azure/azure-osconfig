@@ -30,7 +30,7 @@ jobs:
 
   test:
     needs: package
-    runs-on: [self-hosted, 1ES.Pool=e2e-pool, '1ES.ImageOverride=${{ inputs.target }}']
+    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ inputs.target }}']
     steps:
       - uses: actions/checkout@v4
 

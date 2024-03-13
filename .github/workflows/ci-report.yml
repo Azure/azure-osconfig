@@ -21,7 +21,7 @@ jobs:
           name: CI report
           path: '*.xml'
           reporter: java-junit
-  
+
   nrp-e2e-report:
     runs-on: ubuntu-latest
     steps:

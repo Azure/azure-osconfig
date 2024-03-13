@@ -1,25 +1,3 @@
-variable "client_id" {
-  type        = string
-  sensitive   = true
-  description = "Client ID for the service principal"
-}
-
-variable "client_secret" {
-  type        = string
-  sensitive   = true
-  description = "Client secret for the service principal"
-}
-
-variable "subscription_id" {
-  type      = string
-  sensitive = true
-}
-
-variable "tenant_id" {
-  type      = string
-  sensitive = true
-}
-
 variable "name" {
   type        = string
   description = "The name of the Azure IoT Hub"

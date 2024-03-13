@@ -11,13 +11,19 @@ on:
 jobs:
   hub:
     name: Create IoT Hub
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, 1ES.Pool=e2e-pool, '1ES.ImageOverride=ubuntu-22.04']
     outputs:
       name: ${{ steps.terraform.outputs.iothub_name }}
       connection_string: ${{ steps.terraform.outputs.connection_string }}
       resource_group_name: ${{ steps.terraform.outputs.resource_group_name }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: azure/login@v2
+        with:
+          auth-type: IDENTITY
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - uses: hashicorp/setup-terraform@v3
         with:
@@ -28,10 +34,9 @@ jobs:
         id: terraform
         working-directory: devops/e2e/terraform/iothub
         env:
-          TF_VAR_client_id: ${{ secrets.CLIENT_ID }}
-          TF_VAR_client_secret: ${{ secrets.CLIENT_SECRET }}
-          TF_VAR_subscription_id: ${{ secrets.SUBSCRIPTION_ID }}
-          TF_VAR_tenant_id: ${{ secrets.TENANT_ID }}
+          ARM_USE_MSI: true
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           TF_VAR_name: e2e-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
         run: |
           terraform init
@@ -56,9 +61,8 @@ jobs:
           ]
         arch: [amd64]
     secrets:
-      client_id: ${{ secrets.CLIENT_ID }}
-      client_secret: ${{ secrets.CLIENT_SECRET }}
-      tenant_id: ${{ secrets.TENANT_ID }}
+      subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      tenant_id: ${{ secrets.AZURE_TENANT_ID }}
       iothub: ${{ needs.hub.outputs.name }}
       iothub_connection_string: ${{ needs.hub.outputs.connection_string }}
     with:
@@ -68,16 +72,18 @@ jobs:
 
   cleanup:
     name: Delete IoT Hub
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, 1ES.Pool=e2e-pool, '1ES.ImageOverride=ubuntu-22.04']
     needs: [hub, test]
     if: always()
     steps:
+      - uses: azure/login@v2
+        with:
+          auth-type: IDENTITY
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Delete IoT Hub
         run: |
-          az login --service-principal \
-            --username ${{ secrets.CLIENT_ID }} \
-            --password ${{ secrets.CLIENT_SECRET }} \
-            --tenant ${{ secrets.TENANT_ID }}
           az extension add --name azure-iot
           az iot hub delete \
             --name ${{ needs.hub.outputs.name }} \

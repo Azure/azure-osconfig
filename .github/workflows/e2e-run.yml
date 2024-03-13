@@ -13,11 +13,8 @@ on:
         required: true
         type: string
     secrets:
-      client_id:
-        description: 'Azure Client ID'
-        required: true
-      client_secret:
-        description: 'Azure Client Secret'
+      subscription_id:
+        description: 'Azure Subscription ID'
         required: true
       tenant_id:
         description: 'Azure Tenant ID'
@@ -50,13 +47,15 @@ jobs:
           name: ${{ inputs.target }}
           path: package
 
+      - uses: azure/login@v2
+        with:
+          auth-type: IDENTITY
+          tenant-id: ${{ secrets.tenant_id }}
+          subscription-id: ${{ secrets.subscription_id }}
+
       - name: Create device identity
         id: device
         run: |
-          az login --service-principal \
-            --username ${{ secrets.client_id }} \
-            --password ${{ secrets.client_secret }} \
-            --tenant ${{ secrets.tenant_id }}
           az extension add --name azure-iot
           az iot hub device-identity create \
             --hub-name ${{ secrets.iothub }} \
