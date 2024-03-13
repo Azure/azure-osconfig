@@ -98,6 +98,7 @@ jobs:
         run: |
           mkdir  osconfig-logs
           sudo cp -r /var/log/osconfig* osconfig-logs/
+          sudo chown $USER osconfig-logs/* 
 
       - uses: actions/upload-artifact@v3
         if: success() || failure()
