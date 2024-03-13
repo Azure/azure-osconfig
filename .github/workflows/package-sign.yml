@@ -21,17 +21,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: azure/login@v2
+        with:
+          auth-type: IDENTITY
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Setup ESRP
         env:
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-          TENANT_ID: ${{ secrets.TENANT_ID }}
           AZURE_VAULT: ${{ secrets.AZURE_VAULT }}
           AUTH_CERT: ${{ secrets.AZURE_VAULT_AUTH_CERT_NAME }}
           REQUEST_SIGNING_CERT: ${{ secrets.AZURE_VAULT_REQUEST_SIGNING_CERT_NAME }}
         run: |
-          az login --service-principal --username "$env:CLIENT_ID" --password "$env:CLIENT_SECRET" --tenant "$env:TENANT_ID"
-
           az keyvault secret download --vault-name "$env:AZURE_VAULT" --name "$env:AUTH_CERT" --file out.pfx
           certutil -f -importpfx out.pfx
           Remove-Item -Path out.pfx

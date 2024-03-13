@@ -22,7 +22,6 @@ jobs:
       PMC_CLI_MSAL_SCOPE: api://d48bb382-20ec-41b9-a0ea-07758a21ccd0/.default
       PMC_CLI_MSAL_AUTHORITY: https://login.microsoftonline.com/MSAzureCloud.onmicrosoft.com
       PMC_CLI_MSAL_CERT_PATH: auth.pem
-
     steps:
       - uses: actions/checkout@v4
 
@@ -31,15 +30,17 @@ jobs:
           name: ${{ inputs.artifact }}
           path: packages
 
+      - uses: azure/login@v2
+        with:
+          auth-type: IDENTITY
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Download certs
         env:
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-          TENANT_ID: ${{ secrets.TENANT_ID }}
           AZURE_VAULT: ${{ secrets.AZURE_VAULT }}
           PMC_MSAL_CERT_NAME: pmc-onecert
         run: |
-          az login --service-principal --username "$CLIENT_ID" --password "$CLIENT_SECRET" --tenant "$TENANT_ID"
           az keyvault secret download --vault-name "$AZURE_VAULT" --name "$PMC_MSAL_CERT_NAME" --file "${{ github.workspace }}/auth.pem"
 
       - name: Upload package
