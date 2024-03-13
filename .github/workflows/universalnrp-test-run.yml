@@ -12,7 +12,7 @@ on:
       package-type:
         required: true
         type: string
-      install-agent:
+      install-osconfig:
         required: false
         type: boolean
         default: false
@@ -48,12 +48,12 @@ jobs:
           sudo mkdir -p /etc/osconfig
           sudo cp -r ./src/adapters/pnp/daemon/osconfig.json /etc/osconfig/osconfig.json
 
-      - name: Install agent
-        if: ${{ inputs.install-agent }}
+      - name: Install OSConfig
+        if: ${{ inputs.install-osconfig }}
         working-directory: ${{ steps.download.outputs.download-path }}/build
         run: |
           if [ "${{ inputs.package-type }}" = "DEB" ]; then
-            sudo apt install -y $(ls *.deb)
+            sudo dpkg -i $(ls *.deb)
           else
             sudo yum install -y $(ls *.rpm)
           fi
@@ -61,7 +61,7 @@ jobs:
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.download.outputs.download-path }}
         run: |
-          testLogSuffix=${{ inputs.install-agent == true && 'withAgent' || 'noAgent' }}
+          testLogSuffix=${{ inputs.install-osconfig == true && 'withAgent' || 'noAgent' }}
           script="./universalNRPTest.ps1"
           cat >$script <<EOL
           Install-Module -Name GuestConfiguration -Force
@@ -94,8 +94,20 @@ jobs:
 
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
 
+      - name: Stage OSConfig Logs
+        run: |
+          mkdir  osconfig-logs
+          sudo cp -r /var/log/osconfig* osconfig-logs/
+          sudo chown $USER osconfig-logs/* 
+
       - uses: actions/upload-artifact@v3
         if: success() || failure()
         with:
           name: universal-nrp-test
           path: '${{ steps.download.outputs.download-path }}/${{ inputs.target }}-testResult*.xml'
+
+      - uses: actions/upload-artifact@v3
+        if: success() || failure()
+        with:
+          name: universal-nrp-test-${{ inputs.install-osconfig == true && 'withOSConfig' || 'noOSConfig' }}-logs
+          path: osconfig-logs/osconfig*
