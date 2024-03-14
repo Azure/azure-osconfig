@@ -1,0 +1,164 @@
+[
+  {
+    "RunCommand": "cat /dev/null > /etc/osconfig/osconfig_commandrunner.cache && cp /etc/osconfig/osconfig_commandrunner.cache /tmp/commandrunner-cache.cache.bak && rm -f /etc/osconfig/osconfig_commandrunner.cache"
+  },
+  {
+    "Action": "LoadModule",
+    "Module": "commandrunner.so"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "ExpectedResult": 0,
+    "Payload": {
+      "commandId": "",
+      "resultCode": 0,
+      "textResult": "",
+      "currentState": 0
+    }
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Payload": {
+      "commandId": "test_1",
+      "arguments": "echo -n test",
+      "timeout": 0,
+      "singleLineTextResult": true,
+      "action": 3
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "WaitSeconds": 1,
+    "ExpectedResult": 0,
+    "Payload": {
+      "commandId": "test_1",
+      "resultCode": 0,
+      "textResult": "test",
+      "currentState": 2
+    }
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Payload": {
+      "commandId": "test_2",
+      "arguments": "sleep 10s && echo -n test",
+      "timeout": 0,
+      "singleLineTextResult": true,
+      "action": 3
+    }
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Payload": {
+      "commandId": "test_2",
+      "action": 5
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "WaitSeconds": 1,
+    "ExpectedResult": 0,
+    "Payload": {
+      "commandId": "test_2",
+      "resultCode": 125,
+      "textResult": "",
+      "currentState": 5
+    }
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "WaitSeconds": 2,
+    "Payload": {
+      "commandId": "test_3",
+      "arguments": "sleep 100s",
+      "timeout": 1,
+      "singleLineTextResult": true,
+      "action": 3
+    }
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "WaitSeconds": 5,
+    "Payload": {
+      "commandId": "test_3",
+      "action": 4
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "WaitSeconds": 1,
+    "ExpectedResult": 0,
+    "Payload": {
+      "commandId": "test_3",
+      "resultCode": 62,
+      "textResult": "",
+      "currentState": 4
+    }
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Payload": {
+      "commandId": "test_2",
+      "action": 4
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "ExpectedResult": 0,
+    "Payload": {
+      "commandId": "test_2",
+      "resultCode": 125,
+      "textResult": "",
+      "currentState": 5
+    }
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Payload": {
+      "commandId": "test_1",
+      "action": 4
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "ExpectedResult": 0,
+    "Payload": {
+      "commandId": "test_1",
+      "resultCode": 0,
+      "textResult": "test",
+      "currentState": 2
+    }
+  },
+  {
+    "Action": "UnloadModule"
+  },
+  {
+    "RunCommand": "cat /dev/null > /tmp/commandrunner-cache.cache.bak && cp /tmp/commandrunner-cache.cache.bak /etc/osconfig/osconfig_commandrunner.cache && rm -f /tmp/commandrunner-cache.cache.bak"
+  }
+]

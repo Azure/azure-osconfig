@@ -1,0 +1,364 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "securitybaseline.so"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "DoesNotExist",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "DoesNotExist",
+    "ObjectName": "auditEnsurePermissionsOnEtcCronWeekly",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsurePermissionsOnEtcSshSshdConfig",
+    "Payload": "600"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshPortIsConfigured",
+    "Payload": "22"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshBestPracticeProtocol",
+    "Payload": "2"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshBestPracticeIgnoreRhosts",
+    "Payload": "yes"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshLogLevelIsSet",
+    "Payload": "INFO"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshMaxAuthTriesIsSet",
+    "Payload": "6"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureAllowUsersIsConfigured",
+    "Payload": "*@*"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureDenyUsersIsConfigured",
+    "Payload": "root"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureAllowGroupsIsConfigured",
+    "Payload": "*"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureDenyGroupsConfigured",
+    "Payload": "root"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshHostbasedAuthenticationIsDisabled",
+    "Payload": "no"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshPermitRootLoginIsDisabled",
+    "Payload": "no"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshPermitEmptyPasswordsIsDisabled",
+    "Payload": "no"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshClientIntervalCountMaxIsConfigured",
+    "Payload": "0"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshClientAliveIntervalIsConfigured",
+    "Payload": "3600"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshLoginGraceTimeIsSet",
+    "Payload": "60"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureOnlyApprovedMacAlgorithmsAreUsed",
+    "Payload": "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSshWarningBannerIsEnabled",
+    "Payload": "#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureUsersCannotSetSshEnvironmentOptions",
+    "Payload": "no"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureAppropriateCiphersForSsh",
+    "Payload": "aes128-ctr,aes192-ctr,aes256-ctr"
+  },
+  {
+    "Action": "UnloadModule"
+  },
+  {
+    "Action": "LoadModule",
+    "Module": "securitybaseline.so",
+    "WaitSeconds": 30
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcSshSshdConfig",
+    "Payload": "600"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshPortIsConfigured",
+    "Payload": "22"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshBestPracticeProtocol",
+    "Payload": "2"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshBestPracticeIgnoreRhosts",
+    "Payload": "yes"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshLogLevelIsSet",
+    "Payload": "INFO"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshMaxAuthTriesIsSet",
+    "Payload": "6"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureAllowUsersIsConfigured",
+    "Payload": "*@*"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureDenyUsersIsConfigured",
+    "Payload": "root"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureAllowGroupsIsConfigured",
+    "Payload": "*"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureDenyGroupsConfigured",
+    "Payload": "root"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshHostbasedAuthenticationIsDisabled",
+    "Payload": "no"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshPermitRootLoginIsDisabled",
+    "Payload": "no"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshPermitEmptyPasswordsIsDisabled",
+    "Payload": "no"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshClientIntervalCountMaxIsConfigured",
+    "Payload": "0"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshClientAliveIntervalIsConfigured",
+    "Payload": "3600"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshLoginGraceTimeIsSet",
+    "Payload": "60"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureOnlyApprovedMacAlgorithmsAreUsed",
+    "Payload": "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshWarningBannerIsEnabled",
+    "Payload": "#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureUsersCannotSetSshEnvironmentOptions",
+    "Payload": "no"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureAppropriateCiphersForSsh",
+    "Payload": "aes128-ctr,aes192-ctr,aes256-ctr"
+  },  
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsurePermissionsOnEtcSshSshdConfig"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshPortIsConfigured"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshBestPracticeProtocol"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshBestPracticeIgnoreRhosts"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshLogLevelIsSet"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshMaxAuthTriesIsSet"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAllowUsersIsConfigured"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDenyUsersIsConfigured"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAllowGroupsIsConfigured"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDenyGroupsConfigured"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshHostbasedAuthenticationIsDisabled"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshPermitRootLoginIsDisabled"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshPermitEmptyPasswordsIsDisabled"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshClientIntervalCountMaxIsConfigured"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshLoginGraceTimeIsSet"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureOnlyApprovedMacAlgorithmsAreUsed"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshWarningBannerIsEnabled"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureUsersCannotSetSshEnvironmentOptions"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAppropriateCiphersForSsh"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]
