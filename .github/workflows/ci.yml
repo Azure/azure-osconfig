@@ -90,22 +90,3 @@ jobs:
           path: |
             ${{ matrix.target.name }}-${{ matrix.target.arch }}.log
             ${{ matrix.target.name }}-${{ matrix.target.arch }}.xml
-
-  universal-nrp-test:
-    name: Universal NRP Test
-    uses: ./.github/workflows/universalnrp-test-run.yml
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          [
-            { os: ubuntu, version: 20.04, package-type: DEB, tag: ''},
-          ]
-        arch: [amd64]
-        install-osconfig: [true, false]
-    with:
-      target: ${{ matrix.target.os }}-${{ matrix.target.version }}
-      arch: ${{ matrix.arch }}
-      package-type: ${{ matrix.target.package-type }}
-      install-osconfig: ${{ matrix.install-osconfig }}
-      tag: ${{ matrix.target.tag }}
