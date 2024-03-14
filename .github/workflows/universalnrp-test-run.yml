@@ -28,7 +28,7 @@ jobs:
     with:
       target: ${{ inputs.target }}
       arch: ${{ inputs.arch }}
-      artifact: ${{ inputs.target }}
+      artifact: ${{ inputs.target }}-${{ inputs.install-osconfig == true && 'withOSConfig' || 'noOSConfig' }}
       package-type: ${{ inputs.package-type }}
       test: true
 
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/download-artifact@v3
         id: download
         with:
-          name: ${{ inputs.target }}
+          name: ${{ inputs.target }}-${{ inputs.install-osconfig == true && 'withOSConfig' || 'noOSConfig' }}
 
       - name: Create osconfig.json
         run: |
