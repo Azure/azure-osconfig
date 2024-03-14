@@ -1,0 +1,86 @@
+[
+  {
+    "RunCommand": "mkdir -p /etc/deliveryoptimization-agent/ && cat /dev/null > /etc/deliveryoptimization-agent/admin-config.json && cp /etc/deliveryoptimization-agent/admin-config.json /tmp/admin-config.json.bak"
+  },
+  {
+    "Action": "LoadModule",
+    "Module": "deliveryoptimization.so"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "DeliveryOptimization",
+    "ObjectName": "cacheHost"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "DeliveryOptimization",
+    "ObjectName": "cacheHostSource"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "DeliveryOptimization",
+    "ObjectName": "cacheHostFallback"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "DeliveryOptimization",
+    "ObjectName": "percentageDownloadThrottle"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "DeliveryOptimization",
+    "ObjectName": "invalid",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "DeliveryOptimization",
+    "ObjectName": "desiredDeliveryOptimizationPolicies",
+    "Payload": {
+      "cacheHost": "10.0.0.0:80,host.com:8080",
+      "cacheHostSource": 1,
+      "cacheHostFallback": 2,
+      "percentageDownloadThrottle": 3
+    }
+  },
+  {
+    "RunCommand": "cat /etc/deliveryoptimization-agent/admin-config.json"
+  },
+  {
+    "RunCommand": "grep -q '\"DOCacheHost\": \"10.0.0.0:80,host.com:8080\"' /etc/deliveryoptimization-agent/admin-config.json"
+  },
+  {
+    "RunCommand": "grep -q '\"DOCacheHostSource\": 1' /etc/deliveryoptimization-agent/admin-config.json"
+  },
+  {
+    "RunCommand": "grep -q '\"DOCacheHostFallback\": 2' /etc/deliveryoptimization-agent/admin-config.json"
+  },
+  {
+    "RunCommand": "grep -q '\"DOPercentageDownloadThrottle\": 3' /etc/deliveryoptimization-agent/admin-config.json"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "DeliveryOptimization",
+    "ObjectName": "desiredDeliveryOptimizationPolicies",
+    "Payload": {
+      "cacheHostSource": -1
+    },
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "DeliveryOptimization",
+    "ObjectName": "desiredDeliveryOptimizationPolicies",
+    "Payload": {
+      "percentageDownloadThrottle": -1
+    },
+    "ExpectedResult": 22
+  },
+  {
+    "Action": "UnloadModule",
+    "Module": "deliveryoptimization.so"
+  },
+  {
+    "RunCommand": "cat /dev/null > /tmp/admin-config.json.bak && cp /tmp/admin-config.json.bak /etc/deliveryoptimization-agent/admin-config.json"
+  }
+]
