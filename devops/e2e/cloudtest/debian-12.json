@@ -1,0 +1,37 @@
+{
+    "artifacts": [
+        {
+            "name": "linux-install-packages",
+            "parameters": {
+                "packages": "software-properties-common gnupg2"
+            }
+        },
+        {
+            "name": "linux-add-key",
+            "parameters": {
+                "key": "https://packages.microsoft.com/keys/microsoft.asc"
+            }
+        },
+        {
+            "name": "linux-add-repository",
+            "parameters": {
+                "repository": "https://packages.microsoft.com/debian/12/prod"
+            }
+        },
+        {
+            "name": "linux-install-packages",
+            "parameters": {
+                "packages": "dotnet-sdk-6.0 jq omi"
+            }
+        },
+        {
+            "name": "linux-azcli"
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "wget https://github.com/PowerShell/PowerShell/releases/download/v7.4.1/powershell_7.4.1-1.deb_amd64.deb -O powershell.deb && sudo dpkg -i powershell.deb && sudo apt-get install -f"
+            }
+        }
+    ]
+}

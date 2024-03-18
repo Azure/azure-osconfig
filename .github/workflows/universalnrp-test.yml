@@ -1,6 +1,9 @@
 name: Universal NRP Test
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * *' # Every day at 8am UTC (12am PST)
 
 jobs:
   test:
@@ -11,7 +14,18 @@ jobs:
       matrix:
         target:
           [
+            { os: centos, version: 8, package-type: RPM, tag: ''},
+            { os: debian, version: 10, package-type: DEB, tag: ''},
+            { os: debian, version: 11, package-type: DEB, tag: ''},
+            # { os: debian, version: 12, package-type: DEB, tag: ''},
+            { os: mariner, version: 2, package-type: RPM, tag: ''},
+            { os: oraclelinux, version: 8, package-type: RPM, tag: ''},
+            { os: rhel, version: 8, package-type: RPM, tag: ''},
+            { os: rhel, version: 9, package-type: RPM, tag: ''},
+            # { os: rockylinux, version: 9, package-type: RPM, tag: ''},
+            { os: sles, version: 15, package-type: RPM, tag: ''},
             { os: ubuntu, version: 20.04, package-type: DEB, tag: ''},
+            { os: ubuntu, version: 22.04, package-type: DEB, tag: ''},
           ]
         arch: [amd64]
     with:
