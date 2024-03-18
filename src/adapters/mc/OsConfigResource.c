@@ -119,7 +119,7 @@ void MI_CALL OsConfigResource_Load(
     // Fallback for SSH policy
     InitializeSshAudit(GetLog());
 
-    LogInfo(GetLog(), "[OsConfigResource] Loaded and running (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+    LogInfo(context, GetLog(), "[OsConfigResource] Loaded and running (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 
     MI_Context_PostResult(context, MI_RESULT_OK);
 }
