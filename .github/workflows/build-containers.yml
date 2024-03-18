@@ -9,6 +9,16 @@ on:
       - main
     paths:
       - devops/docker/**/Dockerfile
+  workflow_dispatch:
+    inputs:
+      distro_list:
+        description: 'Comma separated list of distros to build. eg. ubuntu-20.04-amd64,ubuntu-20.04-arm64'
+        type: string
+      rebuild_all:
+        description: 'Rebuild all containers'
+        default: false
+        type: boolean
+    
 
 env:
   REGISTRY: ghcr.io
@@ -34,7 +44,10 @@ jobs:
         id: matrix
         run: |
           # If this workflow is present in other_changed_files, then rebuild all containers
-          if [[ "${{ steps.changed-containers.outputs.other_changed_files }}" == *".github/workflows/build-containers.yml"* ]]; then
+          if [[ -n "${str// }" ]]; then
+            echo "Building specified containers..."
+            containers=$(echo "${{ inputs.distro_list }}" | jq -R 'split(",") | map("devops/docker/" + . + "/Dockerfile")')
+          elif [[ "${{ steps.changed-containers.outputs.other_changed_files }}" == *".github/workflows/build-containers.yml"*  ]] || [[ "${{ inputs.rebuild_all }}" == "true" ]]; then
             echo "Workflow file changed, adding all containers to build matrix..."
             containers=$(ls -d devops/docker/**/Dockerfile | jq -R . | jq -s .)
           else
