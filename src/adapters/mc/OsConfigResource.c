@@ -74,7 +74,7 @@ static bool RefreshMpiClientSession(void)
     return status;
 }
 
-void __attribute__((constructor)) Initialize()
+static void StartResourceProvider(void)
 {
     RefreshMpiClientSession();
 
@@ -89,13 +89,13 @@ void __attribute__((constructor)) Initialize()
     // Fallback for SSH policy
     InitializeSshAudit(GetLog());
 
-    OsConfigLogInfo(GetLog(), "[OsConfigResource] Initialized (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] Running (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 }
 
-void __attribute__((destructor)) Destroy()
+static void StopResourceProvider(void)
 {
-    OsConfigLogInfo(GetLog(), "[OsConfigResource] Terminating (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
-    
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] Stopping (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+
     if (NULL != g_mpiHandle)
     {
         CallMpiClose(g_mpiHandle, GetLog());
@@ -118,6 +118,16 @@ void __attribute__((destructor)) Destroy()
     FREE_MEMORY(g_reportedObjectValue);
 }
 
+void __attribute__((constructor)) Initialize()
+{
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library loaded by host process %d", getpid());
+}
+
+void __attribute__((destructor)) Destroy()
+{
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library unloaded by host process %d", getpid());
+}
+
 void MI_CALL OsConfigResource_Load(
     OsConfigResource_Self** self,
     MI_Module_Self* selfModule,
@@ -129,6 +139,8 @@ void MI_CALL OsConfigResource_Load(
 
     *self = NULL;
 
+    StartResourceProvider();
+
     MI_Context_PostResult(context, MI_RESULT_OK);
 }
 
@@ -139,6 +151,8 @@ void MI_CALL OsConfigResource_Unload(
     MI_UNREFERENCED_PARAMETER(self);
 
     LogInfo(context, GetLog(), "[OsConfigResource] Unload");
+
+    StopResourceProvider();
 
     MI_Context_PostResult(context, MI_RESULT_OK);
 }
