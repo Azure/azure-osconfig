@@ -47,7 +47,7 @@ jobs:
           if [[ -n "${str// }" ]]; then
             echo "Building specified containers..."
             containers=$(echo "${{ inputs.distro_list }}" | jq -R 'split(",") | map("devops/docker/" + . + "/Dockerfile")')
-          elif [[ "${{ steps.changed-containers.outputs.other_changed_files }}" == *".github/workflows/build-containers.yml"*  ]] || [[ "${{ inputs.rebuild_all }}" == "true" ]]; then
+          elif [[ "${{ steps.changed-containers.outputs.other_changed_files }}" == *".github/workflows/build-containers.yml"* ]] || [[ "${{ inputs.rebuild_all }}" == "true" ]]; then
             echo "Workflow file changed, adding all containers to build matrix..."
             containers=$(ls -d devops/docker/**/Dockerfile | jq -R . | jq -s .)
           else
