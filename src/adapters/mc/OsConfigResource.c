@@ -110,8 +110,6 @@ void MI_CALL OsConfigResource_Load(
 {
     MI_UNREFERENCED_PARAMETER(selfModule);
 
-    LogInfo(context, GetLog(), "[OsConfigResource] Load");
-
     *self = NULL;
 
     RefreshMpiClientSession();
