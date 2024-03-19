@@ -117,10 +117,10 @@ void MI_CALL OsConfigResource_Load(
 
     *self = NULL;
 
-    if (NULL != mpiHandle)
+    if (NULL != g_mpiHandle)
     {
-        CallMpiClose(mpiHandle, GetLog());
-        mpiHandle = NULL;
+        CallMpiClose(g_mpiHandle, GetLog());
+        g_mpiHandle = NULL;
     }
     
     if (NULL == (g_mpiHandle = RefreshMpiClientSession(g_mpiHandle))
