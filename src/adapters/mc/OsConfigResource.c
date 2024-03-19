@@ -123,7 +123,7 @@ void MI_CALL OsConfigResource_Load(
         g_mpiHandle = NULL;
     }
     
-    if (NULL == (g_mpiHandle = RefreshMpiClientSession(g_mpiHandle))
+    if (NULL == (g_mpiHandle = RefreshMpiClientSession(g_mpiHandle)))
     {
         // Fallback for SSH policy
         InitializeSshAudit(GetLog());
