@@ -50,7 +50,7 @@ jobs:
 
       - name: Install OSConfig
         if: ${{ inputs.install-osconfig }}
-        working-directory: ${{ steps.download.outputs.download-path }}/build
+        working-directory: ${{ steps.download.outputs.download-path }}
         run: |
           if [ "${{ inputs.package-type }}" = "DEB" ]; then
             sudo dpkg -i $(ls *.deb)
