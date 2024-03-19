@@ -47,11 +47,16 @@ OSCONFIG_LOG_HANDLE GetLog(void)
     return g_log;
 }
 
+static bool IsActiveMpiClientSession(void)
+{
+    return ((NULL != g_mpiHandle) && (true == IsDaemonActive(g_mpiServer, GetLog()))) ? true : false;
+}
+
 static bool RefreshMpiClientSession(void)
 {
     bool status = true;
 
-    if (g_mpiHandle && IsDaemonActive(g_mpiServer, GetLog()))
+    if (true == IsActiveMpiClientSession())
     {
         return status;
     }
@@ -114,9 +119,12 @@ void MI_CALL OsConfigResource_Load(
 
     RefreshMpiClientSession();
 
-    // Fallback for SSH policy
-    InitializeSshAudit(GetLog());
-
+    if (false == IsActiveMpiClientSession())
+    {
+        // Fallback for SSH policy
+        InitializeSshAudit(GetLog());
+    }
+        
     LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 
     MI_Context_PostResult(context, MI_RESULT_OK);
@@ -130,15 +138,18 @@ void MI_CALL OsConfigResource_Unload(
 
     LogInfo(context, GetLog(), "[OsConfigResource] Unload (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 
-    if (NULL != g_mpiHandle)
+    if (true == IsActiveMpiClientSession())
     {
         CallMpiClose(g_mpiHandle, GetLog());
         g_mpiHandle = NULL;
-    }
 
-    // Fallback for SSH policy
-    SshAuditCleanup(GetLog());
-    RestartDaemon(g_mpiServer, NULL);
+        RestartDaemon(g_mpiServer, NULL);
+    }
+    else
+    {
+        // Fallback for SSH policy
+        SshAuditCleanup(GetLog());
+    }
 
     MI_Context_PostResult(context, MI_RESULT_OK);
 }
