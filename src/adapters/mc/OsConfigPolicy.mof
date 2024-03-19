@@ -320,9 +320,9 @@ instance of OsConfigResource as $OsConfigResource19ref
 
 instance of OMI_ConfigurationDocument
 {
-    Version="1.0.3";
+    Version="1.0.5";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="2/20/2024 10:12:00 AM PST";
+    GenerationDate="3/18/2024 16:50:00 PST";
     Name="OsConfigSshServerSecurity";
 };

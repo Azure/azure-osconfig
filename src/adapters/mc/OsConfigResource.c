@@ -35,6 +35,7 @@ MPI_HANDLE g_mpiHandle = NULL;
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
+const char* g_osconfig = "osconfig";
 const char* g_mpiServer = "osconfig-platform";
 
 OSCONFIG_LOG_HANDLE GetLog(void)
@@ -47,23 +48,28 @@ OSCONFIG_LOG_HANDLE GetLog(void)
     return g_log;
 }
 
-static bool RefreshMpiClientSession(void)
+static MPI_HANDLE RefreshMpiClientSession(MPI_HANDLE currentMpiHandle)
 {
-    bool status = true;
+    MPI_HANDLE mpiHandle = currentMpiHandle;
 
-    if (g_mpiHandle && IsDaemonActive(g_mpiServer, GetLog()))
+    if ((NULL != mpiHandle) && (true == IsDaemonActive(g_mpiServer, GetLog())))
     {
-        return status;
+        return mpiHandle;
     }
 
-    if (true == (status = EnableAndStartDaemon(g_mpiServer, GetLog())))
+    if (NULL != mpiHandle)
+    {
+        CallMpiClose(mpiHandle, GetLog());
+        mpiHandle = NULL;
+    }
+
+    if (true == EnableAndStartDaemon(g_mpiServer, GetLog()))
     {
         sleep(1);
 
-        if (NULL == (g_mpiHandle = CallMpiOpen(MPI_CLIENT_NAME, MAX_PAYLOAD_LENGTH, GetLog())))
+        if (NULL == (mpiHandle = CallMpiOpen(MPI_CLIENT_NAME, MAX_PAYLOAD_LENGTH, GetLog())))
         {
             OsConfigLogError(GetLog(), "[OsConfigResource] MpiOpen failed");
-            status = false;
         }
     }
     else
@@ -71,13 +77,11 @@ static bool RefreshMpiClientSession(void)
         OsConfigLogError(GetLog(), "[OsConfigResource] The OSConfig Platform service '%s' is not active on this device", g_mpiServer);
     }
 
-    return status;
+    return mpiHandle;
 }
 
 void __attribute__((constructor)) Initialize()
 {
-    RefreshMpiClientSession();
-
     g_classKey = DuplicateString(g_defaultValue);
     g_componentName = DuplicateString(g_defaultValue);
     g_initObjectName = DuplicateString(g_defaultValue);
@@ -86,28 +90,11 @@ void __attribute__((constructor)) Initialize()
     g_desiredObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectValue = DuplicateString(g_failValue);
 
-    // Fallback for SSH policy
-    InitializeSshAudit(GetLog());
-
-    OsConfigLogInfo(GetLog(), "[OsConfigResource] Initialized (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library loaded by host process %d", getpid());
 }
 
 void __attribute__((destructor)) Destroy()
 {
-    OsConfigLogInfo(GetLog(), "[OsConfigResource] Terminating (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
-    
-    if (NULL != g_mpiHandle)
-    {
-        CallMpiClose(g_mpiHandle, GetLog());
-        g_mpiHandle = NULL;
-    }
-
-    // Fallback for SSH policy
-    SshAuditCleanup(GetLog());
-    RestartDaemon(g_mpiServer, NULL);
-
-    CloseLog(&g_log);
-
     FREE_MEMORY(g_classKey);
     FREE_MEMORY(g_componentName);
     FREE_MEMORY(g_initObjectName);
@@ -116,6 +103,10 @@ void __attribute__((destructor)) Destroy()
     FREE_MEMORY(g_desiredObjectName);
     FREE_MEMORY(g_desiredObjectValue);
     FREE_MEMORY(g_reportedObjectValue);
+
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library unloaded by host process %d", getpid());
+
+    CloseLog(&g_log);
 }
 
 void MI_CALL OsConfigResource_Load(
@@ -125,9 +116,25 @@ void MI_CALL OsConfigResource_Load(
 {
     MI_UNREFERENCED_PARAMETER(selfModule);
 
-    LogInfo(context, GetLog(), "[OsConfigResource] Load");
-
     *self = NULL;
+
+    if (NULL != g_mpiHandle)
+    {
+        CallMpiClose(g_mpiHandle, GetLog());
+        g_mpiHandle = NULL;
+    }
+    
+    if (NULL == (g_mpiHandle = RefreshMpiClientSession(g_mpiHandle)))
+    {
+        // Fallback for SSH policy
+        InitializeSshAudit(GetLog());
+
+        LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d, no MPI connection)", getpid());
+    }
+    else
+    {
+        LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+    }
 
     MI_Context_PostResult(context, MI_RESULT_OK);
 }
@@ -138,7 +145,22 @@ void MI_CALL OsConfigResource_Unload(
 {
     MI_UNREFERENCED_PARAMETER(self);
 
-    LogInfo(context, GetLog(), "[OsConfigResource] Unload");
+    if (NULL == g_mpiHandle)
+    {
+        LogInfo(context, GetLog(), "[OsConfigResource] Unload (PID: %d, no MPI connection)", getpid());
+
+        // Fallback for SSH policy
+        SshAuditCleanup(GetLog());
+    }
+    else
+    {
+        LogInfo(context, GetLog(), "[OsConfigResource] Unload (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+        
+        CallMpiClose(g_mpiHandle, GetLog());
+        g_mpiHandle = NULL;
+
+        RestartDaemon(IsDaemonActive(g_osconfig, GetLog()) ? g_osconfig : g_mpiServer, NULL);
+    }
 
     MI_Context_PostResult(context, MI_RESULT_OK);
 }
@@ -330,7 +352,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
 
     if (NULL == g_mpiHandle)
     {
-        RefreshMpiClientSession();
+        g_mpiHandle = RefreshMpiClientSession(g_mpiHandle);
     }
 
     if (NULL != g_mpiHandle)
@@ -1112,7 +1134,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
     if (NULL == g_mpiHandle)
     {
-        RefreshMpiClientSession();
+        g_mpiHandle = RefreshMpiClientSession(g_mpiHandle);
     }
 
     if (NULL != g_mpiHandle)

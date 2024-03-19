@@ -634,8 +634,21 @@ void MpiInitialize(void)
 
 void MpiShutdown(void)
 {
+    int status = 0;
+
     g_serverActive = false;
-    pthread_join(g_mpiServerWorker, NULL);
+
+    if (0 == (status = pthread_cancel(g_mpiServerWorker)))
+    {
+        if (0 != (status = pthread_join(g_mpiServerWorker, NULL)))
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiShutdown: pthread_join failed with %d", status);
+        }
+    }
+    else
+    {
+        OsConfigLogError(GetPlatformLog(), "MpiShutdown: pthread_cancel failed with %d", status);
+    }
 
     UnloadModules();
 
