@@ -9,7 +9,7 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "wget https://github.com/microsoft/omi/releases/download/v1.8.1-0/omi-1.8.1-0.ssl_110.ulinux.s.x64.rpm -O omi.rpm && if [ $(md5sum omi.rpm | awk '{print $1}') != '50a9f7f1a89e0dbd274ff1128fb9b8dc' ]; then exit 1; else sudo tdnf install -y omi.rpm; fi"
+                "command": "wget https://github.com/microsoft/omi/releases/download/v1.8.1-0/omi-1.8.1-0.ssl_110.ulinux.s.x64.rpm -O omi.rpm && sudo tdnf install -y omi.rpm"
             }
         }
     ]
