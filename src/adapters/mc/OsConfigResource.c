@@ -117,7 +117,7 @@ void MI_CALL OsConfigResource_Load(
     // Fallback for SSH policy
     InitializeSshAudit(GetLog());
 
-    LogInfo(context, GetLog(), "[OsConfigResource] Loaded and running (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+    LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 
     MI_Context_PostResult(context, MI_RESULT_OK);
 }
@@ -128,7 +128,7 @@ void MI_CALL OsConfigResource_Unload(
 {
     MI_UNREFERENCED_PARAMETER(self);
 
-    LogInfo(context, GetLog(), "[OsConfigResource] Stopping and unloading (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+    LogInfo(context, GetLog(), "[OsConfigResource] Unload (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 
     if (NULL != g_mpiHandle)
     {
