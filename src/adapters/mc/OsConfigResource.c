@@ -35,6 +35,7 @@ MPI_HANDLE g_mpiHandle = NULL;
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
+const char* g_osconfig = "osconfig";
 const char* g_mpiServer = "osconfig-platform";
 
 OSCONFIG_LOG_HANDLE GetLog(void)
@@ -158,7 +159,7 @@ void MI_CALL OsConfigResource_Unload(
         CallMpiClose(g_mpiHandle, GetLog());
         g_mpiHandle = NULL;
 
-        RestartDaemon(g_mpiServer, NULL);
+        RestartDaemon(IsDaemonActive(g_osconfig, GetLog()) ? g_osconfig : g_mpiServer, NULL);
     }
 
     MI_Context_PostResult(context, MI_RESULT_OK);
