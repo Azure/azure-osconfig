@@ -13,7 +13,10 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"github.copilot"
+				"eamodio.gitlens",
+				"github.copilot",
+				"github.vscode-github-actions",
+				"ms-vscode.cpptools-extension-pack"
 			]
 		}
 	},
