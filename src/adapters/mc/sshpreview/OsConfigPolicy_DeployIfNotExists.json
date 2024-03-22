@@ -11,8 +11,8 @@
                 "Microsoft.GuestConfiguration"
             ],
             "guestConfiguration": {
-                "name": "OsConfigPolicy",
-                "version": "1.0.0",
+                "name": "LinuxSshServerSecurityBaseline",
+                "version": "1.*",
                 "contentType": "Custom",
                 "configurationParameter": {
                     "accessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
