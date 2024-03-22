@@ -472,7 +472,7 @@
                             },
                             {
                                 "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/parameterHash",
-                                "equals": "[base64(concat('Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue', '=', parameters('AccessPermissionsForSshdConfig'), ',', 'Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue', '=', parameters('IgnoreHosts'), ',', 'Ensure that the SSH LogLevel is configured;DesiredObjectValue', '=', parameters('LogLevel'), ',', 'Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue', '=', parameters('MaxAuthTries'), ',', 'Ensure that the allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('AllowUsers'), ',', 'Ensure that the denied users for SSH are configured;DesiredObjectValue', '=', parameters('DenyUsers'), ',', 'Ensure that the allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('AllowGroups'), ',', 'Ensure that the denied groups for SSH are configured;DesiredObjectValue', '=', parameters('DenyGroups'), ',', 'Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue', '=', parameters('HostBasedAuthentication'), ',', 'Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue', '=', parameters('PermitRootLogin'), ',', 'Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue', '=', parameters('PermitEmptyPasswords'), ',', 'Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue', '=', parameters('ClientAliveCountMax'), ',', 'Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue', '=', parameters('ClientAliveInterval'), ',', 'Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue', '=', parameters('LoginGraceTime'), ',', 'Ensure that only approved MAC algorithms are used;DesiredObjectValue', '=', parameters('MessageAuthenticationCodeAlgorithms'), ',', 'Ensure that the SSH warning Banner is configured;DesiredObjectValue', '=', parameters('Banner'), ',', 'Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue', '=', parameters('PermitUserEnvironment'), ',', 'Ensure that appropriate Ciphers are used for SSH;DesiredObjectValue', '=', parameters('Ciphers'), ',', 'Ensure that the SSH Port is configured;DesiredObjectValue', '=', parameters('Port')))]"
+                                "equals": "[base64(concat('Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue', '=', parameters('AccessPermissionsForSshdConfig'), ',', 'Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue', '=', parameters('IgnoreHosts'), ',', 'Ensure that the SSH LogLevel is configured;DesiredObjectValue', '=', parameters('LogLevel'), ',', 'Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue', '=', parameters('MaxAuthTries'), ',', 'Ensure that the allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('AllowUsers'), ',', 'Ensure that the denied users for SSH are configured;DesiredObjectValue', '=', parameters('DenyUsers'), ',', 'Ensure that the allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('AllowGroups'), ',', 'Ensure that the denied groups for SSH are configured;DesiredObjectValue', '=', parameters('DenyGroups'), ',', 'Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue', '=', parameters('HostBasedAuthentication'), ',', 'Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue', '=', parameters('PermitRootLogin'), ',', 'Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue', '=', parameters('PermitEmptyPasswords'), ',', 'Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue', '=', parameters('ClientAliveCountMax'), ',', 'Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue', '=', parameters('ClientAliveInterval'), ',', 'Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue', '=', parameters('LoginGraceTime'), ',', 'Ensure that only approved MAC algorithms are used;DesiredObjectValue', '=', parameters('MessageAuthenticationCodeAlgorithms'), ',', 'Ensure that the SSH warning banner is configured;DesiredObjectValue', '=', parameters('Banner'), ',', 'Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue', '=', parameters('PermitUserEnvironment'), ',', 'Ensure that appropriate ciphers are used for SSH;DesiredObjectValue', '=', parameters('Ciphers'), ',', 'Ensure that the SSH port is configured;DesiredObjectValue', '=', parameters('Port')))]"
                             }
                         ]
                     },
@@ -699,7 +699,7 @@
                                                         "value": "[parameters('MessageAuthenticationCodeAlgorithms')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that the SSH warning Banner is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
                                                         "value": "[parameters('Banner')]"
                                                     },
                                                     {
@@ -707,11 +707,11 @@
                                                         "value": "[parameters('PermitUserEnvironment')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that appropriate Ciphers are used for SSH;DesiredObjectValue",
+                                                        "name": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
                                                         "value": "[parameters('Ciphers')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that the SSH Port is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH port is configured;DesiredObjectValue",
                                                         "value": "[parameters('Port')]"
                                                     }
                                                 ]
@@ -792,7 +792,7 @@
                                                         "value": "[parameters('MessageAuthenticationCodeAlgorithms')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that the SSH warning Banner is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
                                                         "value": "[parameters('Banner')]"
                                                     },
                                                     {
@@ -800,11 +800,11 @@
                                                         "value": "[parameters('PermitUserEnvironment')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that appropriate Ciphers are used for SSH;DesiredObjectValue",
+                                                        "name": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
                                                         "value": "[parameters('Ciphers')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that the SSH Port is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH port is configured;DesiredObjectValue",
                                                         "value": "[parameters('Port')]"
                                                     }
                                                 ]
@@ -885,7 +885,7 @@
                                                         "value": "[parameters('MessageAuthenticationCodeAlgorithms')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that the SSH warning Banner is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
                                                         "value": "[parameters('Banner')]"
                                                     },
                                                     {
@@ -893,11 +893,11 @@
                                                         "value": "[parameters('PermitUserEnvironment')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that appropriate Ciphers are used for SSH;DesiredObjectValue",
+                                                        "name": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
                                                         "value": "[parameters('Ciphers')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that the SSH Port is configured;DesiredObjectValue",
+                                                        "name": "Ensure that the SSH port is configured;DesiredObjectValue",
                                                         "value": "[parameters('Port')]"
                                                     }
                                                 ]
