@@ -14,25 +14,25 @@
                 "name": "LinuxSshServerSecurityBaseline",
                 "version": "1.*",
                 "configurationParameter": {
-                    "accessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
-                    "ignoreHosts": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
-                    "logLevel": "Ensure that the SSH LogLevel is configured;DesiredObjectValue",
-                    "maxAuthTries": "Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
-                    "allowUsers": "Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
-                    "denyUsers": "Ensure that the denied users for SSH are configured;DesiredObjectValue",
-                    "allowGroups": "Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
-                    "denyGroups": "Ensure that the denied groups for SSH are configured;DesiredObjectValue",
-                    "hostBasedAuthentication": "Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
-                    "permitRootLogin": "Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
-                    "permitEmptyPasswords": "Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
-                    "clientAliveCountMax": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
-                    "clientAliveInterval": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
-                    "loginGraceTime": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
-                    "messageAuthenticationCodeAlgorithms": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
-                    "banner": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
-                    "permitUserEnvironment": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
-                    "ciphers": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
-                    "port": "Ensure that the SSH port is configured;DesiredObjectValue"
+                    "AccessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
+                    "IgnoreHosts": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
+                    "LogLevel": "Ensure that the SSH LogLevel is configured;DesiredObjectValue",
+                    "MaxAuthTries": "Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
+                    "AllowUsers": "Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
+                    "DenyUsers": "Ensure that the denied users for SSH are configured;DesiredObjectValue",
+                    "AllowGroups": "Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
+                    "DenyGroups": "Ensure that the denied groups for SSH are configured;DesiredObjectValue",
+                    "HostBasedAuthentication": "Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
+                    "PermitRootLogin": "Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
+                    "PermitEmptyPasswords": "Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
+                    "ClientAliveCountMax": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
+                    "ClientAliveInterval": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
+                    "LoginGraceTime": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
+                    "MessageAuthenticationCodeAlgorithms": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
+                    "Banner": "Ensure that the SSH warning Banner is configured;DesiredObjectValue",
+                    "PermitUserEnvironment": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
+                    "Ciphers": "Ensure that appropriate Ciphers are used for SSH;DesiredObjectValue",
+                    "Port": "Ensure that the SSH Port is configured;DesiredObjectValue"
                 }
             }
         },
@@ -50,7 +50,7 @@
                 ],
                 "defaultValue": "false"
             },
-            "effect": {
+            "Effect": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Effect",
@@ -63,7 +63,7 @@
                 ],
                 "defaultValue": "AuditIfNotExists"
             },
-            "accessPermissionsForSshdConfig": {
+            "AccessPermissionsForSshdConfig": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Access permissions for sshd_config",
@@ -71,7 +71,7 @@
                 },
                 "defaultValue": "600"
             },
-            "ignoreHosts": {
+            "IgnoreHosts": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Ignore rhosts and shosts",
@@ -79,7 +79,7 @@
                 },
                 "defaultValue": "yes"
             },
-            "logLevel": {
+            "LogLevel": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Log verbosity level",
@@ -87,7 +87,7 @@
                 },
                 "defaultValue": "INFO"
             },
-            "maxAuthTries": {
+            "MaxAuthTries": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Maximum number of authentication attempts",
@@ -95,7 +95,7 @@
                 },
                 "defaultValue": "6"
             },
-            "allowUsers": {
+            "AllowUsers": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Allowed users for SSH",
@@ -103,7 +103,7 @@
                 },
                 "defaultValue": "*@*"
             },
-            "denyUsers": {
+            "DenyUsers": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Denied users for SSH",
@@ -111,7 +111,7 @@
                 },
                 "defaultValue": "root"
             },
-            "allowGroups": {
+            "AllowGroups": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Allowed groups for SSH",
@@ -119,7 +119,7 @@
                 },
                 "defaultValue": "*"
             },
-            "denyGroups": {
+            "DenyGroups": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Denied groups for SSH",
@@ -127,7 +127,7 @@
                 },
                 "defaultValue": "root"
             },
-            "hostBasedAuthentication": {
+            "HostBasedAuthentication": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Host-based authentication",
@@ -135,7 +135,7 @@
                 },
                 "defaultValue": "no"
             },
-            "permitRootLogin": {
+            "PermitRootLogin": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Whether root can log in using ssh",
@@ -143,7 +143,7 @@
                 },
                 "defaultValue": "no"
             },
-            "permitEmptyPasswords": {
+            "PermitEmptyPasswords": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Whether the server allows login to accounts with empty password strings",
@@ -151,7 +151,7 @@
                 },
                 "defaultValue": "no"
             },
-            "clientAliveCountMax": {
+            "ClientAliveCountMax": {
                 "type": "string",
                 "metadata": {
                     "displayName": "The number of client alive messages which may be sent without sshd receiving any messages back from the client",
@@ -159,7 +159,7 @@
                 },
                 "defaultValue": "0"
             },
-            "clientAliveInterval": {
+            "ClientAliveInterval": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Timeout interval in seconds after which if no data has been received from the client, sshd will send a message to request a response",
@@ -167,7 +167,7 @@
                 },
                 "defaultValue": "3600"
             },
-            "loginGraceTime": {
+            "LoginGraceTime": {
                 "type": "string",
                 "metadata": {
                     "displayName": "The time in seconds after which the server disconnects if the user has not successfully logged in",
@@ -175,7 +175,7 @@
                 },
                 "defaultValue": "60"
             },
-            "messageAuthenticationCodeAlgorithms": {
+            "MessageAuthenticationCodeAlgorithms": {
                 "type": "string",
                 "metadata": {
                     "displayName": "The list of available message authentication code (MAC) algorithms",
@@ -183,15 +183,15 @@
                 },
                 "defaultValue": "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com"
             },
-            "banner": {
+            "Banner": {
                 "type": "string",
                 "metadata": {
-                    "displayName": "The contents of the banner file that is sent to the remote user before authentication is allowed",
-                    "description": "The contents of the banner file that is sent to the remote user before authentication is allowed. Default is '#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n'"
+                    "displayName": "The contents of the Banner file that is sent to the remote user before authentication is allowed",
+                    "description": "The contents of the Banner file that is sent to the remote user before authentication is allowed. Default is '#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n'"
                 },
                 "defaultValue": "#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n"
             },
-            "permitUserEnvironment": {
+            "PermitUserEnvironment": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Whether ~/.ssh/environment and environment= options in ~/.ssh/authorized_keys are processed by sshd",
@@ -199,19 +199,19 @@
                 },
                 "defaultValue": "no"
             },
-            "ciphers": {
+            "Ciphers": {
                 "type": "string",
                 "metadata": {
-                    "displayName": "The list of allowed ciphers",
-                    "description": "The list of allowed ciphers. Default is 'aes128-ctr,aes192-ctr,aes256-ctr'"
+                    "displayName": "The list of allowed Ciphers",
+                    "description": "The list of allowed Ciphers. Default is 'aes128-ctr,aes192-ctr,aes256-ctr'"
                 },
                 "defaultValue": "aes128-ctr,aes192-ctr,aes256-ctr"
             },
-            "port": {
+            "Port": {
                 "type": "string",
                 "metadata": {
-                    "displayName": "The SSH port",
-                    "description": "The SSH port. Default is '22'"
+                    "displayName": "The SSH Port",
+                    "description": "The SSH Port. Default is '22'"
                 },
                 "defaultValue": "22"
             }
@@ -457,7 +457,7 @@
                 ]
             },
             "then": {
-                "effect": "[parameters('effect')]",
+                "Effect": "[parameters('Effect')]",
                 "details": {
                     "roleDefinitionIds": [
                         "/providers/Microsoft.Authorization/roleDefinitions/088ab73d-1256-47ae-bea9-9de8e7131f31"
@@ -472,7 +472,7 @@
                             },
                             {
                                 "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/parameterHash",
-                                "equals": "[base64(concat('Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue', '=', parameters('accessPermissionsForSshdConfig'), ',', 'Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue', '=', parameters('ignoreHosts'), ',', 'Ensure that the SSH LogLevel is configured;DesiredObjectValue', '=', parameters('logLevel'), ',', 'Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue', '=', parameters('maxAuthTries'), ',', 'Ensure that the allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('allowUsers'), ',', 'Ensure that the denied users for SSH are configured;DesiredObjectValue', '=', parameters('denyUsers'), ',', 'Ensure that the allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('allowGroups'), ',', 'Ensure that the denied groups for SSH are configured;DesiredObjectValue', '=', parameters('denyGroups'), ',', 'Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue', '=', parameters('hostBasedAuthentication'), ',', 'Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue', '=', parameters('permitRootLogin'), ',', 'Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue', '=', parameters('permitEmptyPasswords'), ',', 'Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue', '=', parameters('clientAliveCountMax'), ',', 'Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue', '=', parameters('clientAliveInterval'), ',', 'Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue', '=', parameters('loginGraceTime'), ',', 'Ensure that only approved MAC algorithms are used;DesiredObjectValue', '=', parameters('messageAuthenticationCodeAlgorithms'), ',', 'Ensure that the SSH warning banner is configured;DesiredObjectValue', '=', parameters('banner'), ',', 'Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue', '=', parameters('permitUserEnvironment'), ',', 'Ensure that appropriate ciphers are used for SSH;DesiredObjectValue', '=', parameters('ciphers'), ',', 'Ensure that the SSH port is configured;DesiredObjectValue', '=', parameters('port')))]"
+                                "equals": "[base64(concat('Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue', '=', parameters('AccessPermissionsForSshdConfig'), ',', 'Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue', '=', parameters('IgnoreHosts'), ',', 'Ensure that the SSH LogLevel is configured;DesiredObjectValue', '=', parameters('LogLevel'), ',', 'Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue', '=', parameters('MaxAuthTries'), ',', 'Ensure that the allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('AllowUsers'), ',', 'Ensure that the denied users for SSH are configured;DesiredObjectValue', '=', parameters('DenyUsers'), ',', 'Ensure that the allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('AllowGroups'), ',', 'Ensure that the denied groups for SSH are configured;DesiredObjectValue', '=', parameters('DenyGroups'), ',', 'Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue', '=', parameters('HostBasedAuthentication'), ',', 'Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue', '=', parameters('PermitRootLogin'), ',', 'Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue', '=', parameters('PermitEmptyPasswords'), ',', 'Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue', '=', parameters('ClientAliveCountMax'), ',', 'Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue', '=', parameters('ClientAliveInterval'), ',', 'Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue', '=', parameters('LoginGraceTime'), ',', 'Ensure that only approved MAC algorithms are used;DesiredObjectValue', '=', parameters('MessageAuthenticationCodeAlgorithms'), ',', 'Ensure that the SSH warning Banner is configured;DesiredObjectValue', '=', parameters('Banner'), ',', 'Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue', '=', parameters('PermitUserEnvironment'), ',', 'Ensure that appropriate Ciphers are used for SSH;DesiredObjectValue', '=', parameters('Ciphers'), ',', 'Ensure that the SSH Port is configured;DesiredObjectValue', '=', parameters('Port')))]"
                             }
                         ]
                     },
@@ -492,62 +492,62 @@
                                 "assignmentName": {
                                     "value": "[concat('OsConfigPolicy$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
                                 },
-                                "accessPermissionsForSshdConfig": {
-                                    "value": "[parameters('accessPermissionsForSshdConfig')]"
+                                "AccessPermissionsForSshdConfig": {
+                                    "value": "[parameters('AccessPermissionsForSshdConfig')]"
                                 },
-                                "ignoreHosts": {
-                                    "value": "[parameters('ignoreHosts')]"
+                                "IgnoreHosts": {
+                                    "value": "[parameters('IgnoreHosts')]"
                                 },
-                                "logLevel": {
-                                    "value": "[parameters('logLevel')]"
+                                "LogLevel": {
+                                    "value": "[parameters('LogLevel')]"
                                 },
-                                "maxAuthTries": {
-                                    "value": "[parameters('maxAuthTries')]"
+                                "MaxAuthTries": {
+                                    "value": "[parameters('MaxAuthTries')]"
                                 },
-                                "allowUsers": {
-                                    "value": "[parameters('allowUsers')]"
+                                "AllowUsers": {
+                                    "value": "[parameters('AllowUsers')]"
                                 },
-                                "denyUsers": {
-                                    "value": "[parameters('denyUsers')]"
+                                "DenyUsers": {
+                                    "value": "[parameters('DenyUsers')]"
                                 },
-                                "allowGroups": {
-                                    "value": "[parameters('allowGroups')]"
+                                "AllowGroups": {
+                                    "value": "[parameters('AllowGroups')]"
                                 },
-                                "denyGroups": {
-                                    "value": "[parameters('denyGroups')]"
+                                "DenyGroups": {
+                                    "value": "[parameters('DenyGroups')]"
                                 },
-                                "hostBasedAuthentication": {
-                                    "value": "[parameters('hostBasedAuthentication')]"
+                                "HostBasedAuthentication": {
+                                    "value": "[parameters('HostBasedAuthentication')]"
                                 },
-                                "permitRootLogin": {
-                                    "value": "[parameters('permitRootLogin')]"
+                                "PermitRootLogin": {
+                                    "value": "[parameters('PermitRootLogin')]"
                                 },
-                                "permitEmptyPasswords": {
-                                    "value": "[parameters('permitEmptyPasswords')]"
+                                "PermitEmptyPasswords": {
+                                    "value": "[parameters('PermitEmptyPasswords')]"
                                 },
-                                "clientAliveCountMax": {
-                                    "value": "[parameters('clientAliveCountMax')]"
+                                "ClientAliveCountMax": {
+                                    "value": "[parameters('ClientAliveCountMax')]"
                                 },
-                                "clientAliveInterval": {
-                                    "value": "[parameters('clientAliveInterval')]"
+                                "ClientAliveInterval": {
+                                    "value": "[parameters('ClientAliveInterval')]"
                                 },
-                                "loginGraceTime": {
-                                    "value": "[parameters('loginGraceTime')]"
+                                "LoginGraceTime": {
+                                    "value": "[parameters('LoginGraceTime')]"
                                 },
-                                "messageAuthenticationCodeAlgorithms": {
-                                    "value": "[parameters('messageAuthenticationCodeAlgorithms')]"
+                                "MessageAuthenticationCodeAlgorithms": {
+                                    "value": "[parameters('MessageAuthenticationCodeAlgorithms')]"
                                 },
-                                "banner": {
-                                    "value": "[parameters('banner')]"
+                                "Banner": {
+                                    "value": "[parameters('Banner')]"
                                 },
-                                "permitUserEnvironment": {
-                                    "value": "[parameters('permitUserEnvironment')]"
+                                "PermitUserEnvironment": {
+                                    "value": "[parameters('PermitUserEnvironment')]"
                                 },
-                                "ciphers": {
-                                    "value": "[parameters('ciphers')]"
+                                "Ciphers": {
+                                    "value": "[parameters('Ciphers')]"
                                 },
-                                "port": {
-                                    "value": "[parameters('port')]"
+                                "Port": {
+                                    "value": "[parameters('Port')]"
                                 }
                             },
                             "template": {
@@ -566,61 +566,61 @@
                                     "assignmentName": {
                                         "type": "string"
                                     },
-                                    "accessPermissionsForSshdConfig": {
+                                    "AccessPermissionsForSshdConfig": {
                                         "type": "string"
                                     },
-                                    "ignoreHosts": {
+                                    "IgnoreHosts": {
                                         "type": "string"
                                     },
-                                    "logLevel": {
+                                    "LogLevel": {
                                         "type": "string"
                                     },
-                                    "maxAuthTries": {
+                                    "MaxAuthTries": {
                                         "type": "string"
                                     },
-                                    "allowUsers": {
+                                    "AllowUsers": {
                                         "type": "string"
                                     },
-                                    "denyUsers": {
+                                    "DenyUsers": {
                                         "type": "string"
                                     },
-                                    "allowGroups": {
+                                    "AllowGroups": {
                                         "type": "string"
                                     },
-                                    "denyGroups": {
+                                    "DenyGroups": {
                                         "type": "string"
                                     },
-                                    "hostBasedAuthentication": {
+                                    "HostBasedAuthentication": {
                                         "type": "string"
                                     },
-                                    "permitRootLogin": {
+                                    "PermitRootLogin": {
                                         "type": "string"
                                     },
-                                    "permitEmptyPasswords": {
+                                    "PermitEmptyPasswords": {
                                         "type": "string"
                                     },
-                                    "clientAliveCountMax": {
+                                    "ClientAliveCountMax": {
                                         "type": "string"
                                     },
-                                    "clientAliveInterval": {
+                                    "ClientAliveInterval": {
                                         "type": "string"
                                     },
-                                    "loginGraceTime": {
+                                    "LoginGraceTime": {
                                         "type": "string"
                                     },
-                                    "messageAuthenticationCodeAlgorithms": {
+                                    "MessageAuthenticationCodeAlgorithms": {
                                         "type": "string"
                                     },
-                                    "banner": {
+                                    "Banner": {
                                         "type": "string"
                                     },
-                                    "permitUserEnvironment": {
+                                    "PermitUserEnvironment": {
                                         "type": "string"
                                     },
-                                    "ciphers": {
+                                    "Ciphers": {
                                         "type": "string"
                                     },
-                                    "port": {
+                                    "Port": {
                                         "type": "string"
                                     }
                                 },
@@ -640,79 +640,79 @@
                                                 "configurationParameter": [
                                                     {
                                                         "name": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
-                                                        "value": "[parameters('accessPermissionsForSshdConfig')]"
+                                                        "value": "[parameters('AccessPermissionsForSshdConfig')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
-                                                        "value": "[parameters('ignoreHosts')]"
+                                                        "value": "[parameters('IgnoreHosts')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH LogLevel is configured;DesiredObjectValue",
-                                                        "value": "[parameters('logLevel')]"
+                                                        "value": "[parameters('LogLevel')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
-                                                        "value": "[parameters('maxAuthTries')]"
+                                                        "value": "[parameters('MaxAuthTries')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
-                                                        "value": "[parameters('allowUsers')]"
+                                                        "value": "[parameters('AllowUsers')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the denied users for SSH are configured;DesiredObjectValue",
-                                                        "value": "[parameters('denyUsers')]"
+                                                        "value": "[parameters('DenyUsers')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
-                                                        "value": "[parameters('allowGroups')]"
+                                                        "value": "[parameters('AllowGroups')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the denied groups for SSH are configured;DesiredObjectValue",
-                                                        "value": "[parameters('denyGroups')]"
+                                                        "value": "[parameters('DenyGroups')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
-                                                        "value": "[parameters('hostBasedAuthentication')]"
+                                                        "value": "[parameters('HostBasedAuthentication')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
-                                                        "value": "[parameters('permitRootLogin')]"
+                                                        "value": "[parameters('PermitRootLogin')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
-                                                        "value": "[parameters('permitEmptyPasswords')]"
+                                                        "value": "[parameters('PermitEmptyPasswords')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
-                                                        "value": "[parameters('clientAliveCountMax')]"
+                                                        "value": "[parameters('ClientAliveCountMax')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
-                                                        "value": "[parameters('clientAliveInterval')]"
+                                                        "value": "[parameters('ClientAliveInterval')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
-                                                        "value": "[parameters('loginGraceTime')]"
+                                                        "value": "[parameters('LoginGraceTime')]"
                                                     },
                                                     {
                                                         "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
-                                                        "value": "[parameters('messageAuthenticationCodeAlgorithms')]"
+                                                        "value": "[parameters('MessageAuthenticationCodeAlgorithms')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
-                                                        "value": "[parameters('banner')]"
+                                                        "name": "Ensure that the SSH warning Banner is configured;DesiredObjectValue",
+                                                        "value": "[parameters('Banner')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
-                                                        "value": "[parameters('permitUserEnvironment')]"
+                                                        "value": "[parameters('PermitUserEnvironment')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
-                                                        "value": "[parameters('ciphers')]"
+                                                        "name": "Ensure that appropriate Ciphers are used for SSH;DesiredObjectValue",
+                                                        "value": "[parameters('Ciphers')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that the SSH port is configured;DesiredObjectValue",
-                                                        "value": "[parameters('port')]"
+                                                        "name": "Ensure that the SSH Port is configured;DesiredObjectValue",
+                                                        "value": "[parameters('Port')]"
                                                     }
                                                 ]
                                             }
@@ -733,79 +733,79 @@
                                                 "configurationParameter": [
                                                     {
                                                         "name": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
-                                                        "value": "[parameters('accessPermissionsForSshdConfig')]"
+                                                        "value": "[parameters('AccessPermissionsForSshdConfig')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
-                                                        "value": "[parameters('ignoreHosts')]"
+                                                        "value": "[parameters('IgnoreHosts')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH LogLevel is configured;DesiredObjectValue",
-                                                        "value": "[parameters('logLevel')]"
+                                                        "value": "[parameters('LogLevel')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
-                                                        "value": "[parameters('maxAuthTries')]"
+                                                        "value": "[parameters('MaxAuthTries')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
-                                                        "value": "[parameters('allowUsers')]"
+                                                        "value": "[parameters('AllowUsers')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the denied users for SSH are configured;DesiredObjectValue",
-                                                        "value": "[parameters('denyUsers')]"
+                                                        "value": "[parameters('DenyUsers')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
-                                                        "value": "[parameters('allowGroups')]"
+                                                        "value": "[parameters('AllowGroups')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the denied groups for SSH are configured;DesiredObjectValue",
-                                                        "value": "[parameters('denyGroups')]"
+                                                        "value": "[parameters('DenyGroups')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
-                                                        "value": "[parameters('hostBasedAuthentication')]"
+                                                        "value": "[parameters('HostBasedAuthentication')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
-                                                        "value": "[parameters('permitRootLogin')]"
+                                                        "value": "[parameters('PermitRootLogin')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
-                                                        "value": "[parameters('permitEmptyPasswords')]"
+                                                        "value": "[parameters('PermitEmptyPasswords')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
-                                                        "value": "[parameters('clientAliveCountMax')]"
+                                                        "value": "[parameters('ClientAliveCountMax')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
-                                                        "value": "[parameters('clientAliveInterval')]"
+                                                        "value": "[parameters('ClientAliveInterval')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
-                                                        "value": "[parameters('loginGraceTime')]"
+                                                        "value": "[parameters('LoginGraceTime')]"
                                                     },
                                                     {
                                                         "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
-                                                        "value": "[parameters('messageAuthenticationCodeAlgorithms')]"
+                                                        "value": "[parameters('MessageAuthenticationCodeAlgorithms')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
-                                                        "value": "[parameters('banner')]"
+                                                        "name": "Ensure that the SSH warning Banner is configured;DesiredObjectValue",
+                                                        "value": "[parameters('Banner')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
-                                                        "value": "[parameters('permitUserEnvironment')]"
+                                                        "value": "[parameters('PermitUserEnvironment')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
-                                                        "value": "[parameters('ciphers')]"
+                                                        "name": "Ensure that appropriate Ciphers are used for SSH;DesiredObjectValue",
+                                                        "value": "[parameters('Ciphers')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that the SSH port is configured;DesiredObjectValue",
-                                                        "value": "[parameters('port')]"
+                                                        "name": "Ensure that the SSH Port is configured;DesiredObjectValue",
+                                                        "value": "[parameters('Port')]"
                                                     }
                                                 ]
                                             }
@@ -826,79 +826,79 @@
                                                 "configurationParameter": [
                                                     {
                                                         "name": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
-                                                        "value": "[parameters('accessPermissionsForSshdConfig')]"
+                                                        "value": "[parameters('AccessPermissionsForSshdConfig')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
-                                                        "value": "[parameters('ignoreHosts')]"
+                                                        "value": "[parameters('IgnoreHosts')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH LogLevel is configured;DesiredObjectValue",
-                                                        "value": "[parameters('logLevel')]"
+                                                        "value": "[parameters('LogLevel')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue",
-                                                        "value": "[parameters('maxAuthTries')]"
+                                                        "value": "[parameters('MaxAuthTries')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the allowed users for SSH access are configured;DesiredObjectValue",
-                                                        "value": "[parameters('allowUsers')]"
+                                                        "value": "[parameters('AllowUsers')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the denied users for SSH are configured;DesiredObjectValue",
-                                                        "value": "[parameters('denyUsers')]"
+                                                        "value": "[parameters('DenyUsers')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the allowed groups for SSH are configured;DesiredObjectValue",
-                                                        "value": "[parameters('allowGroups')]"
+                                                        "value": "[parameters('AllowGroups')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the denied groups for SSH are configured;DesiredObjectValue",
-                                                        "value": "[parameters('denyGroups')]"
+                                                        "value": "[parameters('DenyGroups')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue",
-                                                        "value": "[parameters('hostBasedAuthentication')]"
+                                                        "value": "[parameters('HostBasedAuthentication')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue",
-                                                        "value": "[parameters('permitRootLogin')]"
+                                                        "value": "[parameters('PermitRootLogin')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
-                                                        "value": "[parameters('permitEmptyPasswords')]"
+                                                        "value": "[parameters('PermitEmptyPasswords')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
-                                                        "value": "[parameters('clientAliveCountMax')]"
+                                                        "value": "[parameters('ClientAliveCountMax')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
-                                                        "value": "[parameters('clientAliveInterval')]"
+                                                        "value": "[parameters('ClientAliveInterval')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
-                                                        "value": "[parameters('loginGraceTime')]"
+                                                        "value": "[parameters('LoginGraceTime')]"
                                                     },
                                                     {
                                                         "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
-                                                        "value": "[parameters('messageAuthenticationCodeAlgorithms')]"
+                                                        "value": "[parameters('MessageAuthenticationCodeAlgorithms')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
-                                                        "value": "[parameters('banner')]"
+                                                        "name": "Ensure that the SSH warning Banner is configured;DesiredObjectValue",
+                                                        "value": "[parameters('Banner')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
-                                                        "value": "[parameters('permitUserEnvironment')]"
+                                                        "value": "[parameters('PermitUserEnvironment')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
-                                                        "value": "[parameters('ciphers')]"
+                                                        "name": "Ensure that appropriate Ciphers are used for SSH;DesiredObjectValue",
+                                                        "value": "[parameters('Ciphers')]"
                                                     },
                                                     {
-                                                        "name": "Ensure that the SSH port is configured;DesiredObjectValue",
-                                                        "value": "[parameters('port')]"
+                                                        "name": "Ensure that the SSH Port is configured;DesiredObjectValue",
+                                                        "value": "[parameters('Port')]"
                                                     }
                                                 ]
                                             }
