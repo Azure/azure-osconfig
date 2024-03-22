@@ -9,13 +9,13 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo yum install -y glibc* libicu wget"
+                "command": "wget https://github.com/microsoft/omi/releases/download/v1.8.1-0/omi-1.8.1-0.ssl_110.ulinux.s.x64.rpm -O omi.rpm && rpm -fi omi.rpm"
             }
         },
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "wget https://github.com/PowerShell/PowerShell/releases/download/v7.4.1/powershell-7.4.1-1.rh.x86_64.rpm -O powershell.rpm && if [ $(md5sum powershell.rpm | awk '{print $1}') != 'be68d1e5c567415848deab0587202726' ]; then exit 1; else rpm -fi powershell.rpm --nodeps; fi"
+                "command": "wget https://github.com/PowerShell/PowerShell/releases/download/v7.4.1/powershell-7.4.1-1.rh.x86_64.rpm -O powershell.rpm && rpm -fi powershell.rpm --nodeps"
             }
         }
     ]
