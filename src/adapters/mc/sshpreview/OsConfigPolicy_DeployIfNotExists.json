@@ -32,7 +32,7 @@
                     "Banner": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
                     "PermitUserEnvironment": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
                     "Ciphers": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
-                    "Port": "Ensure that the SSH Port is configured;DesiredObjectValue"
+                    "Port": "Ensure that the SSH port is configured;DesiredObjectValue"
                 }
             }
         },
@@ -186,8 +186,8 @@
             "Banner": {
                 "type": "string",
                 "metadata": {
-                    "displayName": "The contents of the Banner file that is sent to the remote user before authentication is allowed",
-                    "description": "The contents of the Banner file that is sent to the remote user before authentication is allowed. Default is '#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n'"
+                    "displayName": "The contents of the banner file that is sent to the remote user before authentication is allowed",
+                    "description": "The contents of the banner file that is sent to the remote user before authentication is allowed. Default is '#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n'"
                 },
                 "defaultValue": "#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n"
             },
@@ -202,16 +202,16 @@
             "Ciphers": {
                 "type": "string",
                 "metadata": {
-                    "displayName": "The list of allowed Ciphers",
-                    "description": "The list of allowed Ciphers. Default is 'aes128-ctr,aes192-ctr,aes256-ctr'"
+                    "displayName": "The list of allowed ciphers",
+                    "description": "The list of allowed ciphers. Default is 'aes128-ctr,aes192-ctr,aes256-ctr'"
                 },
                 "defaultValue": "aes128-ctr,aes192-ctr,aes256-ctr"
             },
             "Port": {
                 "type": "string",
                 "metadata": {
-                    "displayName": "The SSH Port",
-                    "description": "The SSH Port. Default is '22'"
+                    "displayName": "The SSH port",
+                    "description": "The SSH port. Default is '22'"
                 },
                 "defaultValue": "22"
             }
