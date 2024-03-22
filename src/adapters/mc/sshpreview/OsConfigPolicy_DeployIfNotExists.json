@@ -13,7 +13,6 @@
             "guestConfiguration": {
                 "name": "LinuxSshServerSecurityBaseline",
                 "version": "1.*",
-                "contentType": "Custom",
                 "configurationParameter": {
                     "accessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
                     "ignoreHosts": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
