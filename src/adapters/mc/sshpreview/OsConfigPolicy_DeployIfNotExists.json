@@ -29,9 +29,9 @@
                     "ClientAliveInterval": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
                     "LoginGraceTime": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
                     "MessageAuthenticationCodeAlgorithms": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
-                    "Banner": "Ensure that the SSH warning Banner is configured;DesiredObjectValue",
+                    "Banner": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
                     "PermitUserEnvironment": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
-                    "Ciphers": "Ensure that appropriate Ciphers are used for SSH;DesiredObjectValue",
+                    "Ciphers": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
                     "Port": "Ensure that the SSH Port is configured;DesiredObjectValue"
                 }
             }
