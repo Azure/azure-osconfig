@@ -20,4 +20,4 @@ jobs:
           artifact: universal-nrp-test
           name: Universal NRP Test Report
           path: '*.xml'
-          reporter: dotnet-trx
+          reporter: java-junit

@@ -1,0 +1,10 @@
+{
+    "artifacts": [
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo yum install -y yum-utils && yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-rhel8.0-prod/ && sudo yum install -y powershell omi"
+            }
+        }
+    ]
+}

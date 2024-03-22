@@ -21,13 +21,3 @@ jobs:
           name: CI report
           path: '*.xml'
           reporter: java-junit
-
-  nrp-e2e-report:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: dorny/test-reporter@v1
-        with:
-          artifact: universal-nrp-test
-          name: Universal NRP Test Report
-          path: '*.xml'
-          reporter: java-junit

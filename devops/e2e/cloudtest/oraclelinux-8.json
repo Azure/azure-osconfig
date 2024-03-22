@@ -3,7 +3,7 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo zypper ar -f https://packages.microsoft.com/yumrepos/microsoft-sles15-prod/config.repo"
+                "command": "sudo yum install -y glibc* libicu wget which"
             }
         },
         {

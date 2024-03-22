@@ -1,0 +1,16 @@
+{
+    "artifacts": [
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo tdnf -y install dotnet-sdk-8.0 powershell"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "wget https://github.com/microsoft/omi/releases/download/v1.8.1-0/omi-1.8.1-0.ssl_110.ulinux.s.x64.rpm -O omi.rpm && sudo tdnf install -y omi.rpm"
+            }
+        }
+    ]
+}
