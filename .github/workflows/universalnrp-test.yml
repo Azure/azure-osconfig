@@ -1,7 +1,6 @@
 name: Universal NRP Test
 
 on:
-  push:
   workflow_dispatch:
   schedule:
     - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
