@@ -31,7 +31,7 @@
                     "ClientAliveCountMax": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
                     "ClientAliveInterval": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
                     "LoginGraceTime": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
-                    "MACs": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
+                    "MessageAuthenticationCodeAlgorithms": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
                     "Banner": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
                     "PermitUserEnvironment": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
                     "Ciphers": "Ensure that appropriate ciphers are used for SSH;DesiredObjectValue",
@@ -52,6 +52,19 @@
                     "false"
                 ],
                 "defaultValue": "false"
+            },
+            "Effect": {
+                "type": "string",
+                "metadata": {
+                    "displayName": "Effect",
+                    "description": "Configures between remediation (DeployIfNotExists), audit-only (AuditIfNotExists), or disabled (Disabled) policy execution mode. Default is AuditIfNotExists"
+                },
+                "allowedValues": [
+                    "DeployIfNotExists",
+                    "AuditIfNotExists",
+                    "Disabled"
+                ],
+                "defaultValue": "AuditIfNotExists"
             },
             "AccessPermissionsForSshdConfig": {
                 "type": "string",
@@ -165,11 +178,11 @@
                 },
                 "defaultValue": "60"
             },
-            "MACs": {
+            "MessageAuthenticationCodeAlgorithms": {
                 "type": "string",
                 "metadata": {
-                    "displayName": "The list of available MAC (message authentication code) algorithms",
-                    "description": "The list of available MAC (message authentication code) algorithms. Default is 'hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com'"
+                    "displayName": "The list of available message authentication code (MAC) algorithms",
+                    "description": "The list of available message authentication code (MAC) algorithms. Default is 'hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com'"
                 },
                 "defaultValue": "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com"
             },
@@ -447,7 +460,7 @@
                 ]
             },
             "then": {
-                "effect": "deployIfNotExists",
+                "Effect": "[parameters('Effect')]",
                 "details": {
                     "roleDefinitionIds": [
                         "/providers/Microsoft.Authorization/roleDefinitions/088ab73d-1256-47ae-bea9-9de8e7131f31"
@@ -462,7 +475,7 @@
                             },
                             {
                                 "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/parameterHash",
-                                "equals": "[base64(concat('Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue', '=', parameters('AccessPermissionsForSshdConfig'), ',', 'Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue', '=', parameters('IgnoreHosts'), ',', 'Ensure that the SSH LogLevel is configured;DesiredObjectValue', '=', parameters('LogLevel'), ',', 'Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue', '=', parameters('MaxAuthTries'), ',', 'Ensure that the allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('AllowUsers'), ',', 'Ensure that the denied users for SSH are configured;DesiredObjectValue', '=', parameters('DenyUsers'), ',', 'Ensure that the allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('AllowGroups'), ',', 'Ensure that the denied groups for SSH are configured;DesiredObjectValue', '=', parameters('DenyGroups'), ',', 'Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue', '=', parameters('HostBasedAuthentication'), ',', 'Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue', '=', parameters('PermitRootLogin'), ',', 'Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue', '=', parameters('PermitEmptyPasswords'), ',', 'Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue', '=', parameters('ClientAliveCountMax'), ',', 'Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue', '=', parameters('ClientAliveInterval'), ',', 'Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue', '=', parameters('LoginGraceTime'), ',', 'Ensure that only approved MAC algorithms are used;DesiredObjectValue', '=', parameters('MACs'), ',', 'Ensure that the SSH warning banner is configured;DesiredObjectValue', '=', parameters('Banner'), ',', 'Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue', '=', parameters('PermitUserEnvironment'), ',', 'Ensure that appropriate ciphers are used for SSH;DesiredObjectValue', '=', parameters('Ciphers'), ',', 'Ensure that the SSH port is configured;DesiredObjectValue', '=', parameters('Port')))]"
+                                "equals": "[base64(concat('Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue', '=', parameters('AccessPermissionsForSshdConfig'), ',', 'Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue', '=', parameters('IgnoreHosts'), ',', 'Ensure that the SSH LogLevel is configured;DesiredObjectValue', '=', parameters('LogLevel'), ',', 'Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue', '=', parameters('MaxAuthTries'), ',', 'Ensure that the allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('AllowUsers'), ',', 'Ensure that the denied users for SSH are configured;DesiredObjectValue', '=', parameters('DenyUsers'), ',', 'Ensure that the allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('AllowGroups'), ',', 'Ensure that the denied groups for SSH are configured;DesiredObjectValue', '=', parameters('DenyGroups'), ',', 'Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue', '=', parameters('HostBasedAuthentication'), ',', 'Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue', '=', parameters('PermitRootLogin'), ',', 'Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue', '=', parameters('PermitEmptyPasswords'), ',', 'Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue', '=', parameters('ClientAliveCountMax'), ',', 'Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue', '=', parameters('ClientAliveInterval'), ',', 'Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue', '=', parameters('LoginGraceTime'), ',', 'Ensure that only approved MAC algorithms are used;DesiredObjectValue', '=', parameters('MessageAuthenticationCodeAlgorithms'), ',', 'Ensure that the SSH warning banner is configured;DesiredObjectValue', '=', parameters('Banner'), ',', 'Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue', '=', parameters('PermitUserEnvironment'), ',', 'Ensure that appropriate ciphers are used for SSH;DesiredObjectValue', '=', parameters('Ciphers'), ',', 'Ensure that the SSH port is configured;DesiredObjectValue', '=', parameters('Port')))]"
                             }
                         ]
                     },
@@ -524,8 +537,8 @@
                                 "LoginGraceTime": {
                                     "value": "[parameters('LoginGraceTime')]"
                                 },
-                                "MACs": {
-                                    "value": "[parameters('MACs')]"
+                                "MessageAuthenticationCodeAlgorithms": {
+                                    "value": "[parameters('MessageAuthenticationCodeAlgorithms')]"
                                 },
                                 "Banner": {
                                     "value": "[parameters('Banner')]"
@@ -598,7 +611,7 @@
                                     "LoginGraceTime": {
                                         "type": "string"
                                     },
-                                    "MACs": {
+                                    "MessageAuthenticationCodeAlgorithms": {
                                         "type": "string"
                                     },
                                     "Banner": {
@@ -688,7 +701,7 @@
                                                     },
                                                     {
                                                         "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
-                                                        "value": "[parameters('MACs')]"
+                                                        "value": "[parameters('MessageAuthenticationCodeAlgorithms')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
@@ -722,7 +735,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "<SAS token URL for the artifacts package>",
-                                                "contentHash": "<file hash for the artifacts package>",                                                
+                                                "contentHash": "<file hash for the artifacts package>",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -783,7 +796,7 @@
                                                     },
                                                     {
                                                         "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
-                                                        "value": "[parameters('MACs')]"
+                                                        "value": "[parameters('MessageAuthenticationCodeAlgorithms')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
@@ -878,7 +891,7 @@
                                                     },
                                                     {
                                                         "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
-                                                        "value": "[parameters('MACs')]"
+                                                        "value": "[parameters('MessageAuthenticationCodeAlgorithms')]"
                                                     },
                                                     {
                                                         "name": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
