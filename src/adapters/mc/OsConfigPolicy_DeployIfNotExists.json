@@ -6,7 +6,7 @@
         "description": "This policy ensures that the SSH Server is securely configured on the Linux device",
         "metadata": {
             "category": "Guest Configuration",
-            "version": "1.0.0.1",
+            "version": "1.0.0.0",
             "requiredProviders": [
                 "Microsoft.GuestConfiguration"
             ],
