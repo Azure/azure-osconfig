@@ -21,6 +21,10 @@ on:
         description: 'Pester tag to include in the test run. If not provided, all tests will be run.'
         default: ''
         type: string
+      ref:
+        type: string
+        required: false
+        default: ${{ github.event.repository.default_branch }}
 
 jobs:
   package:
@@ -37,6 +41,8 @@ jobs:
     runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ inputs.target }}']
     steps:
       - uses: actions/checkout@v4
+        with:  
+          ref: ${{ inputs.ref }}
 
       - uses: actions/download-artifact@v3
         id: download

@@ -21,6 +21,10 @@ on:
       package-type:
         type: string
         required: true
+      ref:
+        type: string
+        description: 'The git ref or tag to build from'
+        default: ${{ github.event.repository.default_branch }}
 
 jobs:
   package:
@@ -30,6 +34,7 @@ jobs:
       arch: ${{ inputs.arch }}
       artifact: ${{ inputs.target }}-${{ inputs.arch }}
       package-type: ${{ inputs.package-type }}
+      ref: ${{ inputs.ref }}
       release: true
 
   sign:
