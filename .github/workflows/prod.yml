@@ -22,10 +22,10 @@ jobs:
             { os: debian, version: 11, arch: arm64, dist: bullseye, package-type: DEB, repo: microsoft-debian-bullseye-prod-apt },
             { os: debian, version: 12, arch: amd64, dist: bookworm, package-type: DEB, repo: microsoft-debian-bookworm-prod-apt },
             { os: debian, version: 12, arch: arm64, dist: bookworm, package-type: DEB, repo: microsoft-debian-bookworm-prod-apt },
-            { os: ubuntu, version: 18.04, arch: amd64, dist: bionic, package-type: DEB, repo: microsoft-ubuntu-bionic-prod-apt },
-            { os: ubuntu, version: 18.04, arch: arm64, dist: bionic, package-type: DEB, repo: microsoft-ubuntu-bionic-prod-apt },
             { os: ubuntu, version: 20.04, arch: amd64, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt },
             { os: ubuntu, version: 20.04, arch: arm64, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt },
+            { os: ubuntu, version: 22.04, arch: amd64, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt },
+            { os: ubuntu, version: 22.04, arch: arm64, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt },
           ]
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
