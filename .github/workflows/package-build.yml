@@ -34,6 +34,10 @@ on:
         type: boolean
         required: false
         default: false
+      ref:
+        type: string
+        required: false
+        default: ${{ github.ref }}
 
 env:
   BUILD_TYPE: Release
@@ -48,6 +52,7 @@ jobs:
         with:
           submodules: recursive
           clean: true
+          ref: ${{ inputs.ref }}
 
       - name: Run container
         id: container
