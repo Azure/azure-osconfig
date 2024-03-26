@@ -1,6 +1,7 @@
 name: Publish (prod)
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - v*.*.*
@@ -13,24 +14,30 @@ jobs:
       matrix:
         target:
           [
-            { os: ubuntu, version: 20.04, dist: focal, package-type: DEB },
-            { os: ubuntu, version: 22.04, dist: jammy, package-type: DEB },
-            { os: debian, version: 10, dist: buster, package-type: DEB },
-            { os: debian, version: 11, dist: bullseye, package-type: DEB },
+            { os: debian, version: 10, arch: amd64, dist: buster, package-type: DEB, repo: microsoft-debian-buster-prod-apt },
+            { os: debian, version: 10, arch: arm64, dist: buster, package-type: DEB, repo: microsoft-debian-buster-prod-apt },
+            { os: debian, version: 11, arch: amd64, dist: bullseye, package-type: DEB, repo: microsoft-debian-bullseye-prod-apt },
+            { os: debian, version: 11, arch: arm64, dist: bullseye, package-type: DEB, repo: microsoft-debian-bullseye-prod-apt },
+            { os: debian, version: 12, arch: amd64, dist: bookworm, package-type: DEB, repo: microsoft-debian-bookworm-prod-apt },
+            { os: debian, version: 12, arch: arm64, dist: bookworm, package-type: DEB, repo: microsoft-debian-bookworm-prod-apt },
+            { os: ubuntu, version: 20.04, arch: amd64, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt },
+            { os: ubuntu, version: 20.04, arch: arm64, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt },
+            { os: ubuntu, version: 22.04, arch: amd64, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt },
+            { os: ubuntu, version: 22.04, arch: arm64, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt },
           ]
-        arch: [arm, arm64, amd64]
-        exclude:
-          - target: { os: ubuntu, version: 22.04, dist: jammy, package-type: DEB }
-            arch: arm
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
-      arch: ${{ matrix.arch }}
-      repo: microsoft-${{ matrix.target.os }}-${{ matrix.target.dist }}-prod-apt
+      arch: ${{ matrix.target.arch }}
+      repo: ${{ matrix.target.repo }}
       dist: ${{ matrix.target.dist }}
+      # ESRP debian based repos (deb) have channels/rings on repos.
+      # ESRP yum based repos (rpm) have no channels
+      channel: ${{ matrix.target.package-type == 'DEB' && 'prod' || '' }}
       package-type: ${{ matrix.target.package-type }}
     secrets: inherit
 
   release:
+    if: false
     name: Release
     needs: publish
     runs-on: ubuntu-latest
@@ -38,24 +45,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: ubuntu-20.04-signed
-          path: packages
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: ubuntu-22.04-signed
-          path: packages
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: debian-10-signed
-          path: packages
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: debian-11-signed
+          name: '*-signed'
           path: packages
 
       - name: Create release

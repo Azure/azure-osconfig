@@ -15,16 +15,16 @@ Amazon Linux 2 | x86_64 | [insiders-fast](#amazonlinux-insiders-fast)
 Azure Linux 2 (mariner-2) | x86_64 | [insiders-fast](#azurelinux-insiders-fast)
 CentOS 7 | x86_64 | [insiders-fast](#centos7-insiders-fast)
 CentOS 8 | x86_64 | [insiders-fast](#centos8-insiders-fast)
-Debian 10 | x86_64 | [insiders-fast](#debian10-insiders-fast) / [prod](#debian10-prod)
-Debian 11 | x86_64 | [insiders-fast](#debian11-insiders-fast) / [prod](#debian11-prod)
-Debian 12 | x86_64 | [insiders-fast](#debian12-insiders-fast)
+Debian 10 | x86_64 / arm64 | [insiders-fast](#debian10-insiders-fast) / [prod](#debian10-prod)
+Debian 11 | x86_64 / arm64 | [insiders-fast](#debian11-insiders-fast) / [prod](#debian11-prod)
+Debian 12 | x86_64 / arm64 | [insiders-fast](#debian12-insiders-fast) / [prod](#debian12-prod)
 Red Hat Enterprise Linux 7 | x86_64 | [insiders-fast](#rhel7-insiders-fast)
 Red Hat Enterprise Linux 8 | x86_64 | [insiders-fast](#rhel8-insiders-fast)
 Red Hat Enterprise Linux 9 | x86_64 | [insiders-fast](#rhel9-insiders-fast)
 Rocky Linux 9 | x86_64 | [insiders-fast](#rockylinux9-insiders-fast)
 SUSE Linux Enterprise Server 15 | x86_64 | [insiders-fast](#sles15-insiders-fast)
-Ubuntu 20.04 | x86_64 | [insiders-fast](#ubuntu2004-insiders-fast) / [prod](#ubuntu2004-prod)
-Ubuntu 22.04 | x86_64 | [insiders-fast](#ubuntu2204-insiders-fast) / [prod](#ubuntu2204-prod)
+Ubuntu 20.04 | x86_64 / arm64 | [insiders-fast](#ubuntu2004-insiders-fast) / [prod](#ubuntu2004-prod)
+Ubuntu 22.04 | x86_64 / arm64 | [insiders-fast](#ubuntu2204-insiders-fast) / [prod](#ubuntu2204-prod)
 
 ## Amazon Linux 9
 ### Install
@@ -122,6 +122,10 @@ apt remove osconfig
 #### <a name="debian12-insiders-fast">insiders-fast
 ```bash
 wget https://packages.microsoft.com/config/debian/12/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list
+```
+#### <a name="debian12-prod">prod
+```bash
+wget https://packages.microsoft.com/config/debian/12/prod.list -O /etc/apt/sources.list.d/packages-microsoft-com_prod.list
 ```
 ```bash
 wget -qO - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/packages-microsoft-com_key.asc
