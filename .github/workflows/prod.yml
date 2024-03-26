@@ -1,12 +1,6 @@
 name: Publish (prod)
 
-on:
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: 'Branch or tag'
-        required: true
-        default: ${{ github.event.repository.default_branch }}
+on: [workflow_dispatch]
 
 jobs:
   publish:

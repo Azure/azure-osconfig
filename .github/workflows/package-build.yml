@@ -25,10 +25,6 @@ on:
         description: The type of package to build (deb | rpm).
         type: string
         required: true
-      ref:
-        type: string
-        required: false
-        default: ${{ github.event.repository.default_branch }}
       test:
         description: Include test collateral in the artifact.
         type: boolean
@@ -50,7 +46,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
           submodules: recursive
           clean: true
 
