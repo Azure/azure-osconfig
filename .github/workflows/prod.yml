@@ -2,6 +2,12 @@ name: Publish (prod)
 
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to publish'
+        required: true
+        default: ${{ github.ref }}
+        type: string
   push:
     tags:
       - v*.*.*
