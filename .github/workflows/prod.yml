@@ -6,7 +6,7 @@ on:
       ref:
         description: 'Git ref to publish'
         required: true
-        default: ${{ github.ref }}
+        default: main
         type: string
   push:
     tags:
