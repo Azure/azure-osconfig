@@ -67,7 +67,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ${{fromJson(needs.create-ci-matrix.outputs.matrix)}}
+        target: ${{ fromJson(needs.create-ci-matrix.outputs.matrix) }}
           
     steps:
       - uses: actions/checkout@v4
