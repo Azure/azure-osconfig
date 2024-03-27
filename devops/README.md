@@ -11,8 +11,9 @@ Channels | Description
 
 | Platform | Architecture | Package Repository
 -----|-----|-----
-Amazon Linux 2 | x86_64 | [insiders-fast](#amazonlinux-insiders-fast)
-Azure Linux 2 (mariner-2) | x86_64 | [insiders-fast](#azurelinux-insiders-fast)
+AlmaLinux 9 | x86_64 | [insiders-fast](#almalinux9-insiders-fast)
+Amazon Linux 2 | x86_64 | [insiders-fast](#amazonlinux2-insiders-fast)
+Azure Linux 2 (mariner-2) | x86_64 | [insiders-fast](#azurelinux2-insiders-fast)
 CentOS 7 | x86_64 | [insiders-fast](#centos7-insiders-fast)
 CentOS 8 | x86_64 | [insiders-fast](#centos8-insiders-fast)
 Debian 10 | x86_64 / arm64 | [insiders-fast](#debian10-insiders-fast) / [prod](#debian10-prod)
@@ -26,9 +27,22 @@ SUSE Linux Enterprise Server 15 | x86_64 | [insiders-fast](#sles15-insiders-fast
 Ubuntu 20.04 | x86_64 / arm64 | [insiders-fast](#ubuntu2004-insiders-fast) / [prod](#ubuntu2004-prod)
 Ubuntu 22.04 | x86_64 / arm64 | [insiders-fast](#ubuntu2204-insiders-fast) / [prod](#ubuntu2204-prod)
 
+## AlmaLinux 9
+### Install
+#### <a name="almalinux9-insiders-fast">insiders-fast
+```bash
+yum install yum-utils
+yum-config-manager --add-repo https://packages.microsoft.com/config/alma/9/insiders-fast.repo
+yum install osconfig
+```
+### Remove
+```bash
+yum remove osconfig
+```
+
 ## Amazon Linux 9
 ### Install
-#### <a name="amazonlinux-insiders-fast"></a>insiders-fast
+#### <a name="amazonlinux2-insiders-fast"></a>insiders-fast
 ```bash
 yum install yum-utils
 yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-amazonlinux2-insiders-fast-prod/config.repo
@@ -41,7 +55,7 @@ yum remove osconfig
 
 ## Azure Linux 2 (cbl-mariner2, mariner2)
 ### Install
-#### <a name="azurelinux-insiders-fast"></a>insiders-fast / preview
+#### <a name="azurelinux2-insiders-fast"></a>insiders-fast / preview
 ```bash
 tdnf install dnf-plugins-core
 dnf config-manager --add-repo https://packages.microsoft.com/yumrepos/cbl-mariner-2.0-preview-Microsoft-x86_64/config.repo
