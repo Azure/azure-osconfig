@@ -2,7 +2,7 @@ name: Universal NRP Test Report
 
 on:
   workflow_run:
-    workflows: ['Universal NRP Test Run']
+    workflows: ['Universal NRP Test']
     types:
       - completed
 
