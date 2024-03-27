@@ -1,6 +1,9 @@
 name: CI
 
-on: [pull_request]
+on:
+  pull_request:
+  schedule:
+    - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
 
 env:
   BUILD_TYPE: Release
@@ -8,31 +11,64 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  create-ci-matrix:
+    name: Build CI distro matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.get-matrix.outputs.matrix }}
+    steps:
+      - name: Get matrix
+        id: get-matrix
+        run: |
+          matrix="$(cat <<'EOL'
+          [
+            { "name": "amazonlinux-2", "arch": "amd64" },
+            { "name": "centos-7", "arch": "amd64" },
+            { "name": "centos-8", "arch": "amd64" },
+            { "name": "debian-10", "arch": "amd64" },
+            { "name": "debian-11", "arch": "amd64" },
+            { "name": "debian-12", "arch": "amd64" },
+            { "name": "mariner-2", "arch": "amd64" },
+            { "name": "oraclelinux-7", "arch": "amd64" },
+            { "name": "oraclelinux-8", "arch": "amd64" },
+            { "name": "rhel-7", "arch": "amd64" },
+            { "name": "rhel-8", "arch": "amd64" },
+            { "name": "rhel-9", "arch": "amd64" },
+            { "name": "sles-15", "arch": "amd64" },
+            { "name": "ubuntu-20.04", "arch": "amd64" },
+            { "name": "ubuntu-22.04", "arch": "amd64" }
+          ]
+          EOL
+          )"
+
+          arm64Targets="$(cat <<'EOL'
+          [
+            { "name": "debian-10", "arch": "arm64" },
+            { "name": "debian-11", "arch": "arm64" },
+            { "name": "debian-12", "arch": "arm64" },
+            { "name": "ubuntu-20.04", "arch": "arm64" },
+            { "name": "ubuntu-22.04", "arch": "arm64" }
+          ]
+          EOL
+          )"
+
+          # Add arm64 distros only on scheduled runs to prevent long CI times for PRs
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            matrix=$(jq --argjson arm64Targets "$arm64Targets" '. += $arm64Targets' <<< "$matrix")
+          fi
+
+          echo Distros to perform CI on: $matrix
+          echo matrix=$matrix >> $GITHUB_OUTPUT
+
   unit-test:
     name: Unit test
+    needs: create-ci-matrix
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        target:
-          [
-            { name: amazonlinux-2, arch: amd64 },
-            { name: centos-7, arch: amd64 },
-            { name: centos-8, arch: amd64 },
-            { name: debian-10, arch: amd64 },
-            { name: debian-11, arch: amd64 },
-            { name: debian-12, arch: amd64 },
-            { name: mariner-2, arch: amd64 },
-            { name: oraclelinux-7, arch: amd64 },
-            { name: oraclelinux-8, arch: amd64 },
-            { name: rhel-7, arch: amd64 },
-            { name: rhel-8, arch: amd64 },
-            { name: rhel-9, arch: amd64 },
-            { name: sles-15, arch: amd64 },
-            { name: ubuntu-20.04, arch: amd64 },
-            { name: ubuntu-22.04, arch: amd64 },
-          ]
-
+        target: ${{ fromJson(needs.create-ci-matrix.outputs.matrix) }}
+          
     steps:
       - uses: actions/checkout@v4
         with:
