@@ -1201,6 +1201,7 @@ static char* AuditEnsurePasswordReuseIsLimited(void)
 {
     const char* etcPamdSystemAuth = "/etc/pam.d/system-auth";
     int option = 0;
+
     return ((5 >= (option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog()))) ||
         (5 >= (option = GetIntegerOptionFromFile(etcPamdSystemAuth, "remember", '=', SecurityBaselineGetLog())))) ?
         ((-999 == option) ? FormatAllocateString("The 'remember' option is not found in '%s' or in '%s'", g_etcPamdCommonPassword, etcPamdSystemAuth) :
