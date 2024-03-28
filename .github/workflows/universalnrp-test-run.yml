@@ -104,7 +104,7 @@ jobs:
         if: success() || failure()
         with:
           name: universal-nrp-test
-          path: '${{ steps.download.outputs.download-path }}/${{ inputs.target }}-testResult*.xml'
+          path: '${{ steps.download.outputs.download-path }}/${{ inputs.target }}*testResult*.xml'
 
       - uses: actions/upload-artifact@v3
         if: success() || failure()
