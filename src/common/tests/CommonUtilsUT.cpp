@@ -1589,7 +1589,7 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth required pam_tally2.so file=/var/log/tallylog deny=5 even_deny_root unlock_time=5001",
         "This is a positive test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
         "This is a positive test\nAnother one with auth test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
-        "This is a positive test\nauth required pam_faillock.so deny=6 unlock_time=543",
+        "This is a positive test\nauth required pam_faillock.so deny=3 unlock_time=543",
         "This is a positive test\nAnother one with auth test\nauth required pam_faillock.so deny=5 unlock_time=647"
     };
 
