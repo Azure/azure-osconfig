@@ -1199,11 +1199,12 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void)
 
 static char* AuditEnsurePasswordReuseIsLimited(void)
 {
-    //TBD: refine this and expand to other distros
+    const char* etcPamdSystemAuth = "/etc/pam.d/system-auth";
     int option = 0;
-    return (5 >= (option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog()))) ?
-        ((-999 == option) ? FormatAllocateString("A 'remember' option is not found in %s", g_etcPamdCommonPassword) :
-        FormatAllocateString("A 'remember' option is set to '%d' in %s instead of expected '5' or greater", option, g_etcPamdCommonPassword)) :
+    return ((5 >= (option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog()))) ||
+        (5 >= (option = GetIntegerOptionFromFile(etcPamdSystemAuth, "remember", '=', SecurityBaselineGetLog())))) ?
+        ((-999 == option) ? FormatAllocateString("The 'remember' option is not found in '%s' or in '%s'", g_etcPamdCommonPassword, etcPamdSystemAuth) :
+        FormatAllocateString("The 'remember' option is set to '%d' in '%s' or '%s' instead of expected '5' or greater", option, g_etcPamdCommonPassword, etcPamdSystemAuth)) :
         DuplicateString(g_pass);
 }
 
