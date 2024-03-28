@@ -1576,6 +1576,8 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 {
     const char* goodTestFileContents[] = {
         "auth required pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=2000",
+        "auth required pam_faillock.so deny=3 unlock_time=600",
+        "auth        required      pam_faillock.so preauth silent audit deny=1 unlock_time=2000",
         "auth      required pam_tally2.so file=/var/log/tallylog deny=1 even_deny_root unlock_time=2000",
         "auth required      pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=210",
         "auth required pam_tally2.so     file=/var/log/tallylog deny=2 even_deny_root unlock_time=345",
@@ -1586,7 +1588,9 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth required pam_tally2.so file=/var/log/tallylog deny=5 unlock_time=203",
         "auth required pam_tally2.so file=/var/log/tallylog deny=5 even_deny_root unlock_time=5001",
         "This is a positive test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
-        "This is a positive test\nAnother one with auth test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123"
+        "This is a positive test\nAnother one with auth test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
+        "This is a positive test\nauth required pam_faillock.so deny=6 unlock_time=543",
+        "This is a positive test\nAnother one with auth test\nauth required pam_faillock.so deny=5 unlock_time=647"
     };
 
     const char* badTestFileContents[] = {
@@ -1601,6 +1605,12 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth required pam_tally2.so file=/var/log/tallylog deny=0 unlock_time=0",
         "auth required pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=",
         "auth required pam_tally2.so file=/var/log/tallylog",
+        "auth required pam_faillock.so",
+        "auth required pam_faillock.so deny=1",
+        "auth required pam_faillock.so unlock_time=500",
+        "auth required pam_faillock.so deny=6 unlock_time=100",
+        "auth required pam_faillock.so deny=4 unlock_time=-1",
+        "auth required pam_faillock.so deny=7 unlock_time=-100",
         "This is a negative auth test",
         "This is a negative test",
         "auth	[success=1 default=ignore]	pam_unix.so nullok\n"

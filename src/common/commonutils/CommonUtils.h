@@ -10,6 +10,8 @@
 #include <stdlib.h>
 
 #define PRETTY_NAME_AZURE_LINUX_2 "CBL-Mariner/Linux"
+#define PRETTY_NAME_ALMA_LINUX_9 "AlmaLinux 9 (Beryllium)"
+#define PRETTY_NAME_ALMA_LINUX_9_3 "AlmaLinux 9.3 (Shamrock Pampas Cat)"
 #define PRETTY_NAME_AMAZON_LINUX_2 "Amazon Linux 2"
 #define PRETTY_NAME_CENTOS_7 "CentOS Linux 7"
 #define PRETTY_NAME_CENTOS_8 "CentOS Stream 8"
