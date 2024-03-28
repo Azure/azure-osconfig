@@ -1266,7 +1266,7 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(void)
     const char* commonAuth = "/etc/pam.d/common-auth";
     
     return ((0 == CheckLockoutForFailedPasswordAttempts(passwordAuth, SecurityBaselineGetLog())) ||
-        (0 == CheckLockoutForFailedPasswordAttempts(commonAuth, SecurityBaselineGetLog())))
+        (0 == CheckLockoutForFailedPasswordAttempts(commonAuth, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) :
         FormatAllocateString("In %s: lockout for failed password attempts not set, 'auth', 'pam_faillock.so' or 'pam_tally2.so' and 'file=/var/log/tallylog' "
             "not found, or 'deny' or 'unlock_time' not found, or 'deny' not in between 1 and 5, or 'unlock_time' not set to greater than 0", passwordAuth);
 }
