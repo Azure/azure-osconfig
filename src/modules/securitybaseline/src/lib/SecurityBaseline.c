@@ -665,7 +665,9 @@ static char* AuditEnsureNodevOptionOnHomePartition(void)
     const char* home = "/home";
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, home, NULL, g_nodev, &reason, SecurityBaselineGetLog());
+    OsConfigLogInfo(SecurityBaselineGetLog(), "##### %s", reason);
     CheckFileSystemMountingOption(g_etcMtab, home, NULL, g_nodev, &reason, SecurityBaselineGetLog()); 
+    OsConfigLogInfo(SecurityBaselineGetLog(), "##### %s", reason);
     return reason;
 }
 
