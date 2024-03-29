@@ -1199,11 +1199,13 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void)
 
 static char* AuditEnsurePasswordReuseIsLimited(void)
 {
-    //TBD: refine this and expand to other distros
+    const char* etcPamdSystemAuth = "/etc/pam.d/system-auth";
     int option = 0;
-    return (5 >= (option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog()))) ?
-        ((-999 == option) ? FormatAllocateString("A 'remember' option is not found in %s", g_etcPamdCommonPassword) :
-        FormatAllocateString("A 'remember' option is set to '%d' in %s instead of expected '5' or greater", option, g_etcPamdCommonPassword)) :
+
+    return ((5 >= (option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog()))) ||
+        (5 >= (option = GetIntegerOptionFromFile(etcPamdSystemAuth, "remember", '=', SecurityBaselineGetLog())))) ?
+        ((-999 == option) ? FormatAllocateString("The 'remember' option is not found in '%s' or in '%s'", g_etcPamdCommonPassword, etcPamdSystemAuth) :
+        FormatAllocateString("The 'remember' option is set to '%d' in '%s' or '%s' instead of expected '5' or greater", option, g_etcPamdCommonPassword, etcPamdSystemAuth)) :
         DuplicateString(g_pass);
 }
 
@@ -1262,17 +1264,13 @@ static char* AuditEnsurePasswordCreationRequirements(void)
 
 static char* AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
-    //TBD: expand to other distros
     const char* passwordAuth = "/etc/pam.d/password-auth";
+    const char* commonAuth = "/etc/pam.d/common-auth";
     
-    return ((0 == CheckLockoutForFailedPasswordAttempts(passwordAuth, SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(passwordAuth, '#', "auth", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(passwordAuth, '#', "pam_tally2.so", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(passwordAuth, '#', "file=/var/log/tallylog", SecurityBaselineGetLog())) &&
-        (0 < GetIntegerOptionFromFile(passwordAuth, "deny", '=', SecurityBaselineGetLog())) &&
-        (0 < GetIntegerOptionFromFile(passwordAuth, "unlock_time", '=', SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("In %s: lockout for failed password attempts not set, 'auth', 'pam_tally2.so', 'file=/var/log/tallylog' "
-            "not found, 'deny' or 'unlock_time' is not found or not set to greater than 0", passwordAuth);
+    return ((0 == CheckLockoutForFailedPasswordAttempts(passwordAuth, SecurityBaselineGetLog())) ||
+        (0 == CheckLockoutForFailedPasswordAttempts(commonAuth, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) :
+        FormatAllocateString("In %s: lockout for failed password attempts not set, 'auth', 'pam_faillock.so' or 'pam_tally2.so' and 'file=/var/log/tallylog' "
+            "not found, or 'deny' or 'unlock_time' not found, or 'deny' not in between 1 and 5, or 'unlock_time' not set to greater than 0", passwordAuth);
 }
 
 static char* AuditEnsureDisabledInstallationOfCramfsFileSystem(void)

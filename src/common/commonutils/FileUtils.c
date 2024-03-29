@@ -1041,7 +1041,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
     char* value = NULL;
     int option = 0;
     int status = ENOENT;
-    
+
     if (0 == CheckFileExists(fileName, log))
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
@@ -1052,24 +1052,25 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
         {
             buffer = contents;
 
-            // Example of a valid line: 
+            // Example of valid lines: 
             //
             // auth required pam_tally2.so file=/var/log/tallylog deny=5 even_deny_root unlock_time=2000
+            // auth required pam_faillock.so deny=1 even_deny_root unlock_time=300
             //
-            // To pass, all attributes must be present, including pam_tally2.so, the deny value must be between
-            // 1 and 5 (inclusive), the unlock_time set to a positive value, with any number of spaces between.
-            // The even_deny_root and any other attribute like it are optional.
+            // To pass, all attributes must be present, including either pam_faillock.so or pam_tally2.so, 
+            // the deny value must be between 1 and 5 (inclusive), the unlock_time set to a positive value, 
+            // with any number of spaces between.The even_deny_root and any other attribute like it are optional.
             //
             // There can be multiple 'auth' lines in the file. Only the right one matters.
 
             while (NULL != (value = GetStringOptionFromBuffer(buffer, "auth", ' ', log)))
             {
                 if (((0 == strcmp("required", value)) && FreeAndReturnTrue(value)) &&
-                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "required", ' ', log))) && (0 == strcmp("pam_tally2.so", value)) && FreeAndReturnTrue(value)) &&
+                    (((NULL != (value = GetStringOptionFromBuffer(buffer, "required", ' ', log))) && (0 == strcmp("pam_faillock.so", value)) && FreeAndReturnTrue(value)) ||
+                    (((NULL != (value = GetStringOptionFromBuffer(buffer, "required", ' ', log))) && (0 == strcmp("pam_tally2.so", value)) && FreeAndReturnTrue(value)) &&
                     ((NULL != (value = GetStringOptionFromBuffer(buffer, "pam_tally2.so", ' ', log))) && (0 == strcmp("file=/var/log/tallylog", value)) && FreeAndReturnTrue(value)) &&
-                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "file", '=', log))) && (0 == strcmp("/var/log/tallylog", value)) && FreeAndReturnTrue(value)) &&
-                    ((0 < (option = GetIntegerOptionFromBuffer(buffer, "deny", '=', log))) && (6 > option)) &&
-                    (0 < (option = GetIntegerOptionFromBuffer(buffer, "unlock_time", '=', log))))
+                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "file", '=', log))) && (0 == strcmp("/var/log/tallylog", value)) && FreeAndReturnTrue(value)))) &&
+                    (0 < (option = GetIntegerOptionFromBuffer(buffer, "deny", '=', log))) && (6 > option) && (0 < (option = GetIntegerOptionFromBuffer(buffer, "unlock_time", '=', log))))
                 {
                     status = 0;
                     break;
