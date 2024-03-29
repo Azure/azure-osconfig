@@ -655,7 +655,8 @@ static char* AuditEnsurePermissionsOnEtcMotd(void)
 
 static char* AuditEnsureKernelSupportForCpuNx(void)
 {
-    return IsCpuFlagSupported("nx", SecurityBaselineGetLog()) ? DuplicateString(g_pass) : 
+    return IsCpuFlagSupported("nx", SecurityBaselineGetLog()) ? 
+        FormatAllocateString("%sThe device's processor has support for the NX bit technology", g_pass) : 
         DuplicateString("The device's processor does not have support for the NX bit technology");
 }
 
@@ -663,83 +664,93 @@ static char* AuditEnsureNodevOptionOnHomePartition(void)
 {
     const char* home = "/home";
     char* reason = NULL;
-
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, home, NULL, g_nodev, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, home, NULL, g_nodev, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileSystemMountingOption(g_etcFstab, home, NULL, g_nodev, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcMtab, home, NULL, g_nodev, &reason, SecurityBaselineGetLog()); 
+    return reason;
 }
 
 static char* AuditEnsureNodevOptionOnTmpPartition(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNodevOptionOnVarTmpPartition(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nodev, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nodev, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNosuidOptionOnTmpPartition(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog())) || 
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNosuidOptionOnVarTmpPartition(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoexecOptionOnVarTmpPartition(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_noexec, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_noexec, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoexecOptionOnDevShmPartition(void)
 {
     const char* devShm = "/dev/shm";
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, devShm, NULL, g_noexec, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, devShm, NULL, g_noexec, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileSystemMountingOption(g_etcFstab, devShm, NULL, g_noexec, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcMtab, devShm, NULL, g_noexec, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nodev, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nodev, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_noexec, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_noexec, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nosuid, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nosuid, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
 {
     const char* nfs = "nfs";
     char* reason = NULL;
-    return (((0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_noexec, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, &reason, SecurityBaselineGetLog()))) ||
-        ((0 == CheckFileSystemMountingOption(g_etcMtab, NULL, nfs, g_noexec, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckFileSystemMountingOption(g_etcMtab, NULL, nfs, g_nosuid, &reason, SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : reason;
+    CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_noexec, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcMtab, NULL, nfs, g_noexec, &reason, SecurityBaselineGetLog());
+    CheckFileSystemMountingOption(g_etcMtab, NULL, nfs, g_nosuid, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureInetdNotInstalled(void)
