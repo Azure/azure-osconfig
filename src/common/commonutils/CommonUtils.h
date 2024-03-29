@@ -28,6 +28,9 @@
 #define PRETTY_NAME_UBUNTU_20_04 "Ubuntu 20.04"
 #define PRETTY_NAME_UBUNTU_22_04 "Ubuntu 22.04"
 
+#define SECURITY_AUDIT_PASS "PASS"
+#define SECURITY_AUDIT_FAIL "FAIL"
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 #define UNUSED(a) (void)(a)
@@ -42,7 +45,8 @@
 #define OsConfigCaptureReason(reason, FORMAT1, FORMAT2, ...) {\
     char* temp = NULL;\
     if (NULL != reason) {\
-        if ((NULL == *reason) || (0 == strlen(*reason))) {\
+        if ((NULL == *reason) || (0 == strlen(*reason)) || (0 == strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))) {\
+            FREE_MEMORY(*reason);\
             *reason = FormatAllocateString(FORMAT1, ##__VA_ARGS__);\
         } else {\
             temp = DuplicateString(*reason);\
@@ -82,9 +86,6 @@
 // Uncomment next line when the PROTOCOL_MQTT macro will be needed (compiling with -Werror-unused-macros)
 //#define PROTOCOL_MQTT 1 
 #define PROTOCOL_MQTT_WS 2
-
-#define SECURITY_AUDIT_PASS "PASS"
-#define SECURITY_AUDIT_FAIL "FAIL"
 
 #ifdef __cplusplus
 extern "C"
