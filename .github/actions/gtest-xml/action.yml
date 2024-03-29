@@ -14,8 +14,8 @@ runs:
   using: composite
   steps:
     - uses: actions/setup-python@v5
-        with:
-          python-version: '3.8'
+      with:
+        python-version: '3.8'
 
     - name: Convert GTest to JUnit
       env:
