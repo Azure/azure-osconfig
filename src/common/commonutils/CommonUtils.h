@@ -60,7 +60,7 @@
 #define OsConfigCaptureSuccessReason(reason, FORMAT, ...) {\
     char* temp = NULL;\
     if (NULL != reason) {\
-        if ((NULL == *reason) && (0 == strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS))) {\
+        if ((NULL == *reason) && (0 == strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))) {\
             temp = FormatAllocateString("%s, also ", *reason);\
             FREE_MEMORY(*reason); \
             *reason = FormatAllocateString(FORMAT, temp, ##__VA_ARGS__);\
