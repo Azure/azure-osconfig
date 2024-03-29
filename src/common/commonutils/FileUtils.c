@@ -378,7 +378,6 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     struct mntent* mountStruct = NULL;
     bool matchFound = false;
     int lineNumber = 0;
-    char* temp = NULL;
     int status = 0;
     
     if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
