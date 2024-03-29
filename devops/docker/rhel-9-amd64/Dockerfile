@@ -6,6 +6,7 @@ RUN yum install -y --disableplugin=subscription-manager \
     gcc \
     gcc-c++ \
     git \
+    glibc \
     jq \
     libtool \
     libcurl-devel \

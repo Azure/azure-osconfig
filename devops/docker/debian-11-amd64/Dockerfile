@@ -2,21 +2,22 @@ FROM mcr.microsoft.com/mirror/docker/library/debian:bullseye
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
-    git \
-    cmake \
+    bc \
     build-essential \
+    cmake \
     curl \
+    file \
+    gcovr \
+    git \
+    glibc \
+    jq \
     libcurl4-openssl-dev \
     libssl-dev \
-    uuid-dev \
-    rapidjson-dev \
     ninja-build \
     python3-jsonschema \
-    wget \
-    gcovr \
-    jq \
-    bc \
-    file
+    rapidjson-dev \
+    uuid-dev \
+    wget
 
 WORKDIR /git
 

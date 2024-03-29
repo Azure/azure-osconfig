@@ -6,6 +6,7 @@ RUN yum install -y \
     gcc \
     gcc-c++ \
     git \
+    glibc \
     jq \
     libcurl-devel \
     libtool \
