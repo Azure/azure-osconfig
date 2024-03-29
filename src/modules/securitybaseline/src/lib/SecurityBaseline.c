@@ -516,25 +516,29 @@ void SecurityBaselineShutdown(void)
 static char* AuditEnsurePermissionsOnEtcIssue(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcIssue, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcIssue, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcIssueNet(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcIssueNet, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcIssueNet, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcHostsAllow(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcHostsAllow, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcHostsAllow, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcHostsDeny(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcHostsDeny, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcHostsDeny, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void)
@@ -547,91 +551,106 @@ static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void)
 static char* AuditEnsurePermissionsOnEtcShadow(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcShadow, 0, 42, 400, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcShadow, 0, 42, 400, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcShadowDash(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcShadowDash, 0, 42, 400, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcShadowDash, 0, 42, 400, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcGShadow(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcGShadow, 0, 42, 400, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcGShadow, 0, 42, 400, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcGShadowDash(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcGShadowDash, 0, 42, 400, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcGShadowDash, 0, 42, 400, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcPasswd(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcPasswd, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcPasswd, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcPasswdDash(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcPasswdDash, 0, 0, 600, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcPasswdDash, 0, 0, 600, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcGroup(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcGroup, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcGroup, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcGroupDash(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcGroupDash, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcGroupDash, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcAnacronTab(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcAnacronTab, 0, 0, 600, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcAnacronTab, 0, 0, 600, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcCronD(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcCronD, 0, 0, 700, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcCronD, 0, 0, 700, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcCronDaily(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcCronDaily, 0, 0, 700, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcCronDaily, 0, 0, 700, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcCronHourly(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcCronHourly, 0, 0, 700, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcCronHourly, 0, 0, 700, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcCronMonthly(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcCronMonthly, 0, 0, 700, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcCronMonthly, 0, 0, 700, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcCronWeekly(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcCronWeekly, 0, 0, 700, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcCronWeekly, 0, 0, 700, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcMotd(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcMotd, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcMotd, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsureKernelSupportForCpuNx(void)
@@ -1192,9 +1211,10 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(void)
 static char* AuditEnsurePermissionsOnBootloaderConfig(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileAccess("/boot/grub/grub.conf", 0, 0, 400, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess("/boot/grub/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileAccess("/boot/grub/grub.conf", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    CheckFileAccess("/boot/grub/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePasswordReuseIsLimited(void)
@@ -1366,8 +1386,9 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, &reason, SecurityBaselineGetLog())) && 
-        (0 == CheckFileAccess(g_etcRsyslogConf, 0, 0, 640, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, &reason, SecurityBaselineGetLog());
+    CheckFileAccess(g_etcRsyslogConf, 0, 0, 640, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
@@ -1401,7 +1422,8 @@ static char* AuditEnsureSyslogRotaterServiceIsEnabled(void)
         ((((NULL != (osName = GetOsName(SecurityBaselineGetLog()))) && (0 == strcmp(osName, "Ubuntu")) && FreeAndReturnTrue(osName)) &&
         ((NULL != (osVersion = GetOsVersion(SecurityBaselineGetLog()))) && (0 == strncmp(osVersion, version, strlen(version))) && FreeAndReturnTrue(osVersion))) ||
         CheckIfDaemonActive("logrotate.timer", SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, &reason, SecurityBaselineGetLog()))) ? 
+        FormatAllocateString("%sThe 'logrotate' package is installed and the 'logrotate.timer' service is running", g_pass, reason) :
         FormatAllocateString("The 'logrotate' package is not installed, or the 'logrotate.timer' service is not running, or: %s", reason);
     FREE_MEMORY(reason);
     return status;
@@ -1435,7 +1457,9 @@ static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
         (0 == CheckFileExists(etcCronAllow, SecurityBaselineGetLog())) &&
         (0 == CheckFileExists(etcAtAllow, SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess(etcCronAllow, 0, 0, 600, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess(etcAtAllow, 0, 0, 600, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        (0 == CheckFileAccess(etcAtAllow, 0, 0, 600, &reason, SecurityBaselineGetLog()))) ? 
+        FormatAllocateString("%s/etc/cron.deny, /etc/at.deny, %s, %s are present, %s",
+            g_pass, etcCronAllow, etcAtAllow, reason ? reason : "/etc/cron.allow and /etc/at.allow access set to 600") :
         FormatAllocateString("/etc/cron.deny, or /etc/at.deny, or %s, or %s missing, or: %s", 
             etcCronAllow, etcAtAllow, reason ? reason : "/etc/at.allow access not set to 600");
     FREE_MEMORY(reason);
