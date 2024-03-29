@@ -47,6 +47,11 @@ env:
 jobs:
   package:
     runs-on: ${{ inputs.release == true && fromJSON('["self-hosted", "1ES.Pool=release-pool", "1ES.ImageOverride=ubuntu-22.04"]') || 'ubuntu-latest' }}
+    container:
+      image: ghcr.io/azure/azure-osconfig/${{ inputs.target }}-${{ inputs.arch }}
+      volumes:
+        - ${{ github.workspace }}:/azure-osconfig
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,13 +59,13 @@ jobs:
           clean: true
           ref: ${{ inputs.ref }}
 
-      - name: Run container
-        id: container
-        uses: ./.github/actions/container-run
-        with:
-          registry: ${{ env.REGISTRY }}
-          container: azure/azure-osconfig/${{ inputs.target }}-${{ inputs.arch }}
-          mount: ${{ github.workspace }}:${{ env.MOUNT }}
+      # - name: Run container
+      #   id: container
+      #   uses: ./.github/actions/container-run
+      #   with:
+      #     registry: ${{ env.REGISTRY }}
+      #     container: azure/azure-osconfig/${{ inputs.target }}-${{ inputs.arch }}
+      #     mount: ${{ github.workspace }}:${{ env.MOUNT }}
 
       - name: Set tweak
         id: version
@@ -79,26 +84,38 @@ jobs:
       - run: mkdir build && cd build
 
       - name: Generate build
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.MOUNT }}/build
-          cmd: |
-            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON
+        working-directory: ${{ env.MOUNT }}/build
+        run: cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON
 
       - name: Build azure-osconfig
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.MOUNT }}/build
-          cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
+        working-directory: ${{ env.MOUNT }}/build
+        run: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Run cpack
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.MOUNT }}/build
-          cmd: cpack -G ${{ inputs.package-type }}
+        working-directory: ${{ env.MOUNT }}/build
+        run: cpack -G ${{ inputs.package-type }}
+        
+      # - name: Generate build
+      #   uses: ./.github/actions/container-exec
+      #   with:
+      #     container: ${{ steps.container.outputs.id }}
+      #     working-directory: ${{ env.MOUNT }}/build
+      #     cmd: |
+      #       cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON
+
+      # - name: Build azure-osconfig
+      #   uses: ./.github/actions/container-exec
+      #   with:
+      #     container: ${{ steps.container.outputs.id }}
+      #     working-directory: ${{ env.MOUNT }}/build
+      #     cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
+
+      # - name: Run cpack
+      #   uses: ./.github/actions/container-exec
+      #   with:
+      #     container: ${{ steps.container.outputs.id }}
+      #     working-directory: ${{ env.MOUNT }}/build
+      #     cmd: cpack -G ${{ inputs.package-type }}
 
       - name: Binary footprint delta validation
         uses: ./.github/actions/footprint-check

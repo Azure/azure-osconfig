@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  push: #TODO: Remove before checkin
   pull_request:
   schedule:
     - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
@@ -68,6 +69,10 @@ jobs:
       fail-fast: false
       matrix:
         target: ${{ fromJson(needs.create-ci-matrix.outputs.matrix) }}
+    container:
+      image: ghcr.io/azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
+      volumes:
+        - ${{ github.workspace }}:/azure-osconfig
           
     steps:
       - uses: actions/checkout@v4
@@ -82,35 +87,47 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Run container
-        id: container
-        uses: ./.github/actions/container-run
-        with:
-          registry: ${{ env.REGISTRY }}
-          container: azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
-          mount: ${{ github.workspace }}:${{ env.MOUNT }}
+      # - name: Run container
+      #   id: container
+      #   uses: ./.github/actions/container-run
+      #   with:
+      #     registry: ${{ env.REGISTRY }}
+      #     container: azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
+      #     mount: ${{ github.workspace }}:${{ env.MOUNT }}
+
+      # - name: Generate build
+      #   uses: ./.github/actions/container-exec
+      #   with:
+      #     container: ${{ steps.container.outputs.id }}
+      #     cmd: |
+      #       mkdir build && cd build
+      #       cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -Duse_default_uuid=ON
+
+      # - name: Build azure-osconfig
+      #   uses: ./.github/actions/container-exec
+      #   with:
+      #     container: ${{ steps.container.outputs.id }}
+      #     working-directory: ${{ env.MOUNT }}/build
+      #     cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
+
+      # - name: Run ctest
+      #   uses: ./.github/actions/container-exec
+      #   with:
+      #     container: ${{ steps.container.outputs.id }}
+      #     working-directory: ${{ env.MOUNT }}/build
+      #     cmd: ctest --verbose > ../${{ matrix.target.name }}-${{ matrix.target.arch }}.log
 
       - name: Generate build
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          cmd: |
-            mkdir build && cd build
-            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -Duse_default_uuid=ON
+        working-directory: ${{ env.MOUNT }}/build
+        run: cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON
 
       - name: Build azure-osconfig
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.MOUNT }}/build
-          cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
+        working-directory: ${{ env.MOUNT }}/build
+        run: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Run ctest
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.MOUNT }}/build
-          cmd: ctest --verbose > ../${{ matrix.target.name }}-${{ matrix.target.arch }}.log
+        working-directory: ${{ env.MOUNT }}/build
+        run: ctest --verbose > ../${{ matrix.target.name }}-${{ matrix.target.arch }}.log
 
       - name: Generate test report
         uses: ./.github/actions/gtest-xml
