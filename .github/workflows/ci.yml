@@ -22,32 +22,32 @@ jobs:
         run: |
           matrix="$(cat <<'EOL'
           [
-            { "name": "amazonlinux-2", "arch": "amd64" },
-            { "name": "centos-7", "arch": "amd64" },
-            { "name": "centos-8", "arch": "amd64" },
-            { "name": "debian-10", "arch": "amd64" },
-            { "name": "debian-11", "arch": "amd64" },
-            { "name": "debian-12", "arch": "amd64" },
-            { "name": "mariner-2", "arch": "amd64" },
-            { "name": "oraclelinux-7", "arch": "amd64" },
-            { "name": "oraclelinux-8", "arch": "amd64" },
-            { "name": "rhel-7", "arch": "amd64" },
-            { "name": "rhel-8", "arch": "amd64" },
-            { "name": "rhel-9", "arch": "amd64" },
-            { "name": "sles-15", "arch": "amd64" },
-            { "name": "ubuntu-20.04", "arch": "amd64" },
-            { "name": "ubuntu-22.04", "arch": "amd64" }
+            { "name": "amazonlinux-2", "arch": "amd64", "tag": "latest" },
+            { "name": "centos-7", "arch": "amd64", "tag": "latest" },
+            { "name": "centos-8", "arch": "amd64", "tag": "latest" },
+            { "name": "debian-10", "arch": "amd64", "tag": "latest" },
+            { "name": "debian-11", "arch": "amd64", "tag": "latest" },
+            { "name": "debian-12", "arch": "amd64", "tag": "latest" },
+            { "name": "mariner-2", "arch": "amd64", "tag": "latest" },
+            { "name": "oraclelinux-7", "arch": "amd64", "tag": "latest" },
+            { "name": "oraclelinux-8", "arch": "amd64", "tag": "latest" },
+            { "name": "rhel-7", "arch": "amd64", "tag": "latest" },
+            { "name": "rhel-8", "arch": "amd64", "tag": "latest" },
+            { "name": "rhel-9", "arch": "amd64", "tag": "latest" },
+            { "name": "sles-15", "arch": "amd64", "tag": "latest" },
+            { "name": "ubuntu-20.04", "arch": "amd64", "tag": "latest" },
+            { "name": "ubuntu-22.04", "arch": "amd64", "tag": "latest" }
           ]
           EOL
           )"
 
           arm64Targets="$(cat <<'EOL'
           [
-            { "name": "debian-10", "arch": "arm64" },
-            { "name": "debian-11", "arch": "arm64" },
-            { "name": "debian-12", "arch": "arm64" },
-            { "name": "ubuntu-20.04", "arch": "arm64" },
-            { "name": "ubuntu-22.04", "arch": "arm64" }
+            { "name": "debian-10", "arch": "arm64", "tag": "sha-c689eee" },
+            { "name": "debian-11", "arch": "arm64", "tag": "sha-c689eee" },
+            { "name": "debian-12", "arch": "arm64", "tag": "sha-db3d4c8" },
+            { "name": "ubuntu-20.04", "arch": "arm64", "tag": "sha-c689eee" },
+            { "name": "ubuntu-22.04", "arch": "arm64", "tag": "sha-db3d4c8" }
           ]
           EOL
           )"
@@ -89,6 +89,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           container: azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
+          tag: ${{ matrix.target.tag }}
 
       - name: Generate build
         uses: ./.github/actions/container-exec
