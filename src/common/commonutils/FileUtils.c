@@ -295,7 +295,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     else
     {
         OsConfigLogInfo(log, "CheckAccess: '%s' not found, nothing to check", name);
-        OsConfigCaptureSuccessReason(reason, "%s%s not found, nothing to check", name);
+        OsConfigCaptureSuccessReason(reason, "%s'%s' not found, nothing to check", name);
         result = 0;
     }
 
@@ -389,7 +389,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     if (!FileExists(mountFileName))
     {
         OsConfigLogInfo(log, "CheckFileSystemMountingOption: file '%s' not found, nothing to check", mountFileName);
-        OsConfigCaptureSuccessReason(reason, "%s%s not found, nothing to check", mountFileName);
+        OsConfigCaptureSuccessReason(reason, "%s'%s' not found, nothing to check", mountFileName);
         return 0;
     }
 
