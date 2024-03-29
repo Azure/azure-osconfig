@@ -1219,26 +1219,22 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcIssue",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcIssue"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcIssueNet",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcIssueNet"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcHostsAllow",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcHostsAllow"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcHostsDeny",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcHostsDeny"
   },
   {
     "ObjectType": "Reported",
@@ -1248,98 +1244,82 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcShadow",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcShadow"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcShadowDash",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcShadowDash"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcGShadow",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcGShadow"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcGShadowDash",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcGShadowDash"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcPasswd",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcPasswd"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcPasswdDash",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcPasswdDash"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcGroup",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcGroup"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcGroupDash",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcGroupDash"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcAnacronTab",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcAnacronTab"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcCronD",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcCronD"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcCronDaily",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcCronDaily"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcCronHourly",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcCronHourly"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcCronMonthly",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcCronMonthly"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcCronWeekly",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcCronWeekly"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcMotd",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcMotd"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureKernelSupportForCpuNx",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureKernelSupportForCpuNx"
   },
   {
     "ObjectType": "Reported",
@@ -1350,62 +1330,52 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureNodevOptionOnTmpPartition",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureNodevOptionOnTmpPartition"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureNodevOptionOnVarTmpPartition",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureNodevOptionOnVarTmpPartition"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureNosuidOptionOnTmpPartition",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureNosuidOptionOnTmpPartition"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureNosuidOptionOnVarTmpPartition",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureNosuidOptionOnVarTmpPartition"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureNoexecOptionOnVarTmpPartition",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureNoexecOptionOnVarTmpPartition"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureNoexecOptionOnDevShmPartition",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureNoexecOptionOnDevShmPartition"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureNodevOptionEnabledForAllRemovableMedia",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureNodevOptionEnabledForAllRemovableMedia"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureNoexecOptionEnabledForAllRemovableMedia",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureNoexecOptionEnabledForAllRemovableMedia"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureNosuidOptionEnabledForAllRemovableMedia",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureNosuidOptionEnabledForAllRemovableMedia"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts"
   },
   {
     "ObjectType": "Reported",
