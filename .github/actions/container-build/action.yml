@@ -17,6 +17,7 @@ runs:
   using: composite
   steps:
     - name: Setup image
+      shell: bash
       id: image
       run: |
         dockerfile=${{ inputs.containers }}
