@@ -69,6 +69,7 @@ jobs:
       matrix:
         containers: ${{ fromJson(needs.modified-containers.outputs.amd64Containers) }}
     steps:
+      - uses: actions/checkout@v4
       - name: Container Build
         uses: ./.github/actions/container-build
         with:
@@ -88,6 +89,7 @@ jobs:
       matrix:
         containers: ${{ fromJson(needs.modified-containers.outputs.arm64Containers) }}
     steps:
+      - uses: actions/checkout@v4
       - name: Container Build
         uses: ./.github/actions/container-build
         with:
