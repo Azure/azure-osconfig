@@ -1,54 +1,53 @@
 name: CI
 
 on:
-  # push: #TODO: Remove before checkin
+  push: #TODO: Remove before checkin
   pull_request:
   schedule:
     - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
 
 env:
   BUILD_TYPE: Release
-  MOUNT: /azure-osconfig
-  REGISTRY: ghcr.io
 
 jobs:
   create-ci-matrix:
     name: Build CI distro matrix
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.get-matrix.outputs.matrix }}
+      amd64matrix: ${{ steps.get-matrix.outputs.amd64matrix }}
+      arm64matrix: ${{ steps.get-matrix.outputs.arm64matrix }}
     steps:
       - name: Get matrix
         id: get-matrix
         run: |
-          matrix="$(cat <<'EOL'
+          amd64Targets="$(cat <<'EOL'
           [
-            { "name": "amazonlinux-2", "arch": "amd64" },
-            { "name": "centos-7", "arch": "amd64" },
-            { "name": "centos-8", "arch": "amd64" },
-            { "name": "debian-10", "arch": "amd64" },
-            { "name": "debian-11", "arch": "amd64" },
-            { "name": "debian-12", "arch": "amd64" },
-            { "name": "mariner-2", "arch": "amd64" },
-            { "name": "oraclelinux-7", "arch": "amd64" },
-            { "name": "oraclelinux-8", "arch": "amd64" },
-            { "name": "rhel-7", "arch": "amd64" },
-            { "name": "rhel-8", "arch": "amd64" },
-            { "name": "rhel-9", "arch": "amd64" },
-            { "name": "sles-15", "arch": "amd64" },
-            { "name": "ubuntu-20.04", "arch": "amd64" },
-            { "name": "ubuntu-22.04", "arch": "amd64" }
+            # { "name": "amazonlinux-2", "arch": "amd64" },
+            # { "name": "centos-7", "arch": "amd64" },
+            # { "name": "centos-8", "arch": "amd64" },
+            # { "name": "debian-10", "arch": "amd64" },
+            # { "name": "debian-11", "arch": "amd64" },
+            # { "name": "debian-12", "arch": "amd64" },
+            # { "name": "mariner-2", "arch": "amd64" },
+            # { "name": "oraclelinux-7", "arch": "amd64" },
+            # { "name": "oraclelinux-8", "arch": "amd64" },
+            # { "name": "rhel-7", "arch": "amd64" },
+            # { "name": "rhel-8", "arch": "amd64" },
+            # { "name": "rhel-9", "arch": "amd64" },
+            # { "name": "sles-15", "arch": "amd64" },
+            { "name": "ubuntu-20.04", "arch": "amd64" }
+            # { "name": "ubuntu-22.04", "arch": "amd64" }
           ]
           EOL
           )"
 
           arm64Targets="$(cat <<'EOL'
           [
-            { "name": "debian-10", "arch": "arm64" },
-            { "name": "debian-11", "arch": "arm64" },
-            { "name": "debian-12", "arch": "arm64" },
+            # { "name": "debian-10", "arch": "arm64" },
+            # { "name": "debian-11", "arch": "arm64" },
+            # { "name": "debian-12", "arch": "arm64" },
             { "name": "ubuntu-20.04", "arch": "arm64" },
-            { "name": "ubuntu-22.04", "arch": "arm64" }
+            # { "name": "ubuntu-22.04", "arch": "arm64" }
           ]
           EOL
           )"
@@ -58,17 +57,19 @@ jobs:
             matrix=$(jq --argjson arm64Targets "$arm64Targets" '. += $arm64Targets' <<< "$matrix")
           fi
 
-          echo Distros to perform CI on: $matrix
-          echo matrix=$matrix >> $GITHUB_OUTPUT
+          echo Distros to perform CI on (AMD64): $amd64Targets
+          echo Distros to perform CI on (ARM64): $arm64Targets
+          echo amd64matrix=$amd64Targets >> $GITHUB_OUTPUT
+          echo arm64matrix=$arm64Targets >> $GITHUB_OUTPUT
 
-  unit-test:
+  unit-test-amd64:
     name: Unit test
     needs: create-ci-matrix
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON('["self-hosted", "1ES.Pool=ci-pool", "1ES.ImageOverride=ubuntu-22.04"]') }}
     strategy:
       fail-fast: false
       matrix:
-        target: ${{ fromJson(needs.create-ci-matrix.outputs.matrix) }}
+        target: ${{ fromJson(needs.create-ci-matrix.outputs.amd64matrix) }}
     container:
       image: ghcr.io/azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
       volumes:
@@ -80,67 +81,9 @@ jobs:
           submodules: recursive
           clean: true
 
-      # - name: Docker login
-      #   uses: docker/login-action@v3
-      #   with:
-      #     registry: ${{ env.REGISTRY }}
-      #     username: ${{ github.actor }}
-      #     password: ${{ github.token }}
-
-      # - name: Run container
-      #   id: container
-      #   uses: ./.github/actions/container-run
-      #   with:
-      #     registry: ${{ env.REGISTRY }}
-      #     container: azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
-      #     mount: ${{ github.workspace }}:${{ env.MOUNT }}
-
-      # - name: Generate build
-      #   uses: ./.github/actions/container-exec
-      #   with:
-      #     container: ${{ steps.container.outputs.id }}
-      #     cmd: |
-      #       mkdir build && cd build
-      #       cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -Duse_default_uuid=ON
-
-      # - name: Build azure-osconfig
-      #   uses: ./.github/actions/container-exec
-      #   with:
-      #     container: ${{ steps.container.outputs.id }}
-      #     working-directory: ${{ env.MOUNT }}/build
-      #     cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
-
-      # - name: Run ctest
-      #   uses: ./.github/actions/container-exec
-      #   with:
-      #     container: ${{ steps.container.outputs.id }}
-      #     working-directory: ${{ env.MOUNT }}/build
-      #     cmd: ctest --verbose > ../${{ matrix.target.name }}-${{ matrix.target.arch }}.log
-
-      - name: Generate build
-        run: |
-         mkdir build && cd build
-         cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON
-
-      - name: Build azure-osconfig
-        working-directory: ${{ env.MOUNT }}/build
-        run: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
-
-      - name: Run ctest
-        working-directory: ${{ env.MOUNT }}/build
-        run: ctest --verbose > ../${{ matrix.target.name }}-${{ matrix.target.arch }}.log
-
-      - name: Generate test report
-        uses: ./.github/actions/gtest-xml
-        if: success() || failure()
+      - name: Unit Test
+        uses: ./.github/actions/unit-test
         with:
-          path: ./build/gtest-output
-          output: ${{ matrix.target.name }}-${{ matrix.target.arch }}.xml
-
-      - uses: actions/upload-artifact@v3
-        if: success() || failure()
-        with:
-          name: unit-test
-          path: |
-            ${{ matrix.target.name }}-${{ matrix.target.arch }}.log
-            ${{ matrix.target.name }}-${{ matrix.target.arch }}.xml
+          name: ${{ matrix.target.name }}
+          arch: ${{ matrix.target.arch }}
+          build-type: ${{ env.BUILD_TYPE }}
