@@ -9,7 +9,7 @@ RUN apt -y update && apt-get -y install \
     curl \
     gcovr\
     git \
-    glibc \
+    glibc-source \
     jq \
     libcurl4-openssl-dev \
     libgmock-dev \

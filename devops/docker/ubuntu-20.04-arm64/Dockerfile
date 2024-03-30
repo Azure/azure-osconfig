@@ -1,5 +1,5 @@
 # TODO: Add mcr.io tag
-FROM arm64v8/ubuntu:20.04
+FROM mcr.microsoft.com/mirror/docker/library/ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt -y update && apt-get -y install software-properties-common
@@ -10,7 +10,7 @@ RUN apt -y update && apt-get -y install \
     cmake \
     curl \
     git \
-    glibc \
+    glibc-source \
     jq \
     libcurl4-openssl-dev \
     libgmock-dev \
