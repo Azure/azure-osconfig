@@ -45,7 +45,7 @@ runs:
       id: meta
       uses: docker/metadata-action@v4
       with:
-        images: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
+        images: ${{ inputs.registry }}/${{ steps.image.outputs.name }}
         tags: |
           type=raw,value=latest
           type=raw,value=${{ github.run_number }}
