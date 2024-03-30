@@ -1,7 +1,7 @@
-FROM multiarch/qemu-user-static:x86_64-aarch64 as qemu
+# TODO: Add mcr.io tag
 FROM arm64v8/ubuntu:20.04
-COPY --from=qemu /usr/bin/qemu-aarch64-static /usr/bin
 ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
     apt-transport-https \
