@@ -40,13 +40,39 @@ jobs:
           echo arm64matrix=$arm64Targets >> $GITHUB_OUTPUT
 
   unit-test-amd64:
-    name: Unit test
+    name: Unit test (AMD64)
     needs: create-ci-matrix
     runs-on: ${{ fromJSON('["self-hosted", "1ES.Pool=ci-pool", "1ES.ImageOverride=ubuntu-22.04"]') }}
     strategy:
       fail-fast: false
       matrix:
         target: ${{ fromJson(needs.create-ci-matrix.outputs.amd64matrix) }}
+    container:
+      image: ghcr.io/azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
+      volumes:
+        - ${{ github.workspace }}:/azure-osconfig
+          
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          clean: true
+
+      - name: Unit Test
+        uses: ./.github/actions/unit-test
+        with:
+          name: ${{ matrix.target.name }}
+          arch: ${{ matrix.target.arch }}
+          build-type: ${{ env.BUILD_TYPE }}
+
+  unit-test-arm64:
+    name: Unit test (ARM64)
+    needs: create-ci-matrix
+    runs-on: ${{ fromJSON('["self-hosted", "1ES.Pool=ci-pool-arm64", "1ES.ImageOverride=mariner-2-arm64"]') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.create-ci-matrix.outputs.arm64matrix) }}
     container:
       image: ghcr.io/azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
       volumes:
