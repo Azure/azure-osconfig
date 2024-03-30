@@ -39,7 +39,8 @@ jobs:
         id: matrix
         run: |
           # If this workflow is present in other_changed_files, then rebuild all containers
-          if [[ -n "${str// }" ]]; then
+          distro_list="${{ inputs.distro_list }}"
+          if [[ -n "${distro_list// }" ]]; then
             echo "Building specified containers..."
             containers=$(echo "${{ inputs.distro_list }}" | jq -R 'split(",") | map("devops/docker/" + . + "/Dockerfile")')
           elif [[ "${{ steps.changed-containers.outputs.other_changed_files }}" == *".github/workflows/build-containers.yml"* ]] || [[ "${{ inputs.rebuild_all }}" == "true" ]]; then
