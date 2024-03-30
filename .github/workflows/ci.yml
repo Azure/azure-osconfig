@@ -1,7 +1,7 @@
 name: CI
 
 on:
-  push: #TODO: Remove before checkin
+  # push: #TODO: Remove before checkin
   pull_request:
   schedule:
     - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)

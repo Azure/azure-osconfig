@@ -49,8 +49,8 @@ jobs:
             containers=$(echo -n ${{ steps.changed-containers.outputs.all_changed_files }} | jq -R -s -c 'split(" ")')
           fi
 
-          amd64Containers=$(echo $containers | jq '.[] | select(contains("amd64"))')
-          arm64Containers=$(echo $containers | jq '.[] | select(contains("arm64"))')
+          amd64Containers=$(echo $containers | jq '.[] | select(contains("amd64"))' | jq -s .)
+          arm64Containers=$(echo $containers | jq '.[] | select(contains("arm64"))' | jq -s .)
 
           echo AMD64 Containers to build: $amd64Containers
           echo ARM64 Containers to build: $arm64Containers
