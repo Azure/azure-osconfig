@@ -33,25 +33,25 @@ jobs:
       matrix:
         target:
           [
-            { os: amazonlinux, version: 2, arch: amd64, dist: amazonlinux2, package-type: RPM, repo: microsoft-amazonlinux2-insiders-fast-prod-yum },
-            { os: centos, version: 7, arch: amd64, dist: centos7, package-type: RPM, repo: microsoft-centos7-insiders-fast-prod-yum },
-            { os: centos, version: 8, arch: amd64, dist: centos8, package-type: RPM, repo: microsoft-centos8-insiders-fast-prod-yum },
-            { os: debian, version: 10, arch: amd64, dist: buster, package-type: DEB, repo: microsoft-debian-buster-prod-apt },
-            { os: debian, version: 10, arch: arm64, dist: buster, package-type: DEB, repo: microsoft-debian-buster-prod-apt },
-            { os: debian, version: 11, arch: amd64, dist: bullseye, package-type: DEB, repo: microsoft-debian-bullseye-prod-apt },
-            { os: debian, version: 11, arch: arm64, dist: bullseye, package-type: DEB, repo: microsoft-debian-bullseye-prod-apt },
-            { os: debian, version: 12, arch: amd64, dist: bookworm, package-type: DEB, repo: microsoft-debian-bookworm-prod-apt },
-            { os: debian, version: 12, arch: arm64, dist: bookworm, package-type: DEB, repo: microsoft-debian-bookworm-prod-apt },
-            { os: mariner, version: 2, arch: amd64, dist: azurelinux, package-type: RPM, repo: cbl-mariner-2.0-preview-Microsoft-x86_64-yum },
-            { os: rhel, version: 7, arch: amd64, dist: rhel7, package-type: RPM, repo: microsoft-rhel7.4-insiders-fast-prod-yum },
-            { os: rhel, version: 8, arch: amd64, dist: rhel8, package-type: RPM, repo: microsoft-rhel8.0-insiders-fast-prod-yum },
-            { os: rhel, version: 9, arch: amd64, dist: rhel9, package-type: RPM, repo: microsoft-rhel9.0-insiders-fast-prod-yum },
-            { os: rockylinux, version: 9, arch: amd64, dist: rockylinux9, package-type: RPM, repo: microsoft-el9-insiders-fast-prod-yum },
-            { os: sles, version: 15, arch: amd64, dist: sles15, package-type: RPM, repo: microsoft-sles15-insiders-fast-prod-yum },
-            { os: ubuntu, version: 20.04, arch: amd64, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt },
-            { os: ubuntu, version: 20.04, arch: arm64, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt },
-            { os: ubuntu, version: 22.04, arch: amd64, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt },
-            { os: ubuntu, version: 22.04, arch: arm64, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt },
+            { os: amazonlinux, version: 2, arch: amd64, dist: amazonlinux2, package-type: RPM, repo: microsoft-amazonlinux2-insiders-fast-prod-yum, container-tag: latest },
+            { os: centos, version: 7, arch: amd64, dist: centos7, package-type: RPM, repo: microsoft-centos7-insiders-fast-prod-yum, container-tag: latest },
+            { os: centos, version: 8, arch: amd64, dist: centos8, package-type: RPM, repo: microsoft-centos8-insiders-fast-prod-yum, container-tag: latest },
+            { os: debian, version: 10, arch: amd64, dist: buster, package-type: DEB, repo: microsoft-debian-buster-prod-apt, container-tag: latest },
+            { os: debian, version: 10, arch: arm64, dist: buster, package-type: DEB, repo: microsoft-debian-buster-prod-apt, container-tag: sha-c689eee },
+            { os: debian, version: 11, arch: amd64, dist: bullseye, package-type: DEB, repo: microsoft-debian-bullseye-prod-apt, container-tag: latest },
+            { os: debian, version: 11, arch: arm64, dist: bullseye, package-type: DEB, repo: microsoft-debian-bullseye-prod-apt, container-tag: sha-c689eee },
+            { os: debian, version: 12, arch: amd64, dist: bookworm, package-type: DEB, repo: microsoft-debian-bookworm-prod-apt, container-tag: latest },
+            { os: debian, version: 12, arch: arm64, dist: bookworm, package-type: DEB, repo: microsoft-debian-bookworm-prod-apt, container-tag: sha-db3d4c8 },
+            { os: mariner, version: 2, arch: amd64, dist: azurelinux, package-type: RPM, repo: cbl-mariner-2.0-preview-Microsoft-x86_64-yum, container-tag: latest },
+            { os: rhel, version: 7, arch: amd64, dist: rhel7, package-type: RPM, repo: microsoft-rhel7.4-insiders-fast-prod-yum, container-tag: latest },
+            { os: rhel, version: 8, arch: amd64, dist: rhel8, package-type: RPM, repo: microsoft-rhel8.0-insiders-fast-prod-yum, container-tag: latest },
+            { os: rhel, version: 9, arch: amd64, dist: rhel9, package-type: RPM, repo: microsoft-rhel9.0-insiders-fast-prod-yum, container-tag: latest },
+            { os: rockylinux, version: 9, arch: amd64, dist: rockylinux9, package-type: RPM, repo: microsoft-el9-insiders-fast-prod-yum, container-tag: latest },
+            { os: sles, version: 15, arch: amd64, dist: sles15, package-type: RPM, repo: microsoft-sles15-insiders-fast-prod-yum, container-tag: latest },
+            { os: ubuntu, version: 20.04, arch: amd64, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt, container-tag: latest },
+            { os: ubuntu, version: 20.04, arch: arm64, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt, container-tag: sha-c689eee },
+            { os: ubuntu, version: 22.04, arch: amd64, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt, container-tag: latest },
+            { os: ubuntu, version: 22.04, arch: arm64, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt, container-tag: sha-db3d4c8 },
           ]
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
@@ -62,4 +62,5 @@ jobs:
       # ESRP yum based repos (rpm) have no channels
       channel: ${{ matrix.target.package-type == 'DEB' && 'insiders-fast' || '' }}
       package-type: ${{ matrix.target.package-type }}
+      container-tag: ${{ matrix.target.container-tag }}
     secrets: inherit
