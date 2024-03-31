@@ -17,18 +17,18 @@ runs:
   using: composite
   steps:
     - name: Set tweak
-        id: version
-        run: |
-          # Set the tweak version (YYMMDD + 2 digit run attempt)
-          now=$(date +'%Y%m%d')
-          number=$(printf '%02d' ${{ github.run_attempt }})
-          tweak="$(date +'%Y%m%d')$(printf '%02d' ${{ github.run_attempt }})"
+      id: version
+      run: |
+        # Set the tweak version (YYMMDD + 2 digit run attempt)
+        now=$(date +'%Y%m%d')
+        number=$(printf '%02d' ${{ github.run_attempt }})
+        tweak="$(date +'%Y%m%d')$(printf '%02d' ${{ github.run_attempt }})"
 
-          echo date: $now
-          echo number: $number
-          echo tweak: $tweak
+        echo date: $now
+        echo number: $number
+        echo tweak: $tweak
 
-          echo tweak=$tweak >> $GITHUB_OUTPUT
+        echo tweak=$tweak >> $GITHUB_OUTPUT
 
     - name: Generate build
       shell: bash

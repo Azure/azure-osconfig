@@ -68,7 +68,7 @@ jobs:
   unit-test-arm64:
     name: Unit test (ARM64)
     needs: create-ci-matrix
-    runs-on: ${{ fromJSON('["self-hosted", "1ES.Pool=ci-pool-arm64", "1ES.ImageOverride=mariner-2-arm64"]') }}
+    runs-on: ${{ fromJSON('["self-hosted", "1ES.Pool=ci-pool-arm64", "1ES.ImageOverride=ubuntu-22.04-arm64"]') }}
     strategy:
       fail-fast: false
       matrix:
