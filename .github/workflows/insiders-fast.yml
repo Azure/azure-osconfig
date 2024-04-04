@@ -8,6 +8,7 @@ on:
 jobs:
   changes:
     name: Check changes
+    if: ${{ github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     outputs:
       new: ${{ steps.commits.outputs.new }}
@@ -27,7 +28,9 @@ jobs:
   publish:
     name: Publish
     needs: changes
-    if: ${{ needs.changes.outputs.new == 'true' }}
+    if: |
+      always() &&
+      (needs.changes.outputs.new == 'true' || github.event_name == 'workflow_dispatch')
     uses: ./.github/workflows/publish.yml
     strategy:
       matrix:
