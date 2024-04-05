@@ -34,7 +34,7 @@ on:
         type: boolean
         required: false
         default: false
-      tag:
+      container-tag:
         type: string
         required: false
         default: latest
@@ -65,7 +65,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           container: azure/azure-osconfig/${{ inputs.target }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
-          tag: ${{ inputs.tag }}
+          tag: ${{ inputs.container-tag }}
 
       - name: Set tweak
         id: version

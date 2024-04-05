@@ -21,6 +21,10 @@ on:
       package-type:
         type: string
         required: true
+      container-tag:
+        type: string
+        required: false
+        default: latest
 
 jobs:
   package:
@@ -30,6 +34,7 @@ jobs:
       arch: ${{ inputs.arch }}
       artifact: ${{ inputs.target }}-${{ inputs.arch }}
       package-type: ${{ inputs.package-type }}
+      container-tag: ${{ inputs.container-tag }}
       release: true
 
   sign:
