@@ -1406,7 +1406,7 @@ static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 {
     return ((0 == FindTextInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog())) &&
         (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", SecurityBaselineGetLog()))) ? 
-        FormatAllocateString("'%sFileGroup adm' is found in '%s' and not found in '%s'", g_pass, g_etcRsyslogConf, g_etcRsyslogConf) :
+        FormatAllocateString("%s'FileGroup adm' is found in '%s' and not found in '%s'", g_pass, g_etcRsyslogConf, g_etcRsyslogConf) :
         FormatAllocateString("'FileGroup adm' is not found in '%s' or is found in '%s'", g_etcRsyslogConf, g_etcRsyslogConf);
 }
 
