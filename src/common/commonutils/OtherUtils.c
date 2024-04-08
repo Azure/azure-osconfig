@@ -41,7 +41,7 @@ char* DuplicateStringToLowercase(const char* source)
     return duplicate;
 }
 
-#define MAX_FORMAT_ALLOCATE_STRING_LENGTH 512
+#define MAX_FORMAT_ALLOCATE_STRING_LENGTH 2048
 char* FormatAllocateString(const char* format, ...)
 {
     char buffer[MAX_FORMAT_ALLOCATE_STRING_LENGTH] = {0};
