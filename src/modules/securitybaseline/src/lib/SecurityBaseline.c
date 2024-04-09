@@ -907,19 +907,19 @@ static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
 static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void)
 {
     return CheckNoLegacyPlusEntriesInFile("etc/passwd", SecurityBaselineGetLog()) ? 
-        DuplicateString("'+' lines found in /etc/passwd") : DuplicateString(g_pass);
+        DuplicateString("'+' lines found in '/etc/passwd'") : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcShadow(void)
 {
     return CheckNoLegacyPlusEntriesInFile("etc/shadow", SecurityBaselineGetLog()) ? 
-        DuplicateString(DuplicateString("'+' lines found in /etc/shadow")) : DuplicateString(g_pass);
+        DuplicateString(DuplicateString("'+' lines found in '/etc/shadow'")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcGroup(void)
 {
     return CheckNoLegacyPlusEntriesInFile("etc/group", SecurityBaselineGetLog()) ? 
-        DuplicateString(DuplicateString("'+' lines found in /etc/group")) : DuplicateString(g_pass);
+        DuplicateString(DuplicateString("'+' lines found in '/etc/group'")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureDefaultRootAccountGroupIsGidZero(void)
@@ -1042,7 +1042,7 @@ static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
         (0 != FindTextInFile(g_etcIssueNet, "\\r", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssueNet, "\\s", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssueNet, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'\\m', '\\r', '\\s' or '\\v' is found in %s", g_etcIssueNet);
+        FormatAllocateString("'\\m', '\\r', '\\s' or '\\v' is found in '%s'", g_etcIssueNet);
 }
 
 static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void)
@@ -1051,7 +1051,7 @@ static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void)
         (0 != FindTextInFile(g_etcIssue, "\\r", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssue, "\\s", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssue, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'\\m', '\\r', '\\s' or '\\v' is found in %s", g_etcIssue);
+        FormatAllocateString("'\\m', '\\r', '\\s' or '\\v' is found in '%s'", g_etcIssue);
 }
 
 static char* AuditEnsureAuditdServiceIsRunning(void)
@@ -1063,7 +1063,7 @@ static char* AuditEnsureAuditdServiceIsRunning(void)
 static char* AuditEnsureSuRestrictedToRootGroup(void)
 {
     return (0 == FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog())) ? 
-        DuplicateString(g_pass) : DuplicateString("'use_uid' is not found in /etc/pam.d/su");
+        DuplicateString(g_pass) : DuplicateString("'use_uid' is not found in '/etc/pam.d/su'");
 }
 
 static char* AuditEnsureDefaultUmaskForAllUsers(void)
@@ -1122,26 +1122,26 @@ static char* AuditEnsureSourceRoutedPacketsIsDisabled(void)
 {
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("'0' is not found in /proc/sys/net/ipv4/conf/all/accept_source_route or in /proc/sys/net/ipv6/conf/all/accept_source_route");
+        DuplicateString("'0' is not found in '/proc/sys/net/ipv4/conf/all/accept_source_route' or in '/proc/sys/net/ipv6/conf/all/accept_source_route'");
 }
 
 static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
 {
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("'0' is not found in /proc/sys/net/ipv4/conf/all/accept_source_route or in /proc/sys/net/ipv6/conf/default/accept_source_route");
+        DuplicateString("'0' is not found in '/proc/sys/net/ipv4/conf/all/accept_source_route' or in '/proc/sys/net/ipv6/conf/default/accept_source_route'");
 }
 
 static char* AuditEnsureIgnoringBogusIcmpBroadcastResponses(void)
 {
     return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", SecurityBaselineGetLog())) ? 
-        DuplicateString(g_pass) : DuplicateString("'1' is not found in /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses");
+        DuplicateString(g_pass) : DuplicateString("'1' is not found in '/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses'");
 }
 
 static char* AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
 {
     return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        DuplicateString("'1' is not found in /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts");
+        DuplicateString("'1' is not found in '/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts'");
 }
 
 static char* AuditEnsureMartianPacketLoggingIsEnabled(void)
@@ -1157,13 +1157,13 @@ static char* AuditEnsureReversePathSourceValidationIsEnabled(void)
 {
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", SecurityBaselineGetLog())) && 
         (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("'1' not found in /proc/sys/net/ipv4/conf/all/rp_filter or in /proc/sys/net/ipv4/conf/default/rp_filter");
+        DuplicateString("'1' not found in '/proc/sys/net/ipv4/conf/all/rp_filter' or in '/proc/sys/net/ipv4/conf/default/rp_filter'");
 }
 
 static char* AuditEnsureTcpSynCookiesAreEnabled(void)
 {
     return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        DuplicateString("'1' not found in /proc/sys/net/ipv4/tcp_syncookies");
+        DuplicateString("'1' not found in '/proc/sys/net/ipv4/tcp_syncookies'");
 }
 
 static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
@@ -1174,7 +1174,7 @@ static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
     return (FindTextInCommandOutput(command, text, NULL, SecurityBaselineGetLog()) &&
         (0 == CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, SecurityBaselineGetLog())) &&
         (0 == CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'%s' is not found in command '%s' output or found in /etc/network/interfaces or in /etc/rc.local", text, command);
+        FormatAllocateString("'%s' is not found in command '%s' output or found in '/etc/network/interfaces' or in '/etc/rc.local'", text, command);
 }
 
 static char* AuditEnsureAllWirelessInterfacesAreDisabled(void)
@@ -1192,31 +1192,31 @@ static char* AuditEnsureIpv6ProtocolIsEnabled(void)
 static char* AuditEnsureDccpIsDisabled(void)
 {
     return FindTextInFolder(g_etcModProbeD, "install dccp /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'%s' is not found in any file under %s", "install dccp /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
+        FormatAllocateString("'%s' is not found in any file under '%s'", "install dccp /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSctpIsDisabled(void)
 {
     return FindTextInFolder(g_etcModProbeD, "install sctp /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'%s' is not found in any file under %s", "install sctp /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
+        FormatAllocateString("'%s' is not found in any file under '%s'", "install sctp /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureDisabledSupportForRds(void)
 {
     return FindTextInFolder(g_etcModProbeD, "install rds /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'%s' is not found in any file under %s", "install rds /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
+        FormatAllocateString("'%s' is not found in any file under '%s'", "install rds /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureTipcIsDisabled(void)
 {
     return FindTextInFolder(g_etcModProbeD, "install tipc /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'%s' is not found in any file under %s", "install tipc /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
+        FormatAllocateString("'%s' is not found in any file under '%s'", "install tipc /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureZeroconfNetworkingIsDisabled(void)
 {
     return CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", SecurityBaselineGetLog()) ? 
-        DuplicateString("'ipv4ll' is found in /etc/network/interfaces") : DuplicateString(g_pass);
+        DuplicateString("'ipv4ll' is found in '/etc/network/interfaces'") : DuplicateString(g_pass);
 }
 
 static char* AuditEnsurePermissionsOnBootloaderConfig(void)
@@ -1253,7 +1253,7 @@ static char* AuditEnsureCoreDumpsAreRestricted(void)
     return (((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) ||
         (0 == FindTextInFolder("/etc/security/limits.d", fsSuidDumpable, SecurityBaselineGetLog()))) &&
         (0 == FindTextInCommandOutput("sysctl -a", fsSuidDumpable, NULL, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("Line 'hard core 0' is not found in /etc/security/limits.conf, or 'fs.suid_dumpable = 0' is not found in /etc/security/limits.d or in output from 'sysctl -a'");
+        DuplicateString("Line 'hard core 0' is not found in '/etc/security/limits.conf', or 'fs.suid_dumpable = 0' is not found in '/etc/security/limits.d' or in output from 'sysctl -a'");
 }
 
 static char* AuditEnsurePasswordCreationRequirements(void)
@@ -1307,38 +1307,38 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(void)
 static char* AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
 {
     return FindTextInFolder(g_etcModProbeD, "install cramfs", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install cramfs' is not found in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
+        FormatAllocateString("'install cramfs' is not found in any file under '%s'", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureDisabledInstallationOfFreevxfsFileSystem(void)
 {
     return FindTextInFolder(g_etcModProbeD, "install freevxfs", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install freevxfs' is not found in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
+        FormatAllocateString("'install freevxfs' is not found in any file under '%s'", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureDisabledInstallationOfHfsFileSystem(void)
 {
     return FindTextInFolder(g_etcModProbeD, "install hfs", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install hfs' is not found  in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
+        FormatAllocateString("'install hfs' is not found  in any file under '%s'", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureDisabledInstallationOfHfsplusFileSystem(void)
 {
     return FindTextInFolder(g_etcModProbeD, "install hfsplus", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install hfsplus' is not found  in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
+        FormatAllocateString("'install hfsplus' is not found  in any file under '%s'", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
 {
     return FindTextInFolder(g_etcModProbeD, "install jffs2", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install jffs2' is not found  in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
+        FormatAllocateString("'install jffs2' is not found  in any file under '%s'", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 {
     return ((0 == CompareFileContents("/proc/sys/kernel/randomize_va_space", "2", SecurityBaselineGetLog())) ||
         (0 == CompareFileContents("/proc/sys/kernel/randomize_va_space", "1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("/proc/sys/kernel/randomize_va_space content is not '2' and /proc/sys/kernel/randomize_va_space content is not '1'");
+        DuplicateString("'/proc/sys/kernel/randomize_va_space' content is not '2' and '/proc/sys/kernel/randomize_va_space' content is not '1'");
 }
 
 static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
@@ -1347,7 +1347,7 @@ static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.cfg", '#', password, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.conf", '#', password, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub2/grub.conf", '#', password, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("Line 'password' is not found in /boot/grub/grub.cfg, in /boot/grub/grub.conf and in /boot/grub2/grub.conf");
+        DuplicateString("Line 'password' is not found in '/boot/grub/grub.cfg', in '/boot/grub/grub.conf' and in '/boot/grub2/grub.conf'");
 }
 
 static char* AuditEnsureLoggingIsConfigured(void)
@@ -1470,10 +1470,10 @@ static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
         (0 == CheckFileExists(etcAtAllow, SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess(etcCronAllow, 0, 0, 600, &reason, SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess(etcAtAllow, 0, 0, 600, &reason, SecurityBaselineGetLog()))) ? 
-        FormatAllocateString("%s/etc/cron.deny, /etc/at.deny, %s, %s are present, %s",
-            g_pass, etcCronAllow, etcAtAllow, reason ? reason : "/etc/cron.allow and /etc/at.allow access set to 600") :
-        FormatAllocateString("/etc/cron.deny, or /etc/at.deny, or %s, or %s missing, or: %s", 
-            etcCronAllow, etcAtAllow, reason ? reason : "/etc/at.allow access not set to 600");
+        FormatAllocateString("%s'/etc/cron.deny', '/etc/at.deny', '%s', '%s' are present, '%s'",
+            g_pass, etcCronAllow, etcAtAllow, reason ? reason : "'/etc/cron.allow' and '/etc/at.allow' access set to 600") :
+        FormatAllocateString("'/etc/cron.deny', or '/etc/at.deny', or '%s', or '%s' missing, or: '%s'", 
+            etcCronAllow, etcAtAllow, reason ? reason : "'/etc/at.allow' access not set to 600");
     FREE_MEMORY(reason);
     return status;
 }
@@ -1634,7 +1634,7 @@ static char* AuditEnsurePostfixNetworkListeningIsDisabled(void)
 {
     return ((0 == CheckFileExists("/etc/postfix/main.cf", SecurityBaselineGetLog())) && 
         ((0 == FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : 
-        DuplicateString("/etc/postfix/main.cf is not found, or 'inet_interfaces localhost' is not found in /etc/postfix/main.cf");
+        DuplicateString("'/etc/postfix/main.cf' is not found, or 'inet_interfaces localhost' is not found in /etc/postfix/main.cf");
 }
 
 static char* AuditEnsureRpcgssdServiceIsDisabled(void)
