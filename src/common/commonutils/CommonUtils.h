@@ -42,7 +42,7 @@
     }\
 }\
 
-#define OsConfigCaptureReason(reason, FORMAT1, FORMAT2, ...) {\
+/*#define OsConfigCaptureReason(reason, FORMAT1, FORMAT2, ...) {\
     char* temp = NULL;\
     if (NULL != reason) {\
         if ((NULL == *reason) || (0 == strlen(*reason)) || (0 == strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))) {\
@@ -53,6 +53,21 @@
             FREE_MEMORY(*reason);\
             *reason = FormatAllocateString(FORMAT2, temp, ##__VA_ARGS__);\
             FREE_MEMORY(temp);\
+        }\
+    }\
+}\*/
+
+#define OsConfigCaptureReason(reason, FORMAT, ...) {\
+    char* temp = NULL;\
+    if (NULL != reason) {\
+        if ((NULL != *reason) && (0 != strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))) {\
+            temp = FormatAllocateString("%s, also ", *reason);\
+            FREE_MEMORY(*reason); \
+            *reason = FormatAllocateString(FORMAT, temp, ##__VA_ARGS__);\
+            FREE_MEMORY(temp);\
+        } else {\
+            FREE_MEMORY(*reason);\
+            *reason = FormatAllocateString(FORMAT, ##__VA_ARGS__);\
         }\
     }\
 }\

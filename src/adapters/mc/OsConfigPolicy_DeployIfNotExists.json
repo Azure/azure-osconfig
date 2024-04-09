@@ -634,9 +634,8 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "OsConfigPolicy",
-                                                "version": "1.0.0",
-                                                "contentType": "Custom",
+                                                "name": "LinuxSshServerSecurityBaseline",
+                                                "version": "1.*",
                                                 "contentUri": "<SAS token URL for the artifacts package>",
                                                 "contentHash": "<file hash for the artifacts package>",
                                                 "assignmentType": "ApplyAndAutoCorrect",
@@ -729,9 +728,8 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "OsConfigPolicy",
-                                                "version": "1.0.0",
-                                                "contentType": "Custom",
+                                                "name": "LinuxSshServerSecurityBaseline",
+                                                "version": "1.*",
                                                 "contentUri": "<SAS token URL for the artifacts package>",
                                                 "contentHash": "<file hash for the artifacts package>",
                                                 "assignmentType": "ApplyAndAutoCorrect",
@@ -824,9 +822,8 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "OsConfigPolicy",
-                                                "version": "1.0.0",
-                                                "contentType": "Custom",
+                                                "name": "LinuxSshServerSecurityBaseline",
+                                                "version": "1.*",
                                                 "contentUri": "<SAS token URL for the artifacts package>",
                                                 "contentHash": "<file hash for the artifacts package>",
                                                 "assignmentType": "ApplyAndAutoCorrect",

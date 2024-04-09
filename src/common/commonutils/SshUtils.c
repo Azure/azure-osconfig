@@ -295,7 +295,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
     if (NULL == (macsValue = GetSshServerState(sshMacs, log)))
     {
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' not found in SSH Server response from 'sshd -T'", sshMacs);
-        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' not found in SSH Server response", sshMacs);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", sshMacs);
         status = ENOENT;
     }
     else
@@ -318,7 +318,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
                 {
                     status = ENOENT;
                     OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved MAC algorithm '%s' found in SSH Server response", value);
-                    OsConfigCaptureReason(reason, "Unapproved MAC algorithm '%s' found in SSH Server response", "%s, also MAC algorithm '%s' is unapproved", value);
+                    OsConfigCaptureReason(reason, "'%s' MAC algorithm found in SSH Server response is unapproved", value);
                 }
 
                 i += strlen(value);
@@ -363,7 +363,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, voi
     if (NULL == (ciphersValue = GetSshServerState(sshCiphers, log)))
     {
         OsConfigLogError(log, "CheckAppropriateCiphersForSsh: '%s' not found in SSH Server response", sshCiphers);
-        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' not found in SSH Server response", sshCiphers);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", sshCiphers);
         status = ENOENT;
     }
     else
@@ -387,7 +387,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, voi
                 {
                     status = ENOENT;
                     OsConfigLogError(log, "CheckAppropriateCiphersForSsh: unapproved cipher '%s' found in SSH Server response", value);
-                    OsConfigCaptureReason(reason, "Unapproved cipher '%s' found in SSH Server response", "%s, also cipher '%s' is unapproved", value);
+                    OsConfigCaptureReason(reason, "'%s' cipher found in SSH Server response is unapproved", value);
                 }
 
                 i += strlen(value);
@@ -415,7 +415,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, voi
                 {
                     status = ENOENT;
                     OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found in SSH Server response", &(ciphers[i]));
-                    OsConfigCaptureReason(reason, "Required cipher '%s' not found in SSH Server response", "%s, also required cipher '%s' is not found", &(ciphers[i]));
+                    OsConfigCaptureReason(reason, "'%s' is a required cipher that is not found in SSH Server response", &(ciphers[i]));
                 }
 
                 i += strlen(value);
@@ -461,8 +461,7 @@ static int CheckSshOptionIsSet(const char* option, const char* expectedValue, ch
         if ((NULL != expectedValue) && (0 != strcmp(value, expectedValue)))
         {
             OsConfigLogError(log, "CheckSshOptionIsSet: '%s' is not set to '%s' in SSH Server response (but to '%s')", option, expectedValue, value);
-            OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response (but to '%s')",
-                "%s, also '%s' is not set to '%s' in SSH Server response (but to '%s')", option, expectedValue, value);
+            OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response (but to '%s')", option, expectedValue, value);
             status = ENOENT;
         }
         else
@@ -480,7 +479,7 @@ static int CheckSshOptionIsSet(const char* option, const char* expectedValue, ch
     else
     {
         OsConfigLogError(log, "CheckSshOptionIsSet: '%s' not found in SSH Server response", option);
-        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", option);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", option);
         status = ENOENT;
     }
 
@@ -525,8 +524,7 @@ static int CheckSshClientAliveInterval(char** reason, void* log)
             else
             {
                 OsConfigLogError(log, "CheckSshClientAliveInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
-                OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)",
-                    "%s, also 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
+                OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
                 status = ENOENT;
             }
         }
@@ -559,8 +557,7 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
             else
             {
                 OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to %d or less in SSH Server response (but to %d)", targetValue, actualValue);
-                OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)",
-                    "%s, also 'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)", targetValue, actualValue);
+                OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)", targetValue, actualValue);
                 status = ENOENT;
             }
         }
@@ -594,15 +591,13 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
             if (NULL == (contents = LoadStringFromFile(bannerFile, false, log)))
             {
                 OsConfigLogError(log, "CheckSshWarningBanner: cannot read from '%s'", bannerFile);
-                OsConfigCaptureReason(reason, "'%s' is set to '%s' but the file cannot be read",
-                    "%s, also '%s' is set to '%s' but the file cannot be read", banner, actualValue);
+                OsConfigCaptureReason(reason, "'%s' is set to '%s' but the file cannot be read", banner, actualValue);
                 status = ENOENT;
             }
             else  if (0 != strcmp(contents, bannerText))
             {
                 OsConfigLogError(log, "CheckSshWarningBanner: banner text is:\n%s instead of:\n%s", contents, bannerText);
-                OsConfigCaptureReason(reason, "Banner text from file '%s' is different from the expected text",
-                    "%s, also the banner text from '%s' is different from the expected text", bannerFile);
+                OsConfigCaptureReason(reason, "Banner text from file '%s' is different from the expected text", bannerFile);
                 status = ENOENT;
             }
             else if (0 == (status = CheckFileAccess(bannerFile, 0, 0, desiredAccess, reason, log)))
@@ -663,7 +658,7 @@ int CheckSshProtocol(char** reason, void* log)
     else if (false == FileExists(g_sshServerConfiguration))
     {
         OsConfigLogError(log, "CheckSshProtocol: the SSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
-        OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_sshServerConfiguration);
+        OsConfigCaptureReason(reason, "'%s' is not present on this device", g_sshServerConfiguration);
         status = EEXIST;
     }
     else
@@ -673,7 +668,7 @@ int CheckSshProtocol(char** reason, void* log)
             if (false == FileExists(g_osconfigRemediationConf))
             {
                 OsConfigLogError(log, "CheckSshProtocol: the OSConfig remediation file '%s' is not present on this device", g_osconfigRemediationConf);
-                OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_osconfigRemediationConf);
+                OsConfigCaptureReason(reason, "'%s' is not present on this device", g_osconfigRemediationConf);
                 status = EEXIST;
             }
             else if (NULL == (inclusion = FormatInclusionForRemediation(log)))
@@ -684,8 +679,7 @@ int CheckSshProtocol(char** reason, void* log)
             else if (0 != FindTextInFile(g_sshServerConfiguration, inclusion, log))
             {
                 OsConfigLogError(log, "CheckSshProtocol: '%s' is not found included in '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
-                OsConfigCaptureReason(reason, "'%s' is not found included in %s",
-                    "%s, also '%s' is not found included in %s", g_osconfigRemediationConf, g_sshServerConfiguration);
+                OsConfigCaptureReason(reason, "'%s' is not found included in %s", g_osconfigRemediationConf, g_sshServerConfiguration);
                 status = ENOENT;
             }
             else if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_osconfigRemediationConf, '#', protocol, log)))
@@ -697,8 +691,7 @@ int CheckSshProtocol(char** reason, void* log)
             else
             {
                 OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_osconfigRemediationConf);
-                OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",
-                    "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_osconfigRemediationConf);
+                OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s", protocol, g_osconfigRemediationConf);
                 status = ENOENT;
             }
 
@@ -715,8 +708,7 @@ int CheckSshProtocol(char** reason, void* log)
             else
             {
                 OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
-                OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",
-                    "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
+                OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
                 status = ENOENT;
             }
         }
@@ -799,7 +791,7 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
     }
     else
     {
-        OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response", "%s, also '%s' is not set to '%s' in SSH Server response", lowercase, expectedValue);
+        OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response", lowercase, expectedValue);
     }
 
     OsConfigLogInfo(log, "CheckAllowDenyUsersGroups: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
