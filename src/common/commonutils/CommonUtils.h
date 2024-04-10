@@ -62,7 +62,7 @@
     char* temp = FormatAllocateString("%s, also ", *reason);\
     FREE_MEMORY(*reason); \
     extraFormat = ConcatenateString("%s", FORMAT);\
-    *reason = FormatAllocateString((NULL != extraFormat) ? extraFormat : FORMAT), temp, ##__VA_ARGS__); \
+    *reason = FormatAllocateString(((NULL != extraFormat) ? extraFormat : FORMAT), temp, ##__VA_ARGS__); \
     FREE_MEMORY(temp);\
     FREE_MEMORY(extraFormat);\
 }\
