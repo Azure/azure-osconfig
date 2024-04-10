@@ -65,12 +65,15 @@
 }\
 
 #define OsConfigCaptureSuccessReason(reason, format, ...) {\
+    char* extraFormat = NULL;\
     if (NULL != reason) {\
         if ((NULL != *reason) && (0 == strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))) {\
-            InternalOsConfigAddReason(reason, "%s%s", format, ##__VA_ARGS__); \
+            InternalOsConfigAddReason(reason, "%s%s", format, ##__VA_ARGS__);\
         } else {\
             FREE_MEMORY(*reason);\
-            *reason = FormatAllocateString(format, SECURITY_AUDIT_PASS, ##__VA_ARGS__);\
+            extraFormat = ConcatenateString("%s%s", format);\
+            *reason = FormatAllocateString(extraFormat, SECURITY_AUDIT_PASS, ##__VA_ARGS__);\
+            FREE_MEMORY(extraFormat);\
         }\
     }\
 }\
