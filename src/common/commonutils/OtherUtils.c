@@ -41,13 +41,13 @@ char* DuplicateStringToLowercase(const char* source)
     return duplicate;
 }
 
-#define MAX_FORMAT_ALLOCATE_STRING_LENGTH 2048
+#define DEFAULT_FORMAT_ALLOCATE_STRING_LENGTH 512
 char* FormatAllocateString(const char* format, ...)
 {
-    int formatResult = 0;
-    char* stringToReturn = NULL;
     char* buffer = NULL;
-    size_t sizeOfBuffer = MAX_FORMAT_ALLOCATE_STRING_LENGTH;
+    char* stringToReturn = NULL;
+    int formatResult = 0;
+    int sizeOfBuffer = DEFAULT_FORMAT_ALLOCATE_STRING_LENGTH;
 
     if (NULL == format) 
     {
@@ -68,23 +68,17 @@ char* FormatAllocateString(const char* format, ...)
         formatResult = vsnprintf(buffer, sizeOfBuffer, format, arguments);
         va_end(arguments);
 
-        /*if ((formatResult > 0) && (formatResult < sizeOfBuffer))
-        {
-            stringToReturn = DuplicateString(buffer);
-        }*/
-
-        if ((size_t)formatResult < sizeOfBuffer)
+        if ((formatResult > 0) && (formatResult < (int)sizeOfBuffer))
         {
             stringToReturn = DuplicateString(buffer);
             break;
         }
-        else
-        {
-            FREE_MEMORY(buffer);
-            sizeOfBuffer += 1;
-            continue;
-        }
+
+        FREE_MEMORY(buffer);
+        sizeOfBuffer += 1;
     }
+
+    FREE_MEMORY(buffer);
 
     return stringToReturn;
 }
