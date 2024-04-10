@@ -1751,4 +1751,7 @@ TEST_F(CommonUtilsTest, ConcatenateString)
 
     EXPECT_STREQ("123Test", testString = ConcatenateString("123", "Test"));
     FREE_MEMORY(testString);
+
+    EXPECT_STREQ("%s%s%s", testString = ConcatenateString("%s%s", "%s"));
+    FREE_MEMORY(testString);
 }
