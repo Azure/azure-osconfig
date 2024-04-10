@@ -433,7 +433,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         {
             status = ENOENT;
             OsConfigLogError(log, "CheckFileSystemMountingOption: directory '%s' or mount type '%s' not found in file '%s'", mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
-            OsConfigCaptureReason(reason, "'%s' directory or mount type '%s' not found in file '%s'", (mountDirectory ? mountDirectory : "-"), (mountType ? mountType : "-"), mountFileName);
+            OsConfigCaptureReason(reason, "### directory '%s' or mount type '%s' not found in file '%s' ###", (mountDirectory ? mountDirectory : "-"), (mountType ? mountType : "-"), mountFileName);
         }
 
         endmntent(mountFileHandle);
