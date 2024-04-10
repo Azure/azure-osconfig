@@ -406,7 +406,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
                 {
                     OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' found in file '%s' at line '%d'", 
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
-                    OsConfigCaptureSuccessReason(reason, "%sOption '%s' for directory '%s' or mount type '%s' found in file '%s' at line '%d'", 
+                    OsConfigCaptureSuccessReason(reason, "%s'%s' option for directory '%s' or mount type '%s' found in file '%s' at line '%d'", 
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
                 }
                 else
