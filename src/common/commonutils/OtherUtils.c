@@ -73,7 +73,7 @@ char* FormatAllocateString(const char* format, ...)
             stringToReturn = DuplicateString(buffer);
         }*/
 
-        if (formatResult < sizeOfBuffer)
+        if ((size_t)formatResult < sizeOfBuffer)
         {
             stringToReturn = DuplicateString(buffer);
             break;
