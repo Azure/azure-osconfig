@@ -245,13 +245,13 @@ static int IsSshConfigIncludeSupported(void* log)
 
             if ((versionMajor >= minVersionMajor) && (versionMinor >= minVersionMinor))
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d (%d.%d or newer) and appears to support Include", 
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (%d.%d or newer) and appears to support Include", 
                     g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
                 result = 0;
             }
             else
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the %s service reports OpenSSH version %d.%d (older than %d.%d) and appears to not support Include", 
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (older than %d.%d) and appears to not support Include", 
                     g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
                 result = ENOENT;
             }
@@ -330,7 +330,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
 
     if (0 == status)
     {
-        OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%s' (all approved MAC algorithms)", g_sshServerService, sshMacs, macsValue);
+        OsConfigCaptureSuccessReason(reason, "%s%s reports that '%s' is set to '%s' (all approved MAC algorithms)", g_sshServerService, sshMacs, macsValue);
     }
 
     FREE_MEMORY(macsValue);
@@ -427,7 +427,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, voi
 
     if (0 == status)
     {
-        OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%s' (only approved ciphers)", g_sshServerService, sshCiphers, ciphersValue);
+        OsConfigCaptureSuccessReason(reason, "%s%s reports that '%s' is set to '%s' (only approved ciphers)", g_sshServerService, sshCiphers, ciphersValue);
     }
 
     FREE_MEMORY(ciphersValue);
@@ -466,7 +466,7 @@ static int CheckSshOptionIsSet(const char* option, const char* expectedValue, ch
         }
         else
         {
-            OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%s'", g_sshServerService, option, value);
+            OsConfigCaptureSuccessReason(reason, "%s%s reports that '%s' is set to '%s'", g_sshServerService, option, value);
         }
 
         if (NULL != actualValue)
@@ -519,7 +519,7 @@ static int CheckSshClientAliveInterval(char** reason, void* log)
 
             if (actualValue > 0)
             {
-                OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is greater than zero)", g_sshServerService, clientAliveInterval, actualValue);
+                OsConfigCaptureSuccessReason(reason, "%s%s reports that '%s' is set to '%d' (that is greater than zero)", g_sshServerService, clientAliveInterval, actualValue);
             }
             else
             {
@@ -552,7 +552,7 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
 
             if (actualValue <= targetValue)
             {
-                OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is %d or less)", g_sshServerService, loginGraceTime, targetValue, actualValue);
+                OsConfigCaptureSuccessReason(reason, "%s%s reports that '%s' is set to '%d' (that is %d or less)", g_sshServerService, loginGraceTime, targetValue, actualValue);
             }
             else
             {
@@ -602,7 +602,7 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
             }
             else if (0 == (status = CheckFileAccess(bannerFile, 0, 0, desiredAccess, reason, log)))
             {
-                OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%s', this file has access '%u' and contains the expected banner text", 
+                OsConfigCaptureSuccessReason(reason, "%s%s reports that '%s' is set to '%s', this file has access '%u' and contains the expected banner text", 
                     g_sshServerService, banner, actualValue, desiredAccess);
             }
         }
@@ -787,7 +787,7 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
 
     if (0 == status)
     {
-        OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%s'", g_sshServerService, lowercase, expectedValue);
+        OsConfigCaptureSuccessReason(reason, "%s%s reports that '%s' is set to '%s'", g_sshServerService, lowercase, expectedValue);
     }
     else
     {
