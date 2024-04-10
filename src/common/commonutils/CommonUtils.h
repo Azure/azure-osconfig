@@ -189,7 +189,7 @@ char* GetProductVersion(void* log);
 char* GetSystemCapabilities(void* log);
 char* GetSystemConfiguration(void* log);
 bool CheckOsAndKernelMatchDistro(char** reason, void* log);
-char* GetLoginUmask(void* log);
+char* GetLoginUmask(char** reason, void* log);
 int CheckLoginUmask(const char* desired, char** reason, void* log);
 long GetPassMinDays(void* log);
 long GetPassMaxDays(void* log);

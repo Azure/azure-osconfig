@@ -650,7 +650,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, kernelName = GetOsKernelName(nullptr));
     EXPECT_NE(nullptr, kernelVersion = GetOsKernelVersion(nullptr));
     EXPECT_NE(nullptr, kernelRelease = GetOsKernelRelease(nullptr));
-    EXPECT_NE(nullptr, umask = GetLoginUmask(nullptr));
+    EXPECT_NE(nullptr, umask = GetLoginUmask(nullptr, nullptr));
 
     FREE_MEMORY(osPrettyName);
     FREE_MEMORY(osName);

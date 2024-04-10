@@ -621,7 +621,7 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
     return match;
 }
 
-char* GetLoginUmask(void* log)
+char* GetLoginUmask(char** reason, void* log)
 {
     const char* command = "grep -v '^#' /etc/login.defs | grep UMASK";
     char* result = NULL;
@@ -634,6 +634,7 @@ char* GetLoginUmask(void* log)
     }
     else
     {
+        OsConfigCaptureReason(reason, "'%s' failed and cannot check the current login UMASK", command);
         FREE_MEMORY(result);
     }
 
@@ -667,16 +668,13 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
         if (0 == strncmp(desired, current, length))
         {
             OsConfigLogInfo(log, "CheckLoginUmask: current login UMASK '%s' matches desired '%s'", current, desired);
+            OsConfigCaptureSuccessReason(reason, "%s'%s' (current login UMASK) matches desired '%s'", current, desired);
         }
         else
         {
             OsConfigLogError(log, "CheckLoginUmask: current login UMASK '%s' does not match desired '%s'", current, desired);
+            OsConfigCaptureReason(reason, "'%s' (current login UMASK) does not match desired '%s'", current, desired);
             status = ENOENT;
-
-            if (reason)
-            {
-                *reason = FormatAllocateString("Current login UMASK '%s' does not match desired '%s'", current, desired);
-            }
         }
     }
 
