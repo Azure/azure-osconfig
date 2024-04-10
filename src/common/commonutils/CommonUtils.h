@@ -77,7 +77,6 @@
 }\
 
 #define OsConfigCaptureSuccessReason(reason, FORMAT, ...) {\
-    char* temp = NULL;\
     if (NULL != reason) {\
         if ((NULL != *reason) && (0 == strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))) {\
             InternalOsConfigAddReason(reason, FORMAT, ##__VA_ARGS__); \
