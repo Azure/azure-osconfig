@@ -162,6 +162,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 
 char* DuplicateString(const char* source);
+char* ConcatenateString(const char* first, const char* second);
 char* DuplicateStringToLowercase(const char* source);
 char* FormatAllocateString(const char* format, ...);
 
