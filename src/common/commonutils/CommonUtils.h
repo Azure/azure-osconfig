@@ -58,10 +58,13 @@
 }\*/
 
 #define InternalOsConfigAddReason(reason, FORMAT, ...) {\
+    char* extraFormat = NULL;\
     char* temp = FormatAllocateString("%s, also ", *reason);\
     FREE_MEMORY(*reason); \
-    *reason = FormatAllocateString(FORMAT, temp, ##__VA_ARGS__);\
+    extraFormat = ConcatenateString("%s", FORMAT);\
+    *reason = FormatAllocateString((NULL != extraFormat) ? extraFormat : FORMAT), temp, ##__VA_ARGS__); \
     FREE_MEMORY(temp);\
+    FREE_MEMORY(extraFormat);\
 }\
 
 
