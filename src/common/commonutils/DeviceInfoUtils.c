@@ -634,7 +634,7 @@ char* GetLoginUmask(char** reason, void* log)
     }
     else
     {
-        OsConfigCaptureReason(reason, "'%s' failed and cannot check the current login UMASK", command);
+        OsConfigCaptureReason(reason, "%s'%s' failed and cannot check the current login UMASK", command);
         FREE_MEMORY(result);
     }
 
@@ -673,7 +673,7 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
         else
         {
             OsConfigLogError(log, "CheckLoginUmask: current login UMASK '%s' does not match desired '%s'", current, desired);
-            OsConfigCaptureReason(reason, "'%s' (current login UMASK) does not match desired '%s'", current, desired);
+            OsConfigCaptureReason(reason, "%s'%s' (current login UMASK) does not match desired '%s'", current, desired);
             status = ENOENT;
         }
     }

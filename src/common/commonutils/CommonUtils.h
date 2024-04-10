@@ -58,7 +58,7 @@
 }\*/
 
 #define InternalOsConfigAddReason(reason, FORMAT, ...) {\
-    char* temp = FormatAllocateString("%%s%s, also ", *reason);\
+    char* temp = FormatAllocateString("%s, also ", *reason);\
     FREE_MEMORY(*reason); \
     *reason = FormatAllocateString(FORMAT, temp, ##__VA_ARGS__);\
     FREE_MEMORY(temp);\

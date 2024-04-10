@@ -222,7 +222,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
             {
                 OsConfigLogError(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
                     name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-                OsConfigCaptureReason(reason, "'%s' ownership (%d, %d) does not match expected (%d, %d)",
+                OsConfigCaptureReason(reason, "%s'%s' ownership (%d, %d) does not match expected (%d, %d)",
                     name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                 result = ENOENT;
             }
@@ -271,7 +271,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     (currentMode > desiredMode))
                 {
                     OsConfigLogError(log, "CheckAccess: access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
-                    OsConfigCaptureReason(reason, "'%s' access (%d) does not match expected (%d)", name, currentMode, desiredMode);
+                    OsConfigCaptureReason(reason, "%s'%s' access (%d) does not match expected (%d)", name, currentMode, desiredMode);
                     result = ENOENT;
                 }
                 else
@@ -414,7 +414,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
                     status = ENOENT;
                     OsConfigLogError(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
-                    OsConfigCaptureReason(reason, "'%s' option for directory '%s' or mount type '%s' missing from file '%s' at line %d",
+                    OsConfigCaptureReason(reason, "%s'%s' option for directory '%s' or mount type '%s' missing from file '%s' at line %d",
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
                 }
 
@@ -433,7 +433,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         {
             status = ENOENT;
             OsConfigLogError(log, "CheckFileSystemMountingOption: directory '%s' or mount type '%s' not found in file '%s'", mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
-            OsConfigCaptureReason(reason, "### directory '%s' or mount type '%s' not found in file '%s' ###", (mountDirectory ? mountDirectory : "-"), (mountType ? mountType : "-"), mountFileName);
+            OsConfigCaptureReason(reason, "%s### directory '%s' or mount type '%s' not found in file '%s' ###", (mountDirectory ? mountDirectory : "-"), (mountType ? mountType : "-"), mountFileName);
         }
 
         endmntent(mountFileHandle);
@@ -448,7 +448,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         }
         
         OsConfigLogError(log, "CheckFileSystemMountingOption: could not open file '%s', setmntent() failed (%d)", mountFileName, status);
-        OsConfigCaptureReason(reason, "'%s' cannot be opened, setmntent() failed (%d)", mountFileName, status);
+        OsConfigCaptureReason(reason, "%s'%s' cannot be opened, setmntent() failed (%d)", mountFileName, status);
     }
 
     return status;
@@ -603,14 +603,14 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
             if (false == foundMarker)
             {
                 OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' not found in '%s'", text, marker, fileName);
-                OsConfigCaptureReason(reason, "'%s' containing '%s' not found in '%s'", text, marker, fileName);
+                OsConfigCaptureReason(reason, "%s'%s' containing '%s' not found in '%s'", text, marker, fileName);
                 status = ENOENT; 
             }
         }
         else
         {
             OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' not found in '%s' (%d)", text, fileName, status);
-            OsConfigCaptureReason(reason, "'%s' not found in '%s' (%d)", text, fileName, status);
+            OsConfigCaptureReason(reason, "%s'%s' not found in '%s' (%d)", text, fileName, status);
         }
 
         FREE_MEMORY(results);
@@ -658,7 +658,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
                 else
                 {
                     OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found set for '%s' ('%s')", text, variableName, variableValue);
-                    OsConfigCaptureReason(reason, "'%s' not found set for '%s' ('%s')", text, variableName, variableValue);
+                    OsConfigCaptureReason(reason, "%s'%s' not found set for '%s' ('%s')", text, variableName, variableValue);
                     status = ENOENT;
                 }
             }
@@ -682,7 +682,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
                 if (false == foundText)
                 {
                     OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
-                    OsConfigCaptureReason(reason, "'%s' not found in '%s'", text, variableName);
+                    OsConfigCaptureReason(reason, "%s'%s' not found in '%s'", text, variableName);
                     status = ENOENT;
                 }
             }
@@ -690,7 +690,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
         else
         {
             OsConfigLogInfo(log, "FindTextInEnvironmentVariable: variable '%s' not found (%d)", variableName, status);
-            OsConfigCaptureReason(reason, "'%s' environment variable not found (%d)", variableName, status);
+            OsConfigCaptureReason(reason, "%s'%s' environment variable not found (%d)", variableName, status);
         }
 
         FREE_MEMORY(command);
@@ -875,7 +875,7 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
         {
             status = ENOENT;
             OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' not found in '%s' output", text, command);
-            OsConfigCaptureReason(reason, "'%s' not found in '%s' output", text, command);
+            OsConfigCaptureReason(reason, "%s'%s' not found in '%s' output", text, command);
         }
 
         FREE_MEMORY(results);
@@ -883,7 +883,7 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
     else
     {
         OsConfigLogInfo(log, "FindTextInCommandOutput: command '%s' failed with %d", command, status);
-        OsConfigCaptureReason(reason, "'%s' failed with %d", command, status);
+        OsConfigCaptureReason(reason, "%s'%s' failed with %d", command, status);
     }
 
     return status;
