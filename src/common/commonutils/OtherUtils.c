@@ -83,6 +83,27 @@ char* FormatAllocateString(const char* format, ...)
     return stringToReturn;
 }
 
+char* ConcatenateString(const char* first, const char* second)
+{
+    char* result = NULL;
+    size_t resultSize = 0;
+
+    if ((NULL == first) || (NULL == second))
+    {
+        return result;
+    }
+
+    resultSize = strlen(first) + strlen(second) + 1;
+
+    if (NULL != (result = malloc(resultSize)))
+    {
+        strncpy(result, first, strlen(first));
+        strncat(result, second, strlen(second));
+    }
+
+    return result;
+}
+
 int SleepMilliseconds(long milliseconds)
 {
     struct timespec remaining = {0};

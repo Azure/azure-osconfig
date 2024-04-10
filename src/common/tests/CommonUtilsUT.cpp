@@ -1723,3 +1723,32 @@ TEST_F(CommonUtilsTest, IsCurrentOs)
     FREE_MEMORY(name);
 
 }
+
+TEST_F(CommonUtilsTest, ConcatenateString)
+{
+    char* testString = nullptr;
+
+    EXPECT_EQ(nullptr, testString = ConcatenateString(nullptr, "Test"));
+    FREE_MEMORY(testString);
+
+    EXPECT_EQ(nullptr, testString = ConcatenateString("Test", nullptr));
+    FREE_MEMORY(testString);
+    
+    EXPECT_EQ(nullptr, testString = ConcatenateString(nullptr, nullptr));
+    FREE_MEMORY(testString);
+
+    EXPECT_STREQ("", testString = ConcatenateString("", ""));
+    FREE_MEMORY(testString);
+
+    EXPECT_STREQ("Test", testString = ConcatenateString("", "Test"));
+    FREE_MEMORY(testString);
+
+    EXPECT_STREQ("Test", testString = ConcatenateString("Test", ""));
+    FREE_MEMORY(testString);
+
+    EXPECT_STREQ("Test123", testString = ConcatenateString("Test", "123"));
+    FREE_MEMORY(testString);
+
+    EXPECT_STREQ("123Test", testString = ConcatenateString("123", "Test"));
+    FREE_MEMORY(testString);
+}

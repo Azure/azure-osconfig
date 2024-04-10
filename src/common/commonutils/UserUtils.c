@@ -1272,7 +1272,7 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, void* l
                     OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has a password encrypted with algorithm %d (%s) instead of %d (%s)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordEncryption, EncryptionName(userList[i].passwordEncryption), 
                         algorithm, EncryptionName(algorithm));
-                    OsConfigCaptureReason(reason, "%s'%s' user (%u, %u) has a password encrypted with algorithm %d (%s) instead of %d (%s)",
+                    OsConfigCaptureReason(reason, "%suser '%s' (%u, %u) has a password encrypted with algorithm %d (%s) instead of %d (%s)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordEncryption,
                         EncryptionName(userList[i].passwordEncryption), algorithm, EncryptionName(algorithm));
                     status = ENOENT;
