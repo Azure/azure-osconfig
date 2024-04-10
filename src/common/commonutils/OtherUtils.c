@@ -98,7 +98,7 @@ char* ConcatenateString(const char* first, const char* second)
     if (NULL != (result = malloc(resultSize)))
     {
         memset(result, 0, resultSize);
-        strnpy(result, first, strlen(first));
+        strncpy(result, first, strlen(first));
         strncat(result, second, resultSize);
     }
 
