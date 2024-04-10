@@ -57,14 +57,19 @@
     }\
 }\*/
 
-#define OsConfigCaptureReason(reason, FORMAT, ...) {\
+#define InternalOsConfigAddReason(reason, FORMAT, ...) {\
     char* temp = NULL;\
+    temp = FormatAllocateString("%s, also ", *reason);\
+    FREE_MEMORY(*reason); \
+    *reason = FormatAllocateString(FORMAT, temp, ##__VA_ARGS__);\
+    FREE_MEMORY(temp);\
+}\
+
+
+#define OsConfigCaptureReason(reason, FORMAT, ...) {\
     if (NULL != reason) {\
         if ((NULL != *reason) && (0 != strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))) {\
-            temp = FormatAllocateString("%s, also ", *reason);\
-            FREE_MEMORY(*reason); \
-            *reason = FormatAllocateString(FORMAT, temp, ##__VA_ARGS__);\
-            FREE_MEMORY(temp);\
+            InternalOsConfigAddReason(reason, FORMAT, ##__VA_ARGS__);\
         } else {\
             FREE_MEMORY(*reason);\
             *reason = FormatAllocateString(FORMAT, ##__VA_ARGS__);\
@@ -76,10 +81,7 @@
     char* temp = NULL;\
     if (NULL != reason) {\
         if ((NULL != *reason) && (0 == strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))) {\
-            temp = FormatAllocateString("%s, also ", *reason);\
-            FREE_MEMORY(*reason); \
-            *reason = FormatAllocateString(FORMAT, temp, ##__VA_ARGS__);\
-            FREE_MEMORY(temp);\
+            InternalOsConfigAddReason(reason, FORMAT, ##__VA_ARGS__); \
         } else {\
             FREE_MEMORY(*reason);\
             *reason = FormatAllocateString(FORMAT, SECURITY_AUDIT_PASS, ##__VA_ARGS__);\
