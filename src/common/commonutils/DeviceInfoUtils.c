@@ -658,7 +658,7 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
         return EINVAL;
     }
 
-    if (NULL == (current = GetLoginUmask(log)))
+    if (NULL == (current = GetLoginUmask(reason, log)))
     {
         OsConfigLogError(log, "CheckLoginUmask: GetLoginUmask failed");
         status = ENOENT;
