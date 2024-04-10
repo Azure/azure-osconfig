@@ -42,20 +42,20 @@
     }\
 }\
 
-#define InternalOsConfigAddReason(reason, prefix, format, ...) {\
-    char* extraFormat = NULL;\
+#define InternalOsConfigAddReason(reason, format, ...) {\
+    char* last = NULL;\
     char* temp = FormatAllocateString("%s, also ", *reason);\
     FREE_MEMORY(*reason); \
-    extraFormat = ConcatenateString(prefix, format);\
-    *reason = FormatAllocateString(((NULL != extraFormat) ? extraFormat : format), temp, ##__VA_ARGS__);\
+    last = FormatAllocateString(format, ##__VA_ARGS__);\
+    *reason = ConcatenateString(temp, last); \
     FREE_MEMORY(temp);\
-    FREE_MEMORY(extraFormat);\
+    FREE_MEMORY(last);\
 }\
 
 #define OsConfigCaptureReason(reason, format, ...) {\
     if (NULL != reason) {\
         if ((NULL != *reason) && (0 != strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))) {\
-            InternalOsConfigAddReason(reason, "%s", format, ##__VA_ARGS__);\
+            InternalOsConfigAddReason(reason, format, ##__VA_ARGS__);\
         } else {\
             FREE_MEMORY(*reason);\
             *reason = FormatAllocateString(format, ##__VA_ARGS__);\
@@ -64,18 +64,15 @@
 }\
 
 #define OsConfigCaptureSuccessReason(reason, format, ...) {\
-    char* extraFormat = NULL;\
+    char* temp = NULL;\
     if (NULL != reason) {\
         if ((NULL != *reason) && (0 == strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))) {\
-            InternalOsConfigAddReason(reason, "%s%s", format, ##__VA_ARGS__);\
+            InternalOsConfigAddReason(reason, format, ##__VA_ARGS__);\
         } else {\
             FREE_MEMORY(*reason);\
-            if (NULL == (extraFormat = ConcatenateString("%s%s", format))) {\
-                *reason = FormatAllocateString("%s (failed to complete reason)", SECURITY_AUDIT_PASS);\
-            } else {\
-                *reason = FormatAllocateString(extraFormat, SECURITY_AUDIT_PASS, ##__VA_ARGS__);\
-            }\
-            FREE_MEMORY(extraFormat);\
+            temp = FormatAllocateString(format, ##__VA_ARGS__);\
+            *reason = ConcatenateString(SECURITY_AUDIT_PASS, temp);\
+            FREE_MEMORY(temp);\
         }\
     }\
 }\
