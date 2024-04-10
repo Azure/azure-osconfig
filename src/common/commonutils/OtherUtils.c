@@ -44,23 +44,46 @@ char* DuplicateStringToLowercase(const char* source)
 #define MAX_FORMAT_ALLOCATE_STRING_LENGTH 2048
 char* FormatAllocateString(const char* format, ...)
 {
-    char buffer[MAX_FORMAT_ALLOCATE_STRING_LENGTH] = {0};
     int formatResult = 0;
     char* stringToReturn = NULL;
+    char* buffer = NULL;
+    size_t sizeOfBuffer = MAX_FORMAT_ALLOCATE_STRING_LENGTH;
 
-    if (NULL == format)
+    if (NULL == format) 
     {
         return stringToReturn;
     }
 
-    va_list arguments;
-    va_start(arguments, format);
-    formatResult = vsnprintf(buffer, MAX_FORMAT_ALLOCATE_STRING_LENGTH, format, arguments);
-    va_end(arguments);
-
-    if ((formatResult > 0) && (formatResult < MAX_FORMAT_ALLOCATE_STRING_LENGTH))
+    while (NULL == stringToReturn)
     {
-        stringToReturn = DuplicateString(buffer);
+        if (NULL == (buffer = malloc(sizeOfBuffer)))
+        {
+            break;
+        }
+
+        memset(buffer, 0, sizeOfBuffer);
+
+        va_list arguments;
+        va_start(arguments, format);
+        formatResult = vsnprintf(buffer, sizeOfBuffer, format, arguments);
+        va_end(arguments);
+
+        /*if ((formatResult > 0) && (formatResult < sizeOfBuffer))
+        {
+            stringToReturn = DuplicateString(buffer);
+        }*/
+
+        if (formatResult < sizeOfBuffer)
+        {
+            stringToReturn = DuplicateString(buffer);
+            break;
+        }
+        else
+        {
+            FREE_MEMORY(buffer);
+            sizeOfBuffer += 1;
+            continue;
+        }
     }
 
     return stringToReturn;
