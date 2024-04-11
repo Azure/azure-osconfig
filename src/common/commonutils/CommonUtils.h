@@ -47,7 +47,7 @@
     char* temp = FormatAllocateString("%s, also ", *reason);\
     FREE_MEMORY(*reason); \
     last = FormatAllocateString(format, ##__VA_ARGS__);\
-    last[0] = tolower[last[0]];\
+    last[0] = tolower(last[0]);\
     *reason = ConcatenateStrings(temp, last); \
     FREE_MEMORY(temp);\
     FREE_MEMORY(last);\
