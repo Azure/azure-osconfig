@@ -387,7 +387,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, voi
                 {
                     status = ENOENT;
                     OsConfigLogError(log, "CheckAppropriateCiphersForSsh: unapproved cipher '%s' found in SSH Server response", value);
-                    OsConfigCaptureReason(reason, "'%s' cipher found in SSH Server response is unapproved", value);
+                    OsConfigCaptureReason(reason, "Cipher '%s' found in SSH Server response is unapproved", value);
                 }
 
                 i += strlen(value);
@@ -415,7 +415,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, voi
                 {
                     status = ENOENT;
                     OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found in SSH Server response", &(ciphers[i]));
-                    OsConfigCaptureReason(reason, "'%s' is a required cipher that is not found in SSH Server response", &(ciphers[i]));
+                    OsConfigCaptureReason(reason, "Cipher '%s' is required and is not found in SSH Server response", &(ciphers[i]));
                 }
 
                 i += strlen(value);

@@ -605,7 +605,7 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
     {
         OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
             distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
-        OsConfigCaptureReason(reason, "distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
+        OsConfigCaptureReason(reason, "Distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
             distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
     }
 
@@ -630,7 +630,7 @@ char* GetLoginUmask(char** reason, void* log)
     }
     else
     {
-        OsConfigCaptureReason(reason, "'%s' failed and cannot check the current login UMASK", command);
+        OsConfigCaptureReason(reason, "Command '%s' failed and cannot check the current login UMASK", command);
         FREE_MEMORY(result);
     }
 
@@ -669,7 +669,7 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
         else
         {
             OsConfigLogError(log, "CheckLoginUmask: current login UMASK '%s' does not match desired '%s'", current, desired);
-            OsConfigCaptureReason(reason, "'%s' (current login UMASK) does not match desired '%s'", current, desired);
+            OsConfigCaptureReason(reason, "Current login UMASK '%s' does not match desired '%s'", current, desired);
             status = ENOENT;
         }
     }
