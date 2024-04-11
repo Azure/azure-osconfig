@@ -1054,7 +1054,7 @@ static char* AuditEnsureCronServiceIsEnabled(void)
 {
     char* reason = NULL;
     CheckPackageInstalled(g_cron, &reason, SecurityBaselineGetLog());
-    CheckIfDaemonActive(g_cron, &reason, SecurityBaselineGetLog());
+    CheckDaemonActive(g_cron, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
@@ -1079,7 +1079,7 @@ static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void)
 static char* AuditEnsureAuditdServiceIsRunning(void)
 {
     char* reason = NULL;
-    CheckIfDaemonActive(g_auditd, &reason, SecurityBaselineGetLog());
+    CheckDaemonActive(g_auditd, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
@@ -1100,7 +1100,7 @@ static char* AuditEnsureAutomountingDisabled(void)
     const char* autofs = "autofs";
     char* reason = NULL;
     CheckPackageInstalled(autofs, &reason, SecurityBaselineGetLog());
-    CheckIfDaemonNotActive(autofs, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(autofs, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
@@ -1412,7 +1412,7 @@ static char* AuditEnsureALoggingServiceIsEnabled(void)
     char* reason = NULL;
     if ((0 == CheckPackageNotInstalled(g_syslogNg, &reason, SecurityBaselineGetLog())) && 
         (0 == CheckPackageNotInstalled(g_systemd, &reason, SecurityBaselineGetLog())) && 
-        CheckIfDaemonActive(g_rsyslog, &reason, SecurityBaselineGetLog()))
+        CheckDaemonActive(g_rsyslog, &reason, SecurityBaselineGetLog()))
     {
         return reason;
     }
@@ -1420,14 +1420,14 @@ static char* AuditEnsureALoggingServiceIsEnabled(void)
     FREE_MEMORY(reason);
     if ((0 == CheckPackageNotInstalled(g_rsyslog, &reason, SecurityBaselineGetLog())) && 
         (0 == CheckPackageNotInstalled(g_systemd, &reason, SecurityBaselineGetLog())) && 
-        CheckIfDaemonActive(g_syslogNg, &reason, SecurityBaselineGetLog())) 
+        CheckDaemonActive(g_syslogNg, &reason, SecurityBaselineGetLog())) 
     {
         return reason;
     }
 
     FREE_MEMORY(reason);
     CheckPackageInstalled(g_systemd, &reason, SecurityBaselineGetLog());
-    CheckIfDaemonActive(g_systemdJournald, &reason, SecurityBaselineGetLog());
+    CheckDaemonActive(g_systemdJournald, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
@@ -1657,7 +1657,7 @@ static char* AuditEnsureAppropriateCiphersForSsh(void)
 static char* AuditEnsureAvahiDaemonServiceIsDisabled(void)
 {
     const char* reason = NULL;
-    CheckIfDaemonNotActive(g_avahiDaemon, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_avahiDaemon, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
@@ -1665,7 +1665,7 @@ static char* AuditEnsureCupsServiceisDisabled(void)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_cups, &reason, SecurityBaselineGetLog());
-    CheckIfDaemonNotActive(g_cups, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_cups, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
@@ -1686,32 +1686,32 @@ static char* AuditEnsurePostfixNetworkListeningIsDisabled(void)
 static char* AuditEnsureRpcgssdServiceIsDisabled(void)
 {
     char* reason = NULL;
-    CheckIfDaemonNotActive(g_rpcgssd, &reason, SecurityBaselineGetLog());
-    CheckIfDaemonNotActive(g_rpcGssd, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_rpcgssd, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_rpcGssd, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureRpcidmapdServiceIsDisabled(void)
 {
     char* reason = NULL;
-    CheckIfDaemonNotActive(g_rpcidmapd, &reason, SecurityBaselineGetLog());
-    CheckIfDaemonNotActive(g_nfsIdmapd, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_rpcidmapd, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_nfsIdmapd, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsurePortmapServiceIsDisabled(void)
 {
     char* reason = NULL;
-    CheckIfDaemonNotActive(g_rpcbind, &reason, SecurityBaselineGetLog())) &&
-    CheckIfDaemonNotActive(g_rpcbindService, &reason, SecurityBaselineGetLog());
-    CheckIfDaemonNotActive(g_rpcbindSocket, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_rpcbind, &reason, SecurityBaselineGetLog())) &&
+    CheckDaemonNotActive(g_rpcbindService, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_rpcbindSocket, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 {
     char* reason = NULL;
-    CheckIfDaemonNotActive(g_nfsServer, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_nfsServer, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
@@ -1725,21 +1725,21 @@ static char* AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 static char* AuditEnsureSnmpServerIsDisabled(void)
 {
     char* reason = NULL;
-    CheckIfDaemonNotActive(g_snmpd, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_snmpd, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureRsynServiceIsDisabled(void)
 {
     char* reason = NULL;
-    CheckIfDaemonNotActive(g_rsync, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_rsync, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureNisServerIsDisabled(void)
 {
     char* reason = NULL;
-    CheckIfDaemonNotActive(g_ypserv, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_ypserv, &reason, SecurityBaselineGetLog());
     return reason;
 }
 

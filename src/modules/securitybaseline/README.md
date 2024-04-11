@@ -110,7 +110,7 @@ An example of a completed check, `auditEnsureAuditdServiceIsRunning` and `remedi
 static char* AuditEnsureAuditdServiceIsRunning(void)
 {
     char* reason = NULL;
-    CheckIfDaemonActive(g_auditd, &reason SecurityBaselineGetLog());
+    CheckDaemonActive(g_auditd, &reason SecurityBaselineGetLog());
     return reason;
 }
 ```
@@ -124,7 +124,7 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value)
 }
 ```
 
-These simple functions invoke functions like `CheckIfDaemonActive` and `InstallPackage` that are implemented in [commonutils](../../common/commonutils/).
+These simple functions invoke functions like `CheckDaemonActive` and `InstallPackage` that are implemented in [commonutils](../../common/commonutils/).
 
 Remember, we want to separate the bulk of generic check implementations from this security baseline so that they could be reused in the future for the implementations of other baselines.
 

@@ -212,8 +212,8 @@ int SleepMilliseconds(long milliseconds);
 bool FreeAndReturnTrue(void* value);
 
 bool IsDaemonActive(const char* daemonName, void* log);
-bool CheckIfDaemonActive(const char* daemonName, char** reason, void* log);
-bool CheckIfDaemonNotActive(const char* daemonName, char** reason, void* log);
+bool CheckDaemonActive(const char* daemonName, char** reason, void* log);
+bool CheckDaemonNotActive(const char* daemonName, char** reason, void* log);
 bool EnableAndStartDaemon(const char* daemonName, void* log);
 void StopAndDisableDaemon(const char* daemonName, void* log);
 bool RestartDaemon(const char* daemonName, void* log);
