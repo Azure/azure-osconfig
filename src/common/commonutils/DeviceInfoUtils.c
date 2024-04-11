@@ -323,7 +323,7 @@ char* GetCpuFlags(void* log)
     return textResult;
 }
 
-bool IsCpuFlagSupported(const char* cpuFlag, void* log)
+bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, void* log)
 {
     bool result = false;
     char* cpuFlags = GetCpuFlags(log);
@@ -331,11 +331,13 @@ bool IsCpuFlagSupported(const char* cpuFlag, void* log)
     if ((NULL != cpuFlag) && (NULL != strstr(cpuFlags, cpuFlag)))
     {
         OsConfigLogInfo(log, "CPU flag '%s' is supported", cpuFlag);
+        OsConfigCaptureSuccessReason(reason, "The device's CPU supports '%s'", cpuFlag);
         result = true;
     }
     else
     {
         OsConfigLogInfo(log, "CPU flag '%s' is not supported", cpuFlag);
+        OsConfigCaptureReason(reason, "The device's CPU does not support '%s'", cpuFlag);
     }
 
     FREE_MEMORY(cpuFlags);

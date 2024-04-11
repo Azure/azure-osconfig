@@ -642,9 +642,9 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, cpuVendor = GetCpuType(nullptr));
     EXPECT_NE(nullptr, cpuModel = GetCpuType(nullptr));
     EXPECT_NE(nullptr, cpuFlags = GetCpuFlags(nullptr));
-    EXPECT_EQ(true, IsCpuFlagSupported("fpu", nullptr));
-    EXPECT_EQ(false, IsCpuFlagSupported("test123", nullptr));
-    EXPECT_EQ(false, IsCpuFlagSupported(nullptr, nullptr));
+    EXPECT_EQ(true, CheckCpuFlagSupported("fpu", nullptr, nullptr));
+    EXPECT_EQ(false, CheckCpuFlagSupported("test123", nullptr, nullptr));
+    EXPECT_EQ(false, CheckCpuFlagSupported(nullptr, nullptr));
     EXPECT_NE(0, totalMemory = GetTotalMemory(nullptr));
     EXPECT_NE(0, freeMemory = GetTotalMemory(nullptr));
     EXPECT_NE(nullptr, kernelName = GetOsKernelName(nullptr));

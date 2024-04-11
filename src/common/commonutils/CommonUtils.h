@@ -172,7 +172,7 @@ char* GetCpuType(void* log);
 char* GetCpuVendor(void* log);
 char* GetCpuModel(void* log);
 char* GetCpuFlags(void* log);
-bool IsCpuFlagSupported(const char* cpuFlag, void* log);
+bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, void* log);
 long GetTotalMemory(void* log);
 long GetFreeMemory(void* log);
 char* GetProductName(void* log);

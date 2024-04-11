@@ -655,9 +655,9 @@ static char* AuditEnsurePermissionsOnEtcMotd(void)
 
 static char* AuditEnsureKernelSupportForCpuNx(void)
 {
-    return IsCpuFlagSupported("nx", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("%sThe device's processor has support for the NX bit technology", g_pass) : 
-        DuplicateString("The device's processor does not have support for the NX bit technology");
+    char* reason = NULL;
+    CheckCpuFlagSupported("nx", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNodevOptionOnHomePartition(void)
