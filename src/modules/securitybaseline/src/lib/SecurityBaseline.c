@@ -1033,7 +1033,7 @@ static char* AuditEnsurePrelinkIsDisabled(void)
 static char* AuditEnsureTalkClientIsNotInstalled(void)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_talk, SecurityBaselineGetLog());
+    CheckPackageNotInstalled(g_talk, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
@@ -1246,7 +1246,7 @@ static char* AuditEnsureTipcIsDisabled(void)
 
 static char* AuditEnsureZeroconfNetworkingIsDisabled(void)
 {
-    const char* reason = NULL;
+    char* reason = NULL;
     CheckLineFoundNotCommentedOut("/etc/network/interfaces", '#', "ipv4ll", &reason, SecurityBaselineGetLog());
     return reason;
 }
@@ -1656,7 +1656,7 @@ static char* AuditEnsureAppropriateCiphersForSsh(void)
 
 static char* AuditEnsureAvahiDaemonServiceIsDisabled(void)
 {
-    const char* reason = NULL;
+    char* reason = NULL;
     CheckDaemonNotActive(g_avahiDaemon, &reason, SecurityBaselineGetLog());
     return reason;
 }
@@ -1717,7 +1717,7 @@ static char* AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 
 static char* AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 {
-    const char* reason = NULL;
+    char* reason = NULL;
     CheckLineFoundNotCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", &reason, SecurityBaselineGetLog());
     return reason;
 }
