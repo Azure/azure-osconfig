@@ -630,7 +630,7 @@ char* GetLoginUmask(char** reason, void* log)
     }
     else
     {
-        OsConfigCaptureReason(reason, "Command '%s' failed and cannot check the current login UMASK", command);
+        OsConfigCaptureReason(reason, "'%s' failed, cannot check the current login UMASK", command);
         FREE_MEMORY(result);
     }
 

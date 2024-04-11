@@ -603,14 +603,14 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
             if (false == foundMarker)
             {
                 OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' not found in '%s'", text, marker, fileName);
-                OsConfigCaptureReason(reason, "Text '%s' containing '%s' not found in file '%s'", text, marker, fileName);
+                OsConfigCaptureReason(reason, "'%s' containing '%s' not found in '%s'", text, marker, fileName);
                 status = ENOENT; 
             }
         }
         else
         {
             OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' not found in '%s' (%d)", text, fileName, status);
-            OsConfigCaptureReason(reason, "Text '%s' not found in file '%s' (%d)", text, fileName, status);
+            OsConfigCaptureReason(reason, "'%s' not found in '%s' (%d)", text, fileName, status);
         }
 
         FREE_MEMORY(results);
@@ -658,7 +658,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
                 else
                 {
                     OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found set for '%s' ('%s')", text, variableName, variableValue);
-                    OsConfigCaptureReason(reason, "Text '%s' not found set for variable '%s' to value '%s'", text, variableName, variableValue);
+                    OsConfigCaptureReason(reason, "'%s' not found set for '%s' to '%s'", text, variableName, variableValue);
                     status = ENOENT;
                 }
             }
@@ -682,7 +682,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
                 if (false == foundText)
                 {
                     OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
-                    OsConfigCaptureReason(reason, "Text '%s' not found in variable '%s'", text, variableName);
+                    OsConfigCaptureReason(reason, "'%s' not found in '%s'", text, variableName);
                     status = ENOENT;
                 }
             }
@@ -875,7 +875,7 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
         {
             status = ENOENT;
             OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' not found in '%s' output", text, command);
-            OsConfigCaptureReason(reason, "Text '%s' not found in command '%s' output", text, command);
+            OsConfigCaptureReason(reason, "'%s' not found in '%s' output", text, command);
         }
 
         FREE_MEMORY(results);
@@ -883,7 +883,7 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
     else
     {
         OsConfigLogInfo(log, "FindTextInCommandOutput: command '%s' failed with %d", command, status);
-        OsConfigCaptureReason(reason, "Command '%s' failed with %d", command, status);
+        OsConfigCaptureReason(reason, "'%s' failed with %d", command, status);
     }
 
     return status;
