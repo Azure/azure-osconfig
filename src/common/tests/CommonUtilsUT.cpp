@@ -1724,34 +1724,34 @@ TEST_F(CommonUtilsTest, IsCurrentOs)
 
 }
 
-TEST_F(CommonUtilsTest, ConcatenateString)
+TEST_F(CommonUtilsTest, ConcatenateStrings)
 {
     char* testString = nullptr;
 
-    EXPECT_EQ(nullptr, testString = ConcatenateString(nullptr, "Test"));
+    EXPECT_EQ(nullptr, testString = ConcatenateStrings(nullptr, "Test"));
     FREE_MEMORY(testString);
 
-    EXPECT_EQ(nullptr, testString = ConcatenateString("Test", nullptr));
+    EXPECT_EQ(nullptr, testString = ConcatenateStrings("Test", nullptr));
     FREE_MEMORY(testString);
     
-    EXPECT_EQ(nullptr, testString = ConcatenateString(nullptr, nullptr));
+    EXPECT_EQ(nullptr, testString = ConcatenateStrings(nullptr, nullptr));
     FREE_MEMORY(testString);
 
-    EXPECT_STREQ("", testString = ConcatenateString("", ""));
+    EXPECT_STREQ("", testString = ConcatenateStrings("", ""));
     FREE_MEMORY(testString);
 
-    EXPECT_STREQ("Test", testString = ConcatenateString("", "Test"));
+    EXPECT_STREQ("Test", testString = ConcatenateStrings("", "Test"));
     FREE_MEMORY(testString);
 
-    EXPECT_STREQ("Test", testString = ConcatenateString("Test", ""));
+    EXPECT_STREQ("Test", testString = ConcatenateStrings("Test", ""));
     FREE_MEMORY(testString);
 
-    EXPECT_STREQ("Test123", testString = ConcatenateString("Test", "123"));
+    EXPECT_STREQ("Test123", testString = ConcatenateStrings("Test", "123"));
     FREE_MEMORY(testString);
 
-    EXPECT_STREQ("123Test", testString = ConcatenateString("123", "Test"));
+    EXPECT_STREQ("123Test", testString = ConcatenateStrings("123", "Test"));
     FREE_MEMORY(testString);
 
-    EXPECT_STREQ("%s%s%s", testString = ConcatenateString("%s%s", "%s"));
+    EXPECT_STREQ("%s%s%s", testString = ConcatenateStrings("%s%s", "%s"));
     FREE_MEMORY(testString);
 }

@@ -47,7 +47,7 @@
     char* temp = FormatAllocateString("%s, also ", *reason);\
     FREE_MEMORY(*reason); \
     last = FormatAllocateString(format, ##__VA_ARGS__);\
-    *reason = ConcatenateString(temp, last); \
+    *reason = ConcatenateStrings(temp, last); \
     FREE_MEMORY(temp);\
     FREE_MEMORY(last);\
 }\
@@ -71,7 +71,7 @@
         } else {\
             FREE_MEMORY(*reason);\
             temp = FormatAllocateString(format, ##__VA_ARGS__);\
-            *reason = ConcatenateString(SECURITY_AUDIT_PASS, temp);\
+            *reason = ConcatenateStrings(SECURITY_AUDIT_PASS, temp);\
             FREE_MEMORY(temp);\
         }\
     }\
@@ -152,7 +152,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 
 char* DuplicateString(const char* source);
-char* ConcatenateString(const char* first, const char* second);
+char* ConcatenateStrings(const char* first, const char* second);
 char* DuplicateStringToLowercase(const char* source);
 char* FormatAllocateString(const char* format, ...);
 

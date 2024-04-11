@@ -83,7 +83,7 @@ char* FormatAllocateString(const char* format, ...)
     return stringToReturn;
 }
 
-char* ConcatenateString(const char* first, const char* second)
+char* ConcatenateStrings(const char* first, const char* second)
 {
     char* result = NULL;
     size_t resultSize = 0;
