@@ -1281,7 +1281,7 @@ static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 static char* AuditEnsureCoreDumpsAreRestricted(void)
 {
     const char* fsSuidDumpable = "fs.suid_dumpable = 0";
-    char* reason = NULL;
+    //char* reason = NULL;
 
     return (((0 == CheckLineFoundNotCommentedOut("/etc/security/limits.conf", '#', "hard core 0", NULL/*&reason*/, SecurityBaselineGetLog())) || //TODO //HERE complete this check
         (0 == FindTextInFolder("/etc/security/limits.d", fsSuidDumpable, SecurityBaselineGetLog()))) &&
@@ -1702,7 +1702,7 @@ static char* AuditEnsureRpcidmapdServiceIsDisabled(void)
 static char* AuditEnsurePortmapServiceIsDisabled(void)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_rpcbind, &reason, SecurityBaselineGetLog())) &&
+    CheckDaemonNotActive(g_rpcbind, &reason, SecurityBaselineGetLog());
     CheckDaemonNotActive(g_rpcbindService, &reason, SecurityBaselineGetLog());
     CheckDaemonNotActive(g_rpcbindSocket, &reason, SecurityBaselineGetLog());
     return reason;
