@@ -2884,7 +2884,7 @@ static int RemediateEnsureAvahiDaemonServiceIsDisabled(char* value)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_avahiDaemon, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureAvahiDaemonServiceIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureAvahiDaemonServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureCupsServiceisDisabled(char* value)
@@ -2911,7 +2911,7 @@ static int RemediateEnsureRpcgssdServiceIsDisabled(char* value)
     UNUSED(value);
     StopAndDisableDaemon(g_rpcgssd, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_rpcGssd, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureRpcgssdServiceIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureRpcgssdServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value)
@@ -2919,7 +2919,7 @@ static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value)
     UNUSED(value);
     StopAndDisableDaemon(g_rpcidmapd, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_nfsIdmapd, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureRpcidmapdServiceIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureRpcidmapdServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePortmapServiceIsDisabled(char* value)
@@ -2928,14 +2928,14 @@ static int RemediateEnsurePortmapServiceIsDisabled(char* value)
     StopAndDisableDaemon(g_rpcbind, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_rpcbindService, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_rpcbindSocket, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsurePortmapServiceIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsurePortmapServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_nfsServer, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureNetworkFileSystemServiceIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureNetworkFileSystemServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value)
@@ -2948,21 +2948,21 @@ static int RemediateEnsureSnmpServerIsDisabled(char* value)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_snmpd, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureSnmpServerIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureSnmpServerIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRsynServiceIsDisabled(char* value)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_rsync, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureRsynServiceIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureRsynServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNisServerIsDisabled(char* value)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_ypserv, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureNisServerIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureNisServerIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRshClientNotInstalled(char* value)
