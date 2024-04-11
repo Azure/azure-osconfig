@@ -109,8 +109,9 @@ An example of a completed check, `auditEnsureAuditdServiceIsRunning` and `remedi
 ```C
 static char* AuditEnsureAuditdServiceIsRunning(void)
 {
-    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Service '%s' is not running", g_auditd);
+    char* reason = NULL;
+    CheckIfDaemonActive(g_auditd, &reason SecurityBaselineGetLog());
+    return reason;
 }
 ```
 

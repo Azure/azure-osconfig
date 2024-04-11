@@ -755,100 +755,119 @@ static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
 
 static char* AuditEnsureInetdNotInstalled(void)
 {
-    return (CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
-        CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' is installed or package '%s' is installed", g_inetd, g_inetUtilsInetd);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_inetd, &reason, SecurityBaselineGetLog());
+    CheckPackageNotInstalled(g_inetUtilsInetd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureXinetdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_xinetd, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_xinetd);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_xinetd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllTelnetdPackagesUninstalled(void)
 {
-    return CheckPackageInstalled("*telnetd*", SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : DuplicateString("A 'telnetd' package is installed");
+    char* reason = NULL;
+    CheckPackageNotInstalled("*telnetd*", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRshServerNotInstalled(void)
 {
-    return CheckPackageInstalled(g_rshServer, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_rshServer);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_rshServer, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNisNotInstalled(void)
 {
-    return CheckPackageInstalled(g_nis, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_nis);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_nis, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureTftpdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_tftpd, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_tftpd);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_tftpd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureReadaheadFedoraNotInstalled(void)
 {
-    return CheckPackageInstalled(g_readAheadFedora, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_readAheadFedora);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_readAheadFedora, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureBluetoothHiddNotInstalled(void)
 {
-    return ((0 != CheckPackageInstalled(g_bluetooth, SecurityBaselineGetLog())) && (false == IsDaemonActive(g_bluetooth, SecurityBaselineGetLog()))) ?
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed or service '%s' is active", g_bluetooth, g_bluetooth);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_bluetooth, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_bluetooth, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureIsdnUtilsBaseNotInstalled(void)
 {
-    return CheckPackageInstalled(g_isdnUtilsBase, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_isdnUtilsBase);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_isdnUtilsBase, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureIsdnUtilsKdumpToolsNotInstalled(void)
 {
-    return CheckPackageInstalled(g_kdumpTools, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_kdumpTools);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_kdumpTools, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureIscDhcpdServerNotInstalled(void)
 {
-    return CheckPackageInstalled(g_iscDhcpServer, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_iscDhcpServer);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_iscDhcpServer, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSendmailNotInstalled(void)
 {
-    return CheckPackageInstalled(g_sendmail, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_sendmail);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_sendmail, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSldapdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_slapd, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_slapd);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_slapd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureBind9NotInstalled(void)
 {
-    return CheckPackageInstalled(g_bind9, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_bind9);
+    char* reason = NULL;
+    CheckPackageInstalled(g_bind9, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDovecotCoreNotInstalled(void)
 {
-    return CheckPackageInstalled(g_dovecotCore, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_dovecotCore);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_dovecotCore, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAuditdInstalled(void)
 {
-    return CheckPackageInstalled(g_auditd, SecurityBaselineGetLog()) ? 
-        FormatAllocateString("Package '%s' is not installed", g_auditd) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckPackageInstalled(g_auditd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
+
+//HERE
 
 static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
 {
@@ -1006,14 +1025,16 @@ static char* AuditEnsureAuthenticationRequiredForSingleUserMode(void)
 
 static char* AuditEnsurePrelinkIsDisabled(void)
 {
-    return CheckPackageInstalled(g_prelink, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_prelink);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_prelink, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureTalkClientIsNotInstalled(void)
 {
-    return CheckPackageInstalled(g_talk, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_talk);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_talk, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDotDoesNotAppearInRootsPath(void)
@@ -1031,9 +1052,10 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void)
 
 static char* AuditEnsureCronServiceIsEnabled(void)
 {
-    return (0 == CheckPackageInstalled(g_cron, SecurityBaselineGetLog()) &&
-        CheckIfDaemonActive(g_cron, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' is not installed or service '%s' is not running", g_cron, g_cron);
+    char* reason = NULL;
+    CheckPackageInstalled(g_cron, &reason, SecurityBaselineGetLog());
+    CheckIfDaemonActive(g_cron, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
@@ -1056,8 +1078,9 @@ static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void)
 
 static char* AuditEnsureAuditdServiceIsRunning(void)
 {
-    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Service '%s' is not running", g_auditd);
+    char* reason = NULL;
+    CheckIfDaemonActive(g_auditd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSuRestrictedToRootGroup(void)
@@ -1075,9 +1098,10 @@ static char* AuditEnsureDefaultUmaskForAllUsers(void)
 static char* AuditEnsureAutomountingDisabled(void)
 {
     const char* autofs = "autofs";
-    return (CheckPackageInstalled(autofs, SecurityBaselineGetLog()) 
-        && (false == CheckIfDaemonActive(autofs, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' is not installed or service '%s' is not running", autofs, autofs);
+    char* reason = NULL;
+    CheckPackageInstalled(autofs, &reason, SecurityBaselineGetLog());
+    CheckIfDaemonNotActive(autofs, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureKernelCompiledFromApprovedSources(void)
@@ -1120,28 +1144,32 @@ static char* AuditEnsureIcmpRedirectsIsDisabled(void)
 
 static char* AuditEnsureSourceRoutedPacketsIsDisabled(void)
 {
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("'0' is not found in '/proc/sys/net/ipv4/conf/all/accept_source_route' or in '/proc/sys/net/ipv6/conf/all/accept_source_route'");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
 {
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("'0' is not found in '/proc/sys/net/ipv4/conf/all/accept_source_route' or in '/proc/sys/net/ipv6/conf/default/accept_source_route'");
+    char* reason = 0;
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureIgnoringBogusIcmpBroadcastResponses(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", SecurityBaselineGetLog())) ? 
-        DuplicateString(g_pass) : DuplicateString("'1' is not found in '/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses'");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        DuplicateString("'1' is not found in '/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts'");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureMartianPacketLoggingIsEnabled(void)
@@ -1155,15 +1183,17 @@ static char* AuditEnsureMartianPacketLoggingIsEnabled(void)
 
 static char* AuditEnsureReversePathSourceValidationIsEnabled(void)
 {
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", SecurityBaselineGetLog())) && 
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("'1' not found in '/proc/sys/net/ipv4/conf/all/rp_filter' or in '/proc/sys/net/ipv4/conf/default/rp_filter'");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureTcpSynCookiesAreEnabled(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        DuplicateString("'1' not found in '/proc/sys/net/ipv4/tcp_syncookies'");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
@@ -1171,9 +1201,10 @@ static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
     const char* command = "/sbin/ip addr list";
     const char* text = "PROMISC";
 
+    //TODO //HERE: add CheckTextInCommandOutput and CheckTextNotInCommandOutput and complete this check
     return (FindTextInCommandOutput(command, text, NULL, SecurityBaselineGetLog()) &&
-        (0 == CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, SecurityBaselineGetLog())) &&
-        (0 == CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        (0 == CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, NULL, SecurityBaselineGetLog())) &&
+        (0 == CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, NULL, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
         FormatAllocateString("'%s' is not found in command '%s' output or found in '/etc/network/interfaces' or in '/etc/rc.local'", text, command);
 }
 
@@ -1215,8 +1246,9 @@ static char* AuditEnsureTipcIsDisabled(void)
 
 static char* AuditEnsureZeroconfNetworkingIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", SecurityBaselineGetLog()) ? 
-        DuplicateString("'ipv4ll' is found in '/etc/network/interfaces'") : DuplicateString(g_pass);
+    const char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/etc/network/interfaces", '#', "ipv4ll", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePermissionsOnBootloaderConfig(void)
@@ -1249,8 +1281,9 @@ static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 static char* AuditEnsureCoreDumpsAreRestricted(void)
 {
     const char* fsSuidDumpable = "fs.suid_dumpable = 0";
+    char* reason = NULL;
 
-    return (((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) ||
+    return (((0 == CheckLineFoundNotCommentedOut("/etc/security/limits.conf", '#', "hard core 0", NULL/*&reason*/, SecurityBaselineGetLog())) || //TODO //HERE complete this check
         (0 == FindTextInFolder("/etc/security/limits.d", fsSuidDumpable, SecurityBaselineGetLog()))) &&
         (0 == FindTextInCommandOutput("sysctl -a", fsSuidDumpable, NULL, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
         DuplicateString("Line 'hard core 0' is not found in '/etc/security/limits.conf', or 'fs.suid_dumpable = 0' is not found in '/etc/security/limits.d' or in output from 'sysctl -a'");
@@ -1344,10 +1377,11 @@ static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
 {
     const char* password = "password";
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.cfg", '#', password, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.conf", '#', password, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub2/grub.conf", '#', password, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("Line 'password' is not found in '/boot/grub/grub.cfg', in '/boot/grub/grub.conf' and in '/boot/grub2/grub.conf'");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/boot/grub/grub.cfg", '#', password, &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut("/boot/grub/grub.conf", '#', password, &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut("/boot/grub2/grub.conf", '#', password, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureLoggingIsConfigured(void)
@@ -1358,29 +1392,43 @@ static char* AuditEnsureLoggingIsConfigured(void)
 
 static char* AuditEnsureSyslogPackageIsInstalled(void)
 {
-    return ((0 == CheckPackageInstalled(g_syslog, SecurityBaselineGetLog())) ||
-        (0 == CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog())) ||
-        (0 == CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Packages '%s', '%s' and '%s' are not installed", g_syslog, g_rsyslog, g_syslogNg);
+    char* reason = NULL;
+    CheckPackageInstalled(g_syslog, &reason, SecurityBaselineGetLog());
+    CheckPackageInstalled(g_rsyslog, &reason, SecurityBaselineGetLog());
+    CheckPackageInstalled(g_syslogNg, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
 {
     char* reason = NULL;
-    char* status = ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && 
-        (0 == CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, &reason, SecurityBaselineGetLog()))) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is not installed, or: %s", g_systemd, reason);
-    FREE_MEMORY(reason);
-    return status;
+    CheckPackageInstalled(g_systemd, &reason, SecurityBaselineGetLog());
+    CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureALoggingServiceIsEnabled(void)
 {
-    return ((CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()) && CheckIfDaemonActive(g_rsyslog, SecurityBaselineGetLog())) ||
-        (CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()) && CheckIfDaemonActive(g_syslogNg, SecurityBaselineGetLog())) ||
-        ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && CheckIfDaemonActive(g_systemdJournald, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'%s' or '%s' is not installed or '%s' is not running, and: '%s' or '%s' are not installed or '%s' is not running, and: '%s' is not installed or '%s' is not running",
-            g_syslogNg, g_systemd, g_rsyslog, g_rsyslog, g_systemd, g_syslogNg, g_systemd, g_systemdJournald);
+    char* reason = NULL;
+    if ((0 == CheckPackageNotInstalled(g_syslogNg, &reason, SecurityBaselineGetLog())) && 
+        (0 == CheckPackageNotInstalled(g_systemd, &reason, SecurityBaselineGetLog())) && 
+        CheckIfDaemonActive(g_rsyslog, &reason, SecurityBaselineGetLog()))
+    {
+        return reason;
+    }
+
+    FREE_MEMORY(reason);
+    if ((0 == CheckPackageNotInstalled(g_rsyslog, &reason, SecurityBaselineGetLog())) && 
+        (0 == CheckPackageNotInstalled(g_systemd, &reason, SecurityBaselineGetLog())) && 
+        CheckIfDaemonActive(g_syslogNg, &reason, SecurityBaselineGetLog())) 
+    {
+        return reason;
+    }
+
+    FREE_MEMORY(reason);
+    CheckPackageInstalled(g_systemd, &reason, SecurityBaselineGetLog());
+    CheckIfDaemonActive(g_systemdJournald, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
@@ -1405,7 +1453,7 @@ static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 {
     return ((0 == FindTextInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog())) &&
-        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", SecurityBaselineGetLog()))) ? 
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", NULL, SecurityBaselineGetLog()))) ?   //TODO: add reason here
         FormatAllocateString("%s'FileGroup adm' is found in '%s' and not found in '%s'", g_pass, g_etcRsyslogConf, g_etcRsyslogConf) :
         FormatAllocateString("'FileGroup adm' is not found in '%s' or is found in '%s'", g_etcRsyslogConf, g_etcRsyslogConf);
 }
@@ -1413,50 +1461,45 @@ static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
 {
     return ((0 == FindTextInFile(g_etcRsyslogConf, "FileOwner syslog", SecurityBaselineGetLog())) &&
-        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) :
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", NULL, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : //TODO: add reason here
         FormatAllocateString("'FileOwner syslog' is not found in %s, or 'FileOwner syslog' is found in %s", g_etcRsyslogConf, g_etcRsyslogConf);
 }
 
 static char* AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 {
-    return ((0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imudp", SecurityBaselineGetLog())) &&
-        (0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imtcp", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'ModLoad imudp' is not found in %s, or 'ModLoad imtcp' is not found in %s", g_etcRsyslogConf, g_etcRsyslogConf);
+    char* reason = NULL;
+    CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imudp", &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imtcp", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSyslogRotaterServiceIsEnabled(void)
 {
-    const char* version = "18.04"; 
-    char* osName = NULL;
-    char* osVersion = NULL;
     char* reason = NULL;
-    char* status = ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog())) &&
-        ((((NULL != (osName = GetOsName(SecurityBaselineGetLog()))) && (0 == strcmp(osName, "Ubuntu")) && FreeAndReturnTrue(osName)) &&
-        ((NULL != (osVersion = GetOsVersion(SecurityBaselineGetLog()))) && (0 == strncmp(osVersion, version, strlen(version))) && FreeAndReturnTrue(osVersion))) ||
-        CheckIfDaemonActive("logrotate.timer", SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, &reason, SecurityBaselineGetLog()))) ? 
-        FormatAllocateString("%sThe 'logrotate' package is installed and the 'logrotate.timer' service is running", g_pass, reason) :
-        FormatAllocateString("The 'logrotate' package is not installed, or the 'logrotate.timer' service is not running, or: %s", reason);
-    FREE_MEMORY(reason);
-    return status;
+    CheckPackageInstalled("logrotate", &reason, SecurityBaselineGetLog());
+    CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureTelnetServiceIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'telnet' is not found in %s", g_etcInetdConf) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut(g_etcInetdConf, '#', "telnet", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRcprshServiceIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "shell", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'shell' is not found in %s", g_etcInetdConf) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut(g_etcInetdConf, '#', "shell", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureTftpServiceisDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "tftp", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'tftp' is not found in %s", g_etcInetdConf) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut(g_etcInetdConf, '#', "tftp", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
@@ -1613,21 +1656,24 @@ static char* AuditEnsureAppropriateCiphersForSsh(void)
 
 static char* AuditEnsureAvahiDaemonServiceIsDisabled(void)
 {
-    return (false == CheckIfDaemonActive(g_avahiDaemon, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Sevice '%s' is not running", g_avahiDaemon);
+    const char* reason = NULL;
+    CheckIfDaemonNotActive(g_avahiDaemon, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureCupsServiceisDisabled(void)
 {
-    return (CheckPackageInstalled(g_cups, SecurityBaselineGetLog()) &&
-        (false == CheckIfDaemonActive(g_cups, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' is not installed or service '%s' is not running", g_cups, g_cups);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_cups, &reason, SecurityBaselineGetLog());
+    CheckIfDaemonNotActive(g_cups, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePostfixPackageIsUninstalled(void)
 {
-    return CheckPackageInstalled(g_postfix, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' is not installed", g_postfix);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_postfix, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePostfixNetworkListeningIsDisabled(void)
@@ -1639,73 +1685,84 @@ static char* AuditEnsurePostfixNetworkListeningIsDisabled(void)
 
 static char* AuditEnsureRpcgssdServiceIsDisabled(void)
 {
-    return ((false == CheckIfDaemonActive(g_rpcgssd, SecurityBaselineGetLog())) && 
-        (false == CheckIfDaemonActive(g_rpcGssd, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Service '%s' is not running or service '%s' is not running", g_rpcgssd, g_rpcGssd);
+    char* reason = NULL;
+    CheckIfDaemonNotActive(g_rpcgssd, &reason, SecurityBaselineGetLog());
+    CheckIfDaemonNotActive(g_rpcGssd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRpcidmapdServiceIsDisabled(void)
 {
-    return ((false == CheckIfDaemonActive(g_rpcidmapd, SecurityBaselineGetLog())) &&
-        (false == CheckIfDaemonActive(g_nfsIdmapd, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Service '%s' is not running or service '%s' is not running", g_rpcidmapd, g_nfsIdmapd);
+    char* reason = NULL;
+    CheckIfDaemonNotActive(g_rpcidmapd, &reason, SecurityBaselineGetLog());
+    CheckIfDaemonNotActive(g_nfsIdmapd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePortmapServiceIsDisabled(void)
 {
-    return ((false == CheckIfDaemonActive(g_rpcbind, SecurityBaselineGetLog())) &&
-        (false == CheckIfDaemonActive(g_rpcbindService, SecurityBaselineGetLog())) &&
-        (false == CheckIfDaemonActive(g_rpcbindSocket, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Service '%s', '%s' or '%s' is not running", g_rpcbind, g_rpcbindService, g_rpcbindSocket);
+    char* reason = NULL;
+    CheckIfDaemonNotActive(g_rpcbind, &reason, SecurityBaselineGetLog())) &&
+    CheckIfDaemonNotActive(g_rpcbindService, &reason, SecurityBaselineGetLog());
+    CheckIfDaemonNotActive(g_rpcbindSocket, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_nfsServer, SecurityBaselineGetLog()) ? 
-        FormatAllocateString("Service '%s' is not running", g_nfsServer) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckIfDaemonNotActive(g_nfsServer, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", SecurityBaselineGetLog()) ?
-        FormatAllocateString("'NEED_SVCGSSD = yes' is not found in %s", g_etcInetdConf) : DuplicateString(g_pass);
+    const char* reason = NULL;
+    CheckLineFoundNotCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSnmpServerIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_snmpd, SecurityBaselineGetLog()) ? 
-        FormatAllocateString("Service '%s' is not running", g_snmpd) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckIfDaemonNotActive(g_snmpd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRsynServiceIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_rsync, SecurityBaselineGetLog()) ? 
-        FormatAllocateString("Service '%s' is not running", g_rsync) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckIfDaemonNotActive(g_rsync, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNisServerIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_ypserv, SecurityBaselineGetLog()) ? 
-        FormatAllocateString("Service '%s' is not running", g_ypserv) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckIfDaemonNotActive(g_ypserv, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRshClientNotInstalled(void)
 {
-    return ((0 != CheckPackageInstalled(g_rsh, SecurityBaselineGetLog())) && 
-        (0 != CheckPackageInstalled(g_rshClient, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' or package '%s' is installed", g_rsh, g_rshClient);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_rsh, &reason, SecurityBaselineGetLog());
+    CheckPackageNotInstalled(g_rshClient, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSmbWithSambaIsDisabled(void)
 {
     const char* etcSambaConf = "/etc/samba/smb.conf";
     const char* minProtocol = "min protocol = SMB2";
-
-    return (CheckPackageInstalled("samba", SecurityBaselineGetLog()) || 
-        ((EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, '#', minProtocol, SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, ';', minProtocol, SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package 'samba' is not installed or '%s' is not found in %s", minProtocol, etcSambaConf);
+    char* reason = NULL;
+    CheckPackageInstalled("samba", &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut(etcSambaConf, '#', minProtocol, &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut(etcSambaConf, ';', minProtocol, &reason, SecurityBaselineGetLog());
+    return reason;
 }
+
+//HERE
 
 static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 {
@@ -1735,8 +1792,8 @@ static char* AuditEnsureNoUsersHaveDotRhostsFiles(void)
 
 static char* AuditEnsureRloginServiceIsDisabled(void)
 {
-    return (CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
-        CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog()) &&
+    return (CheckPackageInstalled(g_inetd, NULL, SecurityBaselineGetLog()) && //TODO: add reason
+        CheckPackageInstalled(g_inetUtilsInetd, NULL, SecurityBaselineGetLog()) &&
         FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
         FormatAllocateString("Package '%s' or '%s' is not installed, or 'login' is not found in %s", g_inetd, g_inetUtilsInetd, g_etcInetdConf);
 }

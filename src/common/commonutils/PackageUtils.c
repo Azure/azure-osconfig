@@ -61,7 +61,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     return status;
 }
 
-int CheckPackageInstalled(const char* packageName, void* log)
+int IsPackageInstalled(const char* packageName, void* log)
 {
     const char* commandTemplateDpkg = "%s -l %s | grep ^ii";
     const char* commandTemplateAllElse = "%s list installed %s";
@@ -91,14 +91,48 @@ int CheckPackageInstalled(const char* packageName, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is installed", packageName);
+        OsConfigLogInfo(log, "IsPackageInstalled: '%s' is installed", packageName);
     }
     else
     {
-        OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is not found", packageName);
+        OsConfigLogInfo(log, "IsPackageInstalled: '%s' is not found", packageName);
     }
 
     return status;
+}
+
+int CheckPackageInstalled(const char* packageName, char** reason, void* log)
+{
+    int result = 0; 
+    
+    if (0 == (result = IsPackageInstalled(packageName, log)))
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' is installed", packageName);
+    }
+    else
+    {
+        OsConfigCaptureReason(reason, "'%s' is not installed", packageName);
+    }
+
+    return result;
+}
+
+int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
+{
+    int result = 0;
+
+    if (0 == (result = IsPackageInstalled(packageName, log)))
+    {
+        OsConfigCaptureReason(reason, "'%s' is installed", packageName);
+        result = ENOENT;
+    }
+    else
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' is not installed", packageName);
+        result = 0;
+    }
+
+    return result;
 }
 
 int InstallPackage(const char* packageName, void* log)
@@ -106,7 +140,7 @@ int InstallPackage(const char* packageName, void* log)
     const char* commandTemplate = "%s install -y %s";
     int status = ENOENT;
 
-    if (0 != (status = CheckPackageInstalled(packageName, log)))
+    if (0 != (status = IsPackageInstalled(packageName, log)))
     {
         if (0 == (status = IsPresent(g_aptGet, log)))
         {
@@ -131,7 +165,7 @@ int InstallPackage(const char* packageName, void* log)
 
         if (0 == status) 
         {
-            status = CheckPackageInstalled(packageName, log);
+            status = IsPackageInstalled(packageName, log);
         }
 
         if (0 == status)
@@ -158,7 +192,7 @@ int UninstallPackage(const char* packageName, void* log)
     const char* commandTemplateAllElse = "% remove -y %s";
     int status = ENOENT;
 
-    if (0 == (status = CheckPackageInstalled(packageName, log)))
+    if (0 == (status = IsPackageInstalled(packageName, log)))
     {
         if (0 == (status = IsPresent(g_aptGet, log)))
         {
@@ -181,7 +215,7 @@ int UninstallPackage(const char* packageName, void* log)
             status = CheckOrInstallPackage(commandTemplateAllElse, g_zypper, packageName, log);
         }
 
-        if ((0 == status) && (0 == CheckPackageInstalled(packageName, log)))
+        if ((0 == status) && (0 == IsPackageInstalled(packageName, log)))
         {
             status = ENOENT;
         }

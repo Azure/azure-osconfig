@@ -1455,36 +1455,53 @@ TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
 
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
 
-    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(m_path, '#', nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', "test", nullptr));
-    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(m_path, '#', nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', "test", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', nullptr, nullptr, nullptr));
 
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut("/foo/does_not_exist", '#', "Test", nullptr));
+    EXPECT_EQ(EINVAL, CheckLineFoundNotCommentedOut(m_path, '#', nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineFoundNotCommentedOut(nullptr, '#', "test", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineFoundNotCommentedOut(nullptr, '#', nullptr, nullptr, nullptr));
 
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "does-not__exist123", nullptr));
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "9876543210", nullptr));
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 not really commented", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut("/foo/does_not_exist", '#', "Test", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckLineFoundNotCommentedOut("/foo/does_not_exist", '#', "Test", nullptr, nullptr));
 
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 commented", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 uncommented", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "does-not__exist123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "9876543210", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 not really commented", nullptr, nullptr));
+
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "Test 123 commented", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "Foo", nullptr, nullptr));
+
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Test 123", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 uncommented", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Test 123 uncommented", nullptr, nullptr));
     
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test 345 Test # 345 Test", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test 345 Test # 345 Test", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345", nullptr, nullptr));
+
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "345 Test 345 Test # 345 Test", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "345 Test", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "345", nullptr, nullptr));
+
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "ABC!DEF # Test 678 1234567890", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "ABC!DEF # Test 678 1234567890", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 678 1234567890", nullptr, nullptr));
     
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "ABC!DEF # Test 678 1234567890", nullptr));
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 678 1234567890", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example of a line", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', " of a ", nullptr, nullptr));
     
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Foo", nullptr));
-    
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example of a line", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', " of a ", nullptr));
-    
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '@', "Blah 3", nullptr));
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '!', "Blah 3", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Blah 3", nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Example of a line", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Example", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', " of a ", nullptr, nullptr));
+
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '@', "Blah 3", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '!', "Blah 3", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Blah 3", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Blah 3", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
@@ -1675,35 +1692,60 @@ TEST_F(CommonUtilsTest, RepairBrokenEolCharactersIfAny)
 
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 {
-    EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, IsPackageInstalled(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckPackageNotInstalled(nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, InstallPackage(nullptr, nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage(nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, CheckPackageInstalled("", nullptr));
+    EXPECT_EQ(EINVAL, IsPackageInstalled("", nullptr));
+    EXPECT_EQ(EINVAL, CheckPackageInstalled("", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckPackageNotInstalled("", nullptr, nullptr));
     EXPECT_EQ(EINVAL, InstallPackage("", nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage("", nullptr));
 
-    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, IsPackageInstalled("~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr, nullptr));
+    EXPECT_EQ(0, CheckPackageNotInstalled("~package_that_does_not_exist", nullptr, nullptr));
     EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
 
     // Nothing to uninstall
     EXPECT_EQ(0, UninstallPackage("~package_that_does_not_exist", nullptr));
 
-    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr));
-    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
-    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
+    EXPECT_NE(0, IsPackageInstalled("*~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, IsPackageInstalled("~package_that_does_not_exist*", nullptr));
+    EXPECT_NE(0, IsPackageInstalled("*~package_that_does_not_exist*", nullptr));
+
+    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr, nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr, nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr, nullptr));
+
+    EXPECT_EQ(0, CheckPackageNotInstalled("*~package_that_does_not_exist", nullptr, nullptr));
+    EXPECT_EQ(0, CheckPackageNotInstalled("~package_that_does_not_exist*", nullptr, nullptr));
+    EXPECT_EQ(0, CheckPackageNotInstalled("*~package_that_does_not_exist*", nullptr, nullptr));
 
     if (0 == InstallPackage("rolldice", nullptr))
     {
         EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
-        EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr));
+        EXPECT_NE(0, IsPackageInstalled("rolldice", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr, nullptr));
+        EXPECT_EQ(0, CheckPackageNotInstalled("rolldice", nullptr, nullptr));
+
         EXPECT_EQ(0, InstallPackage("rolldice", nullptr));
-        EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr));
+        EXPECT_EQ(0, IsPackageInstalled("rolldice", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr, nullptr));
+        EXPECT_NE(0, CheckPackageNotInstalled("rolldice", nullptr, nullptr));
+
         EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
     }
-    EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr));
+    
+    EXPECT_NE(0, IsPackageInstalled("rolldice", nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr, nullptr));
+    EXPECT_EQ(0, CheckPackageNotInstalled("rolldice", nullptr, nullptr));
 
-    EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr));
+    EXPECT_EQ(0, IsPackageInstalled("gcc", nullptr));
+    EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr, nullptr));
+    EXPECT_NE(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, IsCurrentOs)

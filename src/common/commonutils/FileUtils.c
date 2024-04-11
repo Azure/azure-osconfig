@@ -782,7 +782,7 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     return status;
 }
 
-int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log)
+static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log)
 {
     char* contents = NULL;
     char* found = NULL;
@@ -792,15 +792,16 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
     {
-        OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut called with invalid arguments");
+        OsConfigLogError(log, "IsLineNotFoundOrCommentedOut called with invalid arguments");
         return EINVAL;
     }
-    
+
     if (FileExists(fileName))
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
-            OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut: cannot read from '%s'", fileName);
+            OsConfigLogError(log, "IsLineNotFoundOrCommentedOut: cannot read from '%s'", fileName);
+            OsConfigCaptureReason(reason, "Cannot read from '%s'", fileName);
         }
         else
         {
@@ -827,13 +828,13 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 
                 if (0 == status)
                 {
-                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld but is commented out with '%c'", 
+                    OsConfigLogInfo(log, "IsLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld but is commented out with '%c'",
                         text, fileName, (long)(found - contents), commentMark);
                 }
                 else
                 {
                     foundUncommented = true;
-                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld and it's not commented out with '%c'", 
+                    OsConfigLogInfo(log, "IsLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld and it's not commented out with '%c'",
                         text, fileName, (long)(found - contents), commentMark);
                 }
 
@@ -847,11 +848,54 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
     }
     else
     {
-        OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: file '%s' not found, nothing to look for", fileName);
+        OsConfigLogInfo(log, "IsLineNotFoundOrCommentedOut: file '%s' not found, nothing to look for", fileName);
+        OsConfigCaptureSuccessReason(reason, "'%s' not found, nothing to look for", fileName);
         status = 0;
     }
 
     return status;
+}
+
+int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log)
+{
+    int result = 0;
+    
+    if (EEXIST == (result = IsLineNotFoundOrCommentedOut(fileName, commentMark, text, reason, log)))
+    {
+        OsConfigCaptureReason(reason, "'%s' found in '%s' and it's not commented out with '%c'", text, fileName, commentMark);
+    }
+    else if (0 == result)
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s' or it's commented out with '%c'", text, fileName, commentMark);
+    }
+
+    return result;
+}
+
+int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if (false == FileExists(fileName))
+    {
+        OsConfigCaptureReason(reason, "'%s' not found", fileName);
+        result = ENOENT;
+    }
+    else
+    {
+        if (EEXIST == (result = IsLineNotFoundOrCommentedOut(fileName, commentMark, text, reason, log)))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' found in '%s' and it's not commented out with '%c'", text, fileName, commentMark);
+            result = 0;
+        }
+        else if (0 == result)
+        {
+            OsConfigCaptureReason(reason, "'%s' not found in '%s' or it's commented out with '%c'", text, fileName, commentMark);
+            result = EEXIST;
+        }
+    }
+
+    return result;
 }
 
 int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log)

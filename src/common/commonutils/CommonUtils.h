@@ -132,7 +132,9 @@ int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, u
 
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, void* log);
 
-int CheckPackageInstalled(const char* packageName, void* log);
+int IsPackageInstalled(const char* packageName, void* log);
+int CheckPackageInstalled(const char* packageName, char** reason, void* log);
+int CheckPackageNotInstalled(const char* packageName, char** reason, void* log);
 int InstallPackage(const char* packageName, void* log);
 int UninstallPackage(const char* packageName, void* log);
 
@@ -144,7 +146,8 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
 int FindTextInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, char** reason, void* log);
 int CompareFileContents(const char* fileName, const char* text, void* log);
 int FindTextInFolder(const char* directory, const char* text, void* log);
-int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log);
+int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
+int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
 int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log);
 
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
@@ -209,7 +212,8 @@ int SleepMilliseconds(long milliseconds);
 bool FreeAndReturnTrue(void* value);
 
 bool IsDaemonActive(const char* daemonName, void* log);
-bool CheckIfDaemonActive(const char* daemonName, void* log);
+bool CheckIfDaemonActive(const char* daemonName, char** reason, void* log);
+bool CheckIfDaemonNotActive(const char* daemonName, char** reason, void* log);
 bool EnableAndStartDaemon(const char* daemonName, void* log);
 void StopAndDisableDaemon(const char* daemonName, void* log);
 bool RestartDaemon(const char* daemonName, void* log);
