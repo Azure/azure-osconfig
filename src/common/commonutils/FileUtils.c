@@ -128,17 +128,38 @@ bool DirectoryExists(const char* fileName)
     return result;
 }
 
-int CheckFileExists(const char* fileName, void* log)
+int CheckFileExists(const char* fileName, char** reason, void* log)
 {
     int status = 0;
 
     if (FileExists(fileName))
     {
         OsConfigLogInfo(log, "CheckFileExists: file '%s' exists", fileName);
+        OsConfigCaptureSuccessReason(reason, "File '%s' exists", fileName);
     }
     else
     {
         OsConfigLogInfo(log, "CheckFileExists: file '%s' not found", fileName);
+        OsConfigCaptureReason(reason, "File  '%s' not found", fileName);
+        status = EEXIST;
+    }
+
+    return status;
+}
+
+int CheckFileNotFound(const char* fileName, char** reason, void* log)
+{
+    int status = 0;
+
+    if (false == FileExists(fileName))
+    {
+        OsConfigLogInfo(log, "CheckFileNotFound: file '%s' not found", fileName);
+        OsConfigCaptureSuccessReason(reason, "File '%s' not found", fileName);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckFileNotFound: file '%s' exists", fileName);
+        OsConfigCaptureReason(reason, "File  '%s' exists", fileName);
         status = EEXIST;
     }
 
@@ -503,8 +524,6 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
 {
     int status = 0;
 
-    //"'+' lines found in '/etc/passwd'"
-
     if (FileExists(fileName) && CharacterFoundInFile(fileName, '+'))
     {
         OsConfigLogError(log, "CheckNoLegacyPlusEntriesInFile(%s): there are + lines in file '%s'", fileName, fileName);
@@ -756,14 +775,14 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
     return status;
 }
 
-int CompareFileContents(const char* fileName, const char* text, void* log)
+int CheckFileContents(const char* fileName, const char* text, char** reason, void* log)
 {
     char* contents = NULL;
     int status = 0;
 
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(fileName)) || (0 == strlen(text)))
     {
-        OsConfigLogError(log, "CompareFileContents called with invalid arguments");
+        OsConfigLogError(log, "CheckFileContents called with invalid arguments");
         return EINVAL;
     }
 
@@ -771,11 +790,13 @@ int CompareFileContents(const char* fileName, const char* text, void* log)
     {
         if (0 == strncmp(contents, text, strlen(text)))
         {
-            OsConfigLogInfo(log, "CompareFileContents: '%s' matches contents of '%s'", text, fileName);
+            OsConfigLogInfo(log, "CheckFileContents: '%s' matches contents of '%s'", text, fileName);
+            OsConfigCaptureSuccessReason(reason, "'%s' matches contents of '%s'", text, fileName);
         }
         else
         {
-            OsConfigLogInfo(log, "CompareFileContents: '%s' does not match contents of '%s' ('%s')", text, fileName, contents);
+            OsConfigLogInfo(log, "CheckFileContents: '%s' does not match contents of '%s' ('%s')", text, fileName, contents);
+            OsConfigCaptureReason(reason, "'%s' does not match contents of '%s' ('%s')", text, fileName, contents);
             status = ENOENT;
         }
     }
@@ -836,6 +857,40 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     }
 
     return status;
+}
+
+int CheckTextNotFoundInFolder(const char* directory, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if (ENOENT == (result = FindTextInFolder(directory, text, log)))
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' not found in any file under '%s'", text, directory);
+        result = 0;
+    }
+    else if (0 == result)
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' found in at least one file under '%s'", text, directory);
+        result = ENOENT;
+    }
+
+    return result;
+}
+
+int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if (0 == (result = FindTextInFolder(directory, text, log)))
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' found in at least one file under '%s'", text, directory);
+    }
+    else if (ENOENT == result)
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' not found in anty file under '%s'", text, directory);
+    }
+
+    return result;
 }
 
 static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log)
@@ -1144,7 +1199,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
     return result;
 }
 
-int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
+int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, void* log)
 {
     char* contents = NULL;
     char* buffer = NULL;
@@ -1199,7 +1254,18 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
         }
     }
 
-    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+        OsConfigCaptureSuccessReason(reason, "Valid lockout for failed password attempts line found in '%s'", fileName);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+        OsConfigCaptureReason(reason, "'%s' does not exist, or lockout for failed password attempts not set, "
+            "'auth', 'pam_faillock.so' or 'pam_tally2.so' and 'file=/var/log/tallylog' not found, or 'deny' or "
+            "'unlock_time' not found, or 'deny' not in between 1 and 5, or 'unlock_time' not set to greater than 0", fileName);
+    }
 
     return status;
 }

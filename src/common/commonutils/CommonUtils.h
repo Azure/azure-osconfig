@@ -122,7 +122,8 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* fileName);
 bool DirectoryExists(const char* directoryName);
-int CheckFileExists(const char* fileName, void* log);
+int CheckFileExists(const char* fileName, char** reason, void* log);
+int CheckFileNotFound(const char* fileName, char** reason, void* log);
 
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, void* log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
@@ -146,8 +147,10 @@ int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason
 int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, void* log);
 int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log);
 int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, char** reason, void* log);
-int CompareFileContents(const char* fileName, const char* text, void* log);
+int CheckFileContents(const char* fileName, const char* text, char** reason, void* log);
 int FindTextInFolder(const char* directory, const char* text, void* log);
+int CheckTextNotFoundInFolder(const char* directory, const char* text, char** reason, void* log);
+int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, void* log);
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
 int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
 int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);

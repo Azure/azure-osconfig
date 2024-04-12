@@ -2066,6 +2066,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckOrEnsureUsersDontHaveDotFiles: no users have '.%s' files", name);
+        OsConfigCaptureSuccessReason(reason, "No users have '.%s' files", name);
     }
 
     return status;
@@ -2155,6 +2156,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckUserDotFilesAccess: all users who can login have dot files (if any) with proper restricted access");
+        OsConfigCaptureSuccessReason(reason, "All users who can login have dot files (if any) with proper restricted access");
     }
 
     return status;
@@ -2255,7 +2257,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
     return status;
 }
 
-int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, char** reason, void* log)
+int CheckUserAccountsNotFound(const char** names, unsigned int numberOfNames, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     SIMPLIFIED_GROUP* groupList = NULL;
@@ -2264,7 +2266,7 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, cha
 
     if ((NULL == names) || (0 == numberOfNames))
     {
-        OsConfigLogError(log, "CheckIfUserAccountsExist: invalid arguments (%p, %u)", names, numberOfNames);
+        OsConfigLogError(log, "CheckUserAccountsNotFound: invalid arguments (%p, %u)", names, numberOfNames);
         return EINVAL;
     }
 
@@ -2281,12 +2283,12 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, cha
                     EnumerateUserGroups(&userList[i], &groupList, &groupListSize, log);
                     FreeGroupList(&groupList, groupListSize);
 
-                    OsConfigLogInfo(log, "CheckIfUserAccountsExist: user '%s' found with id %u, gid %u, home '%s' and present in %u group(s)", 
+                    OsConfigLogInfo(log, "CheckUserAccountsNotFound: user '%s' found with id %u, gid %u, home '%s' and present in %u group(s)", 
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
 
                     if (DirectoryExists(userList[i].home))
                     {
-                        OsConfigLogInfo(log, "CheckIfUserAccountsExist: home directory of user '%s' exists ('%s')", names[j], userList[i].home);
+                        OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user '%s' exists ('%s')", names[j], userList[i].home);
                     }
 
                     OsConfigCaptureReason(reason, "User '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
@@ -2300,7 +2302,7 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, cha
 
     FreeUsersList(&userList, userListSize);
 
-    if (status)
+    if (0 != status)
     {
         for (j = 0; j < numberOfNames; j++)
         {
@@ -2313,6 +2315,16 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, cha
                 OsConfigCaptureReason(reason, "Account '%s' found mentioned in '/etc/passwd', '/etc/shadow' and/or '/etc/group'", names[j]);
             }
         }
+    }
+
+    if (0 != status)
+    {
+        OsConfigCaptureSuccessReason(reason, "None of the requested user accounts is present");
+        status = 0;
+    }
+    else
+    {
+        status = EEXIST;
     }
 
     return status;
@@ -2333,7 +2345,7 @@ int RemoveUserAccounts(const char** names, unsigned int numberOfNames, void* log
         return EINVAL;
     }
 
-    if (0 != CheckIfUserAccountsExist(names, numberOfNames, NULL, log))
+    if (0 != CheckUserAccountsNotFound(names, numberOfNames, NULL, log))
     {
         OsConfigLogError(log, "RemoveUserAccounts: no such user accounts exist");
         return 0;

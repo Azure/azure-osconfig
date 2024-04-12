@@ -1247,29 +1247,33 @@ static char* AuditEnsureIpv6ProtocolIsEnabled(void)
     CheckTextFoundInCommandOutput("cat /sys/module/ipv6/parameters/disable", "0", &reason, SecurityBaselineGetLog());
     return reason;
 }
-//HERE
+
 static char* AuditEnsureDccpIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install dccp /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'%s' is not found in any file under '%s'", "install dccp /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextIsNotFoundInFolder(g_etcModProbeD, "install dccp /bin/true", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSctpIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install sctp /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'%s' is not found in any file under '%s'", "install sctp /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextIsNotFoundInFolder(g_etcModProbeD, "install sctp /bin/true", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDisabledSupportForRds(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install rds /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'%s' is not found in any file under '%s'", "install rds /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextIsNotFoundInFolder(g_etcModProbeD, "install rds /bin/true", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureTipcIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install tipc /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'%s' is not found in any file under '%s'", "install tipc /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextIsNotFoundInFolder(g_etcModProbeD, "install tipc /bin/true", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureZeroconfNetworkingIsDisabled(void)
@@ -1288,7 +1292,7 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void)
     return reason;
 }
 
-static char* AuditEnsurePasswordReuseIsLimited(void)
+static char* AuditEnsurePasswordReuseIsLimited(void) //////////////////////////////HERE fix this one
 {
     const char* etcPamdSystemAuth = "/etc/pam.d/system-auth";
     int option = 0;
@@ -1302,22 +1306,22 @@ static char* AuditEnsurePasswordReuseIsLimited(void)
 
 static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install usb-storage /bin/true' is not found in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextIsNotFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureCoreDumpsAreRestricted(void)
 {
     const char* fsSuidDumpable = "fs.suid_dumpable = 0";
-    //char* reason = NULL;
-
-    return (((0 == CheckLineFoundNotCommentedOut("/etc/security/limits.conf", '#', "hard core 0", NULL/*&reason*/, SecurityBaselineGetLog())) || //TODO //HERE complete this check
-        (0 == FindTextInFolder("/etc/security/limits.d", fsSuidDumpable, SecurityBaselineGetLog()))) &&
-        (0 == CheckTextFoundInCommandOutput("sysctl -a", fsSuidDumpable, NULL, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("Line 'hard core 0' is not found in '/etc/security/limits.conf', or 'fs.suid_dumpable = 0' is not found in '/etc/security/limits.d' or in output from 'sysctl -a'");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/etc/security/limits.conf", '#', "hard core 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInFolderr("/etc/security/limits.d", fsSuidDumpable, &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput("sysctl -a", fsSuidDumpable, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
-static char* AuditEnsurePasswordCreationRequirements(void)
+static char* AuditEnsurePasswordCreationRequirements(void) //////////////////////////////HERE fix this one
 {
     int minlenOption = 0;
     int minclassOption = 0;
@@ -1358,48 +1362,64 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
     const char* passwordAuth = "/etc/pam.d/password-auth";
     const char* commonAuth = "/etc/pam.d/common-auth";
-    
-    return ((0 == CheckLockoutForFailedPasswordAttempts(passwordAuth, SecurityBaselineGetLog())) ||
-        (0 == CheckLockoutForFailedPasswordAttempts(commonAuth, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) :
-        FormatAllocateString("In '%s': lockout for failed password attempts not set, 'auth', 'pam_faillock.so' or 'pam_tally2.so' and 'file=/var/log/tallylog' "
-            "not found, or 'deny' or 'unlock_time' not found, or 'deny' not in between 1 and 5, or 'unlock_time' not set to greater than 0", passwordAuth);
+    char* reason = NULL;
+    if ((0 == CheckLockoutForFailedPasswordAttempts(passwordAuth, &reason, SecurityBaselineGetLog()))
+    {
+        return reason;
+    }
+    OsConfigResetReason(reason);
+    CheckLockoutForFailedPasswordAttempts(commonAuth, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install cramfs", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install cramfs' is not found in any file under '%s'", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install cramfs", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfFreevxfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install freevxfs", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install freevxfs' is not found in any file under '%s'", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install freevxfs", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfHfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfs", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install hfs' is not found  in any file under '%s'", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install hfs", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfHfsplusFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfsplus", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install hfsplus' is not found  in any file under '%s'", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install hfsplus", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install jffs2", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install jffs2' is not found  in any file under '%s'", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install jffs2", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 {
-    return ((0 == CompareFileContents("/proc/sys/kernel/randomize_va_space", "2", SecurityBaselineGetLog())) ||
-        (0 == CompareFileContents("/proc/sys/kernel/randomize_va_space", "1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("'/proc/sys/kernel/randomize_va_space' content is not '2' and '/proc/sys/kernel/randomize_va_space' content is not '1'");
+    char* reason = NULL;
+    if (0 == CheckFileContents("/proc/sys/kernel/randomize_va_space", "2", &reason, SecurityBaselineGetLog()))
+    {
+        return reason;
+    }
+    OsConfigResetReason(reason);
+    if (0 != CheckFileContents("/proc/sys/kernel/randomize_va_space", "1", &reason, SecurityBaselineGetLog()))
+    {
+        OsConfigCaptureReason(reason, "neither 2", text, fileName, contents);
+    }
+    return reason;
 }
 
 static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
@@ -1414,8 +1434,9 @@ static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
 
 static char* AuditEnsureLoggingIsConfigured(void)
 {
-    return CheckFileExists("/var/log/syslog", SecurityBaselineGetLog()) ? 
-        DuplicateString("/var/log/syslog is not found") : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckFileExists("/var/log/syslog", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSyslogPackageIsInstalled(void)
@@ -1444,22 +1465,20 @@ static char* AuditEnsureALoggingServiceIsEnabled(void)
     {
         return reason;
     }
-
-    FREE_MEMORY(reason);
+    OsConfigResetReason(reason);
     if ((0 == CheckPackageNotInstalled(g_rsyslog, &reason, SecurityBaselineGetLog())) && 
         (0 == CheckPackageNotInstalled(g_systemd, &reason, SecurityBaselineGetLog())) && 
         CheckDaemonActive(g_syslogNg, &reason, SecurityBaselineGetLog())) 
     {
         return reason;
     }
-
-    FREE_MEMORY(reason);
+    OsConfigResetReason(reason);
     CheckPackageInstalled(g_systemd, &reason, SecurityBaselineGetLog());
     CheckDaemonActive(g_systemdJournald, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
-static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
+static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void) //////////////////////////////HERE fix this one
 {
     const char* fileCreateMode = "$FileCreateMode";
     int mode = 0, modeNg = 0;
@@ -1480,17 +1499,18 @@ static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 {
-    return ((0 == CheckTextIsFoundInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog())) &&
-        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", NULL, SecurityBaselineGetLog()))) ?   //TODO: add reason here
-        FormatAllocateString("%s'FileGroup adm' is found in '%s' and not found in '%s'", g_pass, g_etcRsyslogConf, g_etcRsyslogConf) :
-        FormatAllocateString("'FileGroup adm' is not found in '%s' or is found in '%s'", g_etcRsyslogConf, g_etcRsyslogConf);
+    char* reason = NULL;
+    CheckTextIsFoundInFile(g_etcRsyslogConf, "FileGroup adm", &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
 {
-    return ((0 == CheckTextIsFoundInFile(g_etcRsyslogConf, "FileOwner syslog", SecurityBaselineGetLog())) &&
-        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", NULL, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : //TODO: add reason here
-        FormatAllocateString("'FileOwner syslog' is not found in %s, or 'FileOwner syslog' is found in %s", g_etcRsyslogConf, g_etcRsyslogConf);
+    char* reason = NULL;
+    CheckTextIsFoundInFile(g_etcRsyslogConf, "FileOwner syslog", &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
@@ -1529,24 +1549,19 @@ static char* AuditEnsureTftpServiceisDisabled(void)
     CheckLineFoundNotCommentedOut(g_etcInetdConf, '#', "tftp", &reason, SecurityBaselineGetLog());
     return reason;
 }
-
+//HERE
 static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
 {
     const char* etcCronAllow = "/etc/cron.allow";
     const char* etcAtAllow = "/etc/at.allow";
     char* reason = NULL;
-    char* status = ((EEXIST == CheckFileExists("/etc/cron.deny", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckFileExists("/etc/at.deny", SecurityBaselineGetLog())) &&
-        (0 == CheckFileExists(etcCronAllow, SecurityBaselineGetLog())) &&
-        (0 == CheckFileExists(etcAtAllow, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess(etcCronAllow, 0, 0, 600, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess(etcAtAllow, 0, 0, 600, &reason, SecurityBaselineGetLog()))) ? 
-        FormatAllocateString("%s'/etc/cron.deny', '/etc/at.deny', '%s', '%s' are present, '%s'",
-            g_pass, etcCronAllow, etcAtAllow, reason ? reason : "'/etc/cron.allow' and '/etc/at.allow' access set to 600") :
-        FormatAllocateString("'/etc/cron.deny', or '/etc/at.deny', or '%s', or '%s' missing, or: '%s'", 
-            etcCronAllow, etcAtAllow, reason ? reason : "'/etc/at.allow' access not set to 600");
-    FREE_MEMORY(reason);
-    return status;
+    CheckFileNotFound("/etc/cron.deny", &reason, SecurityBaselineGetLog());
+    CheckFileNotFound("/etc/at.deny", &reason, SecurityBaselineGetLog());
+    CheckFileExists(etcCronAllow, &reason, SecurityBaselineGetLog());
+    CheckFileExists(etcAtAllow, &reason, SecurityBaselineGetLog());
+    CheckFileAccess(etcCronAllow, 0, 0, 600, &reason, SecurityBaselineGetLog());
+    CheckFileAccess(etcAtAllow, 0, 0, 600, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshPortIsConfigured(void)
@@ -1706,9 +1721,10 @@ static char* AuditEnsurePostfixPackageIsUninstalled(void)
 
 static char* AuditEnsurePostfixNetworkListeningIsDisabled(void)
 {
-    return ((0 == CheckFileExists("/etc/postfix/main.cf", SecurityBaselineGetLog())) && 
-        ((0 == CheckTextIsFoundInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : 
-        DuplicateString("'/etc/postfix/main.cf' is not found, or 'inet_interfaces localhost' is not found in /etc/postfix/main.cf");
+    char* reason = NULL;
+    CheckFileExists("/etc/postfix/main.cf", &reason, SecurityBaselineGetLog());
+    CheckTextIsFoundInFile("/etc/postfix/main.cf", "inet_interfaces localhost", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRpcgssdServiceIsDisabled(void)
@@ -1790,48 +1806,50 @@ static char* AuditEnsureSmbWithSambaIsDisabled(void)
     return reason;
 }
 
-//HERE
-
 static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 {
     unsigned int modes[] = {600, 644, 664, 700, 744};
     char* reason = NULL;
-
-    return CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoUsersHaveDotForwardFiles(void)
 {
     char* reason = NULL;
-    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoUsersHaveDotNetrcFiles(void)
 {
     char* reason = NULL;
-    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoUsersHaveDotRhostsFiles(void)
 {
     char* reason = NULL;
-    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRloginServiceIsDisabled(void)
 {
-    return (CheckPackageInstalled(g_inetd, NULL, SecurityBaselineGetLog()) && //TODO: add reason
-        CheckPackageInstalled(g_inetUtilsInetd, NULL, SecurityBaselineGetLog()) &&
-        FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' or '%s' is not installed, or 'login' is not found in %s", g_inetd, g_inetUtilsInetd, g_etcInetdConf);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_inetd, &reason, SecurityBaselineGetLog());
+    CheckPackageNotInstalled(g_inetUtilsInetd, &reason, SecurityBaselineGetLog());
+    CheckTextIsFoundInFile(g_etcInetdConf, "login", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
     const char* names[] = {"games"};
     char* reason = NULL;
-
-    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), &reason, SecurityBaselineGetLog())) ? reason : DuplicateString(g_pass);
+    CheckUserAccountsNotFound(names, ARRAY_SIZE(names), &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(char* value)
