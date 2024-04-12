@@ -1280,14 +1280,14 @@ TEST_F(CommonUtilsTest, CheckNoPlusEntriesInFile)
     for (i = 0; i < goodTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(testPath, goodTestFileContents[i]));
-        EXPECT_EQ(0, CheckNoLegacyPlusEntriesInFile(testPath, nullptr));
+        EXPECT_EQ(0, CheckNoLegacyPlusEntriesInFile(testPath, nullptr, nullptr));
         EXPECT_TRUE(Cleanup(testPath));
     }
 
     for (i = 0; i < badTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(testPath, badTestFileContents[i]));
-        EXPECT_NE(0, CheckNoLegacyPlusEntriesInFile(testPath, nullptr));
+        EXPECT_NE(0, CheckNoLegacyPlusEntriesInFile(testPath, nullptr, nullptr));
         EXPECT_TRUE(Cleanup(testPath));
     }
 }
@@ -1355,54 +1355,54 @@ TEST_F(CommonUtilsTest, FindTextInFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-TEST_F(CommonUtilsTest, FindMarkedTextInFile)
+TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
 {
     const char* test = "Test \n FOO=test:/123:!abcdef.123:/test.d TEST1; TEST2/..TEST3:Blah=0";
 
     EXPECT_TRUE(CreateTestFile(m_path, test));
 
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(nullptr, nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "FOO", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, nullptr, ";", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(nullptr, nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "FOO", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, nullptr, ";", nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "", "", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "FOO", "", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "", ";", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "", "", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "FOO", "", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "", ";", nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile("~~DoesNotExist", "FOO", ";", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile("~~DoesNotExist", "FOO", ";", nullptr, nullptr));
 
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", ".", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ".", nullptr, nullptr));
     
-    EXPECT_EQ(ENOENT, FindMarkedTextInFile(m_path, "FOO", "!", nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "FOO", "!", nullptr, nullptr));
     
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", ";", nullptr, nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", "..", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ";", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", "..", nullptr, nullptr));
 
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", ";", nullptr, nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", ".", nullptr, nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", "..", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", ";", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", ".", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", "..", nullptr, nullptr));
 
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST2", ".", nullptr, nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST2", "..", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", ".", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", "..", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
+TEST_F(CommonUtilsTest, CheckTextNotFoundInEnvironmentVariable)
 {
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, "/", false, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", "", false, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("", "/", false, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", nullptr, false, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, nullptr, false, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInEnvironmentVariable(nullptr, "/", false, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInEnvironmentVariable("PATH", "", false, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInEnvironmentVariable("", "/", false, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInEnvironmentVariable("PATH", nullptr, false, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInEnvironmentVariable(nullptr, nullptr, false, nullptr, nullptr));
 
-    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", ":", false, nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextNotFoundInEnvironmentVariable("PATH", ":", false, nullptr, nullptr));
 
-    EXPECT_EQ(0, setenv("TESTVAR", "0", 1));
-    EXPECT_EQ(0, FindTextInEnvironmentVariable("TESTVAR", "0", false, nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInEnvironmentVariable("TESTVAR", "0 ", true, nullptr, nullptr));
-    EXPECT_EQ(ENOENT, FindTextInEnvironmentVariable("TESTVAR", "1", true, nullptr, nullptr));
+    EXPECT_EQ(EEXIST, setenv("TESTVAR", "0", 1));
+    EXPECT_EQ(EEXIST, CheckTextNotFoundInEnvironmentVariable("TESTVAR", "0", false, nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckTextNotFoundInEnvironmentVariable("TESTVAR", "0 ", true, nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextNotFoundInEnvironmentVariable("TESTVAR", "1", true, nullptr, nullptr));
     EXPECT_EQ(0, unsetenv("TESTVAR"));
 }
 
