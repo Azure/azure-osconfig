@@ -1367,7 +1367,7 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(void)
         return reason;
     }
     OsConfigResetReason(&reason);
-    CheckLockoutForFailedPasswordAttempts(commonAuth, SecurityBaselineGetLog());
+    CheckLockoutForFailedPasswordAttempts(commonAuth, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
