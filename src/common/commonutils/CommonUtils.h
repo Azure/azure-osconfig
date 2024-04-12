@@ -156,7 +156,7 @@ int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const 
 int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
 int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
 
-int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
+int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
