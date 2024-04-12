@@ -3032,6 +3032,8 @@ int SecurityBaselineMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload,
 
 int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
+    JSON_Value* jsonValue = NULL;
+    char* serializedValue = NULL;
     int status = MMI_OK;
     char* result = NULL;
 
@@ -3750,34 +3752,56 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
             }
         }
         
-        if (result)
+        if (NULL != result)
         {
-            *payloadSizeBytes = strlen(result) + 2;
-
-            if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
+            if (NULL == (jsonValue = json_value_init_string(result)))
             {
-                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
-                    componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
-
-                *payloadSizeBytes = g_maxPayloadSizeBytes;
+                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s): json_value_init_string(%s) failed", componentName, objectName, result);
+                status = ENOMEM;
             }
-
-            *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1);
-            if (*payload)
+            else if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
             {
-                memset(*payload, 0, *payloadSizeBytes + 1);
-                snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", result);
+                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s): json_serialize_to_string(%s) failed", componentName, objectName, result);
+                status = ENOMEM;
             }
             else
             {
-                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
-                *payloadSizeBytes = 0;
-                status = ENOMEM;
-            }
+                *payloadSizeBytes = (int)strlen(serializedValue);
+                if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
+                {
+                    OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
+                        componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+
+                    *payloadSizeBytes = g_maxPayloadSizeBytes;
+                }
+
+                *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1);
+                if (*payload)
+                {
+                    memset(*payload, 0, *payloadSizeBytes + 1);
+                    //snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", serializedValue);
+                    memcpy(*payload, serializedValue, *payloadSizeBytes);
+                }
+                else
+                {
+                    OsConfigLogError(SecurityBaselineGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
+                    *payloadSizeBytes = 0;
+                    status = ENOMEM;
+                }
         }
     }    
 
     OsConfigLogInfo(SecurityBaselineGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+
+    if (NULL != serializedValue)
+    {
+        json_free_serialized_string(serializedValue);
+    }
+
+    if (NULL != jsonValue)
+    {
+        json_value_free(jsonValue);
+    }
 
     FREE_MEMORY(result);
 
