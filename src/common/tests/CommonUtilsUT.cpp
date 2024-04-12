@@ -1343,6 +1343,8 @@ TEST_F(CommonUtilsTest, FindTextInFile)
     EXPECT_EQ(EINVAL, FindTextInFile(nullptr, nullptr, nullptr));
 
     EXPECT_EQ(ENOENT, FindTextInFile("~~DoesNotExist", "text", nullptr));
+    EXPECT_EQ(ENOENT, CheckTextIsFoundInFile("~~DoesNotExist", "text", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextIsNotFoundInFile("~~DoesNotExist", "text", nullptr, nullptr));
     
     EXPECT_EQ(0, FindTextInFile(m_path, "text", nullptr));
     EXPECT_EQ(0, FindTextInFile(m_path, "/1", nullptr));
@@ -1351,6 +1353,22 @@ TEST_F(CommonUtilsTest, FindTextInFile)
     EXPECT_EQ(0, FindTextInFile(m_path, "34", nullptr));
     EXPECT_NE(0, FindTextInFile(m_path, "not found", nullptr));
     EXPECT_NE(0, FindTextInFile(m_path, "\\m", nullptr));
+
+    EXPECT_EQ(0, CheckTextIsFoundInFile(m_path, "text", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextIsFoundInFile(m_path, "/1", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextIsFoundInFile(m_path, "\\3", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextIsFoundInFile(m_path, "\\z", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextIsFoundInFile(m_path, "34", nullptr, nullptr));
+    EXPECT_NE(0, CheckTextIsFoundInFile(m_path, "not found", nullptr, nullptr));
+    EXPECT_NE(0, CheckTextIsFoundInFile(m_path, "\\m", nullptr, nullptr));
+
+    EXPECT_EQ(ENOENT, CheckTextIsNotFoundInFile(m_path, "text", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextIsNotFoundInFile(m_path, "/1", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextIsNotFoundInFile(m_path, "\\3", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextIsNotFoundInFile(m_path, "\\z", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextIsNotFoundInFile(m_path, "34", nullptr, nullptr));
+    EXPECT_NE(ENOENT, CheckTextIsNotFoundInFile(m_path, "not found", nullptr, nullptr));
+    EXPECT_NE(ENOENT, CheckTextIsNotFoundInFile(m_path, "\\m", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }

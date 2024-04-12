@@ -560,6 +560,54 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
     return status;
 }
 
+int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if ((NULL != fileName) && (false == FileExists(fileName)))
+    {
+        OsConfigCaptureReason(reason, "'%s' not found", fileName);
+    }
+    else
+    {
+        if (0 == (reasult = FindTextInFile(fileName, text, reason, log)))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' found in '%s'", text, fileName);
+        }
+        else if (ENOENT == result)
+        {
+            OsConfigCaptureReason(reason, "'%s' not found in '%s'", text, fileName);
+        }
+    }
+
+    return result;
+}
+
+int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if ((NULL != fileName) && (false == FileExists(fileName)))
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' not found", fileName);
+    }
+    else
+    {
+        if (ENOENT == (reasult = FindTextInFile(fileName, text, reason, log)))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s'", text, fileName);
+            result = 0;
+        }
+        else if (0 == result)
+        {
+            OsConfigCaptureReason(reason, "'%s' found in '%s'", text, fileName);
+            result = ENOENT;
+        }
+    }
+
+    return result;
+}
+
 int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log)
 {
     const char* commandTemplate = "cat %s | grep %s";
