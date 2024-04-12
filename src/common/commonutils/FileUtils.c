@@ -867,7 +867,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 {
     int result = 0;
     
-    if (false == FileExists(fileName))
+    if ((NULL != fileName) && (false == FileExists(fileName))
     {
         OsConfigCaptureSuccessReason(reason, "'%s' not found", fileName);
         result = 0;
@@ -883,6 +883,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
             OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s' or it's commented out with '%c'", text, fileName, commentMark);
         }
     }
+
     return result;
 }
 
@@ -890,7 +891,7 @@ int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const 
 {
     int result = 0;
 
-    if (false == FileExists(fileName))
+    if ((NULL != fileName) && (false == FileExists(fileName))
     {
         OsConfigCaptureReason(reason, "'%s' not found", fileName);
         result = ENOENT;
