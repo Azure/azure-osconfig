@@ -608,7 +608,7 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, void* log)
                         {
                             if (IsFullLoggingEnabled())
                             {
-                                OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in /etc/group",
+                                OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in '/etc/group'",
                                     userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                             }
 
@@ -619,9 +619,9 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, void* log)
 
                     if (false == found)
                     {
-                        OsConfigLogError(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) not found in /etc/group",
+                        OsConfigLogError(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) not found in '/etc/group'",
                             userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
-                        OsConfigCaptureReason(reason, "Group '%s' (%u) of user '%s' (%u) not found in /etc/group", 
+                        OsConfigCaptureReason(reason, "Group '%s' (%u) of user '%s' (%u) not found in '/etc/group'", 
                             userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                         status = ENOENT;
                         break;
@@ -638,7 +638,8 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: all groups in /etc/passwd exist in /etc/group");
+        OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: all groups in '/etc/passwd' exist in '/etc/group'");
+        OsConfigCaptureSuccessReason(reason, "All user groups in '/etc/passwd' exist in '/etc/group'");
     }
 
     return status;
@@ -666,8 +667,8 @@ int CheckNoDuplicateUidsExist(char** reason, void* log)
 
                     if (hits > 1)
                     {
-                        OsConfigLogError(log, "CheckNoDuplicateUidsExist: UID %u appears more than a single time in /etc/passwd", userList[i].userId);
-                        OsConfigCaptureReason(reason, "Uid %u appears more than a single time in /etc/passwd", userList[i].userId);
+                        OsConfigLogError(log, "CheckNoDuplicateUidsExist: uid %u appears more than a single time in '/etc/passwd'", userList[i].userId);
+                        OsConfigCaptureReason(reason, "Uid %u appears more than a single time in '/etc/passwd'", userList[i].userId);
                         status = EEXIST;
                         break;
                     }
@@ -680,7 +681,8 @@ int CheckNoDuplicateUidsExist(char** reason, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckNoDuplicateUidsExist: no duplicate UIDs exist in /etc/passwd");
+        OsConfigLogInfo(log, "CheckNoDuplicateUidsExist: no duplicate uids exist in /etc/passwd");
+        OsConfigCaptureSuccessReason(reason, "No duplicate uids exist in '/etc/passwd'");
     }
 
     return status;
@@ -708,8 +710,8 @@ int CheckNoDuplicateGidsExist(char** reason, void* log)
 
                     if (hits > 1)
                     {
-                        OsConfigLogError(log, "CheckNoDuplicateGidsExist: GID %u appears more than a single time in /etc/group", groupList[i].groupId);
-                        OsConfigCaptureReason(reason, "Gid %u appears more than a single time in /etc/group", groupList[i].groupId);
+                        OsConfigLogError(log, "CheckNoDuplicateGidsExist: gid %u appears more than a single time in '/etc/group'", groupList[i].groupId);
+                        OsConfigCaptureReason(reason, "Gid %u appears more than a single time in '/etc/group'", groupList[i].groupId);
                         status = EEXIST;
                         break;
                     }
@@ -722,7 +724,8 @@ int CheckNoDuplicateGidsExist(char** reason, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckNoDuplicateGidsExist: no duplicate GIDs exist in /etc/group");
+        OsConfigLogInfo(log, "CheckNoDuplicateGidsExist: no duplicate gids exist in '/etc/group'");
+        OsConfigCaptureSuccessReason(reason "No duplicate gids (group ids) exist in '/etc/group'");
     }
 
     return status;
@@ -750,8 +753,8 @@ int CheckNoDuplicateUserNamesExist(char** reason, void* log)
 
                     if (hits > 1)
                     {
-                        OsConfigLogError(log, "CheckNoDuplicateUserNamesExist: username '%s' appears more than a single time in /etc/passwd", userList[i].username);
-                        OsConfigCaptureReason(reason, "Username '%s' appears more than a single time in /etc/passwd", userList[i].username);
+                        OsConfigLogError(log, "CheckNoDuplicateUserNamesExist: username '%s' appears more than a single time in '/etc/passwd'", userList[i].username);
+                        OsConfigCaptureReason(reason, "Username '%s' appears more than a single time in '/etc/passwd'", userList[i].username);
                         status = EEXIST;
                         break;
                     }
@@ -764,7 +767,8 @@ int CheckNoDuplicateUserNamesExist(char** reason, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckNoDuplicateUserNamesExist: no duplicate usernames exist in /etc/passwd");
+        OsConfigLogInfo(log, "CheckNoDuplicateUserNamesExist: no duplicate usernames exist in '/etc/passwd'");
+        OsConfigCaptureSuccessReason(reason, "No duplicate usernames exist in '/etc/passwd'");
     }
 
     return status;
@@ -792,8 +796,8 @@ int CheckNoDuplicateGroupsExist(char** reason, void* log)
 
                     if (hits > 1)
                     {
-                        OsConfigLogError(log, "CheckNoDuplicateGroupsExist: group name '%s' appears more than a single time in /etc/group", groupList[i].groupName);
-                        OsConfigCaptureReason(reason, "Group name '%s' appears more than a single time in /etc/group", groupList[i].groupName);
+                        OsConfigLogError(log, "CheckNoDuplicateGroupsExist: group name '%s' appears more than a single time in '/etc/group'", groupList[i].groupName);
+                        OsConfigCaptureReason(reason, "Group name '%s' appears more than a single time in '/etc/group'", groupList[i].groupName);
                         status = EEXIST;
                         break;
                     }
@@ -806,7 +810,8 @@ int CheckNoDuplicateGroupsExist(char** reason, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckNoDuplicateGroupsExist: no duplicate group names exist in /etc/group");
+        OsConfigLogInfo(log, "CheckNoDuplicateGroupsExist: no duplicate group names exist in '/etc/group'");
+        OsConfigCaptureSuccessReason(reason, "No duplicate group names exist in '/etc/group'");
     }
 
     return status;
@@ -828,8 +833,8 @@ int CheckShadowGroupIsEmpty(char** reason, void* log)
         {
             if ((0 == strcmp(groupList[i].groupName, shadow)) && (true == groupList[i].hasUsers))
             {
-                OsConfigLogError(log, "CheckShadowGroupIsEmpty: group shadow (%u) is not empty", groupList[i].groupId);
-                OsConfigCaptureReason(reason, "'shadow' group  is not empty: %u", groupList[i].groupId);
+                OsConfigLogError(log, "CheckShadowGroupIsEmpty: group 'shadow' (%u) is not empty", groupList[i].groupId);
+                OsConfigCaptureReason(reason, "Group 'shadow'  is not empty: %u", groupList[i].groupId);
                 status = ENOENT;
                 break;
             }
@@ -841,6 +846,7 @@ int CheckShadowGroupIsEmpty(char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckShadowGroupIsEmpty: shadow group is %s", found ? "empty" : "not found");
+        OsConfigCaptureSuccessReason(reason, "The 'shadow' group is %s", found ? "empty" : "not found");
     }
 
     return status;
@@ -860,7 +866,8 @@ int CheckRootGroupExists(char** reason, void* log)
         {
             if ((0 == strcmp(groupList[i].groupName, g_root)) && (0 == groupList[i].groupId))
             {
-                OsConfigLogInfo(log, "CheckRootGroupExists: root group exists with GID 0");
+                OsConfigLogInfo(log, "CheckRootGroupExists: root group exists with gid 0");
+                OsConfigCaptureSuccessReason(reason, "Root group exists with gid 0");
                 found = true;
                 break;
             }
@@ -925,6 +932,7 @@ int CheckAllUsersHavePasswordsSet(char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: all users who need passwords appear to have passwords set");
+        OsConfigCaptureSuccessReason(reason, "All users who need passwords appear to have passwords set");
     }
 
     return status;
@@ -942,9 +950,9 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, void* log)
         {
             if (((NULL == userList[i].username) || (0 != strcmp(userList[i].username, g_root))) && (0 == userList[i].userId))
             {
-                OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has UID 0", 
+                OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0", 
                     userList[i].username, userList[i].userId, userList[i].groupId);
-                OsConfigCaptureReason(reason, "User '%s' (%u, %u) is not root but has UID 0", 
+                OsConfigCaptureReason(reason, "User '%s' (%u, %u) is not root but has uid 0", 
                     userList[i].username, userList[i].userId, userList[i].groupId);
                 status = EACCES;
             }
@@ -955,7 +963,8 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckRootIsOnlyUidZeroAccount: all users who are not root have UIDs greater than 0");
+        OsConfigLogInfo(log, "CheckRootIsOnlyUidZeroAccount: all users who are not root have uids (user ids) greater than 0");
+        OsConfigCaptureSuccessReason(reason, "All users who are not root have uids (user ids) greater than 0");
     }
 
     return status;
@@ -974,7 +983,7 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log)
         {
             if ((0 == strcmp(groupList[i].groupName, g_root)) && groupList[i].groupId)
             {
-                OsConfigLogError(log, "CheckDefaultRootAccountGroupIsGidZero: group '%s' is GID %u", groupList[i].groupName, groupList[i].groupId);
+                OsConfigLogError(log, "CheckDefaultRootAccountGroupIsGidZero: group '%s' is gid %u", groupList[i].groupName, groupList[i].groupId);
                 OsConfigCaptureReason(reason, "Group '%s' is gid %u", groupList[i].groupName, groupList[i].groupId);
                 status = EACCES;
                 break;
@@ -986,7 +995,8 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckDefaultRootAccountGroupIsGidZero: default root group is GID 0");
+        OsConfigLogInfo(log, "CheckDefaultRootAccountGroupIsGidZero: default root group is gid 0");
+        OsConfigCaptureSuccessReason(reason, "Default root group is gid 0");
     }
 
     return status;
@@ -1022,6 +1032,7 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckAllUsersHomeDirectoriesExist: all users who can login have home directories that exist");
+        OsConfigCaptureSuccessReason(reason, "All users who can login have home directories that exist"); 
     }
 
     return status;
@@ -1111,6 +1122,7 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: all users who can login own their home directories");
+        OsConfigCaptureSuccessReason(reason, "All users who can login own their home directories");
     }
 
     return status;
@@ -1173,6 +1185,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: all users who can login and have home directories have restricted access to them");
+        OsConfigCaptureSuccessReason(reason, "All users who can login and have home directories have restricted access to them");
     }
 
     return status;
@@ -1285,8 +1298,8 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, void* l
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckPasswordHashingAlgorithm: all users who have passwords have them encrypted with hashing algorithm %s (%d)",
-            EncryptionName(algorithm), algorithm);
+        OsConfigLogInfo(log, "CheckPasswordHashingAlgorithm: all users who have passwords have them encrypted with hashing algorithm %s (%d)", EncryptionName(algorithm), algorithm);
+        OsConfigCaptureSuccessReason(reason, "All users who have passwords have them encrypted with hashing algorithm '%s' (%d)", EncryptionName(algorithm), algorithm);
     }
 
     return status;
@@ -1331,6 +1344,7 @@ int CheckMinDaysBetweenPasswordChanges(long days, char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: all users who have passwords have correct number of minimum days (%ld) between changes", days);
+        OsConfigCaptureSuccessReason(reason, "All users who have passwords have correct number of minimum days (%ld) between changes", days);
     }
 
     if (-1 == etcLoginDefsDays)
@@ -1467,6 +1481,7 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: all users who have passwords have correct number of maximum days (%ld) between changes", days);
+        OsConfigCaptureSuccessReason(reason, "All users who have passwords have correct number of maximum days (%ld) between changes", days);
     }
 
     if (-1 == etcLoginDefsDays)
@@ -1612,6 +1627,7 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: passwords for all users who have them will expire in %ld days or less", days);
+        OsConfigCaptureSuccessReason(reason, "Passwords for all users who have them will expire in %ld days or less", days);
     }
 
     return status;
@@ -1656,6 +1672,7 @@ int CheckPasswordExpirationWarning(long days, char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckPasswordExpirationWarning: all users who have passwords have correct have correct password expiration warning time of %ld days", days);
+        OsConfigCaptureSuccessReason(reason, "All users who have passwords have correct have correct password expiration warning time of %ld days", days);
     }
 
     if (-1 == etcLoginDefsDays)
@@ -1779,6 +1796,7 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: all users who have passwords have dates of last passord change in the past");
+        OsConfigCaptureSuccessReason(reason, "All users who have passwords have dates of last passord change in the past");
     }
 
     return status;
@@ -1814,6 +1832,7 @@ int CheckLockoutAfterInactivityLessThan(long days, char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: all non-root users who have passwords have correct number of maximum inactivity days (%ld) before lockout", days);
+        OsConfigCaptureSuccessReason(reason, "All non-root users who have passwords have correct number of maximum inactivity days (%ld) before lockout", days);
     }
 
     return status;
@@ -1908,6 +1927,7 @@ int CheckSystemAccountsAreNonLogin(char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckSystemAccountsAreNonLogin: all system accounts are non-login");
+        OsConfigCaptureSuccessReason(reason, "All system accounts are non-login");
     }
 
     return status;
@@ -1950,14 +1970,17 @@ int CheckRootPasswordForSingleUserMode(char** reason, void* log)
         if (rootHasPassword && (false == usersWithPassword))
         {
             OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: single user mode, only root user has password");
+            OsConfigCaptureSuccessReason(reason, "Single user mode and only root user has password");
         }
         else if (rootHasPassword && usersWithPassword)
         {
             OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: multi-user mode, root has password");
+            OsConfigCaptureSuccessReason(reason, "Multi-user mode and root has password");
         }
         else if ((false == rootHasPassword) && usersWithPassword)
         {
             OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: multi-user mode, root does not have password");
+            OsConfigCaptureSuccessReason(reason, "Multi-user mode and root does not have password");
         }
         else if ((false == rootHasPassword) && (false == usersWithPassword))
         {

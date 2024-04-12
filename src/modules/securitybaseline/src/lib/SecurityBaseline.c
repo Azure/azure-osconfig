@@ -867,160 +867,182 @@ static char* AuditEnsureAuditdInstalled(void)
     return reason;
 }
 
-//HERE
-
 static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
 {
     char* reason = NULL;
-    return CheckAllEtcPasswdGroupsExistInEtcGroup(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckAllEtcPasswdGroupsExistInEtcGroup(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoDuplicateUidsExist(void)
 {
     char* reason = NULL;
-    return CheckNoDuplicateUidsExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckNoDuplicateUidsExist(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoDuplicateGidsExist(void)
 {
     char* reason = NULL;
-    return CheckNoDuplicateGidsExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckNoDuplicateGidsExist(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoDuplicateUserNamesExist(void)
 {
     char* reason = NULL;
-    return CheckNoDuplicateUserNamesExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckNoDuplicateUserNamesExist(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoDuplicateGroupsExist(void)
 {
     char* reason = NULL;
-    return CheckNoDuplicateGroupsExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckNoDuplicateGroupsExist(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureShadowGroupIsEmpty(void)
 {
     char* reason = NULL;
-    return CheckShadowGroupIsEmpty(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckShadowGroupIsEmpty(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRootGroupExists(void)
 {
     char* reason = NULL;
-    return CheckRootGroupExists(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckRootGroupExists(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllAccountsHavePasswords(void)
 {
     char* reason = NULL;
-    return CheckAllUsersHavePasswordsSet(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckAllUsersHavePasswordsSet(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
 {
     char* reason = NULL;
-    return CheckRootIsOnlyUidZeroAccount(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckRootIsOnlyUidZeroAccount(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void)
 {
-    return CheckNoLegacyPlusEntriesInFile("etc/passwd", SecurityBaselineGetLog()) ? 
-        DuplicateString("'+' lines found in '/etc/passwd'") : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckNoLegacyPlusEntriesInFile("etc/passwd", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcShadow(void)
 {
-    return CheckNoLegacyPlusEntriesInFile("etc/shadow", SecurityBaselineGetLog()) ? 
-        DuplicateString(DuplicateString("'+' lines found in '/etc/shadow'")) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckNoLegacyPlusEntriesInFile("etc/shadow", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcGroup(void)
 {
-    return CheckNoLegacyPlusEntriesInFile("etc/group", SecurityBaselineGetLog()) ? 
-        DuplicateString(DuplicateString("'+' lines found in '/etc/group'")) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckNoLegacyPlusEntriesInFile("etc/group", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDefaultRootAccountGroupIsGidZero(void)
 {
     char* reason = NULL;
-    return CheckDefaultRootAccountGroupIsGidZero(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckDefaultRootAccountGroupIsGidZero(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRootIsOnlyUidZeroAccount(void)
 {
     char* reason = NULL;
-    return ((0 == CheckRootGroupExists(&reason, SecurityBaselineGetLog())) && 
-        (0 == CheckRootIsOnlyUidZeroAccount(&reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckRootGroupExists(&reason, SecurityBaselineGetLog());
+    CheckRootIsOnlyUidZeroAccount(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllUsersHomeDirectoriesExist(void)
 {
     char* reason = NULL;
-    return CheckAllUsersHomeDirectoriesExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckAllUsersHomeDirectoriesExist(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureUsersOwnTheirHomeDirectories(void)
 {
     char* reason = NULL;
-    return CheckUsersOwnTheirHomeDirectories(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckUsersOwnTheirHomeDirectories(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRestrictedUserHomeDirectories(void)
 {
     unsigned int modes[] = {700, 750};
     char* reason = NULL;
-    
-    return CheckRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePasswordHashingAlgorithm(void)
 {
     char* reason = NULL;
-    return CheckPasswordHashingAlgorithm(sha512, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckPasswordHashingAlgorithm(sha512, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureMinDaysBetweenPasswordChanges(void)
 {
     char* reason = NULL;
-    return CheckMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureInactivePasswordLockPeriod(void)
 {
     char* reason = NULL;
-    return ((0 == CheckLockoutAfterInactivityLessThan(g_maxInactiveDays, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckUsersRecordedPasswordChangeDates(&reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckLockoutAfterInactivityLessThan(g_maxInactiveDays, &reason, SecurityBaselineGetLog());
+    CheckUsersRecordedPasswordChangeDates(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureMaxDaysBetweenPasswordChanges(void)
 {
     char* reason = NULL;
-    return CheckMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePasswordExpiration(void)
 {
     char* reason = NULL;
-    return CheckPasswordExpirationLessThan(g_passwordExpiration, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckPasswordExpirationLessThan(g_passwordExpiration, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePasswordExpirationWarning(void)
 {
     char* reason = NULL;
-    return CheckPasswordExpirationWarning(g_passwordExpirationWarning, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckPasswordExpirationWarning(g_passwordExpirationWarning, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSystemAccountsAreNonLogin(void)
 {
     char* reason = NULL;
-    return CheckSystemAccountsAreNonLogin(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckSystemAccountsAreNonLogin(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAuthenticationRequiredForSingleUserMode(void)
 {
     char* reason = NULL;
-    return CheckRootPasswordForSingleUserMode(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckRootPasswordForSingleUserMode(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePrelinkIsDisabled(void)
@@ -1042,12 +1064,12 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void)
     const char* path = "PATH";
     const char* dot = ".";
     char* reason = NULL;
-
-    return ((0 != FindTextInEnvironmentVariable(path, dot, false, &reason, SecurityBaselineGetLog()) &&
-        (0 != FindMarkedTextInFile("/etc/sudoers", "secure_path", dot, &reason, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile(g_etcEnvironment, path, dot, &reason, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile(g_etcProfile, path, dot, &reason, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile("/root/.profile", path, dot, &reason, SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : reason;
+    CheckTextNotFoundInEnvironmentVariable(path, dot, false, &reason, SecurityBaselineGetLog());
+    CheckMarkedTextNotFoundInFile("/etc/sudoers", "secure_path", dot, &reason, SecurityBaselineGetLog());
+    CheckMarkedTextNotFoundInFile(g_etcEnvironment, path, dot, &reason, SecurityBaselineGetLog());
+    CheckMarkedTextNotFoundInFile(g_etcProfile, path, dot, &reason, SecurityBaselineGetLog());
+    CheckMarkedTextNotFoundInFile("/root/.profile", path, dot, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureCronServiceIsEnabled(void)
@@ -1057,6 +1079,8 @@ static char* AuditEnsureCronServiceIsEnabled(void)
     CheckDaemonActive(g_cron, &reason, SecurityBaselineGetLog());
     return reason;
 }
+
+//HERE
 
 static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
 {

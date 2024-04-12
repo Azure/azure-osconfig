@@ -27,13 +27,13 @@ bool CheckDaemonActive(const char* daemonName, char** reason, void* log)
     
     if (true == (result = IsDaemonActive(daemonName, log)))
     {
-        OsConfigLogInfo(log, "CheckDaemonActive: '%s' appears active", daemonName);
-        OsConfigCaptureSuccessReason(reason, "'%s' appears active", daemonName);
+        OsConfigLogInfo(log, "CheckDaemonActive: '%s' is active", daemonName);
+        OsConfigCaptureSuccessReason(reason, "'%s' is active", daemonName);
     }
     else
     {
-        OsConfigLogError(log, "CheckDaemonActive: '%s' appears inactive", daemonName);
-        OsConfigCaptureReason(reason, "'%s' appears inactive", daemonName);
+        OsConfigLogError(log, "CheckDaemonActive: '%s' is inactive", daemonName);
+        OsConfigCaptureReason(reason, "'%s' is inactive", daemonName);
     }
     
     return result;
@@ -45,14 +45,14 @@ bool CheckDaemonNotActive(const char* daemonName, char** reason, void* log)
 
     if (true == (result = IsDaemonActive(daemonName, log)))
     {
-        OsConfigLogError(log, "CheckDaemonActive: '%s' appears active", daemonName);
-        OsConfigCaptureReason(reason, "'%s' appears active", daemonName);
+        OsConfigLogError(log, "CheckDaemonActive: '%s' is active", daemonName);
+        OsConfigCaptureReason(reason, "'%s' is active", daemonName);
         result = false;
     }
     else
     {
-        OsConfigLogInfo(log, "CheckDaemonActive: '%s' appears inactive", daemonName);
-        OsConfigCaptureSuccessReason(reason, "'%s' appears inactive", daemonName);
+        OsConfigLogInfo(log, "CheckDaemonActive: '%s' is inactive", daemonName);
+        OsConfigCaptureSuccessReason(reason, "'%s' is inactive", daemonName);
         result = true;
     }
 
