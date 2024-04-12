@@ -1397,9 +1397,9 @@ TEST_F(CommonUtilsTest, CheckTextNotFoundInEnvironmentVariable)
     EXPECT_EQ(EINVAL, CheckTextNotFoundInEnvironmentVariable("PATH", nullptr, false, nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckTextNotFoundInEnvironmentVariable(nullptr, nullptr, false, nullptr, nullptr));
 
-    EXPECT_EQ(0, CheckTextNotFoundInEnvironmentVariable("PATH", ":", false, nullptr, nullptr));
+    EXPECT_EQ(EXIST, CheckTextNotFoundInEnvironmentVariable("PATH", ":", false, nullptr, nullptr));
 
-    EXPECT_EQ(EEXIST, setenv("TESTVAR", "0", 1));
+    EXPECT_EQ(0, setenv("TESTVAR", "0", 1));
     EXPECT_EQ(EEXIST, CheckTextNotFoundInEnvironmentVariable("TESTVAR", "0", false, nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckTextNotFoundInEnvironmentVariable("TESTVAR", "0 ", true, nullptr, nullptr));
     EXPECT_EQ(0, CheckTextNotFoundInEnvironmentVariable("TESTVAR", "1", true, nullptr, nullptr));
