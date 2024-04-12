@@ -1132,38 +1132,36 @@ static char* AuditEnsureKernelCompiledFromApprovedSources(void)
     return reason;
 }
 
-//HERE
-
 static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
 {
     const char* readIpTables = "iptables -S";
     char* reason = NULL;
-
-    return ((0 == CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePacketRedirectSendingIsDisabled(void)
 {
     const char* command = "sysctl -a";
     char* reason = NULL;
-
-    return ((0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureIcmpRedirectsIsDisabled(void)
 {
     const char* command = "sysctl -a";
     char* reason = NULL;
-
-    return ((0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckTextFoundInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckTextFoundInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.secure_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.secure_redirects = 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSourceRoutedPacketsIsDisabled(void)
@@ -1200,9 +1198,9 @@ static char* AuditEnsureMartianPacketLoggingIsEnabled(void)
 {
     const char* command = "sysctl -a";
     char* reason = NULL;
-
-    return ((0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureReversePathSourceValidationIsEnabled(void)
