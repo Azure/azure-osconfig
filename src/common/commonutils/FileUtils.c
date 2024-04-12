@@ -1077,10 +1077,12 @@ int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char
     if (ENOENT == (result = FindTextInCommandOutput(command, text, log)))
     {
         OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s' output", text, command);
+        result = 0;
     }
     else if (0 == result)
     {
         OsConfigCaptureReason(reason, "'%s' found in '%s' output", text, command);
+        result = ENOENT;
     }
     else
     {
