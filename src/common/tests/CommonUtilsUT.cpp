@@ -1692,20 +1692,20 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 
     int i = 0;
 
-    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(nullptr, nullptr));
-    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts("~file_that_does_not_exist", nullptr));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(nullptr, nullptr, nullptr));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts("~file_that_does_not_exist", nullptr, nullptr));
 
     for (i = 0; i < goodTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, goodTestFileContents[i]));
-        EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr));
+        EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
 
     for (i = 0; i < badTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, badTestFileContents[i]));
-        EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr));
+        EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
 }
