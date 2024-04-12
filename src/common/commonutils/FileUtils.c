@@ -1146,7 +1146,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
     char* contents = NULL;
     char* result = NULL;
 
-    if (option && (0 == CheckFileExists(fileName, log)))
+    if (option && (0 == CheckFileExists(fileName, NULL, log)))
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
@@ -1175,7 +1175,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
     char* contents = NULL;
     int result = -999;
 
-    if (option && (0 == CheckFileExists(fileName, log)))
+    if (option && (0 == CheckFileExists(fileName, NULL, log)))
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
@@ -1207,7 +1207,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, v
     int option = 0;
     int status = ENOENT;
 
-    if (0 == CheckFileExists(fileName, log))
+    if (0 == CheckFileExists(fileName, reason, log))
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
