@@ -1,0 +1,328 @@
+instance of OsConfigResource as $OsConfigResource0ref
+{
+    ResourceID = "Ensure that permissions on /etc/ssh/sshd_config are configured";
+    PayloadKey = "EnsurePermissionsOnEtcSshSshdConfig";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsurePermissionsOnEtcSshSshdConfig";
+    ReportedObjectName = "auditEnsurePermissionsOnEtcSshSshdConfig";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsurePermissionsOnEtcSshSshdConfig";
+    DesiredObjectValue = "600";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource1ref
+{
+    ResourceID = "Ensure that the SSH protocol is configured";
+    PayloadKey = "EnsureSshBestPracticeProtocol";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshBestPracticeProtocol";
+    ReportedObjectName = "auditEnsureSshBestPracticeProtocol";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshBestPracticeProtocol";
+    DesiredObjectValue = "2";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource2ref
+{
+    ResourceID = "Ensure that the SSH IgnoreRhosts is configured";
+    PayloadKey = "EnsureSshBestPracticeIgnoreRhosts";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshBestPracticeIgnoreRhosts";
+    ReportedObjectName = "auditEnsureSshBestPracticeIgnoreRhosts";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshBestPracticeIgnoreRhosts";
+    DesiredObjectValue = "yes";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource3ref
+{
+    ResourceID = "Ensure that the SSH LogLevel is configured";
+    PayloadKey = "EnsureSshLogLevelIsSet";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshLogLevelIsSet";
+    ReportedObjectName = "auditEnsureSshLogLevelIsSet";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshLogLevelIsSet";
+    DesiredObjectValue = "INFO";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource4ref
+{
+    ResourceID = "Ensure that the SSH MaxAuthTries is configured";
+    PayloadKey = "EnsureSshMaxAuthTriesIsSet";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshMaxAuthTriesIsSet";
+    ReportedObjectName = "auditEnsureSshMaxAuthTriesIsSet";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshMaxAuthTriesIsSet";
+    DesiredObjectValue = "6";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource5ref
+{
+    ResourceID = "Ensure that the allowed users for SSH access are configured";
+    PayloadKey = "EnsureAllowUsersIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureAllowUsersIsConfigured";
+    ReportedObjectName = "auditEnsureAllowUsersIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureAllowUsersIsConfigured";
+    DesiredObjectValue = "*@*";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource6ref
+{
+    ResourceID = "Ensure that the denied users for SSH are configured";
+    PayloadKey = "EnsureDenyUsersIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureDenyUsersIsConfigured";
+    ReportedObjectName = "auditEnsureDenyUsersIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureDenyUsersIsConfigured";
+    DesiredObjectValue = "root";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource7ref
+{
+    ResourceID = "Ensure that the allowed groups for SSH are configured";
+    PayloadKey = "EnsureAllowGroupsIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureAllowGroupsIsConfigured";
+    ReportedObjectName = "auditEnsureAllowGroupsIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureAllowGroupsIsConfigured";
+    DesiredObjectValue = "*";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource8ref
+{
+    ResourceID = "Ensure that the denied groups for SSH are configured";
+    PayloadKey = "EnsureDenyGroupsConfigured";
+    ComponentName = "SecurityBaseline";
+    ExpectedObjectValue = "PASS";
+    InitObjectName = "initEnsureDenyGroupsConfigured";
+    ReportedObjectName = "auditEnsureDenyGroupsConfigured";
+    DesiredObjectName = "remediateEnsureDenyGroupsConfigured";
+    DesiredObjectValue = "root";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource9ref
+{
+    ResourceID = "Ensure that the SSH HostBasedAuthentication is configured";
+    PayloadKey = "EnsureSshHostbasedAuthenticationIsDisabled";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshHostbasedAuthenticationIsDisabled";
+    ReportedObjectName = "auditEnsureSshHostbasedAuthenticationIsDisabled";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshHostbasedAuthenticationIsDisabled";
+    DesiredObjectValue = "no";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource10ref
+{
+    ResourceID = "Ensure that the SSH PermitRootLogin is configured";
+    PayloadKey = "EnsureSshPermitRootLoginIsDisabled";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshPermitRootLoginIsDisabled";
+    ReportedObjectName = "auditEnsureSshPermitRootLoginIsDisabled";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshPermitRootLoginIsDisabled";
+    DesiredObjectValue = "no";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource11ref
+{
+    ResourceID = "Ensure that the SSH PermitEmptyPasswords is configured";
+    PayloadKey = "EnsureSshPermitEmptyPasswordsIsDisabled";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshPermitEmptyPasswordsIsDisabled";
+    ReportedObjectName = "auditEnsureSshPermitEmptyPasswordsIsDisabled";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshPermitEmptyPasswordsIsDisabled";
+    DesiredObjectValue = "no";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource12ref
+{
+    ResourceID = "Ensure that the SSH ClientAliveCountMax is configured";
+    PayloadKey = "EnsureSshClientIntervalCountMaxIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshClientIntervalCountMaxIsConfigured";
+    ReportedObjectName = "auditEnsureSshClientIntervalCountMaxIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshClientIntervalCountMaxIsConfigured";
+    DesiredObjectValue = "0";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource13ref
+{
+    ResourceID = "Ensure that the SSH ClientAliveInterval is configured";
+    PayloadKey = "EnsureSshClientAliveIntervalIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshClientAliveIntervalIsConfigured";
+    ReportedObjectName = "auditEnsureSshClientAliveIntervalIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshClientAliveIntervalIsConfigured";
+    DesiredObjectValue = "3600";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource14ref
+{
+    ResourceID = "Ensure that the SSH LoginGraceTime is configured";
+    PayloadKey = "EnsureSshLoginGraceTimeIsSet";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshLoginGraceTimeIsSet";
+    ReportedObjectName = "auditEnsureSshLoginGraceTimeIsSet";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshLoginGraceTimeIsSet";
+    DesiredObjectValue = "60";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource15ref
+{
+    ResourceID = "Ensure that only approved MAC algorithms are used";
+    PayloadKey = "EnsureOnlyApprovedMacAlgorithmsAreUsed";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureOnlyApprovedMacAlgorithmsAreUsed";
+    ReportedObjectName = "auditEnsureOnlyApprovedMacAlgorithmsAreUsed";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureOnlyApprovedMacAlgorithmsAreUsed";
+    DesiredObjectValue = "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource16ref
+{
+    ResourceID = "Ensure that the SSH warning banner is configured";
+    PayloadKey = "EnsureSshWarningBannerIsEnabled";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshWarningBannerIsEnabled";
+    ReportedObjectName = "auditEnsureSshWarningBannerIsEnabled";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshWarningBannerIsEnabled";
+    DesiredObjectValue = "#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource17ref
+{
+    ResourceID = "Ensure that the SSH PermitUserEnvironment is configured";
+    PayloadKey = "EnsureUsersCannotSetSshEnvironmentOptions";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureUsersCannotSetSshEnvironmentOptions";
+    ReportedObjectName = "auditEnsureUsersCannotSetSshEnvironmentOptions";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureUsersCannotSetSshEnvironmentOptions";
+    DesiredObjectValue = "no";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource18ref
+{
+    ResourceID = "Ensure that appropriate ciphers are used for SSH";
+    PayloadKey = "EnsureAppropriateCiphersForSsh";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureAppropriateCiphersForSsh";
+    ReportedObjectName = "auditEnsureAppropriateCiphersForSsh";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureAppropriateCiphersForSsh";
+    DesiredObjectValue = "aes128-ctr,aes192-ctr,aes256-ctr";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource19ref
+{
+    ResourceID = "Ensure that the SSH port is configured";
+    PayloadKey = "EnsureSshPortIsConfigured";
+    ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureSshPortIsConfigured";
+    ReportedObjectName = "auditEnsureSshPortIsConfigured";
+    ExpectedObjectValue = "PASS";
+    DesiredObjectName = "remediateEnsureSshPortIsConfigured";
+    DesiredObjectValue = "22";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxSshServerSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OMI_ConfigurationDocument
+{
+    Version="1.0.5";
+    CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
+    Author="Microsoft";
+    GenerationDate="3/18/2024 16:50:00 PST";
+    Name="OsConfigSshServerSecurity";
+};
