@@ -3788,6 +3788,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
                     *payloadSizeBytes = 0;
                     status = ENOMEM;
                 }
+            }
         }
     }    
 
