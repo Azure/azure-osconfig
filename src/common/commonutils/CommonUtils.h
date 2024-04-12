@@ -150,7 +150,8 @@ int CompareFileContents(const char* fileName, const char* text, void* log);
 int FindTextInFolder(const char* directory, const char* text, void* log);
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
 int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
-int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log);
+int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
+int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
 
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
 

@@ -567,6 +567,7 @@ int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason
     if ((NULL != fileName) && (false == FileExists(fileName)))
     {
         OsConfigCaptureReason(reason, "'%s' not found", fileName);
+        result = ENOENT;
     }
     else
     {
@@ -961,7 +962,7 @@ int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const 
     return result;
 }
 
-int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log)
+static int FindTextInCommandOutput(const char* command, const char* text, void* log)
 {
     char* results = NULL;
     int status = 0;
@@ -982,7 +983,6 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
         {
             status = ENOENT;
             OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' not found in '%s' output", text, command);
-            OsConfigCaptureReason(reason, "'%s' not found in '%s' output", text, command);
         }
 
         FREE_MEMORY(results);
@@ -990,10 +990,49 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
     else
     {
         OsConfigLogInfo(log, "FindTextInCommandOutput: command '%s' failed with %d", command, status);
-        OsConfigCaptureReason(reason, "'%s' failed with %d", command, status);
     }
 
     return status;
+}
+
+int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if (0 == (result = FindTextInCommandOutput(command, text, log)))
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' found in '%s' output", text, command);
+    }
+    else if (ENOENT == result)
+    {
+        OsConfigCaptureReason(reason, "'%s' not found in '%s' output", text, command);
+    }
+    else
+    {
+        OsConfigCaptureReason(reason, "'%s' failed with %d", command, result);
+    }
+
+    return result;
+}
+
+int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if (ENOENT == (result = FindTextInCommandOutput(command, text, log)))
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s' output", text, command);
+    }
+    else if (0 == result)
+    {
+        OsConfigCaptureReason(reason, "'%s' found in '%s' output", text, command);
+    }
+    else
+    {
+        OsConfigCaptureReason(reason, "'%s' failed with %d", command, result);
+    }
+
+    return result;
 }
 
 static char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)

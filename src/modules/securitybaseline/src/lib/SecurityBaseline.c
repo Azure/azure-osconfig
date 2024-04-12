@@ -1075,24 +1075,24 @@ static char* AuditEnsureCronServiceIsEnabled(void)
     return reason;
 }
 
-//HERE
-
 static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
 {
-    return ((0 != FindTextInFile(g_etcIssueNet, "\\m", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssueNet, "\\r", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssueNet, "\\s", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssueNet, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'\\m', '\\r', '\\s' or '\\v' is found in '%s'", g_etcIssueNet);
+    char* reason = NULL;
+    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\m", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\r", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\s", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\v", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void)
 {
-    return ((0 != FindTextInFile(g_etcIssue, "\\m", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssue, "\\r", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssue, "\\s", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssue, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'\\m', '\\r', '\\s' or '\\v' is found in '%s'", g_etcIssue);
+    char* reason = NULL;
+    CheckTextIsNotFoundInFile(g_etcIssue, "\\m", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcIssue, "\\r", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcIssue, "\\s", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcIssue, "\\v", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAuditdServiceIsRunning(void)
@@ -1104,14 +1104,16 @@ static char* AuditEnsureAuditdServiceIsRunning(void)
 
 static char* AuditEnsureSuRestrictedToRootGroup(void)
 {
-    return (0 == FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog())) ? 
-        DuplicateString(g_pass) : DuplicateString("'use_uid' is not found in '/etc/pam.d/su'");
+    char* reason = NULL;
+    CheckTextIsFoundInFile("/etc/pam.d/su", "use_uid", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDefaultUmaskForAllUsers(void)
 {
     char* reason = NULL;
-    return CheckLoginUmask("077", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckLoginUmask("077", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAutomountingDisabled(void)
@@ -1126,17 +1128,20 @@ static char* AuditEnsureAutomountingDisabled(void)
 static char* AuditEnsureKernelCompiledFromApprovedSources(void)
 {
     char* reason = NULL;
-    return (true == CheckOsAndKernelMatchDistro(&reason, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : reason;
+    CheckOsAndKernelMatchDistro(&reason, SecurityBaselineGetLog());
+    return reason;
 }
+
+//HERE
 
 static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
 {
     const char* readIpTables = "iptables -S";
     char* reason = NULL;
 
-    return ((0 == FindTextInCommandOutput(readIpTables, "-P INPUT DROP", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    return ((0 == CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, SecurityBaselineGetLog())) &&
+        (0 == CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, SecurityBaselineGetLog())) &&
+        (0 == CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsurePacketRedirectSendingIsDisabled(void)
@@ -1144,8 +1149,8 @@ static char* AuditEnsurePacketRedirectSendingIsDisabled(void)
     const char* command = "sysctl -a";
     char* reason = NULL;
 
-    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    return ((0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", &reason, SecurityBaselineGetLog())) &&
+        (0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsureIcmpRedirectsIsDisabled(void)
@@ -1153,12 +1158,12 @@ static char* AuditEnsureIcmpRedirectsIsDisabled(void)
     const char* command = "sysctl -a";
     char* reason = NULL;
 
-    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.secure_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    return ((0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
+        (0 == CheckTextFoundInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
+        (0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
+        (0 == CheckTextFoundInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
+        (0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.secure_redirects = 0", &reason, SecurityBaselineGetLog())) &&
+        (0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsureSourceRoutedPacketsIsDisabled(void)
@@ -1196,8 +1201,8 @@ static char* AuditEnsureMartianPacketLoggingIsEnabled(void)
     const char* command = "sysctl -a";
     char* reason = NULL;
 
-    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    return ((0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", &reason, SecurityBaselineGetLog())) &&
+        (0 == CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsureReversePathSourceValidationIsEnabled(void)
@@ -1219,26 +1224,30 @@ static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
 {
     const char* command = "/sbin/ip addr list";
     const char* text = "PROMISC";
-
-    //TODO //HERE: add CheckTextInCommandOutput and CheckTextNotInCommandOutput and complete this check
-    return (FindTextInCommandOutput(command, text, NULL, SecurityBaselineGetLog()) &&
-        (0 == CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, NULL, SecurityBaselineGetLog())) &&
-        (0 == CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, NULL, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'%s' is not found in command '%s' output or found in '/etc/network/interfaces' or in '/etc/rc.local'", text, command);
+    char* reason = NULL;
+    CheckTextNotFoundInCommandOutput(command, text, NULL, &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllWirelessInterfacesAreDisabled(void)
 {
-    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", NULL, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : DuplicateString("'Frequency' found in '/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found' output, indicating at least one active wireless interface");
+    char* reason = NULL;
+    if (0 == CheckTextFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", &reason, SecurityBaselineGetLog()))
+    {
+        OsConfigCaptureReason(reason, "at least one active wireless interface is present");
+    }
+    return reason;
 }
 
 static char* AuditEnsureIpv6ProtocolIsEnabled(void)
 {
     char* reason = NULL;
-    return (0 == FindTextInCommandOutput("cat /sys/module/ipv6/parameters/disable", "0", &reason, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : reason;
+    CheckTextFoundInCommandOutput("cat /sys/module/ipv6/parameters/disable", "0", &reason, SecurityBaselineGetLog());
+    return reason;
 }
-
+//HERE
 static char* AuditEnsureDccpIsDisabled(void)
 {
     return FindTextInFolder(g_etcModProbeD, "install dccp /bin/true", SecurityBaselineGetLog()) ? 
@@ -1304,7 +1313,7 @@ static char* AuditEnsureCoreDumpsAreRestricted(void)
 
     return (((0 == CheckLineFoundNotCommentedOut("/etc/security/limits.conf", '#', "hard core 0", NULL/*&reason*/, SecurityBaselineGetLog())) || //TODO //HERE complete this check
         (0 == FindTextInFolder("/etc/security/limits.d", fsSuidDumpable, SecurityBaselineGetLog()))) &&
-        (0 == FindTextInCommandOutput("sysctl -a", fsSuidDumpable, NULL, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        (0 == CheckTextFoundInCommandOutput("sysctl -a", fsSuidDumpable, NULL, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
         DuplicateString("Line 'hard core 0' is not found in '/etc/security/limits.conf', or 'fs.suid_dumpable = 0' is not found in '/etc/security/limits.d' or in output from 'sysctl -a'");
 }
 
@@ -1471,7 +1480,7 @@ static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 {
-    return ((0 == FindTextInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog())) &&
+    return ((0 == CheckTextIsFoundInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog())) &&
         (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", NULL, SecurityBaselineGetLog()))) ?   //TODO: add reason here
         FormatAllocateString("%s'FileGroup adm' is found in '%s' and not found in '%s'", g_pass, g_etcRsyslogConf, g_etcRsyslogConf) :
         FormatAllocateString("'FileGroup adm' is not found in '%s' or is found in '%s'", g_etcRsyslogConf, g_etcRsyslogConf);
@@ -1479,7 +1488,7 @@ static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
 {
-    return ((0 == FindTextInFile(g_etcRsyslogConf, "FileOwner syslog", SecurityBaselineGetLog())) &&
+    return ((0 == CheckTextIsFoundInFile(g_etcRsyslogConf, "FileOwner syslog", SecurityBaselineGetLog())) &&
         (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", NULL, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : //TODO: add reason here
         FormatAllocateString("'FileOwner syslog' is not found in %s, or 'FileOwner syslog' is found in %s", g_etcRsyslogConf, g_etcRsyslogConf);
 }
@@ -1698,7 +1707,7 @@ static char* AuditEnsurePostfixPackageIsUninstalled(void)
 static char* AuditEnsurePostfixNetworkListeningIsDisabled(void)
 {
     return ((0 == CheckFileExists("/etc/postfix/main.cf", SecurityBaselineGetLog())) && 
-        ((0 == FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : 
+        ((0 == CheckTextIsFoundInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : 
         DuplicateString("'/etc/postfix/main.cf' is not found, or 'inet_interfaces localhost' is not found in /etc/postfix/main.cf");
 }
 

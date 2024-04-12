@@ -1524,16 +1524,27 @@ TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-TEST_F(CommonUtilsTest, FindTextInCommandOutput)
+TEST_F(CommonUtilsTest, CheckTextFoundInCommandOutput)
 {
-    EXPECT_EQ(EINVAL, FindTextInCommandOutput(nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInCommandOutput("echo Test123", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInCommandOutput(nullptr, "Test", nullptr, nullptr));
-    EXPECT_NE(0, FindTextInCommandOutput("echo Test", "~does_not_exist", nullptr, nullptr));
-    EXPECT_NE(0, FindTextInCommandOutput("blah", "Test", nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "Test", nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "123", nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "2", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInCommandOutput(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInCommandOutput("echo Test123", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInCommandOutput(nullptr, "Test", nullptr, nullptr));
+    EXPECT_NE(0, CheckTextFoundInCommandOutput("echo Test", "~does_not_exist", nullptr, nullptr));
+    EXPECT_NE(0, CheckTextFoundInCommandOutput("blah", "Test", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextFoundInCommandOutput("echo Test123", "Test", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextFoundInCommandOutput("echo Test123", "123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextFoundInCommandOutput("echo Test123", "2", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextFoundInCommandOutput("echo Test123", "4", nullptr, nullptr));
+
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInCommandOutput(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInCommandOutput("echo Test123", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInCommandOutput(nullptr, "Test", nullptr, nullptr));
+    EXPECT_NE(ENOENT, CheckTextNotFoundInCommandOutput("echo Test", "~does_not_exist", nullptr, nullptr));
+    EXPECT_NE(ENOENT, CheckTextNotFoundInCommandOutput("blah", "Test", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextNotFoundInCommandOutput("echo Test123", "Test", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextNotFoundInCommandOutput("echo Test123", "123", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextNotFoundInCommandOutput("echo Test123", "2", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextNotFoundInCommandOutput("echo Test123", "4", nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, GetOptionFromFile)

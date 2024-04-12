@@ -601,6 +601,8 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro and installed image match ('%s', '%s', '%s', '%s', '%s')",
             distro.id, distro.release, distro.codename, distro.description, kernelName);
+        OsConfigCaptureSuccessReason(reason, "Distro and installed image match ('%s', '%s', '%s', '%s', '%s')",
+            distro.id, distro.release, distro.codename, distro.description, kernelName);
         match = true;
     }
     else
