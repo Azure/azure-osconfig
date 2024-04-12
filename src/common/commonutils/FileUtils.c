@@ -1203,7 +1203,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
 
 int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, void* log)
 {
-    int valueFromFile = 999;
+    int valueFromFile = -999;
     int i = 0;
     int result = ENOENT;
 
@@ -1217,7 +1217,7 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
     {
         for (i = 0; i < numberOfValues; i++)
         {
-            if (valueFromFile == value[i])
+            if (valueFromFile == values[i])
             {
                 OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of %d", option, fileName, value[i]);
                 result = 0;
@@ -1236,13 +1236,12 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
 
 int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, void* log)
 {
-    int valueFromFile = 999;
-    int i = 0;
+    int valueFromFile = -999;
     int result = ENOENT;
 
     if (-999 != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
     {
-        if (valueFromFile =< value)
+        if (valueFromFile <= value)
         {
             OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' value of %d is less or equal with %d", option, fileName, valueFromFile, value);
             result = 0;
