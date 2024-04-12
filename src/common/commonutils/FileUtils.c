@@ -867,15 +867,22 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 {
     int result = 0;
     
-    if (EEXIST == (result = IsLineNotFoundOrCommentedOut(fileName, commentMark, text, reason, log)))
+    if (false == FileExists(fileName))
     {
-        OsConfigCaptureReason(reason, "'%s' found in '%s' and it's not commented out with '%c'", text, fileName, commentMark);
+        OsConfigCaptureSuccessReason(reason, "'%s' not found", fileName);
+        result = 0;
     }
-    else if (0 == result)
+    else
     {
-        OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s' or it's commented out with '%c'", text, fileName, commentMark);
+        if (EEXIST == (result = IsLineNotFoundOrCommentedOut(fileName, commentMark, text, reason, log)))
+        {
+            OsConfigCaptureReason(reason, "'%s' found in '%s' and it's not commented out with '%c'", text, fileName, commentMark);
+        }
+        else if (0 == result)
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s' or it's commented out with '%c'", text, fileName, commentMark);
+        }
     }
-
     return result;
 }
 
