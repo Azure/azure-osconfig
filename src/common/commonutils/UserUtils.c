@@ -725,7 +725,7 @@ int CheckNoDuplicateGidsExist(char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckNoDuplicateGidsExist: no duplicate gids exist in '/etc/group'");
-        OsConfigCaptureSuccessReason(reason "No duplicate gids (group ids) exist in '/etc/group'");
+        OsConfigCaptureSuccessReason(reason, "No duplicate gids (group ids) exist in '/etc/group'");
     }
 
     return status;
