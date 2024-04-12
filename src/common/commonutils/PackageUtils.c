@@ -109,7 +109,7 @@ int CheckPackageInstalled(const char* packageName, char** reason, void* log)
     {
         OsConfigCaptureSuccessReason(reason, "'%s' is installed", packageName);
     }
-    else
+    else if ((EINVAL != result) && (ENOMEM != result))
     {
         OsConfigCaptureReason(reason, "'%s' is not installed", packageName);
     }
@@ -126,7 +126,7 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
         OsConfigCaptureReason(reason, "'%s' is installed", packageName);
         result = ENOENT;
     }
-    else
+    else if ((EINVAL != result) && (ENOMEM != result))
     {
         OsConfigCaptureSuccessReason(reason, "'%s' is not installed", packageName);
         result = 0;

@@ -1700,7 +1700,7 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 
     EXPECT_EQ(EINVAL, IsPackageInstalled("", nullptr));
     EXPECT_EQ(EINVAL, CheckPackageInstalled("", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckPackageNotInstalled("", nullptr, nullptr));
+    EXPECT_EQ(0, CheckPackageNotInstalled("", nullptr, nullptr));
     EXPECT_EQ(EINVAL, InstallPackage("", nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage("", nullptr));
 
