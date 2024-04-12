@@ -422,7 +422,6 @@ static const char* g_etcModProbeD = "/etc/modprobe.d";
 static const char* g_etcProfile = "/etc/profile";
 static const char* g_etcRsyslogConf = "/etc/rsyslog.conf";
 static const char* g_etcSyslogNgSyslogNgConf = "/etc/syslog-ng/syslog-ng.conf";
-static const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
 
 static const char* g_tmp = "/tmp";
 static const char* g_varTmp = "/var/tmp";
