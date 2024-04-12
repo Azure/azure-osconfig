@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <version.h>
+#include <math.h>
 #include <parson.h>
 #include <CommonUtils.h>
 #include <UserUtils.h>
