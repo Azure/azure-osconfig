@@ -837,10 +837,6 @@
       "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
     },
     {
-      "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditSecurityBaseline"
-    },
-    {
       "ComponentName": "Tpm",
       "ObjectName": "tpmStatus"
     },

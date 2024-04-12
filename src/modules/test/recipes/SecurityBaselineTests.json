@@ -1212,11 +1212,6 @@
     "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved"
   },
   {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateSecurityBaseline"
-  },
-  {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsurePermissionsOnEtcIssue"
@@ -2045,11 +2040,6 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditSecurityBaseline"
   },
   {
     "Action": "UnloadModule"

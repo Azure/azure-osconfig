@@ -16,13 +16,9 @@
 
 #include "SecurityBaseline.h"
 
-typedef int(*RemediationCall)(char*);
-typedef char*(*AuditCall)(void);
-
 static const char* g_securityBaselineModuleName = "OSConfig SecurityBaseline module";
 static const char* g_securityBaselineComponentName = "SecurityBaseline";
 
-static const char* g_auditSecurityBaselineObject = "auditSecurityBaseline";
 static const char* g_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
 static const char* g_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
 static const char* g_auditEnsurePermissionsOnEtcHostsAllowObject = "auditEnsurePermissionsOnEtcHostsAllow";
@@ -193,7 +189,6 @@ static const char* g_auditEnsureRloginServiceIsDisabledObject = "auditEnsureRlog
 static const char* g_auditEnsureUnnecessaryAccountsAreRemovedObject = "auditEnsureUnnecessaryAccountsAreRemoved";
 
 // Remediation
-static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
 static const char* g_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
 static const char* g_remediateEnsurePermissionsOnEtcIssueNetObject = "remediateEnsurePermissionsOnEtcIssueNet";
 static const char* g_remediateEnsurePermissionsOnEtcHostsAllowObject = "remediateEnsurePermissionsOnEtcHostsAllow";
@@ -1830,198 +1825,6 @@ static char* AuditEnsureUnnecessaryAccountsAreRemoved(void)
     return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), &reason, SecurityBaselineGetLog())) ? reason : DuplicateString(g_pass);
 }
 
-AuditCall g_auditChecks[] =
-{
-    &AuditEnsurePermissionsOnEtcIssue,
-    &AuditEnsurePermissionsOnEtcIssueNet,
-    &AuditEnsurePermissionsOnEtcHostsAllow,
-    &AuditEnsurePermissionsOnEtcHostsDeny,
-    &AuditEnsurePermissionsOnEtcSshSshdConfig,
-    &AuditEnsurePermissionsOnEtcShadow,
-    &AuditEnsurePermissionsOnEtcShadowDash,
-    &AuditEnsurePermissionsOnEtcGShadow,
-    &AuditEnsurePermissionsOnEtcGShadowDash,
-    &AuditEnsurePermissionsOnEtcPasswd,
-    &AuditEnsurePermissionsOnEtcPasswdDash,
-    &AuditEnsurePermissionsOnEtcGroup,
-    &AuditEnsurePermissionsOnEtcGroupDash,
-    &AuditEnsurePermissionsOnEtcAnacronTab,
-    &AuditEnsurePermissionsOnEtcCronD,
-    &AuditEnsurePermissionsOnEtcCronDaily,
-    &AuditEnsurePermissionsOnEtcCronHourly,
-    &AuditEnsurePermissionsOnEtcCronMonthly,
-    &AuditEnsurePermissionsOnEtcCronWeekly,
-    &AuditEnsurePermissionsOnEtcMotd,
-    &AuditEnsureKernelSupportForCpuNx,
-    &AuditEnsureNodevOptionOnHomePartition,
-    &AuditEnsureNodevOptionOnTmpPartition,
-    &AuditEnsureNodevOptionOnVarTmpPartition,
-    &AuditEnsureNosuidOptionOnTmpPartition,
-    &AuditEnsureNosuidOptionOnVarTmpPartition,
-    &AuditEnsureNoexecOptionOnVarTmpPartition,
-    &AuditEnsureNoexecOptionOnDevShmPartition,
-    &AuditEnsureNodevOptionEnabledForAllRemovableMedia,
-    &AuditEnsureNoexecOptionEnabledForAllRemovableMedia,
-    &AuditEnsureNosuidOptionEnabledForAllRemovableMedia,
-    &AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
-    &AuditEnsureInetdNotInstalled,
-    &AuditEnsureXinetdNotInstalled,
-    &AuditEnsureAllTelnetdPackagesUninstalled,
-    &AuditEnsureRshServerNotInstalled,
-    &AuditEnsureNisNotInstalled,
-    &AuditEnsureTftpdNotInstalled,
-    &AuditEnsureReadaheadFedoraNotInstalled,
-    &AuditEnsureBluetoothHiddNotInstalled,
-    &AuditEnsureIsdnUtilsBaseNotInstalled,
-    &AuditEnsureIsdnUtilsKdumpToolsNotInstalled,
-    &AuditEnsureIscDhcpdServerNotInstalled,
-    &AuditEnsureSendmailNotInstalled,
-    &AuditEnsureSldapdNotInstalled,
-    &AuditEnsureBind9NotInstalled,
-    &AuditEnsureDovecotCoreNotInstalled,
-    &AuditEnsureAuditdInstalled,
-    &AuditEnsureAllEtcPasswdGroupsExistInEtcGroup,
-    &AuditEnsureNoDuplicateUidsExist,
-    &AuditEnsureNoDuplicateGidsExist,
-    &AuditEnsureNoDuplicateUserNamesExist,
-    &AuditEnsureNoDuplicateGroupsExist,
-    &AuditEnsureShadowGroupIsEmpty,
-    &AuditEnsureRootGroupExists,
-    &AuditEnsureAllAccountsHavePasswords,
-    &AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero,
-    &AuditEnsureNoLegacyPlusEntriesInEtcPasswd,
-    &AuditEnsureNoLegacyPlusEntriesInEtcShadow,
-    &AuditEnsureNoLegacyPlusEntriesInEtcGroup,
-    &AuditEnsureDefaultRootAccountGroupIsGidZero,
-    &AuditEnsureRootIsOnlyUidZeroAccount,
-    &AuditEnsureAllUsersHomeDirectoriesExist,
-    &AuditEnsureUsersOwnTheirHomeDirectories,
-    &AuditEnsureRestrictedUserHomeDirectories,
-    &AuditEnsurePasswordHashingAlgorithm,
-    &AuditEnsureMinDaysBetweenPasswordChanges,
-    &AuditEnsureInactivePasswordLockPeriod,
-    &AuditEnsureMaxDaysBetweenPasswordChanges,
-    &AuditEnsurePasswordExpiration,
-    &AuditEnsurePasswordExpirationWarning,
-    &AuditEnsureSystemAccountsAreNonLogin,
-    &AuditEnsureAuthenticationRequiredForSingleUserMode,
-    &AuditEnsurePrelinkIsDisabled,
-    &AuditEnsureTalkClientIsNotInstalled,
-    &AuditEnsureDotDoesNotAppearInRootsPath,
-    &AuditEnsureCronServiceIsEnabled,
-    &AuditEnsureRemoteLoginWarningBannerIsConfigured,
-    &AuditEnsureLocalLoginWarningBannerIsConfigured,
-    &AuditEnsureAuditdServiceIsRunning,
-    &AuditEnsureSuRestrictedToRootGroup,
-    &AuditEnsureDefaultUmaskForAllUsers,
-    &AuditEnsureAutomountingDisabled,
-    &AuditEnsureKernelCompiledFromApprovedSources,
-    &AuditEnsureDefaultDenyFirewallPolicyIsSet,
-    &AuditEnsurePacketRedirectSendingIsDisabled,
-    &AuditEnsureIcmpRedirectsIsDisabled,
-    &AuditEnsureSourceRoutedPacketsIsDisabled,
-    &AuditEnsureAcceptingSourceRoutedPacketsIsDisabled,
-    &AuditEnsureIgnoringBogusIcmpBroadcastResponses,
-    &AuditEnsureIgnoringIcmpEchoPingsToMulticast,
-    &AuditEnsureMartianPacketLoggingIsEnabled,
-    &AuditEnsureReversePathSourceValidationIsEnabled,
-    &AuditEnsureTcpSynCookiesAreEnabled,
-    &AuditEnsureSystemNotActingAsNetworkSniffer,
-    &AuditEnsureAllWirelessInterfacesAreDisabled,
-    &AuditEnsureIpv6ProtocolIsEnabled,
-    &AuditEnsureDccpIsDisabled,
-    &AuditEnsureSctpIsDisabled,
-    &AuditEnsureDisabledSupportForRds,
-    &AuditEnsureTipcIsDisabled,
-    &AuditEnsureZeroconfNetworkingIsDisabled,
-    &AuditEnsurePermissionsOnBootloaderConfig,
-    &AuditEnsurePasswordReuseIsLimited,
-    &AuditEnsureMountingOfUsbStorageDevicesIsDisabled,
-    &AuditEnsureCoreDumpsAreRestricted,
-    &AuditEnsurePasswordCreationRequirements,
-    &AuditEnsureLockoutForFailedPasswordAttempts,
-    &AuditEnsureDisabledInstallationOfCramfsFileSystem,
-    &AuditEnsureDisabledInstallationOfFreevxfsFileSystem,
-    &AuditEnsureDisabledInstallationOfHfsFileSystem,
-    &AuditEnsureDisabledInstallationOfHfsplusFileSystem,
-    &AuditEnsureDisabledInstallationOfJffs2FileSystem,
-    &AuditEnsureVirtualMemoryRandomizationIsEnabled,
-    &AuditEnsureAllBootloadersHavePasswordProtectionEnabled,
-    &AuditEnsureLoggingIsConfigured,
-    &AuditEnsureSyslogPackageIsInstalled,
-    &AuditEnsureSystemdJournaldServicePersistsLogMessages,
-    &AuditEnsureALoggingServiceIsEnabled,
-    &AuditEnsureFilePermissionsForAllRsyslogLogFiles,
-    &AuditEnsureLoggerConfigurationFilesAreRestricted,
-    &AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup,
-    &AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser,
-    &AuditEnsureRsyslogNotAcceptingRemoteMessages,
-    &AuditEnsureSyslogRotaterServiceIsEnabled,
-    &AuditEnsureTelnetServiceIsDisabled,
-    &AuditEnsureRcprshServiceIsDisabled,
-    &AuditEnsureTftpServiceisDisabled,
-    &AuditEnsureAtCronIsRestrictedToAuthorizedUsers,
-    &AuditEnsureSshPortIsConfigured,
-    &AuditEnsureSshBestPracticeProtocol,
-    &AuditEnsureSshBestPracticeIgnoreRhosts,
-    &AuditEnsureSshLogLevelIsSet,
-    &AuditEnsureSshMaxAuthTriesIsSet,
-    &AuditEnsureAllowUsersIsConfigured,
-    &AuditEnsureDenyUsersIsConfigured,
-    &AuditEnsureAllowGroupsIsConfigured,
-    &AuditEnsureDenyGroupsConfigured,
-    &AuditEnsureSshHostbasedAuthenticationIsDisabled,
-    &AuditEnsureSshPermitRootLoginIsDisabled,
-    &AuditEnsureSshPermitEmptyPasswordsIsDisabled,
-    &AuditEnsureSshClientIntervalCountMaxIsConfigured,
-    &AuditEnsureSshClientAliveIntervalIsConfigured,
-    &AuditEnsureSshLoginGraceTimeIsSet,
-    &AuditEnsureOnlyApprovedMacAlgorithmsAreUsed,
-    &AuditEnsureSshWarningBannerIsEnabled,
-    &AuditEnsureUsersCannotSetSshEnvironmentOptions,
-    &AuditEnsureAppropriateCiphersForSsh,
-    &AuditEnsureAvahiDaemonServiceIsDisabled,
-    &AuditEnsureCupsServiceisDisabled,
-    &AuditEnsurePostfixPackageIsUninstalled,
-    &AuditEnsurePostfixNetworkListeningIsDisabled,
-    &AuditEnsureRpcgssdServiceIsDisabled,
-    &AuditEnsureRpcidmapdServiceIsDisabled,
-    &AuditEnsurePortmapServiceIsDisabled,
-    &AuditEnsureNetworkFileSystemServiceIsDisabled,
-    &AuditEnsureRpcsvcgssdServiceIsDisabled,
-    &AuditEnsureSnmpServerIsDisabled,
-    &AuditEnsureRsynServiceIsDisabled,
-    &AuditEnsureNisServerIsDisabled,
-    &AuditEnsureRshClientNotInstalled,
-    &AuditEnsureSmbWithSambaIsDisabled,
-    &AuditEnsureUsersDotFilesArentGroupOrWorldWritable,
-    &AuditEnsureNoUsersHaveDotForwardFiles,
-    &AuditEnsureNoUsersHaveDotNetrcFiles,
-    &AuditEnsureNoUsersHaveDotRhostsFiles,
-    &AuditEnsureRloginServiceIsDisabled,
-    &AuditEnsureUnnecessaryAccountsAreRemoved
-};
-
-char* AuditSecurityBaseline(void)
-{
-    size_t numChecks = ARRAY_SIZE(g_auditChecks);
-    size_t i = 0;
-    char* _status = NULL;
-    char* status = DuplicateString(g_pass);
-
-    for (i = 0; i < numChecks; i++)
-    {
-        if ((NULL == (_status = g_auditChecks[i]())) || strcmp(_status, g_pass))
-        {
-            FREE_MEMORY(status);
-            status = DuplicateString(_status ? _status : g_fail);
-        }
-        FREE_MEMORY(_status);
-    }
-
-    return status;
-}
-
 static int RemediateEnsurePermissionsOnEtcIssue(char* value)
 {
     UNUSED(value);
@@ -3140,195 +2943,6 @@ static int InitEnsureAppropriateCiphersForSsh(char* value)
     return InitializeSshAuditCheck(g_initEnsureAppropriateCiphersForSshObject, value, SecurityBaselineGetLog());
 }
 
-RemediationCall g_remediateChecks[] =
-{
-    &RemediateEnsurePermissionsOnEtcIssue,
-    &RemediateEnsurePermissionsOnEtcIssueNet,
-    &RemediateEnsurePermissionsOnEtcHostsAllow,
-    &RemediateEnsurePermissionsOnEtcHostsDeny,
-    &RemediateEnsurePermissionsOnEtcSshSshdConfig,
-    &RemediateEnsurePermissionsOnEtcShadow,
-    &RemediateEnsurePermissionsOnEtcShadowDash,
-    &RemediateEnsurePermissionsOnEtcGShadow,
-    &RemediateEnsurePermissionsOnEtcGShadowDash,
-    &RemediateEnsurePermissionsOnEtcPasswd,
-    &RemediateEnsurePermissionsOnEtcPasswdDash,
-    &RemediateEnsurePermissionsOnEtcGroup,
-    &RemediateEnsurePermissionsOnEtcGroupDash,
-    &RemediateEnsurePermissionsOnEtcAnacronTab,
-    &RemediateEnsurePermissionsOnEtcCronD,
-    &RemediateEnsurePermissionsOnEtcCronDaily,
-    &RemediateEnsurePermissionsOnEtcCronHourly,
-    &RemediateEnsurePermissionsOnEtcCronMonthly,
-    &RemediateEnsurePermissionsOnEtcCronWeekly,
-    &RemediateEnsurePermissionsOnEtcMotd,
-    &RemediateEnsureInetdNotInstalled,
-    &RemediateEnsureXinetdNotInstalled,
-    &RemediateEnsureRshServerNotInstalled,
-    &RemediateEnsureNisNotInstalled,
-    &RemediateEnsureTftpdNotInstalled,
-    &RemediateEnsureReadaheadFedoraNotInstalled,
-    &RemediateEnsureBluetoothHiddNotInstalled,
-    &RemediateEnsureIsdnUtilsBaseNotInstalled,
-    &RemediateEnsureIsdnUtilsKdumpToolsNotInstalled,
-    &RemediateEnsureIscDhcpdServerNotInstalled,
-    &RemediateEnsureSendmailNotInstalled,
-    &RemediateEnsureSldapdNotInstalled,
-    &RemediateEnsureBind9NotInstalled,
-    &RemediateEnsureDovecotCoreNotInstalled,
-    &RemediateEnsureAuditdInstalled,
-    &RemediateEnsurePrelinkIsDisabled,
-    &RemediateEnsureTalkClientIsNotInstalled,
-    &RemediateEnsureCronServiceIsEnabled,
-    &RemediateEnsureAuditdServiceIsRunning,
-    &RemediateEnsureKernelSupportForCpuNx,
-    &RemediateEnsureNodevOptionOnHomePartition,
-    &RemediateEnsureNodevOptionOnTmpPartition,
-    &RemediateEnsureNodevOptionOnVarTmpPartition,
-    &RemediateEnsureNosuidOptionOnTmpPartition,
-    &RemediateEnsureNosuidOptionOnVarTmpPartition,
-    &RemediateEnsureNoexecOptionOnVarTmpPartition,
-    &RemediateEnsureNoexecOptionOnDevShmPartition,
-    &RemediateEnsureNodevOptionEnabledForAllRemovableMedia,
-    &RemediateEnsureNoexecOptionEnabledForAllRemovableMedia,
-    &RemediateEnsureNosuidOptionEnabledForAllRemovableMedia,
-    &RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
-    &RemediateEnsureAllTelnetdPackagesUninstalled,
-    &RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup,
-    &RemediateEnsureNoDuplicateUidsExist,
-    &RemediateEnsureNoDuplicateGidsExist,
-    &RemediateEnsureNoDuplicateUserNamesExist,
-    &RemediateEnsureNoDuplicateGroupsExist,
-    &RemediateEnsureShadowGroupIsEmpty,
-    &RemediateEnsureRootGroupExists,
-    &RemediateEnsureAllAccountsHavePasswords,
-    &RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero,
-    &RemediateEnsureNoLegacyPlusEntriesInEtcPasswd,
-    &RemediateEnsureNoLegacyPlusEntriesInEtcShadow,
-    &RemediateEnsureNoLegacyPlusEntriesInEtcGroup,
-    &RemediateEnsureDefaultRootAccountGroupIsGidZero,
-    &RemediateEnsureRootIsOnlyUidZeroAccount,
-    &RemediateEnsureAllUsersHomeDirectoriesExist,
-    &RemediateEnsureUsersOwnTheirHomeDirectories,
-    &RemediateEnsureRestrictedUserHomeDirectories,
-    &RemediateEnsurePasswordHashingAlgorithm,
-    &RemediateEnsureMinDaysBetweenPasswordChanges,
-    &RemediateEnsureInactivePasswordLockPeriod,
-    &RemediateEnsureMaxDaysBetweenPasswordChanges,
-    &RemediateEnsurePasswordExpiration,
-    &RemediateEnsurePasswordExpirationWarning,
-    &RemediateEnsureSystemAccountsAreNonLogin,
-    &RemediateEnsureAuthenticationRequiredForSingleUserMode,
-    &RemediateEnsureDotDoesNotAppearInRootsPath,
-    &RemediateEnsureRemoteLoginWarningBannerIsConfigured,
-    &RemediateEnsureLocalLoginWarningBannerIsConfigured,
-    &RemediateEnsureSuRestrictedToRootGroup,
-    &RemediateEnsureDefaultUmaskForAllUsers,
-    &RemediateEnsureAutomountingDisabled,
-    &RemediateEnsureKernelCompiledFromApprovedSources,
-    &RemediateEnsureDefaultDenyFirewallPolicyIsSet,
-    &RemediateEnsurePacketRedirectSendingIsDisabled,
-    &RemediateEnsureIcmpRedirectsIsDisabled,
-    &RemediateEnsureSourceRoutedPacketsIsDisabled,
-    &RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled,
-    &RemediateEnsureIgnoringBogusIcmpBroadcastResponses,
-    &RemediateEnsureIgnoringIcmpEchoPingsToMulticast,
-    &RemediateEnsureMartianPacketLoggingIsEnabled,
-    &RemediateEnsureReversePathSourceValidationIsEnabled,
-    &RemediateEnsureTcpSynCookiesAreEnabled,
-    &RemediateEnsureSystemNotActingAsNetworkSniffer,
-    &RemediateEnsureAllWirelessInterfacesAreDisabled,
-    &RemediateEnsureIpv6ProtocolIsEnabled,
-    &RemediateEnsureDccpIsDisabled,
-    &RemediateEnsureSctpIsDisabled,
-    &RemediateEnsureDisabledSupportForRds,
-    &RemediateEnsureTipcIsDisabled,
-    &RemediateEnsureZeroconfNetworkingIsDisabled,
-    &RemediateEnsurePermissionsOnBootloaderConfig,
-    &RemediateEnsurePasswordReuseIsLimited,
-    &RemediateEnsureMountingOfUsbStorageDevicesIsDisabled,
-    &RemediateEnsureCoreDumpsAreRestricted,
-    &RemediateEnsurePasswordCreationRequirements,
-    &RemediateEnsureLockoutForFailedPasswordAttempts,
-    &RemediateEnsureDisabledInstallationOfCramfsFileSystem,
-    &RemediateEnsureDisabledInstallationOfFreevxfsFileSystem,
-    &RemediateEnsureDisabledInstallationOfHfsFileSystem,
-    &RemediateEnsureDisabledInstallationOfHfsplusFileSystem,
-    &RemediateEnsureDisabledInstallationOfJffs2FileSystem,
-    &RemediateEnsureVirtualMemoryRandomizationIsEnabled,
-    &RemediateEnsureAllBootloadersHavePasswordProtectionEnabled,
-    &RemediateEnsureLoggingIsConfigured,
-    &RemediateEnsureSyslogPackageIsInstalled,
-    &RemediateEnsureSystemdJournaldServicePersistsLogMessages,
-    &RemediateEnsureALoggingServiceIsEnabled,
-    &RemediateEnsureFilePermissionsForAllRsyslogLogFiles,
-    &RemediateEnsureLoggerConfigurationFilesAreRestricted,
-    &RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup,
-    &RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser,
-    &RemediateEnsureRsyslogNotAcceptingRemoteMessages,
-    &RemediateEnsureSyslogRotaterServiceIsEnabled,
-    &RemediateEnsureTelnetServiceIsDisabled,
-    &RemediateEnsureRcprshServiceIsDisabled,
-    &RemediateEnsureTftpServiceisDisabled,
-    &RemediateEnsureAtCronIsRestrictedToAuthorizedUsers,
-    &RemediateEnsureSshPortIsConfigured,
-    &RemediateEnsureSshBestPracticeProtocol,
-    &RemediateEnsureSshBestPracticeIgnoreRhosts,
-    &RemediateEnsureSshLogLevelIsSet,
-    &RemediateEnsureSshMaxAuthTriesIsSet,
-    &RemediateEnsureAllowUsersIsConfigured,
-    &RemediateEnsureDenyUsersIsConfigured,
-    &RemediateEnsureAllowGroupsIsConfigured,
-    &RemediateEnsureDenyGroupsConfigured,
-    &RemediateEnsureSshHostbasedAuthenticationIsDisabled,
-    &RemediateEnsureSshPermitRootLoginIsDisabled,
-    &RemediateEnsureSshPermitEmptyPasswordsIsDisabled,
-    &RemediateEnsureSshClientIntervalCountMaxIsConfigured,
-    &RemediateEnsureSshClientAliveIntervalIsConfigured,
-    &RemediateEnsureSshLoginGraceTimeIsSet,
-    &RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed,
-    &RemediateEnsureSshWarningBannerIsEnabled,
-    &RemediateEnsureUsersCannotSetSshEnvironmentOptions,
-    &RemediateEnsureAppropriateCiphersForSsh,
-    &RemediateEnsureAvahiDaemonServiceIsDisabled,
-    &RemediateEnsureCupsServiceisDisabled,
-    &RemediateEnsurePostfixPackageIsUninstalled,
-    &RemediateEnsurePostfixNetworkListeningIsDisabled,
-    &RemediateEnsureRpcgssdServiceIsDisabled,
-    &RemediateEnsureRpcidmapdServiceIsDisabled,
-    &RemediateEnsurePortmapServiceIsDisabled,
-    &RemediateEnsureNetworkFileSystemServiceIsDisabled,
-    &RemediateEnsureRpcsvcgssdServiceIsDisabled,
-    &RemediateEnsureSnmpServerIsDisabled,
-    &RemediateEnsureRsynServiceIsDisabled,
-    &RemediateEnsureNisServerIsDisabled,
-    &RemediateEnsureRshClientNotInstalled,
-    &RemediateEnsureSmbWithSambaIsDisabled,
-    &RemediateEnsureUsersDotFilesArentGroupOrWorldWritable,
-    &RemediateEnsureNoUsersHaveDotForwardFiles,
-    &RemediateEnsureNoUsersHaveDotNetrcFiles,
-    &RemediateEnsureNoUsersHaveDotRhostsFiles,
-    &RemediateEnsureRloginServiceIsDisabled,
-    &RemediateEnsureUnnecessaryAccountsAreRemoved
-};
-
-static int RemediateSecurityBaseline(char* value)
-{
-    size_t numChecks = ARRAY_SIZE(g_remediateChecks);
-    size_t i = 0;
-    int status = 0;
-
-    for (i = 0; i < numChecks; i++)
-    {
-        if ((0 != g_remediateChecks[i](value)) && (0 == status))
-        {
-            status = ENOENT;
-        }
-    }
-
-    return status;
-}
-
 MMI_HANDLE SecurityBaselineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
     MMI_HANDLE handle = (MMI_HANDLE)g_securityBaselineModuleName;
@@ -3417,11 +3031,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     }
     else
     {
-        if (0 == strcmp(objectName, g_auditSecurityBaselineObject))
-        {
-            result = AuditSecurityBaseline();
-        }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueObject))
+        if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueObject))
         {
             result = AuditEnsurePermissionsOnEtcIssue();
         }
@@ -4204,11 +3814,7 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
     
     if (MMI_OK == status)
     {
-        if (0 == strcmp(objectName, g_remediateSecurityBaselineObject))
-        {
-            status = RemediateSecurityBaseline(jsonString);
-        }
-        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcIssueObject))
+        if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcIssueObject))
         {
             status = RemediateEnsurePermissionsOnEtcIssue(jsonString);
         }

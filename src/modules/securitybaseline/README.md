@@ -4,7 +4,7 @@
 
 SecurityBaseline is an [OSConfig Management Module](../../../docs/modules.md) that audits and remediates the [Linux Security Baseline](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux) from the Azure Compute Security Baselines.
 
-The Module Interface Model (MIM) for Security Baseline is at [src/modules/mim/securitybaseline.json](../mim/securitybaseline.json). This MIM implements a single MIM component, `SecurityBaseline`. This component contains two global reported and desired MIM objects, `auditSecurityBaseline` and `remediateSecurityBaseline` that audit and remediate respectively the entire baseline, and also contains several more pairs of reported and desired MIM objects for the individuals checks with names that follow the respective check descriptions. For example:
+The Module Interface Model (MIM) for Security Baseline is at [src/modules/mim/securitybaseline.json](../mim/securitybaseline.json). This MIM implements a single MIM component, `SecurityBaseline`. This component contains sets (pairs or triplets) of reported and desired MIM objects for the individual baseline checks with names that follow the respective check descriptions. For example:
 
  Check description | Reported MIM object  | Desired MIM object
 -----|-----|-----

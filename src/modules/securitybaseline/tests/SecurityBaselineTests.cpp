@@ -25,7 +25,6 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_securityBaselineModuleName = "OSConfig SecurityBaseline module";
         const char* m_securityBaselineComponentName = "SecurityBaseline";
 
-        const char* m_auditSecurityBaselineObject = "auditSecurityBaseline";
         const char* m_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
         const char* m_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
         const char* m_auditEnsurePermissionsOnEtcHostsAllowObject = "auditEnsurePermissionsOnEtcHostsAllow";
@@ -195,7 +194,6 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureUnnecessaryAccountsAreRemovedObject = "auditEnsureUnnecessaryAccountsAreRemoved";
 
         // Remediation
-        const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
         const char* m_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
         const char* m_remediateEnsurePermissionsOnEtcIssueNetObject = "remediateEnsurePermissionsOnEtcIssueNet";
         const char* m_remediateEnsurePermissionsOnEtcHostsAllowObject = "remediateEnsurePermissionsOnEtcHostsAllow";
@@ -475,7 +473,6 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_initEnsureUsersCannotSetSshEnvironmentOptionsObject,
         m_initEnsureAppropriateCiphersForSshObject,
         // Actual remediation
-        m_remediateSecurityBaselineObject,
         m_remediateEnsurePermissionsOnEtcIssueObject,
         m_remediateEnsurePermissionsOnEtcIssueNetObject,
         m_remediateEnsurePermissionsOnEtcHostsAllowObject,
@@ -665,7 +662,7 @@ TEST_F(SecurityBaselineTest, MmiSetInvalidComponent)
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, "Test123", m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, "Test123", m_remediateEnsureSshPermitRootLoginIsDisabledObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
     SecurityBaselineMmiClose(handle);
 }
 
@@ -686,11 +683,11 @@ TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
     const char* payload = "PASS";
     int payloadSizeBytes = strlen(payload);
 
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateEnsureSshPermitRootLoginIsDisabledObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
     SecurityBaselineMmiClose(handle);
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateEnsureSshPermitRootLoginIsDisabledObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
 }
 
 TEST_F(SecurityBaselineTest, MmiGet)
@@ -701,7 +698,6 @@ TEST_F(SecurityBaselineTest, MmiGet)
     int payloadSizeBytes = 0;
 
     const char* mimObjects[] = {
-        m_auditSecurityBaselineObject,
         m_auditEnsurePermissionsOnEtcIssueObject,
         m_auditEnsurePermissionsOnEtcIssueNetObject,
         m_auditEnsurePermissionsOnEtcHostsAllowObject,
@@ -897,7 +893,7 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
     int payloadSizeBytes = 0;
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_truncatedMaxPayloadSizeBytes));
-    EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, m_auditSecurityBaselineObject, &payload, &payloadSizeBytes));
+    EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, auditEnsureUnnecessaryAccountsAreRemoved, &payload, &payloadSizeBytes));
     EXPECT_NE(nullptr, payload);
     EXPECT_NE(0, payloadSizeBytes);
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
@@ -944,14 +940,14 @@ TEST_F(SecurityBaselineTest, MmiGetOutsideSession)
     char* payload = nullptr;
     int payloadSizeBytes = 0;
 
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, m_auditSecurityBaselineObject, &payload, &payloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, auditEnsureUnnecessaryAccountsAreRemoved, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
     SecurityBaselineMmiClose(handle);
 
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, m_auditSecurityBaselineObject, &payload, &payloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, auditEnsureUnnecessaryAccountsAreRemoved, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
 }
