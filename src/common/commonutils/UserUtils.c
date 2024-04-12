@@ -2415,6 +2415,7 @@ int CheckPasswordCreationRequirements(int minlen, int minclass, int dcredit, int
     int ucreditOption = 0;
     int ocreditOption = 0;
     int lcreditOption = 0;
+    int result = 0;
 
     if (IsCurrentOs(suse, log))
     {
@@ -2433,6 +2434,7 @@ int CheckPasswordCreationRequirements(int minlen, int minclass, int dcredit, int
             OsConfigCaptureReason(reason, "'%s' detected, in '%s' 'minlen' missing or set to %d instead of 14, 'minclass' missing or set to %d instead of 4, "
                 "or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to %d, %d, %d, %d respectively instead of -1 each",
                 suse, etcPamdCommonPassword, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+            result = ENOENT;
         }
     }
     else
@@ -2451,6 +2453,7 @@ int CheckPasswordCreationRequirements(int minlen, int minclass, int dcredit, int
         {
             OsConfigCaptureReason(reason, "'%s' mising, or 'minclass' missing or set to %d instead of 4, or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to "
                 "%d, %d, %d, %d respectively instead of -1 each", etcSecurityPwQualityConf, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+            result = ENOENT;
         }
     }
 
