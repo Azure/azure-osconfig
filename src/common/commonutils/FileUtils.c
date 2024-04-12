@@ -1219,7 +1219,7 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
         {
             if (valueFromFile == values[i])
             {
-                OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of %d", option, fileName, value[i]);
+                OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of %d", option, fileName, values[i]);
                 result = 0;
                 break;
             }
