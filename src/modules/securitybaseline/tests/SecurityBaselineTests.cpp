@@ -893,7 +893,7 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
     int payloadSizeBytes = 0;
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_truncatedMaxPayloadSizeBytes));
-    EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, auditEnsureUnnecessaryAccountsAreRemoved, &payload, &payloadSizeBytes));
+    EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, m_auditEnsureUnnecessaryAccountsAreRemovedObject, &payload, &payloadSizeBytes));
     EXPECT_NE(nullptr, payload);
     EXPECT_NE(0, payloadSizeBytes);
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
@@ -940,14 +940,14 @@ TEST_F(SecurityBaselineTest, MmiGetOutsideSession)
     char* payload = nullptr;
     int payloadSizeBytes = 0;
 
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, auditEnsureUnnecessaryAccountsAreRemoved, &payload, &payloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, m_auditEnsureUnnecessaryAccountsAreRemovedObject, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
     SecurityBaselineMmiClose(handle);
 
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, auditEnsureUnnecessaryAccountsAreRemoved, &payload, &payloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, m_auditEnsureUnnecessaryAccountsAreRemovedObject, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
 }
