@@ -495,8 +495,8 @@ TEST_F(CommonUtilsTest, CheckFileExists)
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_EQ(EEXIST, CheckFileExists(m_path, nullptr, nullptr));
     EXPECT_EQ(0, CheckFileNotFound(m_path, nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckFileExists("This file does not exist", nullptr));
-    EXPECT_EQ(0, CheckFileNotFound("This file does not exist", nullptr));
+    EXPECT_EQ(EEXIST, CheckFileExists("This file does not exist", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileNotFound("This file does not exist", nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, DirectoryExists)
@@ -1429,11 +1429,11 @@ TEST_F(CommonUtilsTest, CheckTextNotFoundInEnvironmentVariable)
 
 TEST_F(CommonUtilsTest, CheckFileContents)
 {
-    EXPECT_EQ(EINVAL, CheckFileContents(nullptr, "2", nullptr));
-    EXPECT_EQ(EINVAL, CheckFileContents(nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileContents(m_path, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileContents(m_path, "", nullptr));
-    EXPECT_EQ(EINVAL, CheckFileContents("", "2", nullptr));
+    EXPECT_EQ(EINVAL, CheckFileContents(nullptr, "2", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileContents(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileContents(m_path, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileContents(m_path, "", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileContents("", "2", nullptr, nullptr));
 
     const char* test[] = {"2", "ABC", "~1", "This is a test", "One line\nAnd another\n"};
     size_t sizeOfTest = ARRAY_SIZE(test);
@@ -1441,7 +1441,7 @@ TEST_F(CommonUtilsTest, CheckFileContents)
     for (size_t i = 0; i < sizeOfTest; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, test[i]));
-        EXPECT_EQ(0, CheckFileContents(m_path, test[i], nullptr));
+        EXPECT_EQ(0, CheckFileContents(m_path, test[i], nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
 }
@@ -1468,9 +1468,9 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
     EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/etc", nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr));
 
-    FindTextInFolder("/etc/modprobe.d", "ac97", nullptr);
-    CheckTextFoundInFolder("/etc/modprobe.d", "ac97", nullptr);
-    CheckTextNotFoundInFolder("/etc/modprobe.d", "~~~~ test123 ~~~~", nullptr);
+    FindTextInFolder("/etc/modprobe.d", "ac97", nullptr, nullptr);
+    CheckTextFoundInFolder("/etc/modprobe.d", "ac97", nullptr, nullptr);
+    CheckTextNotFoundInFolder("/etc/modprobe.d", "~~~~ test123 ~~~~", nullptr, nullptr);
 }
 
 TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
