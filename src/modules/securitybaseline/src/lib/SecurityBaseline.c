@@ -1234,7 +1234,7 @@ static char* AuditEnsureAllWirelessInterfacesAreDisabled(void)
     char* reason = NULL;
     if (0 == CheckTextFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", &reason, SecurityBaselineGetLog()))
     {
-        OsConfigCaptureReason(reason, "at least one active wireless interface is present");
+        OsConfigCaptureReason(&reason, "at least one active wireless interface is present");
     }
     return reason;
 }
@@ -1415,7 +1415,7 @@ static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
     OsConfigResetReason(reason);
     if (0 != CheckFileContents("/proc/sys/kernel/randomize_va_space", "1", &reason, SecurityBaselineGetLog()))
     {
-        OsConfigCaptureReason(reason, "neither 2", text, fileName, contents);
+        OsConfigCaptureReason(&reason, "neither 2", text, fileName, contents);
     }
     return reason;
 }
