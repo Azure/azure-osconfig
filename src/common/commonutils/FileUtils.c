@@ -570,7 +570,7 @@ int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason
     }
     else
     {
-        if (0 == (result = FindTextInFile(fileName, text, reason, log)))
+        if (0 == (result = FindTextInFile(fileName, text, log)))
         {
             OsConfigCaptureSuccessReason(reason, "'%s' found in '%s'", text, fileName);
         }
@@ -593,7 +593,7 @@ int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** rea
     }
     else
     {
-        if (ENOENT == (result = FindTextInFile(fileName, text, reason, log)))
+        if (ENOENT == (result = FindTextInFile(fileName, text, log)))
         {
             OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s'", text, fileName);
             result = 0;
