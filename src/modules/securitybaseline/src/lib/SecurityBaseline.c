@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <version.h>
-#include <math.h>
+#include <ctype.h>
 #include <parson.h>
 #include <CommonUtils.h>
 #include <UserUtils.h>
@@ -1306,7 +1306,7 @@ static char* AuditEnsurePasswordReuseIsLimited(void) ///////////////////////////
 static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
     char* reason = NULL;
-    CheckTextIsNotFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", &reason, SecurityBaselineGetLog());
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
@@ -1315,7 +1315,7 @@ static char* AuditEnsureCoreDumpsAreRestricted(void)
     const char* fsSuidDumpable = "fs.suid_dumpable = 0";
     char* reason = NULL;
     CheckLineFoundNotCommentedOut("/etc/security/limits.conf", '#', "hard core 0", &reason, SecurityBaselineGetLog());
-    CheckTextFoundInFolderr("/etc/security/limits.d", fsSuidDumpable, &reason, SecurityBaselineGetLog());
+    CheckTextFoundInFolder("/etc/security/limits.d", fsSuidDumpable, &reason, SecurityBaselineGetLog());
     CheckTextFoundInCommandOutput("sysctl -a", fsSuidDumpable, &reason, SecurityBaselineGetLog());
     return reason;
 }
@@ -1344,7 +1344,7 @@ static char* AuditEnsurePasswordCreationRequirements(void) /////////////////////
     }
     else
     {
-        result = ((CheckFileExists(g_etcSecurityPwQualityConf, SecurityBaselineGetLog())) &&
+        result = ((CheckFileExists(g_etcSecurityPwQualityConf, NULL, SecurityBaselineGetLog())) &&
             ((4 == (minclassOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "minclass", '=', SecurityBaselineGetLog())) ||
             ((-1 == (dcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "dcredit", '=', SecurityBaselineGetLog()))) &&
             (-1 == (ucreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ucredit", '=', SecurityBaselineGetLog()))) &&
@@ -1362,11 +1362,11 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(void)
     const char* passwordAuth = "/etc/pam.d/password-auth";
     const char* commonAuth = "/etc/pam.d/common-auth";
     char* reason = NULL;
-    if ((0 == CheckLockoutForFailedPasswordAttempts(passwordAuth, &reason, SecurityBaselineGetLog()))
+    if (0 == CheckLockoutForFailedPasswordAttempts(passwordAuth, &reason, SecurityBaselineGetLog()))
     {
         return reason;
     }
-    OsConfigResetReason(reason);
+    OsConfigResetReason(&reason);
     CheckLockoutForFailedPasswordAttempts(commonAuth, SecurityBaselineGetLog());
     return reason;
 }
@@ -1413,10 +1413,10 @@ static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
     {
         return reason;
     }
-    OsConfigResetReason(reason);
+    OsConfigResetReason(&reason);
     if (0 != CheckFileContents("/proc/sys/kernel/randomize_va_space", "1", &reason, SecurityBaselineGetLog()))
     {
-        OsConfigCaptureReason(&reason, "neither 2", text, fileName, contents);
+        OsConfigCaptureReason(&reason, "neither 2");
     }
     return reason;
 }
@@ -1464,14 +1464,14 @@ static char* AuditEnsureALoggingServiceIsEnabled(void)
     {
         return reason;
     }
-    OsConfigResetReason(reason);
+    OsConfigResetReason(&reason);
     if ((0 == CheckPackageNotInstalled(g_rsyslog, &reason, SecurityBaselineGetLog())) && 
         (0 == CheckPackageNotInstalled(g_systemd, &reason, SecurityBaselineGetLog())) && 
         CheckDaemonActive(g_syslogNg, &reason, SecurityBaselineGetLog())) 
     {
         return reason;
     }
-    OsConfigResetReason(reason);
+    OsConfigResetReason(&reason);
     CheckPackageInstalled(g_systemd, &reason, SecurityBaselineGetLog());
     CheckDaemonActive(g_systemdJournald, &reason, SecurityBaselineGetLog());
     return reason;
@@ -1482,7 +1482,7 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void) /////////////
     const char* fileCreateMode = "$FileCreateMode";
     int mode = 0, modeNg = 0;
     return ((600 == (mode = GetIntegerOptionFromFile(g_etcRsyslogConf, fileCreateMode, ' ', SecurityBaselineGetLog())) || (640 == mode)) &&
-        ((EEXIST == CheckFileExists(g_etcSyslogNgSyslogNgConf, SecurityBaselineGetLog())) ||
+        ((EEXIST == CheckFileExists(g_etcSyslogNgSyslogNgConf, NULL, SecurityBaselineGetLog())) ||
         ((600 == (modeNg = GetIntegerOptionFromFile(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', SecurityBaselineGetLog()))) || (640 == modeNg)))) ? DuplicateString(g_pass) : 
         FormatAllocateString("Option '%d' is not found in %s or is found set to %d instead of 600 or 640, or %s exists, or option '%s' is not found in %s or found set to %d instead of 600 or 640",
             fileCreateMode, g_etcRsyslogConf, mode, g_etcSyslogNgSyslogNgConf, fileCreateMode, g_etcSyslogNgSyslogNgConf, modeNg);
