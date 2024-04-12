@@ -1223,7 +1223,7 @@ static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
     const char* command = "/sbin/ip addr list";
     const char* text = "PROMISC";
     char* reason = NULL;
-    CheckTextNotFoundInCommandOutput(command, text, NULL, &reason, SecurityBaselineGetLog());
+    CheckTextNotFoundInCommandOutput(command, text, &reason, SecurityBaselineGetLog());
     CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, &reason, SecurityBaselineGetLog());
     CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, &reason, SecurityBaselineGetLog());
     return reason;
@@ -1249,28 +1249,28 @@ static char* AuditEnsureIpv6ProtocolIsEnabled(void)
 static char* AuditEnsureDccpIsDisabled(void)
 {
     char* reason = NULL;
-    CheckTextIsNotFoundInFolder(g_etcModProbeD, "install dccp /bin/true", &reason, SecurityBaselineGetLog());
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install dccp /bin/true", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureSctpIsDisabled(void)
 {
     char* reason = NULL;
-    CheckTextIsNotFoundInFolder(g_etcModProbeD, "install sctp /bin/true", &reason, SecurityBaselineGetLog());
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install sctp /bin/true", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureDisabledSupportForRds(void)
 {
     char* reason = NULL;
-    CheckTextIsNotFoundInFolder(g_etcModProbeD, "install rds /bin/true", &reason, SecurityBaselineGetLog());
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install rds /bin/true", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureTipcIsDisabled(void)
 {
     char* reason = NULL;
-    CheckTextIsNotFoundInFolder(g_etcModProbeD, "install tipc /bin/true", &reason, SecurityBaselineGetLog());
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install tipc /bin/true", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
