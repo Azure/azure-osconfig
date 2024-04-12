@@ -2419,11 +2419,11 @@ int CheckPasswordCreationRequirements(int minlen, int minclass, int dcredit, int
     if (IsCurrentOs(suse, log))
     {
         if ((minlen == (minlenOption = GetIntegerOptionFromFile(etcPamdCommonPassword, "minlen", '=', log))) &&
-            ((minclass == (minclassOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minclass", '=', log))) ||
-            ((dcredit == (dcreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "dcredit", '=', log))) &&
-            (ucredit == (ucreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ucredit", '=', log))) &&
-            (ocredit == (ocreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ocredit", '=', log))) &&
-            (lcredit == (lcreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "lcredit", '=', log))))))
+            ((minclass == (minclassOption = GetIntegerOptionFromFile(etcPamdCommonPassword, "minclass", '=', log))) ||
+            ((dcredit == (dcreditOption = GetIntegerOptionFromFile(etcPamdCommonPassword, "dcredit", '=', log))) &&
+            (ucredit == (ucreditOption = GetIntegerOptionFromFile(etcPamdCommonPassword, "ucredit", '=', log))) &&
+            (ocredit == (ocreditOption = GetIntegerOptionFromFile(etcPamdCommonPassword, "ocredit", '=', log))) &&
+            (lcredit == (lcreditOption = GetIntegerOptionFromFile(etcPamdCommonPassword, "lcredit", '=', log))))))
         {
             OsConfigCaptureSuccessReason(reason, "'%s' detected and '%s' contains the expected password creation requirements (minlen: %d, minclass: %d, dcredit: %d, "
                 "ucredit: %d, ocredit: %d, lcredit: %d)", suse, etcPamdCommonPassword, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
@@ -2438,11 +2438,11 @@ int CheckPasswordCreationRequirements(int minlen, int minclass, int dcredit, int
     else
     {
         if ((CheckFileExists(etcSecurityPwQualityConf, NULL, log)) &&
-            ((4 == (minclassOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "minclass", '=', log)) ||
-            ((-1 == (dcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "dcredit", '=', log))) &&
-            (-1 == (ucreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ucredit", '=', log))) &&
-            (-1 == (ocreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ocredit", '=', log))) &&
-            (-1 == (lcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "lcredit", '=', log)))))))
+            ((4 == (minclassOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "minclass", '=', log)) ||
+            ((-1 == (dcreditOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "dcredit", '=', log))) &&
+            (-1 == (ucreditOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "ucredit", '=', log))) &&
+            (-1 == (ocreditOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "ocredit", '=', log))) &&
+            (-1 == (lcreditOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "lcredit", '=', log)))))))
         {
             OsConfigCaptureSuccessReason(reason, "'%s' contains the expected password creation requirements (minlen: %d, minclass: %d, dcredit: %d, ucredit: %d, "
                 "ocredit: %d, lcredit: %d)", etcSecurityPwQualityConf, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
