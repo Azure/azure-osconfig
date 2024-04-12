@@ -160,6 +160,8 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, v
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
+int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, void* log);
+int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, void* log);
 
 char* DuplicateString(const char* source);
 char* ConcatenateStrings(const char* first, const char* second);

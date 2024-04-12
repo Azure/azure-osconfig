@@ -2403,3 +2403,57 @@ int RemoveUserAccounts(const char** names, unsigned int numberOfNames, void* log
 
     return status;
 }
+
+int CheckPasswordCreationRequirements(int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log)
+{
+    const char* etcPamdCommonPassword = "/etc/pam.d/common-password";
+    const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
+    const char* suse = "SUSE";
+
+    int minlenOption = 0;
+    int minclassOption = 0;
+    int dcreditOption = 0;
+    int ucreditOption = 0;
+    int ocreditOption = 0;
+    int lcreditOption = 0;
+
+    if (IsCurrentOs(suse, log))
+    {
+        if ((minlen == (minlenOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minlen", '=', SecurityBaselineGetLog()))) &&
+            ((minclass == (minclassOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minclass", '=', SecurityBaselineGetLog()))) ||
+            ((dcredit == (dcreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "dcredit", '=', SecurityBaselineGetLog()))) &&
+            (ucredit == (ucreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ucredit", '=', SecurityBaselineGetLog()))) &&
+            (ocredit == (ocreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ocredit", '=', SecurityBaselineGetLog()))) &&
+            (lcredit == (lcreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "lcredit", '=', SecurityBaselineGetLog()))))))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' detected and '%s' contains the expected password creation requirements (minlen: %d, minclass: %d, dcredit: %d, "
+                "ucredit: %d, ocredit: %d, lcredit: %d)", suse, g_etcPamdCommonPassword, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+        }
+        else
+        {
+            OsConfigCaptureReason(reason, "'%s' detected, in '%s' 'minlen' missing or set to %d instead of 14, 'minclass' missing or set to %d instead of 4, "
+                "or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to %d, %d, %d, %d respectively instead of -1 each",
+                g_suse, g_etcPamdCommonPassword, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+        }
+    }
+    else
+    {
+        if ((CheckFileExists(g_etcSecurityPwQualityConf, NULL, SecurityBaselineGetLog())) &&
+            ((4 == (minclassOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "minclass", '=', SecurityBaselineGetLog())) ||
+            ((-1 == (dcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "dcredit", '=', SecurityBaselineGetLog()))) &&
+            (-1 == (ucreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ucredit", '=', SecurityBaselineGetLog()))) &&
+            (-1 == (ocreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ocredit", '=', SecurityBaselineGetLog()))) &&
+            (-1 == (lcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "lcredit", '=', SecurityBaselineGetLog())))))))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' contains the expected password creation requirements (minlen: %d, minclass: %d, dcredit: %d, ucredit: %d, "
+                "ocredit: %d, lcredit: %d)", g_etcSecurityPwQualityConf, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+        }
+        else
+        {
+            OsConfigCaptureReason(reason, "'%s' mising, or 'minclass' missing or set to %d instead of 4, or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to "
+                "%d, %d, %d, %d respectively instead of -1 each", g_etcSecurityPwQualityConf, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+        }
+    }
+
+    return result;
+}

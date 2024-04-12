@@ -394,8 +394,6 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-static const char* g_suse = "SUSE";
-
 static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
 static const char* g_etcHostsAllow = "/etc/hosts.allow";
@@ -1291,16 +1289,16 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void)
     return reason;
 }
 
-static char* AuditEnsurePasswordReuseIsLimited(void) //////////////////////////////HERE fix this one
+static char* AuditEnsurePasswordReuseIsLimited(void)
 {
     const char* etcPamdSystemAuth = "/etc/pam.d/system-auth";
-    int option = 0;
-
-    return ((5 >= (option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog()))) ||
-        (5 >= (option = GetIntegerOptionFromFile(etcPamdSystemAuth, "remember", '=', SecurityBaselineGetLog())))) ?
-        ((-999 == option) ? FormatAllocateString("The 'remember' option is not found in '%s' or in '%s'", g_etcPamdCommonPassword, etcPamdSystemAuth) :
-        FormatAllocateString("The 'remember' option is set to '%d' in '%s' or '%s' instead of expected '5' or greater", option, g_etcPamdCommonPassword, etcPamdSystemAuth)) :
-        DuplicateString(g_pass);
+    char* reason = NULL;
+    if (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, "remember", '=', 5, &reason, SecurityBaselineGetLog()))
+    {
+        return reason;
+    }
+    CheckIntegerOptionFromFileLessOrEqualWith(etcPamdSystemAuth, "remember", '=', 5, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
@@ -1320,41 +1318,11 @@ static char* AuditEnsureCoreDumpsAreRestricted(void)
     return reason;
 }
 
-static char* AuditEnsurePasswordCreationRequirements(void) //////////////////////////////HERE fix this one
+static char* AuditEnsurePasswordCreationRequirements(void)
 {
-    int minlenOption = 0;
-    int minclassOption = 0;
-    int dcreditOption = 0;
-    int ucreditOption = 0;
-    int ocreditOption = 0;
-    int lcreditOption = 0;
-    char* result = NULL;
-    
-    if (IsCurrentOs(g_suse, SecurityBaselineGetLog()))
-    {
-        result = ((14 == (minlenOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minlen", '=', SecurityBaselineGetLog()))) &&
-            ((4 == (minclassOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minclass", '=', SecurityBaselineGetLog()))) ||
-            ((-1 == (dcreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "dcredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (ucreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ucredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (ocreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ocredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (lcreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "lcredit", '=', SecurityBaselineGetLog())))))) ? DuplicateString(g_pass) :
-            FormatAllocateString("%s detected, in %s, 'minlen' missing or set to %d instead of 14, 'minclass' missing or set to %d instead of 4, "
-                "or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to %d, %d, %d, %d respectively instead of -1 each",
-                g_suse, g_etcPamdCommonPassword, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
-    }
-    else
-    {
-        result = ((CheckFileExists(g_etcSecurityPwQualityConf, NULL, SecurityBaselineGetLog())) &&
-            ((4 == (minclassOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "minclass", '=', SecurityBaselineGetLog())) ||
-            ((-1 == (dcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "dcredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (ucreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ucredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (ocreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ocredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (lcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "lcredit", '=', SecurityBaselineGetLog()))))))) ? DuplicateString(g_pass) :
-            FormatAllocateString("'%s' mising, or 'minclass' missing or set to %d instead of 4, or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to "
-                "%d, %d, %d, %d respectively instead of -1 each", g_etcSecurityPwQualityConf, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
-    }
-
-    return result;
+    char* reason = NULL;
+    CheckPasswordCreationRequirements(14, 4, -1, -1, -1, -1, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureLockoutForFailedPasswordAttempts(void)
@@ -1477,15 +1445,17 @@ static char* AuditEnsureALoggingServiceIsEnabled(void)
     return reason;
 }
 
-static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void) //////////////////////////////HERE fix this one
+static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 {
     const char* fileCreateMode = "$FileCreateMode";
-    int mode = 0, modeNg = 0;
-    return ((600 == (mode = GetIntegerOptionFromFile(g_etcRsyslogConf, fileCreateMode, ' ', SecurityBaselineGetLog())) || (640 == mode)) &&
-        ((EEXIST == CheckFileExists(g_etcSyslogNgSyslogNgConf, NULL, SecurityBaselineGetLog())) ||
-        ((600 == (modeNg = GetIntegerOptionFromFile(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', SecurityBaselineGetLog()))) || (640 == modeNg)))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Option '%d' is not found in %s or is found set to %d instead of 600 or 640, or %s exists, or option '%s' is not found in %s or found set to %d instead of 600 or 640",
-            fileCreateMode, g_etcRsyslogConf, mode, g_etcSyslogNgSyslogNgConf, fileCreateMode, g_etcSyslogNgSyslogNgConf, modeNg);
+    char* reason = NULL;
+    int modes[] = {600, 640};
+    CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, fileCreateMode, ' ', modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog());
+    if (0 == CheckFileExists(g_etcSyslogNgSyslogNgConf, &reason, SecurityBaselineGetLog()))
+    {
+        CheckIntegerOptionFromFileEqualWithAny(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void)
@@ -1548,7 +1518,7 @@ static char* AuditEnsureTftpServiceisDisabled(void)
     CheckLineFoundNotCommentedOut(g_etcInetdConf, '#', "tftp", &reason, SecurityBaselineGetLog());
     return reason;
 }
-//HERE
+
 static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
 {
     const char* etcCronAllow = "/etc/cron.allow";
@@ -3775,11 +3745,9 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
                     *payloadSizeBytes = g_maxPayloadSizeBytes;
                 }
 
-                *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1);
-                if (*payload)
+                if (NULL != (*payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1)))
                 {
                     memset(*payload, 0, *payloadSizeBytes + 1);
-                    //snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", serializedValue);
                     memcpy(*payload, serializedValue, *payloadSizeBytes);
                 }
                 else

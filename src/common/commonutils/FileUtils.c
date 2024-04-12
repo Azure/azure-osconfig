@@ -1201,6 +1201,61 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
     return result;
 }
 
+int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, void* log)
+{
+    int valueFromFile = 999;
+    int i = 0;
+    int result = ENOENT;
+
+    if ((NULL == values) || (0 == numberOfValues))
+    {
+        OsConfigLogError(log, "CheckIntegerOptionFromFileEqualWithAny: invalid arguments (%p, %u)", values, numberOfValues);
+        return EINVAL;
+    }
+
+    if (-999 != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
+    {
+        for (i = 0; i < numberOfValues; i++)
+        {
+            if (valueFromFile == value[i])
+            {
+                OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of %d", option, fileName, value[i]);
+                result = 0;
+                break;
+            }
+        }
+
+        if (ENOENT == result)
+        {
+            OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found or found set to %d", option, fileName, valueFromFile);
+        }
+    }
+
+    return result;
+}
+
+int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, void* log)
+{
+    int valueFromFile = 999;
+    int i = 0;
+    int result = ENOENT;
+
+    if (-999 != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
+    {
+        if (valueFromFile =< value)
+        {
+            OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' value of %d is less or equal with %d", option, fileName, valueFromFile, value);
+            result = 0;
+        }
+        else
+        {
+            OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found (%d) or not less or equal with %d", option, fileName, valueFromFile, value);
+        }
+    }
+
+    return result;
+}
+
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, void* log)
 {
     char* contents = NULL;
