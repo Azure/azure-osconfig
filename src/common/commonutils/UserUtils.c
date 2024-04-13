@@ -1795,8 +1795,8 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: all users who have passwords have dates of last passord change in the past");
-        OsConfigCaptureSuccessReason(reason, "All users who have passwords have dates of last passord change in the past");
+        OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: all users who have passwords have dates of last password change in the past");
+        OsConfigCaptureSuccessReason(reason, "All users who have passwords have dates of last password change in the past");
     }
 
     return status;
