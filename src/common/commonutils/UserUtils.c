@@ -129,32 +129,32 @@ static char* EncryptionName(int type)
     switch (type)
     {
         case md5:
-            name = "MD5";
+            name = "md5";
             break;
 
         case blowfish:
-            name = "Blowfish";
+            name = "blowfish";
             break;
 
         case eksBlowfish:
-            name = "Eksblowfish";
+            name = "eksblowfish";
             break;
 
         case unknownBlowfish:
-            name = "Unknown Blowfish";
+            name = "unknown blowfish";
             break;
 
         case sha256:
-            name = "SHA-256";
+            name = "sha-256";
             break;
 
         case sha512:
-            name = "SHA-512";
+            name = "sha-512";
             break;
 
         case unknown:
         default:
-            name = "Unknown";
+            name = "unknown default";
     }
 
     return name;
