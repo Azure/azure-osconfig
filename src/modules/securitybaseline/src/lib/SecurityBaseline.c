@@ -1230,9 +1230,13 @@ static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
 static char* AuditEnsureAllWirelessInterfacesAreDisabled(void)
 {
     char* reason = NULL;
-    if (0 != CheckTextNotFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", &reason, SecurityBaselineGetLog()))
+    if (0 == CheckTextNotFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", &reason, SecurityBaselineGetLog()))
     {
-        OsConfigCaptureReason(&reason, "at least one active wireless interface is present");
+        OsConfigCaptureSuccessReason(&reason, "No active wireless interfaces are present");
+    }
+    else
+    {
+        OsConfigCaptureReason(&reason, "At least one active wireless interface is present");
     }
     return reason;
 }
