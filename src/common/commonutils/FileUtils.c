@@ -1230,6 +1230,10 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
             OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found or found set to %d", option, fileName, valueFromFile);
         }
     }
+    else
+    {
+        OsConfigCaptureReason(reason, "File '%s' not found or does not contain option '%s'", fileName, option);
+    }
 
     return result;
 }
@@ -1250,6 +1254,10 @@ int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* 
         {
             OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found (%d) or not less or equal with %d", option, fileName, valueFromFile, value);
         }
+    }
+    else
+    {
+        OsConfigCaptureReason(reason, "File '%s' not found or does not contain option '%s'", fileName, option);
     }
 
     return result;
