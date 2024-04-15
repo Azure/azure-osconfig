@@ -551,14 +551,14 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
 
     if (FileExists(fileName) && CharacterFoundInFile(fileName, '+'))
     {
-        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInFile(%s): there are + lines in file '%s'", fileName, fileName);
-        OsConfigCaptureReason(reason, "There are + lines in file '%s'", fileName);
+        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInFile(%s): there are '+' lines in file '%s'", fileName, fileName);
+        OsConfigCaptureReason(reason, "There are '+' lines in file '%s'", fileName);
         status = ENOENT;
     }
     else
     {
-        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInFile(%s): there are no + lines in file '%s'", fileName, fileName);
-        OsConfigCaptureSuccessReason(reason, "There are no + lines in file '%s'", fileName);
+        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInFile(%s): there are no '+' lines in file '%s'", fileName, fileName);
+        OsConfigCaptureSuccessReason(reason, "There are no '+' lines in file '%s'", fileName);
     }
 
     return status;
@@ -890,12 +890,12 @@ int CheckTextNotFoundInFolder(const char* directory, const char* text, char** re
 
     if (ENOENT == (result = FindTextInFolder(directory, text, log)))
     {
-        OsConfigCaptureSuccessReason(reason, "'%s' not found in any file under '%s'", text, directory);
+        OsConfigCaptureSuccessReason(reason, "Text '%s' not found in any file under directory '%s'", text, directory);
         result = 0;
     }
     else if (0 == result)
     {
-        OsConfigCaptureSuccessReason(reason, "'%s' found in at least one file under '%s'", text, directory);
+        OsConfigCaptureSuccessReason(reason, "Text '%s' found in at least one file under directory '%s'", text, directory);
         result = ENOENT;
     }
 
@@ -908,11 +908,11 @@ int CheckTextFoundInFolder(const char* directory, const char* text, char** reaso
 
     if (0 == (result = FindTextInFolder(directory, text, log)))
     {
-        OsConfigCaptureSuccessReason(reason, "'%s' found in at least one file under '%s'", text, directory);
+        OsConfigCaptureSuccessReason(reason, "Text '%s' found in at least one file under directory '%s'", text, directory);
     }
     else if (ENOENT == result)
     {
-        OsConfigCaptureSuccessReason(reason, "'%s' not found in anty file under '%s'", text, directory);
+        OsConfigCaptureSuccessReason(reason, "Text '%s' not found in any file under directory '%s'", text, directory);
     }
 
     return result;
@@ -937,7 +937,7 @@ static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, 
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
             OsConfigLogError(log, "IsLineNotFoundOrCommentedOut: cannot read from '%s'", fileName);
-            OsConfigCaptureReason(reason, "Cannot read from '%s'", fileName);
+            OsConfigCaptureReason(reason, "Cannot read from file '%s'", fileName);
         }
         else
         {
@@ -1244,7 +1244,7 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
         {
             if (valueFromFile == values[i])
             {
-                OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of %d", option, fileName, values[i]);
+                OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of '%d'", option, fileName, values[i]);
                 result = 0;
                 break;
             }
@@ -1252,7 +1252,7 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
 
         if (ENOENT == result)
         {
-            OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found or found set to %d", option, fileName, valueFromFile);
+            OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found or found set to '%d'", option, fileName, valueFromFile);
         }
     }
     else
@@ -1272,12 +1272,12 @@ int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* 
     {
         if (valueFromFile <= value)
         {
-            OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' value of %d is less or equal with %d", option, fileName, valueFromFile, value);
+            OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' value of '%d' is less or equal with '%d'", option, fileName, valueFromFile, value);
             result = 0;
         }
         else
         {
-            OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found (%d) or not less or equal with %d", option, fileName, valueFromFile, value);
+            OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found ('%d') or not less or equal with '%d'", option, fileName, valueFromFile, value);
         }
     }
     else
