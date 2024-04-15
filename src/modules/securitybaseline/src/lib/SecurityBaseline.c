@@ -1796,7 +1796,7 @@ static char* AuditEnsureSmbWithSambaIsDisabled(void)
     const char* etcSambaConf = "/etc/samba/smb.conf";
     const char* minProtocol = "min protocol = SMB2";
     char* reason = NULL;
-    if (0 == CheckPackageInstalled("samba", &reason, SecurityBaselineGetLog())) 
+    if (0 != CheckPackageNotInstalled("samba", &reason, SecurityBaselineGetLog())) 
     {
         CheckLineFoundNotCommentedOut(etcSambaConf, '#', minProtocol, &reason, SecurityBaselineGetLog());
         CheckLineFoundNotCommentedOut(etcSambaConf, ';', minProtocol, &reason, SecurityBaselineGetLog());
