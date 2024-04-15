@@ -1793,12 +1793,15 @@ static char* AuditEnsureRshClientNotInstalled(void)
 
 static char* AuditEnsureSmbWithSambaIsDisabled(void)
 {
+    cnst char* samba = "samba";
     const char* etcSambaConf = "/etc/samba/smb.conf";
     const char* minProtocol = "min protocol = SMB2";
     char* reason = NULL;
-    CheckPackageInstalled("samba", &reason, SecurityBaselineGetLog());
-    CheckLineFoundNotCommentedOut(etcSambaConf, '#', minProtocol, &reason, SecurityBaselineGetLog());
-    CheckLineFoundNotCommentedOut(etcSambaConf, ';', minProtocol, &reason, SecurityBaselineGetLog());
+    if (0 == CheckPackageInstalled(samba, &reason, SecurityBaselineGetLog())) 
+    {
+        CheckLineFoundNotCommentedOut(etcSambaConf, '#', minProtocol, &reason, SecurityBaselineGetLog());
+        CheckLineFoundNotCommentedOut(etcSambaConf, ';', minProtocol, &reason, SecurityBaselineGetLog());
+    }
     return reason;
 }
 
