@@ -2431,9 +2431,53 @@ int CheckPasswordCreationRequirements(int minlen, int minclass, int dcredit, int
         }
         else
         {
-            OsConfigCaptureReason(reason, "'%s' detected, in '%s' 'minlen' missing or set to %d instead of 14, 'minclass' missing or set to %d instead of 4, "
-                "or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to %d, %d, %d, %d respectively instead of -1 each",
-                suse, etcPamdCommonPassword, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+            OsConfigCaptureReason(reason, "'%s' detected", suse);
+
+            if (-999 == minclassOption)
+            {
+                OsConfigCaptureReason(reason, "In '%s' 'minlen' missing", suse, etcPamdCommonPassword);
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "In '%s' 'minlen' set to %d instead of 14", suse, etcPamdCommonPassword, minlenOption);
+            }
+
+            if (-999 == dcreditOption)
+            {
+                OsConfigCaptureReason(reason, "'dcredit' missing");
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "'dcredit' set to '%d' instead of -1", dcreditOption);
+            }
+
+            if (-999 == ucreditOption)
+            {
+                OsConfigCaptureReason(reason, "'ucredit' missing");
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "'ucredit' set to '%d' instead of -1", ucreditOption);
+            }
+
+            if (-999 == ocreditOption)
+            {
+                OsConfigCaptureReason(reason, "'ocredit' missing");
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "'ocredit' set to '%d' instead of -1", ocreditOption);
+            }
+
+            if (-999 == lcreditOption)
+            {
+                OsConfigCaptureReason(reason, "'lcredit' missing");
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "'lcredid' set to '%d' instead of -1", lcreditOption);
+            }
+
             result = ENOENT;
         }
     }
@@ -2451,8 +2495,51 @@ int CheckPasswordCreationRequirements(int minlen, int minclass, int dcredit, int
         }
         else
         {
-            OsConfigCaptureReason(reason, "'%s' mising, or 'minclass' missing or set to %d instead of 4, or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to "
-                "%d, %d, %d, %d respectively instead of -1 each", etcSecurityPwQualityConf, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+            if (-999 == minclassOption)
+            {
+                OsConfigCaptureReason(reason, "'%s' mising, or 'minclass' missing", etcSecurityPwQualityConf);
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "'%s' mising, or 'minclass' set to %d instead of 4", etcSecurityPwQualityConf, minclassOption);
+            }
+
+            if (-999 == dcreditOption)
+            {
+                OsConfigCaptureReason(reason, "'dcredit' missing");
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "'dcredit' set to '%d' instead of -1", dcreditOption);
+            }
+
+            if (-999 == ucreditOption)
+            {
+                OsConfigCaptureReason(reason, "'ucredit' missing");
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "'ucredit' set to '%d' instead of -1", ucreditOption);
+            }
+
+            if (-999 == ocreditOption)
+            {
+                OsConfigCaptureReason(reason, "'ocredit' missing");
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "'ocredit' set to '%d' instead of -1", ocreditOption);
+            }
+
+            if (-999 == lcreditOption)
+            {
+                OsConfigCaptureReason(reason, "'lcredit' missing");
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "'lcredid' set to '%d' instead of -1", lcreditOption);
+            }
+
             result = ENOENT;
         }
     }
