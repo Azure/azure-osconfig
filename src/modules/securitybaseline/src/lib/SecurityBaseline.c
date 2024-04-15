@@ -1716,8 +1716,10 @@ static char* AuditEnsurePostfixPackageIsUninstalled(void)
 static char* AuditEnsurePostfixNetworkListeningIsDisabled(void)
 {
     char* reason = NULL;
-    CheckFileExists("/etc/postfix/main.cf", &reason, SecurityBaselineGetLog());
-    CheckTextIsFoundInFile("/etc/postfix/main.cf", "inet_interfaces localhost", &reason, SecurityBaselineGetLog());
+    if (0 == CheckFileExists("/etc/postfix/main.cf", &reason, SecurityBaselineGetLog()))
+    {
+        CheckTextIsFoundInFile("/etc/postfix/main.cf", "inet_interfaces localhost", &reason, SecurityBaselineGetLog());
+    }
     return reason;
 }
 
