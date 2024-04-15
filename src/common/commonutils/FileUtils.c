@@ -425,12 +425,12 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
                 
                 if (NULL != hasmntopt(mountStruct, desiredOption))
                 {
-                    OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' found in file '%s' at line '%d'", 
+                    OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' found in file '%s' at line '%d'", 
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
                     
                     if (NULL != mountDirectory)
                     {
-                        OsConfigCaptureSuccessReason(reason, "Option '%s' for directory '%s' found in file '%s' at line '%d'", desiredOption, mountDirectory, mountFileName, lineNumber);
+                        OsConfigCaptureSuccessReason(reason, "Option '%s' for mount directory '%s' found in file '%s' at line '%d'", desiredOption, mountDirectory, mountFileName, lineNumber);
                     }
 
                     if (NULL != mountType)
@@ -441,12 +441,12 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
                 else
                 {
                     status = ENOENT;
-                    OsConfigLogError(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
+                    OsConfigLogError(log, "CheckFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' missing from file '%s' at line %d",
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
                     
                     if (NULL != mountDirectory)
                     {
-                        OsConfigCaptureReason(reason, "Option '%s' for directory '%s' is missing from file '%s' at line %d", desiredOption, mountDirectory, mountFileName, lineNumber);
+                        OsConfigCaptureReason(reason, "Option '%s' for mount directory '%s' is missing from file '%s' at line %d", desiredOption, mountDirectory, mountFileName, lineNumber);
                     }
 
                     if (NULL != mountType)
@@ -469,11 +469,11 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         if (false == matchFound)
         {
             status = ENOENT;
-            OsConfigLogError(log, "CheckFileSystemMountingOption: directory '%s' and/or mount type '%s' not found in file '%s'", mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+            OsConfigLogError(log, "CheckFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in file '%s'", mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
 
             if (NULL != mountDirectory)
             {
-                OsConfigCaptureReason(reason, "Found no entries about directory '%s' in file '%s'", mountDirectory, mountFileName);
+                OsConfigCaptureReason(reason, "Found no entries about mount directory '%s' in file '%s'", mountDirectory, mountFileName);
             }
 
             if (NULL != mountType)
