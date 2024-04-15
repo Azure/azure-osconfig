@@ -427,16 +427,32 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
                 {
                     OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' found in file '%s' at line '%d'", 
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
-                    OsConfigCaptureSuccessReason(reason, "'%s' option for directory '%s' or mount type '%s' found in file '%s' at line '%d'", 
-                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+                    
+                    if (NULL != mountDirectory)
+                    {
+                        OsConfigCaptureSuccessReason(reason, "Option '%s' for directory '%s' found in file '%s' at line '%d'", desiredOption, mountDirectory, mountFileName, lineNumber);
+                    }
+
+                    if (NULL != mountType)
+                    {
+                        OsConfigCaptureSuccessReason(reason, "Option '%s' for mount type '%s' found in file '%s' at line '%d'", desiredOption, mountType, mountFileName, lineNumber);
+                    }
                 }
                 else
                 {
                     status = ENOENT;
                     OsConfigLogError(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
-                    OsConfigCaptureReason(reason, "Option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
-                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+                    
+                    if (NULL != mountDirectory)
+                    {
+                        OsConfigCaptureReason(reason, "Option '%s' for directory '%s' is missing from file '%s' at line %d", desiredOption, mountDirectory, mountFileName, lineNumber);
+                    }
+
+                    if (NULL != mountType)
+                    {
+                        OsConfigCaptureReason(reason, "Option '%s' for mount type '%s' missing from file '%s' at line %d", desiredOption, mountType, mountFileName, lineNumber);
+                    }
                 }
 
                 if (IsFullLoggingEnabled())
@@ -453,8 +469,17 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         if (false == matchFound)
         {
             status = ENOENT;
-            OsConfigLogError(log, "CheckFileSystemMountingOption: directory '%s' or mount type '%s' not found in file '%s'", mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
-            OsConfigCaptureReason(reason, "Directory '%s' or mount type '%s' not found in file '%s'", (mountDirectory ? mountDirectory : "-"), (mountType ? mountType : "-"), mountFileName);
+            OsConfigLogError(log, "CheckFileSystemMountingOption: directory '%s' and/or mount type '%s' not found in file '%s'", mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+
+            if (NULL != mountDirectory)
+            {
+                OsConfigCaptureReason(reason, "Directory '%s' not found in file '%s'", mountDirectory, mountFileName);
+            }
+
+            if (NULL != mountType)
+            {
+                OsConfigCaptureReason(reason, "Mount type '%s' not found in file '%s'", mountType , mountFileName);
+            }
         }
 
         endmntent(mountFileHandle);
@@ -1056,15 +1081,15 @@ int CheckTextFoundInCommandOutput(const char* command, const char* text, char** 
 
     if (0 == (result = FindTextInCommandOutput(command, text, log)))
     {
-        OsConfigCaptureSuccessReason(reason, "'%s' found in '%s' output", text, command);
+        OsConfigCaptureSuccessReason(reason, "'%s' found in response from command '%s'", text, command);
     }
     else if (ENOENT == result)
     {
-        OsConfigCaptureReason(reason, "'%s' not found in '%s' output", text, command);
+        OsConfigCaptureReason(reason, "'%s' not found in response from command '%s'", text, command);
     }
     else
     {
-        OsConfigCaptureReason(reason, "'%s' failed with %d", command, result);
+        OsConfigCaptureReason(reason, "Command '%s' failed with %d", command, result);
     }
 
     return result;
@@ -1076,17 +1101,17 @@ int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char
 
     if (ENOENT == (result = FindTextInCommandOutput(command, text, log)))
     {
-        OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s' output", text, command);
+        OsConfigCaptureSuccessReason(reason, "'%s' not found in response from command '%s'", text, command);
         result = 0;
     }
     else if (0 == result)
     {
-        OsConfigCaptureReason(reason, "'%s' found in '%s' output", text, command);
+        OsConfigCaptureReason(reason, "'%s' found in response from command '%s'", text, command);
         result = ENOENT;
     }
     else
     {
-        OsConfigCaptureReason(reason, "'%s' failed with %d", command, result);
+        OsConfigCaptureReason(reason, "Command '%s' failed with %d", command, result);
     }
 
     return result;
