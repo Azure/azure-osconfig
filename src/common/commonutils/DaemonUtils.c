@@ -27,13 +27,13 @@ bool CheckDaemonActive(const char* daemonName, char** reason, void* log)
     
     if (true == (result = IsDaemonActive(daemonName, log)))
     {
-        OsConfigLogInfo(log, "CheckDaemonActive: '%s' is active", daemonName);
-        OsConfigCaptureSuccessReason(reason, "'%s' is active", daemonName);
+        OsConfigLogInfo(log, "CheckDaemonActive: service '%s' is active", daemonName);
+        OsConfigCaptureSuccessReason(reason, "Service '%s' is active", daemonName);
     }
     else
     {
-        OsConfigLogError(log, "CheckDaemonActive: '%s' is inactive", daemonName);
-        OsConfigCaptureReason(reason, "'%s' is inactive", daemonName);
+        OsConfigLogError(log, "CheckDaemonActive: service '%s' is inactive", daemonName);
+        OsConfigCaptureReason(reason, "Service '%s' is inactive", daemonName);
     }
     
     return result;
@@ -45,14 +45,14 @@ bool CheckDaemonNotActive(const char* daemonName, char** reason, void* log)
 
     if (true == (result = IsDaemonActive(daemonName, log)))
     {
-        OsConfigLogError(log, "CheckDaemonActive: '%s' is active", daemonName);
-        OsConfigCaptureReason(reason, "'%s' is active", daemonName);
+        OsConfigLogError(log, "CheckDaemonActive: service '%s' is active", daemonName);
+        OsConfigCaptureReason(reason, "Service '%s' is active", daemonName);
         result = false;
     }
     else
     {
-        OsConfigLogInfo(log, "CheckDaemonActive: '%s' is inactive", daemonName);
-        OsConfigCaptureSuccessReason(reason, "'%s' is inactive", daemonName);
+        OsConfigLogInfo(log, "CheckDaemonActive: service '%s' is inactive", daemonName);
+        OsConfigCaptureSuccessReason(reason, "Service '%s' is inactive", daemonName);
         result = true;
     }
 
@@ -72,7 +72,7 @@ bool EnableAndStartDaemon(const char* daemonName, void* log)
         snprintf(enableCommand, sizeof(enableCommand), enableTemplate, daemonName);
         snprintf(startCommand, sizeof(startCommand), startTemplate, daemonName);
 
-        OsConfigLogInfo(log, "Starting %s", daemonName);
+        OsConfigLogInfo(log, "Starting service '%s'", daemonName);
 
         status = ((0 == ExecuteCommand(NULL, enableCommand, false, false, 0, 0, NULL, NULL, log)) &&
             (0 == ExecuteCommand(NULL, startCommand, false, false, 0, 0, NULL, NULL, log)));
@@ -105,7 +105,7 @@ bool RestartDaemon(const char* daemonName, void* log)
     {
         snprintf(restartCommand, sizeof(restartCommand), restartTemplate, daemonName);
 
-        OsConfigLogInfo(log, "Restarting %s", daemonName);
+        OsConfigLogInfo(log, "Restarting service '%s'", daemonName);
 
         status = (0 == ExecuteCommand(NULL, restartCommand, false, false, 0, 0, NULL, NULL, log));
     }

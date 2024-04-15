@@ -91,11 +91,11 @@ int IsPackageInstalled(const char* packageName, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "IsPackageInstalled: '%s' is installed", packageName);
+        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is installed", packageName);
     }
     else
     {
-        OsConfigLogInfo(log, "IsPackageInstalled: '%s' is not found", packageName);
+        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is not found", packageName);
     }
 
     return status;
@@ -107,11 +107,11 @@ int CheckPackageInstalled(const char* packageName, char** reason, void* log)
     
     if (0 == (result = IsPackageInstalled(packageName, log)))
     {
-        OsConfigCaptureSuccessReason(reason, "'%s' is installed", packageName);
+        OsConfigCaptureSuccessReason(reason, "Package '%s' is installed", packageName);
     }
     else if ((EINVAL != result) && (ENOMEM != result))
     {
-        OsConfigCaptureReason(reason, "'%s' is not installed", packageName);
+        OsConfigCaptureReason(reason, "Package '%s' is not installed", packageName);
     }
 
     return result;
@@ -123,12 +123,12 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
 
     if (0 == (result = IsPackageInstalled(packageName, log)))
     {
-        OsConfigCaptureReason(reason, "'%s' is installed", packageName);
+        OsConfigCaptureReason(reason, "Package '%s' is installed", packageName);
         result = ENOENT;
     }
     else if ((EINVAL != result) && (ENOMEM != result))
     {
-        OsConfigCaptureSuccessReason(reason, "'%s' is not installed", packageName);
+        OsConfigCaptureSuccessReason(reason, "Package '%s' is not installed", packageName);
         result = 0;
     }
 
@@ -170,16 +170,16 @@ int InstallPackage(const char* packageName, void* log)
 
         if (0 == status)
         {
-            OsConfigLogInfo(log, "InstallPackage: '%s' was successfully installed", packageName);
+            OsConfigLogInfo(log, "InstallPackage: package '%s' was successfully installed", packageName);
         }
         else
         {
-            OsConfigLogError(log, "InstallPackage: installation of '%s' failed with %d", packageName, status);
+            OsConfigLogError(log, "InstallPackage: installation of package '%s' failed with %d", packageName, status);
         }
     }
     else
     {
-        OsConfigLogInfo(log, "InstallPackage: '%s' is already installed", packageName);
+        OsConfigLogInfo(log, "InstallPackage: package '%s' is already installed", packageName);
         status = 0;
     }
 
@@ -222,16 +222,16 @@ int UninstallPackage(const char* packageName, void* log)
         
         if (0 == status)
         {
-            OsConfigLogInfo(log, "UninstallPackage: '%s' was successfully uninstalled", packageName);
+            OsConfigLogInfo(log, "UninstallPackage: package '%s' was successfully uninstalled", packageName);
         }
         else
         {
-            OsConfigLogError(log, "UninstallPackage: uninstallation of '%s' failed with %d", packageName, status);
+            OsConfigLogError(log, "UninstallPackage: uninstallation of package '%s' failed with %d", packageName, status);
         }
     }
     else if (EINVAL != status)
     {
-        OsConfigLogInfo(log, "InstallPackage: '%s' is not found", packageName);
+        OsConfigLogInfo(log, "InstallPackage: package '%s' is not found", packageName);
         status = 0;
     }
 
