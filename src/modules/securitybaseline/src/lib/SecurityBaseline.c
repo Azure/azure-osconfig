@@ -1798,8 +1798,8 @@ static char* AuditEnsureSmbWithSambaIsDisabled(void)
     char* reason = NULL;
     if (0 != CheckPackageNotInstalled("samba", &reason, SecurityBaselineGetLog())) 
     {
-        CheckLineFoundNotCommentedOut(etcSambaConf, '#', minProtocol, &reason, SecurityBaselineGetLog());
-        CheckLineFoundNotCommentedOut(etcSambaConf, ';', minProtocol, &reason, SecurityBaselineGetLog());
+        CheckLineNotFoundOrCommentedOut(etcSambaConf, '#', minProtocol, &reason, SecurityBaselineGetLog());
+        CheckLineNotFoundOrCommentedOut(etcSambaConf, ';', minProtocol, &reason, SecurityBaselineGetLog());
     }
     return reason;
 }
