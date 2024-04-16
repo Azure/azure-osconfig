@@ -1849,10 +1849,13 @@ static char* AuditEnsureNoUsersHaveDotRhostsFiles(void)
 
 static char* AuditEnsureRloginServiceIsDisabled(void)
 {
+    const char* rlogin = "rlogin";
     char* reason = NULL;
+    CheckDaemonNotActive(rlogin, reason, SecurityBaselineGetLog());
+    CheckPackageNotInstalled(rlogin, &reason, SecurityBaselineGetLog());
     CheckPackageNotInstalled(g_inetd, &reason, SecurityBaselineGetLog());
     CheckPackageNotInstalled(g_inetUtilsInetd, &reason, SecurityBaselineGetLog());
-    CheckTextIsFoundInFile(g_etcInetdConf, "login", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcInetdConf, "login", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
