@@ -303,7 +303,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                         OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d) matches expected (%d)", name, currentMode, desiredMode);
                     }
                     
-                    OsConfigCaptureSuccessReason(reason, "'%s' has required access (%d) and ownership (UID: %d, GID: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
+                    OsConfigCaptureSuccessReason(reason, "'%s' has required access (%d) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
                     result = 0;
                 }
             }

@@ -878,7 +878,7 @@ int CheckRootGroupExists(char** reason, void* log)
 
     if (false == found)
     {
-        OsConfigLogError(log, "CheckRootGroupExists: root group with GID 0 not found");
+        OsConfigLogError(log, "CheckRootGroupExists: root group with gid 0 not found");
         OsConfigCaptureReason(reason, "Root group with gid 0 not found");
         status = ENOENT;
     }
