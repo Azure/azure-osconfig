@@ -1489,7 +1489,7 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
     char* reason = NULL;
     int modes[] = {600, 640};
     CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, fileCreateMode, ' ', modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog());
-    if (0 == CheckFileExists(g_etcSyslogNgSyslogNgConf, &reason, SecurityBaselineGetLog()))
+    if (0 == FileExists(g_etcSyslogNgSyslogNgConf)
     {
         CheckIntegerOptionFromFileEqualWithAny(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog());
     }
