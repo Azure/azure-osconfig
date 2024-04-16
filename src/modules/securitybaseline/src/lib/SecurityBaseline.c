@@ -1772,7 +1772,7 @@ static char* AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 {
     char* reason = NULL;
     CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", &reason, SecurityBaselineGetLog());
-    CheckDaemonNotActive("rpcsvcgssd", &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive("rpc.svcgssd", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
