@@ -1065,7 +1065,7 @@ static int CheckHomeDirectoryOwnership(SIMPLIFIED_USER* user, void* log)
     }
     else
     {
-        OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: directory '%s' not found, nothing to check", user->home);
+        OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: directory '%s' is not found, nothing to check", user->home);
     }
 
     return status;

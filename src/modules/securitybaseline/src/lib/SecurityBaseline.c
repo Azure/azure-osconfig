@@ -1254,10 +1254,12 @@ static char* AuditEnsureAllWirelessInterfacesAreDisabled(void)
     char* reason = NULL;
     if (0 == CheckTextNotFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", &reason, SecurityBaselineGetLog()))
     {
+        OsConfigResetReason(&reason);
         OsConfigCaptureSuccessReason(&reason, "No active wireless interfaces are present");
     }
     else
     {
+        OsConfigResetReason(&reason);
         OsConfigCaptureReason(&reason, "At least one active wireless interface is present");
     }
     return reason;
@@ -1308,9 +1310,20 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(void)
 static char* AuditEnsurePermissionsOnBootloaderConfig(void)
 {
     char* reason = NULL;
-    CheckFileAccess("/boot/grub/grub.conf", 0, 0, 400, &reason, SecurityBaselineGetLog());
-    CheckFileAccess("/boot/grub/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
-    CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    if (FileExists("/boot/grub/grub.cfg"))
+    {
+        CheckFileAccess("/boot/grub/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    }
+
+    if (FileExists("/boot/grub/grub.conf"))
+    {
+        CheckFileAccess("/boot/grub/grub.conf", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    }
+
+    if (FileExists("/boot/grub/grub.conf"))
+    {
+        CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    }
     return reason;
 }
 
