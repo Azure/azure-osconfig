@@ -1771,7 +1771,8 @@ static char* AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 static char* AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive("rpcsvcgssd", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
