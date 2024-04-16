@@ -139,8 +139,8 @@ int CheckFileExists(const char* fileName, char** reason, void* log)
     }
     else
     {
-        OsConfigLogInfo(log, "CheckFileExists: file '%s' not found", fileName);
-        OsConfigCaptureReason(reason, "File  '%s' not found", fileName);
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' is not found", fileName);
+        OsConfigCaptureReason(reason, "File  '%s' is not found", fileName);
         status = EEXIST;
     }
 
@@ -153,8 +153,8 @@ int CheckFileNotFound(const char* fileName, char** reason, void* log)
 
     if (false == FileExists(fileName))
     {
-        OsConfigLogInfo(log, "CheckFileNotFound: file '%s' not found", fileName);
-        OsConfigCaptureSuccessReason(reason, "File '%s' not found", fileName);
+        OsConfigLogInfo(log, "CheckFileNotFound: file '%s' is not found", fileName);
+        OsConfigCaptureSuccessReason(reason, "File '%s' is not found", fileName);
     }
     else
     {
