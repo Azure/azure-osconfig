@@ -1499,8 +1499,8 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, &reason, SecurityBaselineGetLog());
     CheckFileAccess(g_etcRsyslogConf, 0, 0, 640, &reason, SecurityBaselineGetLog());
+    CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
