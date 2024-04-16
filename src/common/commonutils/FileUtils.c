@@ -473,12 +473,12 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 
             if (NULL != mountDirectory)
             {
-                OsConfigCaptureReason(reason, "Found no entries about mount directory '%s' in file '%s'", mountDirectory, mountFileName);
+                OsConfigCaptureReason(reason, "Found no entries about mount directory '%s' in file '%s' to look for option '%s'", mountDirectory, mountFileName, desiredOption);
             }
 
             if (NULL != mountType)
             {
-                OsConfigCaptureReason(reason, "Found no entries about mount type '%s' in file '%s'", mountType , mountFileName);
+                OsConfigCaptureReason(reason, "Found no entries about mount type '%s' in file '%s' to look for option '%s'", mountType, mountFileName, desiredOption);
             }
         }
 
