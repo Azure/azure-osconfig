@@ -1019,14 +1019,21 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
     
     if ((NULL != fileName) && (false == FileExists(fileName)))
     {
-        OsConfigCaptureSuccessReason(reason, "'%s' not found to look for '%s'", fileName, text);
-        result = 0;
+        if (OsConfigIsSuccessReason(reason))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' not found to look for '%s'", fileName, text);
+        }
+        else
+        {
+            OsConfigCaptureReason(reason, "'%s' is not found to look for '%s'", fileName, text);
+        }
     }
     else
     {
         if (EEXIST == (result = IsLineNotFoundOrCommentedOut(fileName, commentMark, text, reason, log)))
         {
             OsConfigCaptureReason(reason, "'%s' found in '%s' and it's not commented out with '%c'", text, fileName, commentMark);
+            result = ENOENT;
         }
         else if (0 == result)
         {

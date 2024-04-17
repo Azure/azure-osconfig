@@ -786,7 +786,7 @@ static char* AuditEnsureXinetdNotInstalled(void)
 static char* AuditEnsureAllTelnetdPackagesUninstalled(void)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled("*telnet*", &reason, SecurityBaselineGetLog());
+    CheckPackageNotInstalled("*telnetd*", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
@@ -1540,7 +1540,6 @@ static char* AuditEnsureTelnetServiceIsDisabled(void)
 {
     char* reason = NULL;
     CheckDaemonNotActive("telnet.socket", &reason, SecurityBaselineGetLog());
-    CheckPackageNotInstalled("telnet*", &reason, SecurityBaselineGetLog());
     CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", &reason, SecurityBaselineGetLog());
     return reason;
 }
