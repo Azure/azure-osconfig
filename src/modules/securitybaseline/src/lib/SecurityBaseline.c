@@ -1547,7 +1547,8 @@ static char* AuditEnsureTelnetServiceIsDisabled(void)
 static char* AuditEnsureRcprshServiceIsDisabled(void)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut(g_etcInetdConf, '#', "shell", &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive("rcp.socket", &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive("rsh.socket", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
