@@ -1311,8 +1311,8 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(void)
 static char* AuditEnsurePermissionsOnBootloaderConfig(void)
 {
     char* reason = NULL;
-    CheckFileAccess("/boot/grub/grub.conf", 0, 0, 400, &reason, SecurityBaselineGetLog());
     CheckFileAccess("/boot/grub/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    CheckFileAccess("/boot/grub/grub.conf", 0, 0, 400, &reason, SecurityBaselineGetLog());
     CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
     return reason;
 }
