@@ -786,7 +786,7 @@ static char* AuditEnsureXinetdNotInstalled(void)
 static char* AuditEnsureAllTelnetdPackagesUninstalled(void)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled("*telnetd*", &reason, SecurityBaselineGetLog());
+    CheckPackageNotInstalled("*telnet*", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
