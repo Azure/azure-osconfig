@@ -1303,27 +1303,17 @@ static char* AuditEnsureTipcIsDisabled(void)
 static char* AuditEnsureZeroconfNetworkingIsDisabled(void)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut("/etc/network/interfaces", '#', "ipv4ll", &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_avahiDaemon, &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnBootloaderConfig(void)
 {
     char* reason = NULL;
-    if (FileExists("/boot/grub/grub.cfg"))
-    {
-        CheckFileAccess("/boot/grub/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
-    }
-
-    if (FileExists("/boot/grub/grub.conf"))
-    {
-        CheckFileAccess("/boot/grub/grub.conf", 0, 0, 400, &reason, SecurityBaselineGetLog());
-    }
-
-    if (FileExists("/boot/grub/grub.conf"))
-    {
-        CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
-    }
+    CheckFileAccessIfFileExists("/boot/grub/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    CheckFileAccessIfFileExists("/boot/grub/grub.conf", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    CheckFileAccessIfFileExists("/boot/grub2/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
     return reason;
 }
 

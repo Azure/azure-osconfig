@@ -385,6 +385,11 @@ int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId
     return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, reason, log);
 }
 
+int CheckFileAccessIfFileExists(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, void* log)
+{
+    return FileExists(fileName) ? CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, reason, log) : 0;
+}
+
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
     return SetAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
