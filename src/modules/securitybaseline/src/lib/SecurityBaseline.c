@@ -434,7 +434,7 @@ static const char* g_inetUtilsInetd = "inetutils-inetd";
 static const char* g_xinetd = "xinetd";
 static const char* g_rshServer = "rsh-server";
 static const char* g_nis = "nis";
-static const char* g_tftpd = "tftpd";
+static const char* g_tftpd = "tftpd-hpa";
 static const char* g_readAheadFedora = "readahead-fedora";
 static const char* g_bluetooth = "bluetooth";
 static const char* g_isdnUtilsBase = "isdnutils-base";
@@ -1555,7 +1555,8 @@ static char* AuditEnsureRcprshServiceIsDisabled(void)
 static char* AuditEnsureTftpServiceisDisabled(void)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut(g_etcInetdConf, '#', "tftp", &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive("tftpd-hpa", &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "tftp", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
