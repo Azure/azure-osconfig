@@ -1539,7 +1539,9 @@ static char* AuditEnsureSyslogRotaterServiceIsEnabled(void)
 static char* AuditEnsureTelnetServiceIsDisabled(void)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut(g_etcInetdConf, '#', "telnet", &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive("telnet.socket", &reason, SecurityBaselineGetLog());
+    CheckPackageNotInstalled("telnet*", &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", &reason, SecurityBaselineGetLog());
     return reason;
 }
 
