@@ -132,7 +132,7 @@ void MI_CALL OsConfigResource_Load(
     
     if (0 != (status = EnsureOsConfigIsInstalled()))
     {
-        LogError(context, GetLog(), "[OsConfigResource] Unable to install or update OSConfig (%d), things may not work", status);
+        LogInfo(context, GetLog(), "[OsConfigResource] Unable to install or update OSConfig (%d), things may not work", status);
     }
 
     if (NULL == (g_mpiHandle = RefreshMpiClientSession(g_mpiHandle)))
