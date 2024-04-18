@@ -1298,8 +1298,8 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, void* l
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckPasswordHashingAlgorithm: all users who have passwords have them encrypted with hashing algorithm %s (%d)", EncryptionName(algorithm), algorithm);
-        OsConfigCaptureSuccessReason(reason, "All users who have passwords have them encrypted with hashing algorithm '%s' (%d)", EncryptionName(algorithm), algorithm);
+        OsConfigLogInfo(log, "CheckPasswordHashingAlgorithm: all users who have passwords have them encrypted with algorithm %s (%d)", EncryptionName(algorithm), algorithm);
+        OsConfigCaptureSuccessReason(reason, "All users who have passwords have them encrypted with algorithm '%s' (%d)", EncryptionName(algorithm), algorithm);
     }
 
     return status;
