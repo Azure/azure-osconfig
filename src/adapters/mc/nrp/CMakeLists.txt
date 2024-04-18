@@ -18,4 +18,5 @@ target_link_libraries(osconfignrp
         commonutils
         logging
         mpiclient
-        parsonlib)
+        parsonlib
+        m)
