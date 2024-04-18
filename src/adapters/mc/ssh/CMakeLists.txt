@@ -21,7 +21,7 @@ set_target_properties(OsConfigResourceSsh PROPERTIES OUTPUT_NAME libOsConfigReso
 
 # Create the policy artifacts ZIP package for SSH Posture Control
 
-add_custom_target(stage_create_zip
+add_custom_target(stage_create_zip_ssh
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/OsConfigPolicy.metaconfig.json" ${PROJECT_BINARY_DIR}/Staging/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/OsConfigPolicy.mof" ${PROJECT_BINARY_DIR}/Staging/
@@ -31,5 +31,5 @@ add_custom_target(stage_create_zip
 add_custom_target(create_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/OsConfigPolicy.zip
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaselinePolicy.zip" --format=zip .
-    DEPENDS stage_create_zip
+    DEPENDS stage_create_zip_ssh
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/Staging/)
