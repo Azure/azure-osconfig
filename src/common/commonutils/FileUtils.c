@@ -1033,7 +1033,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
         if (EEXIST == (result = IsLineNotFoundOrCommentedOut(fileName, commentMark, text, reason, log)))
         {
             OsConfigCaptureReason(reason, "'%s' found in '%s' and it's not commented out with '%c'", text, fileName, commentMark);
-            result = ENOENT;
+            result = EEXIST;
         }
         else if (0 == result)
         {
