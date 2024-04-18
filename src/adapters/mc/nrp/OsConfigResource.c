@@ -48,11 +48,6 @@ OSCONFIG_LOG_HANDLE GetLog(void)
     return g_log;
 }
 
-static int EnsureOsConfigIsInstalled(void)
-{
-    return InstallOrUpdatePackage(g_osconfig, GetLog());
-}
-
 static MPI_HANDLE RefreshMpiClientSession(MPI_HANDLE currentMpiHandle)
 {
     MPI_HANDLE mpiHandle = currentMpiHandle;
@@ -114,6 +109,11 @@ void __attribute__((destructor)) Destroy()
     CloseLog(&g_log);
 }
 
+static int EnsureOsConfigIsInstalledAndUpdated(void)
+{
+    return InstallOrUpdatePackage(g_osconfig, GetLog());
+}
+
 void MI_CALL OsConfigResource_Load(
     OsConfigResource_Self** self,
     MI_Module_Self* selfModule,
@@ -130,7 +130,7 @@ void MI_CALL OsConfigResource_Load(
         g_mpiHandle = NULL;
     }
     
-    if (0 != (status = EnsureOsConfigIsInstalled()))
+    if (0 != (status = EnsureOsConfigIsInstalledAndUpdated()))
     {
         LogInfo(context, GetLog(), "[OsConfigResource] Unable to install or update OSConfig (%d), things may not work", status);
     }
