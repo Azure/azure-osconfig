@@ -4,18 +4,20 @@
 # SO binary name must match the class name in MOF with a "lib" prefix added
 project(OsConfigResource)
 
-add_library(OsConfigResource 
+add_library(OsConfigResourceAsb 
     SHARED 
         ../nrp/module.c
         ../nrp/schema.c
         ../nrp/OsConfigResource.c)
 
-target_link_libraries(OsConfigResource
+target_link_libraries(OsConfigResourceAsb
     PRIVATE
         commonutils
         logging
         mpiclient
         parsonlib)
+
+set_target_property(OsConfigResourceAsb OUTPUT_NAME libOsConfigResource)
 
 # Create the policy artifacts ZIP package for the Azure Security Baseline for Linux
 
