@@ -6,9 +6,9 @@ project(OsConfigResource)
 
 add_library(OsConfigResource 
     SHARED 
-        ..\nrp\module.c
-        ..\nrp\schema.c
-        ..\nrp\OsConfigResource.c)
+        "..\nrp\module.c"
+        "..\nrp\schema.c"
+        "..\nrp\OsConfigResource.c")
 
 target_link_libraries(OsConfigResource
     PRIVATE
