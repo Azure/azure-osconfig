@@ -26,7 +26,7 @@ add_custom_target(stage_create_zip
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/OsConfigPolicy.metaconfig.json" ${PROJECT_BINARY_DIR}/Staging/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/OsConfigPolicy.mof" ${PROJECT_BINARY_DIR}/Staging/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceAsb> ${PROJECT_BINARY_DIR}/Staging/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
-    DEPENDS OsConfigResource)
+    DEPENDS OsConfigResourceAsb)
 
 add_custom_target(create_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/OsConfigPolicy.zip
