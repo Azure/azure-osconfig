@@ -4,24 +4,17 @@
 # SO binary name must match the class name in MOF with a "lib" prefix added
 project(OsConfigResource)
 
-add_library(OsConfigResource 
-    SHARED 
-        module.c
-        schema.c
-        OsConfigResource.c)
-
-target_include_directories(OsConfigResource 
-    PUBLIC
-        ${PLATFORM_INC_DIR})
+add_library(OsConfigResource) 
 
 target_link_libraries(OsConfigResource
     PRIVATE
         commonutils
         logging
         mpiclient
-        parsonlib)
+        parsonlib,
+        osconfignrp)
 
-# Create the ZIP package 
+# Create the policy artifacts ZIP package for SSH Posture Control
 
 add_custom_target(stage_create_zip
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
