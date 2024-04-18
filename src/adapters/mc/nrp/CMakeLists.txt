@@ -4,7 +4,7 @@
 project(osconfignrp)
 
 add_library(osconfignrp
-    STATIC 
+    STATIC IMPORTED 
         module.c
         schema.c
         OsConfigResource.c)

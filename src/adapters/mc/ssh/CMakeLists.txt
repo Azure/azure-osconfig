@@ -4,7 +4,7 @@
 # SO binary name must match the class name in MOF with a "lib" prefix added
 project(OsConfigResource)
 
-add_library(OsConfigResource SHARED)
+add_library(OsConfigResource SHARED Dummy.c)
 
 target_link_libraries(OsConfigResource
     PRIVATE
