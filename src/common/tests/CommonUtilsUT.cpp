@@ -1781,12 +1781,11 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
         EXPECT_NE(0, CheckPackageNotInstalled("rolldice", nullptr, nullptr));
 
         EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
+        EXPECT_NE(0, IsPackageInstalled("rolldice", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr, nullptr));
+        EXPECT_EQ(0, CheckPackageNotInstalled("rolldice", nullptr, nullptr));
     }
     
-    EXPECT_NE(0, IsPackageInstalled("rolldice", nullptr));
-    EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr, nullptr));
-    EXPECT_EQ(0, CheckPackageNotInstalled("rolldice", nullptr, nullptr));
-
     EXPECT_EQ(0, IsPackageInstalled("gcc", nullptr));
     EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr, nullptr));
     EXPECT_NE(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
