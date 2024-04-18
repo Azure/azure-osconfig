@@ -61,7 +61,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     return status;
 }
 
-int CheckPackageInstalled(const char* packageName, void* log)
+int IsPackageInstalled(const char* packageName, void* log)
 {
     const char* commandTemplateDpkg = "%s -l %s | grep ^ii";
     const char* commandTemplateAllElse = "%s list installed %s";
@@ -91,11 +91,88 @@ int CheckPackageInstalled(const char* packageName, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is installed", packageName);
+        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is installed", packageName);
     }
     else
     {
-        OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is not found", packageName);
+        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is not found", packageName);
+    }
+
+    return status;
+}
+
+int CheckPackageInstalled(const char* packageName, char** reason, void* log)
+{
+    int result = 0; 
+    
+    if (0 == (result = IsPackageInstalled(packageName, log)))
+    {
+        OsConfigCaptureSuccessReason(reason, "Package '%s' is installed", packageName);
+    }
+    else if ((EINVAL != result) && (ENOMEM != result))
+    {
+        OsConfigCaptureReason(reason, "Package '%s' is not installed", packageName);
+    }
+
+    return result;
+}
+
+int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
+{
+    int result = 0;
+
+    if (0 == (result = IsPackageInstalled(packageName, log)))
+    {
+        OsConfigCaptureReason(reason, "Package '%s' is installed", packageName);
+        result = ENOENT;
+    }
+    else if ((EINVAL != result) && (ENOMEM != result))
+    {
+        OsConfigCaptureSuccessReason(reason, "Package '%s' is not installed", packageName);
+        result = 0;
+    }
+
+    return result;
+}
+
+int InstallOrUpdatePackage(const char* packageName, void* log)
+{
+    const char* commandTemplate = "%s install -y %s";
+    int status = ENOENT;
+
+    if (0 == (status = IsPresent(g_aptGet, log)))
+    {
+        status = CheckOrInstallPackage(commandTemplate, g_aptGet, packageName, log);
+    }
+    else if (0 == (status = IsPresent(g_tdnf, log)))
+    {
+        status = CheckOrInstallPackage(commandTemplate, g_tdnf, packageName, log);
+    }
+    else if (0 == (status = IsPresent(g_dnf, log)))
+    {
+        status = CheckOrInstallPackage(commandTemplate, g_dnf, packageName, log);
+    }
+    else if (0 == (status = IsPresent(g_yum, log)))
+    {
+        status = CheckOrInstallPackage(commandTemplate, g_yum, packageName, log);
+    }
+    else if (0 == (status = IsPresent(g_zypper, log)))
+    {
+        status = CheckOrInstallPackage(commandTemplate, g_zypper, packageName, log);
+    }
+
+    if (0 == status)
+    {
+        status = IsPackageInstalled(packageName, log);
+    }
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "InstallOrUpdatePackage: package '%s' was successfully installed or updated", packageName);
+    }
+    else
+    {
+        OsConfigLogError(log, "InstallOrUpdatePackage: installation or update of package '%s' failed with %d", packageName, status);
     }
 
     return status;
@@ -103,49 +180,15 @@ int CheckPackageInstalled(const char* packageName, void* log)
 
 int InstallPackage(const char* packageName, void* log)
 {
-    const char* commandTemplate = "%s install -y %s";
     int status = ENOENT;
 
-    if (0 != (status = CheckPackageInstalled(packageName, log)))
+    if (0 != (status = IsPackageInstalled(packageName, log)))
     {
-        if (0 == (status = IsPresent(g_aptGet, log)))
-        {
-            status = CheckOrInstallPackage(commandTemplate, g_aptGet, packageName, log);
-        }
-        else if (0 == (status = IsPresent(g_tdnf, log)))
-        {
-            status = CheckOrInstallPackage(commandTemplate, g_tdnf, packageName, log);
-        }
-        else if (0 == (status = IsPresent(g_dnf, log)))
-        {
-            status = CheckOrInstallPackage(commandTemplate, g_dnf, packageName, log);
-        }
-        else if (0 == (status = IsPresent(g_yum, log)))
-        {
-            status = CheckOrInstallPackage(commandTemplate, g_yum, packageName, log);
-        }
-        else if (0 == (status = IsPresent(g_zypper, log)))
-        {
-            status = CheckOrInstallPackage(commandTemplate, g_zypper, packageName, log);
-        }
-
-        if (0 == status) 
-        {
-            status = CheckPackageInstalled(packageName, log);
-        }
-
-        if (0 == status)
-        {
-            OsConfigLogInfo(log, "InstallPackage: '%s' was successfully installed", packageName);
-        }
-        else
-        {
-            OsConfigLogError(log, "InstallPackage: installation of '%s' failed with %d", packageName, status);
-        }
+        InstallOrUpdatePackage(packageName, log);
     }
     else
     {
-        OsConfigLogInfo(log, "InstallPackage: '%s' is already installed", packageName);
+        OsConfigLogInfo(log, "InstallPackage: package '%s' is already installed", packageName);
         status = 0;
     }
 
@@ -158,7 +201,7 @@ int UninstallPackage(const char* packageName, void* log)
     const char* commandTemplateAllElse = "% remove -y %s";
     int status = ENOENT;
 
-    if (0 == (status = CheckPackageInstalled(packageName, log)))
+    if (0 == (status = IsPackageInstalled(packageName, log)))
     {
         if (0 == (status = IsPresent(g_aptGet, log)))
         {
@@ -181,23 +224,23 @@ int UninstallPackage(const char* packageName, void* log)
             status = CheckOrInstallPackage(commandTemplateAllElse, g_zypper, packageName, log);
         }
 
-        if ((0 == status) && (0 == CheckPackageInstalled(packageName, log)))
+        if ((0 == status) && (0 == IsPackageInstalled(packageName, log)))
         {
             status = ENOENT;
         }
         
         if (0 == status)
         {
-            OsConfigLogInfo(log, "UninstallPackage: '%s' was successfully uninstalled", packageName);
+            OsConfigLogInfo(log, "UninstallPackage: package '%s' was successfully uninstalled", packageName);
         }
         else
         {
-            OsConfigLogError(log, "UninstallPackage: uninstallation of '%s' failed with %d", packageName, status);
+            OsConfigLogError(log, "UninstallPackage: uninstallation of package '%s' failed with %d", packageName, status);
         }
     }
     else if (EINVAL != status)
     {
-        OsConfigLogInfo(log, "InstallPackage: '%s' is not found", packageName);
+        OsConfigLogInfo(log, "InstallPackage: package '%s' is not found", packageName);
         status = 0;
     }
 

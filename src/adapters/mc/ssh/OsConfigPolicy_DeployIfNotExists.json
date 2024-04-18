@@ -27,7 +27,6 @@
                     "permitEmptyPasswords": "Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
                     "clientAliveCountMax": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
                     "clientAliveInterval": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
-                    "loginGraceTime": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
                     "messageAuthenticationCodeAlgorithms": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
                     "banner": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
                     "permitUserEnvironment": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
@@ -165,14 +164,6 @@
                     "description": "Timeout interval in seconds after which if no data has been received from the client, sshd will send a message to request a response. Default is  1 hour ('3600')"
                 },
                 "defaultValue": "3600"
-            },
-            "loginGraceTime": {
-                "type": "string",
-                "metadata": {
-                    "displayName": "The time in seconds after which the server disconnects if the user has not successfully logged in",
-                    "description": "The time in seconds after which the server disconnects if the user has not successfully logged in. Default is 1 minute ('60')"
-                },
-                "defaultValue": "60"
             },
             "messageAuthenticationCodeAlgorithms": {
                 "type": "string",
@@ -471,7 +462,7 @@
                             },
                             {
                                 "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/parameterHash",
-                                "equals": "[base64(concat('Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue', '=', parameters('accessPermissionsForSshdConfig'), ',', 'Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue', '=', parameters('ignoreHosts'), ',', 'Ensure that the SSH LogLevel is configured;DesiredObjectValue', '=', parameters('logLevel'), ',', 'Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue', '=', parameters('maxAuthTries'), ',', 'Ensure that the allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('allowUsers'), ',', 'Ensure that the denied users for SSH are configured;DesiredObjectValue', '=', parameters('denyUsers'), ',', 'Ensure that the allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('allowGroups'), ',', 'Ensure that the denied groups for SSH are configured;DesiredObjectValue', '=', parameters('denyGroups'), ',', 'Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue', '=', parameters('hostBasedAuthentication'), ',', 'Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue', '=', parameters('permitRootLogin'), ',', 'Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue', '=', parameters('permitEmptyPasswords'), ',', 'Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue', '=', parameters('clientAliveCountMax'), ',', 'Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue', '=', parameters('clientAliveInterval'), ',', 'Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue', '=', parameters('loginGraceTime'), ',', 'Ensure that only approved MAC algorithms are used;DesiredObjectValue', '=', parameters('messageAuthenticationCodeAlgorithms'), ',', 'Ensure that the SSH warning banner is configured;DesiredObjectValue', '=', parameters('banner'), ',', 'Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue', '=', parameters('permitUserEnvironment'), ',', 'Ensure that appropriate ciphers are used for SSH;DesiredObjectValue', '=', parameters('ciphers'), ',', 'Ensure that the SSH port is configured;DesiredObjectValue', '=', parameters('port')))]"
+                                "equals": "[base64(concat('Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue', '=', parameters('accessPermissionsForSshdConfig'), ',', 'Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue', '=', parameters('ignoreHosts'), ',', 'Ensure that the SSH LogLevel is configured;DesiredObjectValue', '=', parameters('logLevel'), ',', 'Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue', '=', parameters('maxAuthTries'), ',', 'Ensure that the allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('allowUsers'), ',', 'Ensure that the denied users for SSH are configured;DesiredObjectValue', '=', parameters('denyUsers'), ',', 'Ensure that the allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('allowGroups'), ',', 'Ensure that the denied groups for SSH are configured;DesiredObjectValue', '=', parameters('denyGroups'), ',', 'Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue', '=', parameters('hostBasedAuthentication'), ',', 'Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue', '=', parameters('permitRootLogin'), ',', 'Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue', '=', parameters('permitEmptyPasswords'), ',', 'Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue', '=', parameters('clientAliveCountMax'), ',', 'Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue', '=', parameters('clientAliveInterval'), ',', 'Ensure that only approved MAC algorithms are used;DesiredObjectValue', '=', parameters('messageAuthenticationCodeAlgorithms'), ',', 'Ensure that the SSH warning banner is configured;DesiredObjectValue', '=', parameters('banner'), ',', 'Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue', '=', parameters('permitUserEnvironment'), ',', 'Ensure that appropriate ciphers are used for SSH;DesiredObjectValue', '=', parameters('ciphers'), ',', 'Ensure that the SSH port is configured;DesiredObjectValue', '=', parameters('port')))]"
                             }
                         ]
                     },
@@ -529,9 +520,6 @@
                                 },
                                 "clientAliveInterval": {
                                     "value": "[parameters('clientAliveInterval')]"
-                                },
-                                "loginGraceTime": {
-                                    "value": "[parameters('loginGraceTime')]"
                                 },
                                 "messageAuthenticationCodeAlgorithms": {
                                     "value": "[parameters('messageAuthenticationCodeAlgorithms')]"
@@ -604,9 +592,6 @@
                                     "clientAliveInterval": {
                                         "type": "string"
                                     },
-                                    "loginGraceTime": {
-                                        "type": "string"
-                                    },
                                     "messageAuthenticationCodeAlgorithms": {
                                         "type": "string"
                                     },
@@ -632,9 +617,8 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "OsConfigPolicy",
-                                                "version": "1.0.0",
-                                                "contentType": "Custom",
+                                                "name": "LinuxSshServerSecurityBaseline",
+                                                "version": "1.*",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -688,10 +672,6 @@
                                                     {
                                                         "name": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
                                                         "value": "[parameters('clientAliveInterval')]"
-                                                    },
-                                                    {
-                                                        "name": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
-                                                        "value": "[parameters('loginGraceTime')]"
                                                     },
                                                     {
                                                         "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
@@ -725,9 +705,8 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "OsConfigPolicy",
-                                                "version": "1.0.0",
-                                                "contentType": "Custom",
+                                                "name": "LinuxSshServerSecurityBaseline",
+                                                "version": "1.*",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -781,10 +760,6 @@
                                                     {
                                                         "name": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
                                                         "value": "[parameters('clientAliveInterval')]"
-                                                    },
-                                                    {
-                                                        "name": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
-                                                        "value": "[parameters('loginGraceTime')]"
                                                     },
                                                     {
                                                         "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
@@ -818,9 +793,8 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "OsConfigPolicy",
-                                                "version": "1.0.0",
-                                                "contentType": "Custom",
+                                                "name": "LinuxSshServerSecurityBaseline",
+                                                "version": "1.*",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -874,10 +848,6 @@
                                                     {
                                                         "name": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
                                                         "value": "[parameters('clientAliveInterval')]"
-                                                    },
-                                                    {
-                                                        "name": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
-                                                        "value": "[parameters('loginGraceTime')]"
                                                     },
                                                     {
                                                         "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",

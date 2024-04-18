@@ -323,7 +323,7 @@ char* GetCpuFlags(void* log)
     return textResult;
 }
 
-bool IsCpuFlagSupported(const char* cpuFlag, void* log)
+bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, void* log)
 {
     bool result = false;
     char* cpuFlags = GetCpuFlags(log);
@@ -331,11 +331,13 @@ bool IsCpuFlagSupported(const char* cpuFlag, void* log)
     if ((NULL != cpuFlag) && (NULL != strstr(cpuFlags, cpuFlag)))
     {
         OsConfigLogInfo(log, "CPU flag '%s' is supported", cpuFlag);
+        OsConfigCaptureSuccessReason(reason, "The device's CPU supports '%s'", cpuFlag);
         result = true;
     }
     else
     {
         OsConfigLogInfo(log, "CPU flag '%s' is not supported", cpuFlag);
+        OsConfigCaptureReason(reason, "The device's CPU does not support '%s'", cpuFlag);
     }
 
     FREE_MEMORY(cpuFlags);
@@ -599,18 +601,16 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro and installed image match ('%s', '%s', '%s', '%s', '%s')",
             distro.id, distro.release, distro.codename, distro.description, kernelName);
+        OsConfigCaptureSuccessReason(reason, "Distro and installed image match ('%s', '%s', '%s', '%s', '%s')",
+            distro.id, distro.release, distro.codename, distro.description, kernelName);
         match = true;
     }
     else
     {
         OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
             distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
-
-        if (reason)
-        {
-            *reason = FormatAllocateString("Distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
-                distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
-        }
+        OsConfigCaptureReason(reason, "Distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
+            distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
     }
 
     FREE_MEMORY(kernelName);
@@ -621,7 +621,7 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
     return match;
 }
 
-char* GetLoginUmask(void* log)
+char* GetLoginUmask(char** reason, void* log)
 {
     const char* command = "grep -v '^#' /etc/login.defs | grep UMASK";
     char* result = NULL;
@@ -634,6 +634,7 @@ char* GetLoginUmask(void* log)
     }
     else
     {
+        OsConfigCaptureReason(reason, "'%s' failed, cannot check the current login UMASK", command);
         FREE_MEMORY(result);
     }
 
@@ -657,7 +658,7 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
         return EINVAL;
     }
 
-    if (NULL == (current = GetLoginUmask(log)))
+    if (NULL == (current = GetLoginUmask(reason, log)))
     {
         OsConfigLogError(log, "CheckLoginUmask: GetLoginUmask failed");
         status = ENOENT;
@@ -667,16 +668,13 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
         if (0 == strncmp(desired, current, length))
         {
             OsConfigLogInfo(log, "CheckLoginUmask: current login UMASK '%s' matches desired '%s'", current, desired);
+            OsConfigCaptureSuccessReason(reason, "'%s' (current login UMASK) matches desired '%s'", current, desired);
         }
         else
         {
             OsConfigLogError(log, "CheckLoginUmask: current login UMASK '%s' does not match desired '%s'", current, desired);
+            OsConfigCaptureReason(reason, "Current login UMASK '%s' does not match desired '%s'", current, desired);
             status = ENOENT;
-
-            if (reason)
-            {
-                *reason = FormatAllocateString("Current login UMASK '%s' does not match desired '%s'", current, desired);
-            }
         }
     }
 

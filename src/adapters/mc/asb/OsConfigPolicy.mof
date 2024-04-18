@@ -2543,6 +2543,6 @@ instance of OMI_ConfigurationDocument
     Version="0.0.1";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="29/2/2024 16:12:00 PST";
+    GenerationDate="4/12/2024 16:34:00 PST";
     Name="LinuxSecurityBaseline";
 };

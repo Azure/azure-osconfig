@@ -28,6 +28,9 @@
 #define PRETTY_NAME_UBUNTU_20_04 "Ubuntu 20.04"
 #define PRETTY_NAME_UBUNTU_22_04 "Ubuntu 22.04"
 
+#define SECURITY_AUDIT_PASS "PASS"
+#define SECURITY_AUDIT_FAIL "FAIL"
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 #define UNUSED(a) (void)(a)
@@ -39,26 +42,44 @@
     }\
 }\
 
-#define OsConfigCaptureReason(reason, FORMAT1, FORMAT2, ...) {\
+#define InternalOsConfigAddReason(reason, format, ...) {\
+    char* last = NULL;\
+    char* temp = FormatAllocateString("%s, also ", *reason);\
+    FREE_MEMORY(*reason);\
+    last = FormatAllocateString(format, ##__VA_ARGS__);\
+    last[0] = tolower(last[0]);\
+    *reason = ConcatenateStrings(temp, last);\
+    FREE_MEMORY(temp);\
+    FREE_MEMORY(last);\
+}\
+
+#define OsConfigCaptureReason(reason, format, ...) {\
+    if (NULL != reason) {\
+        if ((NULL != *reason) && (0 != strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))) {\
+            InternalOsConfigAddReason(reason, format, ##__VA_ARGS__);\
+        } else {\
+            FREE_MEMORY(*reason);\
+            *reason = FormatAllocateString(format, ##__VA_ARGS__);\
+        }\
+    }\
+}\
+
+#define OsConfigCaptureSuccessReason(reason, format, ...) {\
     char* temp = NULL;\
     if (NULL != reason) {\
-        if ((NULL == *reason) || (0 == strlen(*reason))) {\
-            *reason = FormatAllocateString(FORMAT1, ##__VA_ARGS__);\
+        if ((NULL != *reason) && (0 == strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))) {\
+            InternalOsConfigAddReason(reason, format, ##__VA_ARGS__);\
         } else {\
-            temp = DuplicateString(*reason);\
             FREE_MEMORY(*reason);\
-            *reason = FormatAllocateString(FORMAT2, temp, ##__VA_ARGS__);\
+            temp = FormatAllocateString(format, ##__VA_ARGS__);\
+            *reason = ConcatenateStrings(SECURITY_AUDIT_PASS, temp);\
             FREE_MEMORY(temp);\
         }\
     }\
 }\
 
-#define OsConfigCaptureSuccessReason(reason, FORMAT, ...) {\
-    if (NULL != reason) {\
-        FREE_MEMORY(*reason);\
-        *reason = FormatAllocateString(FORMAT, SECURITY_AUDIT_PASS, ##__VA_ARGS__); \
-    }\
-}\
+#define OsConfigIsSuccessReason(reason)\
+    (((NULL != reason) && ((NULL == *reason) || (0 == strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS))))) ? true : false)\
 
 #define OsConfigResetReason(reason) {\
     if (NULL != reason) {\
@@ -83,9 +104,6 @@
 //#define PROTOCOL_MQTT 1 
 #define PROTOCOL_MQTT_WS 2
 
-#define SECURITY_AUDIT_PASS "PASS"
-#define SECURITY_AUDIT_FAIL "FAIL"
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -107,7 +125,8 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* fileName);
 bool DirectoryExists(const char* directoryName);
-int CheckFileExists(const char* fileName, void* log);
+int CheckFileExists(const char* fileName, char** reason, void* log);
+int CheckFileNotFound(const char* fileName, char** reason, void* log);
 
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, void* log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
@@ -117,27 +136,39 @@ int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, u
 
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, void* log);
 
-int CheckPackageInstalled(const char* packageName, void* log);
+int IsPackageInstalled(const char* packageName, void* log);
+int CheckPackageInstalled(const char* packageName, char** reason, void* log);
+int CheckPackageNotInstalled(const char* packageName, char** reason, void* log);
+int InstallOrUpdatePackage(const char* packageName, void* log);
 int InstallPackage(const char* packageName, void* log);
 int UninstallPackage(const char* packageName, void* log);
 
 unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
-int CheckNoLegacyPlusEntriesInFile(const char* fileName, void* log);
+int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* log);
 int FindTextInFile(const char* fileName, const char* text, void* log);
-int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log);
-int FindTextInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, char** reason, void* log);
-int CompareFileContents(const char* fileName, const char* text, void* log);
+int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, void* log);
+int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, void* log);
+int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log);
+int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, char** reason, void* log);
+int CheckFileContents(const char* fileName, const char* text, char** reason, void* log);
 int FindTextInFolder(const char* directory, const char* text, void* log);
-int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log);
-int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log);
+int CheckTextNotFoundInFolder(const char* directory, const char* text, char** reason, void* log);
+int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, void* log);
+int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
+int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
+int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
+int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
 
-int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
+int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
+int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, void* log);
+int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, void* log);
 
 char* DuplicateString(const char* source);
+char* ConcatenateStrings(const char* first, const char* second);
 char* DuplicateStringToLowercase(const char* source);
 char* FormatAllocateString(const char* format, ...);
 
@@ -156,7 +187,7 @@ char* GetCpuType(void* log);
 char* GetCpuVendor(void* log);
 char* GetCpuModel(void* log);
 char* GetCpuFlags(void* log);
-bool IsCpuFlagSupported(const char* cpuFlag, void* log);
+bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, void* log);
 long GetTotalMemory(void* log);
 long GetFreeMemory(void* log);
 char* GetProductName(void* log);
@@ -165,7 +196,7 @@ char* GetProductVersion(void* log);
 char* GetSystemCapabilities(void* log);
 char* GetSystemConfiguration(void* log);
 bool CheckOsAndKernelMatchDistro(char** reason, void* log);
-char* GetLoginUmask(void* log);
+char* GetLoginUmask(char** reason, void* log);
 int CheckLoginUmask(const char* desired, char** reason, void* log);
 long GetPassMinDays(void* log);
 long GetPassMaxDays(void* log);
@@ -193,7 +224,8 @@ int SleepMilliseconds(long milliseconds);
 bool FreeAndReturnTrue(void* value);
 
 bool IsDaemonActive(const char* daemonName, void* log);
-bool CheckIfDaemonActive(const char* daemonName, void* log);
+bool CheckDaemonActive(const char* daemonName, char** reason, void* log);
+bool CheckDaemonNotActive(const char* daemonName, char** reason, void* log);
 bool EnableAndStartDaemon(const char* daemonName, void* log);
 void StopAndDisableDaemon(const char* daemonName, void* log);
 bool RestartDaemon(const char* daemonName, void* log);

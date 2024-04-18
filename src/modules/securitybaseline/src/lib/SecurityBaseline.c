@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <version.h>
+#include <ctype.h>
 #include <parson.h>
 #include <CommonUtils.h>
 #include <UserUtils.h>
@@ -16,13 +17,9 @@
 
 #include "SecurityBaseline.h"
 
-typedef int(*RemediationCall)(char*);
-typedef char*(*AuditCall)(void);
-
 static const char* g_securityBaselineModuleName = "OSConfig SecurityBaseline module";
 static const char* g_securityBaselineComponentName = "SecurityBaseline";
 
-static const char* g_auditSecurityBaselineObject = "auditSecurityBaseline";
 static const char* g_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
 static const char* g_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
 static const char* g_auditEnsurePermissionsOnEtcHostsAllowObject = "auditEnsurePermissionsOnEtcHostsAllow";
@@ -193,7 +190,6 @@ static const char* g_auditEnsureRloginServiceIsDisabledObject = "auditEnsureRlog
 static const char* g_auditEnsureUnnecessaryAccountsAreRemovedObject = "auditEnsureUnnecessaryAccountsAreRemoved";
 
 // Remediation
-static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
 static const char* g_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
 static const char* g_remediateEnsurePermissionsOnEtcIssueNetObject = "remediateEnsurePermissionsOnEtcIssueNet";
 static const char* g_remediateEnsurePermissionsOnEtcHostsAllowObject = "remediateEnsurePermissionsOnEtcHostsAllow";
@@ -398,8 +394,6 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-static const char* g_suse = "SUSE";
-
 static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
 static const char* g_etcHostsAllow = "/etc/hosts.allow";
@@ -428,7 +422,6 @@ static const char* g_etcModProbeD = "/etc/modprobe.d";
 static const char* g_etcProfile = "/etc/profile";
 static const char* g_etcRsyslogConf = "/etc/rsyslog.conf";
 static const char* g_etcSyslogNgSyslogNgConf = "/etc/syslog-ng/syslog-ng.conf";
-static const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
 
 static const char* g_tmp = "/tmp";
 static const char* g_varTmp = "/var/tmp";
@@ -441,7 +434,7 @@ static const char* g_inetUtilsInetd = "inetutils-inetd";
 static const char* g_xinetd = "xinetd";
 static const char* g_rshServer = "rsh-server";
 static const char* g_nis = "nis";
-static const char* g_tftpd = "tftpd";
+static const char* g_tftpd = "tftpd-hpa";
 static const char* g_readAheadFedora = "readahead-fedora";
 static const char* g_bluetooth = "bluetooth";
 static const char* g_isdnUtilsBase = "isdnutils-base";
@@ -516,25 +509,29 @@ void SecurityBaselineShutdown(void)
 static char* AuditEnsurePermissionsOnEtcIssue(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcIssue, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcIssue, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcIssueNet(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcIssueNet, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcIssueNet, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcHostsAllow(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcHostsAllow, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcHostsAllow, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcHostsDeny(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcHostsDeny, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcHostsDeny, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void)
@@ -547,443 +544,534 @@ static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void)
 static char* AuditEnsurePermissionsOnEtcShadow(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcShadow, 0, 42, 400, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcShadow, 0, 42, 400, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcShadowDash(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcShadowDash, 0, 42, 400, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcShadowDash, 0, 42, 400, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcGShadow(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcGShadow, 0, 42, 400, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcGShadow, 0, 42, 400, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcGShadowDash(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcGShadowDash, 0, 42, 400, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcGShadowDash, 0, 42, 400, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcPasswd(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcPasswd, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcPasswd, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcPasswdDash(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcPasswdDash, 0, 0, 600, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcPasswdDash, 0, 0, 600, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcGroup(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcGroup, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcGroup, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcGroupDash(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcGroupDash, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcGroupDash, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcAnacronTab(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcAnacronTab, 0, 0, 600, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcAnacronTab, 0, 0, 600, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcCronD(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcCronD, 0, 0, 700, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcCronD, 0, 0, 700, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcCronDaily(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcCronDaily, 0, 0, 700, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcCronDaily, 0, 0, 700, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcCronHourly(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcCronHourly, 0, 0, 700, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcCronHourly, 0, 0, 700, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcCronMonthly(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcCronMonthly, 0, 0, 700, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcCronMonthly, 0, 0, 700, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcCronWeekly(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcCronWeekly, 0, 0, 700, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcCronWeekly, 0, 0, 700, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcMotd(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcMotd, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckFileAccess(g_etcMotd, 0, 0, 644, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsureKernelSupportForCpuNx(void)
 {
-    return IsCpuFlagSupported("nx", SecurityBaselineGetLog()) ? DuplicateString(g_pass) : 
-        DuplicateString("The device's processor does not have support for the NX bit technology");
+    char* reason = NULL;
+    CheckCpuFlagSupported("nx", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNodevOptionOnHomePartition(void)
 {
     const char* home = "/home";
     char* reason = NULL;
-
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, home, NULL, g_nodev, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, home, NULL, g_nodev, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, home, NULL, g_nodev, &reason, SecurityBaselineGetLog()))
+    {
+        CheckFileSystemMountingOption(g_etcMtab, home, NULL, g_nodev, &reason, SecurityBaselineGetLog()); 
+    }
+    return reason;
 }
 
 static char* AuditEnsureNodevOptionOnTmpPartition(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog()))
+    {
+        CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureNodevOptionOnVarTmpPartition(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nodev, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, SecurityBaselineGetLog()))
+    {
+        CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nodev, &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureNosuidOptionOnTmpPartition(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog())) || 
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog()))
+    {
+        CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureNosuidOptionOnVarTmpPartition(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog()))
+    {
+        CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureNoexecOptionOnVarTmpPartition(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_noexec, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, SecurityBaselineGetLog()))
+    {
+        CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_noexec, &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureNoexecOptionOnDevShmPartition(void)
 {
     const char* devShm = "/dev/shm";
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, devShm, NULL, g_noexec, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, devShm, NULL, g_noexec, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, devShm, NULL, g_noexec, &reason, SecurityBaselineGetLog()))
+    {
+        CheckFileSystemMountingOption(g_etcMtab, devShm, NULL, g_noexec, &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nodev, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, SecurityBaselineGetLog()))
+    {
+        CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nodev, &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_noexec, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, SecurityBaselineGetLog()))
+    {
+        CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_noexec, &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, SecurityBaselineGetLog())) ||
-        (0 == CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nosuid, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, SecurityBaselineGetLog()))
+    {
+        CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nosuid, &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
 {
     const char* nfs = "nfs";
     char* reason = NULL;
-    return (((0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_noexec, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, &reason, SecurityBaselineGetLog()))) ||
-        ((0 == CheckFileSystemMountingOption(g_etcMtab, NULL, nfs, g_noexec, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckFileSystemMountingOption(g_etcMtab, NULL, nfs, g_nosuid, &reason, SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : reason;
+    if ((0 != CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_noexec, &reason, SecurityBaselineGetLog())) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, &reason, SecurityBaselineGetLog())))
+    {
+        CheckFileSystemMountingOption(g_etcMtab, NULL, nfs, g_noexec, &reason, SecurityBaselineGetLog());
+        CheckFileSystemMountingOption(g_etcMtab, NULL, nfs, g_nosuid, &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureInetdNotInstalled(void)
 {
-    return (CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
-        CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' is installed or package '%s' is installed", g_inetd, g_inetUtilsInetd);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_inetd, &reason, SecurityBaselineGetLog());
+    CheckPackageNotInstalled(g_inetUtilsInetd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureXinetdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_xinetd, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_xinetd);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_xinetd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllTelnetdPackagesUninstalled(void)
 {
-    return CheckPackageInstalled("*telnetd*", SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : DuplicateString("A 'telnetd' package is installed");
+    char* reason = NULL;
+    CheckPackageNotInstalled("*telnetd*", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRshServerNotInstalled(void)
 {
-    return CheckPackageInstalled(g_rshServer, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_rshServer);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_rshServer, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNisNotInstalled(void)
 {
-    return CheckPackageInstalled(g_nis, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_nis);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_nis, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureTftpdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_tftpd, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_tftpd);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_tftpd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureReadaheadFedoraNotInstalled(void)
 {
-    return CheckPackageInstalled(g_readAheadFedora, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_readAheadFedora);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_readAheadFedora, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureBluetoothHiddNotInstalled(void)
 {
-    return ((0 != CheckPackageInstalled(g_bluetooth, SecurityBaselineGetLog())) && (false == IsDaemonActive(g_bluetooth, SecurityBaselineGetLog()))) ?
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed or service '%s' is active", g_bluetooth, g_bluetooth);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_bluetooth, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_bluetooth, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureIsdnUtilsBaseNotInstalled(void)
 {
-    return CheckPackageInstalled(g_isdnUtilsBase, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_isdnUtilsBase);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_isdnUtilsBase, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureIsdnUtilsKdumpToolsNotInstalled(void)
 {
-    return CheckPackageInstalled(g_kdumpTools, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_kdumpTools);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_kdumpTools, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureIscDhcpdServerNotInstalled(void)
 {
-    return CheckPackageInstalled(g_iscDhcpServer, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_iscDhcpServer);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_iscDhcpServer, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSendmailNotInstalled(void)
 {
-    return CheckPackageInstalled(g_sendmail, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_sendmail);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_sendmail, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSldapdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_slapd, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_slapd);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_slapd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureBind9NotInstalled(void)
 {
-    return CheckPackageInstalled(g_bind9, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_bind9);
+    char* reason = NULL;
+    CheckPackageInstalled(g_bind9, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDovecotCoreNotInstalled(void)
 {
-    return CheckPackageInstalled(g_dovecotCore, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_dovecotCore);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_dovecotCore, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAuditdInstalled(void)
 {
-    return CheckPackageInstalled(g_auditd, SecurityBaselineGetLog()) ? 
-        FormatAllocateString("Package '%s' is not installed", g_auditd) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckPackageInstalled(g_auditd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
 {
     char* reason = NULL;
-    return CheckAllEtcPasswdGroupsExistInEtcGroup(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckAllEtcPasswdGroupsExistInEtcGroup(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoDuplicateUidsExist(void)
 {
     char* reason = NULL;
-    return CheckNoDuplicateUidsExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckNoDuplicateUidsExist(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoDuplicateGidsExist(void)
 {
     char* reason = NULL;
-    return CheckNoDuplicateGidsExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckNoDuplicateGidsExist(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoDuplicateUserNamesExist(void)
 {
     char* reason = NULL;
-    return CheckNoDuplicateUserNamesExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckNoDuplicateUserNamesExist(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoDuplicateGroupsExist(void)
 {
     char* reason = NULL;
-    return CheckNoDuplicateGroupsExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckNoDuplicateGroupsExist(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureShadowGroupIsEmpty(void)
 {
     char* reason = NULL;
-    return CheckShadowGroupIsEmpty(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckShadowGroupIsEmpty(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRootGroupExists(void)
 {
     char* reason = NULL;
-    return CheckRootGroupExists(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckRootGroupExists(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllAccountsHavePasswords(void)
 {
     char* reason = NULL;
-    return CheckAllUsersHavePasswordsSet(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckAllUsersHavePasswordsSet(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
 {
     char* reason = NULL;
-    return CheckRootIsOnlyUidZeroAccount(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckRootIsOnlyUidZeroAccount(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void)
 {
-    return CheckNoLegacyPlusEntriesInFile("etc/passwd", SecurityBaselineGetLog()) ? 
-        DuplicateString("'+' lines found in /etc/passwd") : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckNoLegacyPlusEntriesInFile("etc/passwd", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcShadow(void)
 {
-    return CheckNoLegacyPlusEntriesInFile("etc/shadow", SecurityBaselineGetLog()) ? 
-        DuplicateString(DuplicateString("'+' lines found in /etc/shadow")) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckNoLegacyPlusEntriesInFile("etc/shadow", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcGroup(void)
 {
-    return CheckNoLegacyPlusEntriesInFile("etc/group", SecurityBaselineGetLog()) ? 
-        DuplicateString(DuplicateString("'+' lines found in /etc/group")) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckNoLegacyPlusEntriesInFile("etc/group", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDefaultRootAccountGroupIsGidZero(void)
 {
     char* reason = NULL;
-    return CheckDefaultRootAccountGroupIsGidZero(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckDefaultRootAccountGroupIsGidZero(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRootIsOnlyUidZeroAccount(void)
 {
     char* reason = NULL;
-    return ((0 == CheckRootGroupExists(&reason, SecurityBaselineGetLog())) && 
-        (0 == CheckRootIsOnlyUidZeroAccount(&reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckRootGroupExists(&reason, SecurityBaselineGetLog());
+    CheckRootIsOnlyUidZeroAccount(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllUsersHomeDirectoriesExist(void)
 {
     char* reason = NULL;
-    return CheckAllUsersHomeDirectoriesExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckAllUsersHomeDirectoriesExist(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureUsersOwnTheirHomeDirectories(void)
 {
     char* reason = NULL;
-    return CheckUsersOwnTheirHomeDirectories(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckUsersOwnTheirHomeDirectories(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRestrictedUserHomeDirectories(void)
 {
     unsigned int modes[] = {700, 750};
     char* reason = NULL;
-    
-    return CheckRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePasswordHashingAlgorithm(void)
 {
     char* reason = NULL;
-    return CheckPasswordHashingAlgorithm(sha512, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckPasswordHashingAlgorithm(sha512, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureMinDaysBetweenPasswordChanges(void)
 {
     char* reason = NULL;
-    return CheckMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureInactivePasswordLockPeriod(void)
 {
     char* reason = NULL;
-    return ((0 == CheckLockoutAfterInactivityLessThan(g_maxInactiveDays, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckUsersRecordedPasswordChangeDates(&reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckLockoutAfterInactivityLessThan(g_maxInactiveDays, &reason, SecurityBaselineGetLog());
+    CheckUsersRecordedPasswordChangeDates(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureMaxDaysBetweenPasswordChanges(void)
 {
     char* reason = NULL;
-    return CheckMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePasswordExpiration(void)
 {
     char* reason = NULL;
-    return CheckPasswordExpirationLessThan(g_passwordExpiration, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckPasswordExpirationLessThan(g_passwordExpiration, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePasswordExpirationWarning(void)
 {
     char* reason = NULL;
-    return CheckPasswordExpirationWarning(g_passwordExpirationWarning, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckPasswordExpirationWarning(g_passwordExpirationWarning, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSystemAccountsAreNonLogin(void)
 {
     char* reason = NULL;
-    return CheckSystemAccountsAreNonLogin(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckSystemAccountsAreNonLogin(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAuthenticationRequiredForSingleUserMode(void)
 {
     char* reason = NULL;
-    return CheckRootPasswordForSingleUserMode(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckRootPasswordForSingleUserMode(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePrelinkIsDisabled(void)
 {
-    return CheckPackageInstalled(g_prelink, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_prelink);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_prelink, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureTalkClientIsNotInstalled(void)
 {
-    return CheckPackageInstalled(g_talk, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed", g_talk);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_talk, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDotDoesNotAppearInRootsPath(void)
@@ -991,438 +1079,475 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void)
     const char* path = "PATH";
     const char* dot = ".";
     char* reason = NULL;
-
-    return ((0 != FindTextInEnvironmentVariable(path, dot, false, &reason, SecurityBaselineGetLog()) &&
-        (0 != FindMarkedTextInFile("/etc/sudoers", "secure_path", dot, &reason, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile(g_etcEnvironment, path, dot, &reason, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile(g_etcProfile, path, dot, &reason, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile("/root/.profile", path, dot, &reason, SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : reason;
+    CheckTextNotFoundInEnvironmentVariable(path, dot, false, &reason, SecurityBaselineGetLog());
+    CheckMarkedTextNotFoundInFile("/etc/sudoers", "secure_path", dot, &reason, SecurityBaselineGetLog());
+    CheckMarkedTextNotFoundInFile(g_etcEnvironment, path, dot, &reason, SecurityBaselineGetLog());
+    CheckMarkedTextNotFoundInFile(g_etcProfile, path, dot, &reason, SecurityBaselineGetLog());
+    CheckMarkedTextNotFoundInFile("/root/.profile", path, dot, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureCronServiceIsEnabled(void)
 {
-    return (0 == CheckPackageInstalled(g_cron, SecurityBaselineGetLog()) &&
-        CheckIfDaemonActive(g_cron, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' is not installed or service '%s' is not running", g_cron, g_cron);
+    char* reason = NULL;
+    CheckPackageInstalled(g_cron, &reason, SecurityBaselineGetLog());
+    CheckDaemonActive(g_cron, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
 {
-    return ((0 != FindTextInFile(g_etcIssueNet, "\\m", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssueNet, "\\r", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssueNet, "\\s", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssueNet, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'\\m', '\\r', '\\s' or '\\v' is found in %s", g_etcIssueNet);
+    char* reason = NULL;
+    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\m", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\r", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\s", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\v", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void)
 {
-    return ((0 != FindTextInFile(g_etcIssue, "\\m", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssue, "\\r", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssue, "\\s", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssue, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'\\m', '\\r', '\\s' or '\\v' is found in %s", g_etcIssue);
+    char* reason = NULL;
+    CheckTextIsNotFoundInFile(g_etcIssue, "\\m", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcIssue, "\\r", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcIssue, "\\s", &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcIssue, "\\v", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAuditdServiceIsRunning(void)
 {
-    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Service '%s' is not running", g_auditd);
+    char* reason = NULL;
+    CheckDaemonActive(g_auditd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSuRestrictedToRootGroup(void)
 {
-    return (0 == FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog())) ? 
-        DuplicateString(g_pass) : DuplicateString("'use_uid' is not found in /etc/pam.d/su");
+    char* reason = NULL;
+    CheckTextIsFoundInFile("/etc/pam.d/su", "use_uid", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDefaultUmaskForAllUsers(void)
 {
     char* reason = NULL;
-    return CheckLoginUmask("077", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckLoginUmask("077", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAutomountingDisabled(void)
 {
     const char* autofs = "autofs";
-    return (CheckPackageInstalled(autofs, SecurityBaselineGetLog()) 
-        && (false == CheckIfDaemonActive(autofs, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' is not installed or service '%s' is not running", autofs, autofs);
+    char* reason = NULL;
+    CheckPackageInstalled(autofs, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(autofs, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureKernelCompiledFromApprovedSources(void)
 {
     char* reason = NULL;
-    return (true == CheckOsAndKernelMatchDistro(&reason, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : reason;
+    CheckOsAndKernelMatchDistro(&reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
 {
     const char* readIpTables = "iptables -S";
     char* reason = NULL;
-
-    return ((0 == FindTextInCommandOutput(readIpTables, "-P INPUT DROP", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePacketRedirectSendingIsDisabled(void)
 {
     const char* command = "sysctl -a";
     char* reason = NULL;
-
-    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureIcmpRedirectsIsDisabled(void)
 {
     const char* command = "sysctl -a";
     char* reason = NULL;
-
-    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.secure_redirects = 0", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.secure_redirects = 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSourceRoutedPacketsIsDisabled(void)
 {
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("'0' is not found in /proc/sys/net/ipv4/conf/all/accept_source_route or in /proc/sys/net/ipv6/conf/all/accept_source_route");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
 {
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("'0' is not found in /proc/sys/net/ipv4/conf/all/accept_source_route or in /proc/sys/net/ipv6/conf/default/accept_source_route");
+    char* reason = 0;
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureIgnoringBogusIcmpBroadcastResponses(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", SecurityBaselineGetLog())) ? 
-        DuplicateString(g_pass) : DuplicateString("'1' is not found in /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        DuplicateString("'1' is not found in /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureMartianPacketLoggingIsEnabled(void)
 {
     const char* command = "sysctl -a";
     char* reason = NULL;
-
-    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", &reason, SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureReversePathSourceValidationIsEnabled(void)
 {
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", SecurityBaselineGetLog())) && 
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("'1' not found in /proc/sys/net/ipv4/conf/all/rp_filter or in /proc/sys/net/ipv4/conf/default/rp_filter");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureTcpSynCookiesAreEnabled(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        DuplicateString("'1' not found in /proc/sys/net/ipv4/tcp_syncookies");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
 {
     const char* command = "/sbin/ip addr list";
     const char* text = "PROMISC";
-
-    return (FindTextInCommandOutput(command, text, NULL, SecurityBaselineGetLog()) &&
-        (0 == CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, SecurityBaselineGetLog())) &&
-        (0 == CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'%s' is not found in command '%s' output or found in /etc/network/interfaces or in /etc/rc.local", text, command);
+    char* reason = NULL;
+    CheckTextNotFoundInCommandOutput(command, text, &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllWirelessInterfacesAreDisabled(void)
 {
-    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", NULL, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : DuplicateString("'Frequency' found in '/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found' output, indicating at least one active wireless interface");
+    char* reason = NULL;
+    if (0 == CheckTextNotFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", &reason, SecurityBaselineGetLog()))
+    {
+        OsConfigResetReason(&reason);
+        OsConfigCaptureSuccessReason(&reason, "No active wireless interfaces are present");
+    }
+    else
+    {
+        OsConfigResetReason(&reason);
+        OsConfigCaptureReason(&reason, "At least one active wireless interface is present");
+    }
+    return reason;
 }
 
 static char* AuditEnsureIpv6ProtocolIsEnabled(void)
 {
     char* reason = NULL;
-    return (0 == FindTextInCommandOutput("cat /sys/module/ipv6/parameters/disable", "0", &reason, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : reason;
+    CheckTextFoundInCommandOutput("cat /sys/module/ipv6/parameters/disable", "0", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDccpIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install dccp /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'%s' is not found in any file under %s", "install dccp /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install dccp /bin/true", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSctpIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install sctp /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'%s' is not found in any file under %s", "install sctp /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install sctp /bin/true", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDisabledSupportForRds(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install rds /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'%s' is not found in any file under %s", "install rds /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install rds /bin/true", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureTipcIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install tipc /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'%s' is not found in any file under %s", "install tipc /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install tipc /bin/true", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureZeroconfNetworkingIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", SecurityBaselineGetLog()) ? 
-        DuplicateString("'ipv4ll' is found in /etc/network/interfaces") : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckDaemonNotActive(g_avahiDaemon, &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePermissionsOnBootloaderConfig(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileAccess("/boot/grub/grub.conf", 0, 0, 400, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess("/boot/grub/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileAccess("/boot/grub/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    CheckFileAccess("/boot/grub/grub.conf", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, 400, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePasswordReuseIsLimited(void)
 {
     const char* etcPamdSystemAuth = "/etc/pam.d/system-auth";
-    int option = 0;
-
-    return ((5 >= (option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog()))) ||
-        (5 >= (option = GetIntegerOptionFromFile(etcPamdSystemAuth, "remember", '=', SecurityBaselineGetLog())))) ?
-        ((-999 == option) ? FormatAllocateString("The 'remember' option is not found in '%s' or in '%s'", g_etcPamdCommonPassword, etcPamdSystemAuth) :
-        FormatAllocateString("The 'remember' option is set to '%d' in '%s' or '%s' instead of expected '5' or greater", option, g_etcPamdCommonPassword, etcPamdSystemAuth)) :
-        DuplicateString(g_pass);
+    char* reason = NULL;
+    if (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, "remember", '=', 5, &reason, SecurityBaselineGetLog()))
+    {
+        return reason;
+    }
+    CheckIntegerOptionFromFileLessOrEqualWith(etcPamdSystemAuth, "remember", '=', 5, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install usb-storage /bin/true' is not found in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureCoreDumpsAreRestricted(void)
 {
     const char* fsSuidDumpable = "fs.suid_dumpable = 0";
-
-    return (((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) ||
-        (0 == FindTextInFolder("/etc/security/limits.d", fsSuidDumpable, SecurityBaselineGetLog()))) &&
-        (0 == FindTextInCommandOutput("sysctl -a", fsSuidDumpable, NULL, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("Line 'hard core 0' is not found in /etc/security/limits.conf, or 'fs.suid_dumpable = 0' is not found in /etc/security/limits.d or in output from 'sysctl -a'");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/etc/security/limits.conf", '#', "hard core 0", &reason, SecurityBaselineGetLog());
+    CheckTextFoundInFolder("/etc/security/limits.d", fsSuidDumpable, &reason, SecurityBaselineGetLog());
+    CheckTextFoundInCommandOutput("sysctl -a", fsSuidDumpable, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePasswordCreationRequirements(void)
 {
-    int minlenOption = 0;
-    int minclassOption = 0;
-    int dcreditOption = 0;
-    int ucreditOption = 0;
-    int ocreditOption = 0;
-    int lcreditOption = 0;
-    char* result = NULL;
-    
-    if (IsCurrentOs(g_suse, SecurityBaselineGetLog()))
-    {
-        result = ((14 == (minlenOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minlen", '=', SecurityBaselineGetLog()))) &&
-            ((4 == (minclassOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minclass", '=', SecurityBaselineGetLog()))) ||
-            ((-1 == (dcreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "dcredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (ucreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ucredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (ocreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ocredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (lcreditOption = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "lcredit", '=', SecurityBaselineGetLog())))))) ? DuplicateString(g_pass) :
-            FormatAllocateString("%s detected, in %s, 'minlen' missing or set to %d instead of 14, 'minclass' missing or set to %d instead of 4, "
-                "or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to %d, %d, %d, %d respectively instead of -1 each",
-                g_suse, g_etcPamdCommonPassword, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
-    }
-    else
-    {
-        result = ((CheckFileExists(g_etcSecurityPwQualityConf, SecurityBaselineGetLog())) &&
-            ((4 == (minclassOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "minclass", '=', SecurityBaselineGetLog())) ||
-            ((-1 == (dcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "dcredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (ucreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ucredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (ocreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "ocredit", '=', SecurityBaselineGetLog()))) &&
-            (-1 == (lcreditOption = GetIntegerOptionFromFile(g_etcSecurityPwQualityConf, "lcredit", '=', SecurityBaselineGetLog()))))))) ? DuplicateString(g_pass) :
-            FormatAllocateString("'%s' mising, or 'minclass' missing or set to %d instead of 4, or: 'dcredit', 'ucredit', 'ocredit' or 'lcredit' missing or set to "
-                "%d, %d, %d, %d respectively instead of -1 each", g_etcSecurityPwQualityConf, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
-    }
-
-    return result;
+    char* reason = NULL;
+    CheckPasswordCreationRequirements(14, 4, -1, -1, -1, -1, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
     const char* passwordAuth = "/etc/pam.d/password-auth";
     const char* commonAuth = "/etc/pam.d/common-auth";
-    
-    return ((0 == CheckLockoutForFailedPasswordAttempts(passwordAuth, SecurityBaselineGetLog())) ||
-        (0 == CheckLockoutForFailedPasswordAttempts(commonAuth, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) :
-        FormatAllocateString("In %s: lockout for failed password attempts not set, 'auth', 'pam_faillock.so' or 'pam_tally2.so' and 'file=/var/log/tallylog' "
-            "not found, or 'deny' or 'unlock_time' not found, or 'deny' not in between 1 and 5, or 'unlock_time' not set to greater than 0", passwordAuth);
+    char* reason = NULL;
+    if (0 == CheckLockoutForFailedPasswordAttempts(passwordAuth, &reason, SecurityBaselineGetLog()))
+    {
+        return reason;
+    }
+    OsConfigResetReason(&reason);
+    CheckLockoutForFailedPasswordAttempts(commonAuth, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install cramfs", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install cramfs' is not found in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install cramfs", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfFreevxfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install freevxfs", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install freevxfs' is not found in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install freevxfs", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfHfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfs", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install hfs' is not found  in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install hfs", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfHfsplusFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfsplus", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install hfsplus' is not found  in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install hfsplus", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install jffs2", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install jffs2' is not found  in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckTextNotFoundInFolder(g_etcModProbeD, "install jffs2", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 {
-    return ((0 == CompareFileContents("/proc/sys/kernel/randomize_va_space", "2", SecurityBaselineGetLog())) ||
-        (0 == CompareFileContents("/proc/sys/kernel/randomize_va_space", "1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("/proc/sys/kernel/randomize_va_space content is not '2' and /proc/sys/kernel/randomize_va_space content is not '1'");
+    char* reason = NULL;
+    if (0 == CheckFileContents("/proc/sys/kernel/randomize_va_space", "2", &reason, SecurityBaselineGetLog()))
+    {
+        return reason;
+    }
+    OsConfigResetReason(&reason);
+    if (0 != CheckFileContents("/proc/sys/kernel/randomize_va_space", "1", &reason, SecurityBaselineGetLog()))
+    {
+        OsConfigCaptureReason(&reason, "neither 2");
+    }
+    return reason;
 }
 
 static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
 {
     const char* password = "password";
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.cfg", '#', password, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.conf", '#', password, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub2/grub.conf", '#', password, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("Line 'password' is not found in /boot/grub/grub.cfg, in /boot/grub/grub.conf and in /boot/grub2/grub.conf");
+    char* reason = NULL;
+    CheckLineFoundNotCommentedOut("/boot/grub/grub.cfg", '#', password, &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut("/boot/grub/grub.conf", '#', password, &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut("/boot/grub2/grub.conf", '#', password, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureLoggingIsConfigured(void)
 {
-    return CheckFileExists("/var/log/syslog", SecurityBaselineGetLog()) ? 
-        DuplicateString("/var/log/syslog is not found") : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckFileExists("/var/log/syslog", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSyslogPackageIsInstalled(void)
 {
-    return ((0 == CheckPackageInstalled(g_syslog, SecurityBaselineGetLog())) ||
-        (0 == CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog())) ||
-        (0 == CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Packages '%s', '%s' and '%s' are not installed", g_syslog, g_rsyslog, g_syslogNg);
+    char* reason = NULL;
+    CheckPackageInstalled(g_syslog, &reason, SecurityBaselineGetLog());
+    CheckPackageInstalled(g_rsyslog, &reason, SecurityBaselineGetLog());
+    CheckPackageInstalled(g_syslogNg, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
 {
     char* reason = NULL;
-    char* status = ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && 
-        (0 == CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, &reason, SecurityBaselineGetLog()))) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Package '%s' is not installed, or: %s", g_systemd, reason);
-    FREE_MEMORY(reason);
-    return status;
+    CheckPackageInstalled(g_systemd, &reason, SecurityBaselineGetLog());
+    CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureALoggingServiceIsEnabled(void)
 {
-    return ((CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()) && CheckIfDaemonActive(g_rsyslog, SecurityBaselineGetLog())) ||
-        (CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()) && CheckIfDaemonActive(g_syslogNg, SecurityBaselineGetLog())) ||
-        ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && CheckIfDaemonActive(g_systemdJournald, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'%s' or '%s' is not installed or '%s' is not running, and: '%s' or '%s' are not installed or '%s' is not running, and: '%s' is not installed or '%s' is not running",
-            g_syslogNg, g_systemd, g_rsyslog, g_rsyslog, g_systemd, g_syslogNg, g_systemd, g_systemdJournald);
+    char* reason = NULL;
+    if ((0 == CheckPackageNotInstalled(g_syslogNg, &reason, SecurityBaselineGetLog())) && 
+        (0 == CheckPackageNotInstalled(g_systemd, &reason, SecurityBaselineGetLog())) && 
+        CheckDaemonActive(g_rsyslog, &reason, SecurityBaselineGetLog()))
+    {
+        return reason;
+    }
+    OsConfigResetReason(&reason);
+    if ((0 == CheckPackageNotInstalled(g_rsyslog, &reason, SecurityBaselineGetLog())) && 
+        (0 == CheckPackageNotInstalled(g_systemd, &reason, SecurityBaselineGetLog())) && 
+        CheckDaemonActive(g_syslogNg, &reason, SecurityBaselineGetLog())) 
+    {
+        return reason;
+    }
+    OsConfigResetReason(&reason);
+    CheckPackageInstalled(g_systemd, &reason, SecurityBaselineGetLog());
+    CheckDaemonActive(g_systemdJournald, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 {
     const char* fileCreateMode = "$FileCreateMode";
-    int mode = 0, modeNg = 0;
-    return ((600 == (mode = GetIntegerOptionFromFile(g_etcRsyslogConf, fileCreateMode, ' ', SecurityBaselineGetLog())) || (640 == mode)) &&
-        ((EEXIST == CheckFileExists(g_etcSyslogNgSyslogNgConf, SecurityBaselineGetLog())) ||
-        ((600 == (modeNg = GetIntegerOptionFromFile(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', SecurityBaselineGetLog()))) || (640 == modeNg)))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Option '%d' is not found in %s or is found set to %d instead of 600 or 640, or %s exists, or option '%s' is not found in %s or found set to %d instead of 600 or 640",
-            fileCreateMode, g_etcRsyslogConf, mode, g_etcSyslogNgSyslogNgConf, fileCreateMode, g_etcSyslogNgSyslogNgConf, modeNg);
+    char* reason = NULL;
+    int modes[] = {600, 640};
+    CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, fileCreateMode, ' ', modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog());
+    if (0 == FileExists(g_etcSyslogNgSyslogNgConf))
+    {
+        CheckIntegerOptionFromFileEqualWithAny(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 {
     char* reason = NULL;
-    return ((0 == CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, &reason, SecurityBaselineGetLog())) && 
-        (0 == CheckFileAccess(g_etcRsyslogConf, 0, 0, 640, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
+    CheckFileAccess(g_etcRsyslogConf, 0, 0, 640, &reason, SecurityBaselineGetLog());
+    CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 {
-    return ((0 == FindTextInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog())) &&
-        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'FileGroup adm' is not found in %s or is found in %s", g_etcRsyslogConf, g_etcRsyslogConf);
+    char* reason = NULL;
+    CheckTextIsFoundInFile(g_etcRsyslogConf, "FileGroup adm", &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
 {
-    return ((0 == FindTextInFile(g_etcRsyslogConf, "FileOwner syslog", SecurityBaselineGetLog())) &&
-        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) :
-        FormatAllocateString("'FileOwner syslog' is not found in %s, or 'FileOwner syslog' is found in %s", g_etcRsyslogConf, g_etcRsyslogConf);
+    char* reason = NULL;
+    CheckTextIsFoundInFile(g_etcRsyslogConf, "FileOwner syslog", &reason, SecurityBaselineGetLog());
+    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 {
-    return ((0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imudp", SecurityBaselineGetLog())) &&
-        (0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imtcp", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'ModLoad imudp' is not found in %s, or 'ModLoad imtcp' is not found in %s", g_etcRsyslogConf, g_etcRsyslogConf);
+    char* reason = NULL;
+    CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imudp", &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imtcp", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSyslogRotaterServiceIsEnabled(void)
 {
-    const char* version = "18.04"; 
-    char* osName = NULL;
-    char* osVersion = NULL;
     char* reason = NULL;
-    char* status = ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog())) &&
-        ((((NULL != (osName = GetOsName(SecurityBaselineGetLog()))) && (0 == strcmp(osName, "Ubuntu")) && FreeAndReturnTrue(osName)) &&
-        ((NULL != (osVersion = GetOsVersion(SecurityBaselineGetLog()))) && (0 == strncmp(osVersion, version, strlen(version))) && FreeAndReturnTrue(osVersion))) ||
-        CheckIfDaemonActive("logrotate.timer", SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("The 'logrotate' package is not installed, or the 'logrotate.timer' service is not running, or: %s", reason);
-    FREE_MEMORY(reason);
-    return status;
+    CheckPackageInstalled("logrotate", &reason, SecurityBaselineGetLog());
+    CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureTelnetServiceIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'telnet' is not found in %s", g_etcInetdConf) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckDaemonNotActive("telnet.socket", &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRcprshServiceIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "shell", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'shell' is not found in %s", g_etcInetdConf) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckDaemonNotActive("rcp.socket", &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive("rsh.socket", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureTftpServiceisDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "tftp", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'tftp' is not found in %s", g_etcInetdConf) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckDaemonNotActive("tftpd-hpa", &reason, SecurityBaselineGetLog());
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "tftp", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
@@ -1430,16 +1555,13 @@ static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
     const char* etcCronAllow = "/etc/cron.allow";
     const char* etcAtAllow = "/etc/at.allow";
     char* reason = NULL;
-    char* status = ((EEXIST == CheckFileExists("/etc/cron.deny", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckFileExists("/etc/at.deny", SecurityBaselineGetLog())) &&
-        (0 == CheckFileExists(etcCronAllow, SecurityBaselineGetLog())) &&
-        (0 == CheckFileExists(etcAtAllow, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess(etcCronAllow, 0, 0, 600, &reason, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess(etcAtAllow, 0, 0, 600, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("/etc/cron.deny, or /etc/at.deny, or %s, or %s missing, or: %s", 
-            etcCronAllow, etcAtAllow, reason ? reason : "/etc/at.allow access not set to 600");
-    FREE_MEMORY(reason);
-    return status;
+    CheckFileNotFound("/etc/cron.deny", &reason, SecurityBaselineGetLog());
+    CheckFileNotFound("/etc/at.deny", &reason, SecurityBaselineGetLog());
+    CheckFileExists(etcCronAllow, &reason, SecurityBaselineGetLog());
+    CheckFileExists(etcAtAllow, &reason, SecurityBaselineGetLog());
+    CheckFileAccess(etcCronAllow, 0, 0, 600, &reason, SecurityBaselineGetLog());
+    CheckFileAccess(etcAtAllow, 0, 0, 600, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshPortIsConfigured(void)
@@ -1577,332 +1699,165 @@ static char* AuditEnsureAppropriateCiphersForSsh(void)
 
 static char* AuditEnsureAvahiDaemonServiceIsDisabled(void)
 {
-    return (false == CheckIfDaemonActive(g_avahiDaemon, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Sevice '%s' is not running", g_avahiDaemon);
+    char* reason = NULL;
+    CheckDaemonNotActive(g_avahiDaemon, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureCupsServiceisDisabled(void)
 {
-    return (CheckPackageInstalled(g_cups, SecurityBaselineGetLog()) &&
-        (false == CheckIfDaemonActive(g_cups, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' is not installed or service '%s' is not running", g_cups, g_cups);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_cups, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_cups, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePostfixPackageIsUninstalled(void)
 {
-    return CheckPackageInstalled(g_postfix, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' is not installed", g_postfix);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_postfix, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePostfixNetworkListeningIsDisabled(void)
 {
-    return ((0 == CheckFileExists("/etc/postfix/main.cf", SecurityBaselineGetLog())) && 
-        ((0 == FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : 
-        DuplicateString("/etc/postfix/main.cf is not found, or 'inet_interfaces localhost' is not found in /etc/postfix/main.cf");
+    char* reason = NULL;
+    if (0 == CheckFileExists("/etc/postfix/main.cf", &reason, SecurityBaselineGetLog()))
+    {
+        CheckTextIsFoundInFile("/etc/postfix/main.cf", "inet_interfaces localhost", &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureRpcgssdServiceIsDisabled(void)
 {
-    return ((false == CheckIfDaemonActive(g_rpcgssd, SecurityBaselineGetLog())) && 
-        (false == CheckIfDaemonActive(g_rpcGssd, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Service '%s' is not running or service '%s' is not running", g_rpcgssd, g_rpcGssd);
+    char* reason = NULL;
+    CheckDaemonNotActive(g_rpcgssd, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_rpcGssd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRpcidmapdServiceIsDisabled(void)
 {
-    return ((false == CheckIfDaemonActive(g_rpcidmapd, SecurityBaselineGetLog())) &&
-        (false == CheckIfDaemonActive(g_nfsIdmapd, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Service '%s' is not running or service '%s' is not running", g_rpcidmapd, g_nfsIdmapd);
+    char* reason = NULL;
+    CheckDaemonNotActive(g_rpcidmapd, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_nfsIdmapd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsurePortmapServiceIsDisabled(void)
 {
-    return ((false == CheckIfDaemonActive(g_rpcbind, SecurityBaselineGetLog())) &&
-        (false == CheckIfDaemonActive(g_rpcbindService, SecurityBaselineGetLog())) &&
-        (false == CheckIfDaemonActive(g_rpcbindSocket, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Service '%s', '%s' or '%s' is not running", g_rpcbind, g_rpcbindService, g_rpcbindSocket);
+    char* reason = NULL;
+    CheckDaemonNotActive(g_rpcbind, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_rpcbindService, &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive(g_rpcbindSocket, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_nfsServer, SecurityBaselineGetLog()) ? 
-        FormatAllocateString("Service '%s' is not running", g_nfsServer) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckDaemonNotActive(g_nfsServer, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", SecurityBaselineGetLog()) ?
-        FormatAllocateString("'NEED_SVCGSSD = yes' is not found in %s", g_etcInetdConf) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", &reason, SecurityBaselineGetLog());
+    CheckDaemonNotActive("rpc.svcgssd", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSnmpServerIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_snmpd, SecurityBaselineGetLog()) ? 
-        FormatAllocateString("Service '%s' is not running", g_snmpd) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckDaemonNotActive(g_snmpd, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRsynServiceIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_rsync, SecurityBaselineGetLog()) ? 
-        FormatAllocateString("Service '%s' is not running", g_rsync) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckDaemonNotActive(g_rsync, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNisServerIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_ypserv, SecurityBaselineGetLog()) ? 
-        FormatAllocateString("Service '%s' is not running", g_ypserv) : DuplicateString(g_pass);
+    char* reason = NULL;
+    CheckDaemonNotActive(g_ypserv, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRshClientNotInstalled(void)
 {
-    return ((0 != CheckPackageInstalled(g_rsh, SecurityBaselineGetLog())) && 
-        (0 != CheckPackageInstalled(g_rshClient, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' or package '%s' is installed", g_rsh, g_rshClient);
+    char* reason = NULL;
+    CheckPackageNotInstalled(g_rsh, &reason, SecurityBaselineGetLog());
+    CheckPackageNotInstalled(g_rshClient, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSmbWithSambaIsDisabled(void)
 {
     const char* etcSambaConf = "/etc/samba/smb.conf";
     const char* minProtocol = "min protocol = SMB2";
-
-    return (CheckPackageInstalled("samba", SecurityBaselineGetLog()) || 
-        ((EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, '#', minProtocol, SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, ';', minProtocol, SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package 'samba' is not installed or '%s' is not found in %s", minProtocol, etcSambaConf);
+    char* reason = NULL;
+    if (0 != CheckPackageNotInstalled("samba", &reason, SecurityBaselineGetLog())) 
+    {
+        CheckLineNotFoundOrCommentedOut(etcSambaConf, '#', minProtocol, &reason, SecurityBaselineGetLog());
+        CheckLineNotFoundOrCommentedOut(etcSambaConf, ';', minProtocol, &reason, SecurityBaselineGetLog());
+    }
+    return reason;
 }
 
 static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 {
     unsigned int modes[] = {600, 644, 664, 700, 744};
     char* reason = NULL;
-
-    return CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoUsersHaveDotForwardFiles(void)
 {
     char* reason = NULL;
-    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoUsersHaveDotNetrcFiles(void)
 {
     char* reason = NULL;
-    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureNoUsersHaveDotRhostsFiles(void)
 {
     char* reason = NULL;
-    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureRloginServiceIsDisabled(void)
 {
-    return (CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
-        CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog()) &&
-        FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package '%s' or '%s' is not installed, or 'login' is not found in %s", g_inetd, g_inetUtilsInetd, g_etcInetdConf);
+    const char* rlogin = "rlogin";
+    char* reason = NULL;
+    CheckDaemonNotActive(rlogin, &reason, SecurityBaselineGetLog());
+    CheckPackageNotInstalled(rlogin, &reason, SecurityBaselineGetLog());
+    CheckPackageNotInstalled(g_inetd, &reason, SecurityBaselineGetLog());
+    CheckPackageNotInstalled(g_inetUtilsInetd, &reason, SecurityBaselineGetLog());
+    CheckTextIsNotFoundInFile(g_etcInetdConf, "login", &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
     const char* names[] = {"games"};
     char* reason = NULL;
-
-    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), &reason, SecurityBaselineGetLog())) ? reason : DuplicateString(g_pass);
-}
-
-AuditCall g_auditChecks[] =
-{
-    &AuditEnsurePermissionsOnEtcIssue,
-    &AuditEnsurePermissionsOnEtcIssueNet,
-    &AuditEnsurePermissionsOnEtcHostsAllow,
-    &AuditEnsurePermissionsOnEtcHostsDeny,
-    &AuditEnsurePermissionsOnEtcSshSshdConfig,
-    &AuditEnsurePermissionsOnEtcShadow,
-    &AuditEnsurePermissionsOnEtcShadowDash,
-    &AuditEnsurePermissionsOnEtcGShadow,
-    &AuditEnsurePermissionsOnEtcGShadowDash,
-    &AuditEnsurePermissionsOnEtcPasswd,
-    &AuditEnsurePermissionsOnEtcPasswdDash,
-    &AuditEnsurePermissionsOnEtcGroup,
-    &AuditEnsurePermissionsOnEtcGroupDash,
-    &AuditEnsurePermissionsOnEtcAnacronTab,
-    &AuditEnsurePermissionsOnEtcCronD,
-    &AuditEnsurePermissionsOnEtcCronDaily,
-    &AuditEnsurePermissionsOnEtcCronHourly,
-    &AuditEnsurePermissionsOnEtcCronMonthly,
-    &AuditEnsurePermissionsOnEtcCronWeekly,
-    &AuditEnsurePermissionsOnEtcMotd,
-    &AuditEnsureKernelSupportForCpuNx,
-    &AuditEnsureNodevOptionOnHomePartition,
-    &AuditEnsureNodevOptionOnTmpPartition,
-    &AuditEnsureNodevOptionOnVarTmpPartition,
-    &AuditEnsureNosuidOptionOnTmpPartition,
-    &AuditEnsureNosuidOptionOnVarTmpPartition,
-    &AuditEnsureNoexecOptionOnVarTmpPartition,
-    &AuditEnsureNoexecOptionOnDevShmPartition,
-    &AuditEnsureNodevOptionEnabledForAllRemovableMedia,
-    &AuditEnsureNoexecOptionEnabledForAllRemovableMedia,
-    &AuditEnsureNosuidOptionEnabledForAllRemovableMedia,
-    &AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
-    &AuditEnsureInetdNotInstalled,
-    &AuditEnsureXinetdNotInstalled,
-    &AuditEnsureAllTelnetdPackagesUninstalled,
-    &AuditEnsureRshServerNotInstalled,
-    &AuditEnsureNisNotInstalled,
-    &AuditEnsureTftpdNotInstalled,
-    &AuditEnsureReadaheadFedoraNotInstalled,
-    &AuditEnsureBluetoothHiddNotInstalled,
-    &AuditEnsureIsdnUtilsBaseNotInstalled,
-    &AuditEnsureIsdnUtilsKdumpToolsNotInstalled,
-    &AuditEnsureIscDhcpdServerNotInstalled,
-    &AuditEnsureSendmailNotInstalled,
-    &AuditEnsureSldapdNotInstalled,
-    &AuditEnsureBind9NotInstalled,
-    &AuditEnsureDovecotCoreNotInstalled,
-    &AuditEnsureAuditdInstalled,
-    &AuditEnsureAllEtcPasswdGroupsExistInEtcGroup,
-    &AuditEnsureNoDuplicateUidsExist,
-    &AuditEnsureNoDuplicateGidsExist,
-    &AuditEnsureNoDuplicateUserNamesExist,
-    &AuditEnsureNoDuplicateGroupsExist,
-    &AuditEnsureShadowGroupIsEmpty,
-    &AuditEnsureRootGroupExists,
-    &AuditEnsureAllAccountsHavePasswords,
-    &AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero,
-    &AuditEnsureNoLegacyPlusEntriesInEtcPasswd,
-    &AuditEnsureNoLegacyPlusEntriesInEtcShadow,
-    &AuditEnsureNoLegacyPlusEntriesInEtcGroup,
-    &AuditEnsureDefaultRootAccountGroupIsGidZero,
-    &AuditEnsureRootIsOnlyUidZeroAccount,
-    &AuditEnsureAllUsersHomeDirectoriesExist,
-    &AuditEnsureUsersOwnTheirHomeDirectories,
-    &AuditEnsureRestrictedUserHomeDirectories,
-    &AuditEnsurePasswordHashingAlgorithm,
-    &AuditEnsureMinDaysBetweenPasswordChanges,
-    &AuditEnsureInactivePasswordLockPeriod,
-    &AuditEnsureMaxDaysBetweenPasswordChanges,
-    &AuditEnsurePasswordExpiration,
-    &AuditEnsurePasswordExpirationWarning,
-    &AuditEnsureSystemAccountsAreNonLogin,
-    &AuditEnsureAuthenticationRequiredForSingleUserMode,
-    &AuditEnsurePrelinkIsDisabled,
-    &AuditEnsureTalkClientIsNotInstalled,
-    &AuditEnsureDotDoesNotAppearInRootsPath,
-    &AuditEnsureCronServiceIsEnabled,
-    &AuditEnsureRemoteLoginWarningBannerIsConfigured,
-    &AuditEnsureLocalLoginWarningBannerIsConfigured,
-    &AuditEnsureAuditdServiceIsRunning,
-    &AuditEnsureSuRestrictedToRootGroup,
-    &AuditEnsureDefaultUmaskForAllUsers,
-    &AuditEnsureAutomountingDisabled,
-    &AuditEnsureKernelCompiledFromApprovedSources,
-    &AuditEnsureDefaultDenyFirewallPolicyIsSet,
-    &AuditEnsurePacketRedirectSendingIsDisabled,
-    &AuditEnsureIcmpRedirectsIsDisabled,
-    &AuditEnsureSourceRoutedPacketsIsDisabled,
-    &AuditEnsureAcceptingSourceRoutedPacketsIsDisabled,
-    &AuditEnsureIgnoringBogusIcmpBroadcastResponses,
-    &AuditEnsureIgnoringIcmpEchoPingsToMulticast,
-    &AuditEnsureMartianPacketLoggingIsEnabled,
-    &AuditEnsureReversePathSourceValidationIsEnabled,
-    &AuditEnsureTcpSynCookiesAreEnabled,
-    &AuditEnsureSystemNotActingAsNetworkSniffer,
-    &AuditEnsureAllWirelessInterfacesAreDisabled,
-    &AuditEnsureIpv6ProtocolIsEnabled,
-    &AuditEnsureDccpIsDisabled,
-    &AuditEnsureSctpIsDisabled,
-    &AuditEnsureDisabledSupportForRds,
-    &AuditEnsureTipcIsDisabled,
-    &AuditEnsureZeroconfNetworkingIsDisabled,
-    &AuditEnsurePermissionsOnBootloaderConfig,
-    &AuditEnsurePasswordReuseIsLimited,
-    &AuditEnsureMountingOfUsbStorageDevicesIsDisabled,
-    &AuditEnsureCoreDumpsAreRestricted,
-    &AuditEnsurePasswordCreationRequirements,
-    &AuditEnsureLockoutForFailedPasswordAttempts,
-    &AuditEnsureDisabledInstallationOfCramfsFileSystem,
-    &AuditEnsureDisabledInstallationOfFreevxfsFileSystem,
-    &AuditEnsureDisabledInstallationOfHfsFileSystem,
-    &AuditEnsureDisabledInstallationOfHfsplusFileSystem,
-    &AuditEnsureDisabledInstallationOfJffs2FileSystem,
-    &AuditEnsureVirtualMemoryRandomizationIsEnabled,
-    &AuditEnsureAllBootloadersHavePasswordProtectionEnabled,
-    &AuditEnsureLoggingIsConfigured,
-    &AuditEnsureSyslogPackageIsInstalled,
-    &AuditEnsureSystemdJournaldServicePersistsLogMessages,
-    &AuditEnsureALoggingServiceIsEnabled,
-    &AuditEnsureFilePermissionsForAllRsyslogLogFiles,
-    &AuditEnsureLoggerConfigurationFilesAreRestricted,
-    &AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup,
-    &AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser,
-    &AuditEnsureRsyslogNotAcceptingRemoteMessages,
-    &AuditEnsureSyslogRotaterServiceIsEnabled,
-    &AuditEnsureTelnetServiceIsDisabled,
-    &AuditEnsureRcprshServiceIsDisabled,
-    &AuditEnsureTftpServiceisDisabled,
-    &AuditEnsureAtCronIsRestrictedToAuthorizedUsers,
-    &AuditEnsureSshPortIsConfigured,
-    &AuditEnsureSshBestPracticeProtocol,
-    &AuditEnsureSshBestPracticeIgnoreRhosts,
-    &AuditEnsureSshLogLevelIsSet,
-    &AuditEnsureSshMaxAuthTriesIsSet,
-    &AuditEnsureAllowUsersIsConfigured,
-    &AuditEnsureDenyUsersIsConfigured,
-    &AuditEnsureAllowGroupsIsConfigured,
-    &AuditEnsureDenyGroupsConfigured,
-    &AuditEnsureSshHostbasedAuthenticationIsDisabled,
-    &AuditEnsureSshPermitRootLoginIsDisabled,
-    &AuditEnsureSshPermitEmptyPasswordsIsDisabled,
-    &AuditEnsureSshClientIntervalCountMaxIsConfigured,
-    &AuditEnsureSshClientAliveIntervalIsConfigured,
-    &AuditEnsureSshLoginGraceTimeIsSet,
-    &AuditEnsureOnlyApprovedMacAlgorithmsAreUsed,
-    &AuditEnsureSshWarningBannerIsEnabled,
-    &AuditEnsureUsersCannotSetSshEnvironmentOptions,
-    &AuditEnsureAppropriateCiphersForSsh,
-    &AuditEnsureAvahiDaemonServiceIsDisabled,
-    &AuditEnsureCupsServiceisDisabled,
-    &AuditEnsurePostfixPackageIsUninstalled,
-    &AuditEnsurePostfixNetworkListeningIsDisabled,
-    &AuditEnsureRpcgssdServiceIsDisabled,
-    &AuditEnsureRpcidmapdServiceIsDisabled,
-    &AuditEnsurePortmapServiceIsDisabled,
-    &AuditEnsureNetworkFileSystemServiceIsDisabled,
-    &AuditEnsureRpcsvcgssdServiceIsDisabled,
-    &AuditEnsureSnmpServerIsDisabled,
-    &AuditEnsureRsynServiceIsDisabled,
-    &AuditEnsureNisServerIsDisabled,
-    &AuditEnsureRshClientNotInstalled,
-    &AuditEnsureSmbWithSambaIsDisabled,
-    &AuditEnsureUsersDotFilesArentGroupOrWorldWritable,
-    &AuditEnsureNoUsersHaveDotForwardFiles,
-    &AuditEnsureNoUsersHaveDotNetrcFiles,
-    &AuditEnsureNoUsersHaveDotRhostsFiles,
-    &AuditEnsureRloginServiceIsDisabled,
-    &AuditEnsureUnnecessaryAccountsAreRemoved
-};
-
-char* AuditSecurityBaseline(void)
-{
-    size_t numChecks = ARRAY_SIZE(g_auditChecks);
-    size_t i = 0;
-    char* _status = NULL;
-    char* status = DuplicateString(g_pass);
-
-    for (i = 0; i < numChecks; i++)
-    {
-        if ((NULL == (_status = g_auditChecks[i]())) || strcmp(_status, g_pass))
-        {
-            FREE_MEMORY(status);
-            status = DuplicateString(_status ? _status : g_fail);
-        }
-        FREE_MEMORY(_status);
-    }
-
-    return status;
+    CheckUserAccountsNotFound(names, ARRAY_SIZE(names), &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(char* value)
@@ -2791,7 +2746,7 @@ static int RemediateEnsureAvahiDaemonServiceIsDisabled(char* value)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_avahiDaemon, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureAvahiDaemonServiceIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureAvahiDaemonServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureCupsServiceisDisabled(char* value)
@@ -2818,7 +2773,7 @@ static int RemediateEnsureRpcgssdServiceIsDisabled(char* value)
     UNUSED(value);
     StopAndDisableDaemon(g_rpcgssd, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_rpcGssd, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureRpcgssdServiceIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureRpcgssdServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value)
@@ -2826,7 +2781,7 @@ static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value)
     UNUSED(value);
     StopAndDisableDaemon(g_rpcidmapd, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_nfsIdmapd, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureRpcidmapdServiceIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureRpcidmapdServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePortmapServiceIsDisabled(char* value)
@@ -2835,14 +2790,14 @@ static int RemediateEnsurePortmapServiceIsDisabled(char* value)
     StopAndDisableDaemon(g_rpcbind, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_rpcbindService, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_rpcbindSocket, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsurePortmapServiceIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsurePortmapServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_nfsServer, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureNetworkFileSystemServiceIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureNetworkFileSystemServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value)
@@ -2855,21 +2810,21 @@ static int RemediateEnsureSnmpServerIsDisabled(char* value)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_snmpd, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureSnmpServerIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureSnmpServerIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRsynServiceIsDisabled(char* value)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_rsync, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureRsynServiceIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureRsynServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNisServerIsDisabled(char* value)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_ypserv, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsureNisServerIsDisabled())) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureNisServerIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRshClientNotInstalled(char* value)
@@ -3023,195 +2978,6 @@ static int InitEnsureAppropriateCiphersForSsh(char* value)
     return InitializeSshAuditCheck(g_initEnsureAppropriateCiphersForSshObject, value, SecurityBaselineGetLog());
 }
 
-RemediationCall g_remediateChecks[] =
-{
-    &RemediateEnsurePermissionsOnEtcIssue,
-    &RemediateEnsurePermissionsOnEtcIssueNet,
-    &RemediateEnsurePermissionsOnEtcHostsAllow,
-    &RemediateEnsurePermissionsOnEtcHostsDeny,
-    &RemediateEnsurePermissionsOnEtcSshSshdConfig,
-    &RemediateEnsurePermissionsOnEtcShadow,
-    &RemediateEnsurePermissionsOnEtcShadowDash,
-    &RemediateEnsurePermissionsOnEtcGShadow,
-    &RemediateEnsurePermissionsOnEtcGShadowDash,
-    &RemediateEnsurePermissionsOnEtcPasswd,
-    &RemediateEnsurePermissionsOnEtcPasswdDash,
-    &RemediateEnsurePermissionsOnEtcGroup,
-    &RemediateEnsurePermissionsOnEtcGroupDash,
-    &RemediateEnsurePermissionsOnEtcAnacronTab,
-    &RemediateEnsurePermissionsOnEtcCronD,
-    &RemediateEnsurePermissionsOnEtcCronDaily,
-    &RemediateEnsurePermissionsOnEtcCronHourly,
-    &RemediateEnsurePermissionsOnEtcCronMonthly,
-    &RemediateEnsurePermissionsOnEtcCronWeekly,
-    &RemediateEnsurePermissionsOnEtcMotd,
-    &RemediateEnsureInetdNotInstalled,
-    &RemediateEnsureXinetdNotInstalled,
-    &RemediateEnsureRshServerNotInstalled,
-    &RemediateEnsureNisNotInstalled,
-    &RemediateEnsureTftpdNotInstalled,
-    &RemediateEnsureReadaheadFedoraNotInstalled,
-    &RemediateEnsureBluetoothHiddNotInstalled,
-    &RemediateEnsureIsdnUtilsBaseNotInstalled,
-    &RemediateEnsureIsdnUtilsKdumpToolsNotInstalled,
-    &RemediateEnsureIscDhcpdServerNotInstalled,
-    &RemediateEnsureSendmailNotInstalled,
-    &RemediateEnsureSldapdNotInstalled,
-    &RemediateEnsureBind9NotInstalled,
-    &RemediateEnsureDovecotCoreNotInstalled,
-    &RemediateEnsureAuditdInstalled,
-    &RemediateEnsurePrelinkIsDisabled,
-    &RemediateEnsureTalkClientIsNotInstalled,
-    &RemediateEnsureCronServiceIsEnabled,
-    &RemediateEnsureAuditdServiceIsRunning,
-    &RemediateEnsureKernelSupportForCpuNx,
-    &RemediateEnsureNodevOptionOnHomePartition,
-    &RemediateEnsureNodevOptionOnTmpPartition,
-    &RemediateEnsureNodevOptionOnVarTmpPartition,
-    &RemediateEnsureNosuidOptionOnTmpPartition,
-    &RemediateEnsureNosuidOptionOnVarTmpPartition,
-    &RemediateEnsureNoexecOptionOnVarTmpPartition,
-    &RemediateEnsureNoexecOptionOnDevShmPartition,
-    &RemediateEnsureNodevOptionEnabledForAllRemovableMedia,
-    &RemediateEnsureNoexecOptionEnabledForAllRemovableMedia,
-    &RemediateEnsureNosuidOptionEnabledForAllRemovableMedia,
-    &RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
-    &RemediateEnsureAllTelnetdPackagesUninstalled,
-    &RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup,
-    &RemediateEnsureNoDuplicateUidsExist,
-    &RemediateEnsureNoDuplicateGidsExist,
-    &RemediateEnsureNoDuplicateUserNamesExist,
-    &RemediateEnsureNoDuplicateGroupsExist,
-    &RemediateEnsureShadowGroupIsEmpty,
-    &RemediateEnsureRootGroupExists,
-    &RemediateEnsureAllAccountsHavePasswords,
-    &RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero,
-    &RemediateEnsureNoLegacyPlusEntriesInEtcPasswd,
-    &RemediateEnsureNoLegacyPlusEntriesInEtcShadow,
-    &RemediateEnsureNoLegacyPlusEntriesInEtcGroup,
-    &RemediateEnsureDefaultRootAccountGroupIsGidZero,
-    &RemediateEnsureRootIsOnlyUidZeroAccount,
-    &RemediateEnsureAllUsersHomeDirectoriesExist,
-    &RemediateEnsureUsersOwnTheirHomeDirectories,
-    &RemediateEnsureRestrictedUserHomeDirectories,
-    &RemediateEnsurePasswordHashingAlgorithm,
-    &RemediateEnsureMinDaysBetweenPasswordChanges,
-    &RemediateEnsureInactivePasswordLockPeriod,
-    &RemediateEnsureMaxDaysBetweenPasswordChanges,
-    &RemediateEnsurePasswordExpiration,
-    &RemediateEnsurePasswordExpirationWarning,
-    &RemediateEnsureSystemAccountsAreNonLogin,
-    &RemediateEnsureAuthenticationRequiredForSingleUserMode,
-    &RemediateEnsureDotDoesNotAppearInRootsPath,
-    &RemediateEnsureRemoteLoginWarningBannerIsConfigured,
-    &RemediateEnsureLocalLoginWarningBannerIsConfigured,
-    &RemediateEnsureSuRestrictedToRootGroup,
-    &RemediateEnsureDefaultUmaskForAllUsers,
-    &RemediateEnsureAutomountingDisabled,
-    &RemediateEnsureKernelCompiledFromApprovedSources,
-    &RemediateEnsureDefaultDenyFirewallPolicyIsSet,
-    &RemediateEnsurePacketRedirectSendingIsDisabled,
-    &RemediateEnsureIcmpRedirectsIsDisabled,
-    &RemediateEnsureSourceRoutedPacketsIsDisabled,
-    &RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled,
-    &RemediateEnsureIgnoringBogusIcmpBroadcastResponses,
-    &RemediateEnsureIgnoringIcmpEchoPingsToMulticast,
-    &RemediateEnsureMartianPacketLoggingIsEnabled,
-    &RemediateEnsureReversePathSourceValidationIsEnabled,
-    &RemediateEnsureTcpSynCookiesAreEnabled,
-    &RemediateEnsureSystemNotActingAsNetworkSniffer,
-    &RemediateEnsureAllWirelessInterfacesAreDisabled,
-    &RemediateEnsureIpv6ProtocolIsEnabled,
-    &RemediateEnsureDccpIsDisabled,
-    &RemediateEnsureSctpIsDisabled,
-    &RemediateEnsureDisabledSupportForRds,
-    &RemediateEnsureTipcIsDisabled,
-    &RemediateEnsureZeroconfNetworkingIsDisabled,
-    &RemediateEnsurePermissionsOnBootloaderConfig,
-    &RemediateEnsurePasswordReuseIsLimited,
-    &RemediateEnsureMountingOfUsbStorageDevicesIsDisabled,
-    &RemediateEnsureCoreDumpsAreRestricted,
-    &RemediateEnsurePasswordCreationRequirements,
-    &RemediateEnsureLockoutForFailedPasswordAttempts,
-    &RemediateEnsureDisabledInstallationOfCramfsFileSystem,
-    &RemediateEnsureDisabledInstallationOfFreevxfsFileSystem,
-    &RemediateEnsureDisabledInstallationOfHfsFileSystem,
-    &RemediateEnsureDisabledInstallationOfHfsplusFileSystem,
-    &RemediateEnsureDisabledInstallationOfJffs2FileSystem,
-    &RemediateEnsureVirtualMemoryRandomizationIsEnabled,
-    &RemediateEnsureAllBootloadersHavePasswordProtectionEnabled,
-    &RemediateEnsureLoggingIsConfigured,
-    &RemediateEnsureSyslogPackageIsInstalled,
-    &RemediateEnsureSystemdJournaldServicePersistsLogMessages,
-    &RemediateEnsureALoggingServiceIsEnabled,
-    &RemediateEnsureFilePermissionsForAllRsyslogLogFiles,
-    &RemediateEnsureLoggerConfigurationFilesAreRestricted,
-    &RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup,
-    &RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser,
-    &RemediateEnsureRsyslogNotAcceptingRemoteMessages,
-    &RemediateEnsureSyslogRotaterServiceIsEnabled,
-    &RemediateEnsureTelnetServiceIsDisabled,
-    &RemediateEnsureRcprshServiceIsDisabled,
-    &RemediateEnsureTftpServiceisDisabled,
-    &RemediateEnsureAtCronIsRestrictedToAuthorizedUsers,
-    &RemediateEnsureSshPortIsConfigured,
-    &RemediateEnsureSshBestPracticeProtocol,
-    &RemediateEnsureSshBestPracticeIgnoreRhosts,
-    &RemediateEnsureSshLogLevelIsSet,
-    &RemediateEnsureSshMaxAuthTriesIsSet,
-    &RemediateEnsureAllowUsersIsConfigured,
-    &RemediateEnsureDenyUsersIsConfigured,
-    &RemediateEnsureAllowGroupsIsConfigured,
-    &RemediateEnsureDenyGroupsConfigured,
-    &RemediateEnsureSshHostbasedAuthenticationIsDisabled,
-    &RemediateEnsureSshPermitRootLoginIsDisabled,
-    &RemediateEnsureSshPermitEmptyPasswordsIsDisabled,
-    &RemediateEnsureSshClientIntervalCountMaxIsConfigured,
-    &RemediateEnsureSshClientAliveIntervalIsConfigured,
-    &RemediateEnsureSshLoginGraceTimeIsSet,
-    &RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed,
-    &RemediateEnsureSshWarningBannerIsEnabled,
-    &RemediateEnsureUsersCannotSetSshEnvironmentOptions,
-    &RemediateEnsureAppropriateCiphersForSsh,
-    &RemediateEnsureAvahiDaemonServiceIsDisabled,
-    &RemediateEnsureCupsServiceisDisabled,
-    &RemediateEnsurePostfixPackageIsUninstalled,
-    &RemediateEnsurePostfixNetworkListeningIsDisabled,
-    &RemediateEnsureRpcgssdServiceIsDisabled,
-    &RemediateEnsureRpcidmapdServiceIsDisabled,
-    &RemediateEnsurePortmapServiceIsDisabled,
-    &RemediateEnsureNetworkFileSystemServiceIsDisabled,
-    &RemediateEnsureRpcsvcgssdServiceIsDisabled,
-    &RemediateEnsureSnmpServerIsDisabled,
-    &RemediateEnsureRsynServiceIsDisabled,
-    &RemediateEnsureNisServerIsDisabled,
-    &RemediateEnsureRshClientNotInstalled,
-    &RemediateEnsureSmbWithSambaIsDisabled,
-    &RemediateEnsureUsersDotFilesArentGroupOrWorldWritable,
-    &RemediateEnsureNoUsersHaveDotForwardFiles,
-    &RemediateEnsureNoUsersHaveDotNetrcFiles,
-    &RemediateEnsureNoUsersHaveDotRhostsFiles,
-    &RemediateEnsureRloginServiceIsDisabled,
-    &RemediateEnsureUnnecessaryAccountsAreRemoved
-};
-
-static int RemediateSecurityBaseline(char* value)
-{
-    size_t numChecks = ARRAY_SIZE(g_remediateChecks);
-    size_t i = 0;
-    int status = 0;
-
-    for (i = 0; i < numChecks; i++)
-    {
-        if ((0 != g_remediateChecks[i](value)) && (0 == status))
-        {
-            status = ENOENT;
-        }
-    }
-
-    return status;
-}
-
 MMI_HANDLE SecurityBaselineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
     MMI_HANDLE handle = (MMI_HANDLE)g_securityBaselineModuleName;
@@ -3275,6 +3041,8 @@ int SecurityBaselineMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload,
 
 int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
+    JSON_Value* jsonValue = NULL;
+    char* serializedValue = NULL;
     int status = MMI_OK;
     char* result = NULL;
 
@@ -3300,11 +3068,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     }
     else
     {
-        if (0 == strcmp(objectName, g_auditSecurityBaselineObject))
-        {
-            result = AuditSecurityBaseline();
-        }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueObject))
+        if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueObject))
         {
             result = AuditEnsurePermissionsOnEtcIssue();
         }
@@ -3997,34 +3761,55 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
             }
         }
         
-        if (result)
+        if (NULL != result)
         {
-            *payloadSizeBytes = strlen(result) + 2;
-
-            if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
+            if (NULL == (jsonValue = json_value_init_string(result)))
             {
-                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
-                    componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
-
-                *payloadSizeBytes = g_maxPayloadSizeBytes;
+                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s): json_value_init_string(%s) failed", componentName, objectName, result);
+                status = ENOMEM;
             }
-
-            *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1);
-            if (*payload)
+            else if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
             {
-                memset(*payload, 0, *payloadSizeBytes + 1);
-                snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", result);
+                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s): json_serialize_to_string(%s) failed", componentName, objectName, result);
+                status = ENOMEM;
             }
             else
             {
-                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
-                *payloadSizeBytes = 0;
-                status = ENOMEM;
+                *payloadSizeBytes = (int)strlen(serializedValue);
+                if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
+                {
+                    OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
+                        componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+
+                    *payloadSizeBytes = g_maxPayloadSizeBytes;
+                }
+
+                if (NULL != (*payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1)))
+                {
+                    memset(*payload, 0, *payloadSizeBytes + 1);
+                    memcpy(*payload, serializedValue, *payloadSizeBytes);
+                }
+                else
+                {
+                    OsConfigLogError(SecurityBaselineGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
+                    *payloadSizeBytes = 0;
+                    status = ENOMEM;
+                }
             }
         }
     }    
 
     OsConfigLogInfo(SecurityBaselineGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+
+    if (NULL != serializedValue)
+    {
+        json_free_serialized_string(serializedValue);
+    }
+
+    if (NULL != jsonValue)
+    {
+        json_value_free(jsonValue);
+    }
 
     FREE_MEMORY(result);
 
@@ -4087,11 +3872,7 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
     
     if (MMI_OK == status)
     {
-        if (0 == strcmp(objectName, g_remediateSecurityBaselineObject))
-        {
-            status = RemediateSecurityBaseline(jsonString);
-        }
-        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcIssueObject))
+        if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcIssueObject))
         {
             status = RemediateEnsurePermissionsOnEtcIssue(jsonString);
         }

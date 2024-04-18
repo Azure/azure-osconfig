@@ -128,17 +128,38 @@ bool DirectoryExists(const char* fileName)
     return result;
 }
 
-int CheckFileExists(const char* fileName, void* log)
+int CheckFileExists(const char* fileName, char** reason, void* log)
 {
     int status = 0;
 
     if (FileExists(fileName))
     {
         OsConfigLogInfo(log, "CheckFileExists: file '%s' exists", fileName);
+        OsConfigCaptureSuccessReason(reason, "File '%s' exists", fileName);
     }
     else
     {
-        OsConfigLogInfo(log, "CheckFileExists: file '%s' not found", fileName);
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' is not found", fileName);
+        OsConfigCaptureReason(reason, "File  '%s' is not found", fileName);
+        status = EEXIST;
+    }
+
+    return status;
+}
+
+int CheckFileNotFound(const char* fileName, char** reason, void* log)
+{
+    int status = 0;
+
+    if (false == FileExists(fileName))
+    {
+        OsConfigLogInfo(log, "CheckFileNotFound: file '%s' is not found", fileName);
+        OsConfigCaptureSuccessReason(reason, "File '%s' is not found", fileName);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckFileNotFound: file '%s' exists", fileName);
+        OsConfigCaptureReason(reason, "File  '%s' exists", fileName);
         status = EEXIST;
     }
 
@@ -222,7 +243,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
             {
                 OsConfigLogError(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
                     name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-                OsConfigCaptureReason(reason, "Ownership of '%s' (%d, %d) does not match expected (%d, %d)", "%s, also ownership of '%s' (%d, %d) does not match expected (%d, %d)", 
+                OsConfigCaptureReason(reason, "Ownership of '%s' (%d, %d) does not match expected (%d, %d)",
                     name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                 result = ENOENT;
             }
@@ -271,7 +292,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     (currentMode > desiredMode))
                 {
                     OsConfigLogError(log, "CheckAccess: access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
-                    OsConfigCaptureReason(reason, "Access to '%s' (%d) does not match expected (%d)", "%s, also access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
+                    OsConfigCaptureReason(reason, "Access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
                     result = ENOENT;
                 }
                 else
@@ -282,7 +303,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                         OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d) matches expected (%d)", name, currentMode, desiredMode);
                     }
                     
-                    OsConfigCaptureSuccessReason(reason, "%sAccess to '%s' matches required access (%d) and ownership (UID: %d, GID: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
+                    OsConfigCaptureSuccessReason(reason, "'%s' has required access (%d) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
                     result = 0;
                 }
             }
@@ -294,8 +315,15 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     }
     else
     {
-        OsConfigLogInfo(log, "CheckAccess: '%s' not found, nothing to check", name);
-        OsConfigCaptureSuccessReason(reason, "%s%s not found, nothing to check", name);
+        OsConfigLogInfo(log, "CheckAccess: '%s' is not found, nothing to check", name);
+        if (OsConfigIsSuccessReason(reason))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' is not found, nothing to check", name);
+        }
+        else
+        {
+            OsConfigCaptureReason(reason, "'%s' is not found", name);
+        }
         result = 0;
     }
 
@@ -378,7 +406,6 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     struct mntent* mountStruct = NULL;
     bool matchFound = false;
     int lineNumber = 0;
-    char* temp = NULL;
     int status = 0;
     
     if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
@@ -390,6 +417,14 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     if (!FileExists(mountFileName))
     {
         OsConfigLogInfo(log, "CheckFileSystemMountingOption: file '%s' not found, nothing to check", mountFileName);
+        if (OsConfigIsSuccessReason(reason))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' is not found, nothing to check", mountFileName);
+        }
+        else
+        {
+            OsConfigCaptureReason(reason, "'%s' is not found", mountFileName);
+        }
         return 0;
     }
 
@@ -404,31 +439,33 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
                 
                 if (NULL != hasmntopt(mountStruct, desiredOption))
                 {
-                    OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' found in file '%s' at line '%d'", 
+                    OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' found in file '%s' at line '%d'", 
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+                    
+                    if (NULL != mountDirectory)
+                    {
+                        OsConfigCaptureSuccessReason(reason, "Option '%s' for mount directory '%s' found in file '%s' at line '%d'", desiredOption, mountDirectory, mountFileName, lineNumber);
+                    }
+
+                    if (NULL != mountType)
+                    {
+                        OsConfigCaptureSuccessReason(reason, "Option '%s' for mount type '%s' found in file '%s' at line '%d'", desiredOption, mountType, mountFileName, lineNumber);
+                    }
                 }
                 else
                 {
                     status = ENOENT;
-
-                    OsConfigLogError(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
+                    OsConfigLogError(log, "CheckFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' missing from file '%s' at line %d",
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
-
-                    if (reason)
+                    
+                    if (NULL != mountDirectory)
                     {
-                        if ((NULL == *reason) || (0 == strlen(*reason)))
-                        {
-                            *reason = FormatAllocateString("Option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
-                                desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
-                        }
-                        else
-                        {
-                            temp = DuplicateString(*reason);
-                            FREE_MEMORY(*reason);
-                            *reason = FormatAllocateString("%s, also option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
-                                temp, desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
-                            FREE_MEMORY(temp);
-                        }
+                        OsConfigCaptureReason(reason, "Option '%s' for mount directory '%s' is missing from file '%s' at line %d", desiredOption, mountDirectory, mountFileName, lineNumber);
+                    }
+
+                    if (NULL != mountType)
+                    {
+                        OsConfigCaptureReason(reason, "Option '%s' for mount type '%s' missing from file '%s' at line %d", desiredOption, mountType, mountFileName, lineNumber);
                     }
                 }
 
@@ -446,25 +483,16 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         if (false == matchFound)
         {
             status = ENOENT;
+            OsConfigLogError(log, "CheckFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in file '%s'", mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
 
-            OsConfigLogError(log, "CheckFileSystemMountingOption: directory '%s' or mount type '%s' not found in file '%s'", 
-                mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
-
-            if (reason)
+            if (NULL != mountDirectory)
             {
-                if ((NULL == *reason) || (0 == strlen(*reason)))
-                {
-                    *reason = FormatAllocateString("Directory '%s' or mount type '%s' not found in file '%s'",
-                        mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
-                }
-                else
-                {
-                    temp = DuplicateString(*reason);
-                    FREE_MEMORY(*reason);
-                    *reason = FormatAllocateString("%s, also directory '%s' or mount type '%s' not found in file '%s'",
-                        temp, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
-                    FREE_MEMORY(temp);
-                }
+                OsConfigCaptureReason(reason, "Found no entries about mount directory '%s' in file '%s' to look for option '%s'", mountDirectory, mountFileName, desiredOption);
+            }
+
+            if (NULL != mountType)
+            {
+                OsConfigCaptureReason(reason, "Found no entries about mount type '%s' in file '%s' to look for option '%s'", mountType, mountFileName, desiredOption);
             }
         }
 
@@ -480,11 +508,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         }
         
         OsConfigLogError(log, "CheckFileSystemMountingOption: could not open file '%s', setmntent() failed (%d)", mountFileName, status);
-
-        if (reason)
-        {
-            *reason = FormatAllocateString("Could not open file '%s', setmntent() failed (%d)", mountFileName, status);
-        }
+        OsConfigCaptureReason(reason, "Cannot access '%s', setmntent() failed (%d)", mountFileName, status);
     }
 
     return status;
@@ -535,18 +559,20 @@ bool CharacterFoundInFile(const char* fileName, char what)
     return (GetNumberOfCharacterInstancesInFile(fileName, what) > 0) ? true : false;
 }
 
-int CheckNoLegacyPlusEntriesInFile(const char* fileName, void* log)
+int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* log)
 {
     int status = 0;
 
     if (FileExists(fileName) && CharacterFoundInFile(fileName, '+'))
     {
-        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInFile(%s): there are + lines in file '%s'", fileName, fileName);
+        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInFile(%s): there are '+' lines in file '%s'", fileName, fileName);
+        OsConfigCaptureReason(reason, "There are '+' lines in file '%s'", fileName);
         status = ENOENT;
     }
     else
     {
-        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInFile(%s): there are no + lines in file '%s'", fileName, fileName);
+        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInFile(%s): there are no '+' lines in file '%s'", fileName, fileName);
+        OsConfigCaptureSuccessReason(reason, "There are no '+' lines in file '%s'", fileName);
     }
 
     return status;
@@ -592,7 +618,56 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
     return status;
 }
 
-int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log)
+int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if ((NULL != fileName) && (false == FileExists(fileName)))
+    {
+        OsConfigCaptureReason(reason, "'%s' not found", fileName);
+        result = ENOENT;
+    }
+    else
+    {
+        if (0 == (result = FindTextInFile(fileName, text, log)))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' found in '%s'", text, fileName);
+        }
+        else if (ENOENT == result)
+        {
+            OsConfigCaptureReason(reason, "'%s' not found in '%s'", text, fileName);
+        }
+    }
+
+    return result;
+}
+
+int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if ((NULL != fileName) && (false == FileExists(fileName)))
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' not found", fileName);
+    }
+    else
+    {
+        if (ENOENT == (result = FindTextInFile(fileName, text, log)))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s'", text, fileName);
+            result = 0;
+        }
+        else if (0 == result)
+        {
+            OsConfigCaptureReason(reason, "'%s' found in '%s'", text, fileName);
+            result = ENOENT;
+        }
+    }
+
+    return result;
+}
+
+int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log)
 {
     const char* commandTemplate = "cat %s | grep %s";
     char* command = NULL;
@@ -604,14 +679,14 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
 
     if ((!FileExists(fileName)) || (NULL == text) || (NULL == marker) || (0 == strlen(text)) || (0 == strlen(marker)))
     {
-        OsConfigLogError(log, "FindMarkedTextInFile called with invalid arguments");
+        OsConfigLogError(log, "CheckMarkedTextNotFoundInFile called with invalid arguments");
         return EINVAL;
     }
 
     commandLength = strlen(commandTemplate) + strlen(fileName) + strlen(text) + 1;
     if (NULL == (command = malloc(commandLength)))
     {
-        OsConfigLogError(log, "FindMarkedTextInFile: out of memory");
+        OsConfigLogError(log, "CheckMarkedTextNotFoundInFile: out of memory");
         status = ENOMEM;
     }
     else
@@ -631,22 +706,23 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
                 }
                 else if (0 == isalpha(found[0]))
                 {
-                    OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
+                    OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
+                    OsConfigCaptureReason(reason, "'%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
                     foundMarker = true;
+                    status = EEXIST;
                 } 
             } 
             
             if (false == foundMarker)
             {
-                OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' not found in '%s'", text, marker, fileName);
-                OsConfigCaptureReason(reason, "'%s' containing '%s' not found in '%s'", "%s, also '%s' containing '%s' not found in '%s'", text, marker, fileName);
-                status = ENOENT; 
+                OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' not found in '%s'", text, marker, fileName);
+                OsConfigCaptureSuccessReason(reason, "'%s' containing '%s' not found in '%s'", text, marker, fileName);
             }
         }
         else
         {
-            OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' not found in '%s' (%d)", text, fileName, status);
-            OsConfigCaptureReason(reason, "'%s' not found in '%s' (%d)", "%s, also '%s' not found in '%s' (%d)", text, fileName, status);
+            OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' not found in '%s' (%d)", text, fileName, status);
+            OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s' (%d)", text, fileName, status);
         }
 
         FREE_MEMORY(results);
@@ -656,7 +732,7 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
     return status;
 }
 
-int FindTextInEnvironmentVariable(const char* variableName, const char* text, bool strictCompare, char** reason, void* log)
+int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char* text, bool strictCompare, char** reason, void* log)
 {
     const char* commandTemplate = "printenv %s";
     char* command = NULL;
@@ -668,14 +744,14 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
 
     if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text)))
     {
-        OsConfigLogError(log, "FindTextInEnvironmentVariable called with invalid arguments");
+        OsConfigLogError(log, "CheckTextNotFoundInEnvironmentVariable called with invalid arguments");
         return EINVAL;
     }
 
     commandLength = strlen(commandTemplate) + strlen(variableName) + 1;
     if (NULL == (command = malloc(commandLength)))
     {
-        OsConfigLogError(log, "FindTextInEnvironmentVariable: out of memory");
+        OsConfigLogError(log, "CheckTextNotFoundInEnvironmentVariable: out of memory");
         status = ENOMEM;
     }
     else
@@ -689,13 +765,14 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
             {
                 if (0 == strcmp(variableValue, text))
                 {
-                    OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found set for '%s' ('%s')", text, variableName, variableValue);
+                    OsConfigLogError(log, "CheckTextNotFoundInEnvironmentVariable: '%s' found set for '%s' ('%s')", text, variableName, variableValue);
+                    OsConfigCaptureReason(reason, "'%s' found set for '%s' ('%s')", text, variableName, variableValue);
+                    status = EEXIST;
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found set for '%s' ('%s')", text, variableName, variableValue);
-                    OsConfigCaptureReason(reason, "'%s' not found set for '%s' ('%s')", "%s, also '%s' not found set for '%s' ('%s')", text, variableName, variableValue);
-                    status = ENOENT;
+                    OsConfigLogInfo(log, "CheckTextNotFoundInEnvironmentVariable: '%s' not found set for '%s' ('%s')", text, variableName, variableValue);
+                    OsConfigCaptureSuccessReason(reason, "'%s' not found set for '%s' to '%s'", text, variableName, variableValue);
                 }
             }
             else
@@ -710,23 +787,24 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
                     } 
                     else if (0 == isalpha(found[0]))
                     {
-                        OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s' ('%s')", text, variableName, found);
+                        OsConfigLogError(log, "CheckTextNotFoundInEnvironmentVariable: '%s' found in '%s' ('%s')", text, variableName, found);
+                        OsConfigCaptureReason(reason, "'%s' found in '%s' ('%s')", text, variableName, found);
                         foundText = true;
+                        status = EEXIST;
                     }
                 } 
             
                 if (false == foundText)
                 {
-                    OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
-                    OsConfigCaptureReason(reason, "'%s' not found in '%s'", "%s, also '%s' not found in '%s'", text, variableName);
-                    status = ENOENT;
+                    OsConfigLogInfo(log, "CheckTextNotFoundInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
+                    OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s'", text, variableName);
                 }
             }
         }
         else
         {
-            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: variable '%s' not found (%d)", variableName, status);
-            OsConfigCaptureReason(reason, "Environment variable '%s' not found (%d)", "%s, also variable '%s' not found (%d)", variableName, status);
+            OsConfigLogInfo(log, "CheckTextNotFoundInEnvironmentVariable: variable '%s' not found (%d)", variableName, status);
+            OsConfigCaptureSuccessReason(reason, "Environment variable '%s' not found (%d)", variableName, status);
         }
 
         FREE_MEMORY(command);
@@ -736,14 +814,14 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
     return status;
 }
 
-int CompareFileContents(const char* fileName, const char* text, void* log)
+int CheckFileContents(const char* fileName, const char* text, char** reason, void* log)
 {
     char* contents = NULL;
     int status = 0;
 
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(fileName)) || (0 == strlen(text)))
     {
-        OsConfigLogError(log, "CompareFileContents called with invalid arguments");
+        OsConfigLogError(log, "CheckFileContents called with invalid arguments");
         return EINVAL;
     }
 
@@ -751,11 +829,13 @@ int CompareFileContents(const char* fileName, const char* text, void* log)
     {
         if (0 == strncmp(contents, text, strlen(text)))
         {
-            OsConfigLogInfo(log, "CompareFileContents: '%s' matches contents of '%s'", text, fileName);
+            OsConfigLogInfo(log, "CheckFileContents: '%s' matches contents of '%s'", text, fileName);
+            OsConfigCaptureSuccessReason(reason, "'%s' matches contents of '%s'", text, fileName);
         }
         else
         {
-            OsConfigLogInfo(log, "CompareFileContents: '%s' does not match contents of '%s' ('%s')", text, fileName, contents);
+            OsConfigLogInfo(log, "CheckFileContents: '%s' does not match contents of '%s' ('%s')", text, fileName, contents);
+            OsConfigCaptureReason(reason, "'%s' does not match contents of '%s' ('%s')", text, fileName, contents);
             status = ENOENT;
         }
     }
@@ -818,7 +898,41 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     return status;
 }
 
-int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log)
+int CheckTextNotFoundInFolder(const char* directory, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if (ENOENT == (result = FindTextInFolder(directory, text, log)))
+    {
+        OsConfigCaptureSuccessReason(reason, "Text '%s' not found in any file under directory '%s'", text, directory);
+        result = 0;
+    }
+    else if (0 == result)
+    {
+        OsConfigCaptureSuccessReason(reason, "Text '%s' found in at least one file under directory '%s'", text, directory);
+        result = ENOENT;
+    }
+
+    return result;
+}
+
+int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if (0 == (result = FindTextInFolder(directory, text, log)))
+    {
+        OsConfigCaptureSuccessReason(reason, "Text '%s' found in at least one file under directory '%s'", text, directory);
+    }
+    else if (ENOENT == result)
+    {
+        OsConfigCaptureSuccessReason(reason, "Text '%s' not found in any file under directory '%s'", text, directory);
+    }
+
+    return result;
+}
+
+static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log)
 {
     char* contents = NULL;
     char* found = NULL;
@@ -828,15 +942,16 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
     {
-        OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut called with invalid arguments");
+        OsConfigLogError(log, "IsLineNotFoundOrCommentedOut called with invalid arguments");
         return EINVAL;
     }
-    
+
     if (FileExists(fileName))
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
-            OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut: cannot read from '%s'", fileName);
+            OsConfigLogError(log, "IsLineNotFoundOrCommentedOut: cannot read from '%s'", fileName);
+            OsConfigCaptureReason(reason, "Cannot read from file '%s'", fileName);
         }
         else
         {
@@ -863,13 +978,13 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 
                 if (0 == status)
                 {
-                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld but is commented out with '%c'", 
+                    OsConfigLogInfo(log, "IsLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld but is commented out with '%c'",
                         text, fileName, (long)(found - contents), commentMark);
                 }
                 else
                 {
                     foundUncommented = true;
-                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld and it's not commented out with '%c'", 
+                    OsConfigLogInfo(log, "IsLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld and it's not commented out with '%c'",
                         text, fileName, (long)(found - contents), commentMark);
                 }
 
@@ -883,14 +998,79 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
     }
     else
     {
-        OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: file '%s' not found, nothing to look for", fileName);
+        OsConfigLogInfo(log, "IsLineNotFoundOrCommentedOut: file '%s' not found, nothing to look for", fileName);
+        if (OsConfigIsSuccessReason(reason))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' is not found, nothing to look for", fileName);
+        }
+        else
+        {
+            OsConfigCaptureReason(reason, "'%s' is not found", fileName);
+        }
         status = 0;
     }
 
     return status;
 }
 
-int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log)
+int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log)
+{
+    int result = 0;
+    
+    if ((NULL != fileName) && (false == FileExists(fileName)))
+    {
+        if (OsConfigIsSuccessReason(reason))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' not found to look for '%s'", fileName, text);
+        }
+        else
+        {
+            OsConfigCaptureReason(reason, "'%s' is not found to look for '%s'", fileName, text);
+        }
+    }
+    else
+    {
+        if (EEXIST == (result = IsLineNotFoundOrCommentedOut(fileName, commentMark, text, reason, log)))
+        {
+            OsConfigCaptureReason(reason, "'%s' found in '%s' and it's not commented out with '%c'", text, fileName, commentMark);
+            result = EEXIST;
+        }
+        else if (0 == result)
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s' or it's commented out with '%c'", text, fileName, commentMark);
+        }
+    }
+
+    return result;
+}
+
+int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if ((NULL != fileName) && (false == FileExists(fileName)))
+    {
+        OsConfigCaptureReason(reason, "'%s' not found to look for '%s'", fileName, text);
+        result = ENOENT;
+    }
+    else
+    {
+        if (EEXIST == (result = IsLineNotFoundOrCommentedOut(fileName, commentMark, text, reason, log)))
+        {
+            OsConfigCaptureSuccessReason(reason, "'%s' found in '%s' and it's not commented out with '%c'", text, fileName, commentMark);
+            result = 0;
+        }
+        else if (0 == result)
+        {
+            OsConfigCaptureReason(reason, "'%s' not found in '%s' or it's commented out with '%c'", text, fileName, commentMark);
+            result = EEXIST;
+        }
+    }
+
+    return result;
+}
+
+static int FindTextInCommandOutput(const char* command, const char* text, void* log)
 {
     char* results = NULL;
     int status = 0;
@@ -911,7 +1091,6 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
         {
             status = ENOENT;
             OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' not found in '%s' output", text, command);
-            OsConfigCaptureReason(reason, "'%s' not found in '%s' output", "%s, also '%s' not found in '%s' output", text, command);
         }
 
         FREE_MEMORY(results);
@@ -919,10 +1098,51 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
     else
     {
         OsConfigLogInfo(log, "FindTextInCommandOutput: command '%s' failed with %d", command, status);
-        OsConfigCaptureReason(reason, "Command '%s' failed with %d", "%s, also command '%s' failed with %d", command, status);
     }
 
     return status;
+}
+
+int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if (0 == (result = FindTextInCommandOutput(command, text, log)))
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' found in response from command '%s'", text, command);
+    }
+    else if (ENOENT == result)
+    {
+        OsConfigCaptureReason(reason, "'%s' not found in response from command '%s'", text, command);
+    }
+    else
+    {
+        OsConfigCaptureReason(reason, "Command '%s' failed with %d", command, result);
+    }
+
+    return result;
+}
+
+int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, void* log)
+{
+    int result = 0;
+
+    if (ENOENT == (result = FindTextInCommandOutput(command, text, log)))
+    {
+        OsConfigCaptureSuccessReason(reason, "'%s' not found in response from command '%s'", text, command);
+        result = 0;
+    }
+    else if (0 == result)
+    {
+        OsConfigCaptureReason(reason, "'%s' found in response from command '%s'", text, command);
+        result = ENOENT;
+    }
+    else
+    {
+        OsConfigCaptureReason(reason, "Command '%s' failed with %d", command, result);
+    }
+
+    return result;
 }
 
 static char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
@@ -981,7 +1201,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
     char* contents = NULL;
     char* result = NULL;
 
-    if (option && (0 == CheckFileExists(fileName, log)))
+    if (option && (0 == CheckFileExists(fileName, NULL, log)))
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
@@ -1010,7 +1230,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
     char* contents = NULL;
     int result = -999;
 
-    if (option && (0 == CheckFileExists(fileName, log)))
+    if (option && (0 == CheckFileExists(fileName, NULL, log)))
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
@@ -1034,7 +1254,69 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
     return result;
 }
 
-int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
+int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, void* log)
+{
+    int valueFromFile = -999;
+    int i = 0;
+    int result = ENOENT;
+
+    if ((NULL == values) || (0 == numberOfValues))
+    {
+        OsConfigLogError(log, "CheckIntegerOptionFromFileEqualWithAny: invalid arguments (%p, %u)", values, numberOfValues);
+        return EINVAL;
+    }
+
+    if (-999 != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
+    {
+        for (i = 0; i < numberOfValues; i++)
+        {
+            if (valueFromFile == values[i])
+            {
+                OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of '%d'", option, fileName, values[i]);
+                result = 0;
+                break;
+            }
+        }
+
+        if (ENOENT == result)
+        {
+            OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found or found set to '%d'", option, fileName, valueFromFile);
+        }
+    }
+    else
+    {
+        OsConfigCaptureReason(reason, "File '%s' not found or does not contain option '%s'", fileName, option);
+    }
+
+    return result;
+}
+
+int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, void* log)
+{
+    int valueFromFile = -999;
+    int result = ENOENT;
+
+    if (-999 != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
+    {
+        if (valueFromFile <= value)
+        {
+            OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' value of '%d' is less or equal with '%d'", option, fileName, valueFromFile, value);
+            result = 0;
+        }
+        else
+        {
+            OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found ('%d') or not less or equal with '%d'", option, fileName, valueFromFile, value);
+        }
+    }
+    else
+    {
+        OsConfigCaptureReason(reason, "File '%s' not found or does not contain option '%s'", fileName, option);
+    }
+
+    return result;
+}
+
+int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, void* log)
 {
     char* contents = NULL;
     char* buffer = NULL;
@@ -1042,7 +1324,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
     int option = 0;
     int status = ENOENT;
 
-    if (0 == CheckFileExists(fileName, log))
+    if (0 == CheckFileExists(fileName, reason, log))
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
@@ -1089,7 +1371,18 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
         }
     }
 
-    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+        OsConfigCaptureSuccessReason(reason, "Valid lockout for failed password attempts line found in '%s'", fileName);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+        OsConfigCaptureReason(reason, "'%s' does not exist, or lockout for failed password attempts not set, "
+            "'auth', 'pam_faillock.so' or 'pam_tally2.so' and 'file=/var/log/tallylog' not found, or 'deny' or "
+            "'unlock_time' not found, or 'deny' not in between 1 and 5, or 'unlock_time' not set to greater than 0", fileName);
+    }
 
     return status;
 }

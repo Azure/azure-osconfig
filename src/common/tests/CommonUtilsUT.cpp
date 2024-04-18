@@ -490,10 +490,13 @@ TEST_F(CommonUtilsTest, FileExists)
 TEST_F(CommonUtilsTest, CheckFileExists)
 {
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    EXPECT_EQ(0, CheckFileExists(m_path, nullptr));
+    EXPECT_EQ(0, CheckFileExists(m_path, nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckFileNotFound(m_path, nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
-    EXPECT_EQ(EEXIST, CheckFileExists(m_path, nullptr));
-    EXPECT_EQ(EEXIST, CheckFileExists("This file does not exist", nullptr));
+    EXPECT_EQ(EEXIST, CheckFileExists(m_path, nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileNotFound(m_path, nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckFileExists("This file does not exist", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileNotFound("This file does not exist", nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, DirectoryExists)
@@ -642,15 +645,15 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, cpuVendor = GetCpuType(nullptr));
     EXPECT_NE(nullptr, cpuModel = GetCpuType(nullptr));
     EXPECT_NE(nullptr, cpuFlags = GetCpuFlags(nullptr));
-    EXPECT_EQ(true, IsCpuFlagSupported("fpu", nullptr));
-    EXPECT_EQ(false, IsCpuFlagSupported("test123", nullptr));
-    EXPECT_EQ(false, IsCpuFlagSupported(nullptr, nullptr));
+    EXPECT_EQ(true, CheckCpuFlagSupported("fpu", nullptr, nullptr));
+    EXPECT_EQ(false, CheckCpuFlagSupported("test123", nullptr, nullptr));
+    EXPECT_EQ(false, CheckCpuFlagSupported(nullptr, nullptr, nullptr));
     EXPECT_NE(0, totalMemory = GetTotalMemory(nullptr));
     EXPECT_NE(0, freeMemory = GetTotalMemory(nullptr));
     EXPECT_NE(nullptr, kernelName = GetOsKernelName(nullptr));
     EXPECT_NE(nullptr, kernelVersion = GetOsKernelVersion(nullptr));
     EXPECT_NE(nullptr, kernelRelease = GetOsKernelRelease(nullptr));
-    EXPECT_NE(nullptr, umask = GetLoginUmask(nullptr));
+    EXPECT_NE(nullptr, umask = GetLoginUmask(nullptr, nullptr));
 
     FREE_MEMORY(osPrettyName);
     FREE_MEMORY(osName);
@@ -1280,14 +1283,14 @@ TEST_F(CommonUtilsTest, CheckNoPlusEntriesInFile)
     for (i = 0; i < goodTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(testPath, goodTestFileContents[i]));
-        EXPECT_EQ(0, CheckNoLegacyPlusEntriesInFile(testPath, nullptr));
+        EXPECT_EQ(0, CheckNoLegacyPlusEntriesInFile(testPath, nullptr, nullptr));
         EXPECT_TRUE(Cleanup(testPath));
     }
 
     for (i = 0; i < badTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(testPath, badTestFileContents[i]));
-        EXPECT_NE(0, CheckNoLegacyPlusEntriesInFile(testPath, nullptr));
+        EXPECT_NE(0, CheckNoLegacyPlusEntriesInFile(testPath, nullptr, nullptr));
         EXPECT_TRUE(Cleanup(testPath));
     }
 }
@@ -1343,6 +1346,8 @@ TEST_F(CommonUtilsTest, FindTextInFile)
     EXPECT_EQ(EINVAL, FindTextInFile(nullptr, nullptr, nullptr));
 
     EXPECT_EQ(ENOENT, FindTextInFile("~~DoesNotExist", "text", nullptr));
+    EXPECT_EQ(ENOENT, CheckTextIsFoundInFile("~~DoesNotExist", "text", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextIsNotFoundInFile("~~DoesNotExist", "text", nullptr, nullptr));
     
     EXPECT_EQ(0, FindTextInFile(m_path, "text", nullptr));
     EXPECT_EQ(0, FindTextInFile(m_path, "/1", nullptr));
@@ -1352,67 +1357,83 @@ TEST_F(CommonUtilsTest, FindTextInFile)
     EXPECT_NE(0, FindTextInFile(m_path, "not found", nullptr));
     EXPECT_NE(0, FindTextInFile(m_path, "\\m", nullptr));
 
+    EXPECT_EQ(0, CheckTextIsFoundInFile(m_path, "text", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextIsFoundInFile(m_path, "/1", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextIsFoundInFile(m_path, "\\3", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextIsFoundInFile(m_path, "\\z", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextIsFoundInFile(m_path, "34", nullptr, nullptr));
+    EXPECT_NE(0, CheckTextIsFoundInFile(m_path, "not found", nullptr, nullptr));
+    EXPECT_NE(0, CheckTextIsFoundInFile(m_path, "\\m", nullptr, nullptr));
+
+    EXPECT_EQ(ENOENT, CheckTextIsNotFoundInFile(m_path, "text", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextIsNotFoundInFile(m_path, "/1", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextIsNotFoundInFile(m_path, "\\3", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextIsNotFoundInFile(m_path, "\\z", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextIsNotFoundInFile(m_path, "34", nullptr, nullptr));
+    EXPECT_NE(ENOENT, CheckTextIsNotFoundInFile(m_path, "not found", nullptr, nullptr));
+    EXPECT_NE(ENOENT, CheckTextIsNotFoundInFile(m_path, "\\m", nullptr, nullptr));
+
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-TEST_F(CommonUtilsTest, FindMarkedTextInFile)
+TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
 {
     const char* test = "Test \n FOO=test:/123:!abcdef.123:/test.d TEST1; TEST2/..TEST3:Blah=0";
 
     EXPECT_TRUE(CreateTestFile(m_path, test));
 
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(nullptr, nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "FOO", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, nullptr, ";", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(nullptr, nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "FOO", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, nullptr, ";", nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "", "", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "FOO", "", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "", ";", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "", "", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "FOO", "", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "", ";", nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile("~~DoesNotExist", "FOO", ";", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile("~~DoesNotExist", "FOO", ";", nullptr, nullptr));
 
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", ".", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ".", nullptr, nullptr));
     
-    EXPECT_EQ(ENOENT, FindMarkedTextInFile(m_path, "FOO", "!", nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "FOO", "!", nullptr, nullptr));
     
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", ";", nullptr, nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", "..", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ";", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", "..", nullptr, nullptr));
 
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", ";", nullptr, nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", ".", nullptr, nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", "..", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", ";", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", ".", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", "..", nullptr, nullptr));
 
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST2", ".", nullptr, nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST2", "..", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", ".", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", "..", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
+TEST_F(CommonUtilsTest, CheckTextNotFoundInEnvironmentVariable)
 {
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, "/", false, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", "", false, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("", "/", false, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", nullptr, false, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, nullptr, false, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInEnvironmentVariable(nullptr, "/", false, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInEnvironmentVariable("PATH", "", false, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInEnvironmentVariable("", "/", false, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInEnvironmentVariable("PATH", nullptr, false, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInEnvironmentVariable(nullptr, nullptr, false, nullptr, nullptr));
 
-    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", ":", false, nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckTextNotFoundInEnvironmentVariable("PATH", ":", false, nullptr, nullptr));
 
     EXPECT_EQ(0, setenv("TESTVAR", "0", 1));
-    EXPECT_EQ(0, FindTextInEnvironmentVariable("TESTVAR", "0", false, nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInEnvironmentVariable("TESTVAR", "0 ", true, nullptr, nullptr));
-    EXPECT_EQ(ENOENT, FindTextInEnvironmentVariable("TESTVAR", "1", true, nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckTextNotFoundInEnvironmentVariable("TESTVAR", "0", false, nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckTextNotFoundInEnvironmentVariable("TESTVAR", "0 ", true, nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextNotFoundInEnvironmentVariable("TESTVAR", "1", true, nullptr, nullptr));
     EXPECT_EQ(0, unsetenv("TESTVAR"));
 }
 
-TEST_F(CommonUtilsTest, CompareFileContents)
+TEST_F(CommonUtilsTest, CheckFileContents)
 {
-    EXPECT_EQ(EINVAL, CompareFileContents(nullptr, "2", nullptr));
-    EXPECT_EQ(EINVAL, CompareFileContents(nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CompareFileContents(m_path, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CompareFileContents(m_path, "", nullptr));
-    EXPECT_EQ(EINVAL, CompareFileContents("", "2", nullptr));
+    EXPECT_EQ(EINVAL, CheckFileContents(nullptr, "2", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileContents(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileContents(m_path, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileContents(m_path, "", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileContents("", "2", nullptr, nullptr));
 
     const char* test[] = {"2", "ABC", "~1", "This is a test", "One line\nAnd another\n"};
     size_t sizeOfTest = ARRAY_SIZE(test);
@@ -1420,7 +1441,7 @@ TEST_F(CommonUtilsTest, CompareFileContents)
     for (size_t i = 0; i < sizeOfTest; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, test[i]));
-        EXPECT_EQ(0, CompareFileContents(m_path, test[i], nullptr));
+        EXPECT_EQ(0, CheckFileContents(m_path, test[i], nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
 }
@@ -1436,8 +1457,20 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
     EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, "a", nullptr));
     EXPECT_EQ(EINVAL, FindTextInFolder("/etc", nullptr, nullptr));
     EXPECT_EQ(EINVAL, FindTextInFolder("/foo/does_not_exist", "test", nullptr));
-    
+
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder(nullptr, "a", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/etc", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr));
+
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder(nullptr, "a", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/etc", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr));
+
     FindTextInFolder("/etc/modprobe.d", "ac97", nullptr);
+    CheckTextFoundInFolder("/etc/modprobe.d", "ac97", nullptr, nullptr);
+    CheckTextNotFoundInFolder("/etc/modprobe.d", "~~~~ test123 ~~~~", nullptr, nullptr);
 }
 
 TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
@@ -1455,50 +1488,78 @@ TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
 
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
 
-    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(m_path, '#', nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', "test", nullptr));
-    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(m_path, '#', nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', "test", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', nullptr, nullptr, nullptr));
 
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut("/foo/does_not_exist", '#', "Test", nullptr));
+    EXPECT_EQ(EINVAL, CheckLineFoundNotCommentedOut(m_path, '#', nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineFoundNotCommentedOut(nullptr, '#', "test", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineFoundNotCommentedOut(nullptr, '#', nullptr, nullptr, nullptr));
 
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "does-not__exist123", nullptr));
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "9876543210", nullptr));
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 not really commented", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut("/foo/does_not_exist", '#', "Test", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckLineFoundNotCommentedOut("/foo/does_not_exist", '#', "Test", nullptr, nullptr));
 
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 commented", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 uncommented", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "does-not__exist123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "9876543210", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 not really commented", nullptr, nullptr));
+
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "Test 123 commented", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "Foo", nullptr, nullptr));
+
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Test 123", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 uncommented", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Test 123 uncommented", nullptr, nullptr));
     
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test 345 Test # 345 Test", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test 345 Test # 345 Test", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345", nullptr, nullptr));
+
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "345 Test 345 Test # 345 Test", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "345 Test", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "345", nullptr, nullptr));
+
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "ABC!DEF # Test 678 1234567890", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "ABC!DEF # Test 678 1234567890", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 678 1234567890", nullptr, nullptr));
     
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "ABC!DEF # Test 678 1234567890", nullptr));
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 678 1234567890", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example of a line", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', " of a ", nullptr, nullptr));
     
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Foo", nullptr));
-    
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example of a line", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', " of a ", nullptr));
-    
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '@', "Blah 3", nullptr));
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '!', "Blah 3", nullptr));
-    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Blah 3", nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Example of a line", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Example", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', " of a ", nullptr, nullptr));
+
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '@', "Blah 3", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '!', "Blah 3", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Blah 3", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Blah 3", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-TEST_F(CommonUtilsTest, FindTextInCommandOutput)
+TEST_F(CommonUtilsTest, CheckTextFoundInCommandOutput)
 {
-    EXPECT_EQ(EINVAL, FindTextInCommandOutput(nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInCommandOutput("echo Test123", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInCommandOutput(nullptr, "Test", nullptr, nullptr));
-    EXPECT_NE(0, FindTextInCommandOutput("echo Test", "~does_not_exist", nullptr, nullptr));
-    EXPECT_NE(0, FindTextInCommandOutput("blah", "Test", nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "Test", nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "123", nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "2", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInCommandOutput(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInCommandOutput("echo Test123", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInCommandOutput(nullptr, "Test", nullptr, nullptr));
+    EXPECT_NE(0, CheckTextFoundInCommandOutput("echo Test", "~does_not_exist", nullptr, nullptr));
+    EXPECT_NE(0, CheckTextFoundInCommandOutput("blah", "Test", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextFoundInCommandOutput("echo Test123", "Test", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextFoundInCommandOutput("echo Test123", "123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextFoundInCommandOutput("echo Test123", "2", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextFoundInCommandOutput("echo Test123", "4", nullptr, nullptr));
+
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInCommandOutput(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInCommandOutput("echo Test123", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInCommandOutput(nullptr, "Test", nullptr, nullptr));
+    EXPECT_NE(ENOENT, CheckTextNotFoundInCommandOutput("echo Test", "~does_not_exist", nullptr, nullptr));
+    EXPECT_NE(ENOENT, CheckTextNotFoundInCommandOutput("blah", "Test", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextNotFoundInCommandOutput("echo Test123", "Test", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextNotFoundInCommandOutput("echo Test123", "123", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextNotFoundInCommandOutput("echo Test123", "2", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextNotFoundInCommandOutput("echo Test123", "4", nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, GetOptionFromFile)
@@ -1631,20 +1692,20 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 
     int i = 0;
 
-    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(nullptr, nullptr));
-    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts("~file_that_does_not_exist", nullptr));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(nullptr, nullptr, nullptr));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts("~file_that_does_not_exist", nullptr, nullptr));
 
     for (i = 0; i < goodTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, goodTestFileContents[i]));
-        EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr));
+        EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
 
     for (i = 0; i < badTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, badTestFileContents[i]));
-        EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr));
+        EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
 }
@@ -1675,35 +1736,56 @@ TEST_F(CommonUtilsTest, RepairBrokenEolCharactersIfAny)
 
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 {
-    EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, IsPackageInstalled(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckPackageNotInstalled(nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, InstallPackage(nullptr, nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage(nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, CheckPackageInstalled("", nullptr));
+    EXPECT_EQ(EINVAL, IsPackageInstalled("", nullptr));
+    EXPECT_EQ(EINVAL, CheckPackageInstalled("", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckPackageNotInstalled("", nullptr, nullptr));
     EXPECT_EQ(EINVAL, InstallPackage("", nullptr));
     EXPECT_EQ(EINVAL, UninstallPackage("", nullptr));
 
-    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, IsPackageInstalled("~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr, nullptr));
+    EXPECT_EQ(0, CheckPackageNotInstalled("~package_that_does_not_exist", nullptr, nullptr));
     EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
 
     // Nothing to uninstall
     EXPECT_EQ(0, UninstallPackage("~package_that_does_not_exist", nullptr));
 
-    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr));
-    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
-    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
+    EXPECT_NE(0, IsPackageInstalled("*~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, IsPackageInstalled("~package_that_does_not_exist*", nullptr));
+    EXPECT_NE(0, IsPackageInstalled("*~package_that_does_not_exist*", nullptr));
+
+    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr, nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr, nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr, nullptr));
+
+    EXPECT_EQ(0, CheckPackageNotInstalled("*~package_that_does_not_exist", nullptr, nullptr));
+    EXPECT_EQ(0, CheckPackageNotInstalled("~package_that_does_not_exist*", nullptr, nullptr));
+    EXPECT_EQ(0, CheckPackageNotInstalled("*~package_that_does_not_exist*", nullptr, nullptr));
 
     if (0 == InstallPackage("rolldice", nullptr))
     {
         EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
-        EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr));
+        EXPECT_NE(0, IsPackageInstalled("rolldice", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr, nullptr));
+        EXPECT_EQ(0, CheckPackageNotInstalled("rolldice", nullptr, nullptr));
+
         EXPECT_EQ(0, InstallPackage("rolldice", nullptr));
-        EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr));
+        EXPECT_EQ(0, IsPackageInstalled("rolldice", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr, nullptr));
+        EXPECT_NE(0, CheckPackageNotInstalled("rolldice", nullptr, nullptr));
+
         EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
     }
-    EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr));
-
-    EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr));
+    
+    EXPECT_EQ(0, IsPackageInstalled("gcc", nullptr));
+    EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr, nullptr));
+    EXPECT_NE(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, IsCurrentOs)
@@ -1722,4 +1804,36 @@ TEST_F(CommonUtilsTest, IsCurrentOs)
     EXPECT_EQ(true, IsCurrentOs(name, nullptr));
     FREE_MEMORY(name);
 
+}
+
+TEST_F(CommonUtilsTest, ConcatenateStrings)
+{
+    char* testString = nullptr;
+
+    EXPECT_EQ(nullptr, testString = ConcatenateStrings(nullptr, "Test"));
+    FREE_MEMORY(testString);
+
+    EXPECT_EQ(nullptr, testString = ConcatenateStrings("Test", nullptr));
+    FREE_MEMORY(testString);
+    
+    EXPECT_EQ(nullptr, testString = ConcatenateStrings(nullptr, nullptr));
+    FREE_MEMORY(testString);
+
+    EXPECT_STREQ("", testString = ConcatenateStrings("", ""));
+    FREE_MEMORY(testString);
+
+    EXPECT_STREQ("Test", testString = ConcatenateStrings("", "Test"));
+    FREE_MEMORY(testString);
+
+    EXPECT_STREQ("Test", testString = ConcatenateStrings("Test", ""));
+    FREE_MEMORY(testString);
+
+    EXPECT_STREQ("Test123", testString = ConcatenateStrings("Test", "123"));
+    FREE_MEMORY(testString);
+
+    EXPECT_STREQ("123Test", testString = ConcatenateStrings("123", "Test"));
+    FREE_MEMORY(testString);
+
+    EXPECT_STREQ("%s%s%s", testString = ConcatenateStrings("%s%s", "%s"));
+    FREE_MEMORY(testString);
 }

@@ -41,29 +41,68 @@ char* DuplicateStringToLowercase(const char* source)
     return duplicate;
 }
 
-#define MAX_FORMAT_ALLOCATE_STRING_LENGTH 512
+#define DEFAULT_FORMAT_ALLOCATE_STRING_LENGTH 512
 char* FormatAllocateString(const char* format, ...)
 {
-    char buffer[MAX_FORMAT_ALLOCATE_STRING_LENGTH] = {0};
-    int formatResult = 0;
+    char* buffer = NULL;
     char* stringToReturn = NULL;
+    int formatResult = 0;
+    int sizeOfBuffer = DEFAULT_FORMAT_ALLOCATE_STRING_LENGTH;
 
-    if (NULL == format)
+    if (NULL == format) 
     {
         return stringToReturn;
     }
 
-    va_list arguments;
-    va_start(arguments, format);
-    formatResult = vsnprintf(buffer, MAX_FORMAT_ALLOCATE_STRING_LENGTH, format, arguments);
-    va_end(arguments);
-
-    if ((formatResult > 0) && (formatResult < MAX_FORMAT_ALLOCATE_STRING_LENGTH))
+    while (NULL == stringToReturn)
     {
-        stringToReturn = DuplicateString(buffer);
+        if (NULL == (buffer = malloc(sizeOfBuffer)))
+        {
+            break;
+        }
+
+        memset(buffer, 0, sizeOfBuffer);
+
+        va_list arguments;
+        va_start(arguments, format);
+        formatResult = vsnprintf(buffer, sizeOfBuffer, format, arguments);
+        va_end(arguments);
+
+        if ((formatResult > 0) && (formatResult < (int)sizeOfBuffer))
+        {
+            stringToReturn = DuplicateString(buffer);
+            break;
+        }
+
+        FREE_MEMORY(buffer);
+        sizeOfBuffer += 1;
     }
 
+    FREE_MEMORY(buffer);
+
     return stringToReturn;
+}
+
+char* ConcatenateStrings(const char* first, const char* second)
+{
+    char* result = NULL;
+    size_t resultSize = 0;
+
+    if ((NULL == first) || (NULL == second))
+    {
+        return result;
+    }
+
+    resultSize = strlen(first) + strlen(second) + 1;
+
+    if (NULL != (result = malloc(resultSize)))
+    {
+        memset(result, 0, resultSize);
+        memcpy(result, first, strlen(first));
+        strncat(result, second, resultSize);
+    }
+
+    return result;
 }
 
 int SleepMilliseconds(long milliseconds)

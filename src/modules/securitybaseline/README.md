@@ -4,7 +4,7 @@
 
 SecurityBaseline is an [OSConfig Management Module](../../../docs/modules.md) that audits and remediates the [Linux Security Baseline](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux) from the Azure Compute Security Baselines.
 
-The Module Interface Model (MIM) for Security Baseline is at [src/modules/mim/securitybaseline.json](../mim/securitybaseline.json). This MIM implements a single MIM component, `SecurityBaseline`. This component contains two global reported and desired MIM objects, `auditSecurityBaseline` and `remediateSecurityBaseline` that audit and remediate respectively the entire baseline, and also contains several more pairs of reported and desired MIM objects for the individuals checks with names that follow the respective check descriptions. For example:
+The Module Interface Model (MIM) for Security Baseline is at [src/modules/mim/securitybaseline.json](../mim/securitybaseline.json). This MIM implements a single MIM component, `SecurityBaseline`. This component contains sets (pairs or triplets) of reported and desired MIM objects for the individual baseline checks with names that follow the respective check descriptions. For example:
 
  Check description | Reported MIM object  | Desired MIM object
 -----|-----|-----
@@ -109,8 +109,9 @@ An example of a completed check, `auditEnsureAuditdServiceIsRunning` and `remedi
 ```C
 static char* AuditEnsureAuditdServiceIsRunning(void)
 {
-    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 
-        DuplicateString(g_pass) : FormatAllocateString("Service '%s' is not running", g_auditd);
+    char* reason = NULL;
+    CheckDaemonActive(g_auditd, &reason SecurityBaselineGetLog());
+    return reason;
 }
 ```
 
@@ -123,7 +124,7 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value)
 }
 ```
 
-These simple functions invoke functions like `CheckIfDaemonActive` and `InstallPackage` that are implemented in [commonutils](../../common/commonutils/).
+These simple functions invoke functions like `CheckDaemonActive` and `InstallPackage` that are implemented in [commonutils](../../common/commonutils/).
 
 Remember, we want to separate the bulk of generic check implementations from this security baseline so that they could be reused in the future for the implementations of other baselines.
 
