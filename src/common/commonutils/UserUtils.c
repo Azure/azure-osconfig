@@ -834,7 +834,7 @@ int CheckShadowGroupIsEmpty(char** reason, void* log)
             if ((0 == strcmp(groupList[i].groupName, shadow)) && (true == groupList[i].hasUsers))
             {
                 OsConfigLogError(log, "CheckShadowGroupIsEmpty: group 'shadow' (%u) is not empty", groupList[i].groupId);
-                OsConfigCaptureReason(reason, "Group 'shadow'  is not empty: %u", groupList[i].groupId);
+                OsConfigCaptureReason(reason, "Group 'shadow' is not empty: %u", groupList[i].groupId);
                 status = ENOENT;
                 break;
             }
