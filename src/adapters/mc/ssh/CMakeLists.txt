@@ -4,15 +4,18 @@
 # SO binary name must match the class name in MOF with a "lib" prefix added
 project(OsConfigResource)
 
-add_library(OsConfigResource SHARED Dummy.c)
+add_library(OsConfigResource 
+    SHARED 
+        ..\nrp\module.c
+        ..\nrp\schema.c
+        ..\nrp\OsConfigResource.c)
 
 target_link_libraries(OsConfigResource
     PRIVATE
         commonutils
         logging
         mpiclient
-        parsonlib,
-        osconfignrp)
+        parsonlib)
 
 # Create the policy artifacts ZIP package for SSH Posture Control
 
