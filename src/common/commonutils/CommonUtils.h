@@ -45,10 +45,10 @@
 #define InternalOsConfigAddReason(reason, format, ...) {\
     char* last = NULL;\
     char* temp = FormatAllocateString("%s, also ", *reason);\
-    FREE_MEMORY(*reason); \
+    FREE_MEMORY(*reason);\
     last = FormatAllocateString(format, ##__VA_ARGS__);\
     last[0] = tolower(last[0]);\
-    *reason = ConcatenateStrings(temp, last); \
+    *reason = ConcatenateStrings(temp, last);\
     FREE_MEMORY(temp);\
     FREE_MEMORY(last);\
 }\
@@ -139,6 +139,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 int IsPackageInstalled(const char* packageName, void* log);
 int CheckPackageInstalled(const char* packageName, char** reason, void* log);
 int CheckPackageNotInstalled(const char* packageName, char** reason, void* log);
+int InstallOrUpdatePackage(const char* packageName, void* log);
 int InstallPackage(const char* packageName, void* log);
 int UninstallPackage(const char* packageName, void* log);
 

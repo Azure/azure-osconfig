@@ -48,6 +48,11 @@ OSCONFIG_LOG_HANDLE GetLog(void)
     return g_log;
 }
 
+static int EnsureOsConfigIsInstalled(void)
+{
+    return InstallOrUpdatePackage(g_osconfig, GetLog());
+}
+
 static MPI_HANDLE RefreshMpiClientSession(MPI_HANDLE currentMpiHandle)
 {
     MPI_HANDLE mpiHandle = currentMpiHandle;
@@ -115,6 +120,7 @@ void MI_CALL OsConfigResource_Load(
     MI_Context* context)
 {
     MI_UNREFERENCED_PARAMETER(selfModule);
+    int status = 0;
 
     *self = NULL;
 
@@ -124,6 +130,11 @@ void MI_CALL OsConfigResource_Load(
         g_mpiHandle = NULL;
     }
     
+    if (0 != (status = EnsureOsConfigIsInstalled()))
+    {
+        LogError(context, GetLog(), "[OsConfigResource] Unable to install or update OSConfig (%d), things may not work", status);
+    }
+
     if (NULL == (g_mpiHandle = RefreshMpiClientSession(g_mpiHandle)))
     {
         // Fallback for SSH policy

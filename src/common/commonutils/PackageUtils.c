@@ -135,47 +135,56 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
     return result;
 }
 
-int InstallPackage(const char* packageName, void* log)
+int InstallOrUpdatePackage(const char* packageName, void* log)
 {
     const char* commandTemplate = "%s install -y %s";
     int status = ENOENT;
 
+    if (0 == (status = IsPresent(g_aptGet, log)))
+    {
+        status = CheckOrInstallPackage(commandTemplate, g_aptGet, packageName, log);
+    }
+    else if (0 == (status = IsPresent(g_tdnf, log)))
+    {
+        status = CheckOrInstallPackage(commandTemplate, g_tdnf, packageName, log);
+    }
+    else if (0 == (status = IsPresent(g_dnf, log)))
+    {
+        status = CheckOrInstallPackage(commandTemplate, g_dnf, packageName, log);
+    }
+    else if (0 == (status = IsPresent(g_yum, log)))
+    {
+        status = CheckOrInstallPackage(commandTemplate, g_yum, packageName, log);
+    }
+    else if (0 == (status = IsPresent(g_zypper, log)))
+    {
+        status = CheckOrInstallPackage(commandTemplate, g_zypper, packageName, log);
+    }
+
+    if (0 == status)
+    {
+        status = IsPackageInstalled(packageName, log);
+    }
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "InstallOrUpdatePackage: package '%s' was successfully installed or updated", packageName);
+    }
+    else
+    {
+        OsConfigLogError(log, "InstallOrUpdatePackage: installation or update of package '%s' failed with %d", packageName, status);
+    }
+
+    return status;
+}
+
+int InstallPackage(const char* packageName, void* log)
+{
+    int status = ENOENT;
+
     if (0 != (status = IsPackageInstalled(packageName, log)))
     {
-        if (0 == (status = IsPresent(g_aptGet, log)))
-        {
-            status = CheckOrInstallPackage(commandTemplate, g_aptGet, packageName, log);
-        }
-        else if (0 == (status = IsPresent(g_tdnf, log)))
-        {
-            status = CheckOrInstallPackage(commandTemplate, g_tdnf, packageName, log);
-        }
-        else if (0 == (status = IsPresent(g_dnf, log)))
-        {
-            status = CheckOrInstallPackage(commandTemplate, g_dnf, packageName, log);
-        }
-        else if (0 == (status = IsPresent(g_yum, log)))
-        {
-            status = CheckOrInstallPackage(commandTemplate, g_yum, packageName, log);
-        }
-        else if (0 == (status = IsPresent(g_zypper, log)))
-        {
-            status = CheckOrInstallPackage(commandTemplate, g_zypper, packageName, log);
-        }
-
-        if (0 == status) 
-        {
-            status = IsPackageInstalled(packageName, log);
-        }
-
-        if (0 == status)
-        {
-            OsConfigLogInfo(log, "InstallPackage: package '%s' was successfully installed", packageName);
-        }
-        else
-        {
-            OsConfigLogError(log, "InstallPackage: installation of package '%s' failed with %d", packageName, status);
-        }
+        InstallOrUpdatePackage(packageName, log);
     }
     else
     {
