@@ -28,7 +28,7 @@ add_custom_target(stage_create_zip_ssh
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResource> ${PROJECT_BINARY_DIR}/Staging/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
     DEPENDS OsConfigResource)
 
-add_custom_target(create_zip ALL
+add_custom_target(create_zip_ssh ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/OsConfigPolicy.zip
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaselinePolicy.zip" --format=zip .
     DEPENDS stage_create_zip_ssh
