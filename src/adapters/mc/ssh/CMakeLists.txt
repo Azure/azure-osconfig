@@ -17,7 +17,7 @@ target_link_libraries(OsConfigResourceSsh
         mpiclient
         parsonlib)
 
-set_target_property(OsConfigResourceSsh OUTPUT_NAME libOsConfigResource)
+set_target_properties(OsConfigResourceSsh OUTPUT_NAME libOsConfigResource)
 
 # Create the policy artifacts ZIP package for SSH Posture Control
 

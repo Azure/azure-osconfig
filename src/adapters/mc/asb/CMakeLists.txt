@@ -17,7 +17,7 @@ target_link_libraries(OsConfigResourceAsb
         mpiclient
         parsonlib)
 
-set_target_property(OsConfigResourceAsb OUTPUT_NAME libOsConfigResource)
+set_target_properties(OsConfigResourceAsb OUTPUT_NAME libOsConfigResource)
 
 # Create the policy artifacts ZIP package for the Azure Security Baseline for Linux
 
