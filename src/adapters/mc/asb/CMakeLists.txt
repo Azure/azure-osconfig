@@ -4,8 +4,8 @@
 # Azure Security Baseline for Linux
 project(OsConfigResourceAsb)
 
-add_library(OsConfigResourceAsb 
-    SHARED 
+add_library(OsConfigResourceAsb
+    SHARED
         ../module.c
         ../schema.c
         ../OsConfigResource.c)

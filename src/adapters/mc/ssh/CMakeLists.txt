@@ -4,8 +4,8 @@
 # SSH Posture Control
 project(OsConfigResourceSsh)
 
-add_library(OsConfigResourceSsh 
-    SHARED 
+add_library(OsConfigResourceSsh
+    SHARED
         ../module.c
         ../schema.c
         ../OsConfigResource.c)
