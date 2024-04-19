@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# SO binary name must match the class name in MOF with a "lib" prefix added
-project(OsConfigResource)
+// Azure Security Baseline for Linux
+project(OsConfigResourceAsb)
 
 add_library(OsConfigResourceAsb 
     SHARED 
@@ -17,6 +17,7 @@ target_link_libraries(OsConfigResourceAsb
         mpiclient
         parsonlib)
 
+# SO binary name must match the universal class name in MOF with a "lib" prefix added
 set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME libOsConfigResource)
 
 # Create the policy artifacts ZIP package for the Azure Security Baseline for Linux
