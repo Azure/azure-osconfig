@@ -4,7 +4,7 @@
   "GitManagement": 0,
   "GitRepositoryUrl": " ",
   "GitBranch": " ",
-  "LocalManagement": 0,
+  "LocalManagement": 1,
   "ModelVersion": 18,
   "IotHubProtocol": 2,
   "Reported": [
@@ -861,5 +861,5 @@
       "ObjectName": "maxManualAttestationsPerDay"
     }
   ],
-  "ReportingIntervalSeconds": 30
+  "ReportingIntervalSeconds": 300
 }

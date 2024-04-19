@@ -1,14 +1,14 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# SO binary name must match the class name in MOF with a "lib" prefix added
-project(OsConfigResource)
+# SSH Posture Control
+project(OsConfigResourceSsh)
 
-add_library(OsConfigResourceSsh 
-    SHARED 
-        ../nrp/module.c
-        ../nrp/schema.c
-        ../nrp/OsConfigResource.c)
+add_library(OsConfigResourceSsh
+    SHARED
+        ../module.c
+        ../schema.c
+        ../OsConfigResource.c)
 
 target_link_libraries(OsConfigResourceSsh
     PRIVATE
@@ -17,6 +17,7 @@ target_link_libraries(OsConfigResourceSsh
         mpiclient
         parsonlib)
 
+# SO binary name must match the universal class name in MOF with a "lib" prefix added
 set_target_properties(OsConfigResourceSsh PROPERTIES OUTPUT_NAME libOsConfigResource)
 
 # Create the policy artifacts ZIP package for SSH Posture Control
