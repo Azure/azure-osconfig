@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       new: ${{ steps.commits.outputs.new }}
+      status: ${{ steps.last_scheduled_workflow_status.outputs.status }}
     steps:
       - uses: actions/checkout@v4
 
@@ -25,12 +26,19 @@ jobs:
             echo new=true >> $GITHUB_OUTPUT
           fi
 
+      - name: Check last scheduled workflow status
+        id: last_scheduled_workflow_status
+        run: |
+          # Get RUN ID of last workflow, not the current one
+          last_workflow_run_id=$(gh run list --workflow='Publish (insiders-fast)' --event=schedule --limit=2 --json databaseId -q '.[1].databaseId')
+          echo status=$(gh run view '$last_workflow_run_id' --json conclusion -q '.conclusion') >> $GITHUB_OUTPUT
+
   publish:
     name: Publish
     needs: changes
     if: |
       always() &&
-      (needs.changes.outputs.new == 'true' || github.event_name == 'workflow_dispatch')
+      (needs.changes.outputs.new == 'true' || github.event_name == 'workflow_dispatch' || needs.changes.outputs.status != 'success')
     uses: ./.github/workflows/publish.yml
     strategy:
       matrix:
