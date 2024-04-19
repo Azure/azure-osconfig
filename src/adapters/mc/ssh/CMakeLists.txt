@@ -6,9 +6,9 @@ project(OsConfigResourceSsh)
 
 add_library(OsConfigResourceSsh 
     SHARED 
-        ../nrp/module.c
-        ../nrp/schema.c
-        ../nrp/OsConfigResource.c)
+        ../module.c
+        ../schema.c
+        ../OsConfigResource.c)
 
 target_link_libraries(OsConfigResourceSsh
     PRIVATE

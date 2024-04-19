@@ -6,9 +6,9 @@ project(OsConfigResourceAsb)
 
 add_library(OsConfigResourceAsb 
     SHARED 
-        ../nrp/module.c
-        ../nrp/schema.c
-        ../nrp/OsConfigResource.c)
+        ../module.c
+        ../schema.c
+        ../OsConfigResource.c)
 
 target_link_libraries(OsConfigResourceAsb
     PRIVATE
