@@ -48,6 +48,50 @@ OSCONFIG_LOG_HANDLE GetLog(void)
     return g_log;
 }
 
+void __attribute__((constructor)) Initialize()
+{
+    g_classKey = DuplicateString(g_defaultValue);
+    g_componentName = DuplicateString(g_defaultValue);
+    g_initObjectName = DuplicateString(g_defaultValue);
+    g_reportedObjectName = DuplicateString(g_defaultValue);
+    g_expectedObjectValue = DuplicateString(g_passValue);
+    g_desiredObjectName = DuplicateString(g_defaultValue);
+    g_desiredObjectValue = DuplicateString(g_failValue);
+
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library loaded by host process %d", getpid());
+}
+
+void __attribute__((destructor)) Destroy()
+{
+    FREE_MEMORY(g_classKey);
+    FREE_MEMORY(g_componentName);
+    FREE_MEMORY(g_initObjectName);
+    FREE_MEMORY(g_reportedObjectName);
+    FREE_MEMORY(g_expectedObjectValue);
+    FREE_MEMORY(g_desiredObjectName);
+    FREE_MEMORY(g_desiredObjectValue);
+    FREE_MEMORY(g_reportedObjectValue);
+
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library unloaded by host process %d", getpid());
+
+    CloseLog(&g_log);
+}
+
+static void LogCurrentDistro(void)
+{
+    char* prettyName = NULL;
+    if (NULL != (prettyName = GetOsPrettyName(GetLog())))
+    {
+        LogInfo(context, GetLog(), "[OsConfigResource] Running on '%s'", prettyName);
+        FREE_MEMORY(prettyName);
+    }
+    else
+    {
+        LogInfo(context, GetLog(), "[OsConfigResource] Running on an unknown distribution without a valid PRETTY_NAME in /etc/os-release");
+    }
+    return;
+}
+
 static MPI_HANDLE RefreshMpiClientSession(MPI_HANDLE currentMpiHandle)
 {
     MPI_HANDLE mpiHandle = currentMpiHandle;
@@ -80,38 +124,38 @@ static MPI_HANDLE RefreshMpiClientSession(MPI_HANDLE currentMpiHandle)
     return mpiHandle;
 }
 
-void __attribute__((constructor)) Initialize()
+static void LogOsConfigVersion(void)
 {
-    g_classKey = DuplicateString(g_defaultValue);
-    g_componentName = DuplicateString(g_defaultValue);
-    g_initObjectName = DuplicateString(g_defaultValue);
-    g_reportedObjectName = DuplicateString(g_defaultValue);
-    g_expectedObjectValue = DuplicateString(g_passValue);
-    g_desiredObjectName = DuplicateString(g_defaultValue);
-    g_desiredObjectValue = DuplicateString(g_failValue);
+    const char* deviceInfoComponent = "DeviceInfo";
+    const char* osConfigVersionObject = "osConfigVersion";
+    const char* version = NULL;
+    JSON_Value* jsonValue = NULL;
+    char* objectValue = NULL;
+    int objectValueLength = 0;
+    char* payloadString = NULL;
 
-    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library loaded by host process %d", getpid());
-}
+    if ((MPI_OK == CallMpiGet(deviceInfoComponent, osConfigVersionObject, &objectValue, &objectValueLength, GetLog())) && (NULL != objectValue))
+    {
+        if (NULL != (payloadString = malloc(((objectValueLength > 0) ? objectValueLength : strlen(objectValue)) + 1)))
+        {
+            memset(payloadString, 0, objectValueLength + 1);
+            memcpy(payloadString, objectValue, objectValueLength);
 
-void __attribute__((destructor)) Destroy()
-{
-    FREE_MEMORY(g_classKey);
-    FREE_MEMORY(g_componentName);
-    FREE_MEMORY(g_initObjectName);
-    FREE_MEMORY(g_reportedObjectName);
-    FREE_MEMORY(g_expectedObjectValue);
-    FREE_MEMORY(g_desiredObjectName);
-    FREE_MEMORY(g_desiredObjectValue);
-    FREE_MEMORY(g_reportedObjectValue);
+            if (NULL != (jsonValue = json_parse_string(payloadString)))
+            {
+                if (NULL != (version = json_value_get_string(jsonValue)))
+                {
+                    LogInfo(context, GetLog(), "[OsConfigResource] OSConfig version: '%s'", version);
+                }
 
-    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library unloaded by host process %d", getpid());
+                json_value_free(jsonValue);
+            }
 
-    CloseLog(&g_log);
-}
+            FREE_MEMORY(payloadString);
+        }
 
-static int EnsureOsConfigIsInstalledAndUpdated(void)
-{
-    return InstallOrUpdatePackage(g_osconfig, GetLog());
+        CallMpiFree(objectValue);
+    }
 }
 
 void MI_CALL OsConfigResource_Load(
@@ -130,7 +174,9 @@ void MI_CALL OsConfigResource_Load(
         g_mpiHandle = NULL;
     }
     
-    if (0 != (status = EnsureOsConfigIsInstalledAndUpdated()))
+    LogCurrentDistro();
+
+    if (0 != (status = InstallOrUpdatePackage(g_osconfig, GetLog())))
     {
         LogInfo(context, GetLog(), "[OsConfigResource] Unable to install or update OSConfig (%d), things may not work", status);
     }
@@ -145,6 +191,8 @@ void MI_CALL OsConfigResource_Load(
     else
     {
         LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+        
+        LogOsConfigVersion();
     }
 
     MI_Context_PostResult(context, MI_RESULT_OK);
