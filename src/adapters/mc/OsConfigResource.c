@@ -77,7 +77,7 @@ void __attribute__((destructor)) Destroy()
     CloseLog(&g_log);
 }
 
-static void LogCurrentDistro(void)
+static void LogCurrentDistro(MI_Context* context)
 {
     char* prettyName = NULL;
     if (NULL != (prettyName = GetOsPrettyName(GetLog())))
@@ -124,7 +124,7 @@ static MPI_HANDLE RefreshMpiClientSession(MPI_HANDLE currentMpiHandle)
     return mpiHandle;
 }
 
-static void LogOsConfigVersion(void)
+static void LogOsConfigVersion(MI_Context* context)
 {
     const char* deviceInfoComponent = "DeviceInfo";
     const char* osConfigVersionObject = "osConfigVersion";
@@ -174,7 +174,7 @@ void MI_CALL OsConfigResource_Load(
         g_mpiHandle = NULL;
     }
     
-    LogCurrentDistro();
+    LogCurrentDistro(context);
 
     if (0 != (status = InstallOrUpdatePackage(g_osconfig, GetLog())))
     {
@@ -192,7 +192,7 @@ void MI_CALL OsConfigResource_Load(
     {
         LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
         
-        LogOsConfigVersion();
+        LogOsConfigVersion(context);
     }
 
     MI_Context_PostResult(context, MI_RESULT_OK);
