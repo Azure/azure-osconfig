@@ -490,7 +490,6 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
         }
     }
     
-    //else
     if ((NULL == g_mpiHandle) || (MPI_OK != mpiResult))
     {
         // Fallback for SSH policy
