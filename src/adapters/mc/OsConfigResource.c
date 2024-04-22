@@ -1205,7 +1205,6 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         miResult = SetDesiredObjectValueToDevice("OsConfigResource.Set", g_desiredObjectName, context);
     }
     
-    // else
     if ((NULL == g_mpiHandle) || (MI_RESULT_OK != miResult))
     {
         // Fallback for SSH policy

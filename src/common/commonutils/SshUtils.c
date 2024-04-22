@@ -1488,7 +1488,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
         else
         {
             OsConfigLogError(log, "ProcessSshAuditCheck(%s): audit failure without a reason", name);
-            OsConfigCaptureReason(reason, "Audit for '%s' returned no reason", name);
+            OsConfigCaptureReason(reason, SECURITY_AUDIT_FAIL);
         }
     }
     else if ((NULL != value) && (NULL == reason))
