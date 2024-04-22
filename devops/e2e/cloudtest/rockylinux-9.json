@@ -1,5 +1,12 @@
+// Base Image: resf:rockylinux-x86_64:9-base:latest
 {
     "artifacts": [
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo yum install -y yum-utils && yum-config-manager --add-repo https://packages.microsoft.com/config/rocky/9/insiders-fast.repo"
+            }
+        },
         {
             "name": "linux-bash-command",
             "parameters": {

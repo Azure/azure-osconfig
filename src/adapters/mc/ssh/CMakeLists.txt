@@ -30,7 +30,7 @@ add_custom_target(stage_create_zip_ssh
     DEPENDS OsConfigResourceSsh)
 
 add_custom_target(create_zip_ssh ALL
-    BYPRODUCTS ${OsConfigRootBinaryDir}/OsConfigPolicy.zip
+    BYPRODUCTS ${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaselinePolicy.zip
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaselinePolicy.zip" --format=zip .
     DEPENDS stage_create_zip_ssh
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/Staging/)

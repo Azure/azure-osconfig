@@ -1,3 +1,4 @@
+// Base Image: canonical:0001-com.ubuntu-server.focal:20_04-lts-gen2:latest
 {
     "artifacts": [
         {
@@ -10,6 +11,18 @@
             "name": "linux-add-repository",
             "parameters": {
                 "repository": "https://packages.microsoft.com/ubuntu/20.04/prod"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "wget https://packages.microsoft.com/config/ubuntu/20.04/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo apt update"
             }
         },
         {

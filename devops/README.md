@@ -169,7 +169,7 @@ yum remove osconfig
 #### <a name="rhel8-insiders-fast">insiders-fast
 ```bash
 yum install yum-utils
-yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-rhel8.0-insiders-fast-prod/
+yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-rhel8.0-insiders-fast-prod/config.repo
 yum install osconfig
 ```
 ### Remove

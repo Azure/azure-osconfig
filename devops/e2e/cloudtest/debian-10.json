@@ -1,5 +1,12 @@
+// Base Image: debian:debian-10:10-gen2:latest
 {
     "artifacts": [
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo sed -i 's/debian-archive.trafficmanager.net/archive.debian.org/g' /etc/apt/sources.list && sudo sed -i '/debian-security/d' /etc/apt/sources.list"
+            }
+        },
         {
             "name": "linux-install-packages",
             "parameters": {
@@ -7,21 +14,21 @@
             }
         },
         {
-            "name": "linux-add-key",
+            "name": "linux-bash-command",
             "parameters": {
-                "key": "https://packages.microsoft.com/keys/microsoft.asc"
-            }
-        },
-        {
-            "name": "linux-add-repository",
-            "parameters": {
-                "repository": "https://packages.microsoft.com/debian/10/prod"
+                "command": "wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -"
             }
         },
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "wget https://packages.microsoft.com/config/debian/10/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && sudo dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb"
+                "command": "wget https://packages.microsoft.com/config/debian/10/prod.list -O /etc/apt/sources.list.d/packages-microsoft-com_prod.list"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "wget https://packages.microsoft.com/config/debian/10/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list"
             }
         },
         {

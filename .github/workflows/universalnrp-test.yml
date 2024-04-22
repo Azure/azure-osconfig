@@ -28,9 +28,14 @@ jobs:
           ]
         arch: [amd64]
         install-osconfig: [true, false]
+        policy-package: [LinuxSecurityBaselinePolicy.zip, LinuxSshServerSecurityBaselinePolicy.zip]
+        exclude:
+          - install-osconfig: false
+            policy-package: LinuxSecurityBaselinePolicy.zip
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.arch }}
       package-type: ${{ matrix.target.package-type }}
+      policy-package: ${{ matrix.policy-package }}
       install-osconfig: ${{ matrix.install-osconfig }}
       tag: ${{ matrix.target.tag }}

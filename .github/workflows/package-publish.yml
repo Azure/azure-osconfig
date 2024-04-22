@@ -6,6 +6,10 @@ on:
       repo:
         required: true
         type: string
+      environment:
+        type: string
+        description: The GitHub environment to use for the build.
+        required: true
       channel:
         required: true
         type: string
@@ -15,7 +19,8 @@ on:
 
 jobs:
   publish:
-    runs-on: [self-hosted, 1ES.Pool=release-pool, 1ES.ImageOverride=ubuntu-22.04]
+    runs-on: [self-hosted, 1ES.Pool=release-pool, 1ES.ImageOverride=build-infra]
+    environment: ${{ inputs.environment }}
     env:
       PMC_CLI_BASE_URL: https://pmc-ingest.trafficmanager.net/api/v4
       PMC_CLI_MSAL_CLIENT_ID: 7497d560-834a-4326-9750-ead7c3894d19

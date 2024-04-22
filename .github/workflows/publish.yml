@@ -21,6 +21,10 @@ on:
       package-type:
         type: string
         required: true
+      environment:
+        type: string
+        description: The GitHub environment to use for the build.
+        required: true
       container-tag:
         type: string
         required: false
@@ -51,6 +55,7 @@ jobs:
     needs: sign
     with:
       repo: ${{ inputs.repo }}
+      environment: ${{ inputs.environment }}
       channel: ${{ inputs.channel }}
       artifact: ${{ inputs.target }}-${{ inputs.arch }}-signed
     secrets: inherit

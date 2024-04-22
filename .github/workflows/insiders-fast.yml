@@ -28,6 +28,8 @@ jobs:
 
       - name: Check last scheduled workflow status
         id: last_scheduled_workflow_status
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Get RUN ID of last workflow, not the current one
           last_workflow_run_id=$(gh run list --workflow='Publish (insiders-fast)' --event=schedule --limit=2 --json databaseId -q '.[1].databaseId')
@@ -69,6 +71,7 @@ jobs:
       arch: ${{ matrix.target.arch }}
       repo: ${{ matrix.target.repo }}
       dist: ${{ matrix.target.dist }}
+      environment: insiders-fast
       # ESRP debian based repos (deb) have channels/rings on repos.
       # ESRP yum based repos (rpm) have no channels
       channel: ${{ matrix.target.package-type == 'DEB' && 'insiders-fast' || '' }}
