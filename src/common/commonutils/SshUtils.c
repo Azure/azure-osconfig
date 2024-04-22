@@ -1474,8 +1474,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     }
     else
     {
-        OsConfigLogError(log, "ProcessSshAuditCheck: unsupported check name '%s'", name);
-        status = EINVAL;
+        OsConfigLogError(log, "ProcessSshAuditCheck: unsupported check name '%s', nothing done", name);
     }
 
     FREE_MEMORY(lowercase);
@@ -1489,11 +1488,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
         else
         {
             OsConfigLogError(log, "ProcessSshAuditCheck(%s): audit failure without a reason", name);
-            if (NULL == (*reason = DuplicateString(SECURITY_AUDIT_FAIL)))
-            {
-                OsConfigLogError(log, "ProcessSshAuditCheck: DuplicateString failed");
-                status = ENOMEM;
-            }
+            OsConfigCaptureReason(reason, "Audit for '%s' returned no reason", name);
         }
     }
     else if ((NULL != value) && (NULL == reason))
