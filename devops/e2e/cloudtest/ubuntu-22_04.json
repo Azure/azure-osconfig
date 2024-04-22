@@ -1,21 +1,22 @@
+// Base Image: canonical:0001-com.ubuntu-server.focal:22_04-lts-gen2:latest
 {
     "artifacts": [
         {
-            "name": "linux-add-key",
+            "name": "linux-bash-command",
             "parameters": {
-                "key": "https://packages.microsoft.com/keys/microsoft.asc"
+                "command": "wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && sudo wget https://packages.microsoft.com/config/ubuntu/22.04/prod.list -O /etc/apt/sources.list.d/packages-microsoft-com_prod.list && sudo wget https://packages.microsoft.com/config/ubuntu/22.04/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list"
             }
         },
         {
-            "name": "linux-add-repository",
+            "name": "linux-bash-command",
             "parameters": {
-                "repository": "https://packages.microsoft.com/ubuntu/22.04/prod"
+                "command": "sudo apt update"
             }
         },
         {
             "name": "linux-install-packages",
             "parameters": {
-                "packages": "aziot-identity-service jq"
+                "packages": "aziot-identity-service jq omi powershell libgsl-dev libgsl27 libgslcblas0"
             }
         },
         {
@@ -25,6 +26,12 @@
             "name": "linux-dotnet-sdk",
             "parameters": {
                 "version": "6.0"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "apt list --installed"
             }
         }
     ]

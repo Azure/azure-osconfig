@@ -1,5 +1,12 @@
+// Base Image: suse:sles-15-sp4-byos:gen2:latest
 {
     "artifacts": [
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo zypper ar -f https://packages.microsoft.com/yumrepos/microsoft-sles15-insiders-fast-prod/config.repo"
+            }
+        },
         {
             "name": "linux-bash-command",
             "parameters": {

@@ -1,5 +1,12 @@
+// Base Image: RedHat:RHEL:9-lvm-gen2:latest
 {
     "artifacts": [
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo yum install -y yum-utils && yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-rhel9.0-insiders-fast-prod/config.repo"
+            }
+        },
         {
             "name": "linux-bash-command",
             "parameters": {

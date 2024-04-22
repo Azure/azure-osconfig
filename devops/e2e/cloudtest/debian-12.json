@@ -1,3 +1,4 @@
+// Base Image: debian:debian-12:12-gen2:latest
 {
     "artifacts": [
         {
@@ -7,21 +8,27 @@
             }
         },
         {
-            "name": "linux-add-key",
+            "name": "linux-bash-command",
             "parameters": {
-                "key": "https://packages.microsoft.com/keys/microsoft.asc"
+                "command": "wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/packages-microsoft-com_key.asc"
             }
         },
         {
-            "name": "linux-add-repository",
+            "name": "linux-bash-command",
             "parameters": {
-                "repository": "https://packages.microsoft.com/debian/12/prod"
+                "command": "wget https://packages.microsoft.com/config/debian/12/prod.list -O /etc/apt/sources.list.d/packages-microsoft-com_prod.list"
             }
         },
         {
-            "name": "linux-install-packages",
+            "name": "linux-bash-command",
             "parameters": {
-                "packages": "dotnet-sdk-6.0 jq omi"
+                "command": "wget https://packages.microsoft.com/config/debian/12/insiders-fast.list -O /etc/apt/sources.list.d/packages-microsoft-com_insiders-fast.list"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo apt update && sudo apt install -y dotnet-sdk-6.0 jq omi"
             }
         },
         {

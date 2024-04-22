@@ -12,6 +12,9 @@ on:
       package-type:
         required: true
         type: string
+      policy-package:
+        required: true
+        type: string
       install-osconfig:
         required: false
         type: boolean
@@ -68,7 +71,7 @@ jobs:
           Install-Module Pester -Force -SkipPublisherCheck
           Import-Module Pester -Passthru
 
-          \$container = New-PesterContainer -Path ./src/tests/universal-nrp-e2e/UniversalNRP.Tests.ps1 -Data @{ PolicyPackage = './LinuxSshServerSecurityBaselinePolicy.zip' }
+          \$container = New-PesterContainer -Path ./src/tests/universal-nrp-e2e/UniversalNRP.Tests.ps1 -Data @{ PolicyPackage = './${{ inputs.policy-package }}' }
           \$pesterConfig = [PesterConfiguration]@{
               Run = @{
                   Exit = \$true

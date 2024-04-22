@@ -36,6 +36,7 @@ jobs:
       arch: ${{ matrix.target.arch }}
       repo: ${{ matrix.target.repo }}
       dist: ${{ matrix.target.dist }}
+      environment: prod
       # ESRP debian based repos (deb) have channels/rings on repos.
       # ESRP yum based repos (rpm) have no channels
       channel: ${{ matrix.target.package-type == 'DEB' && matrix.target.dist || '' }}

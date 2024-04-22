@@ -50,7 +50,7 @@ env:
 
 jobs:
   package:
-    runs-on: ${{ inputs.release == true && fromJSON('["self-hosted", "1ES.Pool=release-pool", "1ES.ImageOverride=ubuntu-22.04"]') || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.release == true && fromJSON('["self-hosted", "1ES.Pool=release-pool", "1ES.ImageOverride=build-infra"]') || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v4
         with:

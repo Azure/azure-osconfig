@@ -1,3 +1,4 @@
+// Base Image: Oracle:Oracle-Linux:ol89-lvm-gen2:latest
 {
     "artifacts": [
         {

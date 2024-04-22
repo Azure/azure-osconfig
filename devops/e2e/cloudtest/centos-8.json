@@ -1,9 +1,22 @@
+// Base Image: OpenLogic:CentOS:8_2-gen2:latest
 {
     "artifacts": [
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo yum install -y glibc*"
+                "command": "sudo yum install -y yum-utils && yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-centos8-insiders-fast-prod/config.repo"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo yum install -y glibc* libicu wget which"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "wget https://github.com/PowerShell/PowerShell/releases/download/v7.4.2/powershell-7.4.2-1.rh.x86_64.rpm -O powershell.rpm && rpm -fi powershell.rpm --nodeps"
             }
         }
     ]

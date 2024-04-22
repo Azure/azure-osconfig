@@ -1,0 +1,20 @@
+// Base Image: 1ES PT - Ubuntu 22.04 - vNext
+{
+    "artifacts": [
+        {
+            "name": "linux-azcli"
+        },
+        {
+            "name": "linux-dotnet-sdk",
+            "parameters": {
+                "version": "6.0"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "apt list --installed"
+            }
+        }
+    ]
+}
