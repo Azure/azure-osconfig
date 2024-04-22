@@ -483,11 +483,15 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
         }
         else
         {
-            miResult = MI_RESULT_FAILED;
-            LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s) failed with %d", who, g_componentName, g_reportedObjectName, mpiResult);
+            //miResult = MI_RESULT_FAILED;
+            //LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s) failed with %d", who, g_componentName, g_reportedObjectName, mpiResult);
+            LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s) failed with %d, try fallback", who, g_componentName, g_reportedObjectName, mpiResult);
+            miResult = MI_RESULT_OK;
         }
     }
-    else
+    
+    //else
+    if ((NULL == g_mpiHandle) || (MPI_OK != mpiResult))
     {
         // Fallback for SSH policy
 
@@ -1200,7 +1204,9 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     {
         miResult = SetDesiredObjectValueToDevice("OsConfigResource.Set", g_desiredObjectName, context);
     }
-    else
+    
+    // else
+    if ((NULL == g_mpiHandle) || (MI_RESULT_OK != miResult))
     {
         // Fallback for SSH policy
         if (0 == (mpiResult = ProcessSshAuditCheck(g_desiredObjectName, g_desiredObjectValue, NULL, GetLog())))
