@@ -57,7 +57,7 @@ yum remove osconfig
 ### Install
 #### <a name="azurelinux2-insiders-fast"></a>insiders-fast / preview
 ```bash
-tdnf install dnf-plugins-core
+tdnf install dnf dnf-plugins-core
 dnf config-manager --add-repo https://packages.microsoft.com/yumrepos/cbl-mariner-2.0-preview-Microsoft-x86_64/config.repo
 tdnf install osconfig
 ```
