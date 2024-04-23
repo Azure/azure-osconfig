@@ -331,12 +331,12 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName
     if (NULL == g_mpiHandle)
     {
         LogError(context, miResult, GetLog(), "[%s] SetDesiredObjectValueToDevice(%s, %s) called outside of a valid MPI session", who, g_componentName, g_desiredObjectName);
-        return ENOENT;
+        return MI_RESULT_INVALID_PARAMETER;
     }
     else if ((NULL == objectName) || (NULL == g_desiredObjectValue))
     {
         LogError(context, miResult, GetLog(), "[%s] SetDesiredObjectValueToDevice called with an invalid object name and/or desired object value", who);
-        return EINVAL;
+        return MI_RESULT_INVALID_PARAMETER;
     }
 
     if (NULL == (jsonValue = json_value_init_string(g_desiredObjectValue)))
@@ -359,17 +359,9 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName
             memset(payloadString, 0, payloadSize + 1);
             memcpy(payloadString, serializedValue, payloadSize);
 
-            if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, objectName, payloadString, payloadSize, GetLog())))
-            {
-                LogInfo(context, GetLog(), "[%s] CallMpiSet(%s, %s, '%.*s', %d) ok",
-                    who, g_componentName, objectName, payloadSize, payloadString, payloadSize);
-            }
-            else
-            {
-                miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[%s] CallMpiSet(%s, %s, '%.*s', %d) failed with %d, miResult %d",
-                    who, g_componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult, miResult);
-            }
+            mpiResult = CallMpiSet(g_componentName, objectName, payloadString, payloadSize, GetLog());
+            LogInfo(context, GetLog(), "[%s] CallMpiSet(%s, %s, '%.*s', %d) returned %d", 
+                who, g_componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult);
 
             FREE_MEMORY(payloadString);
         }
@@ -456,7 +448,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
                         else
                         {
                             mpiResult = EINVAL;
-                            miResult = MI_RESULT_FAILED;
+                            miResult = MI_RESULT_INVALID_PARAMETER;
                             LogError(context, miResult, GetLog(), "[%s] json_value_get_string(%s) failed", who, payloadString);
                         }
 
@@ -465,7 +457,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
                     else
                     {
                         mpiResult = EINVAL;
-                        miResult = MI_RESULT_FAILED;
+                        miResult = MI_RESULT_INVALID_PARAMETER;
                         LogError(context, miResult, GetLog(), "[%s] json_parse_string(%s) failed", who, payloadString);
                     }
 
@@ -483,17 +475,14 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
         }
         else
         {
-            //miResult = MI_RESULT_FAILED;
-            //LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s) failed with %d", who, g_componentName, g_reportedObjectName, mpiResult);
             LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s) failed with %d, try fallback", who, g_componentName, g_reportedObjectName, mpiResult);
             miResult = MI_RESULT_OK;
         }
     }
     
+    // Fallback for SSH policy
     if ((NULL == g_mpiHandle) || (MPI_OK != mpiResult))
     {
-        // Fallback for SSH policy
-
         // If this reported object has a corresponding init object, initalize it with the desired object value
         if ((NULL != g_initObjectName) && (0 != strcmp(g_initObjectName, g_defaultValue)))
         {
@@ -1204,9 +1193,11 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         miResult = SetDesiredObjectValueToDevice("OsConfigResource.Set", g_desiredObjectName, context);
     }
     
+    // Fallback for SSH policy
     if ((NULL == g_mpiHandle) || (MI_RESULT_OK != miResult))
     {
-        // Fallback for SSH policy
+        miResult = MI_RESULT_OK;
+
         if (0 == (mpiResult = ProcessSshAuditCheck(g_desiredObjectName, g_desiredObjectValue, NULL, GetLog())))
         {
             LogInfo(context, GetLog(), "[OsConfigResource.Set] ProcessSshAuditCheck(%s, '%s') ok", g_desiredObjectName, g_desiredObjectValue);

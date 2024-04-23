@@ -1475,6 +1475,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     else
     {
         OsConfigLogError(log, "ProcessSshAuditCheck: unsupported check name '%s', nothing done", name);
+        status = 0;
     }
 
     FREE_MEMORY(lowercase);
