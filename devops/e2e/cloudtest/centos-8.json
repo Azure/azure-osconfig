@@ -4,13 +4,13 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo yum install -y yum-utils && yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-centos8-insiders-fast-prod/config.repo"
+                "command": "sudo yum install -y yum-utils && yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-centos8-insiders-fast-prod/config.repo && yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-centos8-prod/config.repo"
             }
         },
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo yum install -y glibc* libicu wget which"
+                "command": "sudo yum install -y glibc* libicu wget which omi"
             }
         },
         {
