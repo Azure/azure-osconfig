@@ -176,6 +176,7 @@ void MI_CALL OsConfigResource_Load(
     
     LogCurrentDistro(context);
 
+    // Temporary, may get removed once decided which way to proceed. For now this is here to continue to test with:
     if (0 != (status = InstallOrUpdatePackage(g_osconfig, GetLog())))
     {
         LogInfo(context, GetLog(), "[OsConfigResource] Unable to install or update OSConfig (%d), things may not work", status);
@@ -191,7 +192,7 @@ void MI_CALL OsConfigResource_Load(
     else
     {
         LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
-        
+
         LogOsConfigVersion(context);
     }
 
