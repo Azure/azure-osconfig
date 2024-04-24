@@ -45,7 +45,8 @@ jobs:
         id: normalize
         run: |
           # Remove .zip from policy package name
-          echo policyPackage=${${{ inputs.policy-package }}%zip} >> $GITHUB_OUTPUT
+          package=${{ inputs.policy-package }}
+          echo policyPackage=${package%zip} >> $GITHUB_OUTPUT
 
       - uses: actions/download-artifact@v3
         id: download
