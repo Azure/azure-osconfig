@@ -48,35 +48,6 @@ OSCONFIG_LOG_HANDLE GetLog(void)
     return g_log;
 }
 
-void __attribute__((constructor)) Initialize()
-{
-    g_classKey = DuplicateString(g_defaultValue);
-    g_componentName = DuplicateString(g_defaultValue);
-    g_initObjectName = DuplicateString(g_defaultValue);
-    g_reportedObjectName = DuplicateString(g_defaultValue);
-    g_expectedObjectValue = DuplicateString(g_passValue);
-    g_desiredObjectName = DuplicateString(g_defaultValue);
-    g_desiredObjectValue = DuplicateString(g_failValue);
-
-    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library loaded by host process %d", getpid());
-}
-
-void __attribute__((destructor)) Destroy()
-{
-    FREE_MEMORY(g_classKey);
-    FREE_MEMORY(g_componentName);
-    FREE_MEMORY(g_initObjectName);
-    FREE_MEMORY(g_reportedObjectName);
-    FREE_MEMORY(g_expectedObjectValue);
-    FREE_MEMORY(g_desiredObjectName);
-    FREE_MEMORY(g_desiredObjectValue);
-    FREE_MEMORY(g_reportedObjectValue);
-
-    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library unloaded by host process %d", getpid());
-
-    CloseLog(&g_log);
-}
-
 static void LogCurrentDistro(MI_Context* context)
 {
     char* prettyName = NULL;
@@ -156,6 +127,35 @@ static void LogOsConfigVersion(MI_Context* context)
 
         CallMpiFree(objectValue);
     }
+}
+
+void __attribute__((constructor)) Initialize()
+{
+    g_classKey = DuplicateString(g_defaultValue);
+    g_componentName = DuplicateString(g_defaultValue);
+    g_initObjectName = DuplicateString(g_defaultValue);
+    g_reportedObjectName = DuplicateString(g_defaultValue);
+    g_expectedObjectValue = DuplicateString(g_passValue);
+    g_desiredObjectName = DuplicateString(g_defaultValue);
+    g_desiredObjectValue = DuplicateString(g_failValue);
+
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library loaded by host process %d", getpid());
+}
+
+void __attribute__((destructor)) Destroy()
+{
+    FREE_MEMORY(g_classKey);
+    FREE_MEMORY(g_componentName);
+    FREE_MEMORY(g_initObjectName);
+    FREE_MEMORY(g_reportedObjectName);
+    FREE_MEMORY(g_expectedObjectValue);
+    FREE_MEMORY(g_desiredObjectName);
+    FREE_MEMORY(g_desiredObjectValue);
+    FREE_MEMORY(g_reportedObjectValue);
+
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library unloaded by host process %d", getpid());
+
+    CloseLog(&g_log);
 }
 
 void MI_CALL OsConfigResource_Load(
