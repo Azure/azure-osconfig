@@ -8,5 +8,9 @@
         "hsm_type_symm_key": "ON"
     },
     // Enables C# XML Auto Commenting
-    "editor.formatOnType": true
+    "editor.formatOnType": true,
+    // Use JSON with comments
+    "files.associations": {
+        "*.json": "jsonc"
+    }
 }
