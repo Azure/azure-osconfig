@@ -41,6 +41,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Normalize variables
+        id: normalize
+        run: |
+          # Remove .zip from policy package name
+          echo policyPackage=${${{ inputs.policy-package }}%zip} >> $GITHUB_OUTPUT
+
       - uses: actions/download-artifact@v3
         id: download
         with:
@@ -83,7 +89,7 @@ jobs:
               TestResult = @{
                   Enabled      = \$true
                   OutputFormat = 'JUnitXml'
-                  OutputPath   = '${{ inputs.target }}-UniversalNRP-testResult-$testLogSuffix.xml'
+                  OutputPath   = '${{ inputs.target }}-UniversalNRP-${{ steps.normalize.outputs.policyPackage }}-testResult-$testLogSuffix.xml'
               }
               Should = @{
                   ErrorAction = 'Continue'
@@ -101,7 +107,7 @@ jobs:
         run: |
           mkdir  osconfig-logs
           sudo cp -r /var/log/osconfig* osconfig-logs/
-          sudo chown $USER osconfig-logs/* 
+          sudo chown $USER osconfig-logs/*
 
       - uses: actions/upload-artifact@v3
         if: success() || failure()
