@@ -626,140 +626,140 @@ static char* AuditEnsurePermissionsOnEtcIssue(void)
     char* reason = NULL;
     CheckFileAccess(g_etcIssue, 0, 0, 644, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcIssueNet(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcIssueNet, 0, 0, 644, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcHostsAllow(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcHostsAllow, 0, 0, 644, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcHostsDeny(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcHostsDeny, 0, 0, 644, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsurePermissionsOnEtcSshSshdConfigObject, NULL, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcShadow(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcShadow, 0, 42, 400, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcShadowDash(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcShadowDash, 0, 42, 400, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcGShadow(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcGShadow, 0, 42, 400, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcGShadowDash(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcGShadowDash, 0, 42, 400, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcPasswd(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcPasswd, 0, 0, 644, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcPasswdDash(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcPasswdDash, 0, 0, 600, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcGroup(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcGroup, 0, 0, 644, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcGroupDash(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcGroupDash, 0, 0, 644, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcAnacronTab(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcAnacronTab, 0, 0, 600, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcCronD(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronD, 0, 0, 700, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcCronDaily(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronDaily, 0, 0, 700, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcCronHourly(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronHourly, 0, 0, 700, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcCronMonthly(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronMonthly, 0, 0, 700, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcCronWeekly(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronWeekly, 0, 0, 700, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsurePermissionsOnEtcMotd(void)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcMotd, 0, 0, 644, &reason, log);
     return reason;
-};
+}
 
 static char* AuditEnsureKernelSupportForCpuNx(void)
 {
