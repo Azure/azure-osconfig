@@ -8,8 +8,8 @@
 #include <stdatomic.h>
 #include <errno.h>
 #include <CommonUtils.h>
-#include <Logging.h>
 #include <Asb.h>
+#include <Logging.h>
 #include <Mmi.h>
 
 #include "SecurityBaseline.h"

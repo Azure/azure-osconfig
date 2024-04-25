@@ -3,7 +3,8 @@
 
 project(asb)
 
-add_library(asb STATIC Asb.c)
+add_library(asb STATIC
+    Asb.c)
 
 target_compile_options(asb PRIVATE -Wno-psabi)
 
