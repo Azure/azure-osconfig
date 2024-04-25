@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <Internal.h>
+#include <Mmi.h>
 #include <UserUtils.h>
 #include <SshUtils.h>
 #include <AsbUtils.h>
