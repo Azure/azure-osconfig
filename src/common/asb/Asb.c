@@ -5522,154 +5522,154 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         {
             status = InitEnsureAppropriateCiphersForSsh(jsonString, log);
         }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcIssueObject)) { status = InitEnsurePermissionsOnEtcIssue(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcIssueNetObject)) { status = InitEnsurePermissionsOnEtcIssueNet(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcHostsAllowObject)) { status = InitEnsurePermissionsOnEtcHostsAllow(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcHostsDenyObject)) { status = InitEnsurePermissionsOnEtcHostsDeny(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcShadowObject)) { status = InitEnsurePermissionsOnEtcShadow(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcShadowDashObject)) { status = InitEnsurePermissionsOnEtcShadowDash(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcGShadowObject)) { status = InitEnsurePermissionsOnEtcGShadow(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcGShadowDashObject)) { status = InitEnsurePermissionsOnEtcGShadowDash(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcPasswdObject)) { status = InitEnsurePermissionsOnEtcPasswd(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcPasswdDashObject)) { status = InitEnsurePermissionsOnEtcPasswdDash(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcGroupObject)) { status = InitEnsurePermissionsOnEtcGroup(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcGroupDashObject)) { status = InitEnsurePermissionsOnEtcGroupDash(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcAnacronTabObject)) { status = InitEnsurePermissionsOnEtcAnacronTab(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronDObject)) { status = InitEnsurePermissionsOnEtcCronD(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronDailyObject)) { status = InitEnsurePermissionsOnEtcCronDaily(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronHourlyObject)) { status = InitEnsurePermissionsOnEtcCronHourly(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronMonthlyObject)) { status = InitEnsurePermissionsOnEtcCronMonthly(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronWeeklyObject)) { status = InitEnsurePermissionsOnEtcCronWeekly(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcMotdObject)) { status = InitEnsurePermissionsOnEtcMotd(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureInetdNotInstalledObject)) { status = InitEnsureInetdNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureXinetdNotInstalledObject)) { status = InitEnsureXinetdNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRshServerNotInstalledObject)) { status = InitEnsureRshServerNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNisNotInstalledObject)) { status = InitEnsureNisNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureTftpdNotInstalledObject)) { status = InitEnsureTftpdNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureReadaheadFedoraNotInstalledObject)) { status = InitEnsureReadaheadFedoraNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureBluetoothHiddNotInstalledObject)) { status = InitEnsureBluetoothHiddNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureIsdnUtilsBaseNotInstalledObject)) { status = InitEnsureIsdnUtilsBaseNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureIsdnUtilsKdumpToolsNotInstalledObject)) { status = InitEnsureIsdnUtilsKdumpToolsNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureIscDhcpdServerNotInstalledObject)) { status = InitEnsureIscDhcpdServerNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureSendmailNotInstalledObject)) { status = InitEnsureSendmailNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureSldapdNotInstalledObject)) { status = InitEnsureSldapdNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureBind9NotInstalledObject)) { status = InitEnsureBind9NotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureDovecotCoreNotInstalledObject)) { status = InitEnsureDovecotCoreNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAuditdInstalledObject)) { status = InitEnsureAuditdInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePrelinkIsDisabledObject)) { status = InitEnsurePrelinkIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureTalkClientIsNotInstalledObject)) { status = InitEnsureTalkClientIsNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureCronServiceIsEnabledObject)) { status = InitEnsureCronServiceIsEnabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAuditdServiceIsRunningObject)) { status = InitEnsureAuditdServiceIsRunning(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureKernelSupportForCpuNxObject)) { status = InitEnsureKernelSupportForCpuNx(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAllTelnetdPackagesUninstalledObject)) { status = InitEnsureAllTelnetdPackagesUninstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNodevOptionOnHomePartitionObject)) { status = InitEnsureNodevOptionOnHomePartition(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNodevOptionOnTmpPartitionObject)) { status = InitEnsureNodevOptionOnTmpPartition(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNodevOptionOnVarTmpPartitionObject)) { status = InitEnsureNodevOptionOnVarTmpPartition(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNosuidOptionOnTmpPartitionObject)) { status = InitEnsureNosuidOptionOnTmpPartition(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNosuidOptionOnVarTmpPartitionObject)) { status = InitEnsureNosuidOptionOnVarTmpPartition(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoexecOptionOnVarTmpPartitionObject)) { status = InitEnsureNoexecOptionOnVarTmpPartition(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoexecOptionOnDevShmPartitionObject)) { status = InitEnsureNoexecOptionOnDevShmPartition(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNodevOptionEnabledForAllRemovableMediaObject)) { status = InitEnsureNodevOptionEnabledForAllRemovableMedia(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoexecOptionEnabledForAllRemovableMediaObject)) { status = InitEnsureNoexecOptionEnabledForAllRemovableMedia(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNosuidOptionEnabledForAllRemovableMediaObject)) { status = InitEnsureNosuidOptionEnabledForAllRemovableMedia(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject)) { status = InitEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAllEtcPasswdGroupsExistInEtcGroupObject)) { status = InitEnsureAllEtcPasswdGroupsExistInEtcGroup(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoDuplicateUidsExistObject)) { status = InitEnsureNoDuplicateUidsExist(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoDuplicateGidsExistObject)) { status = InitEnsureNoDuplicateGidsExist(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoDuplicateUserNamesExistObject)) { status = InitEnsureNoDuplicateUserNamesExist(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoDuplicateGroupsExistObject)) { status = InitEnsureNoDuplicateGroupsExist(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureShadowGroupIsEmptyObject)) { status = InitEnsureShadowGroupIsEmpty(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRootGroupExistsObject)) { status = InitEnsureRootGroupExists(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAllAccountsHavePasswordsObject)) { status = InitEnsureAllAccountsHavePasswords(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject)) { status = InitEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoLegacyPlusEntriesInEtcPasswdObject)) { status = InitEnsureNoLegacyPlusEntriesInEtcPasswd(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoLegacyPlusEntriesInEtcShadowObject)) { status = InitEnsureNoLegacyPlusEntriesInEtcShadow(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoLegacyPlusEntriesInEtcGroupObject)) { status = InitEnsureNoLegacyPlusEntriesInEtcGroup(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureDefaultRootAccountGroupIsGidZeroObject)) { status = InitEnsureDefaultRootAccountGroupIsGidZero(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRootIsOnlyUidZeroAccountObject)) { status = InitEnsureRootIsOnlyUidZeroAccount(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAllUsersHomeDirectoriesExistObject)) { status = InitEnsureAllUsersHomeDirectoriesExist(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureUsersOwnTheirHomeDirectoriesObject)) { status = InitEnsureUsersOwnTheirHomeDirectories(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRestrictedUserHomeDirectoriesObject)) { status = InitEnsureRestrictedUserHomeDirectories(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePasswordHashingAlgorithmObject)) { status = InitEnsurePasswordHashingAlgorithm(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureMinDaysBetweenPasswordChangesObject)) { status = InitEnsureMinDaysBetweenPasswordChanges(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureInactivePasswordLockPeriodObject)) { status = InitEnsureInactivePasswordLockPeriod(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initMaxDaysBetweenPasswordChangesObject)) { status = InitMaxDaysBetweenPasswordChanges(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePasswordExpirationObject)) { status = InitEnsurePasswordExpiration(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePasswordExpirationWarningObject)) { status = InitEnsurePasswordExpirationWarning(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureSystemAccountsAreNonLoginObject)) { status = InitEnsureSystemAccountsAreNonLogin(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAuthenticationRequiredForSingleUserModeObject)) { status = InitEnsureAuthenticationRequiredForSingleUserMode(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureDotDoesNotAppearInRootsPathObject)) { status = InitEnsureDotDoesNotAppearInRootsPath(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRemoteLoginWarningBannerIsConfiguredObject)) { status = InitEnsureRemoteLoginWarningBannerIsConfigured(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureLocalLoginWarningBannerIsConfiguredObject)) { status = InitEnsureLocalLoginWarningBannerIsConfigured(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureSuRestrictedToRootGroupObject)) { status = InitEnsureSuRestrictedToRootGroup(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureDefaultUmaskForAllUsersObject)) { status = InitEnsureDefaultUmaskForAllUsers(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAutomountingDisabledObject)) { status = InitEnsureAutomountingDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureKernelCompiledFromApprovedSourcesObject)) { status = InitEnsureKernelCompiledFromApprovedSources(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureDefaultDenyFirewallPolicyIsSetObject)) { status = InitEnsureDefaultDenyFirewallPolicyIsSet(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePacketRedirectSendingIsDisabledObject)) { status = InitEnsurePacketRedirectSendingIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureIcmpRedirectsIsDisabledObject)) { status = InitEnsureIcmpRedirectsIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureSourceRoutedPacketsIsDisabledObject)) { status = InitEnsureSourceRoutedPacketsIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAcceptingSourceRoutedPacketsIsDisabledObject)) { status = InitEnsureAcceptingSourceRoutedPacketsIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureIgnoringBogusIcmpBroadcastResponsesObject)) { status = InitEnsureIgnoringBogusIcmpBroadcastResponses(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureIgnoringIcmpEchoPingsToMulticastObject)) { status = InitEnsureIgnoringIcmpEchoPingsToMulticast(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureMartianPacketLoggingIsEnabledObject)) { status = InitEnsureMartianPacketLoggingIsEnabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureReversePathSourceValidationIsEnabledObject)) { status = InitEnsureReversePathSourceValidationIsEnabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureTcpSynCookiesAreEnabledObject)) { status = InitEnsureTcpSynCookiesAreEnabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureSystemNotActingAsNetworkSnifferObject)) { status = InitEnsureSystemNotActingAsNetworkSniffer(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAllWirelessInterfacesAreDisabledObject)) { status = InitEnsureAllWirelessInterfacesAreDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureIpv6ProtocolIsEnabledObject)) { status = InitEnsureIpv6ProtocolIsEnabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureDccpIsDisabledObject)) { status = InitEnsureDccpIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureSctpIsDisabledObject)) { status = InitEnsureSctpIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureDisabledSupportForRdsObject)) { status = InitEnsureDisabledSupportForRds(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureTipcIsDisabledObject)) { status = InitEnsureTipcIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureZeroconfNetworkingIsDisabledObject)) { status = InitEnsureZeroconfNetworkingIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnBootloaderConfigObject)) { status = InitEnsurePermissionsOnBootloaderConfig(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePasswordReuseIsLimitedObject)) { status = InitEnsurePasswordReuseIsLimited(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureMountingOfUsbStorageDevicesIsDisabledObject)) { status = InitEnsureMountingOfUsbStorageDevicesIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureCoreDumpsAreRestrictedObject)) { status = InitEnsureCoreDumpsAreRestricted(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePasswordCreationRequirementsObject)) { status = InitEnsurePasswordCreationRequirements(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureLockoutForFailedPasswordAttemptsObject)) { status = InitEnsureLockoutForFailedPasswordAttempts(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfCramfsFileSystemObject)) { status = InitEnsureDisabledInstallationOfCramfsFileSystem(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfFreevxfsFileSystemObject)) { status = InitEnsureDisabledInstallationOfFreevxfsFileSystem(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfHfsFileSystemObject)) { status = InitEnsureDisabledInstallationOfHfsFileSystem(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfHfsplusFileSystemObject)) { status = InitEnsureDisabledInstallationOfHfsplusFileSystem(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfJffs2FileSystemObject)) { status = InitEnsureDisabledInstallationOfJffs2FileSystem(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureVirtualMemoryRandomizationIsEnabledObject)) { status = InitEnsureVirtualMemoryRandomizationIsEnabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAllBootloadersHavePasswordProtectionEnabledObject)) { status = InitEnsureAllBootloadersHavePasswordProtectionEnabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureLoggingIsConfiguredObject)) { status = InitEnsureLoggingIsConfigured(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureSyslogPackageIsInstalledObject)) { status = InitEnsureSyslogPackageIsInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureSystemdJournaldServicePersistsLogMessagesObject)) { status = InitEnsureSystemdJournaldServicePersistsLogMessages(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureALoggingServiceIsEnabledObject)) { status = InitEnsureALoggingServiceIsEnabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureFilePermissionsForAllRsyslogLogFilesObject)) { status = InitEnsureFilePermissionsForAllRsyslogLogFiles(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureLoggerConfigurationFilesAreRestrictedObject)) { status = InitEnsureLoggerConfigurationFilesAreRestricted(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject)) { status = InitEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject)) { status = InitEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRsyslogNotAcceptingRemoteMessagesObject)) { status = InitEnsureRsyslogNotAcceptingRemoteMessages(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureSyslogRotaterServiceIsEnabledObject)) { status = InitEnsureSyslogRotaterServiceIsEnabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureTelnetServiceIsDisabledObject)) { status = InitEnsureTelnetServiceIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRcprshServiceIsDisabledObject)) { status = InitEnsureRcprshServiceIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureTftpServiceisDisabledObject)) { status = InitEnsureTftpServiceisDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAtCronIsRestrictedToAuthorizedUsersObject)) { status = InitEnsureAtCronIsRestrictedToAuthorizedUsers(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureAvahiDaemonServiceIsDisabledObject)) { status = InitEnsureAvahiDaemonServiceIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureCupsServiceisDisabledObject)) { status = InitEnsureCupsServiceisDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePostfixPackageIsUninstalledObject)) { status = InitEnsurePostfixPackageIsUninstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePostfixNetworkListeningIsDisabledObject)) { status = InitEnsurePostfixNetworkListeningIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRpcgssdServiceIsDisabledObject)) { status = InitEnsureRpcgssdServiceIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRpcidmapdServiceIsDisabledObject)) { status = InitEnsureRpcidmapdServiceIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsurePortmapServiceIsDisabledObject)) { status = InitEnsurePortmapServiceIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNetworkFileSystemServiceIsDisabledObject)) { status = InitEnsureNetworkFileSystemServiceIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRpcsvcgssdServiceIsDisabledObject)) { status = InitEnsureRpcsvcgssdServiceIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureSnmpServerIsDisabledObject)) { status = InitEnsureSnmpServerIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRsynServiceIsDisabledObject)) { status = InitEnsureRsynServiceIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNisServerIsDisabledObject)) { status = InitEnsureNisServerIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRshClientNotInstalledObject)) { status = InitEnsureRshClientNotInstalled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureSmbWithSambaIsDisabledObject)) { status = InitEnsureSmbWithSambaIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureUsersDotFilesArentGroupOrWorldWritableObject)) { status = InitEnsureUsersDotFilesArentGroupOrWorldWritable(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoUsersHaveDotForwardFilesObject)) { status = InitEnsureNoUsersHaveDotForwardFiles(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoUsersHaveDotNetrcFilesObject)) { status = InitEnsureNoUsersHaveDotNetrcFiles(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureNoUsersHaveDotRhostsFilesObject)) { status = InitEnsureNoUsersHaveDotRhostsFiles(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureRloginServiceIsDisabledObject)) { status = InitEnsureRloginServiceIsDisabled(jsonString, log); }
-        else if (0 == strcmp(objectName, g_initEnsureUnnecessaryAccountsAreRemovedObject)) { status = InitEnsureUnnecessaryAccountsAreRemoved(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcIssueObject)) { status = InitEnsurePermissionsOnEtcIssue(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcIssueNetObject)) { status = InitEnsurePermissionsOnEtcIssueNet(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcHostsAllowObject)) { status = InitEnsurePermissionsOnEtcHostsAllow(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcHostsDenyObject)) { status = InitEnsurePermissionsOnEtcHostsDeny(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcShadowObject)) { status = InitEnsurePermissionsOnEtcShadow(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcShadowDashObject)) { status = InitEnsurePermissionsOnEtcShadowDash(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcGShadowObject)) { status = InitEnsurePermissionsOnEtcGShadow(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcGShadowDashObject)) { status = InitEnsurePermissionsOnEtcGShadowDash(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcPasswdObject)) { status = InitEnsurePermissionsOnEtcPasswd(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcPasswdDashObject)) { status = InitEnsurePermissionsOnEtcPasswdDash(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcGroupObject)) { status = InitEnsurePermissionsOnEtcGroup(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcGroupDashObject)) { status = InitEnsurePermissionsOnEtcGroupDash(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcAnacronTabObject)) { status = InitEnsurePermissionsOnEtcAnacronTab(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronDObject)) { status = InitEnsurePermissionsOnEtcCronD(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronDailyObject)) { status = InitEnsurePermissionsOnEtcCronDaily(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronHourlyObject)) { status = InitEnsurePermissionsOnEtcCronHourly(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronMonthlyObject)) { status = InitEnsurePermissionsOnEtcCronMonthly(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronWeeklyObject)) { status = InitEnsurePermissionsOnEtcCronWeekly(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcMotdObject)) { status = InitEnsurePermissionsOnEtcMotd(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureInetdNotInstalledObject)) { status = InitEnsureInetdNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureXinetdNotInstalledObject)) { status = InitEnsureXinetdNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRshServerNotInstalledObject)) { status = InitEnsureRshServerNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNisNotInstalledObject)) { status = InitEnsureNisNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureTftpdNotInstalledObject)) { status = InitEnsureTftpdNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureReadaheadFedoraNotInstalledObject)) { status = InitEnsureReadaheadFedoraNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureBluetoothHiddNotInstalledObject)) { status = InitEnsureBluetoothHiddNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureIsdnUtilsBaseNotInstalledObject)) { status = InitEnsureIsdnUtilsBaseNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureIsdnUtilsKdumpToolsNotInstalledObject)) { status = InitEnsureIsdnUtilsKdumpToolsNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureIscDhcpdServerNotInstalledObject)) { status = InitEnsureIscDhcpdServerNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureSendmailNotInstalledObject)) { status = InitEnsureSendmailNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureSldapdNotInstalledObject)) { status = InitEnsureSldapdNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureBind9NotInstalledObject)) { status = InitEnsureBind9NotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureDovecotCoreNotInstalledObject)) { status = InitEnsureDovecotCoreNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAuditdInstalledObject)) { status = InitEnsureAuditdInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePrelinkIsDisabledObject)) { status = InitEnsurePrelinkIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureTalkClientIsNotInstalledObject)) { status = InitEnsureTalkClientIsNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureCronServiceIsEnabledObject)) { status = InitEnsureCronServiceIsEnabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAuditdServiceIsRunningObject)) { status = InitEnsureAuditdServiceIsRunning(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureKernelSupportForCpuNxObject)) { status = InitEnsureKernelSupportForCpuNx(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAllTelnetdPackagesUninstalledObject)) { status = InitEnsureAllTelnetdPackagesUninstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNodevOptionOnHomePartitionObject)) { status = InitEnsureNodevOptionOnHomePartition(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNodevOptionOnTmpPartitionObject)) { status = InitEnsureNodevOptionOnTmpPartition(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNodevOptionOnVarTmpPartitionObject)) { status = InitEnsureNodevOptionOnVarTmpPartition(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNosuidOptionOnTmpPartitionObject)) { status = InitEnsureNosuidOptionOnTmpPartition(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNosuidOptionOnVarTmpPartitionObject)) { status = InitEnsureNosuidOptionOnVarTmpPartition(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoexecOptionOnVarTmpPartitionObject)) { status = InitEnsureNoexecOptionOnVarTmpPartition(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoexecOptionOnDevShmPartitionObject)) { status = InitEnsureNoexecOptionOnDevShmPartition(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNodevOptionEnabledForAllRemovableMediaObject)) { status = InitEnsureNodevOptionEnabledForAllRemovableMedia(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoexecOptionEnabledForAllRemovableMediaObject)) { status = InitEnsureNoexecOptionEnabledForAllRemovableMedia(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNosuidOptionEnabledForAllRemovableMediaObject)) { status = InitEnsureNosuidOptionEnabledForAllRemovableMedia(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject)) { status = InitEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAllEtcPasswdGroupsExistInEtcGroupObject)) { status = InitEnsureAllEtcPasswdGroupsExistInEtcGroup(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoDuplicateUidsExistObject)) { status = InitEnsureNoDuplicateUidsExist(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoDuplicateGidsExistObject)) { status = InitEnsureNoDuplicateGidsExist(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoDuplicateUserNamesExistObject)) { status = InitEnsureNoDuplicateUserNamesExist(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoDuplicateGroupsExistObject)) { status = InitEnsureNoDuplicateGroupsExist(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureShadowGroupIsEmptyObject)) { status = InitEnsureShadowGroupIsEmpty(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRootGroupExistsObject)) { status = InitEnsureRootGroupExists(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAllAccountsHavePasswordsObject)) { status = InitEnsureAllAccountsHavePasswords(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject)) { status = InitEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoLegacyPlusEntriesInEtcPasswdObject)) { status = InitEnsureNoLegacyPlusEntriesInEtcPasswd(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoLegacyPlusEntriesInEtcShadowObject)) { status = InitEnsureNoLegacyPlusEntriesInEtcShadow(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoLegacyPlusEntriesInEtcGroupObject)) { status = InitEnsureNoLegacyPlusEntriesInEtcGroup(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureDefaultRootAccountGroupIsGidZeroObject)) { status = InitEnsureDefaultRootAccountGroupIsGidZero(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRootIsOnlyUidZeroAccountObject)) { status = InitEnsureRootIsOnlyUidZeroAccount(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAllUsersHomeDirectoriesExistObject)) { status = InitEnsureAllUsersHomeDirectoriesExist(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureUsersOwnTheirHomeDirectoriesObject)) { status = InitEnsureUsersOwnTheirHomeDirectories(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRestrictedUserHomeDirectoriesObject)) { status = InitEnsureRestrictedUserHomeDirectories(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePasswordHashingAlgorithmObject)) { status = InitEnsurePasswordHashingAlgorithm(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureMinDaysBetweenPasswordChangesObject)) { status = InitEnsureMinDaysBetweenPasswordChanges(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureInactivePasswordLockPeriodObject)) { status = InitEnsureInactivePasswordLockPeriod(jsonString); }
+        else if (0 == strcmp(objectName, g_initMaxDaysBetweenPasswordChangesObject)) { status = InitMaxDaysBetweenPasswordChanges(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePasswordExpirationObject)) { status = InitEnsurePasswordExpiration(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePasswordExpirationWarningObject)) { status = InitEnsurePasswordExpirationWarning(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureSystemAccountsAreNonLoginObject)) { status = InitEnsureSystemAccountsAreNonLogin(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAuthenticationRequiredForSingleUserModeObject)) { status = InitEnsureAuthenticationRequiredForSingleUserMode(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureDotDoesNotAppearInRootsPathObject)) { status = InitEnsureDotDoesNotAppearInRootsPath(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRemoteLoginWarningBannerIsConfiguredObject)) { status = InitEnsureRemoteLoginWarningBannerIsConfigured(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureLocalLoginWarningBannerIsConfiguredObject)) { status = InitEnsureLocalLoginWarningBannerIsConfigured(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureSuRestrictedToRootGroupObject)) { status = InitEnsureSuRestrictedToRootGroup(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureDefaultUmaskForAllUsersObject)) { status = InitEnsureDefaultUmaskForAllUsers(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAutomountingDisabledObject)) { status = InitEnsureAutomountingDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureKernelCompiledFromApprovedSourcesObject)) { status = InitEnsureKernelCompiledFromApprovedSources(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureDefaultDenyFirewallPolicyIsSetObject)) { status = InitEnsureDefaultDenyFirewallPolicyIsSet(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePacketRedirectSendingIsDisabledObject)) { status = InitEnsurePacketRedirectSendingIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureIcmpRedirectsIsDisabledObject)) { status = InitEnsureIcmpRedirectsIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureSourceRoutedPacketsIsDisabledObject)) { status = InitEnsureSourceRoutedPacketsIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAcceptingSourceRoutedPacketsIsDisabledObject)) { status = InitEnsureAcceptingSourceRoutedPacketsIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureIgnoringBogusIcmpBroadcastResponsesObject)) { status = InitEnsureIgnoringBogusIcmpBroadcastResponses(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureIgnoringIcmpEchoPingsToMulticastObject)) { status = InitEnsureIgnoringIcmpEchoPingsToMulticast(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureMartianPacketLoggingIsEnabledObject)) { status = InitEnsureMartianPacketLoggingIsEnabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureReversePathSourceValidationIsEnabledObject)) { status = InitEnsureReversePathSourceValidationIsEnabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureTcpSynCookiesAreEnabledObject)) { status = InitEnsureTcpSynCookiesAreEnabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureSystemNotActingAsNetworkSnifferObject)) { status = InitEnsureSystemNotActingAsNetworkSniffer(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAllWirelessInterfacesAreDisabledObject)) { status = InitEnsureAllWirelessInterfacesAreDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureIpv6ProtocolIsEnabledObject)) { status = InitEnsureIpv6ProtocolIsEnabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureDccpIsDisabledObject)) { status = InitEnsureDccpIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureSctpIsDisabledObject)) { status = InitEnsureSctpIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureDisabledSupportForRdsObject)) { status = InitEnsureDisabledSupportForRds(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureTipcIsDisabledObject)) { status = InitEnsureTipcIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureZeroconfNetworkingIsDisabledObject)) { status = InitEnsureZeroconfNetworkingIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnBootloaderConfigObject)) { status = InitEnsurePermissionsOnBootloaderConfig(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePasswordReuseIsLimitedObject)) { status = InitEnsurePasswordReuseIsLimited(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureMountingOfUsbStorageDevicesIsDisabledObject)) { status = InitEnsureMountingOfUsbStorageDevicesIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureCoreDumpsAreRestrictedObject)) { status = InitEnsureCoreDumpsAreRestricted(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePasswordCreationRequirementsObject)) { status = InitEnsurePasswordCreationRequirements(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureLockoutForFailedPasswordAttemptsObject)) { status = InitEnsureLockoutForFailedPasswordAttempts(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfCramfsFileSystemObject)) { status = InitEnsureDisabledInstallationOfCramfsFileSystem(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfFreevxfsFileSystemObject)) { status = InitEnsureDisabledInstallationOfFreevxfsFileSystem(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfHfsFileSystemObject)) { status = InitEnsureDisabledInstallationOfHfsFileSystem(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfHfsplusFileSystemObject)) { status = InitEnsureDisabledInstallationOfHfsplusFileSystem(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfJffs2FileSystemObject)) { status = InitEnsureDisabledInstallationOfJffs2FileSystem(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureVirtualMemoryRandomizationIsEnabledObject)) { status = InitEnsureVirtualMemoryRandomizationIsEnabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAllBootloadersHavePasswordProtectionEnabledObject)) { status = InitEnsureAllBootloadersHavePasswordProtectionEnabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureLoggingIsConfiguredObject)) { status = InitEnsureLoggingIsConfigured(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureSyslogPackageIsInstalledObject)) { status = InitEnsureSyslogPackageIsInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureSystemdJournaldServicePersistsLogMessagesObject)) { status = InitEnsureSystemdJournaldServicePersistsLogMessages(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureALoggingServiceIsEnabledObject)) { status = InitEnsureALoggingServiceIsEnabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureFilePermissionsForAllRsyslogLogFilesObject)) { status = InitEnsureFilePermissionsForAllRsyslogLogFiles(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureLoggerConfigurationFilesAreRestrictedObject)) { status = InitEnsureLoggerConfigurationFilesAreRestricted(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject)) { status = InitEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject)) { status = InitEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRsyslogNotAcceptingRemoteMessagesObject)) { status = InitEnsureRsyslogNotAcceptingRemoteMessages(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureSyslogRotaterServiceIsEnabledObject)) { status = InitEnsureSyslogRotaterServiceIsEnabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureTelnetServiceIsDisabledObject)) { status = InitEnsureTelnetServiceIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRcprshServiceIsDisabledObject)) { status = InitEnsureRcprshServiceIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureTftpServiceisDisabledObject)) { status = InitEnsureTftpServiceisDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAtCronIsRestrictedToAuthorizedUsersObject)) { status = InitEnsureAtCronIsRestrictedToAuthorizedUsers(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureAvahiDaemonServiceIsDisabledObject)) { status = InitEnsureAvahiDaemonServiceIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureCupsServiceisDisabledObject)) { status = InitEnsureCupsServiceisDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePostfixPackageIsUninstalledObject)) { status = InitEnsurePostfixPackageIsUninstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePostfixNetworkListeningIsDisabledObject)) { status = InitEnsurePostfixNetworkListeningIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRpcgssdServiceIsDisabledObject)) { status = InitEnsureRpcgssdServiceIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRpcidmapdServiceIsDisabledObject)) { status = InitEnsureRpcidmapdServiceIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsurePortmapServiceIsDisabledObject)) { status = InitEnsurePortmapServiceIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNetworkFileSystemServiceIsDisabledObject)) { status = InitEnsureNetworkFileSystemServiceIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRpcsvcgssdServiceIsDisabledObject)) { status = InitEnsureRpcsvcgssdServiceIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureSnmpServerIsDisabledObject)) { status = InitEnsureSnmpServerIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRsynServiceIsDisabledObject)) { status = InitEnsureRsynServiceIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNisServerIsDisabledObject)) { status = InitEnsureNisServerIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRshClientNotInstalledObject)) { status = InitEnsureRshClientNotInstalled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureSmbWithSambaIsDisabledObject)) { status = InitEnsureSmbWithSambaIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureUsersDotFilesArentGroupOrWorldWritableObject)) { status = InitEnsureUsersDotFilesArentGroupOrWorldWritable(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoUsersHaveDotForwardFilesObject)) { status = InitEnsureNoUsersHaveDotForwardFiles(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoUsersHaveDotNetrcFilesObject)) { status = InitEnsureNoUsersHaveDotNetrcFiles(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureNoUsersHaveDotRhostsFilesObject)) { status = InitEnsureNoUsersHaveDotRhostsFiles(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureRloginServiceIsDisabledObject)) { status = InitEnsureRloginServiceIsDisabled(jsonString); }
+        else if (0 == strcmp(objectName, g_initEnsureUnnecessaryAccountsAreRemovedObject)) { status = InitEnsureUnnecessaryAccountsAreRemoved(jsonString); }
         else
         {
             OsConfigLogError(log, "AsbMmiSet called for an unsupported object name: %s", objectName);
