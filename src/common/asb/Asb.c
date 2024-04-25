@@ -618,6 +618,8 @@ static long g_maxInactiveDays = 30;
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
 
+#pragma GCC diagnostic ignored "-Wtautological-compare"
+
 void AsbInitialize(void* log)
 {
     InitializeSshAudit(log);
