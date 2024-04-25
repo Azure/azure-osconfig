@@ -128,13 +128,15 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    if (!IsValidSession(clientSession))
+    if (IsValidSession(clientSession))
+    {
+        status = AsbMmiGet(componentName, objectName, payload, payloadSizeBytes, g_maxPayloadSizeBytes, SecurityBaselineGetLog());
+    }
+    else
     {
         OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-    
-    status = AsbMmiGet(componentName, objectName, payload, payloadSizeBytes, g_maxPayloadSizeBytes, SecurityBaselineGetLog());
     
     OsConfigLogInfo(SecurityBaselineGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
@@ -145,13 +147,15 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
 {
     int status = MMI_OK;
 
-    if (!IsValidSession(clientSession))
+    if (IsValidSession(clientSession))
+    {
+        status = AsbMmiSet(componentName, objectName, payload, payloadSizeBytes, SecurityBaselineGetLog());
+    }
+    else
     {
         OsConfigLogError(SecurityBaselineGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
-        return EINVAL;
+        status = EINVAL;
     }
-    
-    status = AsbMmiSet(componentName, objectName, payload, payloadSizeBytes, SecurityBaselineGetLog());
     
     OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
 
