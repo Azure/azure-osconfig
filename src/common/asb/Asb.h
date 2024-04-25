@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef ASB_UTILS_H
-#define ASB_UTILS_H
+#ifndef ASB_H
+#define ASB_H
 
 #ifdef __cplusplus
 extern "C"
@@ -19,4 +19,4 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
 }
 #endif
 
-#endif // ASB_UTILS_H
+#endif // ASB_H

@@ -1,10 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <Internal.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdarg.h>
+#include <version.h>
+#include <ctype.h>
+#include <parson.h>
+#include <CommonUtils.h>
 #include <UserUtils.h>
 #include <SshUtils.h>
-#include <AsbUtils.h>
+#include <Logging.h>
+#include <Asb.h>
 
 static const char* g_asbName = "Azure Security Baseline for Linux";
 

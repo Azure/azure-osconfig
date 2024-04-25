@@ -8,6 +8,7 @@ target_link_libraries(securitybaseline
     PRIVATE
         commonutils
         logging
+        asb
     PUBLIC
         securitybaselinelib
 )
