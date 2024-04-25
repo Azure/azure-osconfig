@@ -4,6 +4,7 @@
 project(commonutils)
 
 add_library(commonutils STATIC 
+    AsbUtils.c
     CommandUtils.c
     ConfigUtils.c
     DaemonUtils.c
