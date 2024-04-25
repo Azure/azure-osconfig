@@ -379,7 +379,6 @@ static const char* g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "initEns
 static const char* g_initEnsureSshWarningBannerIsEnabledObject = "initEnsureSshWarningBannerIsEnabled";
 static const char* g_initEnsureUsersCannotSetSshEnvironmentOptionsObject = "initEnsureUsersCannotSetSshEnvironmentOptions";
 static const char* g_initEnsureAppropriateCiphersForSshObject = "initEnsureAppropriateCiphersForSsh";
-/****************************************************************************************************
 static const char* g_initEnsurePermissionsOnEtcIssueObject = "initEnsurePermissionsOnEtcIssue";
 static const char* g_initEnsurePermissionsOnEtcIssueNetObject = "initEnsurePermissionsOnEtcIssueNet";
 static const char* g_initEnsurePermissionsOnEtcHostsAllowObject = "initEnsurePermissionsOnEtcHostsAllow";
@@ -528,7 +527,156 @@ static const char* g_initEnsureNoUsersHaveDotNetrcFilesObject = "initEnsureNoUse
 static const char* g_initEnsureNoUsersHaveDotRhostsFilesObject = "initEnsureNoUsersHaveDotRhostsFiles";
 static const char* g_initEnsureRloginServiceIsDisabledObject = "initEnsureRloginServiceIsDisabled";
 static const char* g_initEnsureUnnecessaryAccountsAreRemovedObject = "initEnsureUnnecessaryAccountsAreRemoved";
-****************************************************************************************************************/
+
+// Default values (TBD to fill in appropriate values for each)
+static const char* g_defaultEnsurePermissionsOnEtcIssue = "default value for EnsurePermissionsOnEtcIssue";
+static const char* g_defaultEnsurePermissionsOnEtcIssueNet = "default value for EnsurePermissionsOnEtcIssueNet";
+static const char* g_defaultEnsurePermissionsOnEtcHostsAllow = "default value for EnsurePermissionsOnEtcHostsAllow";
+static const char* g_defaultEnsurePermissionsOnEtcHostsDeny = "default value for EnsurePermissionsOnEtcHostsDeny";
+static const char* g_defaultEnsurePermissionsOnEtcShadow = "default value for EnsurePermissionsOnEtcShadow";
+static const char* g_defaultEnsurePermissionsOnEtcShadowDash = "default value for EnsurePermissionsOnEtcShadowDash";
+static const char* g_defaultEnsurePermissionsOnEtcGShadow = "default value for EnsurePermissionsOnEtcGShadow";
+static const char* g_defaultEnsurePermissionsOnEtcGShadowDash = "default value for EnsurePermissionsOnEtcGShadowDash";
+static const char* g_defaultEnsurePermissionsOnEtcPasswd = "default value for EnsurePermissionsOnEtcPasswd";
+static const char* g_defaultEnsurePermissionsOnEtcPasswdDash = "default value for EnsurePermissionsOnEtcPasswdDash";
+static const char* g_defaultEnsurePermissionsOnEtcGroup = "default value for EnsurePermissionsOnEtcGroup";
+static const char* g_defaultEnsurePermissionsOnEtcGroupDash = "default value for EnsurePermissionsOnEtcGroupDash";
+static const char* g_defaultEnsurePermissionsOnEtcAnacronTab = "default value for EnsurePermissionsOnEtcAnacronTab";
+static const char* g_defaultEnsurePermissionsOnEtcCronD = "default value for EnsurePermissionsOnEtcCronD";
+static const char* g_defaultEnsurePermissionsOnEtcCronDaily = "default value for EnsurePermissionsOnEtcCronDaily";
+static const char* g_defaultEnsurePermissionsOnEtcCronHourly = "default value for EnsurePermissionsOnEtcCronHourly";
+static const char* g_defaultEnsurePermissionsOnEtcCronMonthly = "default value for EnsurePermissionsOnEtcCronMonthly";
+static const char* g_defaultEnsurePermissionsOnEtcCronWeekly = "default value for EnsurePermissionsOnEtcCronWeekly";
+static const char* g_defaultEnsurePermissionsOnEtcMotd = "default value for EnsurePermissionsOnEtcMotd";
+static const char* g_defaultEnsureInetdNotInstalled = "default value for EnsureInetdNotInstalled";
+static const char* g_defaultEnsureXinetdNotInstalled = "default value for EnsureXinetdNotInstalled";
+static const char* g_defaultEnsureRshServerNotInstalled = "default value for EnsureRshServerNotInstalled";
+static const char* g_defaultEnsureNisNotInstalled = "default value for EnsureNisNotInstalled";
+static const char* g_defaultEnsureTftpdNotInstalled = "default value for EnsureTftpdNotInstalled";
+static const char* g_defaultEnsureReadaheadFedoraNotInstalled = "default value for EnsureReadaheadFedoraNotInstalled";
+static const char* g_defaultEnsureBluetoothHiddNotInstalled = "default value for EnsureBluetoothHiddNotInstalled";
+static const char* g_defaultEnsureIsdnUtilsBaseNotInstalled = "default value for EnsureIsdnUtilsBaseNotInstalled";
+static const char* g_defaultEnsureIsdnUtilsKdumpToolsNotInstalled = "default value for EnsureIsdnUtilsKdumpToolsNotInstalled";
+static const char* g_defaultEnsureIscDhcpdServerNotInstalled = "default value for EnsureIscDhcpdServerNotInstalled";
+static const char* g_defaultEnsureSendmailNotInstalled = "default value for EnsureSendmailNotInstalled";
+static const char* g_defaultEnsureSldapdNotInstalled = "default value for EnsureSldapdNotInstalled";
+static const char* g_defaultEnsureBind9NotInstalled = "default value for EnsureBind9NotInstalled";
+static const char* g_defaultEnsureDovecotCoreNotInstalled = "default value for EnsureDovecotCoreNotInstalled";
+static const char* g_defaultEnsureAuditdInstalled = "default value for EnsureAuditdInstalled";
+static const char* g_defaultEnsurePrelinkIsDisabled = "default value for EnsurePrelinkIsDisabled";
+static const char* g_defaultEnsureTalkClientIsNotInstalled = "default value for EnsureTalkClientIsNotInstalled";
+static const char* g_defaultEnsureCronServiceIsEnabled = "default value for EnsureCronServiceIsEnabled";
+static const char* g_defaultEnsureAuditdServiceIsRunning = "default value for EnsureAuditdServiceIsRunning";
+static const char* g_defaultEnsureKernelSupportForCpuNx = "default value for EnsureKernelSupportForCpuNx";
+static const char* g_defaultEnsureAllTelnetdPackagesUninstalled = "default value for EnsureAllTelnetdPackagesUninstalled";
+static const char* g_defaultEnsureNodevOptionOnHomePartition = "default value for EnsureNodevOptionOnHomePartition";
+static const char* g_defaultEnsureNodevOptionOnTmpPartition = "default value for EnsureNodevOptionOnTmpPartition";
+static const char* g_defaultEnsureNodevOptionOnVarTmpPartition = "default value for EnsureNodevOptionOnVarTmpPartition";
+static const char* g_defaultEnsureNosuidOptionOnTmpPartition = "default value for EnsureNosuidOptionOnTmpPartition";
+static const char* g_defaultEnsureNosuidOptionOnVarTmpPartition = "default value for EnsureNosuidOptionOnVarTmpPartition";
+static const char* g_defaultEnsureNoexecOptionOnVarTmpPartition = "default value for EnsureNoexecOptionOnVarTmpPartition";
+static const char* g_defaultEnsureNoexecOptionOnDevShmPartition = "default value for EnsureNoexecOptionOnDevShmPartition";
+static const char* g_defaultEnsureNodevOptionEnabledForAllRemovableMedia = "default value for EnsureNodevOptionEnabledForAllRemovableMedia";
+static const char* g_defaultEnsureNoexecOptionEnabledForAllRemovableMedia = "default value for EnsureNoexecOptionEnabledForAllRemovableMedia";
+static const char* g_defaultEnsureNosuidOptionEnabledForAllRemovableMedia = "default value for EnsureNosuidOptionEnabledForAllRemovableMedia";
+static const char* g_defaultEnsureNoexecNosuidOptionsEnabledForAllNfsMounts = "default value for EnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+static const char* g_defaultEnsureAllEtcPasswdGroupsExistInEtcGroup = "default value for EnsureAllEtcPasswdGroupsExistInEtcGroup";
+static const char* g_defaultEnsureNoDuplicateUidsExist = "default value for EnsureNoDuplicateUidsExist";
+static const char* g_defaultEnsureNoDuplicateGidsExist = "default value for EnsureNoDuplicateGidsExist";
+static const char* g_defaultEnsureNoDuplicateUserNamesExist = "default value for EnsureNoDuplicateUserNamesExist";
+static const char* g_defaultEnsureNoDuplicateGroupsExist = "default value for EnsureNoDuplicateGroupsExist";
+static const char* g_defaultEnsureShadowGroupIsEmpty = "default value for EnsureShadowGroupIsEmpty";
+static const char* g_defaultEnsureRootGroupExists = "default value for EnsureRootGroupExists";
+static const char* g_defaultEnsureAllAccountsHavePasswords = "default value for EnsureAllAccountsHavePasswords";
+static const char* g_defaultEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero = "default value for EnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
+static const char* g_defaultEnsureNoLegacyPlusEntriesInEtcPasswd = "default value for EnsureNoLegacyPlusEntriesInEtcPasswd";
+static const char* g_defaultEnsureNoLegacyPlusEntriesInEtcShadow = "default value for EnsureNoLegacyPlusEntriesInEtcShadow";
+static const char* g_defaultEnsureNoLegacyPlusEntriesInEtcGroup = "default value for EnsureNoLegacyPlusEntriesInEtcGroup";
+static const char* g_defaultEnsureDefaultRootAccountGroupIsGidZero = "default value for EnsureDefaultRootAccountGroupIsGidZero";
+static const char* g_defaultEnsureRootIsOnlyUidZeroAccount = "default value for EnsureRootIsOnlyUidZeroAccount";
+static const char* g_defaultEnsureAllUsersHomeDirectoriesExist = "default value for EnsureAllUsersHomeDirectoriesExist";
+static const char* g_defaultEnsureUsersOwnTheirHomeDirectories = "default value for EnsureUsersOwnTheirHomeDirectories";
+static const char* g_defaultEnsureRestrictedUserHomeDirectories = "default value for EnsureRestrictedUserHomeDirectories";
+static const char* g_defaultEnsurePasswordHashingAlgorithm = "default value for EnsurePasswordHashingAlgorithm";
+static const char* g_defaultEnsureMinDaysBetweenPasswordChanges = "default value for EnsureMinDaysBetweenPasswordChanges";
+static const char* g_defaultEnsureInactivePasswordLockPeriod = "default value for EnsureInactivePasswordLockPeriod";
+static const char* g_defaultMaxDaysBetweenPasswordChanges = "default value for EnsureMaxDaysBetweenPasswordChanges";
+static const char* g_defaultEnsurePasswordExpiration = "default value for EnsurePasswordExpiration";
+static const char* g_defaultEnsurePasswordExpirationWarning = "default value for EnsurePasswordExpirationWarning";
+static const char* g_defaultEnsureSystemAccountsAreNonLogin = "default value for EnsureSystemAccountsAreNonLogin";
+static const char* g_defaultEnsureAuthenticationRequiredForSingleUserMode = "default value for EnsureAuthenticationRequiredForSingleUserMode";
+static const char* g_defaultEnsureDotDoesNotAppearInRootsPath = "default value for EnsureDotDoesNotAppearInRootsPath";
+static const char* g_defaultEnsureRemoteLoginWarningBannerIsConfigured = "default value for EnsureRemoteLoginWarningBannerIsConfigured";
+static const char* g_defaultEnsureLocalLoginWarningBannerIsConfigured = "default value for EnsureLocalLoginWarningBannerIsConfigured";
+static const char* g_defaultEnsureSuRestrictedToRootGroup = "default value for EnsureSuRestrictedToRootGroup";
+static const char* g_defaultEnsureDefaultUmaskForAllUsers = "default value for EnsureDefaultUmaskForAllUsers";
+static const char* g_defaultEnsureAutomountingDisabled = "default value for EnsureAutomountingDisabled";
+static const char* g_defaultEnsureKernelCompiledFromApprovedSources = "default value for EnsureKernelCompiledFromApprovedSources";
+static const char* g_defaultEnsureDefaultDenyFirewallPolicyIsSet = "default value for EnsureDefaultDenyFirewallPolicyIsSet";
+static const char* g_defaultEnsurePacketRedirectSendingIsDisabled = "default value for EnsurePacketRedirectSendingIsDisabled";
+static const char* g_defaultEnsureIcmpRedirectsIsDisabled = "default value for EnsureIcmpRedirectsIsDisabled";
+static const char* g_defaultEnsureSourceRoutedPacketsIsDisabled = "default value for EnsureSourceRoutedPacketsIsDisabled";
+static const char* g_defaultEnsureAcceptingSourceRoutedPacketsIsDisabled = "default value for EnsureAcceptingSourceRoutedPacketsIsDisabled";
+static const char* g_defaultEnsureIgnoringBogusIcmpBroadcastResponses = "default value for EnsureIgnoringBogusIcmpBroadcastResponses";
+static const char* g_defaultEnsureIgnoringIcmpEchoPingsToMulticast = "default value for EnsureIgnoringIcmpEchoPingsToMulticast";
+static const char* g_defaultEnsureMartianPacketLoggingIsEnabled = "default value for EnsureMartianPacketLoggingIsEnabled";
+static const char* g_defaultEnsureReversePathSourceValidationIsEnabled = "default value for EnsureReversePathSourceValidationIsEnabled";
+static const char* g_defaultEnsureTcpSynCookiesAreEnabled = "default value for EnsureTcpSynCookiesAreEnabled";
+static const char* g_defaultEnsureSystemNotActingAsNetworkSniffer = "default value for EnsureSystemNotActingAsNetworkSniffer";
+static const char* g_defaultEnsureAllWirelessInterfacesAreDisabled = "default value for EnsureAllWirelessInterfacesAreDisabled";
+static const char* g_defaultEnsureIpv6ProtocolIsEnabled = "default value for EnsureIpv6ProtocolIsEnabled";
+static const char* g_defaultEnsureDccpIsDisabled = "default value for EnsureDccpIsDisabled";
+static const char* g_defaultEnsureSctpIsDisabled = "default value for EnsureSctpIsDisabled";
+static const char* g_defaultEnsureDisabledSupportForRds = "default value for EnsureDisabledSupportForRds";
+static const char* g_defaultEnsureTipcIsDisabled = "default value for EnsureTipcIsDisabled";
+static const char* g_defaultEnsureZeroconfNetworkingIsDisabled = "default value for EnsureZeroconfNetworkingIsDisabled";
+static const char* g_defaultEnsurePermissionsOnBootloaderConfig = "default value for EnsurePermissionsOnBootloaderConfig";
+static const char* g_defaultEnsurePasswordReuseIsLimited = "default value for EnsurePasswordReuseIsLimited";
+static const char* g_defaultEnsureMountingOfUsbStorageDevicesIsDisabled = "default value for EnsureMountingOfUsbStorageDevicesIsDisabled";
+static const char* g_defaultEnsureCoreDumpsAreRestricted = "default value for EnsureCoreDumpsAreRestricted";
+static const char* g_defaultEnsurePasswordCreationRequirements = "default value for EnsurePasswordCreationRequirements";
+static const char* g_defaultEnsureLockoutForFailedPasswordAttempts = "default value for EnsureLockoutForFailedPasswordAttempts";
+static const char* g_defaultEnsureDisabledInstallationOfCramfsFileSystem = "default value for EnsureDisabledInstallationOfCramfsFileSystem";
+static const char* g_defaultEnsureDisabledInstallationOfFreevxfsFileSystem = "default value for EnsureDisabledInstallationOfFreevxfsFileSystem";
+static const char* g_defaultEnsureDisabledInstallationOfHfsFileSystem = "default value for EnsureDisabledInstallationOfHfsFileSystem";
+static const char* g_defaultEnsureDisabledInstallationOfHfsplusFileSystem = "default value for EnsureDisabledInstallationOfHfsplusFileSystem";
+static const char* g_defaultEnsureDisabledInstallationOfJffs2FileSystem = "default value for EnsureDisabledInstallationOfJffs2FileSystem";
+static const char* g_defaultEnsureVirtualMemoryRandomizationIsEnabled = "default value for EnsureVirtualMemoryRandomizationIsEnabled";
+static const char* g_defaultEnsureAllBootloadersHavePasswordProtectionEnabled = "default value for EnsureAllBootloadersHavePasswordProtectionEnabled";
+static const char* g_defaultEnsureLoggingIsConfigured = "default value for EnsureLoggingIsConfigured";
+static const char* g_defaultEnsureSyslogPackageIsInstalled = "default value for EnsureSyslogPackageIsInstalled";
+static const char* g_defaultEnsureSystemdJournaldServicePersistsLogMessages = "default value for EnsureSystemdJournaldServicePersistsLogMessages";
+static const char* g_defaultEnsureALoggingServiceIsEnabled = "default value for EnsureALoggingServiceIsEnabled";
+static const char* g_defaultEnsureFilePermissionsForAllRsyslogLogFiles = "default value for EnsureFilePermissionsForAllRsyslogLogFiles";
+static const char* g_defaultEnsureLoggerConfigurationFilesAreRestricted = "default value for EnsureLoggerConfigurationFilesAreRestricted";
+static const char* g_defaultEnsureAllRsyslogLogFilesAreOwnedByAdmGroup = "default value for EnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
+static const char* g_defaultEnsureAllRsyslogLogFilesAreOwnedBySyslogUser = "default value for EnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
+static const char* g_defaultEnsureRsyslogNotAcceptingRemoteMessages = "default value for EnsureRsyslogNotAcceptingRemoteMessages";
+static const char* g_defaultEnsureSyslogRotaterServiceIsEnabled = "default value for EnsureSyslogRotaterServiceIsEnabled";
+static const char* g_defaultEnsureTelnetServiceIsDisabled = "default value for EnsureTelnetServiceIsDisabled";
+static const char* g_defaultEnsureRcprshServiceIsDisabled = "default value for EnsureRcprshServiceIsDisabled";
+static const char* g_defaultEnsureTftpServiceisDisabled = "default value for EnsureTftpServiceisDisabled";
+static const char* g_defaultEnsureAtCronIsRestrictedToAuthorizedUsers = "default value for EnsureAtCronIsRestrictedToAuthorizedUsers";
+static const char* g_defaultEnsureAvahiDaemonServiceIsDisabled = "default value for EnsureAvahiDaemonServiceIsDisabled";
+static const char* g_defaultEnsureCupsServiceisDisabled = "default value for EnsureCupsServiceisDisabled";
+static const char* g_defaultEnsurePostfixPackageIsUninstalled = "default value for EnsurePostfixPackageIsUninstalled";
+static const char* g_defaultEnsurePostfixNetworkListeningIsDisabled = "default value for EnsurePostfixNetworkListeningIsDisabled";
+static const char* g_defaultEnsureRpcgssdServiceIsDisabled = "default value for EnsureRpcgssdServiceIsDisabled";
+static const char* g_defaultEnsureRpcidmapdServiceIsDisabled = "default value for EnsureRpcidmapdServiceIsDisabled";
+static const char* g_defaultEnsurePortmapServiceIsDisabled = "default value for EnsurePortmapServiceIsDisabled";
+static const char* g_defaultEnsureNetworkFileSystemServiceIsDisabled = "default value for EnsureNetworkFileSystemServiceIsDisabled";
+static const char* g_defaultEnsureRpcsvcgssdServiceIsDisabled = "default value for EnsureRpcsvcgssdServiceIsDisabled";
+static const char* g_defaultEnsureSnmpServerIsDisabled = "default value for EnsureSnmpServerIsDisabled";
+static const char* g_defaultEnsureRsynServiceIsDisabled = "default value for EnsureRsynServiceIsDisabled";
+static const char* g_defaultEnsureNisServerIsDisabled = "default value for EnsureNisServerIsDisabled";
+static const char* g_defaultEnsureRshClientNotInstalled = "default value for EnsureRshClientNotInstalled";
+static const char* g_defaultEnsureSmbWithSambaIsDisabled = "default value for EnsureSmbWithSambaIsDisabled";
+static const char* g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable = "default value for EnsureUsersDotFilesArentGroupOrWorldWritable";
+static const char* g_defaultEnsureNoUsersHaveDotForwardFiles = "default value for EnsureNoUsersHaveDotForwardFiles";
+static const char* g_defaultEnsureNoUsersHaveDotNetrcFiles = "default value for EnsureNoUsersHaveDotNetrcFiles";
+static const char* g_defaultEnsureNoUsersHaveDotRhostsFiles = "default value for EnsureNoUsersHaveDotRhostsFiles";
+static const char* g_defaultEnsureRloginServiceIsDisabled = "default value for EnsureRloginServiceIsDisabled";
+static const char* g_defaultEnsureUnnecessaryAccountsAreRemoved = "default value for EnsureUnnecessaryAccountsAreRemoved";
 
 static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
@@ -618,15 +766,469 @@ static long g_maxInactiveDays = 30;
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
 
+static char* g_desiredEnsurePermissionsOnEtcIssue = NULL;
+static char* g_desiredEnsurePermissionsOnEtcIssueNet = NULL;
+static char* g_desiredEnsurePermissionsOnEtcHostsAllow = NULL;
+static char* g_desiredEnsurePermissionsOnEtcHostsDeny = NULL;
+static char* g_desiredEnsurePermissionsOnEtcShadow = NULL;
+static char* g_desiredEnsurePermissionsOnEtcShadowDash = NULL;
+static char* g_desiredEnsurePermissionsOnEtcGShadow = NULL;
+static char* g_desiredEnsurePermissionsOnEtcGShadowDash = NULL;
+static char* g_desiredEnsurePermissionsOnEtcPasswd = NULL;
+static char* g_desiredEnsurePermissionsOnEtcPasswdDash = NULL;
+static char* g_desiredEnsurePermissionsOnEtcGroup = NULL;
+static char* g_desiredEnsurePermissionsOnEtcGroupDash = NULL;
+static char* g_desiredEnsurePermissionsOnEtcAnacronTab = NULL;
+static char* g_desiredEnsurePermissionsOnEtcCronD = NULL;
+static char* g_desiredEnsurePermissionsOnEtcCronDaily = NULL;
+static char* g_desiredEnsurePermissionsOnEtcCronHourly = NULL;
+static char* g_desiredEnsurePermissionsOnEtcCronMonthly = NULL;
+static char* g_desiredEnsurePermissionsOnEtcCronWeekly = NULL;
+static char* g_desiredEnsurePermissionsOnEtcMotd = NULL;
+static char* g_desiredEnsureInetdNotInstalled = NULL;
+static char* g_desiredEnsureXinetdNotInstalled = NULL;
+static char* g_desiredEnsureRshServerNotInstalled = NULL;
+static char* g_desiredEnsureNisNotInstalled = NULL;
+static char* g_desiredEnsureTftpdNotInstalled = NULL;
+static char* g_desiredEnsureReadaheadFedoraNotInstalled = NULL;
+static char* g_desiredEnsureBluetoothHiddNotInstalled = NULL;
+static char* g_desiredEnsureIsdnUtilsBaseNotInstalled = NULL;
+static char* g_desiredEnsureIsdnUtilsKdumpToolsNotInstalled = NULL;
+static char* g_desiredEnsureIscDhcpdServerNotInstalled = NULL;
+static char* g_desiredEnsureSendmailNotInstalled = NULL;
+static char* g_desiredEnsureSldapdNotInstalled = NULL;
+static char* g_desiredEnsureBind9NotInstalled = NULL;
+static char* g_desiredEnsureDovecotCoreNotInstalled = NULL;
+static char* g_desiredEnsureAuditdInstalled = NULL;
+static char* g_desiredEnsurePrelinkIsDisabled = NULL;
+static char* g_desiredEnsureTalkClientIsNotInstalled = NULL;
+static char* g_desiredEnsureCronServiceIsEnabled = NULL;
+static char* g_desiredEnsureAuditdServiceIsRunning = NULL;
+static char* g_desiredEnsureKernelSupportForCpuNx = NULL;
+static char* g_desiredEnsureAllTelnetdPackagesUninstalled = NULL;
+static char* g_desiredEnsureNodevOptionOnHomePartition = NULL;
+static char* g_desiredEnsureNodevOptionOnTmpPartition = NULL;
+static char* g_desiredEnsureNodevOptionOnVarTmpPartition = NULL;
+static char* g_desiredEnsureNosuidOptionOnTmpPartition = NULL;
+static char* g_desiredEnsureNosuidOptionOnVarTmpPartition = NULL;
+static char* g_desiredEnsureNoexecOptionOnVarTmpPartition = NULL;
+static char* g_desiredEnsureNoexecOptionOnDevShmPartition = NULL;
+static char* g_desiredEnsureNodevOptionEnabledForAllRemovableMedia = NULL;
+static char* g_desiredEnsureNoexecOptionEnabledForAllRemovableMedia = NULL;
+static char* g_desiredEnsureNosuidOptionEnabledForAllRemovableMedia = NULL;
+static char* g_desiredEnsureNoexecNosuidOptionsEnabledForAllNfsMounts = NULL;
+static char* g_desiredEnsureAllEtcPasswdGroupsExistInEtcGroup = NULL;
+static char* g_desiredEnsureNoDuplicateUidsExist = NULL;
+static char* g_desiredEnsureNoDuplicateGidsExist = NULL;
+static char* g_desiredEnsureNoDuplicateUserNamesExist = NULL;
+static char* g_desiredEnsureNoDuplicateGroupsExist = NULL;
+static char* g_desiredEnsureShadowGroupIsEmpty = NULL;
+static char* g_desiredEnsureRootGroupExists = NULL;
+static char* g_desiredEnsureAllAccountsHavePasswords = NULL;
+static char* g_desiredEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero = NULL;
+static char* g_desiredEnsureNoLegacyPlusEntriesInEtcPasswd = NULL;
+static char* g_desiredEnsureNoLegacyPlusEntriesInEtcShadow = NULL;
+static char* g_desiredEnsureNoLegacyPlusEntriesInEtcGroup = NULL;
+static char* g_desiredEnsureDefaultRootAccountGroupIsGidZero = NULL;
+static char* g_desiredEnsureRootIsOnlyUidZeroAccount = NULL;
+static char* g_desiredEnsureAllUsersHomeDirectoriesExist = NULL;
+static char* g_desiredEnsureUsersOwnTheirHomeDirectories = NULL;
+static char* g_desiredEnsureRestrictedUserHomeDirectories = NULL;
+static char* g_desiredEnsurePasswordHashingAlgorithm = NULL;
+static char* g_desiredEnsureMinDaysBetweenPasswordChanges = NULL;
+static char* g_desiredEnsureInactivePasswordLockPeriod = NULL;
+static char* g_desiredMaxDaysBetweenPasswordChanges = NULL;
+static char* g_desiredEnsurePasswordExpiration = NULL;
+static char* g_desiredEnsurePasswordExpirationWarning = NULL;
+static char* g_desiredEnsureSystemAccountsAreNonLogin = NULL;
+static char* g_desiredEnsureAuthenticationRequiredForSingleUserMode = NULL;
+static char* g_desiredEnsureDotDoesNotAppearInRootsPath = NULL;
+static char* g_desiredEnsureRemoteLoginWarningBannerIsConfigured = NULL;
+static char* g_desiredEnsureLocalLoginWarningBannerIsConfigured = NULL;
+static char* g_desiredEnsureSuRestrictedToRootGroup = NULL;
+static char* g_desiredEnsureDefaultUmaskForAllUsers = NULL;
+static char* g_desiredEnsureAutomountingDisabled = NULL;
+static char* g_desiredEnsureKernelCompiledFromApprovedSources = NULL;
+static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
+static char* g_desiredEnsurePacketRedirectSendingIsDisabled = NULL;
+static char* g_desiredEnsureIcmpRedirectsIsDisabled = NULL;
+static char* g_desiredEnsureSourceRoutedPacketsIsDisabled = NULL;
+static char* g_desiredEnsureAcceptingSourceRoutedPacketsIsDisabled = NULL;
+static char* g_desiredEnsureIgnoringBogusIcmpBroadcastResponses = NULL;
+static char* g_desiredEnsureIgnoringIcmpEchoPingsToMulticast = NULL;
+static char* g_desiredEnsureMartianPacketLoggingIsEnabled = NULL;
+static char* g_desiredEnsureReversePathSourceValidationIsEnabled = NULL;
+static char* g_desiredEnsureTcpSynCookiesAreEnabled = NULL;
+static char* g_desiredEnsureSystemNotActingAsNetworkSniffer = NULL;
+static char* g_desiredEnsureAllWirelessInterfacesAreDisabled = NULL;
+static char* g_desiredEnsureIpv6ProtocolIsEnabled = NULL;
+static char* g_desiredEnsureDccpIsDisabled = NULL;
+static char* g_desiredEnsureSctpIsDisabled = NULL;
+static char* g_desiredEnsureDisabledSupportForRds = NULL;
+static char* g_desiredEnsureTipcIsDisabled = NULL;
+static char* g_desiredEnsureZeroconfNetworkingIsDisabled = NULL;
+static char* g_desiredEnsurePermissionsOnBootloaderConfig = NULL;
+static char* g_desiredEnsurePasswordReuseIsLimited = NULL;
+static char* g_desiredEnsureMountingOfUsbStorageDevicesIsDisabled = NULL;
+static char* g_desiredEnsureCoreDumpsAreRestricted = NULL;
+static char* g_desiredEnsurePasswordCreationRequirements = NULL;
+static char* g_desiredEnsureLockoutForFailedPasswordAttempts = NULL;
+static char* g_desiredEnsureDisabledInstallationOfCramfsFileSystem = NULL;
+static char* g_desiredEnsureDisabledInstallationOfFreevxfsFileSystem = NULL;
+static char* g_desiredEnsureDisabledInstallationOfHfsFileSystem = NULL;
+static char* g_desiredEnsureDisabledInstallationOfHfsplusFileSystem = NULL;
+static char* g_desiredEnsureDisabledInstallationOfJffs2FileSystem = NULL;
+static char* g_desiredEnsureVirtualMemoryRandomizationIsEnabled = NULL;
+static char* g_desiredEnsureAllBootloadersHavePasswordProtectionEnabled = NULL;
+static char* g_desiredEnsureLoggingIsConfigured = NULL;
+static char* g_desiredEnsureSyslogPackageIsInstalled = NULL;
+static char* g_desiredEnsureSystemdJournaldServicePersistsLogMessages = NULL;
+static char* g_desiredEnsureALoggingServiceIsEnabled = NULL;
+static char* g_desiredEnsureFilePermissionsForAllRsyslogLogFiles = NULL;
+static char* g_desiredEnsureLoggerConfigurationFilesAreRestricted = NULL;
+static char* g_desiredEnsureAllRsyslogLogFilesAreOwnedByAdmGroup = NULL;
+static char* g_desiredEnsureAllRsyslogLogFilesAreOwnedBySyslogUser = NULL;
+static char* g_desiredEnsureRsyslogNotAcceptingRemoteMessages = NULL;
+static char* g_desiredEnsureSyslogRotaterServiceIsEnabled = NULL;
+static char* g_desiredEnsureTelnetServiceIsDisabled = NULL;
+static char* g_desiredEnsureRcprshServiceIsDisabled = NULL;
+static char* g_desiredEnsureTftpServiceisDisabled = NULL;
+static char* g_desiredEnsureAtCronIsRestrictedToAuthorizedUsers = NULL;
+static char* g_desiredEnsureAvahiDaemonServiceIsDisabled = NULL;
+static char* g_desiredEnsureCupsServiceisDisabled = NULL;
+static char* g_desiredEnsurePostfixPackageIsUninstalled = NULL;
+static char* g_desiredEnsurePostfixNetworkListeningIsDisabled = NULL;
+static char* g_desiredEnsureRpcgssdServiceIsDisabled = NULL;
+static char* g_desiredEnsureRpcidmapdServiceIsDisabled = NULL;
+static char* g_desiredEnsurePortmapServiceIsDisabled = NULL;
+static char* g_desiredEnsureNetworkFileSystemServiceIsDisabled = NULL;
+static char* g_desiredEnsureRpcsvcgssdServiceIsDisabled = NULL;
+static char* g_desiredEnsureSnmpServerIsDisabled = NULL;
+static char* g_desiredEnsureRsynServiceIsDisabled = NULL;
+static char* g_desiredEnsureNisServerIsDisabled = NULL;
+static char* g_desiredEnsureRshClientNotInstalled = NULL;
+static char* g_desiredEnsureSmbWithSambaIsDisabled = NULL;
+static char* g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable = NULL;
+static char* g_desiredEnsureNoUsersHaveDotForwardFiles = NULL;
+static char* g_desiredEnsureNoUsersHaveDotNetrcFiles = NULL;
+static char* g_desiredEnsureNoUsersHaveDotRhostsFiles = NULL;
+static char* g_desiredEnsureRloginServiceIsDisabled = NULL;
+static char* g_desiredEnsureUnnecessaryAccountsAreRemoved = NULL;
+
 void AsbInitialize(void* log)
 {
     InitializeSshAudit(log);
+
+    if ((NULL == (g_desiredEnsurePermissionsOnEtcIssue = DuplicateString(g_defaultEnsurePermissionsOnEtcIssue))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcIssueNet = DuplicateString(g_defaultEnsurePermissionsOnEtcIssueNet))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcHostsAllow = DuplicateString(g_defaultEnsurePermissionsOnEtcHostsAllow))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcHostsDeny = DuplicateString(g_defaultEnsurePermissionsOnEtcHostsDeny))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcShadow = DuplicateString(g_defaultEnsurePermissionsOnEtcShadow))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcShadowDash = DuplicateString(g_defaultEnsurePermissionsOnEtcShadowDash))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcGShadow = DuplicateString(g_defaultEnsurePermissionsOnEtcGShadow))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcGShadowDash = DuplicateString(g_defaultEnsurePermissionsOnEtcGShadowDash))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcPasswd = DuplicateString(g_defaultEnsurePermissionsOnEtcPasswd))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcPasswdDash = DuplicateString(g_defaultEnsurePermissionsOnEtcPasswdDash))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcGroup = DuplicateString(g_defaultEnsurePermissionsOnEtcGroup))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcGroupDash = DuplicateString(g_defaultEnsurePermissionsOnEtcGroupDash))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcAnacronTab = DuplicateString(g_defaultEnsurePermissionsOnEtcAnacronTab))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcCronD = DuplicateString(g_defaultEnsurePermissionsOnEtcCronD))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcCronDaily = DuplicateString(g_defaultEnsurePermissionsOnEtcCronDaily))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcCronHourly = DuplicateString(g_defaultEnsurePermissionsOnEtcCronHourly))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcCronMonthly = DuplicateString(g_defaultEnsurePermissionsOnEtcCronMonthly))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcCronWeekly = DuplicateString(g_defaultEnsurePermissionsOnEtcCronWeekly))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcMotd = DuplicateString(g_defaultEnsurePermissionsOnEtcMotd))) ||
+        (NULL == (g_desiredEnsureInetdNotInstalled = DuplicateString(g_defaultEnsureInetdNotInstalled))) ||
+        (NULL == (g_desiredEnsureXinetdNotInstalled = DuplicateString(g_defaultEnsureXinetdNotInstalled))) ||
+        (NULL == (g_desiredEnsureRshServerNotInstalled = DuplicateString(g_defaultEnsureRshServerNotInstalled))) ||
+        (NULL == (g_desiredEnsureNisNotInstalled = DuplicateString(g_defaultEnsureNisNotInstalled))) ||
+        (NULL == (g_desiredEnsureTftpdNotInstalled = DuplicateString(g_defaultEnsureTftpdNotInstalled))) ||
+        (NULL == (g_desiredEnsureReadaheadFedoraNotInstalled = DuplicateString(g_defaultEnsureReadaheadFedoraNotInstalled))) ||
+        (NULL == (g_desiredEnsureBluetoothHiddNotInstalled = DuplicateString(g_defaultEnsureBluetoothHiddNotInstalled))) ||
+        (NULL == (g_desiredEnsureIsdnUtilsBaseNotInstalled = DuplicateString(g_defaultEnsureIsdnUtilsBaseNotInstalled))) ||
+        (NULL == (g_desiredEnsureIsdnUtilsKdumpToolsNotInstalled = DuplicateString(g_defaultEnsureIsdnUtilsKdumpToolsNotInstalled))) ||
+        (NULL == (g_desiredEnsureIscDhcpdServerNotInstalled = DuplicateString(g_defaultEnsureIscDhcpdServerNotInstalled))) ||
+        (NULL == (g_desiredEnsureSendmailNotInstalled = DuplicateString(g_defaultEnsureSendmailNotInstalled))) ||
+        (NULL == (g_desiredEnsureSldapdNotInstalled = DuplicateString(g_defaultEnsureSldapdNotInstalled))) ||
+        (NULL == (g_desiredEnsureBind9NotInstalled = DuplicateString(g_defaultEnsureBind9NotInstalled))) ||
+        (NULL == (g_desiredEnsureDovecotCoreNotInstalled = DuplicateString(g_defaultEnsureDovecotCoreNotInstalled))) ||
+        (NULL == (g_desiredEnsureAuditdInstalled = DuplicateString(g_defaultEnsureAuditdInstalled))) ||
+        (NULL == (g_desiredEnsurePrelinkIsDisabled = DuplicateString(g_defaultEnsurePrelinkIsDisabled))) ||
+        (NULL == (g_desiredEnsureTalkClientIsNotInstalled = DuplicateString(g_defaultEnsureTalkClientIsNotInstalled))) ||
+        (NULL == (g_desiredEnsureCronServiceIsEnabled = DuplicateString(g_defaultEnsureCronServiceIsEnabled))) ||
+        (NULL == (g_desiredEnsureAuditdServiceIsRunning = DuplicateString(g_defaultEnsureAuditdServiceIsRunning))) ||
+        (NULL == (g_desiredEnsureKernelSupportForCpuNx = DuplicateString(g_defaultEnsureKernelSupportForCpuNx))) ||
+        (NULL == (g_desiredEnsureAllTelnetdPackagesUninstalled = DuplicateString(g_defaultEnsureAllTelnetdPackagesUninstalled))) ||
+        (NULL == (g_desiredEnsureNodevOptionOnHomePartition = DuplicateString(g_defaultEnsureNodevOptionOnHomePartition))) ||
+        (NULL == (g_desiredEnsureNodevOptionOnTmpPartition = DuplicateString(g_defaultEnsureNodevOptionOnTmpPartition))) ||
+        (NULL == (g_desiredEnsureNodevOptionOnVarTmpPartition = DuplicateString(g_defaultEnsureNodevOptionOnVarTmpPartition))) ||
+        (NULL == (g_desiredEnsureNosuidOptionOnTmpPartition = DuplicateString(g_defaultEnsureNosuidOptionOnTmpPartition))) ||
+        (NULL == (g_desiredEnsureNosuidOptionOnVarTmpPartition = DuplicateString(g_defaultEnsureNosuidOptionOnVarTmpPartition))) ||
+        (NULL == (g_desiredEnsureNoexecOptionOnVarTmpPartition = DuplicateString(g_defaultEnsureNoexecOptionOnVarTmpPartition))) ||
+        (NULL == (g_desiredEnsureNoexecOptionOnDevShmPartition = DuplicateString(g_defaultEnsureNoexecOptionOnDevShmPartition))) ||
+        (NULL == (g_desiredEnsureNodevOptionEnabledForAllRemovableMedia = DuplicateString(g_defaultEnsureNodevOptionEnabledForAllRemovableMedia))) ||
+        (NULL == (g_desiredEnsureNoexecOptionEnabledForAllRemovableMedia = DuplicateString(g_defaultEnsureNoexecOptionEnabledForAllRemovableMedia))) ||
+        (NULL == (g_desiredEnsureNosuidOptionEnabledForAllRemovableMedia = DuplicateString(g_defaultEnsureNosuidOptionEnabledForAllRemovableMedia))) ||
+        (NULL == (g_desiredEnsureNoexecNosuidOptionsEnabledForAllNfsMounts = DuplicateString(g_defaultEnsureNoexecNosuidOptionsEnabledForAllNfsMounts))) ||
+        (NULL == (g_desiredEnsureAllEtcPasswdGroupsExistInEtcGroup = DuplicateString(g_defaultEnsureAllEtcPasswdGroupsExistInEtcGroup))) ||
+        (NULL == (g_desiredEnsureNoDuplicateUidsExist = DuplicateString(g_defaultEnsureNoDuplicateUidsExist))) ||
+        (NULL == (g_desiredEnsureNoDuplicateGidsExist = DuplicateString(g_defaultEnsureNoDuplicateGidsExist))) ||
+        (NULL == (g_desiredEnsureNoDuplicateUserNamesExist = DuplicateString(g_defaultEnsureNoDuplicateUserNamesExist))) ||
+        (NULL == (g_desiredEnsureNoDuplicateGroupsExist = DuplicateString(g_defaultEnsureNoDuplicateGroupsExist))) ||
+        (NULL == (g_desiredEnsureShadowGroupIsEmpty = DuplicateString(g_defaultEnsureShadowGroupIsEmpty))) ||
+        (NULL == (g_desiredEnsureRootGroupExists = DuplicateString(g_defaultEnsureRootGroupExists))) ||
+        (NULL == (g_desiredEnsureAllAccountsHavePasswords = DuplicateString(g_defaultEnsureAllAccountsHavePasswords))) ||
+        (NULL == (g_desiredEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero = DuplicateString(g_defaultEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero))) ||
+        (NULL == (g_desiredEnsureNoLegacyPlusEntriesInEtcPasswd = DuplicateString(g_defaultEnsureNoLegacyPlusEntriesInEtcPasswd))) ||
+        (NULL == (g_desiredEnsureNoLegacyPlusEntriesInEtcShadow = DuplicateString(g_defaultEnsureNoLegacyPlusEntriesInEtcShadow))) ||
+        (NULL == (g_desiredEnsureNoLegacyPlusEntriesInEtcGroup = DuplicateString(g_defaultEnsureNoLegacyPlusEntriesInEtcGroup))) ||
+        (NULL == (g_desiredEnsureDefaultRootAccountGroupIsGidZero = DuplicateString(g_defaultEnsureDefaultRootAccountGroupIsGidZero))) ||
+        (NULL == (g_desiredEnsureRootIsOnlyUidZeroAccount = DuplicateString(g_defaultEnsureRootIsOnlyUidZeroAccount))) ||
+        (NULL == (g_desiredEnsureAllUsersHomeDirectoriesExist = DuplicateString(g_defaultEnsureAllUsersHomeDirectoriesExist))) ||
+        (NULL == (g_desiredEnsureUsersOwnTheirHomeDirectories = DuplicateString(g_defaultEnsureUsersOwnTheirHomeDirectories))) ||
+        (NULL == (g_desiredEnsureRestrictedUserHomeDirectories = DuplicateString(g_defaultEnsureRestrictedUserHomeDirectories))) ||
+        (NULL == (g_desiredEnsurePasswordHashingAlgorithm = DuplicateString(g_defaultEnsurePasswordHashingAlgorithm))) ||
+        (NULL == (g_desiredEnsureMinDaysBetweenPasswordChanges = DuplicateString(g_defaultEnsureMinDaysBetweenPasswordChanges))) ||
+        (NULL == (g_desiredEnsureInactivePasswordLockPeriod = DuplicateString(g_defaultEnsureInactivePasswordLockPeriod))) ||
+        (NULL == (g_desiredMaxDaysBetweenPasswordChanges = DuplicateString(g_defaultMaxDaysBetweenPasswordChanges))) ||
+        (NULL == (g_desiredEnsurePasswordExpiration = DuplicateString(g_defaultEnsurePasswordExpiration))) ||
+        (NULL == (g_desiredEnsurePasswordExpirationWarning = DuplicateString(g_defaultEnsurePasswordExpirationWarning))) ||
+        (NULL == (g_desiredEnsureSystemAccountsAreNonLogin = DuplicateString(g_defaultEnsureSystemAccountsAreNonLogin))) ||
+        (NULL == (g_desiredEnsureAuthenticationRequiredForSingleUserMode = DuplicateString(g_defaultEnsureAuthenticationRequiredForSingleUserMode))) ||
+        (NULL == (g_desiredEnsureDotDoesNotAppearInRootsPath = DuplicateString(g_defaultEnsureDotDoesNotAppearInRootsPath))) ||
+        (NULL == (g_desiredEnsureRemoteLoginWarningBannerIsConfigured = DuplicateString(g_defaultEnsureRemoteLoginWarningBannerIsConfigured))) ||
+        (NULL == (g_desiredEnsureLocalLoginWarningBannerIsConfigured = DuplicateString(g_defaultEnsureLocalLoginWarningBannerIsConfigured))) ||
+        (NULL == (g_desiredEnsureSuRestrictedToRootGroup = DuplicateString(g_defaultEnsureSuRestrictedToRootGroup))) ||
+        (NULL == (g_desiredEnsureDefaultUmaskForAllUsers = DuplicateString(g_defaultEnsureDefaultUmaskForAllUsers))) ||
+        (NULL == (g_desiredEnsureAutomountingDisabled = DuplicateString(g_defaultEnsureAutomountingDisabled))) ||
+        (NULL == (g_desiredEnsureKernelCompiledFromApprovedSources = DuplicateString(g_defaultEnsureKernelCompiledFromApprovedSources))) ||
+        (NULL == (g_desiredEnsureDefaultDenyFirewallPolicyIsSet = DuplicateString(g_defaultEnsureDefaultDenyFirewallPolicyIsSet))) ||
+        (NULL == (g_desiredEnsurePacketRedirectSendingIsDisabled = DuplicateString(g_defaultEnsurePacketRedirectSendingIsDisabled))) ||
+        (NULL == (g_desiredEnsureIcmpRedirectsIsDisabled = DuplicateString(g_defaultEnsureIcmpRedirectsIsDisabled))) ||
+        (NULL == (g_desiredEnsureSourceRoutedPacketsIsDisabled = DuplicateString(g_defaultEnsureSourceRoutedPacketsIsDisabled))) ||
+        (NULL == (g_desiredEnsureAcceptingSourceRoutedPacketsIsDisabled = DuplicateString(g_defaultEnsureAcceptingSourceRoutedPacketsIsDisabled))) ||
+        (NULL == (g_desiredEnsureIgnoringBogusIcmpBroadcastResponses = DuplicateString(g_defaultEnsureIgnoringBogusIcmpBroadcastResponses))) ||
+        (NULL == (g_desiredEnsureIgnoringIcmpEchoPingsToMulticast = DuplicateString(g_defaultEnsureIgnoringIcmpEchoPingsToMulticast))) ||
+        (NULL == (g_desiredEnsureMartianPacketLoggingIsEnabled = DuplicateString(g_defaultEnsureMartianPacketLoggingIsEnabled))) ||
+        (NULL == (g_desiredEnsureReversePathSourceValidationIsEnabled = DuplicateString(g_defaultEnsureReversePathSourceValidationIsEnabled))) ||
+        (NULL == (g_desiredEnsureTcpSynCookiesAreEnabled = DuplicateString(g_defaultEnsureTcpSynCookiesAreEnabled))) ||
+        (NULL == (g_desiredEnsureSystemNotActingAsNetworkSniffer = DuplicateString(g_defaultEnsureSystemNotActingAsNetworkSniffer))) ||
+        (NULL == (g_desiredEnsureAllWirelessInterfacesAreDisabled = DuplicateString(g_defaultEnsureAllWirelessInterfacesAreDisabled))) ||
+        (NULL == (g_desiredEnsureIpv6ProtocolIsEnabled = DuplicateString(g_defaultEnsureIpv6ProtocolIsEnabled))) ||
+        (NULL == (g_desiredEnsureDccpIsDisabled = DuplicateString(g_defaultEnsureDccpIsDisabled))) ||
+        (NULL == (g_desiredEnsureSctpIsDisabled = DuplicateString(g_defaultEnsureSctpIsDisabled))) ||
+        (NULL == (g_desiredEnsureDisabledSupportForRds = DuplicateString(g_defaultEnsureDisabledSupportForRds))) ||
+        (NULL == (g_desiredEnsureTipcIsDisabled = DuplicateString(g_defaultEnsureTipcIsDisabled))) ||
+        (NULL == (g_desiredEnsureZeroconfNetworkingIsDisabled = DuplicateString(g_defaultEnsureZeroconfNetworkingIsDisabled))) ||
+        (NULL == (g_desiredEnsurePermissionsOnBootloaderConfig = DuplicateString(g_defaultEnsurePermissionsOnBootloaderConfig))) ||
+        (NULL == (g_desiredEnsurePasswordReuseIsLimited = DuplicateString(g_defaultEnsurePasswordReuseIsLimited))) ||
+        (NULL == (g_desiredEnsureMountingOfUsbStorageDevicesIsDisabled = DuplicateString(g_defaultEnsureMountingOfUsbStorageDevicesIsDisabled))) ||
+        (NULL == (g_desiredEnsureCoreDumpsAreRestricted = DuplicateString(g_defaultEnsureCoreDumpsAreRestricted))) ||
+        (NULL == (g_desiredEnsurePasswordCreationRequirements = DuplicateString(g_defaultEnsurePasswordCreationRequirements))) ||
+        (NULL == (g_desiredEnsureLockoutForFailedPasswordAttempts = DuplicateString(g_defaultEnsureLockoutForFailedPasswordAttempts))) ||
+        (NULL == (g_desiredEnsureDisabledInstallationOfCramfsFileSystem = DuplicateString(g_defaultEnsureDisabledInstallationOfCramfsFileSystem))) ||
+        (NULL == (g_desiredEnsureDisabledInstallationOfFreevxfsFileSystem = DuplicateString(g_defaultEnsureDisabledInstallationOfFreevxfsFileSystem))) ||
+        (NULL == (g_desiredEnsureDisabledInstallationOfHfsFileSystem = DuplicateString(g_defaultEnsureDisabledInstallationOfHfsFileSystem))) ||
+        (NULL == (g_desiredEnsureDisabledInstallationOfHfsplusFileSystem = DuplicateString(g_defaultEnsureDisabledInstallationOfHfsplusFileSystem))) ||
+        (NULL == (g_desiredEnsureDisabledInstallationOfJffs2FileSystem = DuplicateString(g_defaultEnsureDisabledInstallationOfJffs2FileSystem))) ||
+        (NULL == (g_desiredEnsureVirtualMemoryRandomizationIsEnabled = DuplicateString(g_defaultEnsureVirtualMemoryRandomizationIsEnabled))) ||
+        (NULL == (g_desiredEnsureAllBootloadersHavePasswordProtectionEnabled = DuplicateString(g_defaultEnsureAllBootloadersHavePasswordProtectionEnabled))) ||
+        (NULL == (g_desiredEnsureLoggingIsConfigured = DuplicateString(g_defaultEnsureLoggingIsConfigured))) ||
+        (NULL == (g_desiredEnsureSyslogPackageIsInstalled = DuplicateString(g_defaultEnsureSyslogPackageIsInstalled))) ||
+        (NULL == (g_desiredEnsureSystemdJournaldServicePersistsLogMessages = DuplicateString(g_defaultEnsureSystemdJournaldServicePersistsLogMessages))) ||
+        (NULL == (g_desiredEnsureALoggingServiceIsEnabled = DuplicateString(g_defaultEnsureALoggingServiceIsEnabled))) ||
+        (NULL == (g_desiredEnsureFilePermissionsForAllRsyslogLogFiles = DuplicateString(g_defaultEnsureFilePermissionsForAllRsyslogLogFiles))) ||
+        (NULL == (g_desiredEnsureLoggerConfigurationFilesAreRestricted = DuplicateString(g_defaultEnsureLoggerConfigurationFilesAreRestricted))) ||
+        (NULL == (g_desiredEnsureAllRsyslogLogFilesAreOwnedByAdmGroup = DuplicateString(g_defaultEnsureAllRsyslogLogFilesAreOwnedByAdmGroup))) ||
+        (NULL == (g_desiredEnsureAllRsyslogLogFilesAreOwnedBySyslogUser = DuplicateString(g_defaultEnsureAllRsyslogLogFilesAreOwnedBySyslogUser))) ||
+        (NULL == (g_desiredEnsureRsyslogNotAcceptingRemoteMessages = DuplicateString(g_defaultEnsureRsyslogNotAcceptingRemoteMessages))) ||
+        (NULL == (g_desiredEnsureSyslogRotaterServiceIsEnabled = DuplicateString(g_defaultEnsureSyslogRotaterServiceIsEnabled))) ||
+        (NULL == (g_desiredEnsureTelnetServiceIsDisabled = DuplicateString(g_defaultEnsureTelnetServiceIsDisabled))) ||
+        (NULL == (g_desiredEnsureRcprshServiceIsDisabled = DuplicateString(g_defaultEnsureRcprshServiceIsDisabled))) ||
+        (NULL == (g_desiredEnsureTftpServiceisDisabled = DuplicateString(g_defaultEnsureTftpServiceisDisabled))) ||
+        (NULL == (g_desiredEnsureAtCronIsRestrictedToAuthorizedUsers = DuplicateString(g_defaultEnsureAtCronIsRestrictedToAuthorizedUsers))) ||
+        (NULL == (g_desiredEnsureAvahiDaemonServiceIsDisabled = DuplicateString(g_defaultEnsureAvahiDaemonServiceIsDisabled))) ||
+        (NULL == (g_desiredEnsureCupsServiceisDisabled = DuplicateString(g_defaultEnsureCupsServiceisDisabled))) ||
+        (NULL == (g_desiredEnsurePostfixPackageIsUninstalled = DuplicateString(g_defaultEnsurePostfixPackageIsUninstalled))) ||
+        (NULL == (g_desiredEnsurePostfixNetworkListeningIsDisabled = DuplicateString(g_defaultEnsurePostfixNetworkListeningIsDisabled))) ||
+        (NULL == (g_desiredEnsureRpcgssdServiceIsDisabled = DuplicateString(g_defaultEnsureRpcgssdServiceIsDisabled))) ||
+        (NULL == (g_desiredEnsureRpcidmapdServiceIsDisabled = DuplicateString(g_defaultEnsureRpcidmapdServiceIsDisabled))) ||
+        (NULL == (g_desiredEnsurePortmapServiceIsDisabled = DuplicateString(g_defaultEnsurePortmapServiceIsDisabled))) ||
+        (NULL == (g_desiredEnsureNetworkFileSystemServiceIsDisabled = DuplicateString(g_defaultEnsureNetworkFileSystemServiceIsDisabled))) ||
+        (NULL == (g_desiredEnsureRpcsvcgssdServiceIsDisabled = DuplicateString(g_defaultEnsureRpcsvcgssdServiceIsDisabled))) ||
+        (NULL == (g_desiredEnsureSnmpServerIsDisabled = DuplicateString(g_defaultEnsureSnmpServerIsDisabled))) ||
+        (NULL == (g_desiredEnsureRsynServiceIsDisabled = DuplicateString(g_defaultEnsureRsynServiceIsDisabled))) ||
+        (NULL == (g_desiredEnsureNisServerIsDisabled = DuplicateString(g_defaultEnsureNisServerIsDisabled))) ||
+        (NULL == (g_desiredEnsureRshClientNotInstalled = DuplicateString(g_defaultEnsureRshClientNotInstalled))) ||
+        (NULL == (g_desiredEnsureSmbWithSambaIsDisabled = DuplicateString(g_defaultEnsureSmbWithSambaIsDisabled))) ||
+        (NULL == (g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable = DuplicateString(g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable))) ||
+        (NULL == (g_desiredEnsureNoUsersHaveDotForwardFiles = DuplicateString(g_defaultEnsureNoUsersHaveDotForwardFiles))) ||
+        (NULL == (g_desiredEnsureNoUsersHaveDotNetrcFiles = DuplicateString(g_defaultEnsureNoUsersHaveDotNetrcFiles))) ||
+        (NULL == (g_desiredEnsureNoUsersHaveDotRhostsFiles = DuplicateString(g_defaultEnsureNoUsersHaveDotRhostsFiles))) ||
+        (NULL == (g_desiredEnsureRloginServiceIsDisabled = DuplicateString(g_defaultEnsureRloginServiceIsDisabled))) ||
+        (NULL == (g_desiredEnsureUnnecessaryAccountsAreRemoved = DuplicateString(g_defaultEnsureUnnecessaryAccountsAreRemoved))))
+    {
+        OsConfigLogError(log, "AsbInitialize: failed to allocate memory");
+    }
+    
     OsConfigLogInfo(log, "%s initialized", g_asbName);
+
+    return status;
 }
 
 void AsbShutdown(void* log)
 {
     OsConfigLogInfo(log, "%s shutting down", g_asbName);
+        
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcHostsAllow);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcHostsDeny);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcShadow);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcShadowDash);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcGShadow);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcGShadowDash);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcPasswd);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcPasswdDash);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcGroup);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcGroupDash);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcAnacronTab);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcCronD);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcCronDaily);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcCronHourly);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcCronMonthly);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcCronWeekly);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnEtcMotd);
+    FREE_MEMORY(g_desiredEnsureInetdNotInstalled);
+    FREE_MEMORY(g_desiredEnsureXinetdNotInstalled);
+    FREE_MEMORY(g_desiredEnsureRshServerNotInstalled);
+    FREE_MEMORY(g_desiredEnsureNisNotInstalled);
+    FREE_MEMORY(g_desiredEnsureTftpdNotInstalled);
+    FREE_MEMORY(g_desiredEnsureReadaheadFedoraNotInstalled);
+    FREE_MEMORY(g_desiredEnsureBluetoothHiddNotInstalled);
+    FREE_MEMORY(g_desiredEnsureIsdnUtilsBaseNotInstalled);
+    FREE_MEMORY(g_desiredEnsureIsdnUtilsKdumpToolsNotInstalled);
+    FREE_MEMORY(g_desiredEnsureIscDhcpdServerNotInstalled);
+    FREE_MEMORY(g_desiredEnsureSendmailNotInstalled);
+    FREE_MEMORY(g_desiredEnsureSldapdNotInstalled);
+    FREE_MEMORY(g_desiredEnsureBind9NotInstalled);
+    FREE_MEMORY(g_desiredEnsureDovecotCoreNotInstalled);
+    FREE_MEMORY(g_desiredEnsureAuditdInstalled);
+    FREE_MEMORY(g_desiredEnsurePrelinkIsDisabled);
+    FREE_MEMORY(g_desiredEnsureTalkClientIsNotInstalled);
+    FREE_MEMORY(g_desiredEnsureCronServiceIsEnabled);
+    FREE_MEMORY(g_desiredEnsureAuditdServiceIsRunning);
+    FREE_MEMORY(g_desiredEnsureKernelSupportForCpuNx);
+    FREE_MEMORY(g_desiredEnsureAllTelnetdPackagesUninstalled);
+    FREE_MEMORY(g_desiredEnsureNodevOptionOnHomePartition);
+    FREE_MEMORY(g_desiredEnsureNodevOptionOnTmpPartition);
+    FREE_MEMORY(g_desiredEnsureNodevOptionOnVarTmpPartition);
+    FREE_MEMORY(g_desiredEnsureNosuidOptionOnTmpPartition);
+    FREE_MEMORY(g_desiredEnsureNosuidOptionOnVarTmpPartition);
+    FREE_MEMORY(g_desiredEnsureNoexecOptionOnVarTmpPartition);
+    FREE_MEMORY(g_desiredEnsureNoexecOptionOnDevShmPartition);
+    FREE_MEMORY(g_desiredEnsureNodevOptionEnabledForAllRemovableMedia);
+    FREE_MEMORY(g_desiredEnsureNoexecOptionEnabledForAllRemovableMedia);
+    FREE_MEMORY(g_desiredEnsureNosuidOptionEnabledForAllRemovableMedia);
+    FREE_MEMORY(g_desiredEnsureNoexecNosuidOptionsEnabledForAllNfsMounts);
+    FREE_MEMORY(g_desiredEnsureAllEtcPasswdGroupsExistInEtcGroup);
+    FREE_MEMORY(g_desiredEnsureNoDuplicateUidsExist);
+    FREE_MEMORY(g_desiredEnsureNoDuplicateGidsExist);
+    FREE_MEMORY(g_desiredEnsureNoDuplicateUserNamesExist);
+    FREE_MEMORY(g_desiredEnsureNoDuplicateGroupsExist);
+    FREE_MEMORY(g_desiredEnsureShadowGroupIsEmpty);
+    FREE_MEMORY(g_desiredEnsureRootGroupExists);
+    FREE_MEMORY(g_desiredEnsureAllAccountsHavePasswords);
+    FREE_MEMORY(g_desiredEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero);
+    FREE_MEMORY(g_desiredEnsureNoLegacyPlusEntriesInEtcPasswd);
+    FREE_MEMORY(g_desiredEnsureNoLegacyPlusEntriesInEtcShadow);
+    FREE_MEMORY(g_desiredEnsureNoLegacyPlusEntriesInEtcGroup);
+    FREE_MEMORY(g_desiredEnsureDefaultRootAccountGroupIsGidZero);
+    FREE_MEMORY(g_desiredEnsureRootIsOnlyUidZeroAccount);
+    FREE_MEMORY(g_desiredEnsureAllUsersHomeDirectoriesExist);
+    FREE_MEMORY(g_desiredEnsureUsersOwnTheirHomeDirectories);
+    FREE_MEMORY(g_desiredEnsureRestrictedUserHomeDirectories);
+    FREE_MEMORY(g_desiredEnsurePasswordHashingAlgorithm);
+    FREE_MEMORY(g_desiredEnsureMinDaysBetweenPasswordChanges);
+    FREE_MEMORY(g_desiredEnsureInactivePasswordLockPeriod);
+    FREE_MEMORY(g_desiredMaxDaysBetweenPasswordChanges);
+    FREE_MEMORY(g_desiredEnsurePasswordExpiration);
+    FREE_MEMORY(g_desiredEnsurePasswordExpirationWarning);
+    FREE_MEMORY(g_desiredEnsureSystemAccountsAreNonLogin);
+    FREE_MEMORY(g_desiredEnsureAuthenticationRequiredForSingleUserMode);
+    FREE_MEMORY(g_desiredEnsureDotDoesNotAppearInRootsPath);
+    FREE_MEMORY(g_desiredEnsureRemoteLoginWarningBannerIsConfigured);
+    FREE_MEMORY(g_desiredEnsureLocalLoginWarningBannerIsConfigured);
+    FREE_MEMORY(g_desiredEnsureSuRestrictedToRootGroup);
+    FREE_MEMORY(g_desiredEnsureDefaultUmaskForAllUsers);
+    FREE_MEMORY(g_desiredEnsureAutomountingDisabled);
+    FREE_MEMORY(g_desiredEnsureKernelCompiledFromApprovedSources);
+    FREE_MEMORY(g_desiredEnsureDefaultDenyFirewallPolicyIsSet);
+    FREE_MEMORY(g_desiredEnsurePacketRedirectSendingIsDisabled);
+    FREE_MEMORY(g_desiredEnsureIcmpRedirectsIsDisabled);
+    FREE_MEMORY(g_desiredEnsureSourceRoutedPacketsIsDisabled);
+    FREE_MEMORY(g_desiredEnsureAcceptingSourceRoutedPacketsIsDisabled);
+    FREE_MEMORY(g_desiredEnsureIgnoringBogusIcmpBroadcastResponses);
+    FREE_MEMORY(g_desiredEnsureIgnoringIcmpEchoPingsToMulticast);
+    FREE_MEMORY(g_desiredEnsureMartianPacketLoggingIsEnabled);
+    FREE_MEMORY(g_desiredEnsureReversePathSourceValidationIsEnabled);
+    FREE_MEMORY(g_desiredEnsureTcpSynCookiesAreEnabled);
+    FREE_MEMORY(g_desiredEnsureSystemNotActingAsNetworkSniffer);
+    FREE_MEMORY(g_desiredEnsureAllWirelessInterfacesAreDisabled);
+    FREE_MEMORY(g_desiredEnsureIpv6ProtocolIsEnabled);
+    FREE_MEMORY(g_desiredEnsureDccpIsDisabled);
+    FREE_MEMORY(g_desiredEnsureSctpIsDisabled);
+    FREE_MEMORY(g_desiredEnsureDisabledSupportForRds);
+    FREE_MEMORY(g_desiredEnsureTipcIsDisabled);
+    FREE_MEMORY(g_desiredEnsureZeroconfNetworkingIsDisabled);
+    FREE_MEMORY(g_desiredEnsurePermissionsOnBootloaderConfig);
+    FREE_MEMORY(g_desiredEnsurePasswordReuseIsLimited);
+    FREE_MEMORY(g_desiredEnsureMountingOfUsbStorageDevicesIsDisabled);
+    FREE_MEMORY(g_desiredEnsureCoreDumpsAreRestricted);
+    FREE_MEMORY(g_desiredEnsurePasswordCreationRequirements);
+    FREE_MEMORY(g_desiredEnsureLockoutForFailedPasswordAttempts);
+    FREE_MEMORY(g_desiredEnsureDisabledInstallationOfCramfsFileSystem);
+    FREE_MEMORY(g_desiredEnsureDisabledInstallationOfFreevxfsFileSystem);
+    FREE_MEMORY(g_desiredEnsureDisabledInstallationOfHfsFileSystem);
+    FREE_MEMORY(g_desiredEnsureDisabledInstallationOfHfsplusFileSystem);
+    FREE_MEMORY(g_desiredEnsureDisabledInstallationOfJffs2FileSystem);
+    FREE_MEMORY(g_desiredEnsureVirtualMemoryRandomizationIsEnabled);
+    FREE_MEMORY(g_desiredEnsureAllBootloadersHavePasswordProtectionEnabled);
+    FREE_MEMORY(g_desiredEnsureLoggingIsConfigured);
+    FREE_MEMORY(g_desiredEnsureSyslogPackageIsInstalled);
+    FREE_MEMORY(g_desiredEnsureSystemdJournaldServicePersistsLogMessages);
+    FREE_MEMORY(g_desiredEnsureALoggingServiceIsEnabled);
+    FREE_MEMORY(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles);
+    FREE_MEMORY(g_desiredEnsureLoggerConfigurationFilesAreRestricted);
+    FREE_MEMORY(g_desiredEnsureAllRsyslogLogFilesAreOwnedByAdmGroup);
+    FREE_MEMORY(g_desiredEnsureAllRsyslogLogFilesAreOwnedBySyslogUser);
+    FREE_MEMORY(g_desiredEnsureRsyslogNotAcceptingRemoteMessages);
+    FREE_MEMORY(g_desiredEnsureSyslogRotaterServiceIsEnabled);
+    FREE_MEMORY(g_desiredEnsureTelnetServiceIsDisabled);
+    FREE_MEMORY(g_desiredEnsureRcprshServiceIsDisabled);
+    FREE_MEMORY(g_desiredEnsureTftpServiceisDisabled);
+    FREE_MEMORY(g_desiredEnsureAtCronIsRestrictedToAuthorizedUsers);
+    FREE_MEMORY(g_desiredEnsureAvahiDaemonServiceIsDisabled);
+    FREE_MEMORY(g_desiredEnsureCupsServiceisDisabled);
+    FREE_MEMORY(g_desiredEnsurePostfixPackageIsUninstalled);
+    FREE_MEMORY(g_desiredEnsurePostfixNetworkListeningIsDisabled);
+    FREE_MEMORY(g_desiredEnsureRpcgssdServiceIsDisabled);
+    FREE_MEMORY(g_desiredEnsureRpcidmapdServiceIsDisabled);
+    FREE_MEMORY(g_desiredEnsurePortmapServiceIsDisabled);
+    FREE_MEMORY(g_desiredEnsureNetworkFileSystemServiceIsDisabled);
+    FREE_MEMORY(g_desiredEnsureRpcsvcgssdServiceIsDisabled);
+    FREE_MEMORY(g_desiredEnsureSnmpServerIsDisabled);
+    FREE_MEMORY(g_desiredEnsureRsynServiceIsDisabled);
+    FREE_MEMORY(g_desiredEnsureNisServerIsDisabled);
+    FREE_MEMORY(g_desiredEnsureRshClientNotInstalled);
+    FREE_MEMORY(g_desiredEnsureSmbWithSambaIsDisabled);
+    FREE_MEMORY(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable);
+    FREE_MEMORY(g_desiredEnsureNoUsersHaveDotForwardFiles);
+    FREE_MEMORY(g_desiredEnsureNoUsersHaveDotNetrcFiles);
+    FREE_MEMORY(g_desiredEnsureNoUsersHaveDotRhostsFiles);
+    FREE_MEMORY(g_desiredEnsureRloginServiceIsDisabled);
+    FREE_MEMORY(g_desiredEnsureUnnecessaryAccountsAreRemoved);
+
     SshAuditCleanup(log);
 }
 
@@ -3182,158 +3784,163 @@ static int InitEnsureAppropriateCiphersForSsh(char* value, void* log)
     return InitializeSshAuditCheck(g_initEnsureAppropriateCiphersForSshObject, value, log);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-static int InitEnsurePermissionsOnEtcIssue(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcIssueObject, value, log); }
-static int InitEnsurePermissionsOnEtcIssueNet(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcIssueNetObject, value, log); }
-static int InitEnsurePermissionsOnEtcHostsAllow(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcHostsAllowObject, value, log); }
-static int InitEnsurePermissionsOnEtcHostsDeny(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcHostsDenyObject, value, log); }
-static int InitEnsurePermissionsOnEtcShadow(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcShadowObject, value, log); }
-static int InitEnsurePermissionsOnEtcShadowDash(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcShadowDashObject, value, log); }
-static int InitEnsurePermissionsOnEtcGShadow(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcGShadowObject, value, log); }
-static int InitEnsurePermissionsOnEtcGShadowDash(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcGShadowDashObject, value, log); }
-static int InitEnsurePermissionsOnEtcPasswd(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcPasswdObject, value, log); }
-static int InitEnsurePermissionsOnEtcPasswdDash(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcPasswdDashObject, value, log); }
-static int InitEnsurePermissionsOnEtcGroup(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcGroupObject, value, log); }
-static int InitEnsurePermissionsOnEtcGroupDash(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcGroupDashObject, value, log); }
-static int InitEnsurePermissionsOnEtcAnacronTab(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcAnacronTabObject, value, log); }
-static int InitEnsurePermissionsOnEtcCronD(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcCronDObject, value, log); }
-static int InitEnsurePermissionsOnEtcCronDaily(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcCronDailyObject, value, log); }
-static int InitEnsurePermissionsOnEtcCronHourly(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcCronHourlyObject, value, log); }
-static int InitEnsurePermissionsOnEtcCronMonthly(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcCronMonthlyObject, value, log); }
-static int InitEnsurePermissionsOnEtcCronWeekly(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcCronWeeklyObject, value, log); }
-static int InitEnsurePermissionsOnEtcMotd(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcMotdObject, value, log); }
-static int InitEnsureInetdNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureInetdNotInstalledObject, value, log); }
-static int InitEnsureXinetdNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureXinetdNotInstalledObject, value, log); }
-static int InitEnsureRshServerNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRshServerNotInstalledObject, value, log); }
-static int InitEnsureNisNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNisNotInstalledObject, value, log); }
-static int InitEnsureTftpdNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureTftpdNotInstalledObject, value, log); }
-static int InitEnsureReadaheadFedoraNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureReadaheadFedoraNotInstalledObject, value, log); }
-static int InitEnsureBluetoothHiddNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureBluetoothHiddNotInstalledObject, value, log); }
-static int InitEnsureIsdnUtilsBaseNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureIsdnUtilsBaseNotInstalledObject, value, log); }
-static int InitEnsureIsdnUtilsKdumpToolsNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureIsdnUtilsKdumpToolsNotInstalledObject, value, log); }
-static int InitEnsureIscDhcpdServerNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureIscDhcpdServerNotInstalledObject, value, log); }
-static int InitEnsureSendmailNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureSendmailNotInstalledObject, value, log); }
-static int InitEnsureSldapdNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureSldapdNotInstalledObject, value, log); }
-static int InitEnsureBind9NotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureBind9NotInstalledObject, value, log); }
-static int InitEnsureDovecotCoreNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureDovecotCoreNotInstalledObject, value, log); }
-static int InitEnsureAuditdInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAuditdInstalledObject, value, log); }
-static int InitEnsurePrelinkIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePrelinkIsDisabledObject, value, log); }
-static int InitEnsureTalkClientIsNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureTalkClientIsNotInstalledObject, value, log); }
-static int InitEnsureCronServiceIsEnabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureCronServiceIsEnabledObject, value, log); }
-static int InitEnsureAuditdServiceIsRunning(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAuditdServiceIsRunningObject, value, log); }
-static int InitEnsureKernelSupportForCpuNx(char* value, void* log) { return InitializeAsbCheck(g_initEnsureKernelSupportForCpuNxObject, value, log); }
-static int InitEnsureAllTelnetdPackagesUninstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAllTelnetdPackagesUninstalledObject, value, log); }
-static int InitEnsureNodevOptionOnHomePartition(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNodevOptionOnHomePartitionObject, value, log); }
-static int InitEnsureNodevOptionOnTmpPartition(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNodevOptionOnTmpPartitionObject, value, log); }
-static int InitEnsureNodevOptionOnVarTmpPartition(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNodevOptionOnVarTmpPartitionObject, value, log); }
-static int InitEnsureNosuidOptionOnTmpPartition(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNosuidOptionOnTmpPartitionObject, value, log); }
-static int InitEnsureNosuidOptionOnVarTmpPartition(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNosuidOptionOnVarTmpPartitionObject, value, log); }
-static int InitEnsureNoexecOptionOnVarTmpPartition(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoexecOptionOnVarTmpPartitionObject, value, log); }
-static int InitEnsureNoexecOptionOnDevShmPartition(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoexecOptionOnDevShmPartitionObject, value, log); }
-static int InitEnsureNodevOptionEnabledForAllRemovableMedia(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNodevOptionEnabledForAllRemovableMediaObject, value, log); }
-static int InitEnsureNoexecOptionEnabledForAllRemovableMedia(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoexecOptionEnabledForAllRemovableMediaObject, value, log); }
-static int InitEnsureNosuidOptionEnabledForAllRemovableMedia(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNosuidOptionEnabledForAllRemovableMediaObject, value, log); }
-static int InitEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject, value, log); }
-static int InitEnsureAllEtcPasswdGroupsExistInEtcGroup(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAllEtcPasswdGroupsExistInEtcGroupObject, value, log); }
-static int InitEnsureNoDuplicateUidsExist(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoDuplicateUidsExistObject, value, log); }
-static int InitEnsureNoDuplicateGidsExist(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoDuplicateGidsExistObject, value, log); }
-static int InitEnsureNoDuplicateUserNamesExist(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoDuplicateUserNamesExistObject, value, log); }
-static int InitEnsureNoDuplicateGroupsExist(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoDuplicateGroupsExistObject, value, log); }
-static int InitEnsureShadowGroupIsEmpty(char* value, void* log) { return InitializeAsbCheck(g_initEnsureShadowGroupIsEmptyObject, value, log); }
-static int InitEnsureRootGroupExists(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRootGroupExistsObject, value, log); }
-static int InitEnsureAllAccountsHavePasswords(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAllAccountsHavePasswordsObject, value, log); }
-static int InitEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject, value, log); }
-static int InitEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoLegacyPlusEntriesInEtcPasswdObject, value, log); }
-static int InitEnsureNoLegacyPlusEntriesInEtcShadow(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoLegacyPlusEntriesInEtcShadowObject, value, log); }
-static int InitEnsureNoLegacyPlusEntriesInEtcGroup(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoLegacyPlusEntriesInEtcGroupObject, value, log); }
-static int InitEnsureDefaultRootAccountGroupIsGidZero(char* value, void* log) { return InitializeAsbCheck(g_initEnsureDefaultRootAccountGroupIsGidZeroObject, value, log); }
-static int InitEnsureRootIsOnlyUidZeroAccount(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRootIsOnlyUidZeroAccountObject, value, log); }
-static int InitEnsureAllUsersHomeDirectoriesExist(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAllUsersHomeDirectoriesExistObject, value, log); }
-static int InitEnsureUsersOwnTheirHomeDirectories(char* value, void* log) { return InitializeAsbCheck(g_initEnsureUsersOwnTheirHomeDirectoriesObject, value, log); }
-static int InitEnsureRestrictedUserHomeDirectories(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRestrictedUserHomeDirectoriesObject, value, log); }
-static int InitEnsurePasswordHashingAlgorithm(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePasswordHashingAlgorithmObject, value, log); }
-static int InitEnsureMinDaysBetweenPasswordChanges(char* value, void* log) { return InitializeAsbCheck(g_initEnsureMinDaysBetweenPasswordChangesObject, value, log); }
-static int InitEnsureInactivePasswordLockPeriod(char* value, void* log) { return InitializeAsbCheck(g_initEnsureInactivePasswordLockPeriodObject, value, log); }
-static int InitMaxDaysBetweenPasswordChanges(char* value, void* log) { return InitializeAsbCheck(g_initEnsureMaxDaysBetweenPasswordChangesObject, value, log); }
-static int InitEnsurePasswordExpiration(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePasswordExpirationObject, value, log); }
-static int InitEnsurePasswordExpirationWarning(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePasswordExpirationWarningObject, value, log); }
-static int InitEnsureSystemAccountsAreNonLogin(char* value, void* log) { return InitializeAsbCheck(g_initEnsureSystemAccountsAreNonLoginObject, value, log); }
-static int InitEnsureAuthenticationRequiredForSingleUserMode(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAuthenticationRequiredForSingleUserModeObject, value, log); }
-static int InitEnsureDotDoesNotAppearInRootsPath(char* value, void* log) { return InitializeAsbCheck(g_initEnsureDotDoesNotAppearInRootsPathObject, value, log); }
-static int InitEnsureRemoteLoginWarningBannerIsConfigured(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRemoteLoginWarningBannerIsConfiguredObject, value, log); }
-static int InitEnsureLocalLoginWarningBannerIsConfigured(char* value, void* log) { return InitializeAsbCheck(g_initEnsureLocalLoginWarningBannerIsConfiguredObject, value, log); }
-static int InitEnsureSuRestrictedToRootGroup(char* value, void* log) { return InitializeAsbCheck(g_initEnsureSuRestrictedToRootGroupObject, value, log); }
-static int InitEnsureDefaultUmaskForAllUsers(char* value, void* log) { return InitializeAsbCheck(g_initEnsureDefaultUmaskForAllUsersObject, value, log); }
-static int InitEnsureAutomountingDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAutomountingDisabledObject, value, log); }
-static int InitEnsureKernelCompiledFromApprovedSources(char* value, void* log) { return InitializeAsbCheck(g_initEnsureKernelCompiledFromApprovedSourcesObject, value, log); }
-static int InitEnsureDefaultDenyFirewallPolicyIsSet(char* value, void* log) { return InitializeAsbCheck(g_initEnsureDefaultDenyFirewallPolicyIsSetObject, value, log); }
-static int InitEnsurePacketRedirectSendingIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePacketRedirectSendingIsDisabledObject, value, log); }
-static int InitEnsureIcmpRedirectsIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureIcmpRedirectsIsDisabledObject, value, log); }
-static int InitEnsureSourceRoutedPacketsIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureSourceRoutedPacketsIsDisabledObject, value, log); }
-static int InitEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAcceptingSourceRoutedPacketsIsDisabledObject, value, log); }
-static int InitEnsureIgnoringBogusIcmpBroadcastResponses(char* value, void* log) { return InitializeAsbCheck(g_initEnsureIgnoringBogusIcmpBroadcastResponsesObject, value, log); }
-static int InitEnsureIgnoringIcmpEchoPingsToMulticast(char* value, void* log) { return InitializeAsbCheck(g_initEnsureIgnoringIcmpEchoPingsToMulticastObject, value, log); }
-static int InitEnsureMartianPacketLoggingIsEnabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureMartianPacketLoggingIsEnabledObject, value, log); }
-static int InitEnsureReversePathSourceValidationIsEnabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureReversePathSourceValidationIsEnabledObject, value, log); }
-static int InitEnsureTcpSynCookiesAreEnabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureTcpSynCookiesAreEnabledObject, value, log); }
-static int InitEnsureSystemNotActingAsNetworkSniffer(char* value, void* log) { return InitializeAsbCheck(g_initEnsureSystemNotActingAsNetworkSnifferObject, value, log); }
-static int InitEnsureAllWirelessInterfacesAreDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAllWirelessInterfacesAreDisabledObject, value, log); }
-static int InitEnsureIpv6ProtocolIsEnabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureIpv6ProtocolIsEnabledObject, value, log); }
-static int InitEnsureDccpIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureDccpIsDisabledObject, value, log); }
-static int InitEnsureSctpIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureSctpIsDisabledObject, value, log); }
-static int InitEnsureDisabledSupportForRds(char* value, void* log) { return InitializeAsbCheck(g_initEnsureDisabledSupportForRdsObject, value, log); }
-static int InitEnsureTipcIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureTipcIsDisabledObject, value, log); }
-static int InitEnsureZeroconfNetworkingIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureZeroconfNetworkingIsDisabledObject, value, log); }
-static int InitEnsurePermissionsOnBootloaderConfig(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePermissionsOnBootloaderConfigObject, value, log); }
-static int InitEnsurePasswordReuseIsLimited(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePasswordReuseIsLimitedObject, value, log); }
-static int InitEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureMountingOfUsbStorageDevicesIsDisabledObject, value, log); }
-static int InitEnsureCoreDumpsAreRestricted(char* value, void* log) { return InitializeAsbCheck(g_initEnsureCoreDumpsAreRestrictedObject, value, log); }
-static int InitEnsurePasswordCreationRequirements(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePasswordCreationRequirementsObject, value, log); }
-static int InitEnsureLockoutForFailedPasswordAttempts(char* value, void* log) { return InitializeAsbCheck(g_initEnsureLockoutForFailedPasswordAttemptsObject, value, log); }
-static int InitEnsureDisabledInstallationOfCramfsFileSystem(char* value, void* log) { return InitializeAsbCheck(g_initEnsureDisabledInstallationOfCramfsFileSystemObject, value, log); }
-static int InitEnsureDisabledInstallationOfFreevxfsFileSystem(char* value, void* log) { return InitializeAsbCheck(g_initEnsureDisabledInstallationOfFreevxfsFileSystemObject, value, log); }
-static int InitEnsureDisabledInstallationOfHfsFileSystem(char* value, void* log) { return InitializeAsbCheck(g_initEnsureDisabledInstallationOfHfsFileSystemObject, value, log); }
-static int InitEnsureDisabledInstallationOfHfsplusFileSystem(char* value, void* log) { return InitializeAsbCheck(g_initEnsureDisabledInstallationOfHfsplusFileSystemObject, value, log); }
-static int InitEnsureDisabledInstallationOfJffs2FileSystem(char* value, void* log) { return InitializeAsbCheck(g_initEnsureDisabledInstallationOfJffs2FileSystemObject, value, log); }
-static int InitEnsureVirtualMemoryRandomizationIsEnabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureVirtualMemoryRandomizationIsEnabledObject, value, log); }
-static int InitEnsureAllBootloadersHavePasswordProtectionEnabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAllBootloadersHavePasswordProtectionEnabledObject, value, log); }
-static int InitEnsureLoggingIsConfigured(char* value, void* log) { return InitializeAsbCheck(g_initEnsureLoggingIsConfiguredObject, value, log); }
-static int InitEnsureSyslogPackageIsInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureSyslogPackageIsInstalledObject, value, log); }
-static int InitEnsureSystemdJournaldServicePersistsLogMessages(char* value, void* log) { return InitializeAsbCheck(g_initEnsureSystemdJournaldServicePersistsLogMessagesObject, value, log); }
-static int InitEnsureALoggingServiceIsEnabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureALoggingServiceIsEnabledObject, value, log); }
-static int InitEnsureFilePermissionsForAllRsyslogLogFiles(char* value, void* log) { return InitializeAsbCheck(g_initEnsureFilePermissionsForAllRsyslogLogFilesObject, value, log); }
-static int InitEnsureLoggerConfigurationFilesAreRestricted(char* value, void* log) { return InitializeAsbCheck(g_initEnsureLoggerConfigurationFilesAreRestrictedObject, value, log); }
-static int InitEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject, value, log); }
-static int InitEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject, value, log); }
-static int InitEnsureRsyslogNotAcceptingRemoteMessages(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRsyslogNotAcceptingRemoteMessagesObject, value, log); }
-static int InitEnsureSyslogRotaterServiceIsEnabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureSyslogRotaterServiceIsEnabledObject, value, log); }
-static int InitEnsureTelnetServiceIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureTelnetServiceIsDisabledObject, value, log); }
-static int InitEnsureRcprshServiceIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRcprshServiceIsDisabledObject, value, log); }
-static int InitEnsureTftpServiceisDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureTftpServiceisDisabledObject, value, log); }
-static int InitEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAtCronIsRestrictedToAuthorizedUsersObject, value, log); }
-static int InitEnsureAvahiDaemonServiceIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureAvahiDaemonServiceIsDisabledObject, value, log); }
-static int InitEnsureCupsServiceisDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureCupsServiceisDisabledObject, value, log); }
-static int InitEnsurePostfixPackageIsUninstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePostfixPackageIsUninstalledObject, value, log); }
-static int InitEnsurePostfixNetworkListeningIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePostfixNetworkListeningIsDisabledObject, value, log); }
-static int InitEnsureRpcgssdServiceIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRpcgssdServiceIsDisabledObject, value, log); }
-static int InitEnsureRpcidmapdServiceIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRpcidmapdServiceIsDisabledObject, value, log); }
-static int InitEnsurePortmapServiceIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsurePortmapServiceIsDisabledObject, value, log); }
-static int InitEnsureNetworkFileSystemServiceIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNetworkFileSystemServiceIsDisabledObject, value, log); }
-static int InitEnsureRpcsvcgssdServiceIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRpcsvcgssdServiceIsDisabledObject, value, log); }
-static int InitEnsureSnmpServerIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureSnmpServerIsDisabledObject, value, log); }
-static int InitEnsureRsynServiceIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRsynServiceIsDisabledObject, value, log); }
-static int InitEnsureNisServerIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNisServerIsDisabledObject, value, log); }
-static int InitEnsureRshClientNotInstalled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRshClientNotInstalledObject, value, log); }
-static int InitEnsureSmbWithSambaIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureSmbWithSambaIsDisabledObject, value, log); }
-static int InitEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, void* log) { return InitializeAsbCheck(g_initEnsureUsersDotFilesArentGroupOrWorldWritableObject, value, log); }
-static int InitEnsureNoUsersHaveDotForwardFiles(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoUsersHaveDotForwardFilesObject, value, log); }
-static int InitEnsureNoUsersHaveDotNetrcFiles(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoUsersHaveDotNetrcFilesObject, value, log); }
-static int InitEnsureNoUsersHaveDotRhostsFiles(char* value, void* log) { return InitializeAsbCheck(g_initEnsureNoUsersHaveDotRhostsFilesObject, value, log); }
-static int InitEnsureRloginServiceIsDisabled(char* value, void* log) { return InitializeAsbCheck(g_initEnsureRloginServiceIsDisabledObject, value, log); }
-static int InitEnsureUnnecessaryAccountsAreRemoved(char* value, void* log) { return InitializeAsbCheck(g_initEnsureUnnecessaryAccountsAreRemovedObject, value, log); }
-*/
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+static int ReplaceString(char* target, char* source, const char* defaultValue)
+{
+    bool isValidValue = ((NULL == value) || (0 == value[0])) ? false : true;
+    int status = 0;
+
+    FREE_MEMORY(target);
+    status = (NULL != (target = DuplicateString(isValidValue ? value : defaultValue))) ? 0 : ENOMEM;
+}
+
+static int InitEnsurePermissionsOnEtcIssue(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcIssue, value, g_defaultEnsurePermissionsOnEtcIssue); }
+static int InitEnsurePermissionsOnEtcIssueNet(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcIssueNet, value, g_defaultEnsurePermissionsOnEtcIssueNet); }
+static int InitEnsurePermissionsOnEtcHostsAllow(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcHostsAllow, value, g_defaultEnsurePermissionsOnEtcHostsAllow); }
+static int InitEnsurePermissionsOnEtcHostsDeny(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcHostsDeny, value, g_defaultEnsurePermissionsOnEtcHostsDeny); }
+static int InitEnsurePermissionsOnEtcShadow(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcShadow, value, g_defaultEnsurePermissionsOnEtcShadow); }
+static int InitEnsurePermissionsOnEtcShadowDash(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcShadowDash, value, g_defaultEnsurePermissionsOnEtcShadowDash); }
+static int InitEnsurePermissionsOnEtcGShadow(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcGShadow, value, g_defaultEnsurePermissionsOnEtcGShadow); }
+static int InitEnsurePermissionsOnEtcGShadowDash(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcGShadowDash, value, g_defaultEnsurePermissionsOnEtcGShadowDash); }
+static int InitEnsurePermissionsOnEtcPasswd(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcPasswd, value, g_defaultEnsurePermissionsOnEtcPasswd); }
+static int InitEnsurePermissionsOnEtcPasswdDash(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcPasswdDash, value, g_defaultEnsurePermissionsOnEtcPasswdDash); }
+static int InitEnsurePermissionsOnEtcGroup(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcGroup, value, g_defaultEnsurePermissionsOnEtcGroup); }
+static int InitEnsurePermissionsOnEtcGroupDash(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcGroupDash, value, g_defaultEnsurePermissionsOnEtcGroupDash); }
+static int InitEnsurePermissionsOnEtcAnacronTab(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcAnacronTab, value, g_defaultEnsurePermissionsOnEtcAnacronTab); }
+static int InitEnsurePermissionsOnEtcCronD(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcCronD, value, g_defaultEnsurePermissionsOnEtcCronD); }
+static int InitEnsurePermissionsOnEtcCronDaily(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcCronDaily, value, g_defaultEnsurePermissionsOnEtcCronDaily); }
+static int InitEnsurePermissionsOnEtcCronHourly(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcCronHourly, value, g_defaultEnsurePermissionsOnEtcCronHourly); }
+static int InitEnsurePermissionsOnEtcCronMonthly(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcCronMonthly, value, g_defaultEnsurePermissionsOnEtcCronMonthly); }
+static int InitEnsurePermissionsOnEtcCronWeekly(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcCronWeekly, value, g_defaultEnsurePermissionsOnEtcCronWeekly); }
+static int InitEnsurePermissionsOnEtcMotd(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcMotd, value, g_defaultEnsurePermissionsOnEtcMotd); }
+static int InitEnsureInetdNotInstalled(char* value) { return ReplaceString(g_desiredEnsureInetdNotInstalled, value, g_defaultEnsureInetdNotInstalled); }
+static int InitEnsureXinetdNotInstalled(char* value) { return ReplaceString(g_desiredEnsureXinetdNotInstalled, value, g_defaultEnsureXinetdNotInstalled); }
+static int InitEnsureRshServerNotInstalled(char* value) { return ReplaceString(g_desiredEnsureRshServerNotInstalled, value, g_defaultEnsureRshServerNotInstalled); }
+static int InitEnsureNisNotInstalled(char* value) { return ReplaceString(g_desiredEnsureNisNotInstalled, value, g_defaultEnsureNisNotInstalled); }
+static int InitEnsureTftpdNotInstalled(char* value) { return ReplaceString(g_desiredEnsureTftpdNotInstalled, value, g_defaultEnsureTftpdNotInstalled); }
+static int InitEnsureReadaheadFedoraNotInstalled(char* value) { return ReplaceString(g_desiredEnsureReadaheadFedoraNotInstalled, value, g_defaultEnsureReadaheadFedoraNotInstalled); }
+static int InitEnsureBluetoothHiddNotInstalled(char* value) { return ReplaceString(g_desiredEnsureBluetoothHiddNotInstalled, value, g_defaultEnsureBluetoothHiddNotInstalled); }
+static int InitEnsureIsdnUtilsBaseNotInstalled(char* value) { return ReplaceString(g_desiredEnsureIsdnUtilsBaseNotInstalled, value, g_defaultEnsureIsdnUtilsBaseNotInstalled); }
+static int InitEnsureIsdnUtilsKdumpToolsNotInstalled(char* value) { return ReplaceString(g_desiredEnsureIsdnUtilsKdumpToolsNotInstalled, value, g_defaultEnsureIsdnUtilsKdumpToolsNotInstalled); }
+static int InitEnsureIscDhcpdServerNotInstalled(char* value) { return ReplaceString(g_desiredEnsureIscDhcpdServerNotInstalled, value, g_defaultEnsureIscDhcpdServerNotInstalled); }
+static int InitEnsureSendmailNotInstalled(char* value) { return ReplaceString(g_desiredEnsureSendmailNotInstalled, value, g_defaultEnsureSendmailNotInstalled); }
+static int InitEnsureSldapdNotInstalled(char* value) { return ReplaceString(g_desiredEnsureSldapdNotInstalled, value, g_defaultEnsureSldapdNotInstalled); }
+static int InitEnsureBind9NotInstalled(char* value) { return ReplaceString(g_desiredEnsureBind9NotInstalled, value, g_defaultEnsureBind9NotInstalled); }
+static int InitEnsureDovecotCoreNotInstalled(char* value) { return ReplaceString(g_desiredEnsureDovecotCoreNotInstalled, value, g_defaultEnsureDovecotCoreNotInstalled); }
+static int InitEnsureAuditdInstalled(char* value) { return ReplaceString(g_desiredEnsureAuditdInstalled, value, g_defaultEnsureAuditdInstalled); }
+static int InitEnsurePrelinkIsDisabled(char* value) { return ReplaceString(g_desiredEnsurePrelinkIsDisabled, value, g_defaultEnsurePrelinkIsDisabled); }
+static int InitEnsureTalkClientIsNotInstalled(char* value) { return ReplaceString(g_desiredEnsureTalkClientIsNotInstalled, value, g_defaultEnsureTalkClientIsNotInstalled); }
+static int InitEnsureCronServiceIsEnabled(char* value) { return ReplaceString(g_desiredEnsureCronServiceIsEnabled, value, g_defaultEnsureCronServiceIsEnabled); }
+static int InitEnsureAuditdServiceIsRunning(char* value) { return ReplaceString(g_desiredEnsureAuditdServiceIsRunning, value, g_defaultEnsureAuditdServiceIsRunning); }
+static int InitEnsureKernelSupportForCpuNx(char* value) { return ReplaceString(g_desiredEnsureKernelSupportForCpuNx, value, g_defaultEnsureKernelSupportForCpuNx); }
+static int InitEnsureAllTelnetdPackagesUninstalled(char* value) { return ReplaceString(g_desiredEnsureAllTelnetdPackagesUninstalled, value, g_defaultEnsureAllTelnetdPackagesUninstalled); }
+static int InitEnsureNodevOptionOnHomePartition(char* value) { return ReplaceString(g_desiredEnsureNodevOptionOnHomePartition, value, g_defaultEnsureNodevOptionOnHomePartition); }
+static int InitEnsureNodevOptionOnTmpPartition(char* value) { return ReplaceString(g_desiredEnsureNodevOptionOnTmpPartition, value, g_defaultEnsureNodevOptionOnTmpPartition); }
+static int InitEnsureNodevOptionOnVarTmpPartition(char* value) { return ReplaceString(g_desiredEnsureNodevOptionOnVarTmpPartition, value, g_defaultEnsureNodevOptionOnVarTmpPartition); }
+static int InitEnsureNosuidOptionOnTmpPartition(char* value) { return ReplaceString(g_desiredEnsureNosuidOptionOnTmpPartition, value, g_defaultEnsureNosuidOptionOnTmpPartition); }
+static int InitEnsureNosuidOptionOnVarTmpPartition(char* value) { return ReplaceString(g_desiredEnsureNosuidOptionOnVarTmpPartition, value, g_defaultEnsureNosuidOptionOnVarTmpPartition); }
+static int InitEnsureNoexecOptionOnVarTmpPartition(char* value) { return ReplaceString(g_desiredEnsureNoexecOptionOnVarTmpPartition, value, g_defaultEnsureNoexecOptionOnVarTmpPartition); }
+static int InitEnsureNoexecOptionOnDevShmPartition(char* value) { return ReplaceString(g_desiredEnsureNoexecOptionOnDevShmPartition, value, g_defaultEnsureNoexecOptionOnDevShmPartition); }
+static int InitEnsureNodevOptionEnabledForAllRemovableMedia(char* value) { return ReplaceString(g_desiredEnsureNodevOptionEnabledForAllRemovableMedia, value, g_defaultEnsureNodevOptionEnabledForAllRemovableMedia); }
+static int InitEnsureNoexecOptionEnabledForAllRemovableMedia(char* value) { return ReplaceString(g_desiredEnsureNoexecOptionEnabledForAllRemovableMedia, value, g_defaultEnsureNoexecOptionEnabledForAllRemovableMedia); }
+static int InitEnsureNosuidOptionEnabledForAllRemovableMedia(char* value) { return ReplaceString(g_desiredEnsureNosuidOptionEnabledForAllRemovableMedia, value, g_defaultEnsureNosuidOptionEnabledForAllRemovableMedia); }
+static int InitEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value) { return ReplaceString(g_desiredEnsureNoexecNosuidOptionsEnabledForAllNfsMounts, value, g_defaultEnsureNoexecNosuidOptionsEnabledForAllNfsMounts); }
+static int InitEnsureAllEtcPasswdGroupsExistInEtcGroup(char* value) { return ReplaceString(g_desiredEnsureAllEtcPasswdGroupsExistInEtcGroup, value, g_defaultEnsureAllEtcPasswdGroupsExistInEtcGroup); }
+static int InitEnsureNoDuplicateUidsExist(char* value) { return ReplaceString(g_desiredEnsureNoDuplicateUidsExist, value, g_defaultEnsureNoDuplicateUidsExist); }
+static int InitEnsureNoDuplicateGidsExist(char* value) { return ReplaceString(g_desiredEnsureNoDuplicateGidsExist, value, g_defaultEnsureNoDuplicateGidsExist); }
+static int InitEnsureNoDuplicateUserNamesExist(char* value) { return ReplaceString(g_desiredEnsureNoDuplicateUserNamesExist, value, g_defaultEnsureNoDuplicateUserNamesExist); }
+static int InitEnsureNoDuplicateGroupsExist(char* value) { return ReplaceString(g_desiredEnsureNoDuplicateGroupsExist, value, g_defaultEnsureNoDuplicateGroupsExist); }
+static int InitEnsureShadowGroupIsEmpty(char* value) { return ReplaceString(g_desiredEnsureShadowGroupIsEmpty, value, g_defaultEnsureShadowGroupIsEmpty); }
+static int InitEnsureRootGroupExists(char* value) { return ReplaceString(g_desiredEnsureRootGroupExists, value, g_defaultEnsureRootGroupExists); }
+static int InitEnsureAllAccountsHavePasswords(char* value) { return ReplaceString(g_desiredEnsureAllAccountsHavePasswords, value, g_defaultEnsureAllAccountsHavePasswords); }
+static int InitEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* value) { return ReplaceString(g_desiredEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero, value, g_defaultEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero); }
+static int InitEnsureNoLegacyPlusEntriesInEtcPasswd(char* value) { return ReplaceString(g_desiredEnsureNoLegacyPlusEntriesInEtcPasswd, value, g_defaultEnsureNoLegacyPlusEntriesInEtcPasswd); }
+static int InitEnsureNoLegacyPlusEntriesInEtcShadow(char* value) { return ReplaceString(g_desiredEnsureNoLegacyPlusEntriesInEtcShadow, value, g_defaultEnsureNoLegacyPlusEntriesInEtcShadow); }
+static int InitEnsureNoLegacyPlusEntriesInEtcGroup(char* value) { return ReplaceString(g_desiredEnsureNoLegacyPlusEntriesInEtcGroup, value, g_defaultEnsureNoLegacyPlusEntriesInEtcGroup); }
+static int InitEnsureDefaultRootAccountGroupIsGidZero(char* value) { return ReplaceString(g_desiredEnsureDefaultRootAccountGroupIsGidZero, value, g_defaultEnsureDefaultRootAccountGroupIsGidZero); }
+static int InitEnsureRootIsOnlyUidZeroAccount(char* value) { return ReplaceString(g_desiredEnsureRootIsOnlyUidZeroAccount, value, g_defaultEnsureRootIsOnlyUidZeroAccount); }
+static int InitEnsureAllUsersHomeDirectoriesExist(char* value) { return ReplaceString(g_desiredEnsureAllUsersHomeDirectoriesExist, value, g_defaultEnsureAllUsersHomeDirectoriesExist); }
+static int InitEnsureUsersOwnTheirHomeDirectories(char* value) { return ReplaceString(g_desiredEnsureUsersOwnTheirHomeDirectories, value, g_defaultEnsureUsersOwnTheirHomeDirectories); }
+static int InitEnsureRestrictedUserHomeDirectories(char* value) { return ReplaceString(g_desiredEnsureRestrictedUserHomeDirectories, value, g_defaultEnsureRestrictedUserHomeDirectories); }
+static int InitEnsurePasswordHashingAlgorithm(char* value) { return ReplaceString(g_desiredEnsurePasswordHashingAlgorithm, value, g_defaultEnsurePasswordHashingAlgorithm); }
+static int InitEnsureMinDaysBetweenPasswordChanges(char* value) { return ReplaceString(g_desiredEnsureMinDaysBetweenPasswordChanges, value, g_defaultEnsureMinDaysBetweenPasswordChanges); }
+static int InitEnsureInactivePasswordLockPeriod(char* value) { return ReplaceString(g_desiredEnsureInactivePasswordLockPeriod, value, g_defaultEnsureInactivePasswordLockPeriod); }
+static int InitMaxDaysBetweenPasswordChanges(char* value) { return ReplaceString(g_desiredMaxDaysBetweenPasswordChanges, value, g_defaultMaxDaysBetweenPasswordChanges); }
+static int InitEnsurePasswordExpiration(char* value) { return ReplaceString(g_desiredEnsurePasswordExpiration, value, g_defaultEnsurePasswordExpiration); }
+static int InitEnsurePasswordExpirationWarning(char* value) { return ReplaceString(g_desiredEnsurePasswordExpirationWarning, value, g_defaultEnsurePasswordExpirationWarning); }
+static int InitEnsureSystemAccountsAreNonLogin(char* value) { return ReplaceString(g_desiredEnsureSystemAccountsAreNonLogin, value, g_defaultEnsureSystemAccountsAreNonLogin); }
+static int InitEnsureAuthenticationRequiredForSingleUserMode(char* value) { return ReplaceString(g_desiredEnsureAuthenticationRequiredForSingleUserMode, value, g_defaultEnsureAuthenticationRequiredForSingleUserMode); }
+static int InitEnsureDotDoesNotAppearInRootsPath(char* value) { return ReplaceString(g_desiredEnsureDotDoesNotAppearInRootsPath, value, g_defaultEnsureDotDoesNotAppearInRootsPath); }
+static int InitEnsureRemoteLoginWarningBannerIsConfigured(char* value) { return ReplaceString(g_desiredEnsureRemoteLoginWarningBannerIsConfigured, value, g_defaultEnsureRemoteLoginWarningBannerIsConfigured); }
+static int InitEnsureLocalLoginWarningBannerIsConfigured(char* value) { return ReplaceString(g_desiredEnsureLocalLoginWarningBannerIsConfigured, value, g_defaultEnsureLocalLoginWarningBannerIsConfigured); }
+static int InitEnsureSuRestrictedToRootGroup(char* value) { return ReplaceString(g_desiredEnsureSuRestrictedToRootGroup, value, g_defaultEnsureSuRestrictedToRootGroup); }
+static int InitEnsureDefaultUmaskForAllUsers(char* value) { return ReplaceString(g_desiredEnsureDefaultUmaskForAllUsers, value, g_defaultEnsureDefaultUmaskForAllUsers); }
+static int InitEnsureAutomountingDisabled(char* value) { return ReplaceString(g_desiredEnsureAutomountingDisabled, value, g_defaultEnsureAutomountingDisabled); }
+static int InitEnsureKernelCompiledFromApprovedSources(char* value) { return ReplaceString(g_desiredEnsureKernelCompiledFromApprovedSources, value, g_defaultEnsureKernelCompiledFromApprovedSources); }
+static int InitEnsureDefaultDenyFirewallPolicyIsSet(char* value) { return ReplaceString(g_desiredEnsureDefaultDenyFirewallPolicyIsSet, value, g_defaultEnsureDefaultDenyFirewallPolicyIsSet); }
+static int InitEnsurePacketRedirectSendingIsDisabled(char* value) { return ReplaceString(g_desiredEnsurePacketRedirectSendingIsDisabled, value, g_defaultEnsurePacketRedirectSendingIsDisabled); }
+static int InitEnsureIcmpRedirectsIsDisabled(char* value) { return ReplaceString(g_desiredEnsureIcmpRedirectsIsDisabled, value, g_defaultEnsureIcmpRedirectsIsDisabled); }
+static int InitEnsureSourceRoutedPacketsIsDisabled(char* value) { return ReplaceString(g_desiredEnsureSourceRoutedPacketsIsDisabled, value, g_defaultEnsureSourceRoutedPacketsIsDisabled); }
+static int InitEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value) { return ReplaceString(g_desiredEnsureAcceptingSourceRoutedPacketsIsDisabled, value, g_defaultEnsureAcceptingSourceRoutedPacketsIsDisabled); }
+static int InitEnsureIgnoringBogusIcmpBroadcastResponses(char* value) { return ReplaceString(g_desiredEnsureIgnoringBogusIcmpBroadcastResponses, value, g_defaultEnsureIgnoringBogusIcmpBroadcastResponses); }
+static int InitEnsureIgnoringIcmpEchoPingsToMulticast(char* value) { return ReplaceString(g_desiredEnsureIgnoringIcmpEchoPingsToMulticast, value, g_defaultEnsureIgnoringIcmpEchoPingsToMulticast); }
+static int InitEnsureMartianPacketLoggingIsEnabled(char* value) { return ReplaceString(g_desiredEnsureMartianPacketLoggingIsEnabled, value, g_defaultEnsureMartianPacketLoggingIsEnabled); }
+static int InitEnsureReversePathSourceValidationIsEnabled(char* value) { return ReplaceString(g_desiredEnsureReversePathSourceValidationIsEnabled, value, g_defaultEnsureReversePathSourceValidationIsEnabled); }
+static int InitEnsureTcpSynCookiesAreEnabled(char* value) { return ReplaceString(g_desiredEnsureTcpSynCookiesAreEnabled, value, g_defaultEnsureTcpSynCookiesAreEnabled); }
+static int InitEnsureSystemNotActingAsNetworkSniffer(char* value) { return ReplaceString(g_desiredEnsureSystemNotActingAsNetworkSniffer, value, g_defaultEnsureSystemNotActingAsNetworkSniffer); }
+static int InitEnsureAllWirelessInterfacesAreDisabled(char* value) { return ReplaceString(g_desiredEnsureAllWirelessInterfacesAreDisabled, value, g_defaultEnsureAllWirelessInterfacesAreDisabled); }
+static int InitEnsureIpv6ProtocolIsEnabled(char* value) { return ReplaceString(g_desiredEnsureIpv6ProtocolIsEnabled, value, g_defaultEnsureIpv6ProtocolIsEnabled); }
+static int InitEnsureDccpIsDisabled(char* value) { return ReplaceString(g_desiredEnsureDccpIsDisabled, value, g_defaultEnsureDccpIsDisabled); }
+static int InitEnsureSctpIsDisabled(char* value) { return ReplaceString(g_desiredEnsureSctpIsDisabled, value, g_defaultEnsureSctpIsDisabled); }
+static int InitEnsureDisabledSupportForRds(char* value) { return ReplaceString(g_desiredEnsureDisabledSupportForRds, value, g_defaultEnsureDisabledSupportForRds); }
+static int InitEnsureTipcIsDisabled(char* value) { return ReplaceString(g_desiredEnsureTipcIsDisabled, value, g_defaultEnsureTipcIsDisabled); }
+static int InitEnsureZeroconfNetworkingIsDisabled(char* value) { return ReplaceString(g_desiredEnsureZeroconfNetworkingIsDisabled, value, g_defaultEnsureZeroconfNetworkingIsDisabled); }
+static int InitEnsurePermissionsOnBootloaderConfig(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnBootloaderConfig, value, g_defaultEnsurePermissionsOnBootloaderConfig); }
+static int InitEnsurePasswordReuseIsLimited(char* value) { return ReplaceString(g_desiredEnsurePasswordReuseIsLimited, value, g_defaultEnsurePasswordReuseIsLimited); }
+static int InitEnsureMountingOfUsbStorageDevicesIsDisabled(char* value) { return ReplaceString(g_desiredEnsureMountingOfUsbStorageDevicesIsDisabled, value, g_defaultEnsureMountingOfUsbStorageDevicesIsDisabled); }
+static int InitEnsureCoreDumpsAreRestricted(char* value) { return ReplaceString(g_desiredEnsureCoreDumpsAreRestricted, value, g_defaultEnsureCoreDumpsAreRestricted); }
+static int InitEnsurePasswordCreationRequirements(char* value) { return ReplaceString(g_desiredEnsurePasswordCreationRequirements, value, g_defaultEnsurePasswordCreationRequirements); }
+static int InitEnsureLockoutForFailedPasswordAttempts(char* value) { return ReplaceString(g_desiredEnsureLockoutForFailedPasswordAttempts, value, g_defaultEnsureLockoutForFailedPasswordAttempts); }
+static int InitEnsureDisabledInstallationOfCramfsFileSystem(char* value) { return ReplaceString(g_desiredEnsureDisabledInstallationOfCramfsFileSystem, value, g_defaultEnsureDisabledInstallationOfCramfsFileSystem); }
+static int InitEnsureDisabledInstallationOfFreevxfsFileSystem(char* value) { return ReplaceString(g_desiredEnsureDisabledInstallationOfFreevxfsFileSystem, value, g_defaultEnsureDisabledInstallationOfFreevxfsFileSystem); }
+static int InitEnsureDisabledInstallationOfHfsFileSystem(char* value) { return ReplaceString(g_desiredEnsureDisabledInstallationOfHfsFileSystem, value, g_defaultEnsureDisabledInstallationOfHfsFileSystem); }
+static int InitEnsureDisabledInstallationOfHfsplusFileSystem(char* value) { return ReplaceString(g_desiredEnsureDisabledInstallationOfHfsplusFileSystem, value, g_defaultEnsureDisabledInstallationOfHfsplusFileSystem); }
+static int InitEnsureDisabledInstallationOfJffs2FileSystem(char* value) { return ReplaceString(g_desiredEnsureDisabledInstallationOfJffs2FileSystem, value, g_defaultEnsureDisabledInstallationOfJffs2FileSystem); }
+static int InitEnsureVirtualMemoryRandomizationIsEnabled(char* value) { return ReplaceString(g_desiredEnsureVirtualMemoryRandomizationIsEnabled, value, g_defaultEnsureVirtualMemoryRandomizationIsEnabled); }
+static int InitEnsureAllBootloadersHavePasswordProtectionEnabled(char* value) { return ReplaceString(g_desiredEnsureAllBootloadersHavePasswordProtectionEnabled, value, g_defaultEnsureAllBootloadersHavePasswordProtectionEnabled); }
+static int InitEnsureLoggingIsConfigured(char* value) { return ReplaceString(g_desiredEnsureLoggingIsConfigured, value, g_defaultEnsureLoggingIsConfigured); }
+static int InitEnsureSyslogPackageIsInstalled(char* value) { return ReplaceString(g_desiredEnsureSyslogPackageIsInstalled, value, g_defaultEnsureSyslogPackageIsInstalled); }
+static int InitEnsureSystemdJournaldServicePersistsLogMessages(char* value) { return ReplaceString(g_desiredEnsureSystemdJournaldServicePersistsLogMessages, value, g_defaultEnsureSystemdJournaldServicePersistsLogMessages); }
+static int InitEnsureALoggingServiceIsEnabled(char* value) { return ReplaceString(g_desiredEnsureALoggingServiceIsEnabled, value, g_defaultEnsureALoggingServiceIsEnabled); }
+static int InitEnsureFilePermissionsForAllRsyslogLogFiles(char* value) { return ReplaceString(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, value, g_defaultEnsureFilePermissionsForAllRsyslogLogFiles); }
+static int InitEnsureLoggerConfigurationFilesAreRestricted(char* value) { return ReplaceString(g_desiredEnsureLoggerConfigurationFilesAreRestricted, value, g_defaultEnsureLoggerConfigurationFilesAreRestricted); }
+static int InitEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value) { return ReplaceString(g_desiredEnsureAllRsyslogLogFilesAreOwnedByAdmGroup, value, g_defaultEnsureAllRsyslogLogFilesAreOwnedByAdmGroup); }
+static int InitEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value) { return ReplaceString(g_desiredEnsureAllRsyslogLogFilesAreOwnedBySyslogUser, value, g_defaultEnsureAllRsyslogLogFilesAreOwnedBySyslogUser); }
+static int InitEnsureRsyslogNotAcceptingRemoteMessages(char* value) { return ReplaceString(g_desiredEnsureRsyslogNotAcceptingRemoteMessages, value, g_defaultEnsureRsyslogNotAcceptingRemoteMessages); }
+static int InitEnsureSyslogRotaterServiceIsEnabled(char* value) { return ReplaceString(g_desiredEnsureSyslogRotaterServiceIsEnabled, value, g_defaultEnsureSyslogRotaterServiceIsEnabled); }
+static int InitEnsureTelnetServiceIsDisabled(char* value) { return ReplaceString(g_desiredEnsureTelnetServiceIsDisabled, value, g_defaultEnsureTelnetServiceIsDisabled); }
+static int InitEnsureRcprshServiceIsDisabled(char* value) { return ReplaceString(g_desiredEnsureRcprshServiceIsDisabled, value, g_defaultEnsureRcprshServiceIsDisabled); }
+static int InitEnsureTftpServiceisDisabled(char* value) { return ReplaceString(g_desiredEnsureTftpServiceisDisabled, value, g_defaultEnsureTftpServiceisDisabled); }
+static int InitEnsureAtCronIsRestrictedToAuthorizedUsers(char* value) { return ReplaceString(g_desiredEnsureAtCronIsRestrictedToAuthorizedUsers, value, g_defaultEnsureAtCronIsRestrictedToAuthorizedUsers); }
+static int InitEnsureAvahiDaemonServiceIsDisabled(char* value) { return ReplaceString(g_desiredEnsureAvahiDaemonServiceIsDisabled, value, g_defaultEnsureAvahiDaemonServiceIsDisabled); }
+static int InitEnsureCupsServiceisDisabled(char* value) { return ReplaceString(g_desiredEnsureCupsServiceisDisabled, value, g_defaultEnsureCupsServiceisDisabled); }
+static int InitEnsurePostfixPackageIsUninstalled(char* value) { return ReplaceString(g_desiredEnsurePostfixPackageIsUninstalled, value, g_defaultEnsurePostfixPackageIsUninstalled); }
+static int InitEnsurePostfixNetworkListeningIsDisabled(char* value) { return ReplaceString(g_desiredEnsurePostfixNetworkListeningIsDisabled, value, g_defaultEnsurePostfixNetworkListeningIsDisabled); }
+static int InitEnsureRpcgssdServiceIsDisabled(char* value) { return ReplaceString(g_desiredEnsureRpcgssdServiceIsDisabled, value, g_defaultEnsureRpcgssdServiceIsDisabled); }
+static int InitEnsureRpcidmapdServiceIsDisabled(char* value) { return ReplaceString(g_desiredEnsureRpcidmapdServiceIsDisabled, value, g_defaultEnsureRpcidmapdServiceIsDisabled); }
+static int InitEnsurePortmapServiceIsDisabled(char* value) { return ReplaceString(g_desiredEnsurePortmapServiceIsDisabled, value, g_defaultEnsurePortmapServiceIsDisabled); }
+static int InitEnsureNetworkFileSystemServiceIsDisabled(char* value) { return ReplaceString(g_desiredEnsureNetworkFileSystemServiceIsDisabled, value, g_defaultEnsureNetworkFileSystemServiceIsDisabled); }
+static int InitEnsureRpcsvcgssdServiceIsDisabled(char* value) { return ReplaceString(g_desiredEnsureRpcsvcgssdServiceIsDisabled, value, g_defaultEnsureRpcsvcgssdServiceIsDisabled); }
+static int InitEnsureSnmpServerIsDisabled(char* value) { return ReplaceString(g_desiredEnsureSnmpServerIsDisabled, value, g_defaultEnsureSnmpServerIsDisabled); }
+static int InitEnsureRsynServiceIsDisabled(char* value) { return ReplaceString(g_desiredEnsureRsynServiceIsDisabled, value, g_defaultEnsureRsynServiceIsDisabled); }
+static int InitEnsureNisServerIsDisabled(char* value) { return ReplaceString(g_desiredEnsureNisServerIsDisabled, value, g_defaultEnsureNisServerIsDisabled); }
+static int InitEnsureRshClientNotInstalled(char* value) { return ReplaceString(g_desiredEnsureRshClientNotInstalled, value, g_defaultEnsureRshClientNotInstalled); }
+static int InitEnsureSmbWithSambaIsDisabled(char* value) { return ReplaceString(g_desiredEnsureSmbWithSambaIsDisabled, value, g_defaultEnsureSmbWithSambaIsDisabled); }
+static int InitEnsureUsersDotFilesArentGroupOrWorldWritable(char* value) { return ReplaceString(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, value, g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable); }
+static int InitEnsureNoUsersHaveDotForwardFiles(char* value) { return ReplaceString(g_desiredEnsureNoUsersHaveDotForwardFiles, value, g_defaultEnsureNoUsersHaveDotForwardFiles); }
+static int InitEnsureNoUsersHaveDotNetrcFiles(char* value) { return ReplaceString(g_desiredEnsureNoUsersHaveDotNetrcFiles, value, g_defaultEnsureNoUsersHaveDotNetrcFiles); }
+static int InitEnsureNoUsersHaveDotRhostsFiles(char* value) { return ReplaceString(g_desiredEnsureNoUsersHaveDotRhostsFiles, value, g_defaultEnsureNoUsersHaveDotRhostsFiles); }
+static int InitEnsureRloginServiceIsDisabled(char* value) { return ReplaceString(g_desiredEnsureRloginServiceIsDisabled, value, g_defaultEnsureRloginServiceIsDisabled); }
+static int InitEnsureUnnecessaryAccountsAreRemoved(char* value) { return ReplaceString(g_desiredEnsureUnnecessaryAccountsAreRemoved, value, g_defaultEnsureUnnecessaryAccountsAreRemoved); }
 
 int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log)
 {
@@ -4915,6 +5522,154 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         {
             status = InitEnsureAppropriateCiphersForSsh(jsonString, log);
         }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcIssueObject)) { status = InitEnsurePermissionsOnEtcIssue(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcIssueNetObject)) { status = InitEnsurePermissionsOnEtcIssueNet(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcHostsAllowObject)) { status = InitEnsurePermissionsOnEtcHostsAllow(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcHostsDenyObject)) { status = InitEnsurePermissionsOnEtcHostsDeny(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcShadowObject)) { status = InitEnsurePermissionsOnEtcShadow(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcShadowDashObject)) { status = InitEnsurePermissionsOnEtcShadowDash(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcGShadowObject)) { status = InitEnsurePermissionsOnEtcGShadow(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcGShadowDashObject)) { status = InitEnsurePermissionsOnEtcGShadowDash(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcPasswdObject)) { status = InitEnsurePermissionsOnEtcPasswd(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcPasswdDashObject)) { status = InitEnsurePermissionsOnEtcPasswdDash(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcGroupObject)) { status = InitEnsurePermissionsOnEtcGroup(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcGroupDashObject)) { status = InitEnsurePermissionsOnEtcGroupDash(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcAnacronTabObject)) { status = InitEnsurePermissionsOnEtcAnacronTab(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronDObject)) { status = InitEnsurePermissionsOnEtcCronD(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronDailyObject)) { status = InitEnsurePermissionsOnEtcCronDaily(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronHourlyObject)) { status = InitEnsurePermissionsOnEtcCronHourly(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronMonthlyObject)) { status = InitEnsurePermissionsOnEtcCronMonthly(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcCronWeeklyObject)) { status = InitEnsurePermissionsOnEtcCronWeekly(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcMotdObject)) { status = InitEnsurePermissionsOnEtcMotd(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureInetdNotInstalledObject)) { status = InitEnsureInetdNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureXinetdNotInstalledObject)) { status = InitEnsureXinetdNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRshServerNotInstalledObject)) { status = InitEnsureRshServerNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNisNotInstalledObject)) { status = InitEnsureNisNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureTftpdNotInstalledObject)) { status = InitEnsureTftpdNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureReadaheadFedoraNotInstalledObject)) { status = InitEnsureReadaheadFedoraNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureBluetoothHiddNotInstalledObject)) { status = InitEnsureBluetoothHiddNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureIsdnUtilsBaseNotInstalledObject)) { status = InitEnsureIsdnUtilsBaseNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureIsdnUtilsKdumpToolsNotInstalledObject)) { status = InitEnsureIsdnUtilsKdumpToolsNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureIscDhcpdServerNotInstalledObject)) { status = InitEnsureIscDhcpdServerNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureSendmailNotInstalledObject)) { status = InitEnsureSendmailNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureSldapdNotInstalledObject)) { status = InitEnsureSldapdNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureBind9NotInstalledObject)) { status = InitEnsureBind9NotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureDovecotCoreNotInstalledObject)) { status = InitEnsureDovecotCoreNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAuditdInstalledObject)) { status = InitEnsureAuditdInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePrelinkIsDisabledObject)) { status = InitEnsurePrelinkIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureTalkClientIsNotInstalledObject)) { status = InitEnsureTalkClientIsNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureCronServiceIsEnabledObject)) { status = InitEnsureCronServiceIsEnabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAuditdServiceIsRunningObject)) { status = InitEnsureAuditdServiceIsRunning(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureKernelSupportForCpuNxObject)) { status = InitEnsureKernelSupportForCpuNx(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAllTelnetdPackagesUninstalledObject)) { status = InitEnsureAllTelnetdPackagesUninstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNodevOptionOnHomePartitionObject)) { status = InitEnsureNodevOptionOnHomePartition(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNodevOptionOnTmpPartitionObject)) { status = InitEnsureNodevOptionOnTmpPartition(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNodevOptionOnVarTmpPartitionObject)) { status = InitEnsureNodevOptionOnVarTmpPartition(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNosuidOptionOnTmpPartitionObject)) { status = InitEnsureNosuidOptionOnTmpPartition(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNosuidOptionOnVarTmpPartitionObject)) { status = InitEnsureNosuidOptionOnVarTmpPartition(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoexecOptionOnVarTmpPartitionObject)) { status = InitEnsureNoexecOptionOnVarTmpPartition(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoexecOptionOnDevShmPartitionObject)) { status = InitEnsureNoexecOptionOnDevShmPartition(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNodevOptionEnabledForAllRemovableMediaObject)) { status = InitEnsureNodevOptionEnabledForAllRemovableMedia(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoexecOptionEnabledForAllRemovableMediaObject)) { status = InitEnsureNoexecOptionEnabledForAllRemovableMedia(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNosuidOptionEnabledForAllRemovableMediaObject)) { status = InitEnsureNosuidOptionEnabledForAllRemovableMedia(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject)) { status = InitEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAllEtcPasswdGroupsExistInEtcGroupObject)) { status = InitEnsureAllEtcPasswdGroupsExistInEtcGroup(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoDuplicateUidsExistObject)) { status = InitEnsureNoDuplicateUidsExist(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoDuplicateGidsExistObject)) { status = InitEnsureNoDuplicateGidsExist(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoDuplicateUserNamesExistObject)) { status = InitEnsureNoDuplicateUserNamesExist(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoDuplicateGroupsExistObject)) { status = InitEnsureNoDuplicateGroupsExist(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureShadowGroupIsEmptyObject)) { status = InitEnsureShadowGroupIsEmpty(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRootGroupExistsObject)) { status = InitEnsureRootGroupExists(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAllAccountsHavePasswordsObject)) { status = InitEnsureAllAccountsHavePasswords(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject)) { status = InitEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoLegacyPlusEntriesInEtcPasswdObject)) { status = InitEnsureNoLegacyPlusEntriesInEtcPasswd(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoLegacyPlusEntriesInEtcShadowObject)) { status = InitEnsureNoLegacyPlusEntriesInEtcShadow(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoLegacyPlusEntriesInEtcGroupObject)) { status = InitEnsureNoLegacyPlusEntriesInEtcGroup(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureDefaultRootAccountGroupIsGidZeroObject)) { status = InitEnsureDefaultRootAccountGroupIsGidZero(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRootIsOnlyUidZeroAccountObject)) { status = InitEnsureRootIsOnlyUidZeroAccount(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAllUsersHomeDirectoriesExistObject)) { status = InitEnsureAllUsersHomeDirectoriesExist(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureUsersOwnTheirHomeDirectoriesObject)) { status = InitEnsureUsersOwnTheirHomeDirectories(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRestrictedUserHomeDirectoriesObject)) { status = InitEnsureRestrictedUserHomeDirectories(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePasswordHashingAlgorithmObject)) { status = InitEnsurePasswordHashingAlgorithm(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureMinDaysBetweenPasswordChangesObject)) { status = InitEnsureMinDaysBetweenPasswordChanges(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureInactivePasswordLockPeriodObject)) { status = InitEnsureInactivePasswordLockPeriod(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initMaxDaysBetweenPasswordChangesObject)) { status = InitMaxDaysBetweenPasswordChanges(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePasswordExpirationObject)) { status = InitEnsurePasswordExpiration(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePasswordExpirationWarningObject)) { status = InitEnsurePasswordExpirationWarning(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureSystemAccountsAreNonLoginObject)) { status = InitEnsureSystemAccountsAreNonLogin(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAuthenticationRequiredForSingleUserModeObject)) { status = InitEnsureAuthenticationRequiredForSingleUserMode(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureDotDoesNotAppearInRootsPathObject)) { status = InitEnsureDotDoesNotAppearInRootsPath(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRemoteLoginWarningBannerIsConfiguredObject)) { status = InitEnsureRemoteLoginWarningBannerIsConfigured(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureLocalLoginWarningBannerIsConfiguredObject)) { status = InitEnsureLocalLoginWarningBannerIsConfigured(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureSuRestrictedToRootGroupObject)) { status = InitEnsureSuRestrictedToRootGroup(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureDefaultUmaskForAllUsersObject)) { status = InitEnsureDefaultUmaskForAllUsers(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAutomountingDisabledObject)) { status = InitEnsureAutomountingDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureKernelCompiledFromApprovedSourcesObject)) { status = InitEnsureKernelCompiledFromApprovedSources(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureDefaultDenyFirewallPolicyIsSetObject)) { status = InitEnsureDefaultDenyFirewallPolicyIsSet(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePacketRedirectSendingIsDisabledObject)) { status = InitEnsurePacketRedirectSendingIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureIcmpRedirectsIsDisabledObject)) { status = InitEnsureIcmpRedirectsIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureSourceRoutedPacketsIsDisabledObject)) { status = InitEnsureSourceRoutedPacketsIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAcceptingSourceRoutedPacketsIsDisabledObject)) { status = InitEnsureAcceptingSourceRoutedPacketsIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureIgnoringBogusIcmpBroadcastResponsesObject)) { status = InitEnsureIgnoringBogusIcmpBroadcastResponses(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureIgnoringIcmpEchoPingsToMulticastObject)) { status = InitEnsureIgnoringIcmpEchoPingsToMulticast(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureMartianPacketLoggingIsEnabledObject)) { status = InitEnsureMartianPacketLoggingIsEnabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureReversePathSourceValidationIsEnabledObject)) { status = InitEnsureReversePathSourceValidationIsEnabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureTcpSynCookiesAreEnabledObject)) { status = InitEnsureTcpSynCookiesAreEnabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureSystemNotActingAsNetworkSnifferObject)) { status = InitEnsureSystemNotActingAsNetworkSniffer(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAllWirelessInterfacesAreDisabledObject)) { status = InitEnsureAllWirelessInterfacesAreDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureIpv6ProtocolIsEnabledObject)) { status = InitEnsureIpv6ProtocolIsEnabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureDccpIsDisabledObject)) { status = InitEnsureDccpIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureSctpIsDisabledObject)) { status = InitEnsureSctpIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureDisabledSupportForRdsObject)) { status = InitEnsureDisabledSupportForRds(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureTipcIsDisabledObject)) { status = InitEnsureTipcIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureZeroconfNetworkingIsDisabledObject)) { status = InitEnsureZeroconfNetworkingIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnBootloaderConfigObject)) { status = InitEnsurePermissionsOnBootloaderConfig(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePasswordReuseIsLimitedObject)) { status = InitEnsurePasswordReuseIsLimited(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureMountingOfUsbStorageDevicesIsDisabledObject)) { status = InitEnsureMountingOfUsbStorageDevicesIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureCoreDumpsAreRestrictedObject)) { status = InitEnsureCoreDumpsAreRestricted(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePasswordCreationRequirementsObject)) { status = InitEnsurePasswordCreationRequirements(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureLockoutForFailedPasswordAttemptsObject)) { status = InitEnsureLockoutForFailedPasswordAttempts(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfCramfsFileSystemObject)) { status = InitEnsureDisabledInstallationOfCramfsFileSystem(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfFreevxfsFileSystemObject)) { status = InitEnsureDisabledInstallationOfFreevxfsFileSystem(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfHfsFileSystemObject)) { status = InitEnsureDisabledInstallationOfHfsFileSystem(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfHfsplusFileSystemObject)) { status = InitEnsureDisabledInstallationOfHfsplusFileSystem(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureDisabledInstallationOfJffs2FileSystemObject)) { status = InitEnsureDisabledInstallationOfJffs2FileSystem(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureVirtualMemoryRandomizationIsEnabledObject)) { status = InitEnsureVirtualMemoryRandomizationIsEnabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAllBootloadersHavePasswordProtectionEnabledObject)) { status = InitEnsureAllBootloadersHavePasswordProtectionEnabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureLoggingIsConfiguredObject)) { status = InitEnsureLoggingIsConfigured(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureSyslogPackageIsInstalledObject)) { status = InitEnsureSyslogPackageIsInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureSystemdJournaldServicePersistsLogMessagesObject)) { status = InitEnsureSystemdJournaldServicePersistsLogMessages(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureALoggingServiceIsEnabledObject)) { status = InitEnsureALoggingServiceIsEnabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureFilePermissionsForAllRsyslogLogFilesObject)) { status = InitEnsureFilePermissionsForAllRsyslogLogFiles(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureLoggerConfigurationFilesAreRestrictedObject)) { status = InitEnsureLoggerConfigurationFilesAreRestricted(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject)) { status = InitEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject)) { status = InitEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRsyslogNotAcceptingRemoteMessagesObject)) { status = InitEnsureRsyslogNotAcceptingRemoteMessages(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureSyslogRotaterServiceIsEnabledObject)) { status = InitEnsureSyslogRotaterServiceIsEnabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureTelnetServiceIsDisabledObject)) { status = InitEnsureTelnetServiceIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRcprshServiceIsDisabledObject)) { status = InitEnsureRcprshServiceIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureTftpServiceisDisabledObject)) { status = InitEnsureTftpServiceisDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAtCronIsRestrictedToAuthorizedUsersObject)) { status = InitEnsureAtCronIsRestrictedToAuthorizedUsers(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureAvahiDaemonServiceIsDisabledObject)) { status = InitEnsureAvahiDaemonServiceIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureCupsServiceisDisabledObject)) { status = InitEnsureCupsServiceisDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePostfixPackageIsUninstalledObject)) { status = InitEnsurePostfixPackageIsUninstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePostfixNetworkListeningIsDisabledObject)) { status = InitEnsurePostfixNetworkListeningIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRpcgssdServiceIsDisabledObject)) { status = InitEnsureRpcgssdServiceIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRpcidmapdServiceIsDisabledObject)) { status = InitEnsureRpcidmapdServiceIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsurePortmapServiceIsDisabledObject)) { status = InitEnsurePortmapServiceIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNetworkFileSystemServiceIsDisabledObject)) { status = InitEnsureNetworkFileSystemServiceIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRpcsvcgssdServiceIsDisabledObject)) { status = InitEnsureRpcsvcgssdServiceIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureSnmpServerIsDisabledObject)) { status = InitEnsureSnmpServerIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRsynServiceIsDisabledObject)) { status = InitEnsureRsynServiceIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNisServerIsDisabledObject)) { status = InitEnsureNisServerIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRshClientNotInstalledObject)) { status = InitEnsureRshClientNotInstalled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureSmbWithSambaIsDisabledObject)) { status = InitEnsureSmbWithSambaIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureUsersDotFilesArentGroupOrWorldWritableObject)) { status = InitEnsureUsersDotFilesArentGroupOrWorldWritable(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoUsersHaveDotForwardFilesObject)) { status = InitEnsureNoUsersHaveDotForwardFiles(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoUsersHaveDotNetrcFilesObject)) { status = InitEnsureNoUsersHaveDotNetrcFiles(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureNoUsersHaveDotRhostsFilesObject)) { status = InitEnsureNoUsersHaveDotRhostsFiles(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureRloginServiceIsDisabledObject)) { status = InitEnsureRloginServiceIsDisabled(jsonString, log); }
+        else if (0 == strcmp(objectName, g_initEnsureUnnecessaryAccountsAreRemovedObject)) { status = InitEnsureUnnecessaryAccountsAreRemoved(jsonString, log); }
         else
         {
             OsConfigLogError(log, "AsbMmiSet called for an unsupported object name: %s", objectName);

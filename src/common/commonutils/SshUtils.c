@@ -1322,7 +1322,7 @@ int InitializeSshAuditCheck(const char* name, char* value, void* log)
         status = EINVAL;
     }
 
-    OsConfigLogInfo(log, "InitializeSshAuditCheck: %s to '%s', %d", name, value ? value : "default", status);
+    OsConfigLogInfo(log, "InitializeSshAuditCheck: '%s' to '%s', %d", name, value ? value : "default", status);
 
     return status;
 }
