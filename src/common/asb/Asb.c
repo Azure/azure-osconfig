@@ -1584,14 +1584,14 @@ static char* AuditEnsureALoggingServiceIsEnabled(void* log)
     {
         return reason;
     }
-    FREE_MEMORY(&reason);
+    FREE_MEMORY(reason);
     if ((0 == CheckPackageNotInstalled(g_rsyslog, &reason, log)) && 
         (0 == CheckPackageNotInstalled(g_systemd, &reason, log)) && 
         CheckDaemonActive(g_syslogNg, &reason, log)) 
     {
         return reason;
     }
-    FREE_MEMORY(&reason);
+    FREE_MEMORY(reason);
     CheckPackageInstalled(g_systemd, &reason, log);
     CheckDaemonActive(g_systemdJournald, &reason, log);
     return reason;
