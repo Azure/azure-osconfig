@@ -618,8 +618,6 @@ static long g_maxInactiveDays = 30;
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
 
-#pragma GCC diagnostic ignored "-Wtautological-compare"
-
 void AsbInitialize(void* log)
 {
     InitializeSshAudit(log);
@@ -1380,13 +1378,13 @@ static char* AuditEnsureAllWirelessInterfacesAreDisabled(void* log)
     char* reason = NULL;
     if (0 == CheckTextNotFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", &reason, log))
     {
-        OsConfigResetReason(&reason);
-        OsConfigCaptureSuccessReason(&reason, "No active wireless interfaces are present");
+        FREE_MEMORY(reason);
+        reason = DuplicateString("No active wireless interfaces are present");
     }
     else
     {
-        OsConfigResetReason(&reason);
-        OsConfigCaptureReason(&reason, "At least one active wireless interface is present");
+        FREE_MEMORY(reason);
+        reason = DuplicateString("At least one active wireless interface is present");
     }
     return reason;
 }
