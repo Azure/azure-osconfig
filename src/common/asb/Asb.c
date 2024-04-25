@@ -2224,174 +2224,203 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 static int RemediateEnsureKernelSupportForCpuNx(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNodevOptionOnHomePartition(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNodevOptionOnTmpPartition(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNodevOptionOnVarTmpPartition(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNosuidOptionOnTmpPartition(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNosuidOptionOnVarTmpPartition(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoexecOptionOnVarTmpPartition(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoexecOptionOnDevShmPartition(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNodevOptionEnabledForAllRemovableMedia(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoexecOptionEnabledForAllRemovableMedia(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllTelnetdPackagesUninstalled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoDuplicateUidsExist(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoDuplicateGidsExist(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoDuplicateUserNamesExist(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoDuplicateGroupsExist(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureShadowGroupIsEmpty(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRootGroupExists(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllAccountsHavePasswords(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRootIsOnlyUidZeroAccount(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllUsersHomeDirectoriesExist(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureUsersOwnTheirHomeDirectories(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
@@ -2405,6 +2434,7 @@ static int RemediateEnsureRestrictedUserHomeDirectories(char* value, void* log)
 static int RemediateEnsurePasswordHashingAlgorithm(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
@@ -2443,246 +2473,287 @@ static int RemediateEnsurePasswordExpirationWarning(char* value, void* log)
 static int RemediateEnsureSystemAccountsAreNonLogin(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDotDoesNotAppearInRootsPath(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureLocalLoginWarningBannerIsConfigured(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSuRestrictedToRootGroup(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDefaultUmaskForAllUsers(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAutomountingDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSourceRoutedPacketsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureIgnoringBogusIcmpBroadcastResponses(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureIgnoringIcmpEchoPingsToMulticast(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureReversePathSourceValidationIsEnabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureTcpSynCookiesAreEnabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSystemNotActingAsNetworkSniffer(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllWirelessInterfacesAreDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureIpv6ProtocolIsEnabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDccpIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSctpIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDisabledSupportForRds(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureTipcIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePasswordReuseIsLimited(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePasswordCreationRequirements(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureLockoutForFailedPasswordAttempts(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDisabledInstallationOfCramfsFileSystem(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDisabledInstallationOfFreevxfsFileSystem(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDisabledInstallationOfHfsFileSystem(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDisabledInstallationOfHfsplusFileSystem(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDisabledInstallationOfJffs2FileSystem(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureVirtualMemoryRandomizationIsEnabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureLoggingIsConfigured(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
@@ -2713,6 +2784,7 @@ static int RemediateEnsureALoggingServiceIsEnabled(char* value, void* log)
 static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
@@ -2726,48 +2798,56 @@ static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, voi
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureTelnetServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRcprshServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureTftpServiceisDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
@@ -2870,7 +2950,7 @@ static int RemediateEnsureAvahiDaemonServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_avahiDaemon, log);
-    return (0 == strncmp(g_pass, AuditEnsureAvahiDaemonServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureAvahiDaemonServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureCupsServiceisDisabled(char* value, void* log)
@@ -2889,6 +2969,7 @@ static int RemediateEnsurePostfixPackageIsUninstalled(char* value, void* log)
 static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
@@ -2897,7 +2978,7 @@ static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, void* log)
     UNUSED(value);
     StopAndDisableDaemon(g_rpcgssd, log);
     StopAndDisableDaemon(g_rpcGssd, log);
-    return (0 == strncmp(g_pass, AuditEnsureRpcgssdServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureRpcgssdServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, void* log)
@@ -2905,7 +2986,7 @@ static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, void* log)
     UNUSED(value);
     StopAndDisableDaemon(g_rpcidmapd, log);
     StopAndDisableDaemon(g_nfsIdmapd, log);
-    return (0 == strncmp(g_pass, AuditEnsureRpcidmapdServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureRpcidmapdServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePortmapServiceIsDisabled(char* value, void* log)
@@ -2914,19 +2995,20 @@ static int RemediateEnsurePortmapServiceIsDisabled(char* value, void* log)
     StopAndDisableDaemon(g_rpcbind, log);
     StopAndDisableDaemon(g_rpcbindService, log);
     StopAndDisableDaemon(g_rpcbindSocket, log);
-    return (0 == strncmp(g_pass, AuditEnsurePortmapServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsurePortmapServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_nfsServer, log);
-    return (0 == strncmp(g_pass, AuditEnsureNetworkFileSystemServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureNetworkFileSystemServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns    
 }
 
@@ -2934,21 +3016,21 @@ static int RemediateEnsureSnmpServerIsDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_snmpd, log);
-    return (0 == strncmp(g_pass, AuditEnsureSnmpServerIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureSnmpServerIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRsynServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_rsync, log);
-    return (0 == strncmp(g_pass, AuditEnsureRsynServiceIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureRsynServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNisServerIsDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_ypserv, log);
-    return (0 == strncmp(g_pass, AuditEnsureNisServerIsDisabled(), strlen(g_pass))) ? 0 : ENOENT;
+    return (0 == strncmp(g_pass, AuditEnsureNisServerIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRshClientNotInstalled(char* value, void* log)
@@ -2961,6 +3043,7 @@ static int RemediateEnsureRshClientNotInstalled(char* value, void* log)
 static int RemediateEnsureSmbWithSambaIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
@@ -2992,6 +3075,7 @@ static int RemediateEnsureNoUsersHaveDotRhostsFiles(char* value, void* log)
 static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
