@@ -35,7 +35,7 @@ if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
         set(BUILD_PLATFORM OFF)
         set(BUILD_TESTS OFF)
         set(BUILD_MODULETEST OFF)
-        add_compile_options("-Wno-type-limits")
+        add_compile_options("-Wno-tautological-compare")
     endif()
 endif()
 
