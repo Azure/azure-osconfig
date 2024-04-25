@@ -24,7 +24,6 @@
 #include <mntent.h>
 #include <dirent.h>
 #include <math.h>
-#include <stdatomic.h>
 #include <version.h>
 #include <Logging.h>
 #include <parson.h>

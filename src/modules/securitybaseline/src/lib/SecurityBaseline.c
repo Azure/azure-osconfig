@@ -5,6 +5,8 @@
 #include <stdarg.h>
 #include <version.h>
 #include <ctype.h>
+#include <stdatomic.h>
+#include <errno.h>
 #include <CommonUtils.h>
 #include <AsbUtils.h>
 #include <Logging.h>
@@ -13,7 +15,6 @@
 #include "SecurityBaseline.h"
 
 static const char* g_securityBaselineModuleName = "OSConfig SecurityBaseline module";
-static const char* g_securityBaselineComponentName = "SecurityBaseline";
 
 static const char* g_securityBaselineLogFile = "/var/log/osconfig_securitybaseline.log";
 static const char* g_securityBaselineRolledLogFile = "/var/log/osconfig_securitybaseline.bak";
@@ -142,9 +143,6 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
 
 int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
-    JSON_Value* jsonValue = NULL;
-    char* jsonString = NULL;
-    char* payloadString = NULL;
     int status = MMI_OK;
 
     if (!IsValidSession(clientSession))
