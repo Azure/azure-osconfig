@@ -398,7 +398,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
         SetDesiredObjectValueToDevice(who, g_initObjectName, context);
     }
     
-    mpiResult = AsbMmiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, maxPayloadBytes, MAX_PAYLOAD_LENGTH, GetLog());
+    mpiResult = AsbMmiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, MAX_PAYLOAD_LENGTH, GetLog());
     LogInfo(context, GetLog(), "[%s] AsbMmiGet(%s, %s): '%s' (%d)", who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
 
     if (MPI_OK != mpiResult)
