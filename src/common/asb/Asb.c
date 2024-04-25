@@ -4119,7 +4119,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     char* payloadString = NULL;
     int status = 0;
 
-    // No payload is accepted for now, this may change once the complete Security Baseline is implemented
+    // No payload is accepted for now, this may change once the complete Azure Security Baseline is implemented
     if ((NULL == componentName) || (NULL == objectName))
     {
         OsConfigLogError(log, "AsbMmiSet(%s, %s, %s, %d) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);

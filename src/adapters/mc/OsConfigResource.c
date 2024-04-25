@@ -3,9 +3,6 @@
 
 #include "Common.h"
 
-// Fallback for SSH policy
-#include <SshUtils.h>
-
 // The log file for the NRP
 #define LOG_FILE "/var/log/osconfig_nrp.log"
 #define ROLLED_LOG_FILE "/var/log/osconfig_nrp.bak"
@@ -176,25 +173,9 @@ void MI_CALL OsConfigResource_Load(
     
     LogCurrentDistro(context);
 
-    // Temporary, may get removed once decided which way to proceed. For now this is here to continue to test with:
-    if (0 != (status = InstallOrUpdatePackage(g_osconfig, GetLog())))
-    {
-        LogInfo(context, GetLog(), "[OsConfigResource] Unable to install or update OSConfig (%d), things may not work", status);
-    }
+    AsbInitialize(GetLog());
 
-    if (NULL == (g_mpiHandle = RefreshMpiClientSession(g_mpiHandle)))
-    {
-        // Fallback for SSH policy
-        InitializeSshAudit(GetLog());
-
-        LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d, no MPI connection)", getpid());
-    }
-    else
-    {
-        LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
-
-        LogOsConfigVersion(context);
-    }
+    LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d)", getpid());
 
     MI_Context_PostResult(context, MI_RESULT_OK);
 }
@@ -207,10 +188,9 @@ void MI_CALL OsConfigResource_Unload(
 
     if (NULL == g_mpiHandle)
     {
-        LogInfo(context, GetLog(), "[OsConfigResource] Unload (PID: %d, no MPI connection)", getpid());
+        LogInfo(context, GetLog(), "[OsConfigResource] Unload (PID: %d)", getpid());
 
-        // Fallback for SSH policy
-        SshAuditCleanup(GetLog());
+        AsbShutdown(GetLog());
     }
     else
     {
@@ -329,12 +309,7 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName
     MI_Result miResult = MI_RESULT_OK;
     int mpiResult = MPI_OK;
 
-    if (NULL == g_mpiHandle)
-    {
-        LogError(context, miResult, GetLog(), "[%s] SetDesiredObjectValueToDevice(%s, %s) called outside of a valid MPI session", who, g_componentName, g_desiredObjectName);
-        return MI_RESULT_INVALID_PARAMETER;
-    }
-    else if ((NULL == objectName) || (NULL == g_desiredObjectValue))
+    if ((NULL == objectName) || (NULL == g_desiredObjectValue))
     {
         LogError(context, miResult, GetLog(), "[%s] SetDesiredObjectValueToDevice called with an invalid object name and/or desired object value", who);
         return MI_RESULT_INVALID_PARAMETER;
@@ -360,9 +335,24 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName
             memset(payloadString, 0, payloadSize + 1);
             memcpy(payloadString, serializedValue, payloadSize);
 
-            mpiResult = CallMpiSet(g_componentName, objectName, payloadString, payloadSize, GetLog());
-            LogInfo(context, GetLog(), "[%s] CallMpiSet(%s, %s, '%.*s', %d) returned %d", 
+            mpiResult = AsbMmiSet(g_componentName, objectName, payloadString, payloadSize, GetLog());
+            LogInfo(context, GetLog(), "[%s] AsbMmiSet(%s, %s, '%.*s', %d) returned %d", 
                 who, g_componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult);
+
+            if (MPI_OK != mpiResult) 
+            {
+                if (NULL == g_mpiHandle)
+                {
+                    g_mpiHandle = RefreshMpiClientSession(g_mpiHandle);
+                }
+                
+                if (NULL != g_mpiHandle)
+                {
+                    mpiResult = CallMpiSet(g_componentName, objectName, payloadString, payloadSize, GetLog());
+                    LogInfo(context, GetLog(), "[%s] CallMpiSet(%s, %s, '%.*s', %d) returned %d",
+                        who, g_componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult);
+                }
+            }
 
             FREE_MEMORY(payloadString);
         }
@@ -402,122 +392,84 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     int mpiResult = MPI_OK;
     MI_Result miResult = MI_RESULT_OK;
 
-    if (NULL == g_mpiHandle)
+    // If this reported object has a corresponding init object, initalize it with the desired object value
+    if ((NULL != g_initObjectName) && (0 != strcmp(g_initObjectName, g_defaultValue)))
     {
-        g_mpiHandle = RefreshMpiClientSession(g_mpiHandle);
+        SetDesiredObjectValueToDevice(who, g_initObjectName, context);
+    }
+    
+    mpiResult = AsbMmiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, maxPayloadBytes, MAX_PAYLOAD_LENGTH, GetLog());
+    LogInfo(context, GetLog(), "[%s] AsbMmiGet(%s, %s): '%s' (%d)", who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
+
+    if (MPI_OK != mpiResult)
+    {
+        if (NULL == g_mpiHandle)
+        {
+            g_mpiHandle = RefreshMpiClientSession(g_mpiHandle);
+        }
+
+        if (NULL != g_mpiHandle)
+        {
+            mpiResult = CallMpiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog());
+            LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s): '%s' (%d)", who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
+        }
     }
 
-    if (NULL != g_mpiHandle)
+    if (MPI_OK == mpiResult)
     {
-        // If this reported object has a corresponding init object, initalize it with the desired object value
-        if ((NULL != g_initObjectName) && (0 != strcmp(g_initObjectName, g_defaultValue)))
+        if (NULL == objectValue)
         {
-            SetDesiredObjectValueToDevice(who, g_initObjectName, context);
+            mpiResult = ENODATA;
+            miResult = MI_RESULT_FAILED;
+            LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s): no payload (%s, %d) (%d)", 
+                who, g_componentName, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
         }
-        
-        if (MPI_OK == (mpiResult = CallMpiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog())))
+        else
         {
-            if (NULL == objectValue)
+            if (NULL != (payloadString = malloc(objectValueLength + 1)))
             {
-                mpiResult = ENODATA;
-                miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s): no payload (%s, %d) (%d)", 
-                    who, g_componentName, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
-            }
-            else
-            {
-                LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s): '%s' (%d)", who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
-                
-                if (NULL != (payloadString = malloc(objectValueLength + 1)))
+                memset(payloadString, 0, objectValueLength + 1);
+                memcpy(payloadString, objectValue, objectValueLength);
+
+                if (NULL != (jsonValue = json_parse_string(payloadString)))
                 {
-                    memset(payloadString, 0, objectValueLength + 1);
-                    memcpy(payloadString, objectValue, objectValueLength);
-
-                    if (NULL != (jsonValue = json_parse_string(payloadString)))
+                    jsonString = json_value_get_string(jsonValue);
+                    if (jsonString)
                     {
-                        jsonString = json_value_get_string(jsonValue);
-                        if (jsonString)
+                        FREE_MEMORY(g_reportedObjectValue);
+                        if (NULL == (g_reportedObjectValue = DuplicateString(jsonString)))
                         {
-                            FREE_MEMORY(g_reportedObjectValue);
-                            if (NULL == (g_reportedObjectValue = DuplicateString(jsonString)))
-                            {
-                                mpiResult = ENOMEM;
-                                miResult = MI_RESULT_FAILED;
-                                LogError(context, miResult, GetLog(), "[%s] DuplicateString(%s) failed", who, jsonString);
-                            }
+                            mpiResult = ENOMEM;
+                            miResult = MI_RESULT_FAILED;
+                            LogError(context, miResult, GetLog(), "[%s] DuplicateString(%s) failed", who, jsonString);
                         }
-                        else
-                        {
-                            mpiResult = EINVAL;
-                            miResult = MI_RESULT_INVALID_PARAMETER;
-                            LogError(context, miResult, GetLog(), "[%s] json_value_get_string(%s) failed", who, payloadString);
-                        }
-
-                        json_value_free(jsonValue);
                     }
                     else
                     {
                         mpiResult = EINVAL;
                         miResult = MI_RESULT_INVALID_PARAMETER;
-                        LogError(context, miResult, GetLog(), "[%s] json_parse_string(%s) failed", who, payloadString);
+                        LogError(context, miResult, GetLog(), "[%s] json_value_get_string(%s) failed", who, payloadString);
                     }
 
-                    FREE_MEMORY(payloadString);
+                    json_value_free(jsonValue);
                 }
                 else
                 {
-                    mpiResult = ENOMEM;
-                    miResult = MI_RESULT_FAILED;
-                    LogError(context, miResult, GetLog(), "[%s] Failed to allocate %d bytes", who, objectValueLength + 1);
+                    mpiResult = EINVAL;
+                    miResult = MI_RESULT_INVALID_PARAMETER;
+                    LogError(context, miResult, GetLog(), "[%s] json_parse_string(%s) failed", who, payloadString);
                 }
 
-                CallMpiFree(objectValue);
-            }
-        }
-        else
-        {
-            LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s) failed with %d, try fallback", who, g_componentName, g_reportedObjectName, mpiResult);
-            miResult = MI_RESULT_OK;
-        }
-    }
-    
-    // Fallback for SSH policy
-    if ((NULL == g_mpiHandle) || (MPI_OK != mpiResult))
-    {
-        // If this reported object has a corresponding init object, initalize it with the desired object value
-        if ((NULL != g_initObjectName) && (0 != strcmp(g_initObjectName, g_defaultValue)))
-        {
-            InitializeSshAuditCheck(g_initObjectName, g_desiredObjectValue, GetLog());
-        }
-
-        if (0 == (mpiResult = ProcessSshAuditCheck(g_reportedObjectName, NULL, &objectValue, GetLog())))
-        {
-            if (NULL == objectValue)
-            {
-                mpiResult = ENODATA;
-                miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s): no payload (%s, %d) (%d)",
-                    who, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
+                FREE_MEMORY(payloadString);
             }
             else
             {
-                LogInfo(context, GetLog(), "[%s] ProcessSshAuditCheck(%s): '%s'", who, g_reportedObjectName, objectValue);
-
-                FREE_MEMORY(g_reportedObjectValue);
-                if (NULL == (g_reportedObjectValue = DuplicateString(objectValue)))
-                {
-                    mpiResult = ENOMEM;
-                    miResult = MI_RESULT_FAILED;
-                    LogError(context, miResult, GetLog(), "[%s] DuplicateString(%s) failed", who, objectValue);
-                }
-
-                FREE_MEMORY(objectValue);
+                mpiResult = ENOMEM;
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[%s] Failed to allocate %d bytes", who, objectValueLength + 1);
             }
-        }
-        else
-        {
-            miResult = MI_RESULT_FAILED;
-            LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s) failed with %d", who, g_reportedObjectName, mpiResult);
+
+            FREE_MEMORY(objectValue);
         }
     }
 
@@ -1184,31 +1136,9 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         goto Exit;
     }
 
-    if (NULL == g_mpiHandle)
-    {
-        g_mpiHandle = RefreshMpiClientSession(g_mpiHandle);
-    }
-
-    if (NULL != g_mpiHandle)
-    {
-        miResult = SetDesiredObjectValueToDevice("OsConfigResource.Set", g_desiredObjectName, context);
-    }
+    SetDesiredObjectValueToDevice("OsConfigResource.Set", g_desiredObjectName, context);
     
-    // Fallback for SSH policy
-    if ((NULL == g_mpiHandle) || (MI_RESULT_OK != miResult))
-    {
-        miResult = MI_RESULT_OK;
-
-        if (0 == (mpiResult = ProcessSshAuditCheck(g_desiredObjectName, g_desiredObjectValue, NULL, GetLog())))
-        {
-            LogInfo(context, GetLog(), "[OsConfigResource.Set] ProcessSshAuditCheck(%s, '%s') ok", g_desiredObjectName, g_desiredObjectValue);
-        }
-        else
-        {
-            miResult = MI_RESULT_FAILED;
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] ProcessSshAuditCheck(%s, '%s') failed with %d", g_desiredObjectName, g_desiredObjectValue, mpiResult);
-        }
-    }
+    miResult = MI_RESULT_OK;
 
 Exit:
     if (MI_RESULT_OK != miResult)
