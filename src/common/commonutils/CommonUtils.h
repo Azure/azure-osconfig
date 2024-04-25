@@ -82,7 +82,7 @@
     (((NULL != reason) && ((NULL == *reason) || (0 == strncmp(*reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS))))) ? true : false)\
 
 #define OsConfigResetReason(reason) {\
-    if ((NULL != reason) && (NULL != *reason)) {\
+    if (NULL != ((char*)reason)) {\
         FREE_MEMORY(*reason);\
     }\
 }\
