@@ -11,6 +11,7 @@ static const char* g_asbName = "Azure Security Baseline for Linux";
 static const char* g_securityBaselineComponentName = "SecurityBaseline";
 
 // Audit
+/*
 static const char* g_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
 static const char* g_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
 static const char* g_auditEnsurePermissionsOnEtcHostsAllowObject = "auditEnsurePermissionsOnEtcHostsAllow";
@@ -179,7 +180,7 @@ static const char* g_auditEnsureNoUsersHaveDotNetrcFilesObject = "auditEnsureNoU
 static const char* g_auditEnsureNoUsersHaveDotRhostsFilesObject = "auditEnsureNoUsersHaveDotRhostsFiles";
 static const char* g_auditEnsureRloginServiceIsDisabledObject = "auditEnsureRloginServiceIsDisabled";
 static const char* g_auditEnsureUnnecessaryAccountsAreRemovedObject = "auditEnsureUnnecessaryAccountsAreRemoved";
-
+*/
 // Remediation
 static const char* g_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
 static const char* g_remediateEnsurePermissionsOnEtcIssueNetObject = "remediateEnsurePermissionsOnEtcIssueNet";
@@ -622,6 +623,7 @@ void AsbShutdown(void* log)
     SshAuditCleanup(log);
 }
 
+/*
 static char* AuditEnsurePermissionsOnEtcIssue(void)
 {
     char* reason = NULL;
@@ -1975,6 +1977,7 @@ static char* AuditEnsureUnnecessaryAccountsAreRemoved(void)
     CheckUserAccountsNotFound(names, ARRAY_SIZE(names), &reason, log);
     return reason;
 }
+*/
 
 static int RemediateEnsurePermissionsOnEtcIssue(char* value)
 {
