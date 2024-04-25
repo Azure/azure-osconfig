@@ -1486,7 +1486,7 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(void* log)
     {
         return reason;
     }
-    OsConfigResetReason(&reason);
+    FREE_MEMORY(reason);
     CheckLockoutForFailedPasswordAttempts(commonAuth, &reason, log);
     return reason;
 }
@@ -1533,7 +1533,7 @@ static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(void* log)
     {
         return reason;
     }
-    OsConfigResetReason(&reason);
+    FREE_MEMORY(reason);
     if (0 != CheckFileContents("/proc/sys/kernel/randomize_va_space", "1", &reason, log))
     {
         OsConfigCaptureReason(&reason, "neither 2");
@@ -1584,14 +1584,14 @@ static char* AuditEnsureALoggingServiceIsEnabled(void* log)
     {
         return reason;
     }
-    OsConfigResetReason(&reason);
+    FREE_MEMORY(&reason);
     if ((0 == CheckPackageNotInstalled(g_rsyslog, &reason, log)) && 
         (0 == CheckPackageNotInstalled(g_systemd, &reason, log)) && 
         CheckDaemonActive(g_syslogNg, &reason, log)) 
     {
         return reason;
     }
-    OsConfigResetReason(&reason);
+    FREE_MEMORY(&reason);
     CheckPackageInstalled(g_systemd, &reason, log);
     CheckDaemonActive(g_systemdJournald, &reason, log);
     return reason;
