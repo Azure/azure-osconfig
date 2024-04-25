@@ -29,6 +29,7 @@ static const char* g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "initEns
 static const char* g_initEnsureSshWarningBannerIsEnabledObject = "initEnsureSshWarningBannerIsEnabled";
 static const char* g_initEnsureUsersCannotSetSshEnvironmentOptionsObject = "initEnsureUsersCannotSetSshEnvironmentOptions";
 static const char* g_initEnsureAppropriateCiphersForSshObject = "initEnsureAppropriateCiphersForSsh";
+/*
 static const char* g_initEnsurePermissionsOnEtcIssueObject = "initEnsurePermissionsOnEtcIssue";
 static const char* g_initEnsurePermissionsOnEtcIssueNetObject = "initEnsurePermissionsOnEtcIssueNet";
 static const char* g_initEnsurePermissionsOnEtcHostsAllowObject = "initEnsurePermissionsOnEtcHostsAllow";
@@ -177,7 +178,7 @@ static const char* g_initEnsureNoUsersHaveDotNetrcFilesObject = "initEnsureNoUse
 static const char* g_initEnsureNoUsersHaveDotRhostsFilesObject = "initEnsureNoUsersHaveDotRhostsFiles";
 static const char* g_initEnsureRloginServiceIsDisabledObject = "initEnsureRloginServiceIsDisabled";
 static const char* g_initEnsureUnnecessaryAccountsAreRemovedObject = "initEnsureUnnecessaryAccountsAreRemoved";
-
+*/
 // Audit
 static const char* g_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
 static const char* g_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
@@ -3093,6 +3094,7 @@ static int InitEnsureAppropriateCiphersForSsh(char* value)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
 static int InitEnsurePermissionsOnEtcIssue(char* value) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcIssueObject, value, log); }
 static int InitEnsurePermissionsOnEtcIssueNet(char* value) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcIssueNetObject, value, log); }
 static int InitEnsurePermissionsOnEtcHostsAllow(char* value) { return InitializeAsbCheck(g_initEnsurePermissionsOnEtcHostsAllowObject, value, log); }
@@ -3241,6 +3243,7 @@ static int InitEnsureNoUsersHaveDotNetrcFiles(char* value) { return InitializeAs
 static int InitEnsureNoUsersHaveDotRhostsFiles(char* value) { return InitializeAsbCheck(g_initEnsureNoUsersHaveDotRhostsFilesObject, value, log); }
 static int InitEnsureRloginServiceIsDisabled(char* value) { return InitializeAsbCheck(g_initEnsureRloginServiceIsDisabledObject, value, log); }
 static int InitEnsureUnnecessaryAccountsAreRemoved(char* value) { return InitializeAsbCheck(g_initEnsureUnnecessaryAccountsAreRemovedObject, value, log); }
+*/
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int AsbMmiGet(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log)
