@@ -3978,12 +3978,12 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
             }
             else
             {
-                if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > maxPayloadSizeBytes))
+                if ((maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > maxPayloadSizeBytes))
                 {
                     OsConfigLogError(log, "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
-                        componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+                        componentName, objectName, maxPayloadSizeBytes, *payloadSizeBytes);
 
-                    *payloadSizeBytes = g_maxPayloadSizeBytes;
+                    *payloadSizeBytes = maxPayloadSizeBytes;
                 }
                 
                 *payloadSizeBytes = (int)strlen(serializedValue);
