@@ -11,7 +11,6 @@ static const char* g_asbName = "Azure Security Baseline for Linux";
 static const char* g_securityBaselineComponentName = "SecurityBaseline";
 
 // Audit
-/*
 static const char* g_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
 static const char* g_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
 static const char* g_auditEnsurePermissionsOnEtcHostsAllowObject = "auditEnsurePermissionsOnEtcHostsAllow";
@@ -180,7 +179,7 @@ static const char* g_auditEnsureNoUsersHaveDotNetrcFilesObject = "auditEnsureNoU
 static const char* g_auditEnsureNoUsersHaveDotRhostsFilesObject = "auditEnsureNoUsersHaveDotRhostsFiles";
 static const char* g_auditEnsureRloginServiceIsDisabledObject = "auditEnsureRloginServiceIsDisabled";
 static const char* g_auditEnsureUnnecessaryAccountsAreRemovedObject = "auditEnsureUnnecessaryAccountsAreRemoved";
-*/
+
 // Remediation
 static const char* g_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
 static const char* g_remediateEnsurePermissionsOnEtcIssueNetObject = "remediateEnsurePermissionsOnEtcIssueNet";
@@ -623,7 +622,6 @@ void AsbShutdown(void* log)
     SshAuditCleanup(log);
 }
 
-/*
 static char* AuditEnsurePermissionsOnEtcIssue(void)
 {
     char* reason = NULL;
@@ -1977,7 +1975,6 @@ static char* AuditEnsureUnnecessaryAccountsAreRemoved(void)
     CheckUserAccountsNotFound(names, ARRAY_SIZE(names), &reason, log);
     return reason;
 }
-*/
 
 static int RemediateEnsurePermissionsOnEtcIssue(char* value)
 {
@@ -3254,7 +3251,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 {
     JSON_Value* jsonValue = NULL;
     char* serializedValue = NULL;
-    int status = MMI_OK;
+    int status = 0;
     char* result = NULL;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
@@ -3953,7 +3950,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         }
     }
 
-    if (MMI_OK == status)
+    if (0 == status)
     {
         if (NULL == result)
         {
@@ -3983,7 +3980,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
             {
                 if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > maxPayloadSizeBytes))
                 {
-                    OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
+                    OsConfigLogError(log, "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
                         componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
 
                     *payloadSizeBytes = g_maxPayloadSizeBytes;
@@ -3991,7 +3988,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
                 
                 *payloadSizeBytes = (int)strlen(serializedValue);
 
-                if (NULL != (*payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1)))
+                if (NULL != (*payload = (char*)malloc(*payloadSizeBytes + 1)))
                 {
                     memset(*payload, 0, *payloadSizeBytes + 1);
                     memcpy(*payload, serializedValue, *payloadSizeBytes);
@@ -4006,7 +4003,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         }
     }    
 
-    OsConfigLogInfo(log, "AsbMmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    OsConfigLogInfo(log, "AsbMmiGet(%s, %s, %.*s, %d) returning %d", componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     if (NULL != serializedValue)
     {
@@ -4028,7 +4025,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     JSON_Value* jsonValue = NULL;
     char* jsonString = NULL;
     char* payloadString = NULL;
-    int status = MMI_OK;
+    int status = 0;
 
     // No payload is accepted for now, this may change once the complete Security Baseline is implemented
     if ((NULL == componentName) || (NULL == objectName))
@@ -4043,7 +4040,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         status = EINVAL;
     }
 
-    if ((MMI_OK == status) && (NULL != payload) && (0 < payloadSizeBytes))
+    if ((0 == status) && (NULL != payload) && (0 < payloadSizeBytes))
     {
         if (NULL != (payloadString = malloc(payloadSizeBytes + 1)))
         {
@@ -4071,7 +4068,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         }
     }
     
-    if (MMI_OK == status)
+    if (0 == status)
     {
         if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcIssueObject))
         {
