@@ -12,8 +12,8 @@ extern "C"
 void AsbInitialize(void* log);
 void AsbShutdown(void* log);
 
-int AsbMmiGet(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log);
-int AsbMmiSet(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes, void* log);
+int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log);
+int AsbMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, void* log);
 
 #ifdef __cplusplus
 }

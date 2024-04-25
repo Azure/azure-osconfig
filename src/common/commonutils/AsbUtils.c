@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <Internal.h>
-#include <Mmi.h>
 #include <UserUtils.h>
 #include <SshUtils.h>
 #include <AsbUtils.h>
@@ -3251,7 +3250,7 @@ static int InitEnsureUnnecessaryAccountsAreRemoved(char* value) { return Initial
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int AsbMmiGet(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log)
+int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log)
 {
     JSON_Value* jsonValue = NULL;
     char* serializedValue = NULL;
@@ -4024,7 +4023,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, MMI_JSON_STRING
     return status;
 }
 
-int AsbMmiSet(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes, void* log)
+int AsbMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, void* log)
 {
     JSON_Value* jsonValue = NULL;
     char* jsonString = NULL;
