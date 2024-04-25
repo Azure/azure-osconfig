@@ -1533,11 +1533,7 @@ static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(void* log)
     {
         return reason;
     }
-    FREE_MEMORY(reason);
-    if (0 != CheckFileContents("/proc/sys/kernel/randomize_va_space", "1", &reason, log))
-    {
-        OsConfigCaptureReason(&reason, "neither 2");
-    }
+    CheckFileContents("/proc/sys/kernel/randomize_va_space", "1", &reason, log);
     return reason;
 }
 
