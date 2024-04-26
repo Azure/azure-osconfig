@@ -9,7 +9,7 @@ Our packages are distributed via the [Microsoft repository](https://packages.mic
 
 Channels | Description
 -----|-----  
-`insiders-fast` | The latest and greatest features and bug fixes. This channel is updated frequently.
+`insiders-fast` | The latest and greatest features and bug fixes, represents current work-in-progress so things might not work as expected. This channel is updated frequently.
 `prod` | The stable channel. This channel is updated less frequently and is recommended for production use.
 
 *If you see any missing platforms or architectures that would help, please contact osconfigcore@microsoft.com.
