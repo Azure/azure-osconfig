@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/mirror/docker/library/debian:bullseye
+FROM mcr.microsoft.com/mirror/docker/library/debian:bookworm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
