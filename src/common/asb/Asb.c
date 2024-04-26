@@ -1072,8 +1072,6 @@ void AsbInitialize(void* log)
     }
     
     OsConfigLogInfo(log, "%s initialized", g_asbName);
-
-    return status;
 }
 
 void AsbShutdown(void* log)
@@ -3786,11 +3784,13 @@ static int InitEnsureAppropriateCiphersForSsh(char* value, void* log)
 
 static int ReplaceString(char* target, char* source, const char* defaultValue)
 {
-    bool isValidValue = ((NULL == value) || (0 == value[0])) ? false : true;
+    bool isValidValue = ((NULL == source) || (0 == source[0])) ? false : true;
     int status = 0;
 
     FREE_MEMORY(target);
-    status = (NULL != (target = DuplicateString(isValidValue ? value : defaultValue))) ? 0 : ENOMEM;
+    status = (NULL != (target = DuplicateString(isValidValue ? source : defaultValue))) ? 0 : ENOMEM;
+
+    return status;
 }
 
 static int InitEnsurePermissionsOnEtcIssue(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcIssue, value, g_defaultEnsurePermissionsOnEtcIssue); }
