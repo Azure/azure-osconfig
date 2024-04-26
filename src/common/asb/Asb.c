@@ -358,7 +358,9 @@ static const char* g_remediateEnsureNoUsersHaveDotRhostsFilesObject = "remediate
 static const char* g_remediateEnsureRloginServiceIsDisabledObject = "remediateEnsureRloginServiceIsDisabled";
 static const char* g_remediateEnsureUnnecessaryAccountsAreRemovedObject = "remediateEnsureUnnecessaryAccountsAreRemoved";
 
-// Initialization for audit before remediation ----------- TODO: add these to MIM, to Test Recipe, to unit-tests, etc!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// Initialization for audit before remediation 
+// TODO: This list will be triaged and only objects that benefit of parameters will remain
+// TODO: For those kept, then we will add them to SecurityBaseline MIM, to its Test Recipe, to unit-tests, etc
 static const char* g_initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
 static const char* g_initEnsureSshPortIsConfiguredObject = "initEnsureSshPortIsConfigured";
 static const char* g_initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
@@ -528,7 +530,9 @@ static const char* g_initEnsureNoUsersHaveDotRhostsFilesObject = "initEnsureNoUs
 static const char* g_initEnsureRloginServiceIsDisabledObject = "initEnsureRloginServiceIsDisabled";
 static const char* g_initEnsureUnnecessaryAccountsAreRemovedObject = "initEnsureUnnecessaryAccountsAreRemoved";
 
-// Default values (TBD to fill in appropriate values for each)
+// Default values
+// TODO: This list will be triaged and only objects that benefit of parameters will remain
+// For those, we will have real default values added here.
 static const char* g_defaultEnsurePermissionsOnEtcIssue = "default value for EnsurePermissionsOnEtcIssue";
 static const char* g_defaultEnsurePermissionsOnEtcIssueNet = "default value for EnsurePermissionsOnEtcIssueNet";
 static const char* g_defaultEnsurePermissionsOnEtcHostsAllow = "default value for EnsurePermissionsOnEtcHostsAllow";
@@ -676,7 +680,7 @@ static const char* g_defaultEnsureNoUsersHaveDotForwardFiles = "default value fo
 static const char* g_defaultEnsureNoUsersHaveDotNetrcFiles = "default value for EnsureNoUsersHaveDotNetrcFiles";
 static const char* g_defaultEnsureNoUsersHaveDotRhostsFiles = "default value for EnsureNoUsersHaveDotRhostsFiles";
 static const char* g_defaultEnsureRloginServiceIsDisabled = "default value for EnsureRloginServiceIsDisabled";
-static const char* g_defaultEnsureUnnecessaryAccountsAreRemoved = "default value for EnsureUnnecessaryAccountsAreRemoved";
+static const char* g_defaultEnsureUnnecessaryAccountsAreRemoved = "games"; //TODO: repeat for all others above that will remain
 
 static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
@@ -766,6 +770,7 @@ static long g_maxInactiveDays = 30;
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
 
+// TODO: This list will be triaged and only objects that benefit of parameters will remain
 static char* g_desiredEnsurePermissionsOnEtcIssue = NULL;
 static char* g_desiredEnsurePermissionsOnEtcIssueNet = NULL;
 static char* g_desiredEnsurePermissionsOnEtcHostsAllow = NULL;
@@ -919,6 +924,7 @@ void AsbInitialize(void* log)
 {
     InitializeSshAudit(log);
 
+    // TODO: This list will be triaged and only objects that benefit of paramaters will remain
     if ((NULL == (g_desiredEnsurePermissionsOnEtcIssue = DuplicateString(g_defaultEnsurePermissionsOnEtcIssue))) ||
         (NULL == (g_desiredEnsurePermissionsOnEtcIssueNet = DuplicateString(g_defaultEnsurePermissionsOnEtcIssueNet))) ||
         (NULL == (g_desiredEnsurePermissionsOnEtcHostsAllow = DuplicateString(g_defaultEnsurePermissionsOnEtcHostsAllow))) ||
@@ -1078,6 +1084,7 @@ void AsbShutdown(void* log)
 {
     OsConfigLogInfo(log, "%s shutting down", g_asbName);
         
+    // TODO: This list will be triaged and only objects that benefit of paramaters will remain
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcHostsAllow);
@@ -2574,6 +2581,8 @@ static char* AuditEnsureRloginServiceIsDisabled(void* log)
 
 static char* AuditEnsureUnnecessaryAccountsAreRemoved(void* log)
 {
+    // TODO: here and elewhere where checks can benefit of parameters, we will audit against desired values
+    // TODO: here use g_desiredEnsureUnnecessaryAccountsAreRemoved instead of the local 'names' variable
     const char* names[] = {"games"};
     char* reason = NULL;
     CheckUserAccountsNotFound(names, ARRAY_SIZE(names), &reason, log);
@@ -3677,8 +3686,11 @@ static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
 
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
 {
+    // TODO: here and elewhere where checks can benefit of parameters, we will remediate against desired values
+    // TODO: here use g_desiredEnsureUnnecessaryAccountsAreRemoved (via 'value') instead of the local 'names' variable
     const char* names[] = {"games"};
     UNUSED(value);
+    //TODO: here and elsewhere where we use C arrays of values, change to space separated values (like used for SSH ciphers)
     return RemoveUserAccounts(names, ARRAY_SIZE(names), log);
 }
 
@@ -3793,6 +3805,7 @@ static int ReplaceString(char* target, char* source, const char* defaultValue)
     return status;
 }
 
+// TODO: This list will be triaged and only objects that benefit of parameters will remain (and then be correctly formatted) 
 static int InitEnsurePermissionsOnEtcIssue(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcIssue, value, g_defaultEnsurePermissionsOnEtcIssue); }
 static int InitEnsurePermissionsOnEtcIssueNet(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcIssueNet, value, g_defaultEnsurePermissionsOnEtcIssueNet); }
 static int InitEnsurePermissionsOnEtcHostsAllow(char* value) { return ReplaceString(g_desiredEnsurePermissionsOnEtcHostsAllow, value, g_defaultEnsurePermissionsOnEtcHostsAllow); }
@@ -5439,6 +5452,8 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         }
         else if (0 == strcmp(objectName, g_remediateEnsureUnnecessaryAccountsAreRemovedObject))
         {
+            // TODO: here and elewhere where checks can benefit of parameters, we will remediate against desired values
+            // TODO: here confirm that 'jsonString' will be set to the g_desiredEnsureUnnecessaryAccountsAreRemoved
             status = RemediateEnsureUnnecessaryAccountsAreRemoved(jsonString, log);
         }
         // Initialization for audit before remediation
@@ -5522,6 +5537,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         {
             status = InitEnsureAppropriateCiphersForSsh(jsonString, log);
         }
+        // TODO: This list will be triaged and only objects that benefit of parameters will remain (and then be correctly formatted) 
         else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcIssueObject)) { status = InitEnsurePermissionsOnEtcIssue(jsonString); }
         else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcIssueNetObject)) { status = InitEnsurePermissionsOnEtcIssueNet(jsonString); }
         else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcHostsAllowObject)) { status = InitEnsurePermissionsOnEtcHostsAllow(jsonString); }

@@ -45,87 +45,6 @@ OSCONFIG_LOG_HANDLE GetLog(void)
     return g_log;
 }
 
-static void LogCurrentDistro(MI_Context* context)
-{
-    char* prettyName = NULL;
-    if (NULL != (prettyName = GetOsPrettyName(GetLog())))
-    {
-        LogInfo(context, GetLog(), "[OsConfigResource] Running on '%s'", prettyName);
-        FREE_MEMORY(prettyName);
-    }
-    else
-    {
-        LogInfo(context, GetLog(), "[OsConfigResource] Running on an unknown distribution without a valid PRETTY_NAME in /etc/os-release");
-    }
-    return;
-}
-
-static MPI_HANDLE RefreshMpiClientSession(MPI_HANDLE currentMpiHandle)
-{
-    MPI_HANDLE mpiHandle = currentMpiHandle;
-
-    if ((NULL != mpiHandle) && (true == IsDaemonActive(g_mpiServer, GetLog())))
-    {
-        return mpiHandle;
-    }
-
-    if (NULL != mpiHandle)
-    {
-        CallMpiClose(mpiHandle, GetLog());
-        mpiHandle = NULL;
-    }
-
-    if (true == EnableAndStartDaemon(g_mpiServer, GetLog()))
-    {
-        sleep(1);
-
-        if (NULL == (mpiHandle = CallMpiOpen(MPI_CLIENT_NAME, MAX_PAYLOAD_LENGTH, GetLog())))
-        {
-            OsConfigLogError(GetLog(), "[OsConfigResource] MpiOpen failed");
-        }
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "[OsConfigResource] The OSConfig Platform service '%s' is not active on this device", g_mpiServer);
-    }
-
-    return mpiHandle;
-}
-
-static void LogOsConfigVersion(MI_Context* context)
-{
-    const char* deviceInfoComponent = "DeviceInfo";
-    const char* osConfigVersionObject = "osConfigVersion";
-    const char* version = NULL;
-    JSON_Value* jsonValue = NULL;
-    char* objectValue = NULL;
-    int objectValueLength = 0;
-    char* payloadString = NULL;
-
-    if ((MPI_OK == CallMpiGet(deviceInfoComponent, osConfigVersionObject, &objectValue, &objectValueLength, GetLog())) && (NULL != objectValue))
-    {
-        if (NULL != (payloadString = malloc(((objectValueLength > 0) ? objectValueLength : strlen(objectValue)) + 1)))
-        {
-            memset(payloadString, 0, objectValueLength + 1);
-            memcpy(payloadString, objectValue, objectValueLength);
-
-            if (NULL != (jsonValue = json_parse_string(payloadString)))
-            {
-                if (NULL != (version = json_value_get_string(jsonValue)))
-                {
-                    LogInfo(context, GetLog(), "[OsConfigResource] OSConfig version: '%s'", version);
-                }
-
-                json_value_free(jsonValue);
-            }
-
-            FREE_MEMORY(payloadString);
-        }
-
-        CallMpiFree(objectValue);
-    }
-}
-
 void __attribute__((constructor)) Initialize()
 {
     g_classKey = DuplicateString(g_defaultValue);
@@ -153,6 +72,91 @@ void __attribute__((destructor)) Destroy()
     OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library unloaded by host process %d", getpid());
 
     CloseLog(&g_log);
+}
+
+static void LogCurrentDistro(MI_Context* context)
+{
+    char* prettyName = NULL;
+    if (NULL != (prettyName = GetOsPrettyName(GetLog())))
+    {
+        LogInfo(context, GetLog(), "[OsConfigResource] Running on '%s'", prettyName);
+        FREE_MEMORY(prettyName);
+    }
+    else
+    {
+        LogInfo(context, GetLog(), "[OsConfigResource] Running on an unknown distribution without a valid PRETTY_NAME in /etc/os-release");
+    }
+    return;
+}
+
+static void LogOsConfigVersion(MI_Context* context)
+{
+    const char* deviceInfoComponent = "DeviceInfo";
+    const char* osConfigVersionObject = "osConfigVersion";
+    const char* version = NULL;
+    JSON_Value* jsonValue = NULL;
+    char* objectValue = NULL;
+    int objectValueLength = 0;
+    char* payloadString = NULL;
+
+    if ((NULL != g_mpiHandle) && (MPI_OK == CallMpiGet(deviceInfoComponent, osConfigVersionObject, &objectValue, &objectValueLength, GetLog())) && (NULL != objectValue))
+    {
+        if (NULL != (payloadString = malloc(((objectValueLength > 0) ? objectValueLength : strlen(objectValue)) + 1)))
+        {
+            memset(payloadString, 0, objectValueLength + 1);
+            memcpy(payloadString, objectValue, objectValueLength);
+
+            if (NULL != (jsonValue = json_parse_string(payloadString)))
+            {
+                if (NULL != (version = json_value_get_string(jsonValue)))
+                {
+                    LogInfo(context, GetLog(), "[OsConfigResource] Azure OSConfig version: '%s'", version);
+                }
+
+                json_value_free(jsonValue);
+            }
+
+            FREE_MEMORY(payloadString);
+        }
+
+        CallMpiFree(objectValue);
+    }
+}
+
+static MPI_HANDLE RefreshMpiClientSession(MPI_HANDLE currentMpiHandle, MI_Context* context)
+{
+    MPI_HANDLE mpiHandle = currentMpiHandle;
+
+    if ((NULL != mpiHandle) && (true == IsDaemonActive(g_mpiServer, GetLog())))
+    {
+        return mpiHandle;
+    }
+
+    if (NULL != mpiHandle)
+    {
+        CallMpiClose(mpiHandle, GetLog());
+        mpiHandle = NULL;
+    }
+
+    if (true == EnableAndStartDaemon(g_mpiServer, GetLog()))
+    {
+        sleep(1);
+
+        if (NULL == (mpiHandle = CallMpiOpen(MPI_CLIENT_NAME, MAX_PAYLOAD_LENGTH, GetLog())))
+        {
+            OsConfigLogError(GetLog(), "[OsConfigResource] MpiOpen failed");
+        }
+        else
+        {
+            LogOsConfigVersion(context);
+        }
+    }
+    else
+    {
+        OsConfigLogError(GetLog(), "[OsConfigResource] The OSConfig Platform service '%s' is not active on this device", g_mpiServer);
+    }
+
+    return mpiHandle;
 }
 
 void MI_CALL OsConfigResource_Load(
@@ -343,7 +347,7 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName
             {
                 if (NULL == g_mpiHandle)
                 {
-                    g_mpiHandle = RefreshMpiClientSession(g_mpiHandle);
+                    g_mpiHandle = RefreshMpiClientSession(g_mpiHandle, context);
                 }
                 
                 if (NULL != g_mpiHandle)
@@ -405,7 +409,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     {
         if (NULL == g_mpiHandle)
         {
-            g_mpiHandle = RefreshMpiClientSession(g_mpiHandle);
+            g_mpiHandle = RefreshMpiClientSession(g_mpiHandle, context);
         }
 
         if (NULL != g_mpiHandle)
