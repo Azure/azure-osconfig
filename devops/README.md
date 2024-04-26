@@ -1,11 +1,16 @@
+[![CI Tests](https://github.com/Azure/azure-osconfig/actions/workflows/ci.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/ci.yml)
+[![Integration - NRP Tests](https://github.com/Azure/azure-osconfig/actions/workflows/universalnrp-test.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/universalnrp-test.yml)
+[![insiders-fast](https://github.com/Azure/azure-osconfig/actions/workflows/insiders-fast.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/insiders-fast.yml)
+[![prod](https://github.com/Azure/azure-osconfig/actions/workflows/prod.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/prod.yml)
+
 # Package Installation
 
 Our packages are distributed via the [Microsoft repository](https://packages.microsoft.com/). The following instructions will guide you through the installation of the `osconfig` package on our supported Linux distributions. Additionally, you can find our MSDN documentation on package installation at [docs.microsoft.com](https://learn.microsoft.com/azure/osconfig/howto-install?tabs=package).
 
 Channels | Description
 -----|-----  
-[![insiders-fast](https://github.com/Azure/azure-osconfig/actions/workflows/insiders-fast.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/insiders-fast.yml) | The latest and greatest features and bug fixes. This channel is updated frequently.
-[![prod](https://github.com/Azure/azure-osconfig/actions/workflows/prod.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/prod.yml) | The stable channel. This channel is updated less frequently and is recommended for production use.
+`insiders-fast` | The latest and greatest features and bug fixes. This channel is updated frequently.
+`prod` | The stable channel. This channel is updated less frequently and is recommended for production use.
 
 *If you see any missing platforms or architectures that would help, please contact osconfigcore@microsoft.com.
 

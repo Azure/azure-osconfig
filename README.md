@@ -1,8 +1,6 @@
 # OSConfig
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
-[![CI Tests](https://github.com/Azure/azure-osconfig/actions/workflows/ci.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/ci.yml)
-[![Integration - NRP Tests](https://github.com/Azure/azure-osconfig/actions/workflows/universalnrp-test.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/universalnrp-test.yml)
 
 Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI, GitOps, as well as local management.
 
