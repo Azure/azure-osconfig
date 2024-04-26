@@ -19,6 +19,7 @@
 #include <Logging.h>
 #include <Mpi.h>
 #include <MpiClient.h>
+#include <Asb.h>
 
 #include "MI.h"
 #include "MSFT_Credential.h"
