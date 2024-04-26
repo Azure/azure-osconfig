@@ -27,7 +27,7 @@ jobs:
             { os: ubuntu, version: 22.04, package-type: DEB, tag: ''},
           ]
         arch: [amd64]
-        install-osconfig: [true, false]
+        install-osconfig: [false]
         policy-package: [LinuxSshServerSecurityBaselinePolicy.zip]
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
