@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-target_compile_options(${target_name} PRIVATE  -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-const-variable=2)
-
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4.7)
@@ -26,6 +24,8 @@ set(osconfig_platform_files
 set(target_name osconfig-platform)
 
 add_executable(${target_name} ${osconfig_platform_files})
+
+target_compile_options(${target_name} PRIVATE  -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-const-variable=2)
 
 target_include_directories(${target_name} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
