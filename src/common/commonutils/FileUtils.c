@@ -863,7 +863,7 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     
     if (NULL != (home = opendir(directory)))
     {
-        while ((NULL != (entry = readdir(home))) && (NULL != entry->d_name))
+        while ((NULL != (entry = readdir(home))) && (NULL != &(entry->d_name[0])))
         {
             if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
             {
