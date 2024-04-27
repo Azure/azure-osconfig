@@ -1985,13 +1985,13 @@ static char* AuditEnsureAllWirelessInterfacesAreDisabled(void* log)
     char* reason = NULL;
     if (0 == CheckTextNotFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", &reason, log))
     {
-        FREE_MEMORY(reason);
-        reason = DuplicateString("No active wireless interfaces are present");
+        OsConfigResetReason(&reason);
+        OsConfigCaptureSuccessReason("No active wireless interfaces are present");
     }
     else
     {
-        FREE_MEMORY(reason);
-        reason = DuplicateString("At least one active wireless interface is present");
+        OsConfigResetReason(&reason);
+        OsConfigCaptureReason("At least one active wireless interface is present");
     }
     return reason;
 }
