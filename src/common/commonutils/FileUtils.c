@@ -865,7 +865,10 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     {
         while (NULL != (entry = readdir(home)))
         {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"    
             if (entry->d_name && strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
+#pragma clang diagnostic pop
             {
                 length = strlen(pathTemplate) + strlen(directory) + strlen(entry->d_name);
                 if (NULL == (path = malloc(length + 1)))
