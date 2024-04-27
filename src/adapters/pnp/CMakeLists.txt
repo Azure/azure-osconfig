@@ -30,7 +30,7 @@ else ()
 endif ()
 
 if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
-    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security)
+    #target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security)
 
     target_include_directories(${target_name} PUBLIC
         ${azure_iot_sdks_SOURCE_DIR}/deps/parson
@@ -56,7 +56,7 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         commonutils
         mpiclient)
 else()
-    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result)
+    #target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result)
 
     find_package (azure_c_shared_utility REQUIRED)
     find_package (azure_macro_utils_c REQUIRED)

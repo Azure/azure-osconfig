@@ -21,6 +21,8 @@ option(BUILD_SAMPLES    "Build samples" OFF)
 option(COVERAGE         "Enable code coverage" OFF)
 
 # add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-nonnull;-Wno-unused-result>")
+# Private target: -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security
+add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security>")
 add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wreorder;-Wno-nonnull;-Wno-unused-result>")
 
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
