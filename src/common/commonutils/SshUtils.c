@@ -3,6 +3,7 @@
 
 #include "Internal.h"
 #include "SshUtils.h"
+#include "..\asb\Asb.h"
 
 static const char* g_sshServerService = "sshd";
 static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
