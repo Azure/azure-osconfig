@@ -20,7 +20,7 @@ option(BUILD_MODULETEST "Build the moduletest tool" ON)
 option(BUILD_SAMPLES    "Build samples" OFF)
 option(COVERAGE         "Enable code coverage" OFF)
 
-add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-nonnull;-Wno-unused-result;-Wno-sign-compare;-Wno-maybe-uninitialized;-Wno-strict-aliasing>")
+add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-nonnull;-Wno-unused-result;-Wno-sign-compare;-Wno-maybe-uninitialized;-Wno-strict-aliasing;-Wno-implicit-fallthrough>")
 add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wreorder;-Wno-nonnull;-Wno-unused-result;-Wunused-macros>")
 
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
