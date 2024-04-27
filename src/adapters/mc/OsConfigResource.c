@@ -512,7 +512,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_Value miValueReasonResult = {0};
     MI_Boolean isCompliant = MI_FALSE;
 
-    struct OsConfigResource_GetTargetResource get_result_object = {0};
+    OsConfigResource_GetTargetResource get_result_object;
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
@@ -874,7 +874,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     MI_UNREFERENCED_PARAMETER(methodName);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
-    OsConfigResource_TestTargetResource test_result_object = {0};
+    OsConfigResource_TestTargetResource test_result_object;
 
     MI_Result miResult = MI_RESULT_OK;
     MI_Result miCleanup = MI_RESULT_OK;
@@ -1048,7 +1048,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     MI_Result miResult = MI_RESULT_OK;
     MI_Result miCleanup = MI_RESULT_OK;
 
-    OsConfigResource_SetTargetResource set_result_object = {0};
+    OsConfigResource_SetTargetResource set_result_object;
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
