@@ -865,7 +865,6 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     {
         while (NULL != (entry = readdir(home)))
         {
-            // d_name is defined as a static character array inside the dirent structure
             if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
             {
                 length = strlen(pathTemplate) + strlen(directory) + strlen(entry->d_name);
