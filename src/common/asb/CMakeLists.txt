@@ -3,6 +3,8 @@
 
 project(asb)
 
+add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-nonnull;-Wno-unused-result;-Wno-tautological-compare>")
+
 add_library(asb STATIC
     Asb.c)
 
