@@ -863,12 +863,9 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     
     if (NULL != (home = opendir(directory)))
     {
-        while (NULL != (entry = readdir(home)))
+        while ((NULL != (entry = readdir(home))) && (NULL != entry->d_name))
         {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wtautological-compare"    
-            if (entry->d_name && strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
-#pragma GCC diagnostic pop
+            if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
             {
                 length = strlen(pathTemplate) + strlen(directory) + strlen(entry->d_name);
                 if (NULL == (path = malloc(length + 1)))
