@@ -21,15 +21,14 @@ option(BUILD_SAMPLES    "Build samples" OFF)
 option(COVERAGE         "Enable code coverage" OFF)
 
 # add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-nonnull;-Wno-unused-result>")
-add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-unused-variable;-Wno-unused-function;-Wno-missing-braces;-Wno-strict-aliasing;-Wno-sign-compare;-Wno-maybe-uninitialized;-Wno-implicit-fallthrough>")
 add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wreorder;-Wno-nonnull;-Wno-unused-result>")
 
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
     add_compile_options("-Wno-psabi;-fPIC")
     
-    if ((NOT CMAKE_C_COMPILER_VERSION VERSION_LESS "5.3.0") AND (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.3.0"))
-        add_compile_options("-unused-const-variable=2")
-    endif()
+    #if ((NOT CMAKE_C_COMPILER_VERSION VERSION_LESS "5.3.0") AND (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.3.0"))
+    #    add_compile_options("-unused-const-variable=2")
+    #endif()
 
     # Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Universal NRP adapter
     if (CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.7" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4.9")
