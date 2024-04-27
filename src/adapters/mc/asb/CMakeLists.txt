@@ -4,7 +4,7 @@
 # Azure Security Baseline for Linux
 project(OsConfigResourceAsb)
 
-target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-macros)
+target_compile_options(${target_name} PUBLIC -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-macros)
 
 add_library(OsConfigResourceAsb
     SHARED
