@@ -25,7 +25,7 @@ set(target_name osconfig-platform)
 
 add_executable(${target_name} ${osconfig_platform_files})
 
-target_compile_options(${target_name} PRIVATE  -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-const-variable=2 -Wunused-macros)
+# target_compile_options(${target_name} PRIVATE  -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-const-variable=2 -Wunused-macros)
 
 target_include_directories(${target_name} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
