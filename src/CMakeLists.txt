@@ -21,7 +21,7 @@ option(BUILD_SAMPLES    "Build samples" OFF)
 option(COVERAGE         "Enable code coverage" OFF)
 
 # add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-nonnull;-Wno-unused-result>")
-add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-unused-variable;-Wno-unused-function;-Wno-missing-braces;-Wno-strict-aliasing;-Wno-sign-compare;-Wno-maybe-uninitialized>")
+add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-unused-variable;-Wno-unused-function;-Wno-missing-braces;-Wno-strict-aliasing;-Wno-sign-compare;-Wno-maybe-uninitialized;-Wno-implicit-fallthrough>")
 add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wreorder;-Wno-nonnull;-Wno-unused-result>")
 
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
