@@ -4,8 +4,6 @@
 # SSH Posture Control
 project(OsConfigResourceSsh)
 
-target_compile_options(${target_name} PUBLIC -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-macros)
-
 add_library(OsConfigResourceSsh
     SHARED
         ../module.c
