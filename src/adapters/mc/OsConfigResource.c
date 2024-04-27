@@ -869,6 +869,9 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     const OsConfigResource_TestTargetResource* in)
 {
     MI_UNREFERENCED_PARAMETER(self);
+    MI_UNREFERENCED_PARAMETER(nameSpace);
+    MI_UNREFERENCED_PARAMETER(className);
+    MI_UNREFERENCED_PARAMETER(methodName);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
     OsConfigResource_TestTargetResource test_result_object = {0};
