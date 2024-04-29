@@ -865,7 +865,7 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     {
         while (NULL != (entry = readdir(home)))
         {
-            if (entry->d_name && strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
+            if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
             {
                 length = strlen(pathTemplate) + strlen(directory) + strlen(entry->d_name);
                 if (NULL == (path = malloc(length + 1)))

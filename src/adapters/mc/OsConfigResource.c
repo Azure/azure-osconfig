@@ -101,7 +101,7 @@ static void LogOsConfigVersion(MI_Context* context)
 
     if ((NULL != g_mpiHandle) && (MPI_OK == CallMpiGet(deviceInfoComponent, osConfigVersionObject, &objectValue, &objectValueLength, GetLog())) && (NULL != objectValue))
     {
-        if (NULL != (payloadString = malloc(((objectValueLength > 0) ? objectValueLength : strlen(objectValue)) + 1)))
+        if (NULL != (payloadString = malloc(((objectValueLength > 0) ? objectValueLength : (int)strlen(objectValue)) + 1)))
         {
             memset(payloadString, 0, objectValueLength + 1);
             memcpy(payloadString, objectValue, objectValueLength);
@@ -165,7 +165,6 @@ void MI_CALL OsConfigResource_Load(
     MI_Context* context)
 {
     MI_UNREFERENCED_PARAMETER(selfModule);
-    int status = 0;
 
     *self = NULL;
 
@@ -492,6 +491,9 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     const OsConfigResource_GetTargetResource* in)
 {
     MI_UNREFERENCED_PARAMETER(self);
+    MI_UNREFERENCED_PARAMETER(nameSpace);
+    MI_UNREFERENCED_PARAMETER(className);
+    MI_UNREFERENCED_PARAMETER(methodName);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
     const char* auditPassed = "Audit passed";
@@ -510,7 +512,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_Value miValueReasonResult = {0};
     MI_Boolean isCompliant = MI_FALSE;
 
-    OsConfigResource_GetTargetResource get_result_object = {0};
+    OsConfigResource_GetTargetResource get_result_object;
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
@@ -867,9 +869,12 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     const OsConfigResource_TestTargetResource* in)
 {
     MI_UNREFERENCED_PARAMETER(self);
+    MI_UNREFERENCED_PARAMETER(nameSpace);
+    MI_UNREFERENCED_PARAMETER(className);
+    MI_UNREFERENCED_PARAMETER(methodName);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
-    OsConfigResource_TestTargetResource test_result_object = {0};
+    OsConfigResource_TestTargetResource test_result_object;
 
     MI_Result miResult = MI_RESULT_OK;
     MI_Result miCleanup = MI_RESULT_OK;
@@ -1035,13 +1040,15 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     const OsConfigResource_SetTargetResource* in)
 {
     MI_UNREFERENCED_PARAMETER(self);
+    MI_UNREFERENCED_PARAMETER(nameSpace);
+    MI_UNREFERENCED_PARAMETER(className);
+    MI_UNREFERENCED_PARAMETER(methodName);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
     MI_Result miResult = MI_RESULT_OK;
     MI_Result miCleanup = MI_RESULT_OK;
-    int mpiResult = MPI_OK;
 
-    OsConfigResource_SetTargetResource set_result_object = {0};
+    OsConfigResource_SetTargetResource set_result_object;
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
