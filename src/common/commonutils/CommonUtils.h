@@ -9,28 +9,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define PRETTY_NAME_AZURE_LINUX_2 "CBL-Mariner/Linux"
-#define PRETTY_NAME_ALMA_LINUX_9 "AlmaLinux 9 (Beryllium)"
-#define PRETTY_NAME_ALMA_LINUX_9_3 "AlmaLinux 9.3 (Shamrock Pampas Cat)"
-#define PRETTY_NAME_AMAZON_LINUX_2 "Amazon Linux 2"
-#define PRETTY_NAME_CENTOS_7 "CentOS Linux 7"
-#define PRETTY_NAME_CENTOS_8 "CentOS Stream 8"
-#define PRETTY_NAME_DEBIAN_10 "Debian GNU/Linux 10"
-#define PRETTY_NAME_DEBIAN_11 "Debian GNU/Linux 11"
-#define PRETTY_NAME_DEBIAN_12 "Debian GNU/Linux 12"
-#define PRETTY_NAME_ORACLE_LINUX_SERVER_7 "Oracle Linux Server 7"
-#define PRETTY_NAME_ORACLE_LINUX_SERVER_8 "Oracle Linux Server 8"
-#define PRETTY_NAME_RHEL_7 "Red Hat Enterprise Linux Server 7"
-#define PRETTY_NAME_RHEL_8 "Red Hat Enterprise Linux 8"
-#define PRETTY_NAME_RHEL_9 "Red Hat Enterprise Linux 9"
-#define PRETTY_NAME_ROCKY_LINUX_9 "Rocky Linux 9"
-#define PRETTY_NAME_SLES_15 "SUSE Linux Enterprise Server 15"
-#define PRETTY_NAME_UBUNTU_20_04 "Ubuntu 20.04"
-#define PRETTY_NAME_UBUNTU_22_04 "Ubuntu 22.04"
-
-#define SECURITY_AUDIT_PASS "PASS"
-#define SECURITY_AUDIT_FAIL "FAIL"
-
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 #define UNUSED(a) (void)(a)
