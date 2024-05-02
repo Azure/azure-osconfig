@@ -38,13 +38,13 @@ jobs:
       - uses: azure/login@v2
         with:
           auth-type: IDENTITY
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant-id: ${{ secrets.AZURE_AME_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_AME_SUBSCRIPTION_ID }}
 
       - name: Download certs
         env:
-          AZURE_VAULT: ${{ secrets.AZURE_VAULT }}
-          PMC_MSAL_CERT_NAME: pmc-onecert
+          AZURE_VAULT: ${{ secrets.AZURE_AME_VAULT }}
+          PMC_MSAL_CERT_NAME: pmc
         run: |
           az keyvault secret download --vault-name "$AZURE_VAULT" --name "$PMC_MSAL_CERT_NAME" --file "${{ github.workspace }}/auth.pem"
 
