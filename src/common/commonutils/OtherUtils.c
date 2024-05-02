@@ -256,7 +256,7 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
             {
                 FREE_MEMORY(*integers);
                 *integers = (int*)malloc(sizeof(int));
-                *numIntegers == 1;
+                *numIntegers = 1;
             }
             else
             {
