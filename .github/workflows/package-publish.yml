@@ -19,6 +19,7 @@ on:
 
 jobs:
   publish:
+    # Ensure runners are using the AME tenant
     runs-on: [self-hosted, 1ES.Pool=release-pool, 1ES.ImageOverride=build-infra]
     environment: ${{ inputs.environment }}
     env:
