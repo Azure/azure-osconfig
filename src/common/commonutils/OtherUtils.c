@@ -244,9 +244,11 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
         }
         else
         {
-            //RemovePrefixBlanks(value);
+            i += strlen(value);
+            
+            RemovePrefixBlanks(value);
             TruncateAtFirst(value, separator);
-            //RemoveTrailingBlanks(value);
+            RemoveTrailingBlanks(value);
 
             if (0 == *numIntegers)
             {
@@ -271,7 +273,6 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
                 (*integers)[(*numIntegers) - 1] = atoi(value);
             }
 
-            i += strlen(value);
             FREE_MEMORY(value);
         }
     }
