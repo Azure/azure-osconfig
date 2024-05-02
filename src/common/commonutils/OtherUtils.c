@@ -244,13 +244,9 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
         }
         else
         {
-            OsConfigLogInfo(log, "### Before: %s", value);
-
-            RemovePrefixBlanks(value);
+            //RemovePrefixBlanks(value);
             TruncateAtFirst(value, separator);
-            RemoveTrailingBlanks(value);
-
-            OsConfigLogInfo(log, "### After: %s", value);
+            //RemoveTrailingBlanks(value);
 
             if (0 == *numIntegers)
             {
