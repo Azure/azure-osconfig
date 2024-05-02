@@ -503,25 +503,25 @@ static void* MpiServerWorker(void* arguments)
                 OsConfigLogError(GetPlatformLog(), "Failed to read request URI %d", socketHandle);
                 status = HTTP_BAD_REQUEST;
             }
-
-            if ((contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog())))
+            else if ((contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog())))
             {
                 if (NULL == (requestBody = (char*)malloc(contentLength + 1)))
                 {
                     OsConfigLogError(GetPlatformLog(), "%s: failed to allocate memory for HTTP body, Content-Length %d", uri, contentLength);
                     status = HTTP_BAD_REQUEST;
                 }
-
-                memset(requestBody, 0, contentLength + 1);
-
-                if (contentLength != (int)(bytes = read(socketHandle, requestBody, contentLength)))
+                else
                 {
-                    OsConfigLogError(GetPlatformLog(), "%s: failed to read complete HTTP body, Content-Length %d, bytes read %d", uri, contentLength, (int)bytes);
-                    status = HTTP_BAD_REQUEST;
+                    memset(requestBody, 0, contentLength + 1);
+                    if (contentLength != (int)(bytes = read(socketHandle, requestBody, contentLength)))
+                    {
+                        OsConfigLogError(GetPlatformLog(), "%s: failed to read complete HTTP body, Content-Length %d, bytes read %d", uri, contentLength, (int)bytes);
+                        status = HTTP_BAD_REQUEST;
+                    }
                 }
             }
 
-            if (status == HTTP_OK)
+            if (HTTP_OK == status)
             {
                 if (IsFullLoggingEnabled())
                 {
@@ -541,9 +541,7 @@ static void* MpiServerWorker(void* arguments)
                 snprintf(buffer, estimatedSize, responseFormat, (int)status, httpReason, responseSize, responseSize, (responseBody ? responseBody : ""));
                 actualSize = (int)strlen(buffer);
 
-                bytes = write(socketHandle, buffer, actualSize);
-
-                if (bytes != actualSize)
+                if (actualSize != (bytes = write(socketHandle, buffer, actualSize)))
                 {
                     OsConfigLogError(GetPlatformLog(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, (int)bytes, actualSize);
                 }
