@@ -265,7 +265,7 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
             }
             else
             {
-                integers[*numIntegers] = atoi(value);
+                *integers[*numIntegers] = atoi(value);
                 *numIntegers += 1;
             }
 
