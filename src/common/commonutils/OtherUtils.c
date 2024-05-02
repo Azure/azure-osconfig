@@ -230,7 +230,7 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
     }
 
     *integers = NULL;
-    numIntegers = 0;
+    *numIntegers = 0;
 
     sourceLength = strlen(source);
 

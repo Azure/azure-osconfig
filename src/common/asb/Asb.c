@@ -654,28 +654,32 @@ void AsbShutdown(void* log)
 static char* AuditEnsurePermissionsOnEtcIssue(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcIssue, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcIssue ? g_desiredEnsurePermissionsOnEtcIssue : g_defaultEnsurePermissionsOnEtcIssue), &reason, log);
+    CheckFileAccess(g_etcIssue, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcIssue ? 
+        g_desiredEnsurePermissionsOnEtcIssue : g_defaultEnsurePermissionsOnEtcIssue), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcIssueNet(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcIssueNet, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcIssueNet ? g_desiredEnsurePermissionsOnEtcIssueNet : g_defaultEnsurePermissionsOnEtcIssueNet), &reason, log);
+    CheckFileAccess(g_etcIssueNet, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcIssueNet ? 
+        g_desiredEnsurePermissionsOnEtcIssueNet : g_defaultEnsurePermissionsOnEtcIssueNet), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcHostsAllow(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcHostsAllow, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcHostsAllow ? g_desiredEnsurePermissionsOnEtcHostsAllow : g_defaultEnsurePermissionsOnEtcHostsAllow), &reason, log);
+    CheckFileAccess(g_etcHostsAllow, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcHostsAllow ? 
+        g_desiredEnsurePermissionsOnEtcHostsAllow : g_defaultEnsurePermissionsOnEtcHostsAllow), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcHostsDeny(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcHostsDeny, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcHostsDeny ? g_desiredEnsurePermissionsOnEtcHostsDeny : g_defaultEnsurePermissionsOnEtcHostsDeny), &reason, log);
+    CheckFileAccess(g_etcHostsDeny, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcHostsDeny ? 
+        g_desiredEnsurePermissionsOnEtcHostsDeny : g_defaultEnsurePermissionsOnEtcHostsDeny), &reason, log);
     return reason;
 }
 
@@ -689,105 +693,120 @@ static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void* log)
 static char* AuditEnsurePermissionsOnEtcShadow(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadow ? g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow), &reason, log);
+    CheckFileAccess(g_etcShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadow ? 
+        g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcShadowDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadowDash ? g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash), &reason, log);
+    CheckFileAccess(g_etcShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadowDash ? 
+        g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcGShadow(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadow ? g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow), &reason, log);
+    CheckFileAccess(g_etcGShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadow ? 
+        g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcGShadowDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash ? g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash), &reason, log);
+    CheckFileAccess(g_etcGShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash ? 
+        g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcPasswd(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcPasswd, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswd ? g_desiredEnsurePermissionsOnEtcPasswd : g_defaultEnsurePermissionsOnEtcPasswd), &reason, log);
+    CheckFileAccess(g_etcPasswd, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswd ? 
+        g_desiredEnsurePermissionsOnEtcPasswd : g_defaultEnsurePermissionsOnEtcPasswd), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcPasswdDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcPasswdDash, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswdDash ? g_desiredEnsurePermissionsOnEtcPasswdDash : g_defaultEnsurePermissionsOnEtcPasswdDash), &reason, log);
+    CheckFileAccess(g_etcPasswdDash, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswdDash ? 
+        g_desiredEnsurePermissionsOnEtcPasswdDash : g_defaultEnsurePermissionsOnEtcPasswdDash), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcGroup(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGroup, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcGroup ? g_desiredEnsurePermissionsOnEtcGroup : g_defaultEnsurePermissionsOnEtcGroup), &reason, log);
+    CheckFileAccess(g_etcGroup, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcGroup ? 
+        g_desiredEnsurePermissionsOnEtcGroup : g_defaultEnsurePermissionsOnEtcGroup), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcGroupDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGroupDash, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcGroupDash ? g_desiredEnsurePermissionsOnEtcGroupDash : g_defaultEnsurePermissionsOnEtcGroupDash), &reason, log);
+    CheckFileAccess(g_etcGroupDash, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcGroupDash ? 
+        g_desiredEnsurePermissionsOnEtcGroupDash : g_defaultEnsurePermissionsOnEtcGroupDash), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcAnacronTab(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcAnacronTab, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcAnacronTab ? g_desiredEnsurePermissionsOnEtcAnacronTab : g_defaultEnsurePermissionsOnEtcAnacronTab), &reason, log);
+    CheckFileAccess(g_etcAnacronTab, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcAnacronTab ? 
+        g_desiredEnsurePermissionsOnEtcAnacronTab : g_defaultEnsurePermissionsOnEtcAnacronTab), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcCronD(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronD, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronD ? g_desiredEnsurePermissionsOnEtcCronD : g_defaultEnsurePermissionsOnEtcCronD), &reason, log);
+    CheckFileAccess(g_etcCronD, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronD ? 
+        g_desiredEnsurePermissionsOnEtcCronD : g_defaultEnsurePermissionsOnEtcCronD), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcCronDaily(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronDaily, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronDaily ? g_desiredEnsurePermissionsOnEtcCronDaily : g_defaultEnsurePermissionsOnEtcCronDaily), &reason, log);
+    CheckFileAccess(g_etcCronDaily, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronDaily ? 
+        g_desiredEnsurePermissionsOnEtcCronDaily : g_defaultEnsurePermissionsOnEtcCronDaily), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcCronHourly(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronHourly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronHourly ? g_desiredEnsurePermissionsOnEtcCronHourly : g_defaultEnsurePermissionsOnEtcCronHourly), &reason, log);
+    CheckFileAccess(g_etcCronHourly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronHourly ? 
+        g_desiredEnsurePermissionsOnEtcCronHourly : g_defaultEnsurePermissionsOnEtcCronHourly), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcCronMonthly(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronMonthly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronMonthly ? g_desiredEnsurePermissionsOnEtcCronMonthly : g_defaultEnsurePermissionsOnEtcCronMonthly), &reason, log);
+    CheckFileAccess(g_etcCronMonthly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronMonthly ? 
+        g_desiredEnsurePermissionsOnEtcCronMonthly : g_defaultEnsurePermissionsOnEtcCronMonthly), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcCronWeekly(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronWeekly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronWeekly ? g_desiredEnsurePermissionsOnEtcCronWeekly : g_defaultEnsurePermissionsOnEtcCronWeekly), &reason, log);
+    CheckFileAccess(g_etcCronWeekly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronWeekly ? 
+        g_desiredEnsurePermissionsOnEtcCronWeekly : g_defaultEnsurePermissionsOnEtcCronWeekly), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcMotd(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcMotd, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcMotd ? g_desiredEnsurePermissionsOnEtcMotd : g_defaultEnsurePermissionsOnEtcMotd), &reason, log);
+    CheckFileAccess(g_etcMotd, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcMotd ? 
+        g_desiredEnsurePermissionsOnEtcMotd : g_defaultEnsurePermissionsOnEtcMotd), &reason, log);
     return reason;
 }
 
