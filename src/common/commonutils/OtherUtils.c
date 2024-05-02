@@ -248,13 +248,13 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
             TruncateAtFirst(value, separator);
             RemoveTrailingBlanks(value);
 
-            if (0 == numIntegers)
+            if (0 == *numIntegers)
             {
                 *integers = (int*)malloc(sizeof(int));
             }
             else
             {
-                *integers = realloc(*integers, size_t(numIntegers * sizeof(int)));
+                *integers = realloc(*integers, (size_t)((*numIntegers) * sizeof(int)));
             }
 
             if (NULL == *integers)
@@ -265,8 +265,8 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
             }
             else
             {
-                integers[numIntegers] = atoi(value);
-                numIntegers += 1;
+                integers[*numIntegers] = atoi(value);
+                *numIntegers += 1;
             }
 
             i += strlen(value);
@@ -275,7 +275,7 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
         }
     }
 
-    OsConfigLogInfo(log, "ConvertStringsToIntegers: %d (%d integers converted from '%s' separated with '%c')", status, numIntegers, source, separator);
+    OsConfigLogInfo(log, "ConvertStringsToIntegers: %d (%d integers converted from '%s' separated with '%c')", status, *numIntegers, source, separator);
 
     return status;
 }
