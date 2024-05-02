@@ -254,7 +254,7 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
             }
             else
             {
-                *integers = realloc(*integers, numIntegers * sizeof(int));
+                *integers = realloc(*integers, size_t(numIntegers * sizeof(int)));
             }
 
             if (NULL == *integers)
