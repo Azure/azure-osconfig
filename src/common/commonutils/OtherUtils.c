@@ -252,7 +252,9 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
 
             OsConfigLogInfo(log, "### After: %s", value);
 
-            if (0 == *numIntegers)
+            *numIntegers += 1;
+
+            if (NULL == *integers)
             {
                 *integers = (int*)malloc(sizeof(int));
             }
@@ -270,7 +272,6 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
             else
             {
                 *integers[*numIntegers] = atoi(value);
-                *numIntegers += 1;
             }
 
             i += strlen(value);
