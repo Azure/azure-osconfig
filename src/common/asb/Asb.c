@@ -696,7 +696,7 @@ static char* AuditEnsurePermissionsOnEtcShadow(void* log)
 static char* AuditEnsurePermissionsOnEtcShadowDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadowDash ? g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash, &reason, log);
+    CheckFileAccess(g_etcShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadowDash ? g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash), &reason, log);
     return reason;
 }
 
