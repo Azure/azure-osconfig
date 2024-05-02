@@ -503,7 +503,7 @@ static void* MpiServerWorker(void* arguments)
                 OsConfigLogError(GetPlatformLog(), "Failed to read request URI %d", socketHandle);
                 status = HTTP_BAD_REQUEST;
             }
-            else if ((contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog())))
+            else if (0 != (contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog())))
             {
                 if (NULL == (requestBody = (char*)malloc(contentLength + 1)))
                 {
