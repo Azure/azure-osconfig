@@ -1837,3 +1837,38 @@ TEST_F(CommonUtilsTest, ConcatenateStrings)
     EXPECT_STREQ("%s%s%s", testString = ConcatenateStrings("%s%s", "%s"));
     FREE_MEMORY(testString);
 }
+
+TEST_F(CommonUtilsTest, ConvertStringsToIntegers)
+{
+    int* integers = NULL;
+    int numIntegers = 0;
+
+    EXPECT_EQ(EINVAL, ConvertStringsToIntegers(nullptr, ',', nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringsToIntegers("123 456", ',', nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringsToIntegers("123 456", ',', &integers, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringsToIntegers("123 456", ',', nullptr, &numIntegers, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringsToIntegers(nullptr, ',', &integers, &numIntegers, nullptr));
+
+    EXPECT_EQ(0, ConvertStringsToIntegers("123,456", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(2, numIntegers);
+    EXPECT_EQ(123, integers[0]);
+    EXPECT_EQ(456, integers[1]);
+    FREE_MEMORY(integers);
+    numIntegers = 0;
+
+    EXPECT_EQ(0, ConvertStringsToIntegers("1,-2,-3", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(3, numIntegers);
+    EXPECT_EQ(1, integers[0]);
+    EXPECT_EQ(-1, integers[1]);
+    EXPECT_EQ(-3, integers[2]);
+    FREE_MEMORY(integers);
+    numIntegers = 0;
+
+    EXPECT_EQ(0, ConvertStringsToIntegers("  -100 , 200     ,-300  ", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(3, numIntegers);
+    EXPECT_EQ(-100, integers[0]);
+    EXPECT_EQ(200, integers[1]);
+    EXPECT_EQ(300, integers[2]);
+    FREE_MEMORY(integers);
+    numIntegers = 0;
+}

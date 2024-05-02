@@ -215,3 +215,67 @@ char* RepairBrokenEolCharactersIfAny(const char* value)
 
     return result;
 }
+
+int ConvertStringsToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log)
+{
+    char* value = NULL;
+    size_t sourceLength = 0;
+    size_t i = 0;
+    int status = 0;
+
+    if ((NULL == source) || (NULL == integers) || (NULL == numIntegers))
+    {
+        OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: invalid arguments");
+        return EINVAL;
+    }
+
+    *integers = NULL;
+    numIntegers = 0;
+
+    sourceLength = strlen(source);
+
+    for (i = 0; i < sourceLength; i++)
+    {
+        if (NULL == (value = DuplicateString(&(source[i]))))
+        {
+            OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: failed to duplicate string");
+            status = ENOMEM;
+            break;
+        }
+        else
+        {
+            RemovePrefixBlanks(value);
+            TruncateAtFirst(value, separator);
+            RemoveTrailingBlanks(value);
+
+            if (0 == numIntegers)
+            {
+                *integers = (int*)malloc(sizeof(int));
+            }
+            else
+            {
+                *integers = realloc(*integers, numIntegers * sizeof(int));
+            }
+
+            if (NULL == *integers)
+            {
+                OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: failed to allocate memory");
+                status = ENOMEM;
+                break;
+            }
+            else
+            {
+                integers[numIntegers] = atoi(value);
+                numIntegers += 1;
+            }
+
+            i += strlen(value);
+            FREE_MEMORY(value);
+            continue;
+        }
+    }
+
+    OsConfigLogInfo(log, "ConvertStringsToIntegers: %d (%d integers converted from '%s' separated with '%c')", status, numIntegers, source, separator);
+
+    return status;
+}
