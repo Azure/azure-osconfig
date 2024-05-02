@@ -229,7 +229,7 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
         return EINVAL;
     }
 
-    *integers = NULL;
+    FREE_MEMORY(*integers);
     *numIntegers = 0;
 
     sourceLength = strlen(source);
@@ -252,14 +252,15 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
 
             OsConfigLogInfo(log, "### After: %s", value);
 
-            *numIntegers += 1;
-
-            if (NULL == *integers)
+            if (0 == *numIntegers)
             {
+                FREE_MEMORY(*integers);
                 *integers = (int*)malloc(sizeof(int));
+                *numIntegers == 1;
             }
             else
             {
+                *numIntegers += 1;
                 *integers = realloc(*integers, (size_t)((*numIntegers) * sizeof(int)));
             }
 
@@ -271,7 +272,7 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
             }
             else
             {
-                *integers[*numIntegers - 1] = atoi(value);
+                (*integers)[(*numIntegers) - 1] = atoi(value);
             }
 
             i += strlen(value);
