@@ -271,8 +271,13 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
 
             i += strlen(value);
             FREE_MEMORY(value);
-            continue;
         }
+    }
+
+    if (0 != status)
+    {
+        FREE_MEMORY(*integers);
+        *numIntegers = 0;
     }
 
     OsConfigLogInfo(log, "ConvertStringsToIntegers: %d (%d integers converted from '%s' separated with '%c')", status, *numIntegers, source, separator);
