@@ -2814,11 +2814,10 @@ static int RemediateEnsureRestrictedUserHomeDirectories(char* value, void* log)
 
     if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, log))) && (numberOfModes >= 2))
     {
-        status = SetRestrictedUserHomeDirectories((unisgned int*)modes, (unsigned int)numberOfModes, modes[0], modes[1], log);
+        status = SetRestrictedUserHomeDirectories((unsigned int*)modes, (unsigned int)numberOfModes, modes[0], modes[1], log);
     }
 
     FREE_MEMORY(modes);
-
     return status;
 }
 
