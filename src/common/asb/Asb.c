@@ -3186,8 +3186,8 @@ static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
 
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
 {
-    return RemoveUserAccounts(value ? value : (g_desiredEnsureUnnecessaryAccountsAreRemoved ? 
-        g_desiredEnsureUnnecessaryAccountsAreRemoved : g_defaultEnsureUnnecessaryAccountsAreRemoved), log);
+    InitEnsureUnnecessaryAccountsAreRemoved(value);
+    return RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log);
 }
 
 static int InitEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
