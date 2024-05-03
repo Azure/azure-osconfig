@@ -595,7 +595,7 @@ void AsbInitialize(void* log)
         (NULL == (g_desiredEnsurePasswordHashingAlgorithm = DuplicateString(g_defaultEnsurePasswordHashingAlgorithm))) ||
         (NULL == (g_desiredEnsureMinDaysBetweenPasswordChanges = DuplicateString(g_defaultEnsureMinDaysBetweenPasswordChanges))) ||
         (NULL == (g_desiredEnsureInactivePasswordLockPeriod = DuplicateString(g_defaultEnsureInactivePasswordLockPeriod))) ||
-        (NULL == (g_desiredMaxDaysBetweenPasswordChanges = DuplicateString(g_defaultMaxDaysBetweenPasswordChanges))) ||
+        (NULL == (g_desiredEnsureMaxDaysBetweenPasswordChanges = DuplicateString(g_defaultEnsureMaxDaysBetweenPasswordChanges))) ||
         (NULL == (g_desiredEnsurePasswordExpiration = DuplicateString(g_defaultEnsurePasswordExpiration))) ||
         (NULL == (g_desiredEnsurePasswordExpirationWarning = DuplicateString(g_defaultEnsurePasswordExpirationWarning))) ||
         (NULL == (g_desiredEnsureDefaultUmaskForAllUsers = DuplicateString(g_defaultEnsureDefaultUmaskForAllUsers))) ||
@@ -638,7 +638,7 @@ void AsbShutdown(void* log)
     FREE_MEMORY(g_desiredEnsurePasswordHashingAlgorithm);
     FREE_MEMORY(g_desiredEnsureMinDaysBetweenPasswordChanges);
     FREE_MEMORY(g_desiredEnsureInactivePasswordLockPeriod);
-    FREE_MEMORY(g_desiredMaxDaysBetweenPasswordChanges);
+    FREE_MEMORY(g_desiredEnsureMaxDaysBetweenPasswordChanges);
     FREE_MEMORY(g_desiredEnsurePasswordExpiration);
     FREE_MEMORY(g_desiredEnsurePasswordExpirationWarning);
     FREE_MEMORY(g_desiredEnsureDefaultUmaskForAllUsers);
@@ -3405,7 +3405,7 @@ static int InitEnsureInactivePasswordLockPeriod(char* value)
 
 static int InitMaxDaysBetweenPasswordChanges(char* value)
 {
-    return ReplaceString(g_desiredMaxDaysBetweenPasswordChanges, value, g_defaultMaxDaysBetweenPasswordChanges);
+    return ReplaceString(g_desiredEnsureMaxDaysBetweenPasswordChanges, value, g_defaultEnsureMaxDaysBetweenPasswordChanges);
 }
 
 static int InitEnsurePasswordExpiration(char* value)
