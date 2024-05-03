@@ -274,7 +274,205 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureAppropriateCiphersForSsh",
     "Payload": "aes128-ctr,aes192-ctr,aes256-ctr"
-  },  
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcIssue",
+    "Payload": "644"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcIssueNet",
+    "Payload": "644"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcHostsAllow",
+    "Payload": "644"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcHostsDeny",
+    "Payload": "644"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcShadow",
+    "Payload": "400"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcShadowDash",
+    "Payload": "400"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcGShadow",
+    "Payload": "400"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcGShadowDash",
+    "Payload": "400"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcPasswd",
+    "Payload": "644"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcPasswdDash",
+    "Payload": "600"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcGroup",
+    "Payload": "644"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcGroupDash",
+    "Payload": "644"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcAnacronTab",
+    "Payload": "600"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcCronD",
+    "Payload": "700"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcCronDaily",
+    "Payload": "700"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcCronHourly",
+    "Payload": "700"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcCronMonthly",
+    "Payload": "700"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcCronWeekly",
+    "Payload": "700"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnEtcMotd",
+    "Payload": "644"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureRestrictedUserHomeDirectories",
+    "Payload": "700,750"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePasswordHashingAlgorithm",
+    "Payload": "sha512"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureMinDaysBetweenPasswordChanges",
+    "Payload": "7"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureInactivePasswordLockPeriod",
+    "Payload": "30"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureMaxDaysBetweenPasswordChanges",
+    "Payload": "365"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePasswordExpiration",
+    "Payload": "365"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePasswordExpirationWarning",
+    "Payload": "7"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureDefaultUmaskForAllUsers",
+    "Payload": "077"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePermissionsOnBootloaderConfig",
+    "Payload": "400"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePasswordReuseIsLimited",
+    "Payload": "5"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsurePasswordCreationRequirements",
+    "Payload": "14,4,-1,-1,-1,-1"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureFilePermissionsForAllRsyslogLogFiles",
+    "Payload": "600,640"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureUsersDotFilesArentGroupOrWorldWritable",
+    "Payload": "600,644,664,700,744"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
+    "Payload": "games,test"
+  },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
@@ -379,22 +577,26 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcIssue"
+    "ObjectName": "remediateEnsurePermissionsOnEtcIssue",
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcIssueNet"
+    "ObjectName": "remediateEnsurePermissionsOnEtcIssueNet",
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcHostsAllow"
+    "ObjectName": "remediateEnsurePermissionsOnEtcHostsAllow",
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcHostsDeny"
+    "ObjectName": "remediateEnsurePermissionsOnEtcHostsDeny",
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
@@ -404,77 +606,92 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcShadow"
+    "ObjectName": "remediateEnsurePermissionsOnEtcShadow",
+    "Payload": "400"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcShadowDash"
+    "ObjectName": "remediateEnsurePermissionsOnEtcShadowDash",
+    "Payload": "400"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcGShadow"
+    "ObjectName": "remediateEnsurePermissionsOnEtcGShadow",
+    "Payload": "400"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcGShadowDash"
+    "ObjectName": "remediateEnsurePermissionsOnEtcGShadowDash",
+    "Payload": "400"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcPasswd"
+    "ObjectName": "remediateEnsurePermissionsOnEtcPasswd",
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcPasswdDash"
+    "ObjectName": "remediateEnsurePermissionsOnEtcPasswdDash",
+    "Payload": "600"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcGroup"
+    "ObjectName": "remediateEnsurePermissionsOnEtcGroup",
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcGroupDash"
+    "ObjectName": "remediateEnsurePermissionsOnEtcGroupDash",
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcAnacronTab"
+    "ObjectName": "remediateEnsurePermissionsOnEtcAnacronTab",
+    "Payload": "600"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcCronD"
+    "ObjectName": "remediateEnsurePermissionsOnEtcCronD",
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcCronDaily"
+    "ObjectName": "remediateEnsurePermissionsOnEtcCronDaily",
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcCronHourly"
+    "ObjectName": "remediateEnsurePermissionsOnEtcCronHourly",
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcCronMonthly"
+    "ObjectName": "remediateEnsurePermissionsOnEtcCronMonthly",
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcCronWeekly"
+    "ObjectName": "remediateEnsurePermissionsOnEtcCronWeekly",
+    "Payload": "700"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcMotd"
+    "ObjectName": "remediateEnsurePermissionsOnEtcMotd",
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
@@ -719,37 +936,44 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureRestrictedUserHomeDirectories"
+    "ObjectName": "remediateEnsureRestrictedUserHomeDirectories",
+    "Payload": "700,750"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePasswordHashingAlgorithm"
+    "ObjectName": "remediateEnsurePasswordHashingAlgorithm",
+    "Payload": "sha512"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureMinDaysBetweenPasswordChanges"
+    "ObjectName": "remediateEnsureMinDaysBetweenPasswordChanges",
+    "Payload": "7"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureInactivePasswordLockPeriod"
+    "ObjectName": "remediateEnsureInactivePasswordLockPeriod",
+    "Payload": "30"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureMaxDaysBetweenPasswordChanges"
+    "ObjectName": "remediateEnsureMaxDaysBetweenPasswordChanges",
+    "Payload": "365"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePasswordExpiration"
+    "ObjectName": "remediateEnsurePasswordExpiration",
+    "Payload": "365"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePasswordExpirationWarning"
+    "ObjectName": "remediateEnsurePasswordExpirationWarning",
+    "Payload": "7"
   },
   {
     "ObjectType": "Desired",
@@ -784,7 +1008,8 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureDefaultUmaskForAllUsers"
+    "ObjectName": "remediateEnsureDefaultUmaskForAllUsers",
+    "Payload": "077"
   },
   {
     "ObjectType": "Desired",
@@ -889,12 +1114,14 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnBootloaderConfig"
+    "ObjectName": "remediateEnsurePermissionsOnBootloaderConfig",
+    "Payload": "400"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePasswordReuseIsLimited"
+    "ObjectName": "remediateEnsurePasswordReuseIsLimited",
+    "Payload": "5"
   },
   {
     "ObjectType": "Desired",
@@ -909,7 +1136,8 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePasswordCreationRequirements"
+    "ObjectName": "remediateEnsurePasswordCreationRequirements",
+    "Payload": "14,4,-1,-1,-1,-1"
   },
   {
     "ObjectType": "Desired",
@@ -974,7 +1202,8 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureFilePermissionsForAllRsyslogLogFiles"
+    "ObjectName": "remediateEnsureFilePermissionsForAllRsyslogLogFiles",
+    "Payload": "600,640"
   },
   {
     "ObjectType": "Desired",
@@ -1184,7 +1413,8 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureUsersDotFilesArentGroupOrWorldWritable"
+    "ObjectName": "remediateEnsureUsersDotFilesArentGroupOrWorldWritable",
+    "Payload": "600,644,664,700,744"
   },
   {
     "ObjectType": "Desired",
@@ -1209,7 +1439,8 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved"
+    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
+    "Payload": "games,test"
   },
   {
     "ObjectType": "Reported",
