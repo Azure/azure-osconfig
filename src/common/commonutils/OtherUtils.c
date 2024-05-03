@@ -247,10 +247,10 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
         {
             OsConfigLogInfo(log, "### 1: %s", value);
 
-            if (space != separator)
+            /*if (space != separator)
             {
                 RemovePrefixBlanks(value);
-            }
+            }*/
             
             OsConfigLogInfo(log, "### 2: %s", value);
 
@@ -289,7 +289,7 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
             {
                 (*integers)[(*numIntegers) - 1] = atoi(value);
 
-                OsConfigLogInfo(log, "### 4: %d at position %d", (*integers)[(*numIntegers) - 1], (*numIntegers) - 1);
+                OsConfigLogInfo(log, "### 5: %d at position %d", (*integers)[(*numIntegers) - 1], (*numIntegers) - 1);
             }
             
             FREE_MEMORY(value);

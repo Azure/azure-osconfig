@@ -1859,7 +1859,7 @@ TEST_F(CommonUtilsTest, ConvertStringsToIntegers)
     EXPECT_EQ(0, ConvertStringsToIntegers("1,-2,-3", ',', &integers, &numIntegers, nullptr));
     EXPECT_EQ(3, numIntegers);
     EXPECT_EQ(1, integers[0]);
-    EXPECT_EQ(-1, integers[1]);
+    EXPECT_EQ(-2, integers[1]);
     EXPECT_EQ(-3, integers[2]);
     FREE_MEMORY(integers);
     numIntegers = 0;
