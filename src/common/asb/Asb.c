@@ -3186,7 +3186,8 @@ static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
 
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
 {
-    return RemoveUserAccounts(value, log);
+    return RemoveUserAccounts(value ? value : (g_desiredEnsureUnnecessaryAccountsAreRemoved ? 
+        g_desiredEnsureUnnecessaryAccountsAreRemoved : g_defaultEnsureUnnecessaryAccountsAreRemoved), log);
 }
 
 static int InitEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
@@ -4962,8 +4963,6 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         }
         else if (0 == strcmp(objectName, g_remediateEnsureUnnecessaryAccountsAreRemovedObject))
         {
-            // TODO: here and elewhere where checks can benefit of parameters, we will remediate against desired values
-            // TODO: here confirm that 'jsonString' will be set to the g_desiredEnsureUnnecessaryAccountsAreRemoved
             status = RemediateEnsureUnnecessaryAccountsAreRemoved(jsonString, log);
         }
         // Initialization for audit before remediation
