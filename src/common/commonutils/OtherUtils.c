@@ -216,7 +216,7 @@ char* RepairBrokenEolCharactersIfAny(const char* value)
     return result;
 }
 
-int ConvertStringsToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log)
+int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log)
 {
     const char space = ' ';
     char* value = NULL;
@@ -245,27 +245,13 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
         }
         else
         {
-            OsConfigLogInfo(log, "### 1: %s", value);
-
-            /*if (space != separator)
-            {
-                RemovePrefixBlanks(value);
-            }*/
-            
-            OsConfigLogInfo(log, "### 2: %s", value);
-
             TruncateAtFirst(value, separator);
-
-            OsConfigLogInfo(log, "### 3: %s", value);
-            
             i += strlen(value);
 
             if (space != separator)
             {
                 RemoveTrailingBlanks(value);
             }
-
-            OsConfigLogInfo(log, "### 4: %s", value);
 
             if (0 == *numIntegers)
             {
@@ -288,8 +274,6 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
             else
             {
                 (*integers)[(*numIntegers) - 1] = atoi(value);
-
-                OsConfigLogInfo(log, "### 5: %d at position %d", (*integers)[(*numIntegers) - 1], (*numIntegers) - 1);
             }
             
             FREE_MEMORY(value);
@@ -302,7 +286,7 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
         *numIntegers = 0;
     }
 
-    OsConfigLogInfo(log, "ConvertStringsToIntegers: %d (%d integers converted from '%s' separated with '%c')", status, *numIntegers, source, separator);
+    OsConfigLogInfo(log, "ConvertStringToIntegers: %d (%d integers converted from '%s' separated with '%c')", status, *numIntegers, source, separator);
 
     return status;
 }

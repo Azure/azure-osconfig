@@ -104,7 +104,7 @@ char* DuplicateString(const char* source);
 char* ConcatenateStrings(const char* first, const char* second);
 char* DuplicateStringToLowercase(const char* source);
 char* FormatAllocateString(const char* format, ...);
-int ConvertStringsToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log);
+int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log);
 
 size_t HashString(const char* source);
 char* HashCommand(const char* source, void* log);

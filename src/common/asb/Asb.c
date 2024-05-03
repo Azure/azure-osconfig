@@ -1159,32 +1159,48 @@ static char* AuditEnsureUsersOwnTheirHomeDirectories(void* log)
     return reason;
 }
 
-static char* AuditEnsureRestrictedUserHomeDirectories(void* log) //HERE
+static char* AuditEnsureRestrictedUserHomeDirectories(void* log)
 {
-    unsigned int modes[] = {700, 750};
+    int* modes = NULL;
+    int numberOfModes = 0;
     char* reason = NULL;
-    CheckRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), &reason, log);
+
+    if (0 == ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories ? 
+        g_desiredEnsureRestrictedUserHomeDirectories : g_defaultEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, log))
+    {
+        CheckRestrictedUserHomeDirectories(modes, numberOfModes, &reason, log);
+    }
+    else
+    {
+        reason = FormatAllocateString("Failed to parse '%s'", g_desiredEnsureRestrictedUserHomeDirectories ? 
+            g_desiredEnsureRestrictedUserHomeDirectories : g_defaultEnsureRestrictedUserHomeDirectories)
+    }
+
+    FREE_MEMORY(modes);
     return reason;
 }
 
 static char* AuditEnsurePasswordHashingAlgorithm(void* log)
 {
     char* reason = NULL;
-    CheckPasswordHashingAlgorithm(sha512, &reason, log);
+    CheckPasswordHashingAlgorithm(g_desiredEnsurePasswordHashingAlgorithm ? 
+        g_desiredEnsurePasswordHashingAlgorithm : g_defaultEnsurePasswordHashingAlgorithm, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureMinDaysBetweenPasswordChanges(void* log)
 {
     char* reason = NULL;
-    CheckMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, &reason, log);
+    CheckMinDaysBetweenPasswordChanges(g_desiredEnsureMinDaysBetweenPasswordChanges ? 
+        g_desiredEnsureMinDaysBetweenPasswordChanges : g_defaultEnsureMinDaysBetweenPasswordChanges, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureInactivePasswordLockPeriod(void* log)
 {
     char* reason = NULL;
-    CheckLockoutAfterInactivityLessThan(g_maxInactiveDays, &reason, log);
+    CheckLockoutAfterInactivityLessThan(g_desiredEnsureInactivePasswordLockPeriod ? 
+        g_desiredEnsureInactivePasswordLockPeriod : g_defaultEnsureInactivePasswordLockPeriod, &reason, log);
     CheckUsersRecordedPasswordChangeDates(&reason, log);
     return reason;
 }
@@ -1192,21 +1208,24 @@ static char* AuditEnsureInactivePasswordLockPeriod(void* log)
 static char* AuditEnsureMaxDaysBetweenPasswordChanges(void* log)
 {
     char* reason = NULL;
-    CheckMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, &reason, log);
+    CheckMaxDaysBetweenPasswordChanges(g_desiredEnsureMaxDaysBetweenPasswordChanges ? 
+        g_desiredEnsureMaxDaysBetweenPasswordChanges : g_defaultEnsureMaxDaysBetweenPasswordChanges, &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePasswordExpiration(void* log)
 {
     char* reason = NULL;
-    CheckPasswordExpirationLessThan(g_passwordExpiration, &reason, log);
+    CheckPasswordExpirationLessThan(g_desiredEnsurePasswordExpiration ? 
+        g_desiredEnsurePasswordExpiration : g_defaultEnsurePasswordExpiration, &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePasswordExpirationWarning(void* log)
 {
     char* reason = NULL;
-    CheckPasswordExpirationWarning(g_passwordExpirationWarning, &reason, log);
+    CheckPasswordExpirationWarning(g_desiredEnsurePasswordExpirationWarning ? 
+        g_desiredEnsurePasswordExpirationWarning : g_defaultEnsurePasswordExpirationWarning, &reason, log);
     return reason;
 }
 
@@ -1296,7 +1315,8 @@ static char* AuditEnsureSuRestrictedToRootGroup(void* log)
 static char* AuditEnsureDefaultUmaskForAllUsers(void* log)
 {
     char* reason = NULL;
-    CheckLoginUmask("077", &reason, log);
+    CheckLoginUmask(g_desiredEnsureDefaultUmaskForAllUsers ? 
+        g_desiredEnsureDefaultUmaskForAllUsers : g_defaultEnsureDefaultUmaskForAllUsers, &reason, log);
     return reason;
 }
 
@@ -1474,10 +1494,12 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(void* log)
 
 static char* AuditEnsurePermissionsOnBootloaderConfig(void* log)
 {
+    char* value = g_desiredEnsurePermissionsOnBootloaderConfig ? 
+        g_desiredEnsurePermissionsOnBootloaderConfig : g_defaultEnsurePermissionsOnBootloaderConfig;
     char* reason = NULL;
-    CheckFileAccess("/boot/grub/grub.cfg", 0, 0, 400, &reason, log);
-    CheckFileAccess("/boot/grub/grub.conf", 0, 0, 400, &reason, log);
-    CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, 400, &reason, log);
+    CheckFileAccess("/boot/grub/grub.cfg", 0, 0, value, &reason, log);
+    CheckFileAccess("/boot/grub/grub.conf", 0, 0, value, &reason, log);
+    CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, value, &reason, log);
     return reason;
 }
 
@@ -1512,8 +1534,22 @@ static char* AuditEnsureCoreDumpsAreRestricted(void* log)
 
 static char* AuditEnsurePasswordCreationRequirements(void* log)
 {
+    int* values = NULL;
+    int numberOfValues = 0;
     char* reason = NULL;
-    CheckPasswordCreationRequirements(14, 4, -1, -1, -1, -1, &reason, log);
+
+    if ((0 == ConvertStringToIntegers(g_desiredEnsurePasswordCreationRequirements ? g_desiredEnsurePasswordCreationRequirements : 
+        g_defaultEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, log)) && (6 == numberOfValues))
+    {
+        CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], &reason, log);
+    }
+    else
+    {
+        reason = FormatAllocateString("Failed to parse '%s'", g_desiredEnsurePasswordCreationRequirements ? 
+            g_desiredEnsurePasswordCreationRequirements : g_defaultEnsurePasswordCreationRequirements)
+    }
+
+    FREE_MEMORY(values);
     return reason;
 }
 
@@ -1636,14 +1672,28 @@ static char* AuditEnsureALoggingServiceIsEnabled(void* log)
 static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void* log)
 {
     const char* fileCreateMode = "$FileCreateMode";
+    int* modes = NULL;
+    int numberOfModes = 0;
     char* reason = NULL;
-    int modes[] = {600, 640};
-    CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, fileCreateMode, ' ', modes, ARRAY_SIZE(modes), &reason, log);
-    if (0 == FileExists(g_etcSyslogNgSyslogNgConf))
+
+    if (0 == ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles ?
+        g_desiredEnsureFilePermissionsForAllRsyslogLogFiles : g_defaultEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, log))
     {
-        CheckIntegerOptionFromFileEqualWithAny(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', modes, ARRAY_SIZE(modes), &reason, log);
+        CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, fileCreateMode, ' ', modes, numberOfModes, &reason, log);
+        if (0 == FileExists(g_etcSyslogNgSyslogNgConf))
+        {
+            CheckIntegerOptionFromFileEqualWithAny(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', modes, numberOfModes, &reason, log);
+        }
     }
+    else
+    {
+        reason = FormatAllocateString("Failed to parse '%s'", g_desiredEnsureFilePermissionsForAllRsyslogLogFiles ?
+            g_desiredEnsureFilePermissionsForAllRsyslogLogFiles : g_defaultEnsureFilePermissionsForAllRsyslogLogFiles)
+    }
+
+    FREE_MEMORY(modes);
     return reason;
+
 }
 
 static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void* log)
