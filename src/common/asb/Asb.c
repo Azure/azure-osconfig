@@ -2045,7 +2045,6 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void* log)
 
     FREE_MEMORY(modes);
     return reason;
-
 }
 
 static char* AuditEnsureNoUsersHaveDotForwardFiles(void* log)
@@ -2367,26 +2366,26 @@ static int InitEnsureUnnecessaryAccountsAreRemoved(char* value)
 
 static int RemediateEnsurePermissionsOnEtcIssue(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcIssue, 0, 0, 644, log);
+    InitEnsurePermissionsOnEtcIssue(value);
+    return SetFileAccess(g_etcIssue, 0, 0, g_desiredEnsurePermissionsOnEtcIssue, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcIssueNet(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcIssueNet, 0, 0, 644, log);
+    InitEnsurePermissionsOnEtcIssueNet(value);
+    return SetFileAccess(g_etcIssueNet, 0, 0, g_desiredEnsurePermissionsOnEtcIssueNet, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcHostsAllow(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcHostsAllow, 0, 0, 644, log);
+    InitEnsurePermissionsOnEtcHostsAllow(value);
+    return SetFileAccess(g_etcHostsAllow, 0, 0, g_desiredEnsurePermissionsOnEtcHostsAllow, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcHostsDeny(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcHostsDeny, 0, 0, 644, log);
+    InitEnsurePermissionsOnEtcHostsDeny(value);
+    return SetFileAccess(g_etcHostsDeny, 0, 0, g_desiredEnsurePermissionsOnEtcHostsDeny, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
@@ -2396,92 +2395,92 @@ static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
 
 static int RemediateEnsurePermissionsOnEtcShadow(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcShadow, 0, 42, 400, log);
+    InitEnsurePermissionsOnEtcShadow(value);
+    return SetFileAccess(g_etcShadow, 0, 42, g_desiredEnsurePermissionsOnEtcShadow, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcShadowDash(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcShadowDash, 0, 42, 400, log);
+    InitEnsurePermissionsOnEtcShadowDash(value);
+    return SetFileAccess(g_etcShadowDash, 0, 42, g_desiredEnsurePermissionsOnEtcShadowDash, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadow(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcGShadow, 0, 42, 400, log);
+    InitEnsurePermissionsOnEtcGShadow(value);
+    return SetFileAccess(g_etcGShadow, 0, 42, g_desiredEnsurePermissionsOnEtcGShadow, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadowDash(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcGShadowDash, 0, 42, 400, log);
+    InitEnsurePermissionsOnEtcGShadowDash(value);
+    return SetFileAccess(g_etcGShadowDash, 0, 42, g_desiredEnsurePermissionsOnEtcGShadowDash, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswd(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcPasswd, 0, 0, 644, log);
+    InitEnsurePermissionsOnEtcPasswd(value);
+    return SetFileAccess(g_etcPasswd, 0, 0, g_desiredEnsurePermissionsOnEtcPasswd, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswdDash(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcPasswdDash, 0, 0, 600, log);
+    InitEnsurePermissionsOnEtcPasswdDash(value);
+    return SetFileAccess(g_etcPasswdDash, 0, 0, g_desiredEnsurePermissionsOnEtcPasswdDash, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGroup(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcGroup, 0, 0, 644, log);
+    InitEnsurePermissionsOnEtcGroup(value);
+    return SetFileAccess(g_etcGroup, 0, 0, g_desiredEnsurePermissionsOnEtcGroup, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGroupDash(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcGroupDash, 0, 0, 644, log);
+    InitEnsurePermissionsOnEtcGroupDash(value);
+    return SetFileAccess(g_etcGroupDash, 0, 0, g_desiredEnsurePermissionsOnEtcGroupDash, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcAnacronTab(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcAnacronTab, 0, 0, 600, log);
+    InitEnsurePermissionsOnEtcAnacronTab(value);
+    return SetFileAccess(g_etcAnacronTab, 0, 0, g_desiredEnsurePermissionsOnEtcAnacronTab, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronD(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcCronD, 0, 0, 700, log);
+    InitEnsurePermissionsOnEtcCronD(value);
+    return SetFileAccess(g_etcCronD, 0, 0, g_desiredEnsurePermissionsOnEtcCronD, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronDaily(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcCronDaily, 0, 0, 700, log);
+    InitEnsurePermissionsOnEtcCronDaily(value);
+    return SetFileAccess(g_etcCronDaily, 0, 0, g_desiredEnsurePermissionsOnEtcCronDaily, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronHourly(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcCronHourly, 0, 0, 700, log);
+    InitEnsurePermissionsOnEtcCronHourly(value);
+    return SetFileAccess(g_etcCronHourly, 0, 0, g_desiredEnsurePermissionsOnEtcCronHourly, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronMonthly(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcCronMonthly, 0, 0, 700, log);
+    InitEnsurePermissionsOnEtcCronMonthly(value);
+    return SetFileAccess(g_etcCronMonthly, 0, 0, g_desiredEnsurePermissionsOnEtcCronMonthly, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronWeekly(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcCronWeekly, 0, 0, 700, log);
+    InitEnsurePermissionsOnEtcCronWeekly(value);
+    return SetFileAccess(g_etcCronWeekly, 0, 0, g_desiredEnsurePermissionsOnEtcCronWeekly, log);
 };
 
 static int RemediateEnsurePermissionsOnEtcMotd(char* value, void* log)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcMotd, 0, 0, 644, log);
+    InitEnsurePermissionsOnEtcMotd(value);
+    return SetFileAccess(g_etcMotd, 0, 0, g_desiredEnsurePermissionsOnEtcMotd, log);
 };
 
 static int RemediateEnsureInetdNotInstalled(char* value, void* log)
@@ -2807,48 +2806,62 @@ static int RemediateEnsureUsersOwnTheirHomeDirectories(char* value, void* log)
 
 static int RemediateEnsureRestrictedUserHomeDirectories(char* value, void* log)
 {
-    unsigned int modes[] = {700, 750};
-    UNUSED(value);
-    return SetRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), 700, 750, log);
+    int* modes = NULL;
+    int numberOfModes = 0;
+    int status = 0;
+
+    InitEnsureRestrictedUserHomeDirectories(value);
+
+    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, log))) && (numberOfModes >= 2))
+    {
+        status = SetRestrictedUserHomeDirectories(modes, numberOfModes, modes[0], modes[1], log);
+    }
+
+    FREE_MEMORY(modes);
+
+    return status;
 }
 
 static int RemediateEnsurePasswordHashingAlgorithm(char* value, void* log)
 {
-    UNUSED(value);
+    InitEnsurePasswordHashingAlgorithm(value);
     UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureMinDaysBetweenPasswordChanges(char* value, void* log)
 {
-    UNUSED(value);
-    return SetMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, log);
+    InitEnsureMinDaysBetweenPasswordChanges(value);
+    return SetMinDaysBetweenPasswordChanges(atoi(g_desiredEnsureMinDaysBetweenPasswordChanges), log);
 }
 
 static int RemediateEnsureInactivePasswordLockPeriod(char* value, void* log)
 {
-    UNUSED(value);
-    return SetLockoutAfterInactivityLessThan(g_maxInactiveDays, log);
+    InitEnsureInactivePasswordLockPeriod(value);
+    return SetLockoutAfterInactivityLessThan(atoi(g_desiredEnsureInactivePasswordLockPeriod), log);
 }
 
 static int RemediateEnsureMaxDaysBetweenPasswordChanges(char* value, void* log)
 {
-    UNUSED(value);
-    return SetMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, log);
+    InitEnsureMaxDaysBetweenPasswordChanges(value);
+    return SetMaxDaysBetweenPasswordChanges(atoi(g_desiredEnsureMaxDaysBetweenPasswordChanges), log);
 }
 
 static int RemediateEnsurePasswordExpiration(char* value, void* log)
 {
-    UNUSED(value);
-    return ((0 == SetMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, log)) &&
-        (0 == SetMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, log)) &&
-        (0 == CheckPasswordExpirationLessThan(g_passwordExpiration, NULL, log))) ? 0 : ENOENT;
+    InitEnsurePasswordExpiration(value);
+
+    return ((0 == SetMinDaysBetweenPasswordChanges(atoi(g_desiredEnsureMinDaysBetweenPasswordChanges ? 
+        g_desiredEnsureMinDaysBetweenPasswordChanges : g_defaultEnsureMinDaysBetweenPasswordChanges), log)) &&
+        (0 == SetMaxDaysBetweenPasswordChanges(atoi(g_desiredEnsureMaxDaysBetweenPasswordChanges ? 
+        g_desiredEnsureMaxDaysBetweenPasswordChanges : g_defaultEnsureMaxDaysBetweenPasswordChanges), log)) &&
+        (0 == CheckPasswordExpirationLessThan(atoi(g_desiredEnsurePasswordExpiration), NULL, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePasswordExpirationWarning(char* value, void* log)
 {
-    UNUSED(value);
-    return SetPasswordExpirationWarning(g_passwordExpirationWarning, log);
+    InitEnsurePasswordExpirationWarning(value);
+    return SetPasswordExpirationWarning(atoi(g_desiredEnsurePasswordExpirationWarning), log);
 }
 
 static int RemediateEnsureSystemAccountsAreNonLogin(char* value, void* log)
@@ -2895,7 +2908,7 @@ static int RemediateEnsureSuRestrictedToRootGroup(char* value, void* log)
 
 static int RemediateEnsureDefaultUmaskForAllUsers(char* value, void* log)
 {
-    UNUSED(value);
+    InitEnsureDefaultUmaskForAllUsers(value);
     UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
@@ -3042,14 +3055,14 @@ static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, void* log)
 
 static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)
 {
-    UNUSED(value);
+    InitEnsurePermissionsOnBootloaderConfig(value);
     UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePasswordReuseIsLimited(char* value, void* log)
 {
-    UNUSED(value);
+    InitEnsurePasswordReuseIsLimited(value);
     UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
@@ -3070,7 +3083,7 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
 
 static int RemediateEnsurePasswordCreationRequirements(char* value, void* log)
 {
-    UNUSED(value);
+    InitEnsurePasswordCreationRequirements(value);
     UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
@@ -3164,7 +3177,7 @@ static int RemediateEnsureALoggingServiceIsEnabled(char* value, void* log)
 
 static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, void* log)
 {
-    UNUSED(value);
+    InitEnsureFilePermissionsForAllRsyslogLogFiles(value);
     UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
@@ -3430,9 +3443,19 @@ static int RemediateEnsureSmbWithSambaIsDisabled(char* value, void* log)
 
 static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, void* log)
 {
-    unsigned int modes[] = {600, 644, 664, 700, 744};
-    UNUSED(value);
-    return SetUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), 744, log);
+    int* modes = NULL;
+    int numberOfModes = 0;
+    char* reason = NULL;
+
+    InitEnsureUsersDotFilesArentGroupOrWorldWritable(value);
+
+    if (0 == (status = ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, log)))
+    {
+        status = SetUsersRestrictedDotFiles((unisgned int*)modes, (unsigned int)numberOfModes, modes[(numberOfModes > 1) ? (numberOfModes - 1) : 0], log);
+    }
+
+    FREE_MEMORY(modes);
+    return status;
 }
 
 static int RemediateEnsureNoUsersHaveDotForwardFiles(char* value, void* log)
