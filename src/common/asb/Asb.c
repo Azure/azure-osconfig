@@ -2089,6 +2089,282 @@ static char* AuditEnsureUnnecessaryAccountsAreRemoved(void* log)
     return reason;
 }
 
+static int InitEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsurePermissionsOnEtcSshSshdConfigObject, value, log);
+}
+
+static int InitEnsureSshPortIsConfigured(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshPortIsConfiguredObject, value, log);
+}
+
+static int InitEnsureSshBestPracticeProtocol(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshBestPracticeProtocolObject, value, log);
+}
+
+static int InitEnsureSshBestPracticeIgnoreRhosts(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshBestPracticeIgnoreRhostsObject, value, log);
+}
+
+static int InitEnsureSshLogLevelIsSet(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshLogLevelIsSetObject, value, log);
+}
+
+static int InitEnsureSshMaxAuthTriesIsSet(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshMaxAuthTriesIsSetObject, value, log);
+}
+
+static int InitEnsureAllowUsersIsConfigured(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureAllowUsersIsConfiguredObject, value, log);
+}
+
+static int InitEnsureDenyUsersIsConfigured(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureDenyUsersIsConfiguredObject, value, log);
+}
+
+static int InitEnsureAllowGroupsIsConfigured(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureAllowGroupsIsConfiguredObject, value, log);
+}
+
+static int InitEnsureDenyGroupsConfigured(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureDenyGroupsConfiguredObject, value, log);
+}
+
+static int InitEnsureSshHostbasedAuthenticationIsDisabled(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshHostbasedAuthenticationIsDisabledObject, value, log);
+}
+
+static int InitEnsureSshPermitRootLoginIsDisabled(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshPermitRootLoginIsDisabledObject, value, log);
+}
+
+static int InitEnsureSshPermitEmptyPasswordsIsDisabled(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshPermitEmptyPasswordsIsDisabledObject, value, log);
+}
+
+static int InitEnsureSshClientIntervalCountMaxIsConfigured(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshClientIntervalCountMaxIsConfiguredObject, value, log);
+}
+
+static int InitEnsureSshClientAliveIntervalIsConfigured(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshClientAliveIntervalIsConfiguredObject, value, log);
+}
+
+static int InitEnsureSshLoginGraceTimeIsSet(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshLoginGraceTimeIsSetObject, value, log);
+}
+
+static int InitEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject, value, log);
+}
+
+static int InitEnsureSshWarningBannerIsEnabled(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshWarningBannerIsEnabledObject, value, log);
+}
+
+static int InitEnsureUsersCannotSetSshEnvironmentOptions(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureUsersCannotSetSshEnvironmentOptionsObject, value, log);
+}
+
+static int InitEnsureAppropriateCiphersForSsh(char* value, void* log)
+{
+    return InitializeSshAuditCheck(g_initEnsureAppropriateCiphersForSshObject, value, log);
+}
+
+static int ReplaceString(char* target, char* source, const char* defaultValue)
+{
+    bool isValidValue = ((NULL == source) || (0 == source[0])) ? false : true;
+    int status = 0;
+
+    FREE_MEMORY(target);
+    status = (NULL != (target = DuplicateString(isValidValue ? source : defaultValue))) ? 0 : ENOMEM;
+
+    return status;
+}
+
+static int InitEnsurePermissionsOnEtcIssue(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcIssue, value, g_defaultEnsurePermissionsOnEtcIssue);
+}
+
+static int InitEnsurePermissionsOnEtcIssueNet(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcIssueNet, value, g_defaultEnsurePermissionsOnEtcIssueNet);
+}
+
+static int InitEnsurePermissionsOnEtcHostsAllow(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcHostsAllow, value, g_defaultEnsurePermissionsOnEtcHostsAllow);
+}
+
+static int InitEnsurePermissionsOnEtcHostsDeny(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcHostsDeny, value, g_defaultEnsurePermissionsOnEtcHostsDeny);
+}
+
+static int InitEnsurePermissionsOnEtcShadow(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcShadow, value, g_defaultEnsurePermissionsOnEtcShadow);
+}
+
+static int InitEnsurePermissionsOnEtcShadowDash(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcShadowDash, value, g_defaultEnsurePermissionsOnEtcShadowDash);
+}
+
+static int InitEnsurePermissionsOnEtcGShadow(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcGShadow, value, g_defaultEnsurePermissionsOnEtcGShadow);
+}
+
+static int InitEnsurePermissionsOnEtcGShadowDash(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcGShadowDash, value, g_defaultEnsurePermissionsOnEtcGShadowDash);
+}
+
+static int InitEnsurePermissionsOnEtcPasswd(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcPasswd, value, g_defaultEnsurePermissionsOnEtcPasswd);
+}
+
+static int InitEnsurePermissionsOnEtcPasswdDash(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcPasswdDash, value, g_defaultEnsurePermissionsOnEtcPasswdDash);
+}
+
+static int InitEnsurePermissionsOnEtcGroup(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcGroup, value, g_defaultEnsurePermissionsOnEtcGroup);
+}
+
+static int InitEnsurePermissionsOnEtcGroupDash(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcGroupDash, value, g_defaultEnsurePermissionsOnEtcGroupDash);
+}
+
+static int InitEnsurePermissionsOnEtcAnacronTab(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcAnacronTab, value, g_defaultEnsurePermissionsOnEtcAnacronTab);
+}
+
+static int InitEnsurePermissionsOnEtcCronD(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronD, value, g_defaultEnsurePermissionsOnEtcCronD);
+}
+
+static int InitEnsurePermissionsOnEtcCronDaily(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronDaily, value, g_defaultEnsurePermissionsOnEtcCronDaily);
+}
+
+static int InitEnsurePermissionsOnEtcCronHourly(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronHourly, value, g_defaultEnsurePermissionsOnEtcCronHourly);
+}
+
+static int InitEnsurePermissionsOnEtcCronMonthly(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronMonthly, value, g_defaultEnsurePermissionsOnEtcCronMonthly);
+}
+
+static int InitEnsurePermissionsOnEtcCronWeekly(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronWeekly, value, g_defaultEnsurePermissionsOnEtcCronWeekly);
+}
+
+static int InitEnsurePermissionsOnEtcMotd(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnEtcMotd, value, g_defaultEnsurePermissionsOnEtcMotd);
+}
+
+static int InitEnsureRestrictedUserHomeDirectories(char* value)
+{
+    return ReplaceString(g_desiredEnsureRestrictedUserHomeDirectories, value, g_defaultEnsureRestrictedUserHomeDirectories);
+}
+
+static int InitEnsurePasswordHashingAlgorithm(char* value)
+{
+    return ReplaceString(g_desiredEnsurePasswordHashingAlgorithm, value, g_defaultEnsurePasswordHashingAlgorithm);
+}
+
+static int InitEnsureMinDaysBetweenPasswordChanges(char* value)
+{
+    return ReplaceString(g_desiredEnsureMinDaysBetweenPasswordChanges, value, g_defaultEnsureMinDaysBetweenPasswordChanges);
+}
+
+static int InitEnsureInactivePasswordLockPeriod(char* value)
+{
+    return ReplaceString(g_desiredEnsureInactivePasswordLockPeriod, value, g_defaultEnsureInactivePasswordLockPeriod);
+}
+
+static int InitMaxDaysBetweenPasswordChanges(char* value)
+{
+    return ReplaceString(g_desiredEnsureMaxDaysBetweenPasswordChanges, value, g_defaultEnsureMaxDaysBetweenPasswordChanges);
+}
+
+static int InitEnsurePasswordExpiration(char* value)
+{
+    return ReplaceString(g_desiredEnsurePasswordExpiration, value, g_defaultEnsurePasswordExpiration);
+}
+
+static int InitEnsurePasswordExpirationWarning(char* value)
+{
+    return ReplaceString(g_desiredEnsurePasswordExpirationWarning, value, g_defaultEnsurePasswordExpirationWarning);
+}
+
+static int InitEnsureDefaultUmaskForAllUsers(char* value)
+{
+    return ReplaceString(g_desiredEnsureDefaultUmaskForAllUsers, value, g_defaultEnsureDefaultUmaskForAllUsers);
+}
+
+static int InitEnsurePermissionsOnBootloaderConfig(char* value)
+{
+    return ReplaceString(g_desiredEnsurePermissionsOnBootloaderConfig, value, g_defaultEnsurePermissionsOnBootloaderConfig);
+}
+
+static int InitEnsurePasswordReuseIsLimited(char* value)
+{
+    return ReplaceString(g_desiredEnsurePasswordReuseIsLimited, value, g_defaultEnsurePasswordReuseIsLimited);
+}
+
+static int InitEnsurePasswordCreationRequirements(char* value)
+{
+    return ReplaceString(g_desiredEnsurePasswordCreationRequirements, value, g_defaultEnsurePasswordCreationRequirements);
+}
+
+static int InitEnsureFilePermissionsForAllRsyslogLogFiles(char* value)
+{
+    return ReplaceString(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, value, g_defaultEnsureFilePermissionsForAllRsyslogLogFiles);
+}
+
+static int InitEnsureUsersDotFilesArentGroupOrWorldWritable(char* value)
+{
+    return ReplaceString(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, value, g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable);
+}
+
+static int InitEnsureUnnecessaryAccountsAreRemoved(char* value)
+{
+    return ReplaceString(g_desiredEnsureUnnecessaryAccountsAreRemoved, value, g_defaultEnsureUnnecessaryAccountsAreRemoved);
+}
+
 static int RemediateEnsurePermissionsOnEtcIssue(char* value, void* log)
 {
     UNUSED(value);
@@ -3188,282 +3464,6 @@ static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
 {
     InitEnsureUnnecessaryAccountsAreRemoved(value);
     return RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log);
-}
-
-static int InitEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsurePermissionsOnEtcSshSshdConfigObject, value, log);
-}
-
-static int InitEnsureSshPortIsConfigured(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshPortIsConfiguredObject, value, log);
-}
-
-static int InitEnsureSshBestPracticeProtocol(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshBestPracticeProtocolObject, value, log);
-}
-
-static int InitEnsureSshBestPracticeIgnoreRhosts(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshBestPracticeIgnoreRhostsObject, value, log);
-}
-
-static int InitEnsureSshLogLevelIsSet(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshLogLevelIsSetObject, value, log);
-}
-
-static int InitEnsureSshMaxAuthTriesIsSet(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshMaxAuthTriesIsSetObject, value, log);
-}
-
-static int InitEnsureAllowUsersIsConfigured(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureAllowUsersIsConfiguredObject, value, log);
-}
-
-static int InitEnsureDenyUsersIsConfigured(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureDenyUsersIsConfiguredObject, value, log);
-}
-
-static int InitEnsureAllowGroupsIsConfigured(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureAllowGroupsIsConfiguredObject, value, log);
-}
-
-static int InitEnsureDenyGroupsConfigured(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureDenyGroupsConfiguredObject, value, log);
-}
-
-static int InitEnsureSshHostbasedAuthenticationIsDisabled(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshHostbasedAuthenticationIsDisabledObject, value, log);
-}
-
-static int InitEnsureSshPermitRootLoginIsDisabled(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshPermitRootLoginIsDisabledObject, value, log);
-}
-
-static int InitEnsureSshPermitEmptyPasswordsIsDisabled(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshPermitEmptyPasswordsIsDisabledObject, value, log);
-}
-
-static int InitEnsureSshClientIntervalCountMaxIsConfigured(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshClientIntervalCountMaxIsConfiguredObject, value, log);
-}
-
-static int InitEnsureSshClientAliveIntervalIsConfigured(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshClientAliveIntervalIsConfiguredObject, value, log);
-}
-
-static int InitEnsureSshLoginGraceTimeIsSet(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshLoginGraceTimeIsSetObject, value, log);
-}
-
-static int InitEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject, value, log);
-}
-
-static int InitEnsureSshWarningBannerIsEnabled(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshWarningBannerIsEnabledObject, value, log);
-}
-
-static int InitEnsureUsersCannotSetSshEnvironmentOptions(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureUsersCannotSetSshEnvironmentOptionsObject, value, log);
-}
-
-static int InitEnsureAppropriateCiphersForSsh(char* value, void* log)
-{
-    return InitializeSshAuditCheck(g_initEnsureAppropriateCiphersForSshObject, value, log);
-}
-
-static int ReplaceString(char* target, char* source, const char* defaultValue)
-{
-    bool isValidValue = ((NULL == source) || (0 == source[0])) ? false : true;
-    int status = 0;
-
-    FREE_MEMORY(target);
-    status = (NULL != (target = DuplicateString(isValidValue ? source : defaultValue))) ? 0 : ENOMEM;
-
-    return status;
-}
-
-static int InitEnsurePermissionsOnEtcIssue(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcIssue, value, g_defaultEnsurePermissionsOnEtcIssue);
-}
-
-static int InitEnsurePermissionsOnEtcIssueNet(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcIssueNet, value, g_defaultEnsurePermissionsOnEtcIssueNet);
-}
-
-static int InitEnsurePermissionsOnEtcHostsAllow(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcHostsAllow, value, g_defaultEnsurePermissionsOnEtcHostsAllow);
-}
-
-static int InitEnsurePermissionsOnEtcHostsDeny(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcHostsDeny, value, g_defaultEnsurePermissionsOnEtcHostsDeny);
-}
-
-static int InitEnsurePermissionsOnEtcShadow(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcShadow, value, g_defaultEnsurePermissionsOnEtcShadow);
-}
-
-static int InitEnsurePermissionsOnEtcShadowDash(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcShadowDash, value, g_defaultEnsurePermissionsOnEtcShadowDash);
-}
-
-static int InitEnsurePermissionsOnEtcGShadow(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcGShadow, value, g_defaultEnsurePermissionsOnEtcGShadow);
-}
-
-static int InitEnsurePermissionsOnEtcGShadowDash(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcGShadowDash, value, g_defaultEnsurePermissionsOnEtcGShadowDash);
-}
-
-static int InitEnsurePermissionsOnEtcPasswd(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcPasswd, value, g_defaultEnsurePermissionsOnEtcPasswd);
-}
-
-static int InitEnsurePermissionsOnEtcPasswdDash(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcPasswdDash, value, g_defaultEnsurePermissionsOnEtcPasswdDash);
-}
-
-static int InitEnsurePermissionsOnEtcGroup(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcGroup, value, g_defaultEnsurePermissionsOnEtcGroup);
-}
-
-static int InitEnsurePermissionsOnEtcGroupDash(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcGroupDash, value, g_defaultEnsurePermissionsOnEtcGroupDash);
-}
-
-static int InitEnsurePermissionsOnEtcAnacronTab(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcAnacronTab, value, g_defaultEnsurePermissionsOnEtcAnacronTab);
-}
-
-static int InitEnsurePermissionsOnEtcCronD(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronD, value, g_defaultEnsurePermissionsOnEtcCronD);
-}
-
-static int InitEnsurePermissionsOnEtcCronDaily(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronDaily, value, g_defaultEnsurePermissionsOnEtcCronDaily);
-}
-
-static int InitEnsurePermissionsOnEtcCronHourly(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronHourly, value, g_defaultEnsurePermissionsOnEtcCronHourly);
-}
-
-static int InitEnsurePermissionsOnEtcCronMonthly(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronMonthly, value, g_defaultEnsurePermissionsOnEtcCronMonthly);
-}
-
-static int InitEnsurePermissionsOnEtcCronWeekly(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronWeekly, value, g_defaultEnsurePermissionsOnEtcCronWeekly);
-}
-
-static int InitEnsurePermissionsOnEtcMotd(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcMotd, value, g_defaultEnsurePermissionsOnEtcMotd);
-}
-
-static int InitEnsureRestrictedUserHomeDirectories(char* value)
-{
-    return ReplaceString(g_desiredEnsureRestrictedUserHomeDirectories, value, g_defaultEnsureRestrictedUserHomeDirectories);
-}
-
-static int InitEnsurePasswordHashingAlgorithm(char* value)
-{
-    return ReplaceString(g_desiredEnsurePasswordHashingAlgorithm, value, g_defaultEnsurePasswordHashingAlgorithm);
-}
-
-static int InitEnsureMinDaysBetweenPasswordChanges(char* value)
-{
-    return ReplaceString(g_desiredEnsureMinDaysBetweenPasswordChanges, value, g_defaultEnsureMinDaysBetweenPasswordChanges);
-}
-
-static int InitEnsureInactivePasswordLockPeriod(char* value)
-{
-    return ReplaceString(g_desiredEnsureInactivePasswordLockPeriod, value, g_defaultEnsureInactivePasswordLockPeriod);
-}
-
-static int InitMaxDaysBetweenPasswordChanges(char* value)
-{
-    return ReplaceString(g_desiredEnsureMaxDaysBetweenPasswordChanges, value, g_defaultEnsureMaxDaysBetweenPasswordChanges);
-}
-
-static int InitEnsurePasswordExpiration(char* value)
-{
-    return ReplaceString(g_desiredEnsurePasswordExpiration, value, g_defaultEnsurePasswordExpiration);
-}
-
-static int InitEnsurePasswordExpirationWarning(char* value)
-{
-    return ReplaceString(g_desiredEnsurePasswordExpirationWarning, value, g_defaultEnsurePasswordExpirationWarning);
-}
-
-static int InitEnsureDefaultUmaskForAllUsers(char* value)
-{
-    return ReplaceString(g_desiredEnsureDefaultUmaskForAllUsers, value, g_defaultEnsureDefaultUmaskForAllUsers);
-}
-
-static int InitEnsurePermissionsOnBootloaderConfig(char* value)
-{
-    return ReplaceString(g_desiredEnsurePermissionsOnBootloaderConfig, value, g_defaultEnsurePermissionsOnBootloaderConfig);
-}
-
-static int InitEnsurePasswordReuseIsLimited(char* value)
-{
-    return ReplaceString(g_desiredEnsurePasswordReuseIsLimited, value, g_defaultEnsurePasswordReuseIsLimited);
-}
-
-static int InitEnsurePasswordCreationRequirements(char* value)
-{
-    return ReplaceString(g_desiredEnsurePasswordCreationRequirements, value, g_defaultEnsurePasswordCreationRequirements);
-}
-
-static int InitEnsureFilePermissionsForAllRsyslogLogFiles(char* value)
-{
-    return ReplaceString(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, value, g_defaultEnsureFilePermissionsForAllRsyslogLogFiles);
-}
-
-static int InitEnsureUsersDotFilesArentGroupOrWorldWritable(char* value)
-{
-    return ReplaceString(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, value, g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable);
-}
-
-static int InitEnsureUnnecessaryAccountsAreRemoved(char* value)
-{
-    return ReplaceString(g_desiredEnsureUnnecessaryAccountsAreRemoved, value, g_defaultEnsureUnnecessaryAccountsAreRemoved);
 }
 
 int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log)
