@@ -411,6 +411,7 @@ static const char* g_initEnsurePermissionsOnBootloaderConfigObject = "initEnsure
 static const char* g_initEnsurePasswordReuseIsLimitedObject = "initEnsurePasswordReuseIsLimited";
 static const char* g_initEnsurePasswordCreationRequirementsObject = "initEnsurePasswordCreationRequirements";
 static const char* g_initEnsureFilePermissionsForAllRsyslogLogFilesObject = "initEnsureFilePermissionsForAllRsyslogLogFiles";
+static const char* g_initEnsureUsersDotFilesArentGroupOrWorldWritableObject = "initEnsureUsersDotFilesArentGroupOrWorldWritable";
 static const char* g_initEnsureUnnecessaryAccountsAreRemovedObject = "initEnsureUnnecessaryAccountsAreRemoved";
 
 // Default values for checks that support configuration (and initialization)
@@ -433,7 +434,7 @@ static const char* g_defaultEnsurePermissionsOnEtcCronHourly = "700";
 static const char* g_defaultEnsurePermissionsOnEtcCronMonthly = "700";
 static const char* g_defaultEnsurePermissionsOnEtcCronWeekly = "700";
 static const char* g_defaultEnsurePermissionsOnEtcMotd = "644";
-static const char* g_defaultEnsureRestrictedUserHomeDirectories = "700 750";
+static const char* g_defaultEnsureRestrictedUserHomeDirectories = "700,750";
 static const char* g_defaultEnsurePasswordHashingAlgorithm = "sha512";
 static const char* g_defaultEnsureMinDaysBetweenPasswordChanges = "7";
 static const char* g_defaultEnsureInactivePasswordLockPeriod = "30";
@@ -443,9 +444,10 @@ static const char* g_defaultEnsurePasswordExpirationWarning = "7";
 static const char* g_defaultEnsureDefaultUmaskForAllUsers = "777";
 static const char* g_defaultEnsurePermissionsOnBootloaderConfig = "400";
 static const char* g_defaultEnsurePasswordReuseIsLimited = "5";
-static const char* g_defaultEnsurePasswordCreationRequirements = "14 4 -1 -1 -1 -1";
-static const char* g_defaultEnsureFilePermissionsForAllRsyslogLogFiles = "600 640";
-static const char* g_defaultEnsureUnnecessaryAccountsAreRemoved = "games test";
+static const char* g_defaultEnsurePasswordCreationRequirements = "14,4,-1,-1,-1,-1";
+static const char* g_defaultEnsureFilePermissionsForAllRsyslogLogFiles = "600,640";
+static const char* g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable = "600,644,664,700,744";
+static const char* g_defaultEnsureUnnecessaryAccountsAreRemoved = "games,test";
 
 static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
@@ -566,6 +568,7 @@ static char* g_desiredEnsurePermissionsOnBootloaderConfig = NULL;
 static char* g_desiredEnsurePasswordReuseIsLimited = NULL;
 static char* g_desiredEnsurePasswordCreationRequirements = NULL;
 static char* g_desiredEnsureFilePermissionsForAllRsyslogLogFiles = NULL;
+static char* g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable = NULL;
 static char* g_desiredEnsureUnnecessaryAccountsAreRemoved = NULL;
 
 void AsbInitialize(void* log)
@@ -603,6 +606,7 @@ void AsbInitialize(void* log)
         (NULL == (g_desiredEnsurePasswordReuseIsLimited = DuplicateString(g_defaultEnsurePasswordReuseIsLimited))) ||
         (NULL == (g_desiredEnsurePasswordCreationRequirements = DuplicateString(g_defaultEnsurePasswordCreationRequirements))) ||
         (NULL == (g_desiredEnsureFilePermissionsForAllRsyslogLogFiles = DuplicateString(g_defaultEnsureFilePermissionsForAllRsyslogLogFiles))) ||
+        (NULL == (gdesiredEnsureUsersDotFilesArentGroupOrWorldWritable = DuplicateString(g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable))) ||
         (NULL == (g_desiredEnsureUnnecessaryAccountsAreRemoved = DuplicateString(g_defaultEnsureUnnecessaryAccountsAreRemoved))))
     {
         OsConfigLogError(log, "AsbInitialize: failed to allocate memory");
@@ -646,6 +650,7 @@ void AsbShutdown(void* log)
     FREE_MEMORY(g_desiredEnsurePasswordReuseIsLimited);
     FREE_MEMORY(g_desiredEnsurePasswordCreationRequirements);
     FREE_MEMORY(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles);
+    FREE_MEMORY(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable);
     FREE_MEMORY(g_desiredEnsureUnnecessaryAccountsAreRemoved);
 
     SshAuditCleanup(log);
@@ -1545,8 +1550,8 @@ static char* AuditEnsurePasswordCreationRequirements(void* log)
     }
     else
     {
-        reason = FormatAllocateString("Failed to parse '%s'", g_desiredEnsurePasswordCreationRequirements ?
-            g_desiredEnsurePasswordCreationRequirements : g_defaultEnsurePasswordCreationRequirements);
+        reason = FormatAllocateString("Failed to parse '%s'. There must be 6 numbers, comma separated, in this order: minlen, minclass, dcredit, ucredit, ocredit, lcredit", 
+            g_desiredEnsurePasswordCreationRequirements ? g_desiredEnsurePasswordCreationRequirements : g_defaultEnsurePasswordCreationRequirements);
     }
 
     FREE_MEMORY(values);
@@ -2023,10 +2028,28 @@ static char* AuditEnsureSmbWithSambaIsDisabled(void* log)
 
 static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void* log)
 {
-    unsigned int modes[] = {600, 644, 664, 700, 744};
     char* reason = NULL;
     CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), &reason, log);
     return reason;
+
+    int* modes = NULL;
+    int numberOfModes = 0;
+    char* reason = NULL;
+
+    if (0 == ConvertStringToIntegers(g_desiredtEnsureUsersDotFilesArentGroupOrWorldWritable ?
+        g_desiredtEnsureUsersDotFilesArentGroupOrWorldWritable : g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, log))
+    {
+        CheckUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, &reason, log);
+    }
+    else
+    {
+        reason = FormatAllocateString("Failed to parse '%s'", g_desiredtEnsureUsersDotFilesArentGroupOrWorldWritable ?
+            g_desiredtEnsureUsersDotFilesArentGroupOrWorldWritable : g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable);
+    }
+
+    FREE_MEMORY(modes);
+    return reason;
+
 }
 
 static char* AuditEnsureNoUsersHaveDotForwardFiles(void* log)
@@ -2064,11 +2087,9 @@ static char* AuditEnsureRloginServiceIsDisabled(void* log)
 
 static char* AuditEnsureUnnecessaryAccountsAreRemoved(void* log)
 {
-    // TODO: here and elewhere where checks can benefit of parameters, we will audit against desired values
-    // TODO: here use g_desiredEnsureUnnecessaryAccountsAreRemoved instead of the local 'names' variable
-    const char* names[] = {"games"};
     char* reason = NULL;
-    CheckUserAccountsNotFound(names, ARRAY_SIZE(names), &reason, log);
+    CheckUserAccountsNotFound(g_desiredEnsureUnnecessaryAccountsAreRemoved ? 
+        g_desiredEnsureUnnecessaryAccountsAreRemoved : g_defaultEnsureUnnecessaryAccountsAreRemoved, &reason, log);
     return reason;
 }
 
@@ -3169,12 +3190,7 @@ static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
 
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
 {
-    // TODO: here and elewhere where checks can benefit of parameters, we will remediate against desired values
-    // TODO: here use g_desiredEnsureUnnecessaryAccountsAreRemoved (via 'value') instead of the local 'names' variable
-    const char* names[] = {"games"};
-    UNUSED(value);
-    //TODO: here and elsewhere where we use C arrays of values, change to space separated values (like used for SSH ciphers)
-    return RemoveUserAccounts(names, ARRAY_SIZE(names), log);
+    return RemoveUserAccounts(value, log);
 }
 
 static int InitEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
@@ -3441,6 +3457,11 @@ static int InitEnsurePasswordCreationRequirements(char* value)
 static int InitEnsureFilePermissionsForAllRsyslogLogFiles(char* value)
 {
     return ReplaceString(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, value, g_defaultEnsureFilePermissionsForAllRsyslogLogFiles);
+}
+
+static int InitEnsureUsersDotFilesArentGroupOrWorldWritable(char* value)
+{
+    return ReplaceString(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, value, g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable);
 }
 
 static int InitEnsureUnnecessaryAccountsAreRemoved(char* value)
@@ -5153,6 +5174,10 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         else if (0 == strcmp(objectName, g_initEnsureFilePermissionsForAllRsyslogLogFilesObject))
         {
             status = InitEnsureFilePermissionsForAllRsyslogLogFiles(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureUsersDotFilesArentGroupOrWorldWritable))
+        {
+            status = InitEnsureUsersDotFilesArentGroupOrWorldWritable(jsonString);
         }
         else if (0 == strcmp(objectName, g_initEnsureUnnecessaryAccountsAreRemovedObject))
         {
