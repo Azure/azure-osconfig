@@ -1168,7 +1168,7 @@ static char* AuditEnsureRestrictedUserHomeDirectories(void* log)
     if (0 == ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories ? 
         g_desiredEnsureRestrictedUserHomeDirectories : g_defaultEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, log))
     {
-        CheckRestrictedUserHomeDirectories(modes, numberOfModes, &reason, log);
+        CheckRestrictedUserHomeDirectories((unsigned int*)modes, (unsigned int)numberOfModes, &reason, log);
     }
     else
     {
@@ -1183,24 +1183,24 @@ static char* AuditEnsureRestrictedUserHomeDirectories(void* log)
 static char* AuditEnsurePasswordHashingAlgorithm(void* log)
 {
     char* reason = NULL;
-    CheckPasswordHashingAlgorithm(g_desiredEnsurePasswordHashingAlgorithm ? 
-        g_desiredEnsurePasswordHashingAlgorithm : g_defaultEnsurePasswordHashingAlgorithm, &reason, log);
+    CheckPasswordHashingAlgorithm(atoi(g_desiredEnsurePasswordHashingAlgorithm ? 
+        g_desiredEnsurePasswordHashingAlgorithm : g_defaultEnsurePasswordHashingAlgorithm), &reason, log);
     return reason;
 }
 
 static char* AuditEnsureMinDaysBetweenPasswordChanges(void* log)
 {
     char* reason = NULL;
-    CheckMinDaysBetweenPasswordChanges(g_desiredEnsureMinDaysBetweenPasswordChanges ? 
-        g_desiredEnsureMinDaysBetweenPasswordChanges : g_defaultEnsureMinDaysBetweenPasswordChanges, &reason, log);
+    CheckMinDaysBetweenPasswordChanges(atoi(g_desiredEnsureMinDaysBetweenPasswordChanges ? 
+        g_desiredEnsureMinDaysBetweenPasswordChanges : g_defaultEnsureMinDaysBetweenPasswordChanges), &reason, log);
     return reason;
 }
 
 static char* AuditEnsureInactivePasswordLockPeriod(void* log)
 {
     char* reason = NULL;
-    CheckLockoutAfterInactivityLessThan(g_desiredEnsureInactivePasswordLockPeriod ? 
-        g_desiredEnsureInactivePasswordLockPeriod : g_defaultEnsureInactivePasswordLockPeriod, &reason, log);
+    CheckLockoutAfterInactivityLessThan(atoi(g_desiredEnsureInactivePasswordLockPeriod ? 
+        g_desiredEnsureInactivePasswordLockPeriod : g_defaultEnsureInactivePasswordLockPeriod), &reason, log);
     CheckUsersRecordedPasswordChangeDates(&reason, log);
     return reason;
 }
@@ -1208,24 +1208,24 @@ static char* AuditEnsureInactivePasswordLockPeriod(void* log)
 static char* AuditEnsureMaxDaysBetweenPasswordChanges(void* log)
 {
     char* reason = NULL;
-    CheckMaxDaysBetweenPasswordChanges(g_desiredEnsureMaxDaysBetweenPasswordChanges ? 
-        g_desiredEnsureMaxDaysBetweenPasswordChanges : g_defaultEnsureMaxDaysBetweenPasswordChanges, &reason, log);
+    CheckMaxDaysBetweenPasswordChanges(atoi(g_desiredEnsureMaxDaysBetweenPasswordChanges ? 
+        g_desiredEnsureMaxDaysBetweenPasswordChanges : g_defaultEnsureMaxDaysBetweenPasswordChanges), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePasswordExpiration(void* log)
 {
     char* reason = NULL;
-    CheckPasswordExpirationLessThan(g_desiredEnsurePasswordExpiration ? 
-        g_desiredEnsurePasswordExpiration : g_defaultEnsurePasswordExpiration, &reason, log);
+    CheckPasswordExpirationLessThan(atoi(g_desiredEnsurePasswordExpiration ? 
+        g_desiredEnsurePasswordExpiration : g_defaultEnsurePasswordExpiration), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePasswordExpirationWarning(void* log)
 {
     char* reason = NULL;
-    CheckPasswordExpirationWarning(g_desiredEnsurePasswordExpirationWarning ? 
-        g_desiredEnsurePasswordExpirationWarning : g_defaultEnsurePasswordExpirationWarning, &reason, log);
+    CheckPasswordExpirationWarning(atoi(g_desiredEnsurePasswordExpirationWarning ? 
+        g_desiredEnsurePasswordExpirationWarning : g_defaultEnsurePasswordExpirationWarning), &reason, log);
     return reason;
 }
 
