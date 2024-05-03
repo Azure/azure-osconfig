@@ -2033,7 +2033,7 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void* log)
     char* reason = NULL;
 
     if (0 == ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable ?
-        g_desiredtEnsureUsersDotFilesArentGroupOrWorldWritable : g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, log))
+        g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable : g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, log))
     {
         CheckUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, &reason, log);
     }
@@ -5171,7 +5171,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         {
             status = InitEnsureFilePermissionsForAllRsyslogLogFiles(jsonString);
         }
-        else if (0 == strcmp(objectName, g_initEnsureUsersDotFilesArentGroupOrWorldWritable))
+        else if (0 == strcmp(objectName, g_initEnsureUsersDotFilesArentGroupOrWorldWritableObject))
         {
             status = InitEnsureUsersDotFilesArentGroupOrWorldWritable(jsonString);
         }
