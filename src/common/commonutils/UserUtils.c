@@ -2380,7 +2380,7 @@ int RemoveUserAccounts(const char* names, void* log)
 
     if (NULL == names)
     {
-        OsConfigLogError(log, "RemoveUserAccounts: invalid argument", names);
+        OsConfigLogError(log, "RemoveUserAccounts: invalid argument");
         return EINVAL;
     }
 
