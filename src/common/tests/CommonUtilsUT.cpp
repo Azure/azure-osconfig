@@ -1864,11 +1864,20 @@ TEST_F(CommonUtilsTest, ConvertStringsToIntegers)
     FREE_MEMORY(integers);
     numIntegers = 0;
 
+    EXPECT_EQ(0, ConvertStringsToIntegers("11, -222, -333, 444", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(4, numIntegers);
+    EXPECT_EQ(11, integers[0]);
+    EXPECT_EQ(-222, integers[1]);
+    EXPECT_EQ(-333, integers[2]);
+    EXPECT_EQ(444, integers[3]);
+    FREE_MEMORY(integers);
+    numIntegers = 0;
+
     EXPECT_EQ(0, ConvertStringsToIntegers("  -100 , 200     ,-300  ", ',', &integers, &numIntegers, nullptr));
     EXPECT_EQ(3, numIntegers);
     EXPECT_EQ(-100, integers[0]);
     EXPECT_EQ(200, integers[1]);
-    EXPECT_EQ(300, integers[2]);
+    EXPECT_EQ(-300, integers[2]);
     FREE_MEMORY(integers);
     numIntegers = 0;
 }
