@@ -2367,25 +2367,25 @@ static int InitEnsureUnnecessaryAccountsAreRemoved(char* value)
 static int RemediateEnsurePermissionsOnEtcIssue(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcIssue(value);
-    return SetFileAccess(g_etcIssue, 0, 0, g_desiredEnsurePermissionsOnEtcIssue, log);
+    return SetFileAccess(g_etcIssue, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcIssue), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcIssueNet(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcIssueNet(value);
-    return SetFileAccess(g_etcIssueNet, 0, 0, g_desiredEnsurePermissionsOnEtcIssueNet, log);
+    return SetFileAccess(g_etcIssueNet, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcIssueNet), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcHostsAllow(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcHostsAllow(value);
-    return SetFileAccess(g_etcHostsAllow, 0, 0, g_desiredEnsurePermissionsOnEtcHostsAllow, log);
+    return SetFileAccess(g_etcHostsAllow, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcHostsAllow), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcHostsDeny(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcHostsDeny(value);
-    return SetFileAccess(g_etcHostsDeny, 0, 0, g_desiredEnsurePermissionsOnEtcHostsDeny, log);
+    return SetFileAccess(g_etcHostsDeny, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcHostsDeny), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
@@ -2396,91 +2396,91 @@ static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
 static int RemediateEnsurePermissionsOnEtcShadow(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcShadow(value);
-    return SetFileAccess(g_etcShadow, 0, 42, g_desiredEnsurePermissionsOnEtcShadow, log);
+    return SetFileAccess(g_etcShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadow), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcShadowDash(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcShadowDash(value);
-    return SetFileAccess(g_etcShadowDash, 0, 42, g_desiredEnsurePermissionsOnEtcShadowDash, log);
+    return SetFileAccess(g_etcShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadowDash), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadow(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcGShadow(value);
-    return SetFileAccess(g_etcGShadow, 0, 42, g_desiredEnsurePermissionsOnEtcGShadow, log);
+    return SetFileAccess(g_etcGShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadow), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadowDash(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcGShadowDash(value);
-    return SetFileAccess(g_etcGShadowDash, 0, 42, g_desiredEnsurePermissionsOnEtcGShadowDash, log);
+    return SetFileAccess(g_etcGShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswd(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcPasswd(value);
-    return SetFileAccess(g_etcPasswd, 0, 0, g_desiredEnsurePermissionsOnEtcPasswd, log);
+    return SetFileAccess(g_etcPasswd, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswd), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswdDash(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcPasswdDash(value);
-    return SetFileAccess(g_etcPasswdDash, 0, 0, g_desiredEnsurePermissionsOnEtcPasswdDash, log);
+    return SetFileAccess(g_etcPasswdDash, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswdDash), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGroup(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcGroup(value);
-    return SetFileAccess(g_etcGroup, 0, 0, g_desiredEnsurePermissionsOnEtcGroup, log);
+    return SetFileAccess(g_etcGroup, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcGroup), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGroupDash(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcGroupDash(value);
-    return SetFileAccess(g_etcGroupDash, 0, 0, g_desiredEnsurePermissionsOnEtcGroupDash, log);
+    return SetFileAccess(g_etcGroupDash, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcGroupDash), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcAnacronTab(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcAnacronTab(value);
-    return SetFileAccess(g_etcAnacronTab, 0, 0, g_desiredEnsurePermissionsOnEtcAnacronTab, log);
+    return SetFileAccess(g_etcAnacronTab, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcAnacronTab), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronD(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcCronD(value);
-    return SetFileAccess(g_etcCronD, 0, 0, g_desiredEnsurePermissionsOnEtcCronD, log);
+    return SetFileAccess(g_etcCronD, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronD), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronDaily(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcCronDaily(value);
-    return SetFileAccess(g_etcCronDaily, 0, 0, g_desiredEnsurePermissionsOnEtcCronDaily, log);
+    return SetFileAccess(g_etcCronDaily, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronDaily), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronHourly(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcCronHourly(value);
-    return SetFileAccess(g_etcCronHourly, 0, 0, g_desiredEnsurePermissionsOnEtcCronHourly, log);
+    return SetFileAccess(g_etcCronHourly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronHourly), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronMonthly(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcCronMonthly(value);
-    return SetFileAccess(g_etcCronMonthly, 0, 0, g_desiredEnsurePermissionsOnEtcCronMonthly, log);
+    return SetFileAccess(g_etcCronMonthly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronMonthly), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronWeekly(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcCronWeekly(value);
-    return SetFileAccess(g_etcCronWeekly, 0, 0, g_desiredEnsurePermissionsOnEtcCronWeekly, log);
+    return SetFileAccess(g_etcCronWeekly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronWeekly), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcMotd(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcMotd(value);
-    return SetFileAccess(g_etcMotd, 0, 0, g_desiredEnsurePermissionsOnEtcMotd, log);
+    return SetFileAccess(g_etcMotd, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcMotd), log);
 };
 
 static int RemediateEnsureInetdNotInstalled(char* value, void* log)
