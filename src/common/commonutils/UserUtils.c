@@ -2268,7 +2268,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
     if (NULL == names)
     {
-        OsConfigLogError(log, "CheckUserAccountsNotFound: invalid arguments (%p, %u)", names, numberOfNames);
+        OsConfigLogError(log, "CheckUserAccountsNotFound: invalid argument");
         return EINVAL;
     }
 
@@ -2378,9 +2378,9 @@ int RemoveUserAccounts(const char* names, void* log)
     unsigned int userListSize = 0, i = 0, j = 0;
     int status = 0, _status = 0;
 
-    if ((NULL == names) || (0 == numberOfNames))
+    if (NULL == names)
     {
-        OsConfigLogError(log, "RemoveUserAccounts: invalid arguments (%p, %u)", names, numberOfNames);
+        OsConfigLogError(log, "RemoveUserAccounts: invalid argument", names);
         return EINVAL;
     }
 
