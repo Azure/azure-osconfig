@@ -2032,7 +2032,7 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void* log)
     int numberOfModes = 0;
     char* reason = NULL;
 
-    if (0 == ConvertStringToIntegers(g_desiredtEnsureUsersDotFilesArentGroupOrWorldWritable ?
+    if (0 == ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable ?
         g_desiredtEnsureUsersDotFilesArentGroupOrWorldWritable : g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, log))
     {
         CheckUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, &reason, log);
@@ -2040,7 +2040,7 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void* log)
     else
     {
         reason = FormatAllocateString("Failed to parse '%s'", g_desiredtEnsureUsersDotFilesArentGroupOrWorldWritable ?
-            g_desiredtEnsureUsersDotFilesArentGroupOrWorldWritable : g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable);
+            g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable : g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable);
     }
 
     FREE_MEMORY(modes);
