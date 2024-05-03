@@ -606,7 +606,7 @@ void AsbInitialize(void* log)
         (NULL == (g_desiredEnsurePasswordReuseIsLimited = DuplicateString(g_defaultEnsurePasswordReuseIsLimited))) ||
         (NULL == (g_desiredEnsurePasswordCreationRequirements = DuplicateString(g_defaultEnsurePasswordCreationRequirements))) ||
         (NULL == (g_desiredEnsureFilePermissionsForAllRsyslogLogFiles = DuplicateString(g_defaultEnsureFilePermissionsForAllRsyslogLogFiles))) ||
-        (NULL == (gdesiredEnsureUsersDotFilesArentGroupOrWorldWritable = DuplicateString(g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable))) ||
+        (NULL == (g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable = DuplicateString(g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable))) ||
         (NULL == (g_desiredEnsureUnnecessaryAccountsAreRemoved = DuplicateString(g_defaultEnsureUnnecessaryAccountsAreRemoved))))
     {
         OsConfigLogError(log, "AsbInitialize: failed to allocate memory");
@@ -2028,10 +2028,6 @@ static char* AuditEnsureSmbWithSambaIsDisabled(void* log)
 
 static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void* log)
 {
-    char* reason = NULL;
-    CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), &reason, log);
-    return reason;
-
     int* modes = NULL;
     int numberOfModes = 0;
     char* reason = NULL;
