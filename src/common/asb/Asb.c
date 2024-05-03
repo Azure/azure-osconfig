@@ -1172,8 +1172,8 @@ static char* AuditEnsureRestrictedUserHomeDirectories(void* log)
     }
     else
     {
-        reason = FormatAllocateString("Failed to parse '%s'", g_desiredEnsureRestrictedUserHomeDirectories ? 
-            g_desiredEnsureRestrictedUserHomeDirectories : g_defaultEnsureRestrictedUserHomeDirectories)
+        reason = FormatAllocateString("Failed to parse '%s'", g_desiredEnsureRestrictedUserHomeDirectories ?
+            g_desiredEnsureRestrictedUserHomeDirectories : g_defaultEnsureRestrictedUserHomeDirectories);
     }
 
     FREE_MEMORY(modes);
@@ -1497,9 +1497,9 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void* log)
     char* value = g_desiredEnsurePermissionsOnBootloaderConfig ? 
         g_desiredEnsurePermissionsOnBootloaderConfig : g_defaultEnsurePermissionsOnBootloaderConfig;
     char* reason = NULL;
-    CheckFileAccess("/boot/grub/grub.cfg", 0, 0, value, &reason, log);
-    CheckFileAccess("/boot/grub/grub.conf", 0, 0, value, &reason, log);
-    CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, value, &reason, log);
+    CheckFileAccess("/boot/grub/grub.cfg", 0, 0, (unsigned int)atoi(value), &reason, log);
+    CheckFileAccess("/boot/grub/grub.conf", 0, 0, (unsigned int)atoi(value), &reason, log);
+    CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, (unsigned int)atoi(value), &reason, log);
     return reason;
 }
 
@@ -1545,8 +1545,8 @@ static char* AuditEnsurePasswordCreationRequirements(void* log)
     }
     else
     {
-        reason = FormatAllocateString("Failed to parse '%s'", g_desiredEnsurePasswordCreationRequirements ? 
-            g_desiredEnsurePasswordCreationRequirements : g_defaultEnsurePasswordCreationRequirements)
+        reason = FormatAllocateString("Failed to parse '%s'", g_desiredEnsurePasswordCreationRequirements ?
+            g_desiredEnsurePasswordCreationRequirements : g_defaultEnsurePasswordCreationRequirements);
     }
 
     FREE_MEMORY(values);
@@ -1688,7 +1688,7 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void* log)
     else
     {
         reason = FormatAllocateString("Failed to parse '%s'", g_desiredEnsureFilePermissionsForAllRsyslogLogFiles ?
-            g_desiredEnsureFilePermissionsForAllRsyslogLogFiles : g_defaultEnsureFilePermissionsForAllRsyslogLogFiles)
+            g_desiredEnsureFilePermissionsForAllRsyslogLogFiles : g_defaultEnsureFilePermissionsForAllRsyslogLogFiles);
     }
 
     FREE_MEMORY(modes);
