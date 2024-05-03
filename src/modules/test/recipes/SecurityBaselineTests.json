@@ -399,7 +399,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePasswordHashingAlgorithm",
-    "Payload": "sha512"
+    "Payload": "6"
   },
   {
     "ObjectType": "Desired",
@@ -943,7 +943,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePasswordHashingAlgorithm",
-    "Payload": "sha512"
+    "Payload": "6"
   },
   {
     "ObjectType": "Desired",
