@@ -403,7 +403,7 @@ static const char* g_initEnsureRestrictedUserHomeDirectoriesObject = "initEnsure
 static const char* g_initEnsurePasswordHashingAlgorithmObject = "initEnsurePasswordHashingAlgorithm";
 static const char* g_initEnsureMinDaysBetweenPasswordChangesObject = "initEnsureMinDaysBetweenPasswordChanges";
 static const char* g_initEnsureInactivePasswordLockPeriodObject = "initEnsureInactivePasswordLockPeriod";
-static const char* g_initMaxDaysBetweenPasswordChangesObject = "initEnsureMaxDaysBetweenPasswordChanges";
+static const char* g_initEnsureMaxDaysBetweenPasswordChangesObject = "initEnsureMaxDaysBetweenPasswordChanges";
 static const char* g_initEnsurePasswordExpirationObject = "initEnsurePasswordExpiration";
 static const char* g_initEnsurePasswordExpirationWarningObject = "initEnsurePasswordExpirationWarning";
 static const char* g_initEnsureDefaultUmaskForAllUsersObject = "initEnsureDefaultUmaskForAllUsers";
@@ -2314,7 +2314,7 @@ static int InitEnsureInactivePasswordLockPeriod(char* value)
     return ReplaceString(g_desiredEnsureInactivePasswordLockPeriod, value, g_defaultEnsureInactivePasswordLockPeriod);
 }
 
-static int InitMaxDaysBetweenPasswordChanges(char* value)
+static int InitEnsureMaxDaysBetweenPasswordChanges(char* value)
 {
     return ReplaceString(g_desiredEnsureMaxDaysBetweenPasswordChanges, value, g_defaultEnsureMaxDaysBetweenPasswordChanges);
 }
@@ -2814,7 +2814,7 @@ static int RemediateEnsureRestrictedUserHomeDirectories(char* value, void* log)
 
     if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, log))) && (numberOfModes >= 2))
     {
-        status = SetRestrictedUserHomeDirectories(modes, numberOfModes, modes[0], modes[1], log);
+        status = SetRestrictedUserHomeDirectories((unisgned int*)modes, (unsigned int)numberOfModes, modes[0], modes[1], log);
     }
 
     FREE_MEMORY(modes);
@@ -5161,9 +5161,9 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         {
             status = InitEnsureInactivePasswordLockPeriod(jsonString);
         }
-        else if (0 == strcmp(objectName, g_initMaxDaysBetweenPasswordChangesObject))
+        else if (0 == strcmp(objectName, g_initEnsureMaxDaysBetweenPasswordChangesObject))
         {
-            status = InitMaxDaysBetweenPasswordChanges(jsonString);
+            status = InitEnsureMaxDaysBetweenPasswordChanges(jsonString);
         }
         else if (0 == strcmp(objectName, g_initEnsurePasswordExpirationObject))
         {
