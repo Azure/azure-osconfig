@@ -2039,7 +2039,7 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void* log)
     }
     else
     {
-        reason = FormatAllocateString("Failed to parse '%s'", g_desiredtEnsureUsersDotFilesArentGroupOrWorldWritable ?
+        reason = FormatAllocateString("Failed to parse '%s'", g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable ?
             g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable : g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable);
     }
 
