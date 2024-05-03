@@ -528,12 +528,6 @@ static const char* g_netrc = "netrc";
 static const char* g_rhosts = "rhosts";
 static const char* g_systemdJournald = "systemd-journald";
 
-static long g_minDaysBetweenPasswordChanges = 7;
-static long g_maxDaysBetweenPasswordChanges = 365;
-static long g_passwordExpirationWarning = 7;
-static long g_passwordExpiration = 365;
-static long g_maxInactiveDays = 30;
-
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
 
@@ -3444,7 +3438,7 @@ static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, vo
 {
     int* modes = NULL;
     int numberOfModes = 0;
-    char* reason = NULL;
+    int status = 0;
 
     InitEnsureUsersDotFilesArentGroupOrWorldWritable(value);
 
