@@ -437,7 +437,7 @@ static const char* g_defaultEnsureRestrictedUserHomeDirectories = "700 750";
 static const char* g_defaultEnsurePasswordHashingAlgorithm = "sha512";
 static const char* g_defaultEnsureMinDaysBetweenPasswordChanges = "7";
 static const char* g_defaultEnsureInactivePasswordLockPeriod = "30";
-static const char* g_defaultMaxDaysBetweenPasswordChanges = "365";
+static const char* g_defaultEnsureMaxDaysBetweenPasswordChanges = "365";
 static const char* g_defaultEnsurePasswordExpiration = "365";
 static const char* g_defaultEnsurePasswordExpirationWarning = "7";
 static const char* g_defaultEnsureDefaultUmaskForAllUsers = "777";
@@ -558,7 +558,7 @@ static char* g_desiredEnsureRestrictedUserHomeDirectories = NULL;
 static char* g_desiredEnsurePasswordHashingAlgorithm = NULL;
 static char* g_desiredEnsureMinDaysBetweenPasswordChanges = NULL;
 static char* g_desiredEnsureInactivePasswordLockPeriod = NULL;
-static char* g_desiredMaxDaysBetweenPasswordChanges = NULL;
+static char* g_desiredEnsureMaxDaysBetweenPasswordChanges = NULL;
 static char* g_desiredEnsurePasswordExpiration = NULL;
 static char* g_desiredEnsurePasswordExpirationWarning = NULL;
 static char* g_desiredEnsureDefaultUmaskForAllUsers = NULL;
@@ -1494,7 +1494,7 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(void* log)
 
 static char* AuditEnsurePermissionsOnBootloaderConfig(void* log)
 {
-    char* value = g_desiredEnsurePermissionsOnBootloaderConfig ? 
+    const char* value = g_desiredEnsurePermissionsOnBootloaderConfig ? 
         g_desiredEnsurePermissionsOnBootloaderConfig : g_defaultEnsurePermissionsOnBootloaderConfig;
     char* reason = NULL;
     CheckFileAccess("/boot/grub/grub.cfg", 0, 0, (unsigned int)atoi(value), &reason, log);
