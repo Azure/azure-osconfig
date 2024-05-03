@@ -3444,7 +3444,7 @@ static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, vo
 
     if (0 == (status = ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, log)))
     {
-        status = SetUsersRestrictedDotFiles((unisgned int*)modes, (unsigned int)numberOfModes, modes[(numberOfModes > 1) ? (numberOfModes - 1) : 0], log);
+        status = SetUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, modes[(numberOfModes > 1) ? (numberOfModes - 1) : 0], log);
     }
 
     FREE_MEMORY(modes);
