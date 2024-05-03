@@ -218,6 +218,7 @@ char* RepairBrokenEolCharactersIfAny(const char* value)
 
 int ConvertStringsToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log)
 {
+    const char space = ' ';
     char* value = NULL;
     size_t sourceLength = 0;
     size_t i = 0;
@@ -244,15 +245,30 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
         }
         else
         {
-            i += strlen(value);
+            OsConfigLogInfo(log, "### 1: %s", value);
+
+            if (space != separator)
+            {
+                RemovePrefixBlanks(value);
+            }
             
-            RemovePrefixBlanks(value);
+            OsConfigLogInfo(log, "### 2: %s", value);
+
             TruncateAtFirst(value, separator);
-            RemoveTrailingBlanks(value);
+
+            OsConfigLogInfo(log, "### 3: %s", value);
+            
+            i += strlen(value);
+
+            if (space != separator)
+            {
+                RemoveTrailingBlanks(value);
+            }
+
+            OsConfigLogInfo(log, "### 4: %s", value);
 
             if (0 == *numIntegers)
             {
-                FREE_MEMORY(*integers);
                 *integers = (int*)malloc(sizeof(int));
                 *numIntegers = 1;
             }
@@ -265,14 +281,17 @@ int ConvertStringsToIntegers(const char* source, char separator, int** integers,
             if (NULL == *integers)
             {
                 OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: failed to allocate memory");
+                *numIntegers = 0;
                 status = ENOMEM;
                 break;
             }
             else
             {
                 (*integers)[(*numIntegers) - 1] = atoi(value);
-            }
 
+                OsConfigLogInfo(log, "### 4: %d at position %d", (*integers)[(*numIntegers) - 1], (*numIntegers) - 1);
+            }
+            
             FREE_MEMORY(value);
         }
     }
