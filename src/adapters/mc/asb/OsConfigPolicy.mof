@@ -2348,7 +2348,7 @@ instance of OsConfigResource as $OsConfigResource153ref
     ReportedObjectName = "auditEnsurePasswordHashingAlgorithm";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePasswordHashingAlgorithm";
-    DesiredObjectValue = "sha512";
+    DesiredObjectValue = "6";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "LinuxSecurityBaseline";
