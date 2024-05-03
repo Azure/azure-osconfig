@@ -2302,7 +2302,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
                         if (DirectoryExists(userList[i].home))
                         {
-                            OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user '%s' exists ('%s')", names[j], userList[i].home);
+                            OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user '%s' exists ('%s')", name, userList[i].home);
                         }
 
                         OsConfigCaptureReason(reason, "User '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
@@ -2419,7 +2419,7 @@ int RemoveUserAccounts(const char* names, void* log)
                         }
 
                         memset(command, 0, commandLength);
-                        snprintf(command, commandLength, commandTemplate, names[j]);
+                        snprintf(command, commandLength, commandTemplate, name);
 
                         if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                         {
