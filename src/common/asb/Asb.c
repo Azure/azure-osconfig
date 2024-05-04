@@ -359,7 +359,6 @@ static const char* g_remediateEnsureRloginServiceIsDisabledObject = "remediateEn
 static const char* g_remediateEnsureUnnecessaryAccountsAreRemovedObject = "remediateEnsureUnnecessaryAccountsAreRemoved";
 
 // Initialization for audit before remediation 
-// TODO: For those kept, then we will add them to SecurityBaseline MIM, to its Test Recipe, to unit-tests, etc
 static const char* g_initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
 static const char* g_initEnsureSshPortIsConfiguredObject = "initEnsureSshPortIsConfigured";
 static const char* g_initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
