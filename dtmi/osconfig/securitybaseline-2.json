@@ -2287,7 +2287,7 @@
     },
     {
       "@type": "Property",
-      "name": "initEnsureUnnecessaryAccountsAreRemoved = "games,test",
+      "name": "initEnsureUnnecessaryAccountsAreRemoved",
       "schema": "string",
       "writable": true
     }
