@@ -1873,4 +1873,11 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(-303, integers[2]);
     FREE_MEMORY(integers);
     numIntegers = 0;
+
+    EXPECT_EQ(0, ConvertStringToIntegers("111 222 -333", ' ', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(3, numIntegers);
+    EXPECT_EQ(111, integers[0]);
+    EXPECT_EQ(222, integers[1]);
+    EXPECT_EQ(-333, integers[2]);
+    FREE_MEMORY(integers);
 }
