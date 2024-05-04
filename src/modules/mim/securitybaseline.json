@@ -2329,7 +2329,7 @@
           "schema": "string"
         },
         {
-          "name": "initEnsureUnnecessaryAccountsAreRemoved = "games,test",
+          "name": "initEnsureUnnecessaryAccountsAreRemoved",
           "type": "mimObject",
           "desired": true,
           "schema": "string"
