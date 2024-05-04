@@ -2025,15 +2025,16 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void* log)
     int numberOfModes = 0;
     char* reason = NULL;
 
-    if (0 == ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable ?
-        g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable : g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, log))
+    if ((0 == ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable ? g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable : 
+        g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, log)) && (numberOfModes >= 2))
     {
         CheckUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, &reason, log);
     }
     else
     {
-        reason = FormatAllocateString("Failed to parse '%s'", g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable ?
-            g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable : g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable);
+        reason = FormatAllocateString("Failed to parse '%s'. There must be at least two access numbers, comma separated", 
+            g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable ? g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable : 
+            g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable);
     }
 
     FREE_MEMORY(modes);
