@@ -1494,10 +1494,11 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void* log)
 {
     const char* value = g_desiredEnsurePermissionsOnBootloaderConfig ? 
         g_desiredEnsurePermissionsOnBootloaderConfig : g_defaultEnsurePermissionsOnBootloaderConfig;
+    unsigned int mode = (unsigned int)atoi(value);
     char* reason = NULL;
-    CheckFileAccess("/boot/grub/grub.cfg", 0, 0, (unsigned int)atoi(value), &reason, log);
-    CheckFileAccess("/boot/grub/grub.conf", 0, 0, (unsigned int)atoi(value), &reason, log);
-    CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, (unsigned int)atoi(value), &reason, log);
+    CheckFileAccess("/boot/grub/grub.cfg", 0, 0, mode, &reason, log);
+    CheckFileAccess("/boot/grub/grub.conf", 0, 0, mode, &reason, log);
+    CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, mode, &reason, log);
     return reason;
 }
 
@@ -2182,180 +2183,185 @@ static int InitEnsureAppropriateCiphersForSsh(char* value, void* log)
     return InitializeSshAuditCheck(g_initEnsureAppropriateCiphersForSshObject, value, log);
 }
 
-static int ReplaceString(char* target, char* source, const char* defaultValue)
+static int ReplaceString(char** target, char* source, const char* defaultValue)
 {
     bool isValidValue = ((NULL == source) || (0 == source[0])) ? false : true;
     int status = 0;
 
-    FREE_MEMORY(target);
-    status = (NULL != (target = DuplicateString(isValidValue ? source : defaultValue))) ? 0 : ENOMEM;
+    if (NULL == target)
+    {
+        return EINVAL;
+    }
+
+    FREE_MEMORY(*target);
+    status = (NULL != (*target = DuplicateString(isValidValue ? source : defaultValue))) ? 0 : ENOMEM;
 
     return status;
 }
 
 static int InitEnsurePermissionsOnEtcIssue(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcIssue, value, g_defaultEnsurePermissionsOnEtcIssue);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcIssue, value, g_defaultEnsurePermissionsOnEtcIssue);
 }
 
 static int InitEnsurePermissionsOnEtcIssueNet(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcIssueNet, value, g_defaultEnsurePermissionsOnEtcIssueNet);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcIssueNet, value, g_defaultEnsurePermissionsOnEtcIssueNet);
 }
 
 static int InitEnsurePermissionsOnEtcHostsAllow(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcHostsAllow, value, g_defaultEnsurePermissionsOnEtcHostsAllow);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcHostsAllow, value, g_defaultEnsurePermissionsOnEtcHostsAllow);
 }
 
 static int InitEnsurePermissionsOnEtcHostsDeny(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcHostsDeny, value, g_defaultEnsurePermissionsOnEtcHostsDeny);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcHostsDeny, value, g_defaultEnsurePermissionsOnEtcHostsDeny);
 }
 
 static int InitEnsurePermissionsOnEtcShadow(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcShadow, value, g_defaultEnsurePermissionsOnEtcShadow);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcShadow, value, g_defaultEnsurePermissionsOnEtcShadow);
 }
 
 static int InitEnsurePermissionsOnEtcShadowDash(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcShadowDash, value, g_defaultEnsurePermissionsOnEtcShadowDash);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcShadowDash, value, g_defaultEnsurePermissionsOnEtcShadowDash);
 }
 
 static int InitEnsurePermissionsOnEtcGShadow(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcGShadow, value, g_defaultEnsurePermissionsOnEtcGShadow);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcGShadow, value, g_defaultEnsurePermissionsOnEtcGShadow);
 }
 
 static int InitEnsurePermissionsOnEtcGShadowDash(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcGShadowDash, value, g_defaultEnsurePermissionsOnEtcGShadowDash);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcGShadowDash, value, g_defaultEnsurePermissionsOnEtcGShadowDash);
 }
 
 static int InitEnsurePermissionsOnEtcPasswd(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcPasswd, value, g_defaultEnsurePermissionsOnEtcPasswd);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcPasswd, value, g_defaultEnsurePermissionsOnEtcPasswd);
 }
 
 static int InitEnsurePermissionsOnEtcPasswdDash(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcPasswdDash, value, g_defaultEnsurePermissionsOnEtcPasswdDash);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcPasswdDash, value, g_defaultEnsurePermissionsOnEtcPasswdDash);
 }
 
 static int InitEnsurePermissionsOnEtcGroup(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcGroup, value, g_defaultEnsurePermissionsOnEtcGroup);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcGroup, value, g_defaultEnsurePermissionsOnEtcGroup);
 }
 
 static int InitEnsurePermissionsOnEtcGroupDash(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcGroupDash, value, g_defaultEnsurePermissionsOnEtcGroupDash);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcGroupDash, value, g_defaultEnsurePermissionsOnEtcGroupDash);
 }
 
 static int InitEnsurePermissionsOnEtcAnacronTab(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcAnacronTab, value, g_defaultEnsurePermissionsOnEtcAnacronTab);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcAnacronTab, value, g_defaultEnsurePermissionsOnEtcAnacronTab);
 }
 
 static int InitEnsurePermissionsOnEtcCronD(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronD, value, g_defaultEnsurePermissionsOnEtcCronD);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcCronD, value, g_defaultEnsurePermissionsOnEtcCronD);
 }
 
 static int InitEnsurePermissionsOnEtcCronDaily(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronDaily, value, g_defaultEnsurePermissionsOnEtcCronDaily);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcCronDaily, value, g_defaultEnsurePermissionsOnEtcCronDaily);
 }
 
 static int InitEnsurePermissionsOnEtcCronHourly(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronHourly, value, g_defaultEnsurePermissionsOnEtcCronHourly);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcCronHourly, value, g_defaultEnsurePermissionsOnEtcCronHourly);
 }
 
 static int InitEnsurePermissionsOnEtcCronMonthly(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronMonthly, value, g_defaultEnsurePermissionsOnEtcCronMonthly);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcCronMonthly, value, g_defaultEnsurePermissionsOnEtcCronMonthly);
 }
 
 static int InitEnsurePermissionsOnEtcCronWeekly(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcCronWeekly, value, g_defaultEnsurePermissionsOnEtcCronWeekly);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcCronWeekly, value, g_defaultEnsurePermissionsOnEtcCronWeekly);
 }
 
 static int InitEnsurePermissionsOnEtcMotd(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnEtcMotd, value, g_defaultEnsurePermissionsOnEtcMotd);
+    return ReplaceString(&g_desiredEnsurePermissionsOnEtcMotd, value, g_defaultEnsurePermissionsOnEtcMotd);
 }
 
 static int InitEnsureRestrictedUserHomeDirectories(char* value)
 {
-    return ReplaceString(g_desiredEnsureRestrictedUserHomeDirectories, value, g_defaultEnsureRestrictedUserHomeDirectories);
+    return ReplaceString(&g_desiredEnsureRestrictedUserHomeDirectories, value, g_defaultEnsureRestrictedUserHomeDirectories);
 }
 
 static int InitEnsurePasswordHashingAlgorithm(char* value)
 {
-    return ReplaceString(g_desiredEnsurePasswordHashingAlgorithm, value, g_defaultEnsurePasswordHashingAlgorithm);
+    return ReplaceString(&g_desiredEnsurePasswordHashingAlgorithm, value, g_defaultEnsurePasswordHashingAlgorithm);
 }
 
 static int InitEnsureMinDaysBetweenPasswordChanges(char* value)
 {
-    return ReplaceString(g_desiredEnsureMinDaysBetweenPasswordChanges, value, g_defaultEnsureMinDaysBetweenPasswordChanges);
+    return ReplaceString(&g_desiredEnsureMinDaysBetweenPasswordChanges, value, g_defaultEnsureMinDaysBetweenPasswordChanges);
 }
 
 static int InitEnsureInactivePasswordLockPeriod(char* value)
 {
-    return ReplaceString(g_desiredEnsureInactivePasswordLockPeriod, value, g_defaultEnsureInactivePasswordLockPeriod);
+    return ReplaceString(&g_desiredEnsureInactivePasswordLockPeriod, value, g_defaultEnsureInactivePasswordLockPeriod);
 }
 
 static int InitEnsureMaxDaysBetweenPasswordChanges(char* value)
 {
-    return ReplaceString(g_desiredEnsureMaxDaysBetweenPasswordChanges, value, g_defaultEnsureMaxDaysBetweenPasswordChanges);
+    return ReplaceString(&g_desiredEnsureMaxDaysBetweenPasswordChanges, value, g_defaultEnsureMaxDaysBetweenPasswordChanges);
 }
 
 static int InitEnsurePasswordExpiration(char* value)
 {
-    return ReplaceString(g_desiredEnsurePasswordExpiration, value, g_defaultEnsurePasswordExpiration);
+    return ReplaceString(&g_desiredEnsurePasswordExpiration, value, g_defaultEnsurePasswordExpiration);
 }
 
 static int InitEnsurePasswordExpirationWarning(char* value)
 {
-    return ReplaceString(g_desiredEnsurePasswordExpirationWarning, value, g_defaultEnsurePasswordExpirationWarning);
+    return ReplaceString(&g_desiredEnsurePasswordExpirationWarning, value, g_defaultEnsurePasswordExpirationWarning);
 }
 
 static int InitEnsureDefaultUmaskForAllUsers(char* value)
 {
-    return ReplaceString(g_desiredEnsureDefaultUmaskForAllUsers, value, g_defaultEnsureDefaultUmaskForAllUsers);
+    return ReplaceString(&g_desiredEnsureDefaultUmaskForAllUsers, value, g_defaultEnsureDefaultUmaskForAllUsers);
 }
 
 static int InitEnsurePermissionsOnBootloaderConfig(char* value)
 {
-    return ReplaceString(g_desiredEnsurePermissionsOnBootloaderConfig, value, g_defaultEnsurePermissionsOnBootloaderConfig);
+    return ReplaceString(&g_desiredEnsurePermissionsOnBootloaderConfig, value, g_defaultEnsurePermissionsOnBootloaderConfig);
 }
 
 static int InitEnsurePasswordReuseIsLimited(char* value)
 {
-    return ReplaceString(g_desiredEnsurePasswordReuseIsLimited, value, g_defaultEnsurePasswordReuseIsLimited);
+    return ReplaceString(&g_desiredEnsurePasswordReuseIsLimited, value, g_defaultEnsurePasswordReuseIsLimited);
 }
 
 static int InitEnsurePasswordCreationRequirements(char* value)
 {
-    return ReplaceString(g_desiredEnsurePasswordCreationRequirements, value, g_defaultEnsurePasswordCreationRequirements);
+    return ReplaceString(&g_desiredEnsurePasswordCreationRequirements, value, g_defaultEnsurePasswordCreationRequirements);
 }
 
 static int InitEnsureFilePermissionsForAllRsyslogLogFiles(char* value)
 {
-    return ReplaceString(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, value, g_defaultEnsureFilePermissionsForAllRsyslogLogFiles);
+    return ReplaceString(&g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, value, g_defaultEnsureFilePermissionsForAllRsyslogLogFiles);
 }
 
 static int InitEnsureUsersDotFilesArentGroupOrWorldWritable(char* value)
 {
-    return ReplaceString(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, value, g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable);
+    return ReplaceString(&g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, value, g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable);
 }
 
 static int InitEnsureUnnecessaryAccountsAreRemoved(char* value)
 {
-    return ReplaceString(g_desiredEnsureUnnecessaryAccountsAreRemoved, value, g_defaultEnsureUnnecessaryAccountsAreRemoved);
+    return ReplaceString(&g_desiredEnsureUnnecessaryAccountsAreRemoved, value, g_defaultEnsureUnnecessaryAccountsAreRemoved);
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(char* value, void* log)
@@ -2806,9 +2812,9 @@ static int RemediateEnsureRestrictedUserHomeDirectories(char* value, void* log)
 
     InitEnsureRestrictedUserHomeDirectories(value);
 
-    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, log))) && (numberOfModes >= 2))
+    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, log))) && (numberOfModes > 1))
     {
-        status = SetRestrictedUserHomeDirectories((unsigned int*)modes, (unsigned int)numberOfModes, modes[0], modes[1], log);
+        status = SetRestrictedUserHomeDirectories((unsigned int*)modes, (unsigned int)numberOfModes, modes[0], modes[numberOfModes - 1], log);
     }
 
     FREE_MEMORY(modes);
@@ -3442,9 +3448,9 @@ static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, vo
 
     InitEnsureUsersDotFilesArentGroupOrWorldWritable(value);
 
-    if (0 == (status = ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, log)))
+    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, log))) && (numberOfModes > 0))
     {
-        status = SetUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, modes[(numberOfModes > 1) ? (numberOfModes - 1) : 0], log);
+        status = SetUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, modes[numberOfModes - 1], log);
     }
 
     FREE_MEMORY(modes);
