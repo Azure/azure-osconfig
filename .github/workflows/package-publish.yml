@@ -19,8 +19,7 @@ on:
 
 jobs:
   publish:
-    # Ensure runners are using the AME tenant
-    runs-on: [self-hosted, 1ES.Pool=release-pool, 1ES.ImageOverride=build-infra]
+    runs-on: [self-hosted, 1ES.Pool=osconfig-prod-release-pool, 1ES.ImageOverride=build-infra]
     environment: ${{ inputs.environment }}
     env:
       PMC_CLI_BASE_URL: https://pmc-ingest.trafficmanager.net/api/v4
