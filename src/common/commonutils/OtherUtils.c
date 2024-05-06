@@ -215,3 +215,78 @@ char* RepairBrokenEolCharactersIfAny(const char* value)
 
     return result;
 }
+
+int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log)
+{
+    const char space = ' ';
+    char* value = NULL;
+    size_t sourceLength = 0;
+    size_t i = 0;
+    int status = 0;
+
+    if ((NULL == source) || (NULL == integers) || (NULL == numIntegers))
+    {
+        OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: invalid arguments");
+        return EINVAL;
+    }
+
+    FREE_MEMORY(*integers);
+    *numIntegers = 0;
+
+    sourceLength = strlen(source);
+
+    for (i = 0; i < sourceLength; i++)
+    {
+        if (NULL == (value = DuplicateString(&(source[i]))))
+        {
+            OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: failed to duplicate string");
+            status = ENOMEM;
+            break;
+        }
+        else
+        {
+            TruncateAtFirst(value, separator);
+            i += strlen(value);
+
+            if (space != separator)
+            {
+                RemoveTrailingBlanks(value);
+            }
+
+            if (0 == *numIntegers)
+            {
+                *integers = (int*)malloc(sizeof(int));
+                *numIntegers = 1;
+            }
+            else
+            {
+                *numIntegers += 1;
+                *integers = realloc(*integers, (size_t)((*numIntegers) * sizeof(int)));
+            }
+
+            if (NULL == *integers)
+            {
+                OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: failed to allocate memory");
+                *numIntegers = 0;
+                status = ENOMEM;
+                break;
+            }
+            else
+            {
+                (*integers)[(*numIntegers) - 1] = atoi(value);
+            }
+            
+            FREE_MEMORY(value);
+        }
+    }
+
+    if (0 != status)
+    {
+        FREE_MEMORY(*integers);
+        *numIntegers = 0;
+    }
+
+    OsConfigLogInfo(log, "ConvertStringToIntegers: %d (%d integers converted from '%s' separated with '%c')", status, *numIntegers, source, separator);
+
+    return status;
+}

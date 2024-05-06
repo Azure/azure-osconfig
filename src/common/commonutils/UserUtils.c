@@ -2257,45 +2257,68 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
     return status;
 }
 
-int CheckUserAccountsNotFound(const char** names, unsigned int numberOfNames, char** reason, void* log)
+int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 {
+    size_t namesLength = 0;
+    char* name = NULL;
     SIMPLIFIED_USER* userList = NULL;
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int userListSize = 0, groupListSize = 0, i = 0, j = 0;
     int status = ENOENT;
 
-    if ((NULL == names) || (0 == numberOfNames))
+    if (NULL == names)
     {
-        OsConfigLogError(log, "CheckUserAccountsNotFound: invalid arguments (%p, %u)", names, numberOfNames);
+        OsConfigLogError(log, "CheckUserAccountsNotFound: invalid argument");
         return EINVAL;
     }
 
+    namesLength = strlen(names);
+    
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
         status = ENOENT;
-        
+
         for (i = 0; i < userListSize; i++)
         {
-            for (j = 0; j < numberOfNames; j++)
+            for (j = 0; j < namesLength; j++)
             {
-                if (0 == strcmp(userList[i].username, names[j]))
+                if (NULL == (name = DuplicateString(&(names[j]))))
                 {
-                    EnumerateUserGroups(&userList[i], &groupList, &groupListSize, log);
-                    FreeGroupList(&groupList, groupListSize);
-
-                    OsConfigLogInfo(log, "CheckUserAccountsNotFound: user '%s' found with id %u, gid %u, home '%s' and present in %u group(s)", 
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
-
-                    if (DirectoryExists(userList[i].home))
-                    {
-                        OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user '%s' exists ('%s')", names[j], userList[i].home);
-                    }
-
-                    OsConfigCaptureReason(reason, "User '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
-
-                    status = 0;
+                    OsConfigLogError(log, "CheckUserAccountsNotFound: failed to duplicate string");
+                    status = ENOMEM;
+                    break;
                 }
+                else
+                {
+                    TruncateAtFirst(name, ',');
+
+                    if (0 == strcmp(userList[i].username, name))
+                    {
+                        EnumerateUserGroups(&userList[i], &groupList, &groupListSize, log);
+                        FreeGroupList(&groupList, groupListSize);
+
+                        OsConfigLogInfo(log, "CheckUserAccountsNotFound: user '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
+
+                        if (DirectoryExists(userList[i].home))
+                        {
+                            OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user '%s' exists ('%s')", name, userList[i].home);
+                        }
+
+                        OsConfigCaptureReason(reason, "User '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
+
+                        status = 0;
+                    }
+                }
+
+                j += strlen(name);
+                FREE_MEMORY(name);
+            }
+
+            if (0 != status)
+            {
+                break;
             }
         }
     }
@@ -2304,15 +2327,29 @@ int CheckUserAccountsNotFound(const char** names, unsigned int numberOfNames, ch
 
     if (0 != status)
     {
-        for (j = 0; j < numberOfNames; j++)
+        for (j = 0; j < namesLength; j++)
         {
-            if ((0 == FindTextInFile("/etc/passwd", names[j], log)) ||
-                (0 == FindTextInFile("/etc/shadow", names[j], log)) ||
-                (0 == FindTextInFile("/etc/group", names[j], log)))
+            if (NULL == (name = DuplicateString(&(names[j]))))
             {
-                status = 0;
+                OsConfigLogError(log, "CheckUserAccountsNotFound: failed to duplicate string");
+                status = ENOMEM;
+                break;
+            }
+            else
+            {
+                TruncateAtFirst(name, ',');
 
-                OsConfigCaptureReason(reason, "Account '%s' found mentioned in '/etc/passwd', '/etc/shadow' and/or '/etc/group'", names[j]);
+                if ((0 == FindTextInFile("/etc/passwd", name, log)) ||
+                    (0 == FindTextInFile("/etc/shadow", name, log)) ||
+                    (0 == FindTextInFile("/etc/group", name, log)))
+                {
+                    status = 0;
+
+                    OsConfigCaptureReason(reason, "Account '%s' found mentioned in '/etc/passwd', '/etc/shadow' and/or '/etc/group'", name);
+                }
+
+                j += strlen(name);
+                FREE_MEMORY(name);
             }
         }
     }
@@ -2330,71 +2367,94 @@ int CheckUserAccountsNotFound(const char** names, unsigned int numberOfNames, ch
     return status;
 }
 
-int RemoveUserAccounts(const char** names, unsigned int numberOfNames, void* log)
+int RemoveUserAccounts(const char* names, void* log)
 {
     const char* commandTemplate = "userdel -f -r %s";
+    size_t namesLength = 0;
+    char* name = NULL;
     char* command = NULL;
     size_t commandLength = 0;
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     int status = 0, _status = 0;
 
-    if ((NULL == names) || (0 == numberOfNames))
+    if (NULL == names)
     {
-        OsConfigLogError(log, "RemoveUserAccounts: invalid arguments (%p, %u)", names, numberOfNames);
+        OsConfigLogError(log, "RemoveUserAccounts: invalid argument");
         return EINVAL;
     }
 
-    if (0 != CheckUserAccountsNotFound(names, numberOfNames, NULL, log))
+    if (0 != CheckUserAccountsNotFound(names, NULL, log))
     {
         OsConfigLogError(log, "RemoveUserAccounts: no such user accounts exist");
         return 0;
     }
 
+    namesLength = strlen(names);
+
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
-            for (j = 0; j < numberOfNames; j++)
+            for (j = 0; j < namesLength; j++)
             {
-                if (0 == strcmp(userList[i].username, names[j]))
+                if (NULL == (name = DuplicateString(&(names[j]))))
                 {
-                    commandLength = strlen(commandTemplate) + strlen(names[j]) + 1;
-                    if (NULL == (command = malloc(commandLength)))
-                    {
-                        OsConfigLogError(log, "RemoveUserAccounts: out of memory");
-                        status = ENOMEM;
-                        break;
-                    }
-                    
-                    memset(command, 0, commandLength);
-                    snprintf(command, commandLength, commandTemplate, names[j]);
+                    OsConfigLogError(log, "RemoveUserAccounts: failed to duplicate string");
+                    status = ENOMEM;
+                    break;
+                }
+                else
+                {
+                    TruncateAtFirst(name, ',');
 
-                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    if (0 == strcmp(userList[i].username, name))
                     {
-                        OsConfigLogInfo(log, "RemoveUserAccounts: removed user '%s' (%u, %u, '%s')", userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
-                        
-                        if (DirectoryExists(userList[i].home))
+                        commandLength = strlen(commandTemplate) + strlen(name) + 1;
+                        if (NULL == (command = malloc(commandLength)))
                         {
-                            OsConfigLogError(log, "RemoveUserAccounts: home directory of user '%s' remains ('%s') and needs to be manually deleted", names[j], userList[i].home);
+                            OsConfigLogError(log, "RemoveUserAccounts: out of memory");
+                            status = ENOMEM;
+                            break;
+                        }
+
+                        memset(command, 0, commandLength);
+                        snprintf(command, commandLength, commandTemplate, name);
+
+                        if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                        {
+                            OsConfigLogInfo(log, "RemoveUserAccounts: removed user '%s' (%u, %u, '%s')", userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+
+                            if (DirectoryExists(userList[i].home))
+                            {
+                                OsConfigLogError(log, "RemoveUserAccounts: home directory of user '%s' remains ('%s') and needs to be manually deleted", name, userList[i].home);
+                            }
+                            else
+                            {
+                                OsConfigLogInfo(log, "RemoveUserAccounts: home directory of user '%s' successfully removed ('%s')", name, userList[i].home);
+                            }
                         }
                         else
                         {
-                            OsConfigLogInfo(log, "RemoveUserAccounts: home directory of user '%s' successfully removed ('%s')", names[j], userList[i].home);
+                            OsConfigLogError(log, "RemoveUserAccounts: failed to remove user '%s' (%u, %u) (%d)", userList[i].username, userList[i].userId, userList[i].groupId, _status);
                         }
-                    }
-                    else
-                    {
-                        OsConfigLogError(log, "RemoveUserAccounts: failed to remove user '%s' (%u, %u) (%d)", userList[i].username, userList[i].userId, userList[i].groupId, _status);
+
+                        if (0 == status)
+                        {
+                            status = _status;
+                        }
+
+                        FREE_MEMORY(command);
                     }
 
-                    if (0 == status)
-                    {
-                        status = _status;
-                    }
-
-                    FREE_MEMORY(command);
+                    j += strlen(name);
+                    FREE_MEMORY(name);
                 }
+            }
+
+            if (0 != status)
+            {
+                break;
             }
         }
     }

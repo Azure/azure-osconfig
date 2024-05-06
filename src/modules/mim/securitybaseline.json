@@ -2135,6 +2135,204 @@
           "type": "mimObject",
           "desired": true,
           "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcIssue",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcIssueNet",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcHostsAllow",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcHostsDeny",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcShadow",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcShadowDash",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcGShadow",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcGShadowDash",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcPasswd",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcPasswdDash",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcGroup",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcGroupDash",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcAnacronTab",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcCronD",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcCronDaily",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcCronHourly",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcCronMonthly",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcCronWeekly",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcMotd",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureRestrictedUserHomeDirectories",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePasswordHashingAlgorithm",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureMinDaysBetweenPasswordChanges",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureInactivePasswordLockPeriod",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureMaxDaysBetweenPasswordChanges",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePasswordExpiration",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePasswordExpirationWarning",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureDefaultUmaskForAllUsers",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnBootloaderConfig",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePasswordReuseIsLimited",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsurePasswordCreationRequirements",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureFilePermissionsForAllRsyslogLogFiles",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureUsersDotFilesArentGroupOrWorldWritable",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureUnnecessaryAccountsAreRemoved",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
         }
       ]
     }

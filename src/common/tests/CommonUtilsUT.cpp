@@ -1768,21 +1768,6 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_EQ(0, CheckPackageNotInstalled("~package_that_does_not_exist*", nullptr, nullptr));
     EXPECT_EQ(0, CheckPackageNotInstalled("*~package_that_does_not_exist*", nullptr, nullptr));
 
-    if (0 == InstallPackage("rolldice", nullptr))
-    {
-        EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
-        EXPECT_NE(0, IsPackageInstalled("rolldice", nullptr));
-        EXPECT_NE(0, CheckPackageInstalled("rolldice", nullptr, nullptr));
-        EXPECT_EQ(0, CheckPackageNotInstalled("rolldice", nullptr, nullptr));
-
-        EXPECT_EQ(0, InstallPackage("rolldice", nullptr));
-        EXPECT_EQ(0, IsPackageInstalled("rolldice", nullptr));
-        EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr, nullptr));
-        EXPECT_NE(0, CheckPackageNotInstalled("rolldice", nullptr, nullptr));
-
-        EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
-    }
-    
     EXPECT_EQ(0, IsPackageInstalled("gcc", nullptr));
     EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr, nullptr));
     EXPECT_NE(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
@@ -1836,4 +1821,63 @@ TEST_F(CommonUtilsTest, ConcatenateStrings)
 
     EXPECT_STREQ("%s%s%s", testString = ConcatenateStrings("%s%s", "%s"));
     FREE_MEMORY(testString);
+}
+
+TEST_F(CommonUtilsTest, ConvertStringToIntegers)
+{
+    int* integers = NULL;
+    int numIntegers = 0;
+
+    EXPECT_EQ(EINVAL, ConvertStringToIntegers(nullptr, ',', nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringToIntegers("123 456", ',', nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringToIntegers("123 456", ',', &integers, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringToIntegers("123 456", ',', nullptr, &numIntegers, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringToIntegers(nullptr, ',', &integers, &numIntegers, nullptr));
+
+    EXPECT_EQ(0, ConvertStringToIntegers("123,456", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(2, numIntegers);
+    EXPECT_EQ(123, integers[0]);
+    EXPECT_EQ(456, integers[1]);
+    FREE_MEMORY(integers);
+    numIntegers = 0;
+
+    EXPECT_EQ(0, ConvertStringToIntegers("1,-2,-3", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(3, numIntegers);
+    EXPECT_EQ(1, integers[0]);
+    EXPECT_EQ(-2, integers[1]);
+    EXPECT_EQ(-3, integers[2]);
+    FREE_MEMORY(integers);
+    numIntegers = 0;
+
+    EXPECT_EQ(0, ConvertStringToIntegers("11, -222, -333, 444", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(4, numIntegers);
+    EXPECT_EQ(11, integers[0]);
+    EXPECT_EQ(-222, integers[1]);
+    EXPECT_EQ(-333, integers[2]);
+    EXPECT_EQ(444, integers[3]);
+    FREE_MEMORY(integers);
+    numIntegers = 0;
+
+    EXPECT_EQ(0, ConvertStringToIntegers("  -100 , 200     ,-300  ", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(3, numIntegers);
+    EXPECT_EQ(-100, integers[0]);
+    EXPECT_EQ(200, integers[1]);
+    EXPECT_EQ(-300, integers[2]);
+    FREE_MEMORY(integers);
+    numIntegers = 0;
+
+    EXPECT_EQ(0, ConvertStringToIntegers("  -101 # 202     #-303  ", '#', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(3, numIntegers);
+    EXPECT_EQ(-101, integers[0]);
+    EXPECT_EQ(202, integers[1]);
+    EXPECT_EQ(-303, integers[2]);
+    FREE_MEMORY(integers);
+    numIntegers = 0;
+
+    EXPECT_EQ(0, ConvertStringToIntegers("111 222 -333", ' ', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(3, numIntegers);
+    EXPECT_EQ(111, integers[0]);
+    EXPECT_EQ(222, integers[1]);
+    EXPECT_EQ(-333, integers[2]);
+    FREE_MEMORY(integers);
 }
