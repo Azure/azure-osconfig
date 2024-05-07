@@ -634,7 +634,7 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
     }
     
     FREE_MEMORY(kernelName);
-    FREE_MEMORY(kerneVersion);
+    FREE_MEMORY(kernelVersion);
 
     ClearOsDistroInfo(&distro);
     ClearOsDistroInfo(&os);
