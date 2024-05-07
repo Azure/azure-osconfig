@@ -550,10 +550,13 @@ static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
 bool CheckOsAndKernelMatchDistro(char** reason, void* log)
 {
     const char* linuxName = "Linux";
+    const char* ubuntuName = "Ubuntu";
+    const char* debianName = "Debian";
     const char* none = "<null>";
 
     OS_DISTRO_INFO distro = {0}, os = {0};
     char* kernelName = GetOsKernelName(log);
+    char* kernelVersion = GetOsKernelVersion(log);
     bool match = false;
 
     // Distro
@@ -593,27 +596,45 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
     os.codename = GetEtcReleaseEntry("VERSION_CODENAME", log);
     os.description = GetEtcReleaseEntry("PRETTY_NAME", log);
 
-    if ((0 == strncmp(distro.id, os.id, strlen(distro.id))) &&
-        (0 == strcmp(distro.release, os.release)) &&
-        (0 == strcmp(distro.codename, os.codename)) &&
-        (0 == strcmp(distro.description, os.description)) &&
-        (0 == strcmp(kernelName, linuxName)))
+    if (IsCurrentOs(ubuntuName, log) || IsCurrentOs(debianName, log))
     {
-        OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro and installed image match ('%s', '%s', '%s', '%s', '%s')",
-            distro.id, distro.release, distro.codename, distro.description, kernelName);
-        OsConfigCaptureSuccessReason(reason, "Distro and installed image match ('%s', '%s', '%s', '%s', '%s')",
-            distro.id, distro.release, distro.codename, distro.description, kernelName);
-        match = true;
+        if ((0 == strncmp(distro.id, os.id, strlen(distro.id))) &&
+            (0 == strcmp(distro.release, os.release)) &&
+            (0 == strcmp(distro.codename, os.codename)) &&
+            (0 == strcmp(distro.description, os.description)) &&
+            (0 == strcmp(kernelName, linuxName)))
+        {
+            OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro and installed image match ('%s', '%s', '%s', '%s', '%s')",
+                distro.id, distro.release, distro.codename, distro.description, kernelName);
+            OsConfigCaptureSuccessReason(reason, "Distro and installed image match ('%s', '%s', '%s', '%s', '%s')",
+                distro.id, distro.release, distro.codename, distro.description, kernelName);
+            match = true;
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
+                distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
+            OsConfigCaptureReason(reason, "Distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
+                distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
+        }
     }
     else
     {
-        OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
-            distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
-        OsConfigCaptureReason(reason, "Distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
-            distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
+        if (0 == strcmp(kernelName, linuxName))
+        {
+            OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro and installed image match ('%s', '%s')", kernelName, kernelVersion);
+            OsConfigCaptureSuccessReason(reason, "Distro and installed image match ('%s', '%s')", kernelName, kernelVersion);
+            match = true;
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s') and installed image ('%s', '%s') do not match", linuxName, kernelName, kernelVersion);
+            OsConfigCaptureReason(reason, "Distro ('%s') and installed image ('%s', '%s') do not match", linuxName, kernelName, kernelVersion);
+        }
     }
-
+    
     FREE_MEMORY(kernelName);
+    FREE_MEMORY(kerneVersion);
 
     ClearOsDistroInfo(&distro);
     ClearOsDistroInfo(&os);
