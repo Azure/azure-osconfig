@@ -493,7 +493,8 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         if (false == matchFound)
         {
             status = ENOENT;
-            OsConfigLogError(log, "CheckFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in file '%s'", mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+            OsConfigLogError(log, "CheckFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in file '%s'", 
+                mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
 
             if (NULL != mountDirectory)
             {
@@ -594,6 +595,8 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
     const char tempFileNameTemplate[] = "/tmp/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
     const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
+    const char* mountDirectoryDefault = "/mnt/default";
+    const char* mountTypeDefault = "none";
 
     char* newLine = NULL;
     char* tempFileNameOne = NULL;
@@ -695,8 +698,8 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
                 // No relevant mount entries found, add the entire mount entry as complete as possible
                 FREE_MEMORY(newLine);
-                if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountFileName,
-                    mountDirectory ? mountDirectory : "none", mountType ? mountType : "none", desiredOption, 0, 0)))
+                if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountFileName, mountDirectory ? mountDirectory : mountDirectoryDefault,
+                    mountType ? mountType : mountTypeDefault, desiredOption, 0, 0)))
                 {
                     status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT;
                 }
