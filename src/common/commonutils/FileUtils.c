@@ -529,7 +529,6 @@ static int CopyMountFile(const char* source, const char* target, void* log)
     FILE* sourceHandle = NULL;
     FILE* targetHandle = NULL;
     struct mntent* mountStruct = NULL;
-    char* contents = NULL;
     int status = 0;
 
     if ((NULL == source) || (NULL == target))
@@ -576,10 +575,6 @@ static int CopyMountFile(const char* source, const char* target, void* log)
         fflush(targetHandle);
         endmntent(targetHandle);
         endmntent(sourceHandle);
-
-        contents = LoadStringFromFile("target", false, log);
-        OsConfigLogInfo(log, "CopyMountFile:\n'%s'\n", contents);
-        FREE_MEMORY(contents);
     }
     else
     {
@@ -639,13 +634,12 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                 {
                     matchFound = true;
 
-                    FREE_MEMORY(newLine);
-
                     if (NULL != hasmntopt(mountStruct, desiredOption))
                     {
                         OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' already set in file '%s' at line '%d'",
                             desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
 
+                        FREE_MEMORY(newLine);
                         newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                             mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
                     }
@@ -654,6 +648,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                         OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' missing from file '%s' at line %d",
                             desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
                         
+                        FREE_MEMORY(newLine);
                         newLine = FormatAllocateString(newLineAddNewTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                             mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno);
                     }
@@ -662,8 +657,11 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                     {
                         status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT;
                     }
-
-                    FREE_MEMORY(newLine);
+                    else
+                    {
+                        OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
+                        status = ENOMEM;
+                    }
                 }
 
                 lineNumber += 1;
@@ -673,22 +671,18 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
             {
                 OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in file '%s'", 
                     mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
-                
-                FREE_MEMORY(newLine);
 
-                // We need to add the new line in full in this case
-                if (NULL == (newLine = FormatAllocateString(newLineAsIsTemplate, mountFileName, 
+                FREE_MEMORY(newLine);
+                if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountFileName,
                     mountDirectory ? mountDirectory : "none", mountType ? mountType : "none", desiredOption, 0, 0)))
+                {
+                    status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT;
+                }
+                else
                 {
                     OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
                     status = ENOMEM;
                 }
-                else if (NULL != newLine)
-                {
-                    status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT;
-                }
-
-                FREE_MEMORY(newLine);
             }
 
             endmntent(mountFileHandle);
@@ -704,8 +698,20 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
         if (0 == status)
         {
+            /////////////////
+            char* contents = LoadStringFromFile(tempFileNameOne, false, log);
+            OsConfigLogInfo(log, "'%s':\n'%s'\n", tempFileNameOne, contents);
+            FREE_MEMORY(contents);
+            /////////////////
+
             if (0 == (status = CopyMountFile(tempFileNameOne, tempFileNameTwo, log)))
             {
+                /////////////////
+                contents = LoadStringFromFile(tempFileNameTwo, false, log);
+                OsConfigLogInfo(log, "'%s':\n'%s'\n", tempFileNameTwo, contents);
+                FREE_MEMORY(contents);
+                /////////////////
+            
                 rename(tempFileNameTwo, mountFileName);
             }
         }
@@ -714,6 +720,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
         remove(tempFileNameTwo);
     }
 
+    FREE_MEMORY(newLine);
     FREE_MEMORY(tempFileNameOne);
     FREE_MEMORY(tempFileNameTwo);
 
