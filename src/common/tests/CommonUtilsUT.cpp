@@ -1177,6 +1177,48 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
+TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
+{
+    const char* testFstab =
+        "# /etc/fstab: static file system information.\n"
+        "#\n"
+        "# Use 'blkid' to print the universally unique identifier for a\n"
+        "# device; this may be used with UUID= as a more robust way to name devices\n"
+        "# that works even if disks are added and removed. See fstab(5).\n"
+        "#\n"
+        "# <file system> <mount point>   <type>  <options>       <dump>  <pass>\n"
+        "# / was on /dev/sda1 during installation\n"
+        "Test2 /home/test/home               ext6    noauto,123            0                 0\n"
+        "/dev/scd1  /media/dvdrom0  udf,iso9660  user,noauto,noexec,utf8  0  0\n"
+        "UUID=test123 /test/media/home               ext6,iso9660    123,noexec            0                 0\n"
+        "UUID=blah /test/root               ext6    123            0       0\n"
+        "UUID=62fd6763-f758-4417-98be-0cf4d82d5c1b /               ext4    errors=remount-ro 0       0\n"
+        "# / was on /dev/sda5 during installation\n"
+        "        UUID = b65913ad - db15 - 4ba0 - 8c8b - d24f6fcb2825 / ext4    errors=remount-ro 0       0\n"
+        "# /boot/efi was on /dev/sda1 during installation\n"
+        "UUID=6BBC-4153/boot/efi       vfat    umask=0077,nosuid      0       1\n"
+        "/dev/scd0  /media/cdrom0  udf,iso9660  user,noauto,noexec,utf8,nosuid  0  0\n"
+        "/swapfile                                 none            swap    sw              0       0";
+
+    EXPECT_TRUE(CreateTestFile(m_path, testFstab));
+
+    EXPECT_EQ(EINVAL, SetFileSystemMountingOption(m_path, "none", "swap", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, SetFileSystemMountingOption(m_path, "none", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, SetFileSystemMountingOption(nullptr, "none", "swap", "sw", nullptr));
+
+    // The requested option is already present in all matching mounting points
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/media", "udf", "noexec", nullptr));
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, nullptr, "udf", "noexec", nullptr));
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/media", nullptr, "noexec", nullptr));
+
+    // The requested option is missing from one of the matching mounting points and needs to be added
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/media", "iso9660", "noauto", nullptr));
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, nullptr, "iso9660", "noauto", nullptr));
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/media", nullptr, "noauto", nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
 TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
 {
     EXPECT_EQ(0, GetNumberOfLinesInFile(nullptr));
