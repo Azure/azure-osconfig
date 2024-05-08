@@ -529,6 +529,7 @@ static int CopyMountFile(const char* source, const char* target, void* log)
     FILE* sourceHandle = NULL;
     FILE* targetHandle = NULL;
     struct mntent* mountStruct = NULL;
+    char* contents = NULL;
     int status = 0;
 
     if ((NULL == source) || (NULL == target))
@@ -560,12 +561,6 @@ static int CopyMountFile(const char* source, const char* target, void* log)
                         mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno, status);
                     break;
                 }
-                else
-                {
-                    OsConfigLogInfo(log, "CopyMountFile ('%s' to '%s'): added '%s %s %s %s %d %d'", source, target, mountStruct->mnt_fsname, 
-                        mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
-                    continue;
-                }
             }
 
             endmntent(sourceHandle);
@@ -590,6 +585,13 @@ static int CopyMountFile(const char* source, const char* target, void* log)
         }
 
         OsConfigLogError(log, "CopyMountFile: could not open target file '%s', setmntent() failed (%d)", target, status);
+    }
+    
+    if (0 == status)
+    {
+        contents = LoadStringFromFile("target", false, log);
+        OsConfigLogInfo(log, "CopyMountFile:\n'%s'\n",  contents);
+        FREE_MEMORY(contents);
     }
         
     return status;
