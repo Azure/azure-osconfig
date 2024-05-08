@@ -543,7 +543,7 @@ static int CopyMountFile(const char* source, const char* target, void* log)
         return EINVAL;
     }
         
-    if (NULL != (targetHandle = setmntent(target, "rw")))
+    if (NULL != (targetHandle = setmntent(target, "w")))
     {
         if (NULL != (sourceHandle = setmntent(source, "r")))
         {
@@ -556,7 +556,7 @@ static int CopyMountFile(const char* source, const char* target, void* log)
                         status = ENOENT;
                     }
                     
-                    OsConfigLogError(log, "CopyMountFile: addmntent() failed (%d)", status);
+                    OsConfigLogError(log, "CopyMountFile: addmntent() to '%s' failed (%d)", target, status);
                     break;
                 }
             }
