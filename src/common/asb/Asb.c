@@ -2612,7 +2612,7 @@ static int RemediateEnsureNodevOptionOnHomePartition(char* value, void* log)
 {
     UNUSED(value);
     UNUSED(log);
-    return SetFileSystemMountingOptions(g_etcFstab, "/home", NULL, g_nodev, log); //HERE
+    return SetFileSystemMountingOption(g_etcFstab, "/home", NULL, g_nodev, log); //HERE
 }
 
 static int RemediateEnsureNodevOptionOnTmpPartition(char* value, void* log)
