@@ -69,7 +69,7 @@ int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desi
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, void* log);
-int SetFileSystemMountingOptions(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log);
+int SetFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log);
 
 int IsPackageInstalled(const char* packageName, void* log);
 int CheckPackageInstalled(const char* packageName, char** reason, void* log);
