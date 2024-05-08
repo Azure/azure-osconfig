@@ -562,8 +562,6 @@ static int CopyMountFile(const char* source, const char* target, void* log)
                     break;
                 }
             }
-
-            endmntent(sourceHandle);
         }
         else
         {
@@ -575,7 +573,9 @@ static int CopyMountFile(const char* source, const char* target, void* log)
             OsConfigLogError(log, "CopyMountFile: could not open source file '%s', setmntent() failed (%d)", source, status);
         }
         
+        fflush(targetHandle);
         endmntent(targetHandle);
+        endmntent(sourceHandle);
     }
     else
     {
