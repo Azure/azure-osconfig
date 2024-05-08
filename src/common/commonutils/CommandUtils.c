@@ -275,7 +275,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         return ENOMEM;
     }
 
-    snprintf(commandLine, commandLineLength, wrappedCommand ? "%s%s%s%s" : "(%s)%s%s%s", command, commandSeparator, commandTextResultFile, g_commandTerminator);
+    snprintf(commandLine, commandLineLength, wrappedCommand ? "%s%s%s%s" : "(%s)%s%s%s", command, commandSeparator, commandTextResultFile, commandTerminator);
  
     // Execute the command with the requested timeout: error ETIME (62) means the command timed out
     status = SystemCommand(context, commandLine, timeoutSeconds, callback, log);
