@@ -102,7 +102,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
-    return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
+    return SaveToFile(fileName, FileExists(fileName) ? "a" : "w", payload, payloadSizeBytes, log);
 }
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
