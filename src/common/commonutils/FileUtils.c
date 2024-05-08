@@ -567,8 +567,15 @@ static int CopyMountFile(const char* source, const char* target, void* log)
                         status = ENOENT;
                     }
                     
-                    OsConfigLogError(log, "CopyMountFile: addmntent() to '%s' failed (%d)", target, status);
+                    OsConfigLogError(log, "CopyMountFile ('%s' to '%s'): failed adding '%s %s %s %s %d %d', addmntent() failed with %d", source, target, 
+                        mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno, status);
                     break;
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "CopyMountFile ('%s' to '%s'): added '%s %s %s %s %d %d'", source, target, mountStruct->mnt_fsname, 
+                        mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
+                    continue;
                 }
             }
 
