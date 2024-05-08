@@ -1209,13 +1209,6 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
         "/dev/scd1  /media/dvdrom0  udf,iso9660  user,noauto,noexec,utf8  0  0\n"
         "UUID=test123 /test/media/home               ext6,iso9660    123,noexec            0                 0\n"
         "UUID=blah /test/root               ext6    123            0       0\n"
-        "UUID=62fd6763-f758-4417-98be-0cf4d82d5c1b /               ext4    errors=remount-ro 0       0\n"
-        "# / was on /dev/sda5 during installation\n"
-        "        UUID = b65913ad - db15 - 4ba0 - 8c8b - d24f6fcb2825 / ext4    errors=remount-ro 0       0\n"
-        "# /boot/efi was on /dev/sda1 during installation\n"
-        "UUID=6BBC-4153/boot/efi       vfat    umask=0077,nosuid      0       1\n"
-        "/dev/scd0  /media/cdrom0  udf,iso9660  user,noauto,noexec,utf8,nosuid  0  0\n"
-        "/swapfile                                 none            swap    sw              0       0"
         "sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime 0 0\n"
         "proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0\n"
         "udev /dev devtmpfs rw,nosuid,relatime,size=8080048k,nr_inodes=2020012,mode=755,inode64 0 0\n"
@@ -1246,6 +1239,13 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
         "/dev/loop6 /snap/firefox/4173 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "/dev/loop7 /snap/gnome-3-38-2004/119 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "/dev/loop8 /snap/gnome-3-38-2004/143 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
+        "UUID=62fd6763-f758-4417-98be-0cf4d82d5c1b /               ext4    errors=remount-ro 0       0\n"
+        "# / was on /dev/sda5 during installation\n"
+        "        UUID = b65913ad - db15 - 4ba0 - 8c8b - d24f6fcb2825 / ext4    errors=remount-ro 0       0\n"
+        "# /boot/efi was on /dev/sda1 during installation\n"
+        "UUID=6BBC-4153/boot/efi       vfat    umask=0077,nosuid      0       1\n"
+        "/dev/scd0  /media/cdrom0  udf,iso9660  user,noauto,noexec,utf8,nosuid  0  0\n"
+        "/swapfile                                 none            swap    sw              0       0"
         "/dev/loop9 /snap/gnome-42-2204/172 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "/dev/loop10 /snap/gnome-42-2204/176 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "/dev/loop11 /snap/gtk-common-themes/1535 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
@@ -1291,6 +1291,7 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/test3", nullptr, "test-option3", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test3", nullptr, "test-option3", nullptr, nullptr));
 
+    // Other existing entries need to remain there unchanged
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test1", "testA", "test-option1", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "testB", "test-option2", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test3", nullptr, "test-option3", nullptr, nullptr));

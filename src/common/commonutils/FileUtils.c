@@ -639,6 +639,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                         OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' already set in file '%s' at line '%d'",
                             desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
 
+                        // The option is found here, copy this mount entry as-is
                         FREE_MEMORY(newLine);
                         newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                             mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
@@ -648,6 +649,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                         OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' missing from file '%s' at line %d",
                             desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
                         
+                        // The option is not found and is needed here, add the desired new option string when copying this mount entry
                         FREE_MEMORY(newLine);
                         newLine = FormatAllocateString(newLineAddNewTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                             mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno);
@@ -670,6 +672,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                 }
                 else
                 {
+                    // No relevant mount entries found, add the entire mount entry as complete as possible
                     FREE_MEMORY(newLine);
                     if (NULL != (newLine = FormatAllocateString(newLineAddNewTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                         mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno)))
@@ -716,20 +719,10 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
         if (0 == status)
         {
-            /////////////////
-            char* contents = LoadStringFromFile(tempFileNameOne, false, log);
-            OsConfigLogInfo(log, "'%s':\n'%s'\n", tempFileNameOne, contents);
-            FREE_MEMORY(contents);
-            /////////////////
-
+            // Copy from the manually built temp mount file one to the temp mount file two using the *mntent API to ensure correct format
             if (0 == (status = CopyMountFile(tempFileNameOne, tempFileNameTwo, log)))
             {
-                /////////////////
-                contents = LoadStringFromFile(tempFileNameTwo, false, log);
-                OsConfigLogInfo(log, "'%s':\n'%s'\n", tempFileNameTwo, contents);
-                FREE_MEMORY(contents);
-                /////////////////
-            
+                // When done assembling the final temp mount file two, move it in an atomic step to real mount file
                 rename(tempFileNameTwo, mountFileName);
             }
         }
