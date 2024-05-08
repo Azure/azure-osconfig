@@ -45,6 +45,7 @@ extern "C"
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log);
 
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
+bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
 
 void SetCommandLogging(bool commandLogging);
 bool IsCommandLoggingEnabled(void);

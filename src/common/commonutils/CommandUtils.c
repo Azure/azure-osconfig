@@ -223,9 +223,9 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
 
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, void* log)
 {
-    const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
-    const char g_commandSeparator[] = " > ";
-    const char g_commandTerminator[] = " 2>&1";
+    const char commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
+    const char commandSeparator[] = " > ";
+    const char commandTerminator[] = " 2>&1";
     
     int status = -1;
     FILE* resultsFile = NULL;
@@ -251,9 +251,9 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     wrappedCommand = (('(' == command[0]) || (')' == command[commandLineLength]));
 
     // Append a random number to the results file to prevent parallel commands overwriting each other results
-    snprintf(commandTextResultFile, sizeof(commandTextResultFile), g_commandTextResultFileTemplate, rand());
+    snprintf(commandTextResultFile, sizeof(commandTextResultFile), commandTextResultFileTemplate, rand());
 
-    commandLineLength += strlen(g_commandSeparator) + strlen(commandTextResultFile) + strlen(g_commandTerminator) + (wrappedCommand ? 0 : 2) + 1;
+    commandLineLength += strlen(commandSeparator) + strlen(commandTextResultFile) + strlen(commandTerminator) + (wrappedCommand ? 0 : 2) + 1;
 
     maximumCommandLine = (size_t)sysconf(_SC_ARG_MAX);
     if (commandLineLength > maximumCommandLine)

@@ -50,15 +50,15 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
     return string;
 }
 
-bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     FILE* file = NULL;
     int i = 0;
     bool result = true;
 
-    if (fileName && payload && (0 < payloadSizeBytes))
+    if (fileName && mode && payload && (0 < payloadSizeBytes))
     {
-        if (NULL != (file = fopen(fileName, "w")))
+        if (NULL != (file = fopen(fileName, mode)))
         {
             if (true == (result = LockFile(file, log)))
             {
@@ -67,7 +67,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
                     if (payload[i] != fputc(payload[i], file))
                     {
                         result = false;
-                        OsConfigLogError(log, "SavePayloadToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
+                        OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
                     }
                 }
 
@@ -75,24 +75,34 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
             }
             else
             {
-                OsConfigLogError(log, "SavePayloadToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
+                OsConfigLogError(log, "SaveToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
             }
-            
+
             fclose(file);
         }
         else
         {
             result = false;
-            OsConfigLogError(log, "SavePayloadToFile: cannot open for write '%s' (%d)", fileName, errno);
+            OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s'(%d)", fileName, mode, errno);
         }
     }
     else
     {
         result = false;
-        OsConfigLogError(log, "SavePayloadToFile: invalid arguments (%s, '%s', %d)", fileName, payload, payloadSizeBytes);
+        OsConfigLogError(log, "SaveToFile: invalid arguments ('%s', '%s', '%s', %d)", fileName, mode, payload, payloadSizeBytes);
     }
 
     return result;
+}
+
+bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+{
+    return SaveToFile(fileName, "w", payload, payloadSizeBytes, log);
+}
+
+bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+{
+    return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
 }
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
@@ -510,6 +520,190 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         OsConfigLogError(log, "CheckFileSystemMountingOption: could not open file '%s', setmntent() failed (%d)", mountFileName, status);
         OsConfigCaptureReason(reason, "Cannot access '%s', setmntent() failed (%d)", mountFileName, status);
     }
+
+    return status;
+}
+
+static int CopyMountFile(const char* source, const char* target, void* log)
+{
+    FILE* sourceHandle = NULL;
+    FILE* targetHandle = NULL;
+    struct mntent* mountStruct = NULL;
+    int status = 0;
+
+    if ((NULL == source) || ((NULL == target))
+    {
+        OsConfigLogError(log, "CopyMountFile called with invalid argument(s)");
+        return EINVAL;
+    }
+
+    if (!FileExists(source))
+    {
+        OsConfigLogInfo(log, "CopyMountFile: file '%s' not found", source);
+        return EINVAL;
+    }
+        
+    if (NULL != (targetHandle = setmntent(target, "rw")))
+    {
+        if (NULL != (sourceHandle = setmntent(source, "r")))
+        {
+            while (NULL != (mountStruct = getmntent(sourceHandle)))
+            {
+                if (0 != addmntent(targetHandle, mountStruct))
+                {
+                    if (0 == (status = errno))
+                    {
+                        status = ENOENT;
+                    }
+                    
+                    OsConfigLogError(log, "CopyMountFile: addmntent() failed (%d)", status);
+                    break;
+                }
+            }
+
+            endmntent(sourceHandle);
+        }
+        else
+        {
+            if (0 == (status = errno))
+            {
+                status = ENOENT;
+            }
+            
+            OsConfigLogError(log, "CopyMountFile: could not open source file '%s', setmntent() failed (%d)", source, status);
+        }
+        
+        endmntent(targetHandle);
+    }
+    else
+    {
+        if (0 == (status = errno))
+        {
+            status = ENOENT;
+        }
+
+        OsConfigLogError(log, "CopyMountFile: could not open target file '%s', setmntent() failed (%d)", target, status);
+    }
+
+    return status;
+}
+
+int SetFileSystemMountingOptions(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
+{
+    const char tempFileNameTemplate[] = "/tmp/~%s%d";
+    const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
+    const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
+
+    char* newLine = NULL;
+    char* tempFileNameOne = NULL;
+    char* tempFileNameTwo = NULL;
+    FILE* mountFileHandle = NULL;
+    struct mntent* mountStruct = NULL;
+    bool matchFound = false;
+    int lineNumber = 0;
+    int status = 0;
+
+    if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
+    {
+        OsConfigLogError(log, "SetFileSystemMountingOption called with invalid argument(s)");
+        return EINVAL;
+    }
+
+    if (!FileExists(mountFileName))
+    {
+        OsConfigLogInfo(log, "SetFileSystemMountingOption: file '%s' not found, nothing to set", mountFileName);
+        return 0;
+    }
+
+    if ((NULL == (tempFileNameOne = FormatAllocateString(tempFileNameTemplate, mountFileName, 1))) ||
+        (NULL == (tempFileNameTwo = FormatAllocateString(tempFileNameTemplate, mountFileName, 2))))
+    {
+        OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
+        status = ENOMEM;
+    }
+
+    if (0 == status)
+    {
+        if (NULL != (mountFileHandle = setmntent(mountFileName, "r")))
+        {
+            while (NULL != (mountStruct = getmntent(mountFileHandle)))
+            {
+                if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
+                    ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
+                {
+                    matchFound = true;
+
+                    FREE_MEMORY(newLine);
+
+                    if (NULL != hasmntopt(mountStruct, desiredOption))
+                    {
+                        OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' already set in file '%s' at line '%d'",
+                            desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+
+                        newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
+                            mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
+                    }
+                    else
+                    {
+                        OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' missing from file '%s' at line %d",
+                            desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+                        
+                        newLine = FormatAllocateString(newLineAddNewTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
+                            mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno);
+                    }
+
+                    if (NULL != newLine)
+                    {
+                        status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT;
+                    }
+                }
+
+                lineNumber += 1;
+            }
+
+            if (false == matchFound)
+            {
+                OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in file '%s'", 
+                    mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+                
+                // We need to add the new line in full in this case
+                if (NULL == (newLine = FormatAllocateString(newLineAsIsTemplate, mountFileName, 
+                    mountDirectory ? mountDirectory : "none", mountType ? mountType : "none", desiredOption, 0, 0)))
+                {
+                    OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
+                    status = ENOMEM;
+                }
+                else if (NULL != newLine)
+                {
+                    status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT;
+                }
+            }
+
+            endmntent(mountFileHandle);
+        }
+        else
+        {
+            if (0 == (status = errno))
+            {
+                status = ENOENT;
+            }
+            OsConfigLogError(log, "SetFileSystemMountingOption: could not open file '%s', setmntent() failed (%d)", mountFileName, status);
+        }
+
+        if (0 == status)
+        {
+            if (0 == (status = CopyMountFile(tempFileNameOne, tempFileNameTwo, log)))
+            {
+                rename(tempFileNameTwo, mountFileName);
+            }
+        }
+
+        remove(tempFileNameOne);
+        remove(tempFileNameTwo);
+    }
+
+    FREE_MEMORY(tempFileNameOne);
+    FREE_MEMORY(tempFileNameTwo);
 
     return status;
 }
