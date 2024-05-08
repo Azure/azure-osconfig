@@ -465,8 +465,8 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
                 else
                 {
                     status = ENOENT;
-                    OsConfigLogError(log, "CheckFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' missing from file '%s' at line %d",
-                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+                    OsConfigLogError(log, "CheckFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' missing from file '%s' at line %d (existing options: '%s')",
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber, mountStruct->mnt_opts);
                     
                     if (NULL != mountDirectory)
                     {
