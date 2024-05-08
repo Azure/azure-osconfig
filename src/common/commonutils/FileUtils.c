@@ -672,10 +672,10 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                 }
                 else
                 {
-                    // No relevant mount entries found, add the entire mount entry as complete as possible
+                    // No match for this mount entry, copy it as-is
                     FREE_MEMORY(newLine);
-                    if (NULL != (newLine = FormatAllocateString(newLineAddNewTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
-                        mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno)))
+                    if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
+                        mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno)))
                     {
                         if (0 != (status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                         {
@@ -693,6 +693,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                 OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in file '%s'", 
                     mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
 
+                // No relevant mount entries found, add the entire mount entry as complete as possible
                 FREE_MEMORY(newLine);
                 if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountFileName,
                     mountDirectory ? mountDirectory : "none", mountType ? mountType : "none", desiredOption, 0, 0)))
