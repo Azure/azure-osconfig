@@ -655,12 +655,30 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
                     if (NULL != newLine)
                     {
-                        status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT;
+                        if (0 != (status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                        {
+                            OsConfigLogError(log, "SetFileSystemMountingOption: failed collecting entries from '%s'", mountFileName);
+                            break;
+                        }
                     }
                     else
                     {
                         OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
                         status = ENOMEM;
+                        break;
+                    }
+                }
+                else
+                {
+                    FREE_MEMORY(newLine);
+                    if (NULL != (newLine = FormatAllocateString(newLineAddNewTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
+                        mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno)))
+                    {
+                        if (0 != (status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                        {
+                            OsConfigLogError(log, "SetFileSystemMountingOption: failed copying existing entries from '%s'", mountFileName);
+                            break;
+                        }
                     }
                 }
 
