@@ -576,6 +576,10 @@ static int CopyMountFile(const char* source, const char* target, void* log)
         fflush(targetHandle);
         endmntent(targetHandle);
         endmntent(sourceHandle);
+
+        contents = LoadStringFromFile("target", false, log);
+        OsConfigLogInfo(log, "CopyMountFile:\n'%s'\n", contents);
+        FREE_MEMORY(contents);
     }
     else
     {
@@ -585,13 +589,6 @@ static int CopyMountFile(const char* source, const char* target, void* log)
         }
 
         OsConfigLogError(log, "CopyMountFile: could not open target file '%s', setmntent() failed (%d)", target, status);
-    }
-    
-    if (0 == status)
-    {
-        contents = LoadStringFromFile("target", false, log);
-        OsConfigLogInfo(log, "CopyMountFile:\n'%s'\n",  contents);
-        FREE_MEMORY(contents);
     }
         
     return status;
@@ -665,6 +662,8 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                     {
                         status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT;
                     }
+
+                    FREE_MEMORY(newLine);
                 }
 
                 lineNumber += 1;
@@ -675,6 +674,8 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                 OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in file '%s'", 
                     mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
                 
+                FREE_MEMORY(newLine);
+
                 // We need to add the new line in full in this case
                 if (NULL == (newLine = FormatAllocateString(newLineAsIsTemplate, mountFileName, 
                     mountDirectory ? mountDirectory : "none", mountType ? mountType : "none", desiredOption, 0, 0)))
@@ -686,6 +687,8 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                 {
                     status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT;
                 }
+
+                FREE_MEMORY(newLine);
             }
 
             endmntent(mountFileHandle);
