@@ -1258,15 +1258,15 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/media", "udf", "noexec", nullptr));
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, nullptr, "udf", "noexec", nullptr));
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/media", nullptr, "noexec", nullptr));
-    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/dev/loop3", "/snap/core22/1122", "ro,nodev,relatime,errors=continue,threads=single", nullptr));
-    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "nsfs", "/run/snapd/ns/snapd-desktop-integration.mnt", "rw", nullptr));
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/dev/loop3", nullptr, "ro,nodev,relatime,errors=continue,threads=single", nullptr));
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "ramfs", nullptr, "ro,nosuid,nodev,noexec,relatime,mode=700", nullptr));
 
     // The requested option is missing from one of the matching mounting points and needs to be added
     EXPECT_NE(0, CheckFileSystemMountingOption(m_path, "/test1", "testA", "test-option1", nullptr, nullptr));
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/test1", "testA", "test-option1", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test1", "testA", "test-option1", nullptr, nullptr));
     
-    /*EXPECT_NE(0, CheckFileSystemMountingOption(m_path, nullptr, "testB", "test-option2", nullptr, nullptr));
+    EXPECT_NE(0, CheckFileSystemMountingOption(m_path, nullptr, "testB", "test-option2", nullptr, nullptr));
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, nullptr, "testB", "test-option2", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "testB", "test-option2", nullptr, nullptr));
     
@@ -1281,7 +1281,7 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "ext6", "123", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", nullptr, "123", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test/root", nullptr, "123", nullptr, nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/root", nullptr, "123", nullptr, nullptr));*/
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/root", nullptr, "123", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }

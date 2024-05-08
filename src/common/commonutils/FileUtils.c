@@ -102,18 +102,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
-    bool status = false;
-    
-    if (true == (status = SaveToFile(fileName, FileExists(fileName) ? "a" : "w", payload, payloadSizeBytes, log)))
-    {
-        OsConfigLogInfo(log, "AppendToFile: appended to file '%s' line '%s'", fileName, payload);
-    }
-    else
-    {
-        OsConfigLogError(log, "AppendToFile: failed to append to file '%s' line '%s'", fileName, payload);
-    }
-    
-    return status;
+    return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
 }
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
