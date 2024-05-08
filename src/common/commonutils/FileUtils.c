@@ -531,7 +531,7 @@ static int CopyMountFile(const char* source, const char* target, void* log)
     struct mntent* mountStruct = NULL;
     int status = 0;
 
-    if ((NULL == source) || ((NULL == target))
+    if ((NULL == source) || (NULL == target))
     {
         OsConfigLogError(log, "CopyMountFile called with invalid argument(s)");
         return EINVAL;
