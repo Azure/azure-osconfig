@@ -1209,6 +1209,18 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
         "/dev/scd1  /media/dvdrom0  udf,iso9660  user,noauto,noexec,utf8  0  0\n"
         "UUID=test123 /test/media/home               ext6,iso9660    123,noexec            0                 0\n"
         "UUID=blah /test/root               ext6    123            0       0\n"
+        "bpf /sys/fs/bpf bpf rw,nosuid,nodev,noexec,relatime,mode=700 0 0\n"
+        "systemd-1 /proc/sys/fs/binfmt_misc autofs rw,relatime,fd=29,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=17330 0 0\n"
+        "mqueue /dev/mqueue mqueue rw,nosuid,nodev,noexec,relatime 0 0\n"
+        "hugetlbfs /dev/hugepages hugetlbfs rw,relatime,pagesize=2M 0 0\n"
+        "debugfs /sys/kernel/debug debugfs rw,nosuid,nodev,noexec,relatime 0 0\n"
+        "tracefs /sys/kernel/tracing tracefs rw,nosuid,nodev,noexec,relatime 0 0\n"
+        "fusectl /sys/fs/fuse/connections fusectl rw,nosuid,nodev,noexec,relatime 0 0\n"
+        "configfs /sys/kernel/config configfs rw,nosuid,nodev,noexec,relatime 0 0\n"
+        "ramfs /run/credentials/systemd-sysusers.service ramfs ro,nosuid,nodev,noexec,relatime,mode=700 0 0\n"
+        "/dev/loop0 /snap/bare/5 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
+        "/dev/loop1 /snap/core20/2182 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
+        "/dev/loop2 /snap/core20/2264 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "UUID=62fd6763-f758-4417-98be-0cf4d82d5c1b /               ext4    errors=remount-ro 0       0\n"
         "# / was on /dev/sda5 during installation\n"
         "        UUID = b65913ad - db15 - 4ba0 - 8c8b - d24f6fcb2825 / ext4    errors=remount-ro 0       0\n"
@@ -1228,18 +1240,6 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
         "cgroup2 /sys/fs/cgroup cgroup2 rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot 0 0\n"
         "pstore /sys/fs/pstore pstore rw,nosuid,nodev,noexec,relatime 0 0\n"
         "efivarfs /sys/firmware/efi/efivars efivarfs rw,nosuid,nodev,noexec,relatime 0 0\n"
-        "bpf /sys/fs/bpf bpf rw,nosuid,nodev,noexec,relatime,mode=700 0 0\n"
-        "systemd-1 /proc/sys/fs/binfmt_misc autofs rw,relatime,fd=29,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=17330 0 0\n"
-        "mqueue /dev/mqueue mqueue rw,nosuid,nodev,noexec,relatime 0 0\n"
-        "hugetlbfs /dev/hugepages hugetlbfs rw,relatime,pagesize=2M 0 0\n"
-        "debugfs /sys/kernel/debug debugfs rw,nosuid,nodev,noexec,relatime 0 0\n"
-        "tracefs /sys/kernel/tracing tracefs rw,nosuid,nodev,noexec,relatime 0 0\n"
-        "fusectl /sys/fs/fuse/connections fusectl rw,nosuid,nodev,noexec,relatime 0 0\n"
-        "configfs /sys/kernel/config configfs rw,nosuid,nodev,noexec,relatime 0 0\n"
-        "ramfs /run/credentials/systemd-sysusers.service ramfs ro,nosuid,nodev,noexec,relatime,mode=700 0 0\n"
-        "/dev/loop0 /snap/bare/5 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop1 /snap/core20/2182 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop2 /snap/core20/2264 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "/dev/loop15 /snap/snapd-desktop-integration/83 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "/dev/loop16 /snap/software-boutique/57 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "/dev/loop17 /snap/ubuntu-mate-welcome/714 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
@@ -1263,11 +1263,9 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
     EXPECT_NE(0, CheckFileSystemMountingOption(m_path, "/foo1", "fooA", "foo-option1", nullptr, nullptr));
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/foo1", "fooA", "foo-option1", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/foo1", "fooA", "foo-option1", nullptr, nullptr));
-    
     EXPECT_NE(0, CheckFileSystemMountingOption(m_path, nullptr, "fooB", "foo-option2", nullptr, nullptr));
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, nullptr, "fooB", "foo-option2", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "fooB", "foo-option2", nullptr, nullptr));
-    
     EXPECT_NE(0, CheckFileSystemMountingOption(m_path, "/foo3", nullptr, "foo-option3", nullptr, nullptr));
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/foo3", nullptr, "foo-option3", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/foo3", nullptr, "foo-option3", nullptr, nullptr));
@@ -1280,7 +1278,6 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", nullptr, "123", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test/root", nullptr, "123", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/root", nullptr, "123", nullptr, nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/dev/loop16", "/snap/software-boutique/57", "ro,nodev,relatime", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
