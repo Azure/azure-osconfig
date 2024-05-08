@@ -1212,9 +1212,26 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/media", nullptr, "noexec", nullptr));
 
     // The requested option is missing from one of the matching mounting points and needs to be added
+    EXPECT_NE(0, CheckFileSystemMountingOption(m_path, "/test1", "testA", "test-option1", nullptr, nullptr));
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/test1", "testA", "test-option1", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test1", "testA", "test-option1", nullptr, nullptr));
+    
+    EXPECT_NE(0, CheckFileSystemMountingOption(m_path, nullptr, "testB", "test-option2", nullptr, nullptr));
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, nullptr, "testB", "test-option2", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "testB", "test-option2", nullptr, nullptr));
+    
+    EXPECT_NE(0, CheckFileSystemMountingOption(m_path, "/test3", nullptr, "test-option3", nullptr, nullptr));
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/test3", nullptr, "test-option3", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test3", nullptr, "test-option3", nullptr, nullptr));
+
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test1", "testA", "test-option1", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "testB", "test-option2", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test3", nullptr, "test-option3", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", "ext6", "123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "ext6", "123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", nullptr, "123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test/root", nullptr, "123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/root", nullptr, "123", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
