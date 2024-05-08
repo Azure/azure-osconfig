@@ -1240,30 +1240,11 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
         "/dev/loop0 /snap/bare/5 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "/dev/loop1 /snap/core20/2182 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "/dev/loop2 /snap/core20/2264 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop3 /snap/core22/1122 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop4 /snap/core22/1380 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop5 /snap/firefox/4090 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop6 /snap/firefox/4173 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop7 /snap/gnome-3-38-2004/119 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop8 /snap/gnome-3-38-2004/143 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop9 /snap/gnome-42-2204/172 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop10 /snap/gnome-42-2204/176 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop11 /snap/gtk-common-themes/1535 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop12 /snap/snapd/21184 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop13 /snap/snapd/21465 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop14 /snap/snapd-desktop-integration/157 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "/dev/loop15 /snap/snapd-desktop-integration/83 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "/dev/loop16 /snap/software-boutique/57 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
         "/dev/loop17 /snap/ubuntu-mate-welcome/714 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/loop18 /snap/ubuntu-mate-welcome/726 squashfs ro,nodev,relatime,errors=continue,threads=single 0 0\n"
-        "/dev/sda6 /var/snap/firefox/common/host-hunspell ext4 ro,noexec,noatime,errors=remount-ro 0 0\n"
-        "/dev/sda3 /boot/efi vfat rw,relatime,fmask=0077,dmask=0077,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro 0 0\n"
-        "binfmt_misc /proc/sys/fs/binfmt_misc binfmt_misc rw,nosuid,nodev,noexec,relatime 0 0\n"
-        "tmpfs /run/user/1000 tmpfs rw,nosuid,nodev,relatime,size=1629032k,nr_inodes=407258,mode=700,uid=1000,gid=1000,inode64 0 0\n"
-        "portal /run/user/1000/doc fuse.portal rw,nosuid,nodev,relatime,user_id=1000,group_id=1000 0 0\n"
         "tmpfs /run/snapd/ns tmpfs rw,nosuid,nodev,noexec,relatime,size=1629036k,mode=755,inode64 0 0\n"
-        "nsfs /run/snapd/ns/snapd-desktop-integration.mnt nsfs rw 0 0\n"
-        "gvfsd-fuse /run/user/1000/gvfs fuse.gvfsd-fuse rw,nosuid,nodev,relatime,user_id=1000,group_id=1000 0 0\n";
+        "nsfs /run/snapd/ns/snapd-desktop-integration.mnt nsfs rw 0 0\n";
   
     EXPECT_TRUE(CreateTestFile(m_path, testTab));
 
