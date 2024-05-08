@@ -1990,3 +1990,20 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(-333, integers[2]);
     FREE_MEMORY(integers);
 }
+
+TEST_F(CommonUtilsTest, AppendToFile)
+{
+    const char* original = "First line of text\n";
+    const char* added = "Second line of text\nAnd third line of text";
+    const char* complete = "First line of text\nSecond line of text\nAnd third line of text";
+
+    EXPECT_TRUE(SavePayloadToFile(m_path, original, strlen(original), nullptr));
+    EXPECT_STREQ(original, LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_TRUE(AppendToFile(m_path, added, strlen(added), nullptr));
+    EXPECT_STREQ(complete, LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+
+    EXPECT_TRUE(AppendToFile(m_path, original, strlen(original), nullptr));
+    EXPECT_STREQ(original, LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+}
