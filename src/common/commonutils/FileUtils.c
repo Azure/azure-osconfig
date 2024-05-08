@@ -590,7 +590,7 @@ static int CopyMountFile(const char* source, const char* target, void* log)
 
 int SetFileSystemMountingOptions(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
 {
-    const char tempFileNameTemplate[] = "/tmp/~%s%d";
+    const char tempFileNameTemplate[] = "/tmp/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
     const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
 
@@ -615,8 +615,8 @@ int SetFileSystemMountingOptions(const char* mountFileName, const char* mountDir
         return 0;
     }
 
-    if ((NULL == (tempFileNameOne = FormatAllocateString(tempFileNameTemplate, mountFileName, 1))) ||
-        (NULL == (tempFileNameTwo = FormatAllocateString(tempFileNameTemplate, mountFileName, 2))))
+    if ((NULL == (tempFileNameOne = FormatAllocateString(tempFileNameTemplate, 1))) ||
+        (NULL == (tempFileNameTwo = FormatAllocateString(tempFileNameTemplate, 2))))
     {
         OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
         status = ENOMEM;
