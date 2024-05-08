@@ -102,7 +102,18 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
-    return SaveToFile(fileName, FileExists(fileName) ? "a" : "w", payload, payloadSizeBytes, log);
+    bool status = false;
+    
+    if (true == (status = SaveToFile(fileName, FileExists(fileName) ? "a" : "w", payload, payloadSizeBytes, log)))
+    {
+        OsConfigLogInfo(log, "AppendToFile: appended to file '%s' line '%s'", fileName, payload);
+    }
+    else
+    {
+        OsConfigLogError(log, "AppendToFile: failed to append to file '%s' line '%s'", fileName, payload);
+    }
+    
+    return status;
 }
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
@@ -584,7 +595,7 @@ static int CopyMountFile(const char* source, const char* target, void* log)
 
         OsConfigLogError(log, "CopyMountFile: could not open target file '%s', setmntent() failed (%d)", target, status);
     }
-
+        
     return status;
 }
 
