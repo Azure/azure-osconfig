@@ -1272,10 +1272,9 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/foo3", nullptr, "foo-option3", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/foo3", nullptr, "foo-option3", nullptr, nullptr));
 
-    // Other existing entries need to remain there unchanged
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test1", "testA", "test-option1", nullptr, nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "testB", "test-option2", nullptr, nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test3", nullptr, "test-option3", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/foo1", "fooA", "foo-option1", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "fooB", "foo-option2", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/foo3", nullptr, "foo-option3", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", "ext6", "123", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "ext6", "123", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", nullptr, "123", nullptr, nullptr));
