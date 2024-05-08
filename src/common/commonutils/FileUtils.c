@@ -588,7 +588,7 @@ static int CopyMountFile(const char* source, const char* target, void* log)
     return status;
 }
 
-int SetFileSystemMountingOptions(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
+int SetFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
 {
     const char tempFileNameTemplate[] = "/tmp/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
