@@ -1212,9 +1212,9 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
     EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/media", nullptr, "noexec", nullptr));
 
     // The requested option is missing from one of the matching mounting points and needs to be added
-    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/media", "iso9660", "noauto", nullptr));
-    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, nullptr, "iso9660", "noauto", nullptr));
-    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/media", nullptr, "noauto", nullptr));
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/test1", "testA", "test-option1", nullptr));
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, nullptr, "testB", "test-option2", nullptr));
+    EXPECT_EQ(0, SetFileSystemMountingOption(m_path, "/test3", nullptr, "test-option3", nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
