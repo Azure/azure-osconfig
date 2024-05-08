@@ -1300,7 +1300,7 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", nullptr, "123", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test/root", nullptr, "123", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/root", nullptr, "123", nullptr, nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "loop16", nullptr, "ro,nodev,relatime", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/dev/loop16", nullptr, "ro,nodev,relatime", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
