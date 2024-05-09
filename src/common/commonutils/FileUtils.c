@@ -672,11 +672,11 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
     {
         if (NULL != (fsMountHandle = setmntent(fsMountTable, "r")))
         {
+            OsConfigLogInfo(log, "SetFileSystemMountingOption: looking for entries with mount directory '%s' or mount type '%s' in '%s'",
+                mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable);
+
             while (NULL != (mountStruct = getmntent(fsMountHandle)))
             {
-                OsConfigLogInfo(log, "SetFileSystemMountingOption: looking for entries with mount directory '%s' or mount type '%s' in '%s'",
-                    mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable);
-
                 if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
                     ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
                 {
@@ -749,12 +749,11 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     if (NULL != (mountHandle = setmntent(mountTable, "r")))
                     {
                         lineNumber = 0;
-                        
+                        OsConfigLogInfo(log, "SetFileSystemMountingOption: looking for entries with mount directory '%s' or mount type '%s' in '%s'",
+                            mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable);
+
                         while (NULL != (mountStruct = getmntent(mountHandle)))
                         {
-                            OsConfigLogInfo(log, "SetFileSystemMountingOption: looking for entries with mount directory '%s' or mount type '%s' in '%s'",
-                                mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable);
-
                             if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
                                 ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
                             {
