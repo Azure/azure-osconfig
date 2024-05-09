@@ -740,8 +740,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
             if (false == matchFound)
             {
-                OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in '%s', looking at '%s' next",
-                    mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, mountTable);
+                OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in '%s'",
+                    mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable);
 
                 // No relevant mount entries found in /etc/fstab, try to find and copy entries from /etc/tab if there are any matching
                 if (FileExists(mountTable))
@@ -771,7 +771,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                                 }
                                 else
                                 {
-                                    OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' found missing from '%s' at line %d (to be added)",
+                                    OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' found missing from '%s' at line %d",
                                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable, lineNumber);
 
                                     // The option is not found and is needed for this entry, add the needed option when copying this mount entry
@@ -814,6 +814,9 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
             if (false == matchFound)
             {
+                OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in '%s'",
+                    mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable);
+
                 // Entry not found in either /etc/fstab or /etc/mtab, construct the entry from what's available
                 FREE_MEMORY(newLine);
                 if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountDirectoryDefault, mountDirectory ? mountDirectory : mountDirectoryDefault,
