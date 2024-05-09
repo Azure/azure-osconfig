@@ -631,8 +631,8 @@ static int CopyMountFile(const char* source, const char* target, void* log)
 // TODO: once /etc/fstab entries are changed, remount or mount
 int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
 {
-    const char* fsMountTable = "/ets/fstab";
-    const char* mountTable = "/ets/mtab";
+    const char* fsMountTable = "/etc/fstab";
+    const char* mountTable = "/etc/mtab";
     const char tempFileNameTemplate[] = "/tmp/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
     const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
