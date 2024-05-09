@@ -478,6 +478,7 @@ static const char* g_etcProfile = "/etc/profile";
 static const char* g_etcRsyslogConf = "/etc/rsyslog.conf";
 static const char* g_etcSyslogNgSyslogNgConf = "/etc/syslog-ng/syslog-ng.conf";
 
+static const char* g_home = "/home";
 static const char* g_devShm = "/dev/shm";
 static const char* g_tmp = "/tmp";
 static const char* g_varTmp = "/var/tmp";
@@ -828,11 +829,10 @@ static char* AuditEnsureKernelSupportForCpuNx(void* log)
 
 static char* AuditEnsureNodevOptionOnHomePartition(void* log)
 {
-    const char* home = "/home";
     char* reason = NULL;
-    if (0 != CheckFileSystemMountingOption(g_etcFstab, home, NULL, g_nodev, &reason, log))
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log))
     {
-        CheckFileSystemMountingOption(g_etcMtab, home, NULL, g_nodev, &reason, log); 
+        CheckFileSystemMountingOption(g_etcMtab, g_home, NULL, g_nodev, &reason, log); 
     }
     return reason;
 }
@@ -2620,7 +2620,7 @@ static int RemediateEnsureKernelSupportForCpuNx(char* value, void* log)
 static int RemediateEnsureNodevOptionOnHomePartition(char* value, void* log)
 {
     UNUSED(value);
-    return SetFileSystemMountingOption("/home", NULL, g_nodev, log);
+    return SetFileSystemMountingOption(g_home, NULL, g_nodev, log);
 }
 
 static int RemediateEnsureNodevOptionOnTmpPartition(char* value, void* log)
