@@ -157,7 +157,8 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         status = EINVAL;
     }
     
-    OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
+    OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, 
+        payloadSizeBytes, payload ? payload : "<none>", payloadSizeBytes, status);
 
     return status;
 }

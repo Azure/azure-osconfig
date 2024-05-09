@@ -674,6 +674,9 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
         {
             while (NULL != (mountStruct = getmntent(fsMountHandle)))
             {
+                OsConfigLogInfo(log, "SetFileSystemMountingOption: looking for entries with mount directory '%s' or mount type '%s' in '%s'",
+                    mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable);
+
                 if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
                     ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
                 {
@@ -737,8 +740,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
             if (false == matchFound)
             {
-                OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in '%s'",
-                    mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable);
+                OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in '%s', looking at '%s' next",
+                    mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, mountTable);
 
                 // No relevant mount entries found in /etc/fstab, try to find and copy entries from /etc/tab if there are any matching
                 if (FileExists(mountTable))
@@ -749,6 +752,9 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                         
                         while (NULL != (mountStruct = getmntent(mountHandle)))
                         {
+                            OsConfigLogInfo(log, "SetFileSystemMountingOption: looking for entries with mount directory '%s' or mount type '%s' in '%s'",
+                                mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable);
+
                             if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
                                 ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
                             {
@@ -766,7 +772,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                                 }
                                 else
                                 {
-                                    OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' missing from '%s' at line %d",
+                                    OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' found missing from '%s' at line %d (to be added)",
                                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable, lineNumber);
 
                                     // The option is not found and is needed for this entry, add the needed option when copying this mount entry
