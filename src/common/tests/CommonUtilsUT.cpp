@@ -104,15 +104,40 @@ TEST_F(CommonUtilsTest, AppendToFile)
     const char* added = "Second line of text\nAnd third line of text";
     const char* complete = "First line of text\nSecond line of text\nAnd third line of text";
 
+    char* contents = NULL;
+
     EXPECT_TRUE(SavePayloadToFile(m_path, original, strlen(original), nullptr));
-    EXPECT_STREQ(original, LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_STREQ(original, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
     EXPECT_TRUE(AppendToFile(m_path, added, strlen(added), nullptr));
-    EXPECT_STREQ(complete, LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_STREQ(complete, contents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
+    FREE_MEMORY(contents);
 
     EXPECT_TRUE(AppendToFile(m_path, original, strlen(original), nullptr));
-    EXPECT_STREQ(original, LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_STREQ(original, contents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
+    FREE_MEMORY(contents);
+}
+
+TEST_F(CommonUtilsTest, MakeFileBackupCopy)
+{
+    char* fileCopyPath = NULL; 
+    char* contents = NULL;
+    
+    EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(original), nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    
+    EXPECT_TRUE(MakeFileBackupCopy(m_path, nullptr));
+    EXPECT_NE(nullptr, fileCopyPath = FormatAllocateString("%s.copy", m_path));
+    EXPECT_TRUE(FileExists(fileCopyPath));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(fileCopyPath, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(fileCopyPath));
+    EXPECT_TRUE(Cleanup(m_path));
+    FREE_MEMORY(fileCopyPath);
 }
 
 struct ExecuteCommandOptions
@@ -1273,6 +1298,7 @@ TEST_F(CommonUtilsTest, SetFileSystemMountingOption)
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/foo1", "fooA", "foo-option1", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "fooB", "foo-option2", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/foo3", nullptr, "foo-option3", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "/mnt/default", "foo-option3", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", "ext6", "123", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "ext6", "123", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", nullptr, "123", nullptr, nullptr));

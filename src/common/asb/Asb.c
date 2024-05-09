@@ -470,6 +470,7 @@ static const char* g_etcCronWeekly = "/etc/cron.weekly";
 static const char* g_etcMotd = "/etc/motd";
 static const char* g_etcEnvironment = "/etc/environment";
 static const char* g_etcFstab = "/etc/fstab";
+static const char* g_etcFstabCopy = "/etc/fstab.copy";
 static const char* g_etcMtab = "/etc/mtab";
 static const char* g_etcInetdConf = "/etc/inetd.conf";
 static const char* g_etcModProbeD = "/etc/modprobe.d";
@@ -603,6 +604,14 @@ void AsbInitialize(void* log)
         (NULL == (g_desiredEnsureUnnecessaryAccountsAreRemoved = DuplicateString(g_defaultEnsureUnnecessaryAccountsAreRemoved))))
     {
         OsConfigLogError(log, "AsbInitialize: failed to allocate memory");
+    }
+
+    if (false == FileExists(g_etcFstabCopy))
+    {
+        if (false == MakeFileBackupCopy(g_etcFstab, log))
+        {
+            OsConfigLogError(log, "AsbInitialize: failed to make a local backup copy of '%s'", g_etcFstab);
+        }
     }
     
     OsConfigLogInfo(log, "%s initialized", g_asbName);
@@ -2611,7 +2620,6 @@ static int RemediateEnsureKernelSupportForCpuNx(char* value, void* log)
 static int RemediateEnsureNodevOptionOnHomePartition(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
     return SetFileSystemMountingOption(g_etcFstab, "/home", NULL, g_nodev, log); //HERE
 }
 

@@ -105,6 +105,38 @@ bool AppendToFile(const char* fileName, const char* payload, const int payloadSi
     return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
 }
 
+bool MakeFileBackupCopy(const char* fileName, void* log)
+{
+    const char* backupTemplate = "%s.copy";
+    char* fileContents = NULL;
+    char* newFileName = NULL;
+    bool result = true;
+
+    if (FileExists(fileName))
+    {
+        if ((NULL != (newFileName = FormatAllocateString(backupTemplate, fileName))) && 
+            (NULL != (fileContents = LoadStringFromFile(fileName, false, log))))
+        {
+            status = SavePayloadToFile(fileName, fileContents, strlen(fileContents), log);
+        }
+        else
+        {
+            result = false;
+            OsConfigLogError(log, "MakeFileBackupCopy: failed to make a copy for backup of '%s'", fileName);
+        }
+    }
+    else
+    {
+        result = false;
+        OsConfigLogError(log, "MakeFileBackupCopy: invalid argument ('%s')", fileName);
+    }
+
+    FREE_MEMORY(fileContents);
+    FREE_MEMORY(newFileName);
+
+    return result;
+}
+
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
 {
     // S_ISUID (4000): Set user ID on execution
