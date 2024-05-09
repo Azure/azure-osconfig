@@ -470,6 +470,7 @@ static const char* g_etcCronWeekly = "/etc/cron.weekly";
 static const char* g_etcMotd = "/etc/motd";
 static const char* g_etcEnvironment = "/etc/environment";
 static const char* g_etcFstab = "/etc/fstab";
+static const char* g_etcFstabCopy = "/etc/fstab.copy";
 static const char* g_etcMtab = "/etc/mtab";
 static const char* g_etcInetdConf = "/etc/inetd.conf";
 static const char* g_etcModProbeD = "/etc/modprobe.d";
@@ -477,6 +478,8 @@ static const char* g_etcProfile = "/etc/profile";
 static const char* g_etcRsyslogConf = "/etc/rsyslog.conf";
 static const char* g_etcSyslogNgSyslogNgConf = "/etc/syslog-ng/syslog-ng.conf";
 
+static const char* g_home = "/home";
+static const char* g_devShm = "/dev/shm";
 static const char* g_tmp = "/tmp";
 static const char* g_varTmp = "/var/tmp";
 static const char* g_media = "/media/";
@@ -487,6 +490,7 @@ static const char* g_inetd = "inetd";
 static const char* g_inetUtilsInetd = "inetutils-inetd";
 static const char* g_xinetd = "xinetd";
 static const char* g_rshServer = "rsh-server";
+static const char* g_nfs = "nfs";
 static const char* g_nis = "nis";
 static const char* g_tftpd = "tftpd-hpa";
 static const char* g_readAheadFedora = "readahead-fedora";
@@ -603,6 +607,14 @@ void AsbInitialize(void* log)
         (NULL == (g_desiredEnsureUnnecessaryAccountsAreRemoved = DuplicateString(g_defaultEnsureUnnecessaryAccountsAreRemoved))))
     {
         OsConfigLogError(log, "AsbInitialize: failed to allocate memory");
+    }
+
+    if (false == FileExists(g_etcFstabCopy))
+    {
+        if (false == MakeFileBackupCopy(g_etcFstab, g_etcFstabCopy, log))
+        {
+            OsConfigLogError(log, "AsbInitialize: failed to make a local backup copy of '%s'", g_etcFstab);
+        }
     }
     
     OsConfigLogInfo(log, "%s initialized", g_asbName);
@@ -817,116 +829,91 @@ static char* AuditEnsureKernelSupportForCpuNx(void* log)
 
 static char* AuditEnsureNodevOptionOnHomePartition(void* log)
 {
-    const char* home = "/home";
     char* reason = NULL;
-    if (0 != CheckFileSystemMountingOption(g_etcFstab, home, NULL, g_nodev, &reason, log))
-    {
-        CheckFileSystemMountingOption(g_etcMtab, home, NULL, g_nodev, &reason, log); 
-    }
+    CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log);
+    CheckFileSystemMountingOption(g_etcMtab, g_home, NULL, g_nodev, &reason, log); 
     return reason;
 }
 
 static char* AuditEnsureNodevOptionOnTmpPartition(void* log)
 {
     char* reason = NULL;
-    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, log))
-    {
-        CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nodev, &reason, log);
-    }
+    CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nodev, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNodevOptionOnVarTmpPartition(void* log)
 {
     char* reason = NULL;
-    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, log))
-    {
-        CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nodev, &reason, log);
-    }
+    CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nodev, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNosuidOptionOnTmpPartition(void* log)
 {
     char* reason = NULL;
-    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, log))
-    {
-        CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nosuid, &reason, log);
-    }
+    CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nosuid, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNosuidOptionOnVarTmpPartition(void* log)
 {
     char* reason = NULL;
-    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, log))
-    {
-        CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nosuid, &reason, log);
-    }
+    CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nosuid, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNoexecOptionOnVarTmpPartition(void* log)
 {
     char* reason = NULL;
-    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, log))
-    {
-        CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_noexec, &reason, log);
-    }
+    CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_noexec, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNoexecOptionOnDevShmPartition(void* log)
 {
-    const char* devShm = "/dev/shm";
     char* reason = NULL;
-    if (0 != CheckFileSystemMountingOption(g_etcFstab, devShm, NULL, g_noexec, &reason, log))
-    {
-        CheckFileSystemMountingOption(g_etcMtab, devShm, NULL, g_noexec, &reason, log);
-    }
+    CheckFileSystemMountingOption(g_etcMtab, g_devShm, NULL, g_noexec, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(void* log)
 {
     char* reason = NULL;
-    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, log))
-    {
-        CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nodev, &reason, log);
-    }
+    CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nodev, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void* log)
 {
     char* reason = NULL;
-    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, log))
-    {
-        CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_noexec, &reason, log);
-    }
+    CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_noexec, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void* log)
 {
     char* reason = NULL;
-    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, log))
-    {
-        CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nosuid, &reason, log);
-    }
+    CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nosuid, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void* log)
 {
-    const char* nfs = "nfs";
     char* reason = NULL;
-    if ((0 != CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_noexec, &reason, log)) ||
-        (0 != CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, &reason, log)))
-    {
-        CheckFileSystemMountingOption(g_etcMtab, NULL, nfs, g_noexec, &reason, log);
-        CheckFileSystemMountingOption(g_etcMtab, NULL, nfs, g_nosuid, &reason, log);
-    }
+    CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_noexec, &reason, log);
+    CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_nosuid, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_noexec, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_nosuid, &reason, log);
     return reason;
 }
 
@@ -2611,78 +2598,68 @@ static int RemediateEnsureKernelSupportForCpuNx(char* value, void* log)
 static int RemediateEnsureNodevOptionOnHomePartition(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetFileSystemMountingOption(g_home, NULL, g_nodev, log);
 }
 
 static int RemediateEnsureNodevOptionOnTmpPartition(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetFileSystemMountingOption(g_tmp, NULL, g_nodev, log);
 }
 
 static int RemediateEnsureNodevOptionOnVarTmpPartition(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetFileSystemMountingOption(g_varTmp, NULL, g_nodev, log);
 }
 
 static int RemediateEnsureNosuidOptionOnTmpPartition(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetFileSystemMountingOption(g_tmp, NULL, g_nosuid, log);
 }
 
 static int RemediateEnsureNosuidOptionOnVarTmpPartition(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetFileSystemMountingOption(g_varTmp, NULL, g_nosuid, log);
 }
 
 static int RemediateEnsureNoexecOptionOnVarTmpPartition(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetFileSystemMountingOption(g_varTmp, NULL, g_noexec, log);
 }
 
 static int RemediateEnsureNoexecOptionOnDevShmPartition(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetFileSystemMountingOption(g_devShm, NULL, g_noexec, log);
 }
 
 static int RemediateEnsureNodevOptionEnabledForAllRemovableMedia(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetFileSystemMountingOption(g_media, NULL, g_nodev, log);
 }
 
 static int RemediateEnsureNoexecOptionEnabledForAllRemovableMedia(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetFileSystemMountingOption(g_media, NULL, g_noexec, log);
 }
 
 static int RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetFileSystemMountingOption(g_media, NULL, g_nosuid, log);
 }
 
 static int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == SetFileSystemMountingOption(g_nfs, NULL, g_nosuid, log)) &&
+        (0 == SetFileSystemMountingOption(g_nfs, NULL, g_noexec, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAllTelnetdPackagesUninstalled(char* value, void* log)

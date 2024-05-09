@@ -45,6 +45,7 @@ extern "C"
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log);
 
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
+bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
 
 void SetCommandLogging(bool commandLogging);
 bool IsCommandLoggingEnabled(void);
@@ -61,6 +62,8 @@ bool DirectoryExists(const char* directoryName);
 int CheckFileExists(const char* fileName, char** reason, void* log);
 int CheckFileNotFound(const char* fileName, char** reason, void* log);
 
+bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log);
+
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, void* log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 
@@ -68,6 +71,7 @@ int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desi
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, void* log);
+int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, void* log);
 
 int IsPackageInstalled(const char* packageName, void* log);
 int CheckPackageInstalled(const char* packageName, char** reason, void* log);

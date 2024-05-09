@@ -64,29 +64,37 @@ TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
 
 TEST_F(CommonUtilsTest, LoadStringFromFile)
 {
+    char* contents = NULL;
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, LoadStringWithEolFromFile)
 {
+    char* contents = NULL;
     EXPECT_TRUE(CreateTestFile(m_path, m_dataWithEol));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, SavePayloadToFile)
 {
+    char* contents = NULL;
     EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, SavePayloadWithEolToFile)
 {
+    char* contents = NULL;
     EXPECT_TRUE(SavePayloadToFile(m_path, m_dataWithEol, strlen(m_dataWithEol), nullptr));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -96,6 +104,46 @@ TEST_F(CommonUtilsTest, SavePayloadToFileInvalidArgument)
     EXPECT_FALSE(SavePayloadToFile(m_path, nullptr, sizeof(m_data), nullptr));
     EXPECT_FALSE(SavePayloadToFile(m_path, m_data, -1, nullptr));
     EXPECT_FALSE(SavePayloadToFile(m_path, m_data, 0, nullptr));
+}
+
+TEST_F(CommonUtilsTest, AppendToFile)
+{
+    const char* original = "First line of text\n";
+    const char* added = "Second line of text\nAnd third line of text";
+    const char* complete = "First line of text\nSecond line of text\nAnd third line of text";
+
+    char* contents = NULL;
+
+    EXPECT_TRUE(SavePayloadToFile(m_path, original, strlen(original), nullptr));
+    EXPECT_STREQ(original, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(AppendToFile(m_path, added, strlen(added), nullptr));
+    EXPECT_STREQ(complete, contents = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(AppendToFile(m_path, original, strlen(original), nullptr));
+    EXPECT_STREQ(original, contents = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    FREE_MEMORY(contents);
+}
+
+TEST_F(CommonUtilsTest, MakeFileBackupCopy)
+{
+    const char* fileCopyPath = "~test.test.copy";
+    char* contents = NULL;
+    
+    EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    
+    EXPECT_TRUE(MakeFileBackupCopy(m_path, fileCopyPath, nullptr));
+    EXPECT_TRUE(FileExists(fileCopyPath));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(fileCopyPath, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(fileCopyPath));
+    EXPECT_TRUE(Cleanup(m_path));
 }
 
 struct ExecuteCommandOptions
@@ -882,13 +930,15 @@ TEST_F(CommonUtilsTest, UrlEncodeDecode)
 TEST_F(CommonUtilsTest, LockUnlockFile)
 {
     FILE* testFile = nullptr;
+    char* contents = NULL;
 
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
     EXPECT_NE(nullptr, testFile = fopen(m_path, "r"));
     EXPECT_TRUE(LockFile(testFile, nullptr));
     EXPECT_EQ(nullptr, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(UnlockFile(testFile, nullptr));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
     fclose(testFile);
     EXPECT_TRUE(Cleanup(m_path));
 }
@@ -971,6 +1021,7 @@ struct TestHttpHeader
 TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
 {
     const char* testPath = "~socket.test";
+    char* contents = NULL;
     
     TestHttpHeader testHttpHeaders[] = {
         { "POST /foo/ HTTP/1.1\r\nblah blah\r\n\r\n\"", "foo", 404, 0 },
@@ -994,7 +1045,8 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
     for (i = 0; i < testHttpHeadersSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(testPath, testHttpHeaders[i].httpRequest));
-        EXPECT_STREQ(testHttpHeaders[i].httpRequest, LoadStringFromFile(testPath, false, nullptr));
+        EXPECT_STREQ(testHttpHeaders[i].httpRequest, contents = LoadStringFromFile(testPath, false, nullptr));
+        FREE_MEMORY(contents);
         EXPECT_NE(-1, fileDescriptor = open(testPath, O_RDONLY));
         EXPECT_EQ(testHttpHeaders[i].expectedHttpStatus, ReadHttpStatusFromSocket(fileDescriptor, nullptr));
         EXPECT_EQ(testHttpHeaders[i].expectedHttpContentLength, ReadHttpContentLengthFromSocket(fileDescriptor, nullptr));
@@ -1005,7 +1057,8 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
     for (i = 0; i < testHttpHeadersSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(testPath, testHttpHeaders[i].httpRequest));
-        EXPECT_STREQ(testHttpHeaders[i].httpRequest, LoadStringFromFile(testPath, false, nullptr));
+        EXPECT_STREQ(testHttpHeaders[i].httpRequest, contents = LoadStringFromFile(testPath, false, nullptr));
+        FREE_MEMORY(contents);
         EXPECT_NE(-1, fileDescriptor = open(testPath, O_RDONLY));
         if (NULL == testHttpHeaders[i].expectedUri)
         {
@@ -1154,8 +1207,10 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", "swap", "does_not_exist", nullptr, nullptr));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", nullptr, "this_neither", nullptr, nullptr));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "swap", "also_not_this", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "doesnotexist", nullptr, "doesnotexist", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "doesnotexist", "doesnotexist", nullptr, nullptr));
+    
+    // This directory and mounting point do not appear at all
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "doesnotexist", nullptr, "doesnotexist", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "doesnotexist", "doesnotexist", nullptr, nullptr));
 
     // The requested option is present in all matching mounting points
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media", "udf", "noexec", nullptr, nullptr));
