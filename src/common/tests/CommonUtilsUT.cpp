@@ -64,29 +64,37 @@ TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
 
 TEST_F(CommonUtilsTest, LoadStringFromFile)
 {
+    char* contents = NULL;
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, LoadStringWithEolFromFile)
 {
+    char* contents = NULL;
     EXPECT_TRUE(CreateTestFile(m_path, m_dataWithEol));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, SavePayloadToFile)
 {
+    char* contents = NULL;
     EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, SavePayloadWithEolToFile)
 {
+    char* contents = NULL;
     EXPECT_TRUE(SavePayloadToFile(m_path, m_dataWithEol, strlen(m_dataWithEol), nullptr));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -924,13 +932,15 @@ TEST_F(CommonUtilsTest, UrlEncodeDecode)
 TEST_F(CommonUtilsTest, LockUnlockFile)
 {
     FILE* testFile = nullptr;
+    char* contents = NULL;
 
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
     EXPECT_NE(nullptr, testFile = fopen(m_path, "r"));
     EXPECT_TRUE(LockFile(testFile, nullptr));
     EXPECT_EQ(nullptr, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(UnlockFile(testFile, nullptr));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
     fclose(testFile);
     EXPECT_TRUE(Cleanup(m_path));
 }
@@ -1013,6 +1023,7 @@ struct TestHttpHeader
 TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
 {
     const char* testPath = "~socket.test";
+    char* contents = NULL;
     
     TestHttpHeader testHttpHeaders[] = {
         { "POST /foo/ HTTP/1.1\r\nblah blah\r\n\r\n\"", "foo", 404, 0 },
@@ -1036,7 +1047,8 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
     for (i = 0; i < testHttpHeadersSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(testPath, testHttpHeaders[i].httpRequest));
-        EXPECT_STREQ(testHttpHeaders[i].httpRequest, LoadStringFromFile(testPath, false, nullptr));
+        EXPECT_STREQ(testHttpHeaders[i].httpRequest, contents = LoadStringFromFile(testPath, false, nullptr));
+        FREE_MEMORY(contents);
         EXPECT_NE(-1, fileDescriptor = open(testPath, O_RDONLY));
         EXPECT_EQ(testHttpHeaders[i].expectedHttpStatus, ReadHttpStatusFromSocket(fileDescriptor, nullptr));
         EXPECT_EQ(testHttpHeaders[i].expectedHttpContentLength, ReadHttpContentLengthFromSocket(fileDescriptor, nullptr));
@@ -1047,7 +1059,8 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
     for (i = 0; i < testHttpHeadersSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(testPath, testHttpHeaders[i].httpRequest));
-        EXPECT_STREQ(testHttpHeaders[i].httpRequest, LoadStringFromFile(testPath, false, nullptr));
+        EXPECT_STREQ(testHttpHeaders[i].httpRequest, contents = LoadStringFromFile(testPath, false, nullptr));
+        FREE_MEMORY(contents);
         EXPECT_NE(-1, fileDescriptor = open(testPath, O_RDONLY));
         if (NULL == testHttpHeaders[i].expectedUri)
         {
