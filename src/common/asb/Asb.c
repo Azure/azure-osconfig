@@ -478,6 +478,7 @@ static const char* g_etcProfile = "/etc/profile";
 static const char* g_etcRsyslogConf = "/etc/rsyslog.conf";
 static const char* g_etcSyslogNgSyslogNgConf = "/etc/syslog-ng/syslog-ng.conf";
 
+static const char* g_devShm = "/dev/shm";
 static const char* g_tmp = "/tmp";
 static const char* g_varTmp = "/var/tmp";
 static const char* g_media = "/media/";
@@ -488,6 +489,7 @@ static const char* g_inetd = "inetd";
 static const char* g_inetUtilsInetd = "inetutils-inetd";
 static const char* g_xinetd = "xinetd";
 static const char* g_rshServer = "rsh-server";
+static const char* g_nfs = "nfs";
 static const char* g_nis = "nis";
 static const char* g_tftpd = "tftpd-hpa";
 static const char* g_readAheadFedora = "readahead-fedora";
@@ -887,9 +889,8 @@ static char* AuditEnsureNoexecOptionOnVarTmpPartition(void* log)
 
 static char* AuditEnsureNoexecOptionOnDevShmPartition(void* log)
 {
-    const char* devShm = "/dev/shm";
     char* reason = NULL;
-    if (0 != CheckFileSystemMountingOption(g_etcFstab, devShm, NULL, g_noexec, &reason, log))
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, &reason, log))
     {
         CheckFileSystemMountingOption(g_etcMtab, devShm, NULL, g_noexec, &reason, log);
     }
@@ -928,13 +929,12 @@ static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void* log)
 
 static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void* log)
 {
-    const char* nfs = "nfs";
     char* reason = NULL;
-    if ((0 != CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_noexec, &reason, log)) ||
-        (0 != CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, &reason, log)))
+    if ((0 != CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_noexec, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_nosuid, &reason, log)))
     {
-        CheckFileSystemMountingOption(g_etcMtab, NULL, nfs, g_noexec, &reason, log);
-        CheckFileSystemMountingOption(g_etcMtab, NULL, nfs, g_nosuid, &reason, log);
+        CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_noexec, &reason, log);
+        CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_nosuid, &reason, log);
     }
     return reason;
 }
@@ -2656,7 +2656,7 @@ static int RemediateEnsureNoexecOptionOnVarTmpPartition(char* value, void* log)
 static int RemediateEnsureNoexecOptionOnDevShmPartition(char* value, void* log)
 {
     UNUSED(value);
-    return SetFileSystemMountingOption("/dev/shm", NULL, g_noexec, log);
+    return SetFileSystemMountingOption(g_devShm, NULL, g_noexec, log);
 }
 
 static int RemediateEnsureNodevOptionEnabledForAllRemovableMedia(char* value, void* log)
@@ -2680,8 +2680,8 @@ static int RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(char* value, v
 static int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == SetFileSystemMountingOption("nfs", NULL, g_nosuid, log)) && 
-        (0 == SetFileSystemMountingOption("nfs", NULL, g_noexec, log))) ? 0 : ENOENT;
+    return ((0 == SetFileSystemMountingOption(g_nfs, NULL, g_nosuid, log)) &&
+        (0 == SetFileSystemMountingOption(g_nfs, NULL, g_noexec, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAllTelnetdPackagesUninstalled(char* value, void* log)
