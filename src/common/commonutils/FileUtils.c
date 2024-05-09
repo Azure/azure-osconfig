@@ -105,30 +105,36 @@ bool AppendToFile(const char* fileName, const char* payload, const int payloadSi
     return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
 }
 
-bool MakeFileBackupCopy(const char* fileName, void* log)
+bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
 {
-    const char* backupTemplate = "%s.copy";
     char* fileContents = NULL;
     char* newFileName = NULL;
     bool result = true;
 
-    if (FileExists(fileName))
+    if (fileName && backupName)
     {
-        if ((NULL != (newFileName = FormatAllocateString(backupTemplate, fileName))) && 
-            (NULL != (fileContents = LoadStringFromFile(fileName, false, log))))
+        if (FileExists(fileName))
         {
-            result = SavePayloadToFile(fileName, fileContents, strlen(fileContents), log);
+            if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
+            {
+                result = SavePayloadToFile(backupName, fileContents, strlen(fileContents), log);
+            }
+            else
+            {
+                result = false;
+                OsConfigLogError(log, "MakeFileBackupCopy: failed to make a file copy of '%s'", fileName);
+            }
         }
         else
         {
             result = false;
-            OsConfigLogError(log, "MakeFileBackupCopy: failed to make a file copy to backup of '%s'", fileName);
+            OsConfigLogError(log, "MakeFileBackupCopy: file '%s' does not exist", fileName);
         }
     }
     else
     {
         result = false;
-        OsConfigLogError(log, "MakeFileBackupCopy: invalid argument ('%s')", fileName);
+        OsConfigLogError(log, "MakeFileBackupCopy: invalid arguments ('%s', '%s')", fileName);
     }
 
     FREE_MEMORY(fileContents);

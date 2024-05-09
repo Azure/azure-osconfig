@@ -608,7 +608,7 @@ void AsbInitialize(void* log)
 
     if (false == FileExists(g_etcFstabCopy))
     {
-        if (false == MakeFileBackupCopy(g_etcFstab, log))
+        if (false == MakeFileBackupCopy(g_etcFstab, g_etcFstabCopy, log))
         {
             OsConfigLogError(log, "AsbInitialize: failed to make a local backup copy of '%s'", g_etcFstab);
         }

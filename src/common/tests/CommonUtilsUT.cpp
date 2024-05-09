@@ -130,22 +130,20 @@ TEST_F(CommonUtilsTest, AppendToFile)
 
 TEST_F(CommonUtilsTest, MakeFileBackupCopy)
 {
-    char* fileCopyPath = NULL; 
+    const char* fileCopyPath = "~test.test.copy";
     char* contents = NULL;
     
     EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
     
-    EXPECT_TRUE(MakeFileBackupCopy(m_path, nullptr));
-    EXPECT_NE(nullptr, fileCopyPath = FormatAllocateString("%s.copy", m_path));
+    EXPECT_TRUE(MakeFileBackupCopy(m_path, fileCopyPath, nullptr));
     EXPECT_TRUE(FileExists(fileCopyPath));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(fileCopyPath, false, nullptr));
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(fileCopyPath));
     EXPECT_TRUE(Cleanup(m_path));
-    FREE_MEMORY(fileCopyPath);
 }
 
 struct ExecuteCommandOptions
