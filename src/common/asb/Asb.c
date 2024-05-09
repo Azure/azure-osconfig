@@ -892,7 +892,7 @@ static char* AuditEnsureNoexecOptionOnDevShmPartition(void* log)
     char* reason = NULL;
     if (0 != CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, &reason, log))
     {
-        CheckFileSystemMountingOption(g_etcMtab, devShm, NULL, g_noexec, &reason, log);
+        CheckFileSystemMountingOption(g_etcMtab, g_devShm, NULL, g_noexec, &reason, log);
     }
     return reason;
 }
