@@ -628,6 +628,9 @@ static int CopyMountFile(const char* source, const char* target, void* log)
     return status;
 }
 
+//TODO:  hard-code the Set version to target /etc/fstab (losing the unittest) and if no entries found 
+//       in /etc/fstab, then look to copy entries from /etc/mtab and add to those the desired options if missing
+//       Also once /etc/fstab entries are changed, remount or mount them
 int SetFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
 {
     const char tempFileNameTemplate[] = "/tmp/~xtab%d";
