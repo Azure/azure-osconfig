@@ -530,18 +530,18 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 
         if (false == matchFound)
         {
-            status = ENOENT;
+            status = 0;
             OsConfigLogError(log, "CheckFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in '%s'", 
                 mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
 
             if (NULL != mountDirectory)
             {
-                OsConfigCaptureReason(reason, "Found no entries about mount directory '%s' in '%s' to look for option '%s'", mountDirectory, mountFileName, desiredOption);
+                OsConfigCaptureSuccessReason(reason, "Found no entries about mount directory '%s' in '%s' to look for option '%s'", mountDirectory, mountFileName, desiredOption);
             }
 
             if (NULL != mountType)
             {
-                OsConfigCaptureReason(reason, "Found no entries about mount type '%s' in '%s' to look for option '%s'", mountType, mountFileName, desiredOption);
+                OsConfigCaptureSuccessReason(reason, "Found no entries about mount type '%s' in '%s' to look for option '%s'", mountType, mountFileName, desiredOption);
             }
         }
 
@@ -628,7 +628,6 @@ static int CopyMountFile(const char* source, const char* target, void* log)
     return status;
 }
 
-// TODO: once /etc/fstab entries are changed, remount or mount
 int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
 {
     const char* fsMountTable = "/etc/fstab";
@@ -818,7 +817,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable);
 
                 // Entry not found in either /etc/fstab or /etc/mtab, construct the entry from what's available
-                FREE_MEMORY(newLine);
+                /*FREE_MEMORY(newLine);
                 if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountDirectoryDefault, mountDirectory ? mountDirectory : mountDirectoryDefault,
                     mountType ? mountType : mountTypeDefault, desiredOption, 0, 0)))
                 {
@@ -828,7 +827,10 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 {
                     OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
                     status = ENOMEM;
-                }
+                }*/
+
+                OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in either '%s' or '%s', nothing to remediate",
+                    mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, mountTable);
             }
         }
         else
