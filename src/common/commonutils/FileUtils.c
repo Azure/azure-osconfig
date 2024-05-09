@@ -134,7 +134,7 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
     else
     {
         result = false;
-        OsConfigLogError(log, "MakeFileBackupCopy: invalid arguments ('%s', '%s')", fileName);
+        OsConfigLogError(log, "MakeFileBackupCopy: invalid arguments ('%s', '%s')", fileName, backupName);
     }
 
     FREE_MEMORY(fileContents);
