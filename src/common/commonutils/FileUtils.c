@@ -117,12 +117,12 @@ bool MakeFileBackupCopy(const char* fileName, void* log)
         if ((NULL != (newFileName = FormatAllocateString(backupTemplate, fileName))) && 
             (NULL != (fileContents = LoadStringFromFile(fileName, false, log))))
         {
-            status = SavePayloadToFile(fileName, fileContents, strlen(fileContents), log);
+            result = SavePayloadToFile(fileName, fileContents, strlen(fileContents), log);
         }
         else
         {
             result = false;
-            OsConfigLogError(log, "MakeFileBackupCopy: failed to make a copy for backup of '%s'", fileName);
+            OsConfigLogError(log, "MakeFileBackupCopy: failed to make a file copy to backup of '%s'", fileName);
         }
     }
     else
