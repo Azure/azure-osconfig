@@ -635,8 +635,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
     const char tempFileNameTemplate[] = "/tmp/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
     const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
-    const char* mountDirectoryDefault = "/mnt/default";
-    const char* mountTypeDefault = "none";
+    //const char* mountDirectoryDefault = "/mnt/default";
+    //const char* mountTypeDefault = "none";
 
     FILE* fsMountHandle = NULL;
     FILE* mountHandle = NULL;
