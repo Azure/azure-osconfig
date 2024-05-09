@@ -487,17 +487,17 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
                 
                 if (NULL != hasmntopt(mountStruct, desiredOption))
                 {
-                    OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' found in file '%s' at line '%d'", 
+                    OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' found in '%s' at line '%d'", 
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
                     
                     if (NULL != mountDirectory)
                     {
-                        OsConfigCaptureSuccessReason(reason, "Option '%s' for mount directory '%s' found in file '%s' at line '%d'", desiredOption, mountDirectory, mountFileName, lineNumber);
+                        OsConfigCaptureSuccessReason(reason, "Option '%s' for mount directory '%s' found in '%s' at line '%d'", desiredOption, mountDirectory, mountFileName, lineNumber);
                     }
 
                     if (NULL != mountType)
                     {
-                        OsConfigCaptureSuccessReason(reason, "Option '%s' for mount type '%s' found in file '%s' at line '%d'", desiredOption, mountType, mountFileName, lineNumber);
+                        OsConfigCaptureSuccessReason(reason, "Option '%s' for mount type '%s' found in '%s' at line '%d'", desiredOption, mountType, mountFileName, lineNumber);
                     }
                 }
                 else
@@ -531,17 +531,17 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         if (false == matchFound)
         {
             status = ENOENT;
-            OsConfigLogError(log, "CheckFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in file '%s'", 
+            OsConfigLogError(log, "CheckFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in '%s'", 
                 mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
 
             if (NULL != mountDirectory)
             {
-                OsConfigCaptureReason(reason, "Found no entries about mount directory '%s' in file '%s' to look for option '%s'", mountDirectory, mountFileName, desiredOption);
+                OsConfigCaptureReason(reason, "Found no entries about mount directory '%s' in '%s' to look for option '%s'", mountDirectory, mountFileName, desiredOption);
             }
 
             if (NULL != mountType)
             {
-                OsConfigCaptureReason(reason, "Found no entries about mount type '%s' in file '%s' to look for option '%s'", mountType, mountFileName, desiredOption);
+                OsConfigCaptureReason(reason, "Found no entries about mount type '%s' in '%s' to look for option '%s'", mountType, mountFileName, desiredOption);
             }
         }
 
@@ -628,35 +628,36 @@ static int CopyMountFile(const char* source, const char* target, void* log)
     return status;
 }
 
-//TODO:  hard-code the Set version to target /etc/fstab (losing the unittest) and if no entries found 
-//       in /etc/fstab, then look to copy entries from /etc/mtab and add to those the desired options if missing
-//       Also once /etc/fstab entries are changed, remount or mount them
-int SetFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
+// TODO: once /etc/fstab entries are changed, remount or mount
+int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
 {
+    const char* fsMountTable = "/ets/fstab";
+    const char* mountTable = "/ets/mtab";
     const char tempFileNameTemplate[] = "/tmp/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
     const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
     const char* mountDirectoryDefault = "/mnt/default";
     const char* mountTypeDefault = "none";
 
+    FILE* fsMountHandle = NULL;
+    FILE* mountHandle = NULL;
     char* newLine = NULL;
     char* tempFileNameOne = NULL;
     char* tempFileNameTwo = NULL;
-    FILE* mountFileHandle = NULL;
     struct mntent* mountStruct = NULL;
     bool matchFound = false;
     int lineNumber = 0;
     int status = 0;
 
-    if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
+    if (((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
     {
         OsConfigLogError(log, "SetFileSystemMountingOption called with invalid argument(s)");
         return EINVAL;
     }
 
-    if (!FileExists(mountFileName))
+    if (!FileExists(fsMountTable))
     {
-        OsConfigLogInfo(log, "SetFileSystemMountingOption: file '%s' not found, nothing to set", mountFileName);
+        OsConfigLogInfo(log, "SetFileSystemMountingOption: '%s' not found, no place to set mounting options", fsMountTable);
         return 0;
     }
 
@@ -669,9 +670,9 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
     if (0 == status)
     {
-        if (NULL != (mountFileHandle = setmntent(mountFileName, "r")))
+        if (NULL != (fsMountHandle = setmntent(fsMountTable, "r")))
         {
-            while (NULL != (mountStruct = getmntent(mountFileHandle)))
+            while (NULL != (mountStruct = getmntent(fsMountHandle)))
             {
                 if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
                     ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
@@ -680,10 +681,10 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
                     if (NULL != hasmntopt(mountStruct, desiredOption))
                     {
-                        OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' already set in file '%s' at line '%d'",
-                            desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+                        OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' already set in '%s' at line '%d'",
+                            desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, lineNumber);
 
-                        // The option is found here, copy this mount entry as-is
+                        // The option is found, copy this mount entry as-is
                         FREE_MEMORY(newLine);
                         newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                             mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
@@ -691,9 +692,9 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                     else
                     {
                         OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' missing from file '%s' at line %d",
-                            desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+                            desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, lineNumber);
                         
-                        // The option is not found and is needed here, add the desired new option string when copying this mount entry
+                        // The option is not found and is needed for this entry, add the needed option when copying this mount entry
                         FREE_MEMORY(newLine);
                         newLine = FormatAllocateString(newLineAddNewTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                             mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno);
@@ -703,7 +704,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                     {
                         if (0 != (status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                         {
-                            OsConfigLogError(log, "SetFileSystemMountingOption: failed collecting entries from '%s'", mountFileName);
+                            OsConfigLogError(log, "SetFileSystemMountingOption: failed collecting entries from '%s'", fsMountTable);
                             break;
                         }
                     }
@@ -716,14 +717,14 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                 }
                 else
                 {
-                    // No match for this mount entry, copy it as-is
+                    // No match for this mount entry, copy the entire entry as-is
                     FREE_MEMORY(newLine);
                     if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                         mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno)))
                     {
                         if (0 != (status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                         {
-                            OsConfigLogError(log, "SetFileSystemMountingOption: failed copying existing entries from '%s'", mountFileName);
+                            OsConfigLogError(log, "SetFileSystemMountingOption: failed copying existing entries from '%s'", fsMountTable);
                             break;
                         }
                     }
@@ -732,12 +733,83 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                 lineNumber += 1;
             }
 
+            endmntent(fsMountHandle);
+
             if (false == matchFound)
             {
-                OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in file '%s'",
-                    mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+                OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in '%s'",
+                    mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable);
 
-                // No relevant mount entries found, add the entire mount entry what is possible
+                // No relevant mount entries found in /etc/fstab, try to find and copy entries from /etc/tab if there are any matching
+                if (FileExists(mountTable))
+                {
+                    if (NULL != (mountHandle = setmntent(mountTable, "r")))
+                    {
+                        lineNumber = 0;
+                        
+                        while (NULL != (mountStruct = getmntent(mountHandle)))
+                        {
+                            if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
+                                ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
+                            {
+                                matchFound = true;
+
+                                if (NULL != hasmntopt(mountStruct, desiredOption))
+                                {
+                                    OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' found set in '%s' at line '%d'",
+                                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable, lineNumber);
+
+                                    // Copy this mount entry as-is
+                                    FREE_MEMORY(newLine);
+                                    newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
+                                        mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
+                                }
+                                else
+                                {
+                                    OsConfigLogInfo(log, "SetFileSystemMountingOption: option '%s' for mount directory '%s' or mount type '%s' missing from '%s' at line %d",
+                                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable, lineNumber);
+
+                                    // The option is not found and is needed for this entry, add the needed option when copying this mount entry
+                                    FREE_MEMORY(newLine);
+                                    newLine = FormatAllocateString(newLineAddNewTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
+                                        mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno);
+                                }
+
+                                if (NULL != newLine)
+                                {
+                                    if (0 != (status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                                    {
+                                        OsConfigLogError(log, "SetFileSystemMountingOption: failed collecting entry from '%s'", mountTable);
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
+                                    status = ENOMEM;
+                                    break;
+                                }
+                            }
+                            
+                            lineNumber += 1;
+                        }
+                        
+                        endmntent(mountHandle);
+                    }
+                    else
+                    {
+                        if (0 == (status = errno))
+                        {
+                            status = ENOENT;
+                        }
+                        OsConfigLogError(log, "SetFileSystemMountingOption: could not open '%s', setmntent() failed (%d)", mountTable, status);
+                    }
+                }
+            }
+
+            if (false == matchFound)
+            {
+                // Entry not found in either /etc/fstab or /etc/mtab, construct the entry from what's available
                 FREE_MEMORY(newLine);
                 if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountDirectoryDefault, mountDirectory ? mountDirectory : mountDirectoryDefault,
                     mountType ? mountType : mountTypeDefault, desiredOption, 0, 0)))
@@ -750,8 +822,6 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
                     status = ENOMEM;
                 }
             }
-
-            endmntent(mountFileHandle);
         }
         else
         {
@@ -759,7 +829,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
             {
                 status = ENOENT;
             }
-            OsConfigLogError(log, "SetFileSystemMountingOption: could not open file '%s', setmntent() failed (%d)", mountFileName, status);
+            OsConfigLogError(log, "SetFileSystemMountingOption: could not open '%s', setmntent() failed (%d)", fsMountTable, status);
         }
 
         if (0 == status)
@@ -768,7 +838,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
             if (0 == (status = CopyMountFile(tempFileNameOne, tempFileNameTwo, log)))
             {
                 // When done assembling the final temp mount file two, move it in an atomic step to real mount file
-                rename(tempFileNameTwo, mountFileName);
+                rename(tempFileNameTwo, fsMountTable);
             }
         }
 

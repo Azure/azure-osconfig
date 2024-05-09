@@ -2620,68 +2620,68 @@ static int RemediateEnsureKernelSupportForCpuNx(char* value, void* log)
 static int RemediateEnsureNodevOptionOnHomePartition(char* value, void* log)
 {
     UNUSED(value);
-    return SetFileSystemMountingOption(g_etcFstab, "/home", NULL, g_nodev, log);
+    return SetFileSystemMountingOption("/home", NULL, g_nodev, log);
 }
 
 static int RemediateEnsureNodevOptionOnTmpPartition(char* value, void* log)
 {
     UNUSED(value);
-    return SetFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, log);
+    return SetFileSystemMountingOption(g_tmp, NULL, g_nodev, log);
 }
 
 static int RemediateEnsureNodevOptionOnVarTmpPartition(char* value, void* log)
 {
     UNUSED(value);
-    return SetFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, log);
+    return SetFileSystemMountingOption(g_varTmp, NULL, g_nodev, log);
 }
 
 static int RemediateEnsureNosuidOptionOnTmpPartition(char* value, void* log)
 {
     UNUSED(value);
-    return SetFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, log);
+    return SetFileSystemMountingOption(g_tmp, NULL, g_nosuid, log);
 }
 
 static int RemediateEnsureNosuidOptionOnVarTmpPartition(char* value, void* log)
 {
     UNUSED(value);
-    return SetFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, log);
+    return SetFileSystemMountingOption(g_varTmp, NULL, g_nosuid, log);
 }
 
 static int RemediateEnsureNoexecOptionOnVarTmpPartition(char* value, void* log)
 {
     UNUSED(value);
-    return SetFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, log);
+    return SetFileSystemMountingOption(g_varTmp, NULL, g_noexec, log);
 }
 
 static int RemediateEnsureNoexecOptionOnDevShmPartition(char* value, void* log)
 {
     UNUSED(value);
-    return SetFileSystemMountingOption(g_etcFstab, "/dev/shm", NULL, g_noexec, log);
+    return SetFileSystemMountingOption("/dev/shm", NULL, g_noexec, log);
 }
 
 static int RemediateEnsureNodevOptionEnabledForAllRemovableMedia(char* value, void* log)
 {
     UNUSED(value);
-    return SetFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, log);
+    return SetFileSystemMountingOption(g_media, NULL, g_nodev, log);
 }
 
 static int RemediateEnsureNoexecOptionEnabledForAllRemovableMedia(char* value, void* log)
 {
     UNUSED(value);
-    return SetFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, log);
+    return SetFileSystemMountingOption(g_media, NULL, g_noexec, log);
 }
 
 static int RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(char* value, void* log)
 {
     UNUSED(value);
-    return SetFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, log);
+    return SetFileSystemMountingOption(g_media, NULL, g_nosuid, log);
 }
 
 static int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == SetFileSystemMountingOption(g_etcFstab, "nfs", NULL, g_nosuid, log)) && 
-        (0 == SetFileSystemMountingOption(g_etcFstab, "nfs", NULL, g_noexec, log))) ? 0 : ENOENT;
+    return ((0 == SetFileSystemMountingOption("nfs", NULL, g_nosuid, log)) && 
+        (0 == SetFileSystemMountingOption("nfs", NULL, g_noexec, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAllTelnetdPackagesUninstalled(char* value, void* log)
