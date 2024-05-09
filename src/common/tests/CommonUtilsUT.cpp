@@ -125,7 +125,7 @@ TEST_F(CommonUtilsTest, MakeFileBackupCopy)
     char* fileCopyPath = NULL; 
     char* contents = NULL;
     
-    EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(original), nullptr));
+    EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
     
