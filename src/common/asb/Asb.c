@@ -830,8 +830,8 @@ static char* AuditEnsureKernelSupportForCpuNx(void* log)
 static char* AuditEnsureNodevOptionOnHomePartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log);
     CheckFileSystemMountingOption(g_etcMtab, g_home, NULL, g_nodev, &reason, log); 
+    CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log);
     return reason;
 }
 
