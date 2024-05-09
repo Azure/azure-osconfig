@@ -635,8 +635,6 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
     const char tempFileNameTemplate[] = "/tmp/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
     const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
-    //const char* mountDirectoryDefault = "/mnt/default";
-    //const char* mountTypeDefault = "none";
 
     FILE* fsMountHandle = NULL;
     FILE* mountHandle = NULL;
@@ -813,22 +811,6 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
             if (false == matchFound)
             {
-                OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in '%s'",
-                    mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountTable);
-
-                // Entry not found in either /etc/fstab or /etc/mtab, construct the entry from what's available
-                /*FREE_MEMORY(newLine);
-                if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountDirectoryDefault, mountDirectory ? mountDirectory : mountDirectoryDefault,
-                    mountType ? mountType : mountTypeDefault, desiredOption, 0, 0)))
-                {
-                    status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT;
-                }
-                else
-                {
-                    OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
-                    status = ENOMEM;
-                }*/
-
                 OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in either '%s' or '%s', nothing to remediate",
                     mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable, mountTable);
             }
