@@ -730,7 +730,7 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
                 // No relevant mount entries found, add the entire mount entry as complete as possible
                 FREE_MEMORY(newLine);
-                if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountFileName, mountDirectory ? mountDirectory : mountDirectoryDefault,
+                if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, "", mountDirectory ? mountDirectory : mountDirectoryDefault,
                     mountType ? mountType : mountTypeDefault, desiredOption, 0, 0)))
                 {
                     status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT;
