@@ -731,12 +731,12 @@ int SetFileSystemMountingOption(const char* mountFileName, const char* mountDire
 
             if (false == matchFound)
             {
-                OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in file '%s'", 
+                OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in file '%s'",
                     mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
 
-                // No relevant mount entries found, add the entire mount entry (for fsname using 'none', same as for mount type default)
+                // No relevant mount entries found, add the entire mount entry what is possible
                 FREE_MEMORY(newLine);
-                if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountTypeDefault, mountDirectory ? mountDirectory : mountDirectoryDefault,
+                if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountDirectoryDefault, mountDirectory ? mountDirectory : mountDirectoryDefault,
                     mountType ? mountType : mountTypeDefault, desiredOption, 0, 0)))
                 {
                     status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT;

@@ -889,11 +889,10 @@ static char* AuditEnsureNoexecOptionOnDevShmPartition(void* log)
 {
     const char* devShm = "/dev/shm";
     char* reason = NULL;
-    /*if (0 != CheckFileSystemMountingOption(g_etcFstab, devShm, NULL, g_noexec, &reason, log))
+    if (0 != CheckFileSystemMountingOption(g_etcFstab, devShm, NULL, g_noexec, &reason, log))
     {
         CheckFileSystemMountingOption(g_etcMtab, devShm, NULL, g_noexec, &reason, log);
-    }*/
-    CheckFileSystemMountingOption(g_etcMtab, devShm, NULL, g_noexec, &reason, log);
+    }
     return reason;
 }
 
@@ -2657,8 +2656,7 @@ static int RemediateEnsureNoexecOptionOnVarTmpPartition(char* value, void* log)
 static int RemediateEnsureNoexecOptionOnDevShmPartition(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //SetFileSystemMountingOption(g_etcFstab, "/dev/shm", NULL, g_noexec, log);
+    return SetFileSystemMountingOption(g_etcFstab, "/dev/shm", NULL, g_noexec, log);
 }
 
 static int RemediateEnsureNodevOptionEnabledForAllRemovableMedia(char* value, void* log)
