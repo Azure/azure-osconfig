@@ -512,6 +512,86 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
     return status;
 }
 
+int RemoveLineFromFile(const char* fileName, const char* marker, void* log)
+{
+    const char* tempFileNameTemplate = "/tmp/~%s";
+    char* tempFileName = NULL;
+    FILE* fileHandle = NULL;
+    FILE* tempHandle = NULL;
+    long lineMax = sysconf(_SC_LINE_MAX);
+    char* line = NULL;
+    int status = 0;
+
+    if ((NULL == fileName) || (false == FileExists(fileName)) || (NULL == marker))
+    {
+        OsConfigLogError(log, "RemoveLineFromFile called with invalid arguments");
+        return EINVAL;
+    }
+    else if (NULL == (line = malloc(lineMax + 1)))
+    {
+        OsConfigLogError(log, "RemoveLineFromFile: out of memory");
+        return ENOMEM;
+    }
+
+    if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileName)))
+    {
+        if (NULL != (fileHandle = fopen(fileName, "r")))
+        {
+            if (NULL != (tempFileHandle = fopen(tempFileName, "w")))
+            {
+                while (NULL != fgets(line, lineMax + 1, fileHandle)) 
+                {
+                    if (NULL != strstr(line, marker))
+                    {
+                        OsConfigLogInfo(log, "RemoveLineFromFile: skipping  from file '%s' the line '%s'", fileName, line);
+                    }
+                    else
+                    {
+                        if (EOF == fputs(line, tempFileHandle))
+                        {
+                            if (0 == (status = errno))
+                            {
+                                status = EPERM;
+                            }
+
+                            OsConfigLogError(log, "RemoveLineFromFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
+                        }
+                    }
+                }
+                
+                fclose(tempFileHandle);
+            }
+            else
+            {
+                OsConfigLogError(log, "RemoveLineFromFile: failed to create temporary file '%s'", tempFileName);
+                status = EACCES;
+            }
+
+            fclose(fileHandle);
+        }
+        else
+        {
+            OsConfigLogError(log, "RemoveLineFromFile: cannot read from '%s'", fileName);
+            status = EACCES;
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "RemoveLineFromFile: out of memory");
+        status = ENOMEM;
+    }
+    
+    FREE_MEMORY(line);
+
+    if (0 == status)
+    {
+        rename(fileName, tempFileName);
+        remove(tempFileName);
+    }
+
+    return status;
+}
+
 int FindTextInFile(const char* fileName, const char* text, void* log)
 {
     char* contents = NULL;
