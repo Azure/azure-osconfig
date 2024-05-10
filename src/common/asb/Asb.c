@@ -530,6 +530,7 @@ static const char* g_forward = "forward";
 static const char* g_netrc = "netrc";
 static const char* g_rhosts = "rhosts";
 static const char* g_systemdJournald = "systemd-journald";
+static const char* g_allTelnetd = "*telnetd*";
 
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
@@ -935,7 +936,7 @@ static char* AuditEnsureXinetdNotInstalled(void* log)
 static char* AuditEnsureAllTelnetdPackagesUninstalled(void* log)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled("*telnetd*", &reason, log);
+    CheckPackageNotInstalled(g_allTelnetd, &reason, log);
     return reason;
 }
 
@@ -2665,8 +2666,7 @@ static int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value,
 static int RemediateEnsureAllTelnetdPackagesUninstalled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return UninstallPackage(g_allTelnetd, log);
 }
 
 static int RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(char* value, void* log)

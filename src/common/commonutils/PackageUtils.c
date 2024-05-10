@@ -104,14 +104,15 @@ int IsPackageInstalled(const char* packageName, void* log)
 int CheckPackageInstalled(const char* packageName, char** reason, void* log)
 {
     int result = 0; 
-    
+    bool wildcards = (NULL != packageName) ? ((NULL != strstr(packageName, "*")) || (NULL != strstr(packageName, "^"))) : false;
+
     if (0 == (result = IsPackageInstalled(packageName, log)))
     {
-        OsConfigCaptureSuccessReason(reason, "Package '%s' is installed", packageName);
+        OsConfigCaptureSuccessReason(reason, wildcards ? "Some '%s' packages are installed" : "Package '%s' is installed", packageName);
     }
     else if ((EINVAL != result) && (ENOMEM != result))
     {
-        OsConfigCaptureReason(reason, "Package '%s' is not installed", packageName);
+        OsConfigCaptureReason(reason, wildcards ? "No '%s' packages are installed" : "Package '%s' is not installed", packageName);
     }
 
     return result;
