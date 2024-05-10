@@ -702,6 +702,8 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(void* log)
                                 OsConfigLogError(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: 'gpasswd -d %u %u' failed with %d",
                                     userList[i].userId, userGroupList[j].groupId, status);
                             }
+
+                            FREE_MEMORY(command);
                         }
                     }
                 }
