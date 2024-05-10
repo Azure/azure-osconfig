@@ -363,6 +363,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                         {
                             status = ENOENT;
                         }
+
                         OsConfigLogError(log, "SetFileSystemMountingOption: could not open '%s', setmntent() failed (%d)", mountTable, status);
                     }
                 }
@@ -380,6 +381,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
             {
                 status = ENOENT;
             }
+
             OsConfigLogError(log, "SetFileSystemMountingOption: could not open '%s', setmntent() failed (%d)", fsMountTable, status);
         }
 

@@ -2592,8 +2592,8 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 static int RemediateEnsureKernelSupportForCpuNx(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    OsConfigLogInfo(log, "A CPU that supports the NX (no-execute) bit technology is necessary, automatic remediation is not possible");
+    return 0;
 }
 
 static int RemediateEnsureNodevOptionOnHomePartition(char* value, void* log)
@@ -2672,8 +2672,7 @@ static int RemediateEnsureAllTelnetdPackagesUninstalled(char* value, void* log)
 static int RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetAllEtcPasswdGroupsToExistInEtcGroup(log);
 }
 
 static int RemediateEnsureNoDuplicateUidsExist(char* value, void* log)

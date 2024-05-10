@@ -645,6 +645,85 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, void* log)
     return status;
 }
 
+int SetAllEtcPasswdGroupsToExistInEtcGroup(void* log)
+{
+    const char* commandTemplate = "gpasswd -d %u %u";
+    char* command = NULL;
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0;
+    struct SIMPLIFIED_GROUP* userGroupList = NULL;
+    unsigned int userGroupListSize = 0;
+    struct SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int groupListSize = 0;
+    unsigned int i = 0, j = 0, k = 0;
+    bool found = false;
+    int status = 0;
+
+    if ((0 == (status = EnumerateUsers(&userList, &userListSize, log))) &&
+        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log))))
+    {
+        for (i = 0; (i < userListSize) && (0 == status); i++)
+        {
+            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, log)))
+            {
+                for (j = 0; (j < userGroupListSize) && (0 == status); j++)
+                {
+                    found = false;
+
+                    for (k = 0; (k < groupListSize) && (0 == status); k++)
+                    {
+                        if (userGroupList[j].groupId == groupList[k].groupId)
+                        {
+                            if (IsFullLoggingEnabled())
+                            {
+                                OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in '/etc/group'",
+                                    userGroupList[j].groupName, userGroupList[j].groupId, userList[i].username, userList[i].userId);
+                            }
+
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (false == found)
+                    {
+                        OsConfigLogError(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user '%s' (%u) not found in '/etc/group'",
+                            userGroupList[j].groupName, userGroupList[j].groupId, userList[i].username, userList[i].userId);
+
+                        if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].userId, userGroupList[j].groupId)))
+                        {
+                            if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                            {
+                                OsConfigLogError(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: user '%s' (%u) was removed from group '%s' (%u)",
+                                    userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+                            }
+                            else
+                            {
+                                OsConfigLogError(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: 'gpasswd -d %u %u' failed with %d",
+                                    userList[i].userId, userGroupList[j].groupId, status);
+                            }
+                        }
+
+                        break;
+                    }
+                }
+
+                FreeGroupList(&userGroupList, userGroupListSize);
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+    FreeGroupList(&groupList, groupListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: all groups in '/etc/passwd' now exist in '/etc/group'");
+    }
+
+    return status;
+}
+
 int CheckNoDuplicateUidsExist(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;

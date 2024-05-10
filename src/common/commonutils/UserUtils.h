@@ -77,6 +77,7 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
 void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size);
 
 int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, void* log);
+int SetAllEtcPasswdGroupsToExistInEtcGroup(void* log);
 int CheckNoDuplicateUidsExist(char** reason, void* log);
 int CheckNoDuplicateGidsExist(char** reason, void* log);
 int CheckNoDuplicateUserNamesExist(char** reason, void* log);
