@@ -1378,6 +1378,11 @@ int RepairRootGroup(void* log)
         }
     }
 
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "RepairRootGroup: root group exists with gid 0");
+    }
+
     return status;
 }
 
