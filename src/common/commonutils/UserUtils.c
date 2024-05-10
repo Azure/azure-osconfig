@@ -797,11 +797,11 @@ static int RemoveUser(SIMPLIFIED_USER* user, void* log)
 
             if (DirectoryExists(user->home))
             {
-                OsConfigLogError(log, "RemoveUser: home directory of user '%s' remains ('%s') and needs to be manually deleted", name, user->home);
+                OsConfigLogError(log, "RemoveUser: home directory of user '%s' remains ('%s') and needs to be manually deleted", user->username, user->home);
             }
             else
             {
-                OsConfigLogInfo(log, "RemoveUser: home directory of user '%s' successfully removed ('%s')", name, user->home);
+                OsConfigLogInfo(log, "RemoveUser: home directory of user '%s' successfully removed ('%s')", user->username, user->home);
             }
         }
         else
