@@ -1585,7 +1585,7 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log)
         }
     }
 
-    FreeGroupList(&groupList, groupListSize);
+    FreeUserList(&userList, userListSize);
 
     if (0 == status)
     {
