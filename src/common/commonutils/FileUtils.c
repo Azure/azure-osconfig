@@ -585,7 +585,7 @@ int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, void* lo
 
     if (0 == status)
     {
-        rename(fileName, tempFileName);
+        rename(tempFileName, fileName);
         remove(tempFileName);
     }
 

@@ -1963,17 +1963,22 @@ TEST_F(CommonUtilsTest, RemoveMarkedLinesFromFile)
     char* contents = nullptr;
 
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
+    
     EXPECT_EQ(EINVAL, RemoveMarkedLinesFromFile(nullptr, "+", nullptr));
     EXPECT_EQ(EINVAL, RemoveMarkedLinesFromFile(nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, RemoveMarkedLinesFromFile(m_path, nullptr, nullptr));
+
     EXPECT_EQ(0, RemoveMarkedLinesFromFile(m_path, "+", nullptr));
     EXPECT_STREQ(outFile, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
+    
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
+    
     EXPECT_EQ(0, RemoveMarkedLinesFromFile(m_path, "Test", nullptr));
     EXPECT_STREQ(outFile2, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
+    
     EXPECT_TRUE(Cleanup(m_path));
 }
