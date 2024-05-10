@@ -1098,21 +1098,21 @@ static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log)
 static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void* log)
 {
     char* reason = NULL;
-    CheckNoLegacyPlusEntriesInFile("etc/passwd", &reason, log);
+    CheckNoLegacyPlusEntriesInFile(g_etcPasswd, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcShadow(void* log)
 {
     char* reason = NULL;
-    CheckNoLegacyPlusEntriesInFile("etc/shadow", &reason, log);
+    CheckNoLegacyPlusEntriesInFile(g_etcShadow, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcGroup(void* log)
 {
     char* reason = NULL;
-    CheckNoLegacyPlusEntriesInFile("etc/group", &reason, log);
+    CheckNoLegacyPlusEntriesInFile(g_etcGroup, &reason, log);
     return reason;
 }
 
@@ -2729,22 +2729,19 @@ static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* val
 static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return RemoveMarkedLinesFromFile(g_etcPasswd, "+", log);
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return RemoveMarkedLinesFromFile(g_etcShadow, "+", log);
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return RemoveMarkedLinesFromFile(g_etcGroup, "+", log);
 }
 
 static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, void* log)
