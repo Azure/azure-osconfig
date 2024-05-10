@@ -1317,10 +1317,11 @@ int CheckRootGroupExists(char** reason, void* log)
 
 int RepairRootGroup(void* log)
 {
-    const char* etcGroup = "/etc/group";
+    const char* command = "usermod -g 0 root";
+    /*const char* etcGroup = "/etc/group";
     const char* rootLine = "root:x:0:\n";
     const char* tempFileName = "/tmp/~group";
-    char* original = NULL;
+    char* original = NULL;*/
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;
@@ -1346,6 +1347,17 @@ int RepairRootGroup(void* log)
     {
         OsConfigLogInfo(log, "RepairRootGroup: root group with gid 0 not found");
 
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "RepairRootGroup: default group for root repaired to be gid 0");
+        }
+        else
+        {
+            OsConfigLogError(log, "RepairRootGroup: 'usermod -g 0 root' failed with %d", status);
+        }
+
+
+        /*
         if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
         {
             if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
@@ -1376,6 +1388,7 @@ int RepairRootGroup(void* log)
             OsConfigLogError(log, "RepairRootGroup: failed reading '%s", etcGroup);
             status = EACCES;
         }
+        */
     }
 
     if (0 == status)
