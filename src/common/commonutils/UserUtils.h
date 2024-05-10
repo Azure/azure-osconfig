@@ -81,6 +81,7 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(void* log);
 int CheckNoDuplicateUidsExist(char** reason, void* log);
 int SetNoDuplicateUids(void* log);
 int CheckNoDuplicateGidsExist(char** reason, void* log);
+int SetNoDuplicateGids(void* log);
 int CheckNoDuplicateUserNamesExist(char** reason, void* log);
 int CheckNoDuplicateGroupsExist(char** reason, void* log);
 int CheckShadowGroupIsEmpty(char** reason, void* log);

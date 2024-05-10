@@ -2684,8 +2684,7 @@ static int RemediateEnsureNoDuplicateUidsExist(char* value, void* log)
 static int RemediateEnsureNoDuplicateGidsExist(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetNoDuplicateGids(log);
 }
 
 static int RemediateEnsureNoDuplicateUserNamesExist(char* value, void* log)

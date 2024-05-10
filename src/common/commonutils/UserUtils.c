@@ -783,7 +783,7 @@ static int RemoveUser(SIMPLIFIED_USER* user, void* log)
     char* command = NULL;
     int status = 0, _status = 0;
 
-    if (NULL == user)
+    if ((NULL == user) || (0 == user->userId))
     {
         OsConfigLogError(log, "RemoveUser: invalid argument");
         return EINVAL;
@@ -830,11 +830,11 @@ int SetNoDuplicateUids(void* log)
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
-        for (i = 0; (i < userListSize) && (0 == status); i++)
+        for (i = 0; i < userListSize; i++)
         {
             hits = 0;
 
-            for (j = 0; (j < userListSize) && (0 == status); j++)
+            for (j = 0; j < userListSize; j++)
             {
                 if (userList[i].userId == userList[j].userId)
                 {
@@ -907,6 +907,107 @@ int CheckNoDuplicateGidsExist(char** reason, void* log)
 
     return status;
 }
+
+static int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
+{
+    const char* commandTemplate = "groupdel -f %s";
+    char* command = NULL;
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0;
+    unsigned int i = 0;
+    int status = 0;
+
+    if ((NULL == group) || (0 == group->groupId))
+    {
+        OsConfigLogError(log, "RemoveGroup: invalid argument");
+        return EINVAL;
+    }
+
+    if (grpup->hasUsers)
+    {
+        OsConfigLogInfo(log, "RemoveGroup: attempting to delete a group that has users ('%s', %u)", group->groupName, group->groupId);
+
+        // Check if this group is the primary group of any existing user
+        if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+        {
+            for (i = 0; i < userListSize; i++)
+            {
+                if (userList[i].groupId == group->groupId)
+                {
+                    OsConfigLogError(log, "RemoveGroup: group '%s' (%u) is primary group of user '%s' (%u), try first to delete this user account",
+                        group->groupName, group->groupId, userList[i].username, userList[i].userId);
+                    RemoveUser(&(userList[i]), log);
+                }
+            }
+        }
+        FreeUsersList(&userList, userListSize);
+    }
+
+    if (NULL != (command = FormatAllocateString(commandTemplate, group->groupName)))
+    {
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "RemoveGroup: removed group '%s' (%u)", group->groupName, group->groupId);
+        }
+        else
+        {
+            OsConfigLogError(log, "RemoveGroup: failed to remove group '%s' (%u) (%d)", group->groupName, group->groupId, status);
+        }
+
+        FREE_MEMORY(command);
+    }
+    else
+    {
+        OsConfigLogError(log, "RemoveGroup: out of memory");
+        status = ENOMEM;
+    }
+
+    return status;
+}
+
+int SetNoDuplicateGids(void* log)
+{
+    SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int groupListSize = 0;
+    unsigned int i = 0, j = 0;
+    unsigned int hits = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    {
+        for (i = 0; i < groupListSize; i++)
+        {
+            hits = 0;
+
+            for (j = 0; j < groupListSize; j++)
+            {
+                if (groupList[i].groupId == groupList[j].groupId)
+                {
+                    hits += 1;
+                }
+            }
+
+            if (hits > 1)
+            {
+                OsConfigLogError(log, "SetNoDuplicateGids: gid %u appears more than a single time in '/etc/group'", groupList[i].groupId);
+                if ((0 != (_status = RemoveGroup(&(groupList[i]), log))) && (0 == status))
+                {
+                    status = _status;
+                }
+            }
+        }
+    }
+
+    FreeGroupList(&groupList, groupListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetNoDuplicateGids: no duplicate gids exist in '/etc/group'");
+    }
+
+    return status;
+}
+
 
 int CheckNoDuplicateUserNamesExist(char** reason, void* log)
 {
