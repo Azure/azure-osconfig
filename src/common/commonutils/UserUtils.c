@@ -1315,6 +1315,72 @@ int CheckRootGroupExists(char** reason, void* log)
     return status;
 }
 
+int RepairRootGroup(void* log)
+{
+    const char* etcGroup = "/etc/group";
+    const char* rootLine = "root:x:0:";
+    const char* tempFileName = "/tmp/~group";
+    char* original = NULL;
+    SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int groupListSize = 0;
+    unsigned int i = 0;
+    bool found = false;
+    int status = 0;
+
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    {
+        for (i = 0; i < groupListSize; i++)
+        {
+            if ((0 == strcmp(groupList[i].groupName, g_root)) && (0 == groupList[i].groupId))
+            {
+                OsConfigLogInfo(log, "RepairRootGroup: root group exists with gid 0");
+                found = true;
+                break;
+            }
+        }
+    }
+
+    FreeGroupList(&groupList, groupListSize);
+
+    if (false == found)
+    {
+        OsConfigLogError(log, "CheckRootGroupExists: root group with gid 0 not found");
+
+        if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
+        {
+            if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
+            {
+                if (true == AppendToFile(tempFileName, original, strlen(original), log))
+                {
+                    // When done assembling, move the temp file in an atomic step to real /etc/group file
+                    rename(tempFileName, etcGroup);
+                }
+                else
+                {
+                    OsConfigLogError(log, "CheckRootGroupExists: failed appending to to temp file '%s", tempFileName);
+                    status = ENOENT;
+                }
+                
+                remove(tempFileName);
+            }
+            else
+            {
+                OsConfigLogError(log, "CheckRootGroupExists: failed saving to temp file '%s", tempFileName);
+                status = EPERM;
+            }
+            
+            FREE_MEMORY(original);
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckRootGroupExists: failed reading '%s", etcGroup);
+            status = EACCES;
+        }
+    }
+
+    return status;
+}
+
 int CheckAllUsersHavePasswordsSet(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;

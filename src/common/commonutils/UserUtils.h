@@ -89,6 +89,7 @@ int SetNoDuplicateGroupNames(void* log);
 int CheckShadowGroupIsEmpty(char** reason, void* log);
 int SetShadowGroupEmpty(void* log);
 int CheckRootGroupExists(char** reason, void* log);
+int RepairRootGroup(void* log);
 int CheckRootIsOnlyUidZeroAccount(char** reason, void* log);
 int CheckAllUsersHavePasswordsSet(char** reason, void* log);
 int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log);

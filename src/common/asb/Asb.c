@@ -2708,8 +2708,7 @@ static int RemediateEnsureShadowGroupIsEmpty(char* value, void* log)
 static int RemediateEnsureRootGroupExists(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return RepairRootGroup(log);
 }
 
 static int RemediateEnsureAllAccountsHavePasswords(char* value, void* log)
