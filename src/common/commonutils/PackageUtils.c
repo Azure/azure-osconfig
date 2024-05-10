@@ -106,8 +106,7 @@ int CheckPackageInstalled(const char* packageName, char** reason, void* log)
     int result = 0; 
     bool wildcards = packageName ? (strstr(packageName, "*") || strstr(packageName, "^")) : false;
     
-    OsConfigLogInfo(log, "CheckPackageInstalled: package '%s' has wildcards: %s, '*': %s, '^': %s", packageName, 
-        (wildcards ? "yes" : "no"), (strstr(packageName, "*") ? "yes" : "no"), (strstr(packageName, "^") : "yes" : "no"));
+    OsConfigLogInfo(log, "CheckPackageInstalled: package '%s' has wildcards: %s, '*': %s, '^': %s", packageName, (wildcards ? "yes" : "no"), (strstr(packageName, "*") ? "yes" : "no"), (strstr(packageName, "^") ? "yes" : "no"));
 
     if (0 == (result = IsPackageInstalled(packageName, log)))
     {
