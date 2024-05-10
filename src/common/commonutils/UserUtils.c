@@ -461,7 +461,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
             {
                 if (NULL == (groupEntry = getgrgid(groupIds[i])))
                 {
-                    OsConfigLogError(log, "EnumerateUserGroups: getgrgid(%u) failed", (unsigned int)groupIds[i]);
+                    OsConfigLogError(log, "EnumerateUserGroups: getgrgid(for gid %u) failed", (unsigned int)groupIds[i]);
                     status = ENOENT;
                     break;
                 }
