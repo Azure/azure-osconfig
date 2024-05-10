@@ -101,20 +101,22 @@ int IsPackageInstalled(const char* packageName, void* log)
     return status;
 }
 
+static bool WildcardsPresent(const char* packageName)
+{
+    return (packageName ? (strstr(packageName, "*") || strstr(packageName, "^")) : false);
+}
+
 int CheckPackageInstalled(const char* packageName, char** reason, void* log)
 {
     int result = 0; 
-    bool wildcards = packageName ? (strstr(packageName, "*") || strstr(packageName, "^")) : false;
-    
-    OsConfigLogInfo(log, "CheckPackageInstalled: package '%s' has wildcards: %s, '*': %s, '^': %s", packageName, (wildcards ? "yes" : "no"), (strstr(packageName, "*") ? "yes" : "no"), (strstr(packageName, "^") ? "yes" : "no"));
 
     if (0 == (result = IsPackageInstalled(packageName, log)))
     {
-        OsConfigCaptureSuccessReason(reason, wildcards ? "Some '%s' packages are installed" : "Package '%s' is installed", packageName);
+        OsConfigCaptureSuccessReason(reason, WildcardsPresent(packageName) ? "Some '%s' packages are installed" : "Package '%s' is installed", packageName);
     }
     else if ((EINVAL != result) && (ENOMEM != result))
     {
-        OsConfigCaptureReason(reason, wildcards ? "No '%s' packages are installed" : "Package '%s' is not installed", packageName);
+        OsConfigCaptureReason(reason, WildcardsPresent(packageName) ? "No '%s' packages are installed" : "Package '%s' is not installed", packageName);
     }
 
     return result;
@@ -126,12 +128,12 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
 
     if (0 == (result = IsPackageInstalled(packageName, log)))
     {
-        OsConfigCaptureReason(reason, "Package '%s' is installed", packageName);
+        OsConfigCaptureReason(reason, WildcardsPresent(packageName) ? "Some '%s' packages are installed" : "Package '%s' is installed", packageName);
         result = ENOENT;
     }
     else if ((EINVAL != result) && (ENOMEM != result))
     {
-        OsConfigCaptureSuccessReason(reason, "Package '%s' is not installed", packageName);
+        OsConfigCaptureSuccessReason(reason, WildcardsPresent(packageName) ? "No '%s' packages are installed" : "Package '%s' is not installed", packageName);
         result = 0;
     }
 
