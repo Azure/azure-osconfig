@@ -1008,7 +1008,6 @@ int SetNoDuplicateGids(void* log)
     return status;
 }
 
-
 int CheckNoDuplicateUserNamesExist(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
@@ -1047,6 +1046,50 @@ int CheckNoDuplicateUserNamesExist(char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckNoDuplicateUserNamesExist: no duplicate usernames exist in '/etc/passwd'");
         OsConfigCaptureSuccessReason(reason, "No duplicate usernames exist in '/etc/passwd'");
+    }
+
+    return status;
+}
+
+int SetNoDuplicateUserNames(void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0;
+    unsigned int i = 0, j = 0;
+    unsigned int hits = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            hits = 0;
+
+            for (j = 0; j < userListSize; j++)
+            {
+                if (userList[i].username && userList[j].username && (0 == strcmp(userList[i].username, userList[j].username)))
+                {
+                    hits += 1;
+                }
+            }
+
+            if (hits > 1)
+            {
+                OsConfigLogError(log, "SetNoDuplicateUserNames: username '%s' appears more than a single time in '/etc/passwd'", userList[i].username);
+                
+                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                {
+                    status = _status;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetNoDuplicateUserNames: no duplicate usernames exist in '/etc/passwd'");
     }
 
     return status;
