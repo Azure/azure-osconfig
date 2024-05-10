@@ -118,6 +118,10 @@ int CheckPackageInstalled(const char* packageName, char** reason, void* log)
     {
         OsConfigCaptureReason(reason, WildcardsPresent(packageName) ? "No '%s' packages are installed" : "Package '%s' is not installed", packageName);
     }
+    else
+    {
+        OsConfigCaptureReason(reason, "Internal error: %d", result);
+    }
 
     return result;
 }
@@ -135,6 +139,10 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
     {
         OsConfigCaptureSuccessReason(reason, WildcardsPresent(packageName) ? "No '%s' packages are installed" : "Package '%s' is not installed", packageName);
         result = 0;
+    }
+    else
+    {
+        OsConfigCaptureReason(reason, "Internal error: %d", result);
     }
 
     return result;
