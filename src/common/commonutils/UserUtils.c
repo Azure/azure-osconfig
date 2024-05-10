@@ -461,7 +461,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
             {
                 if (NULL == (groupEntry = getgrgid(groupIds[i])))
                 {
-                    OsConfigLogError(log, "EnumerateUserGroups: getgrgid(for gid %u) failed", (unsigned int)groupIds[i]);
+                    OsConfigLogError(log, "EnumerateUserGroups: getgrgid(for gid: %u) failed", (unsigned int)groupIds[i]);
                     status = ENOENT;
                     break;
                 }
@@ -1326,44 +1326,67 @@ int RepairRootGroup(void* log)
     const char* etcGroup = "/etc/group";
     const char* rootLine = "root:x:0:\n";
     const char* tempFileName = "/tmp/~group";
+    SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int groupListSize = 0;
+    unsigned int i = 0;
+    bool found = false;
     char* original = NULL;
     int status = 0;
 
-    if (0 == (status = RemoveMarkedLinesFromFile(etcGroup, g_root, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
     {
-        if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
+        for (i = 0; i < groupListSize; i++)
         {
-            if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
+            if ((0 == strcmp(groupList[i].groupName, g_root)) && (0 == groupList[i].groupId))
             {
-                if (true == AppendToFile(tempFileName, original, strlen(original), log))
+                OsConfigLogInfo(log, "CheckRootGroupExists: root group exists with gid 0");
+                OsConfigCaptureSuccessReason(reason, "Root group exists with gid 0");
+                found = true;
+                break;
+            }
+        }
+    }
+
+    FreeGroupList(&groupList, groupListSize);
+
+    if (false == found)
+    {
+        if (0 == (status = RemoveMarkedLinesFromFile(etcGroup, g_root, log)))
+        {
+            if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
+            {
+                if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
                 {
-                    rename(tempFileName, etcGroup);
+                    if (true == AppendToFile(tempFileName, original, strlen(original), log))
+                    {
+                        rename(tempFileName, etcGroup);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "RepairRootGroup: failed appending to to temp file '%s", tempFileName);
+                        status = ENOENT;
+                    }
+
+                    remove(tempFileName);
                 }
                 else
                 {
-                    OsConfigLogError(log, "RepairRootGroup: failed appending to to temp file '%s", tempFileName);
-                    status = ENOENT;
+                    OsConfigLogError(log, "RepairRootGroup: failed saving to temp file '%s", tempFileName);
+                    status = EPERM;
                 }
 
-                remove(tempFileName);
+                FREE_MEMORY(original);
             }
             else
             {
-                OsConfigLogError(log, "RepairRootGroup: failed saving to temp file '%s", tempFileName);
-                status = EPERM;
+                OsConfigLogError(log, "RepairRootGroup: failed reading '%s", etcGroup);
+                status = EACCES;
             }
-
-            FREE_MEMORY(original);
         }
         else
         {
-            OsConfigLogError(log, "RepairRootGroup: failed reading '%s", etcGroup);
-            status = EACCES;
+            OsConfigLogError(log, "RepairRootGroup: failed removing corrupted root entries from '%s' ", etcGroup);
         }
-    }
-    else
-    {
-        OsConfigLogError(log, "RepairRootGroup: failed removing corrupted root entries from '%s' ", etcGroup);
     }
 
     if (0 == status)
