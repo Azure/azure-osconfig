@@ -1234,38 +1234,34 @@ int SetShadowGroupEmpty(void* log)
             {
                 for (j = 0; j < userGroupListSize; j++)
                 {
-                    found = false;
-
-                    for (k = 0; k < groupListSize; k++)
+                    if (0 == strcmp(userGroupList[j].groupName, g_shadow))
                     {
-                        if (0 == strcmp(userGroupList[j].groupName, g_shadow))
-                        {
-                            OsConfigLogInfo(log, "SetShadowGroupEmpty: user '%s' (%u) is a member of group '%s' (%u)", 
-                                userList[i].username, userList[i].userId, g_shadow, userGroupList[j].groupId);
+                        OsConfigLogInfo(log, "SetShadowGroupEmpty: user '%s' (%u) is a member of group '%s' (%u)", 
+                            userList[i].username, userList[i].userId, g_shadow, userGroupList[j].groupId);
                             
-                            if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].username, g_shadow)))
+                        if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].username, g_shadow)))
+                        {
+                            if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                             {
-                                if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-                                {
-                                    OsConfigLogError(log, "SetShadowGroupEmpty: user '%s' (%u) was removed from group '%s' (%u)",
-                                        userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
-                                }
-                                else
-                                {
-                                    OsConfigLogError(log, "SetShadowGroupEmpty: 'gpasswd -d %s %s' failed with %d", commandTemplate, userList[i].userId, userGroupList[j].groupId, _status);
-                                }
-                                FREE_MEMORY(command);
+                                OsConfigLogError(log, "SetShadowGroupEmpty: user '%s' (%u) was removed from group '%s' (%u)",
+                                    userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                             }
                             else
                             {
-                                OsConfigLogError(log, "SetShadowGroupEmpty: out of memory");
-                                _status = ENOMEM;
+                                OsConfigLogError(log, "SetShadowGroupEmpty: 'gpasswd -d %s %s' failed with %d",
+                                    commandTemplate, userList[i].userId, userGroupList[j].groupId, _status);
                             }
+                            FREE_MEMORY(command);
+                        }
+                        else
+                        {
+                            OsConfigLogError(log, "SetShadowGroupEmpty: out of memory");
+                            _status = ENOMEM;
+                        }
 
-                            if (_status && (0 == status))
-                            {
-                                status = _status;
-                            }
+                        if (_status && (0 == status))
+                        {
+                            status = _status;
                         }
                     }
                 }
