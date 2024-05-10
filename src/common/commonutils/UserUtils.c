@@ -703,8 +703,6 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(void* log)
                                     userList[i].userId, userGroupList[j].groupId, status);
                             }
                         }
-
-                        break;
                     }
                 }
 
