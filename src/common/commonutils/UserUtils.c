@@ -1230,7 +1230,7 @@ int SetShadowGroupEmpty(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (0 == (status = EnumerateUserGroups(&userList[i], &, &userGroupListSize, log)))
+            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, log)))
             {
                 for (j = 0; j < userGroupListSize; j++)
                 {
@@ -1252,7 +1252,7 @@ int SetShadowGroupEmpty(void* log)
                                 }
                                 else
                                 {
-                                    OsConfigLogError(log, "SetShadowGroupEmpty: '%s' failed with %d", commandTemplate, userList[i].userId, userGroupList[j].groupId, _status);
+                                    OsConfigLogError(log, "SetShadowGroupEmpty: 'gpasswd -d %s %s' failed with %d", commandTemplate, userList[i].userId, userGroupList[j].groupId, _status);
                                 }
                                 FREE_MEMORY(command);
                             }
