@@ -514,7 +514,7 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
 
 int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, void* log)
 {
-    const char* tempFileNameTemplate = "/tmp/~%s";
+    const char* tempFileNameTemplate = "/tmp/~temporary%d";
     char* tempFileName = NULL;
     FILE* fileHandle = NULL;
     FILE* tempHandle = NULL;
@@ -533,7 +533,7 @@ int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, void* lo
         return ENOMEM;
     }
 
-    if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileName)))
+    if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, rand())))
     {
         if (NULL != (fileHandle = fopen(fileName, "r")))
         {
