@@ -104,7 +104,7 @@ int IsPackageInstalled(const char* packageName, void* log)
 int CheckPackageInstalled(const char* packageName, char** reason, void* log)
 {
     int result = 0; 
-    bool wildcards = (NULL != packageName) ? ((NULL != strstr(packageName, "*")) || (NULL != strstr(packageName, "^"))) : false;
+    bool wildcards = packageName ? ((strstr(packageName, "*") || strstr(packageName, "^")) ? true : false) : false;
 
     if (0 == (result = IsPackageInstalled(packageName, log)))
     {
