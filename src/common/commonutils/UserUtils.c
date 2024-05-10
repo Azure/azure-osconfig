@@ -780,7 +780,7 @@ int CheckNoDuplicateUidsExist(char** reason, void* log)
 static int RemoveUser(SIMPLIFIED_USER* user, void* log)
 {
     const char* commandTemplate = "userdel -f -r %s";
-    command = NULL;
+    char* command = NULL;
     int status = 0, _status = 0;
 
     if (NULL == user)
