@@ -1543,7 +1543,6 @@ int SetRootIsOnlyUidZeroAccount(void* log)
     return status;
 }
 
-
 int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
@@ -1555,14 +1554,13 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((0 == userList[i].userId) && (0 != userList[i].groupId))
+            if ((0 == strcmp(userList[i].username, g_root)) && (0 == userList[i].userId) && (0 != userList[i].groupId))
             {
                 OsConfigLogError(log, "CheckDefaultRootAccountuserIsGidZero: root user '%s' (%u) has default gid %u instead of gid 0", 
                     userList[i].username, userList[i].userId, userList[i].groupId);
                 OsConfigCaptureReason(reason, "Root user '%s' (%u) has default gid %u instead of gid 0",
                     userList[i].username, userList[i].userId, userList[i].groupId);
                 status = EPERM;
-                break;
             }
         }
     }
@@ -1580,19 +1578,11 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log)
 
 int SetDefaultRootAccountGroupIsGidZero(void* log)
 {
-    const char* command = "usermod -g 0 root";
     int status = 0;
 
     if (0 != (status = CheckDefaultRootAccountGroupIsGidZero(NULL, log)))
     {
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-        {
-            OsConfigLogInfo(log, "SetDefaultRootAccountGroupIsGidZero: default root group is gid 0");
-        }
-        else
-        {
-            OsConfigLogError(log, "SetDefaultRootAccountGroupIsGidZero: 'usermod -g 0 root' failed with %d", status);
-        }
+        status = RepairRootGroup(log);
     }
 
     return status;
