@@ -1340,7 +1340,6 @@ int RepairRootGroup(void* log)
             if ((0 == strcmp(groupList[i].groupName, g_root)) && (0 == groupList[i].groupId))
             {
                 OsConfigLogInfo(log, "CheckRootGroupExists: root group exists with gid 0");
-                OsConfigCaptureSuccessReason(reason, "Root group exists with gid 0");
                 found = true;
                 break;
             }
