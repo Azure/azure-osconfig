@@ -1308,7 +1308,7 @@ TEST_F(CommonUtilsTest, CheckNoDuplicateUsersGroups)
     EXPECT_EQ(0, CheckNoDuplicateUidsExist(nullptr, nullptr));
     EXPECT_EQ(0, CheckNoDuplicateGidsExist(nullptr, nullptr));
     EXPECT_EQ(0, CheckNoDuplicateUserNamesExist(nullptr, nullptr));
-    EXPECT_EQ(0, CheckNoDuplicateGroupsExist(nullptr, nullptr));
+    EXPECT_EQ(0, CheckNoDuplicateGroupNamesExist(nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, CheckNoPlusEntriesInFile)
