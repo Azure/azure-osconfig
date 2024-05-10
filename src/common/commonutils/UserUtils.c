@@ -777,6 +777,94 @@ int CheckNoDuplicateUidsExist(char** reason, void* log)
     return status;
 }
 
+static int RemoveUser(SIMPLIFIED_USER* user, void* log)
+{
+    const char* commandTemplate = "userdel -f -r %s";
+    command = NULL;
+    int status = 0, _status = 0;
+
+    if (NULL == user)
+    {
+        OsConfigLogError(log, "RemoveUser: invalid argument");
+        return EINVAL;
+    }
+
+    if (NULL != (command = FormatAllocateString(commandTemplate, user->username)))
+    {
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "RemoveUser: removed user '%s' (%u, %u, '%s')", user->username, user->userId, user->groupId, user->home);
+
+            if (DirectoryExists(user->home))
+            {
+                OsConfigLogError(log, "RemoveUser: home directory of user '%s' remains ('%s') and needs to be manually deleted", name, user->home);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "RemoveUser: home directory of user '%s' successfully removed ('%s')", name, user->home);
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "RemoveUser: failed to remove user '%s' (%u, %u) (%d)", user->username, user->userId, user->groupId, _status);
+        }
+
+        FREE_MEMORY(command);
+    }
+    else
+    {
+        OsConfigLogError(log, "RemoveUser: out of memory");
+        status = ENOMEM;
+    }
+
+    return status;
+}
+
+int SetNoDuplicateUids(void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0;
+    unsigned int i = 0, j = 0;
+    unsigned int hits = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; (i < userListSize) && (0 == status); i++)
+        {
+            hits = 0;
+
+            for (j = 0; (j < userListSize) && (0 == status); j++)
+            {
+                if (userList[i].userId == userList[j].userId)
+                {
+                    hits += 1;
+                }
+            }
+
+            if (hits > 1)
+            {
+                OsConfigLogError(log, "SetNoDuplicateUids: user '%s' (%u) appears more than a single time in '/etc/passwd', deleting this user account",
+                    userList[i].username, userList[i].userId);
+
+                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                {
+                    status = _status;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetNoDuplicateUids: no duplicate uids exist in /etc/passwd");
+    }
+
+    return status;
+}
+
 int CheckNoDuplicateGidsExist(char** reason, void* log)
 {
     SIMPLIFIED_GROUP* groupList = NULL;
@@ -2458,11 +2546,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
 int RemoveUserAccounts(const char* names, void* log)
 {
-    const char* commandTemplate = "userdel -f -r %s";
     size_t namesLength = 0;
     char* name = NULL;
-    char* command = NULL;
-    size_t commandLength = 0;
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     int status = 0, _status = 0;
@@ -2499,41 +2584,10 @@ int RemoveUserAccounts(const char* names, void* log)
 
                     if (0 == strcmp(userList[i].username, name))
                     {
-                        commandLength = strlen(commandTemplate) + strlen(name) + 1;
-                        if (NULL == (command = malloc(commandLength)))
-                        {
-                            OsConfigLogError(log, "RemoveUserAccounts: out of memory");
-                            status = ENOMEM;
-                            break;
-                        }
-
-                        memset(command, 0, commandLength);
-                        snprintf(command, commandLength, commandTemplate, name);
-
-                        if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-                        {
-                            OsConfigLogInfo(log, "RemoveUserAccounts: removed user '%s' (%u, %u, '%s')", userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
-
-                            if (DirectoryExists(userList[i].home))
-                            {
-                                OsConfigLogError(log, "RemoveUserAccounts: home directory of user '%s' remains ('%s') and needs to be manually deleted", name, userList[i].home);
-                            }
-                            else
-                            {
-                                OsConfigLogInfo(log, "RemoveUserAccounts: home directory of user '%s' successfully removed ('%s')", name, userList[i].home);
-                            }
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "RemoveUserAccounts: failed to remove user '%s' (%u, %u) (%d)", userList[i].username, userList[i].userId, userList[i].groupId, _status);
-                        }
-
-                        if (0 == status)
+                        if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
                         {
                             status = _status;
                         }
-
-                        FREE_MEMORY(command);
                     }
 
                     j += strlen(name);

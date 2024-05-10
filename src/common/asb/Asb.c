@@ -2678,8 +2678,7 @@ static int RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(char* value, void* l
 static int RemediateEnsureNoDuplicateUidsExist(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetNoDuplicateUids(log);
 }
 
 static int RemediateEnsureNoDuplicateGidsExist(char* value, void* log)
