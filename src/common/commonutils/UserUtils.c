@@ -1248,9 +1248,9 @@ int SetShadowGroupEmpty(void* log)
                             }
                             else
                             {
-                                OsConfigLogError(log, "SetShadowGroupEmpty: 'gpasswd -d %s %s' failed with %d",
-                                    commandTemplate, userList[i].userId, userGroupList[j].groupId, _status);
+                                OsConfigLogError(log, "SetShadowGroupEmpty: 'gpasswd -d %s %s' failed with %d", userList[i].username, g_shadow, _status);
                             }
+
                             FREE_MEMORY(command);
                         }
                         else
