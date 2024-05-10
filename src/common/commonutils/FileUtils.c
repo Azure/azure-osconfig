@@ -537,7 +537,7 @@ int RemoveLineFromFile(const char* fileName, const char* marker, void* log)
     {
         if (NULL != (fileHandle = fopen(fileName, "r")))
         {
-            if (NULL != (tempFileHandle = fopen(tempFileName, "w")))
+            if (NULL != (tempHandle = fopen(tempFileName, "w")))
             {
                 while (NULL != fgets(line, lineMax + 1, fileHandle)) 
                 {
@@ -547,7 +547,7 @@ int RemoveLineFromFile(const char* fileName, const char* marker, void* log)
                     }
                     else
                     {
-                        if (EOF == fputs(line, tempFileHandle))
+                        if (EOF == fputs(line, tempHandle))
                         {
                             if (0 == (status = errno))
                             {
@@ -559,7 +559,7 @@ int RemoveLineFromFile(const char* fileName, const char* marker, void* log)
                     }
                 }
                 
-                fclose(tempFileHandle);
+                fclose(tempHandle);
             }
             else
             {
@@ -588,6 +588,8 @@ int RemoveLineFromFile(const char* fileName, const char* marker, void* log)
         rename(fileName, tempFileName);
         remove(tempFileName);
     }
+
+    FREE_MEMORY(tempFileName);
 
     return status;
 }
