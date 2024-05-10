@@ -2714,8 +2714,10 @@ static int RemediateEnsureRootGroupExists(char* value, void* log)
 static int RemediateEnsureAllAccountsHavePasswords(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    // We cannot automatically add passwords for user accouns that can login and do not have passwords set.
+    // If we try for example to run a command such as usermod, the command line can reveal that password 
+    // in clear before it gets encrypted and saved. Thus we simply delete such accounts:
+    return RemoveUsersWithoutPasswords(log);
 }
 
 static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* value, void* log)

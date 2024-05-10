@@ -92,6 +92,7 @@ int CheckRootGroupExists(char** reason, void* log);
 int RepairRootGroup(void* log);
 int CheckRootIsOnlyUidZeroAccount(char** reason, void* log);
 int CheckAllUsersHavePasswordsSet(char** reason, void* log);
+int RemoveUsersWithoutPasswords(void* log);
 int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log);
 int CheckAllUsersHomeDirectoriesExist(char** reason, void* log);
 int CheckUsersOwnTheirHomeDirectories(char** reason, void* log);

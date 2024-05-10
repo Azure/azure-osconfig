@@ -1344,7 +1344,7 @@ int RepairRootGroup(void* log)
 
     if (false == found)
     {
-        OsConfigLogError(log, "RepairRootGroup: root group with gid 0 not found");
+        OsConfigLogInfo(log, "RepairRootGroup: root group with gid 0 not found");
 
         if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
         {
@@ -1433,6 +1433,64 @@ int CheckAllUsersHavePasswordsSet(char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: all users who need passwords appear to have passwords set");
         OsConfigCaptureSuccessReason(reason, "All users who need passwords appear to have passwords set");
+    }
+
+    return status;
+}
+
+int RemoveUsersWithoutPasswords(void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (userList[i].hasPassword)
+            {
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user '%s' (%u, %u) appears to have a password set",
+                    userList[i].username, userList[i].userId, userList[i].groupId);
+            }
+            else if (userList[i].noLogin)
+            {
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user '%s' (%u, %u) is no login",
+                    userList[i].username, userList[i].userId, userList[i].groupId);
+            }
+            else if (userList[i].isLocked)
+            {
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user '%s' (%u, %u) is locked",
+                    userList[i].username, userList[i].userId, userList[i].groupId);
+            }
+            else if (userList[i].cannotLogin)
+            {
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user '%s' (%u, %u) cannot login with password",
+                    userList[i].username, userList[i].userId, userList[i].groupId);
+            }
+            else
+            {
+                OsConfigLogError(log, "RemoveUsersWithoutPasswords: user '%s' (%u, %u) can login and has no password set",
+                    userList[i].username, userList[i].userId, userList[i].groupId);
+                
+                if (0 == userList[i].userId)
+                {
+                    OsConfigLogError(log, "RemoveUsersWithoutPasswords: the root account's password must be manually fixed");
+                    status = EPERM;
+                }
+                else if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                {
+                    status = _status;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: all users who need passwords have passwords set");
     }
 
     return status;
