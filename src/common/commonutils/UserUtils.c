@@ -1359,11 +1359,10 @@ int RepairRootGroup(void* log)
     {
         OsConfigLogError(log, "RepairRootGroup: failed removing corrupted root entries from '%s' ", etcGroup);
     }
-    }
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "RepairRootGroup: root group exists with gid 0");
+        OsConfigLogInfo(log, "RepairRootGroup: root group was repaired and exists with gid 0");
     }
 
     return status;
