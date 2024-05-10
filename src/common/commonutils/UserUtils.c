@@ -1321,69 +1321,44 @@ int RepairRootGroup(void* log)
     const char* rootLine = "root:x:0:\n";
     const char* tempFileName = "/tmp/~group";
     char* original = NULL;
-    SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupListSize = 0;
-    unsigned int i = 0;
-    bool found = false;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    if (0 == (status = RemoveMarkedLinesFromFile(etcGroup, g_root, log)))
     {
-        for (i = 0; i < groupListSize; i++)
+        if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
         {
-            if ((0 == strcmp(groupList[i].groupName, g_root)) && (0 == groupList[i].groupId))
+            if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
             {
-                OsConfigLogInfo(log, "RepairRootGroup: root group exists with gid 0");
-                found = true;
-                break;
-            }
-        }
-    }
-
-    FreeGroupList(&groupList, groupListSize);
-
-    if (false == found)
-    {
-        OsConfigLogInfo(log, "RepairRootGroup: root group with gid 0 not found");
-
-        // Make sure no corrupted root entries exist in /etc/group
-        if (0 == (status = RemoveMarkedLinesFromFile(etcGroup, g_root, log)))
-        {
-            if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
-            {
-                if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
+                if (true == AppendToFile(tempFileName, original, strlen(original), log))
                 {
-                    if (true == AppendToFile(tempFileName, original, strlen(original), log))
-                    {
-                        // When done assembling, move the temp file in an atomic step to real /etc/group file
-                        rename(tempFileName, etcGroup);
-                    }
-                    else
-                    {
-                        OsConfigLogError(log, "RepairRootGroup: failed appending to to temp file '%s", tempFileName);
-                        status = ENOENT;
-                    }
-
-                    remove(tempFileName);
+                    rename(tempFileName, etcGroup);
                 }
                 else
                 {
-                    OsConfigLogError(log, "RepairRootGroup: failed saving to temp file '%s", tempFileName);
-                    status = EPERM;
+                    OsConfigLogError(log, "RepairRootGroup: failed appending to to temp file '%s", tempFileName);
+                    status = ENOENT;
                 }
 
-                FREE_MEMORY(original);
+                remove(tempFileName);
             }
             else
             {
-                OsConfigLogError(log, "RepairRootGroup: failed reading '%s", etcGroup);
-                status = EACCES;
+                OsConfigLogError(log, "RepairRootGroup: failed saving to temp file '%s", tempFileName);
+                status = EPERM;
             }
+
+            FREE_MEMORY(original);
         }
         else
         {
-            OsConfigLogError(log, "RepairRootGroup: failed removing corrupted root entries from '%s' ", etcGroup);
+            OsConfigLogError(log, "RepairRootGroup: failed reading '%s", etcGroup);
+            status = EACCES;
         }
+    }
+    else
+    {
+        OsConfigLogError(log, "RepairRootGroup: failed removing corrupted root entries from '%s' ", etcGroup);
+    }
     }
 
     if (0 == status)
