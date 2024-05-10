@@ -657,7 +657,7 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(void* log)
     unsigned int groupListSize = 0;
     unsigned int i = 0, j = 0, k = 0;
     bool found = false;
-    int status = 0;
+    int status = 0, _status = 0;
 
     if ((0 == (status = EnumerateUsers(&userList, &userListSize, log))) &&
         (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log))))
@@ -692,7 +692,7 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(void* log)
 
                         if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].userId, userGroupList[j].groupId)))
                         {
-                            if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                            if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                             {
                                 OsConfigLogError(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: user '%s' (%u) was removed from group '%s' (%u)",
                                     userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
@@ -700,11 +700,21 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(void* log)
                             else
                             {
                                 OsConfigLogError(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: 'gpasswd -d %u %u' failed with %d",
-                                    userList[i].userId, userGroupList[j].groupId, status);
+                                    userList[i].userId, userGroupList[j].groupId, _status);
                             }
 
                             FREE_MEMORY(command);
                         }
+                        else
+                        {
+                            OsConfigLogError(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: out of memory");
+                            _status = ENOMEM;
+                        }
+                    }
+
+                    if (0 == status)
+                    {
+                        status = _status;
                     }
                 }
 
