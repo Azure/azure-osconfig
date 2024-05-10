@@ -923,7 +923,7 @@ static int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
         return EINVAL;
     }
 
-    if (grpup->hasUsers)
+    if (group->hasUsers)
     {
         OsConfigLogInfo(log, "RemoveGroup: attempting to delete a group that has users ('%s', %u)", group->groupName, group->groupId);
 
