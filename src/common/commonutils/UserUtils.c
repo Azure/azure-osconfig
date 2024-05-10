@@ -918,10 +918,15 @@ static int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
     unsigned int i = 0;
     int status = 0;
 
-    if ((NULL == group) || (0 == group->groupId))
+    if (NULL == group)
     {
         OsConfigLogError(log, "RemoveGroup: invalid argument");
         return EINVAL;
+    }
+    else if (0 == strcmp(g_root, group->groupName))
+    {
+        OsConfigLogError(log, "RemoveGroup: cannot remove root group");
+        return EPERM;
     }
 
     if (group->hasUsers)
@@ -941,6 +946,7 @@ static int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
                 }
             }
         }
+        
         FreeUsersList(&userList, userListSize);
     }
 
