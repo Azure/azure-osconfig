@@ -1569,16 +1569,16 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log)
     unsigned int i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateAllusers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
             if ((0 == userList[i].userId) && (0 != userList[i].groupId))
             {
                 OsConfigLogError(log, "CheckDefaultRootAccountuserIsGidZero: root user '%s' (%u) has default gid %u instead of gid 0", 
-                    userList[i].userName, userList[i].userId, userList[i].groupId);
+                    userList[i].username, userList[i].userId, userList[i].groupId);
                 OsConfigCaptureReason(reason, "Root user '%s' (%u) has default gid %u instead of gid 0",
-                    userList[i].userName, userList[i].userId, userList[i].groupId);
+                    userList[i].username, userList[i].userId, userList[i].groupId);
                 status = EPERM;
                 break;
             }
