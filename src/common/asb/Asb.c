@@ -1063,7 +1063,7 @@ static char* AuditEnsureNoDuplicateUserNamesExist(void* log)
 static char* AuditEnsureNoDuplicateGroupsExist(void* log)
 {
     char* reason = NULL;
-    CheckNoDuplicateGroupsExist(&reason, log);
+    CheckNoDuplicateGroupNamesExist(&reason, log);
     return reason;
 }
 
@@ -2696,15 +2696,13 @@ static int RemediateEnsureNoDuplicateUserNamesExist(char* value, void* log)
 static int RemediateEnsureNoDuplicateGroupsExist(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    int SetNoDuplicateGroupNames(log);
 }
 
 static int RemediateEnsureShadowGroupIsEmpty(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetShadowGroupEmpty(log);
 }
 
 static int RemediateEnsureRootGroupExists(char* value, void* log)

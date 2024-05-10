@@ -10,6 +10,7 @@
 #define NUMBER_OF_SECONDS_IN_A_DAY 86400
 
 static const char* g_root = "root";
+static const char* g_shadow = "shadow";
 
 static void ResetUserEntry(SIMPLIFIED_USER* target)
 {
@@ -1095,7 +1096,7 @@ int SetNoDuplicateUserNames(void* log)
     return status;
 }
 
-int CheckNoDuplicateGroupsExist(char** reason, void* log)
+int CheckNoDuplicateGroupNamesExist(char** reason, void* log)
 {
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
@@ -1117,7 +1118,7 @@ int CheckNoDuplicateGroupsExist(char** reason, void* log)
 
                     if (hits > 1)
                     {
-                        OsConfigLogError(log, "CheckNoDuplicateGroupsExist: group name '%s' appears more than a single time in '/etc/group'", groupList[i].groupName);
+                        OsConfigLogError(log, "CheckNoDuplicateGroupNamesExist: group name '%s' appears more than a single time in '/etc/group'", groupList[i].groupName);
                         OsConfigCaptureReason(reason, "Group name '%s' appears more than a single time in '/etc/group'", groupList[i].groupName);
                         status = EEXIST;
                         break;
@@ -1131,8 +1132,51 @@ int CheckNoDuplicateGroupsExist(char** reason, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckNoDuplicateGroupsExist: no duplicate group names exist in '/etc/group'");
+        OsConfigLogInfo(log, "CheckNoDuplicateGroupNamesExist: no duplicate group names exist in '/etc/group'");
         OsConfigCaptureSuccessReason(reason, "No duplicate group names exist in '/etc/group'");
+    }
+
+    return status;
+}
+
+int SetNoDuplicateGroupNames(void* log)
+{
+    SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int groupListSize = 0;
+    unsigned int i = 0, j = 0;
+    unsigned int hits = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    {
+        for (i = 0; i < groupListSize; i++)
+        {
+            hits = 0;
+
+            for (j = 0; j < groupListSize; j++)
+            {
+                if (groupList[i].groupId == groupList[j].groupId)
+                {
+                    hits += 1;
+                }
+            }
+
+            if (hits > 1)
+            {
+                OsConfigLogError(log, "SetNoDuplicateGroupNames: group name '%s' appears more than a single time in '/etc/group'", groupList[i].groupName);
+                if ((0 != (_status = RemoveGroup(&(groupList[i]), log))) && (0 == status))
+                {
+                    status = _status;
+                }
+            }
+        }
+    }
+
+    FreeGroupList(&groupList, groupListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetNoDuplicateGroupNames: no duplicate group names exist in '/etc/group'");
     }
 
     return status;
@@ -1140,8 +1184,6 @@ int CheckNoDuplicateGroupsExist(char** reason, void* log)
 
 int CheckShadowGroupIsEmpty(char** reason, void* log)
 {
-    const char* shadow = "shadow";
-
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;
@@ -1152,7 +1194,7 @@ int CheckShadowGroupIsEmpty(char** reason, void* log)
     {
         for (i = 0; i < groupListSize; i++)
         {
-            if ((0 == strcmp(groupList[i].groupName, shadow)) && (true == groupList[i].hasUsers))
+            if ((0 == strcmp(groupList[i].groupName, g_shadow)) && (true == groupList[i].hasUsers))
             {
                 OsConfigLogError(log, "CheckShadowGroupIsEmpty: group 'shadow' (%u) is not empty", groupList[i].groupId);
                 OsConfigCaptureReason(reason, "Group 'shadow' is not empty: %u", groupList[i].groupId);
@@ -1168,6 +1210,76 @@ int CheckShadowGroupIsEmpty(char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckShadowGroupIsEmpty: shadow group is %s", found ? "empty" : "not found");
         OsConfigCaptureSuccessReason(reason, "The 'shadow' group is %s", found ? "empty" : "not found");
+    }
+
+    return status;
+}
+
+int SetShadowGroupEmpty(void* log)
+{
+    const char* commandTemplate = "gpasswd -d %s %s";
+    char* command = NULL;
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0;
+    struct SIMPLIFIED_GROUP* userGroupList = NULL;
+    unsigned int userGroupListSize = 0;
+    unsigned int i = 0, j = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (0 == (status = EnumerateUserGroups(&userList[i], &, &userGroupListSize, log)))
+            {
+                for (j = 0; j < userGroupListSize; j++)
+                {
+                    found = false;
+
+                    for (k = 0; k < groupListSize; k++)
+                    {
+                        if (0 == strcmp(userGroupList[j].groupName, g_shadow))
+                        {
+                            OsConfigLogInfo(log, "SetShadowGroupEmpty: user '%s' (%u) is a member of group '%s' (%u)", 
+                                userList[i].username, userList[i].userId, g_shadow, userGroupList[j].groupId);
+                            
+                            if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].username, g_shadow)))
+                            {
+                                if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                                {
+                                    OsConfigLogError(log, "SetShadowGroupEmpty: user '%s' (%u) was removed from group '%s' (%u)",
+                                        userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+                                }
+                                else
+                                {
+                                    OsConfigLogError(log, "SetShadowGroupEmpty: '%s' failed with %d", commandTemplate, userList[i].userId, userGroupList[j].groupId, _status);
+                                }
+                                FREE_MEMORY(command);
+                            }
+                            else
+                            {
+                                OsConfigLogError(log, "SetShadowGroupEmpty: out of memory");
+                                _status = ENOMEM;
+                            }
+
+                            if (_status && (0 == status))
+                            {
+                                status = _status;
+                            }
+                        }
+                    }
+                }
+
+                FreeGroupList(&userGroupList, userGroupListSize);
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetShadowGroupEmpty: the 'shadow' group is empty");
     }
 
     return status;
