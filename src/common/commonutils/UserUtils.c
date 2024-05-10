@@ -1318,7 +1318,7 @@ int CheckRootGroupExists(char** reason, void* log)
 int RepairRootGroup(void* log)
 {
     const char* etcGroup = "/etc/group";
-    const char* rootLine = "root:x:0:";
+    const char* rootLine = "root:x:0:\n";
     const char* tempFileName = "/tmp/~group";
     char* original = NULL;
     SIMPLIFIED_GROUP* groupList = NULL;
@@ -1344,7 +1344,7 @@ int RepairRootGroup(void* log)
 
     if (false == found)
     {
-        OsConfigLogError(log, "CheckRootGroupExists: root group with gid 0 not found");
+        OsConfigLogError(log, "RepairRootGroup: root group with gid 0 not found");
 
         if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
         {
@@ -1357,7 +1357,7 @@ int RepairRootGroup(void* log)
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckRootGroupExists: failed appending to to temp file '%s", tempFileName);
+                    OsConfigLogError(log, "RepairRootGroup: failed appending to to temp file '%s", tempFileName);
                     status = ENOENT;
                 }
                 
@@ -1365,7 +1365,7 @@ int RepairRootGroup(void* log)
             }
             else
             {
-                OsConfigLogError(log, "CheckRootGroupExists: failed saving to temp file '%s", tempFileName);
+                OsConfigLogError(log, "RepairRootGroup: failed saving to temp file '%s", tempFileName);
                 status = EPERM;
             }
             
@@ -1373,7 +1373,7 @@ int RepairRootGroup(void* log)
         }
         else
         {
-            OsConfigLogError(log, "CheckRootGroupExists: failed reading '%s", etcGroup);
+            OsConfigLogError(log, "RepairRootGroup: failed reading '%s", etcGroup);
             status = EACCES;
         }
     }
