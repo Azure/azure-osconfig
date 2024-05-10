@@ -1226,7 +1226,7 @@ int SetShadowGroupEmpty(void* log)
     unsigned int i = 0, j = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
