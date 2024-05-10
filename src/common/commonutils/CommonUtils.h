@@ -83,7 +83,7 @@ int UninstallPackage(const char* packageName, void* log);
 unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
 int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* log);
-int RemoveLineFromFile(const char* fileName, const char* marker, void* log);
+int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, void* log);
 int FindTextInFile(const char* fileName, const char* text, void* log);
 int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, void* log);
 int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, void* log);

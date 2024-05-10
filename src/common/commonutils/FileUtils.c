@@ -512,7 +512,7 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
     return status;
 }
 
-int RemoveLineFromFile(const char* fileName, const char* marker, void* log)
+int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, void* log)
 {
     const char* tempFileNameTemplate = "/tmp/~%s";
     char* tempFileName = NULL;
@@ -524,12 +524,12 @@ int RemoveLineFromFile(const char* fileName, const char* marker, void* log)
 
     if ((NULL == fileName) || (false == FileExists(fileName)) || (NULL == marker))
     {
-        OsConfigLogError(log, "RemoveLineFromFile called with invalid arguments");
+        OsConfigLogError(log, "RemoveMarkedLinesFromFile called with invalid arguments");
         return EINVAL;
     }
     else if (NULL == (line = malloc(lineMax + 1)))
     {
-        OsConfigLogError(log, "RemoveLineFromFile: out of memory");
+        OsConfigLogError(log, "RemoveMarkedLinesFromFile: out of memory");
         return ENOMEM;
     }
 
@@ -543,7 +543,7 @@ int RemoveLineFromFile(const char* fileName, const char* marker, void* log)
                 {
                     if (NULL != strstr(line, marker))
                     {
-                        OsConfigLogInfo(log, "RemoveLineFromFile: skipping  from file '%s' the line '%s'", fileName, line);
+                        OsConfigLogInfo(log, "RemoveMarkedLinesFromFile: skipping  from file '%s' the line '%s'", fileName, line);
                     }
                     else
                     {
@@ -554,7 +554,7 @@ int RemoveLineFromFile(const char* fileName, const char* marker, void* log)
                                 status = EPERM;
                             }
 
-                            OsConfigLogError(log, "RemoveLineFromFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
+                            OsConfigLogError(log, "RemoveMarkedLinesFromFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
                         }
                     }
                 }
@@ -563,7 +563,7 @@ int RemoveLineFromFile(const char* fileName, const char* marker, void* log)
             }
             else
             {
-                OsConfigLogError(log, "RemoveLineFromFile: failed to create temporary file '%s'", tempFileName);
+                OsConfigLogError(log, "RemoveMarkedLinesFromFile: failed to create temporary file '%s'", tempFileName);
                 status = EACCES;
             }
 
@@ -571,13 +571,13 @@ int RemoveLineFromFile(const char* fileName, const char* marker, void* log)
         }
         else
         {
-            OsConfigLogError(log, "RemoveLineFromFile: cannot read from '%s'", fileName);
+            OsConfigLogError(log, "RemoveMarkedLinesFromFile: cannot read from '%s'", fileName);
             status = EACCES;
         }
     }
     else
     {
-        OsConfigLogError(log, "RemoveLineFromFile: out of memory");
+        OsConfigLogError(log, "RemoveMarkedLinesFromFile: out of memory");
         status = ENOMEM;
     }
     
