@@ -2723,8 +2723,7 @@ static int RemediateEnsureAllAccountsHavePasswords(char* value, void* log)
 static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetRootIsOnlyUidZeroAccount(log);
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, void* log)
@@ -2758,8 +2757,7 @@ static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, void* lo
 static int RemediateEnsureRootIsOnlyUidZeroAccount(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetRootIsOnlyUidZeroAccount(log);
 }
 
 static int RemediateEnsureAllUsersHomeDirectoriesExist(char* value, void* log)
