@@ -1346,35 +1346,43 @@ int RepairRootGroup(void* log)
     {
         OsConfigLogInfo(log, "RepairRootGroup: root group with gid 0 not found");
 
-        if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
+        // Make sure no corrupted root entries exist in /etc/group
+        if (0 == (status = RemoveMarkedLinesFromFile(etcGroup, g_root, log)))
         {
-            if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
+            if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
             {
-                if (true == AppendToFile(tempFileName, original, strlen(original), log))
+                if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
                 {
-                    // When done assembling, move the temp file in an atomic step to real /etc/group file
-                    rename(tempFileName, etcGroup);
+                    if (true == AppendToFile(tempFileName, original, strlen(original), log))
+                    {
+                        // When done assembling, move the temp file in an atomic step to real /etc/group file
+                        rename(tempFileName, etcGroup);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "RepairRootGroup: failed appending to to temp file '%s", tempFileName);
+                        status = ENOENT;
+                    }
+
+                    remove(tempFileName);
                 }
                 else
                 {
-                    OsConfigLogError(log, "RepairRootGroup: failed appending to to temp file '%s", tempFileName);
-                    status = ENOENT;
+                    OsConfigLogError(log, "RepairRootGroup: failed saving to temp file '%s", tempFileName);
+                    status = EPERM;
                 }
-                
-                remove(tempFileName);
+
+                FREE_MEMORY(original);
             }
             else
             {
-                OsConfigLogError(log, "RepairRootGroup: failed saving to temp file '%s", tempFileName);
-                status = EPERM;
+                OsConfigLogError(log, "RepairRootGroup: failed reading '%s", etcGroup);
+                status = EACCES;
             }
-            
-            FREE_MEMORY(original);
         }
         else
         {
-            OsConfigLogError(log, "RepairRootGroup: failed reading '%s", etcGroup);
-            status = EACCES;
+            OsConfigLogError(log, "RepairRootGroup: failed removing corrupted root entries from '%s' ", etcGroup);
         }
     }
 
