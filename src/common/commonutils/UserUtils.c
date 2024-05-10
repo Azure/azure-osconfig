@@ -1564,20 +1564,22 @@ int SetRootIsOnlyUidZeroAccount(void* log)
 
 int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log)
 {
-    SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupListSize = 0;
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0;
     unsigned int i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    if (0 == (status = EnumerateAllusers(&userList, &userListSize, log)))
     {
-        for (i = 0; i < groupListSize; i++)
+        for (i = 0; i < userListSize; i++)
         {
-            if ((0 == strcmp(groupList[i].groupName, g_root)) && groupList[i].groupId)
+            if ((0 == userList[i].userId) && (0 != userList[i].groupId))
             {
-                OsConfigLogError(log, "CheckDefaultRootAccountGroupIsGidZero: group '%s' is gid %u", groupList[i].groupName, groupList[i].groupId);
-                OsConfigCaptureReason(reason, "Group '%s' is gid %u", groupList[i].groupName, groupList[i].groupId);
-                status = EACCES;
+                OsConfigLogError(log, "CheckDefaultRootAccountuserIsGidZero: root user '%s' (%u) has default gid %u instead of gid 0", 
+                    userList[i].userName, userList[i].userId, userList[i].groupId);
+                OsConfigCaptureReason(reason, "Root user '%s' (%u) has default gid %u instead of gid 0",
+                    userList[i].userName, userList[i].userId, userList[i].groupId);
+                status = EPERM;
                 break;
             }
         }
@@ -1589,6 +1591,26 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckDefaultRootAccountGroupIsGidZero: default root group is gid 0");
         OsConfigCaptureSuccessReason(reason, "Default root group is gid 0");
+    }
+
+    return status;
+}
+
+int SetDefaultRootAccountGroupIsGidZero(void* log)
+{
+    const char* command = "usermod -g 0 root";
+    int status = 0;
+
+    if (0 != (status = CheckDefaultRootAccountGroupIsGidZero(NULL, log)))
+    {
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "SetDefaultRootAccountGroupIsGidZero: default root group is gid 0");
+        }
+        else
+        {
+            OsConfigLogError(log, "SetDefaultRootAccountGroupIsGidZero: 'usermod -g 0 root' failed with %d", status);
+        }
     }
 
     return status;

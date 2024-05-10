@@ -95,6 +95,7 @@ int SetRootIsOnlyUidZeroAccount(void* log);
 int CheckAllUsersHavePasswordsSet(char** reason, void* log);
 int RemoveUsersWithoutPasswords(void* log);
 int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log);
+int SetDefaultRootAccountGroupIsGidZero(void* log);
 int CheckAllUsersHomeDirectoriesExist(char** reason, void* log);
 int CheckUsersOwnTheirHomeDirectories(char** reason, void* log);
 int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, char** reason, void* log);

@@ -2747,8 +2747,7 @@ static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(char* value, void* log)
 static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetDefaultRootAccountGroupIsGidZero(log);
 }
 
 static int RemediateEnsureRootIsOnlyUidZeroAccount(char* value, void* log)
