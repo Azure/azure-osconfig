@@ -2696,7 +2696,7 @@ static int RemediateEnsureNoDuplicateUserNamesExist(char* value, void* log)
 static int RemediateEnsureNoDuplicateGroupsExist(char* value, void* log)
 {
     UNUSED(value);
-    int SetNoDuplicateGroupNames(log);
+    return SetNoDuplicateGroupNames(log);
 }
 
 static int RemediateEnsureShadowGroupIsEmpty(char* value, void* log)
