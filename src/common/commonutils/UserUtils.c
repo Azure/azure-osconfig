@@ -1656,8 +1656,8 @@ int SetUserHomeDirectories(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    unisgned int defaultHomeDirAccess = 750;
-    int status = 0, _status = 0;;
+    unsigned int defaultHomeDirAccess = 750;
+    int status = 0, _status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
@@ -1670,7 +1670,7 @@ int SetUserHomeDirectories(void* log)
             else if (NULL != userList[i].home)
             {
                 // If the home directory does not exist, create it
-                if (false == DirectoryExists(userList[i].home)
+                if (false == DirectoryExists(userList[i].home))
                 {
                     OsConfigLogError(log, "SetUserHomeDirectories: user '%s' (%u, %u) home directory '%s' not found",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
