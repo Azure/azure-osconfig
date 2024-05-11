@@ -513,7 +513,7 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
     return status;
 }
 
-int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, const char* replacement, void* log)
+int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, void* log)
 {
     const char* tempFileNameTemplate = "/tmp/~temporary%d";
     char* tempFileName = NULL;
@@ -544,26 +544,7 @@ int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, const ch
                 {
                     if (NULL != strstr(line, marker))
                     {
-                        if (NULL == replacement)
-                        {
-                            OsConfigLogInfo(log, "RemoveMarkedLinesFromFile: skipping  from file '%s' the line '%s'", fileName, line);
-                        }
-                        else
-                        {
-                            if (EOF == fputs(replacement, tempHandle))
-                            {
-                                if (0 == (status = errno))
-                                {
-                                    status = EPERM;
-                                }
-
-                                OsConfigLogError(log, "RemoveMarkedLinesFromFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
-                            }
-                            else
-                            {
-                                OsConfigLogInfo(log, "RemoveMarkedLinesFromFile: in file '%s', replaced line '%s' with '%s'", fileName, line, replacement);
-                            }
-                        }
+                        OsConfigLogInfo(log, "RemoveMarkedLinesFromFile: skipping  from file '%s' the line '%s'", fileName, line);
                     }
                     else
                     {
@@ -577,6 +558,8 @@ int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, const ch
                             OsConfigLogError(log, "RemoveMarkedLinesFromFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
                         }
                     }
+
+                    line[0] = 0;
                 }
                 
                 fclose(tempHandle);

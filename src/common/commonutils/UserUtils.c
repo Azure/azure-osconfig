@@ -1354,10 +1354,10 @@ int RepairRootGroup(void* log)
         if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
         {
             // Save content loaded from /etc/group to temporary file
-            if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
+            if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
             {
                 // Delete from temporary file any lines containing "root"
-                if (0 == (status = RemoveMarkedLinesFromFile(tempFileName, g_root, NULL, log)))
+                if (0 == (status = RemoveMarkedLinesFromFile(tempFileName, g_root, log)))
                 {
                     // Free the previously loaded content, we'll reload
                     FREE_MEMORY(original);
@@ -1369,10 +1369,10 @@ int RepairRootGroup(void* log)
                         remove(tempFileName);
                         
                         // Save correct root line to the recreated temporary file
-                        if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
+                        if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
                         {
                             // Append to temporary file the cleaned content
-                            if (true == AppendToFile(tempFileName, original, strlen(original), log))
+                            if (AppendToFile(tempFileName, original, strlen(original), log))
                             {
                                 // In a single atomic operation move edited contents from temporary file to /etc/group
                                 rename(tempFileName, etcGroup);
@@ -2030,13 +2030,20 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
         {
             if (NULL != (original = LoadStringFromFile(etcLoginDefs, false, log)))
             {
-                if (true == SavePayloadToFile(tempLoginDefs, original, strlen(original), log))
+                if (SavePayloadToFile(tempLoginDefs, original, strlen(original), log))
                 {
-                    if (0 == (status = RemoveMarkedLinesFromFile(tempLoginDefs, encryptMethodWithSpace, line, log)))
+                    if (0 == (status = RemoveMarkedLinesFromFile(tempLoginDefs, encryptMethodWithSpace, log)))
                     {
-                        rename(tempLoginDefs, etcLoginDefs);
-                        
-                        OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: '%s' is added to '%s", line, etcLoginDefs);
+                        if (AppendToFile(tempLoginDefs, line, strlen(line), log))
+                        {
+                            rename(tempLoginDefs, etcLoginDefs);
+                            OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: '%s' is added to '%s", line, etcLoginDefs);
+                        }
+                        else
+                        {
+                            OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed to append '%s' to '%s", line, etcLoginDefs);
+                            status = ENOENT;
+                        }
                     }
                     
                     remove(tempLoginDefs);
