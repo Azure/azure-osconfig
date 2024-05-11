@@ -520,7 +520,6 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     FILE* fileHandle = NULL;
     FILE* tempHandle = NULL;
     char* line = NULL;
-    char* found = NULL;
     long lineMax = sysconf(_SC_LINE_MAX);
     long newlineLength = newline ? (long)strlen(newline) : 0;
     bool skipLine = false;
