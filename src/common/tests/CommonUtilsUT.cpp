@@ -2016,7 +2016,6 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
         "456 DEF\n"
         "456 DEF\n"
         "456 DEF\n"
-        "456 DEF\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
         "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
 
