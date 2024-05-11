@@ -1684,7 +1684,7 @@ int SetUserHomeDirectories(void* log)
                     {
                         if (0 == (_status = errno))
                         {
-                            _status = EACCESS;
+                            _status = EACCES;
                         }
 
                         OsConfigLogError(log, "SetUserHomeDirectories: cannot create home directory '%s' for user '%s' (%u, %u) (%d)",
@@ -1693,7 +1693,7 @@ int SetUserHomeDirectories(void* log)
                 }
 
                 // If the home directory does not have correct ownership and access, correct this
-                if (true == DirectoryExists(userList[i].home)
+                if (true == DirectoryExists(userList[i].home))
                 {
                     if (0 != (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, defaultHomeDirAccess, log)))
                     {
