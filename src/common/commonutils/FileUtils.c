@@ -603,9 +603,9 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     char* tempFileName = NULL;
     FILE* fileHandle = NULL;
     FILE* tempHandle = NULL;
-    long lineMax = sysconf(_SC_LINE_MAX);
     char* line = NULL;
-    size_t newlineLength = newline ? strlen(newline) : 0;
+    long lineMax = sysconf(_SC_LINE_MAX);
+    long newlineLength = newline ? (long)strlen(newline) : 0;
     int status = 0;
 
     if ((NULL == fileName) || (false == FileExists(fileName)) || (NULL == marker) || (NULL == newline) || (0 == newlineLength))
@@ -631,7 +631,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                     {
                         OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: replacing from file '%s' the line '%s' with '%s'", fileName, line, newline);
                         memset(line, 0, lineMax + 1);
-                        memcpy(line, newline, ((long)newlineLength > lineMax) ? lineMax : newlineLength);
+                        memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
                     }
 
                     if (EOF == fputs(line, tempHandle))
