@@ -1985,7 +1985,7 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
 {
     const char* etcLoginDefs = "/etc/login.defs"; 
     const char* tempLoginDefs = "/etc/~login.defs.copy";
-    onst char* encryptMethodWithSpace = "ENCRYPT_METHOD ";
+    const char* encryptMethodWithSpace = "ENCRYPT_METHOD ";
     const char* lineTemplate = "\n%s%s\n";
     char* encryption = EncryptionName(algorithm);
     char* original = NULL;
