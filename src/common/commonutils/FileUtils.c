@@ -631,7 +631,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                     {
                         OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: replacing from file '%s' the line '%s' with '%s'", fileName, line, newline);
                         memset(line, 0, lineMax + 1);
-                        memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
+                        memcpy(line, newline, ((long)newlineLength > lineMax) ? lineMax : newlineLength);
                     }
 
                     if (EOF == fputs(line, tempHandle))
