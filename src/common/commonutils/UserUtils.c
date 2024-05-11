@@ -2055,11 +2055,6 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
                 status = EACCES;
             }
 
-            if (0 == status)
-            {
-                
-            }
-
             FREE_MEMORY(line);
         }
         else
