@@ -130,7 +130,7 @@ static char* EncryptionName(int type)
     switch (type)
     {
         case md5:
-            name = "md5";
+            name = "MD5";
             break;
 
         case blowfish:
@@ -142,15 +142,15 @@ static char* EncryptionName(int type)
             break;
 
         case unknownBlowfish:
-            name = "unknown blowfish";
+            name = "unknown blowFish";
             break;
 
         case sha256:
-            name = "sha-256";
+            name = "SHA256";
             break;
 
         case sha512:
-            name = "sha-512";
+            name = "SHA512";
             break;
 
         case unknown:
@@ -1943,46 +1943,109 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
 int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, void* log)
 {
-    SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0, i = 0;
+    const char* command = "cat /etc/login.defs | grep ENCRYPT_METHOD | grep ^[^#]";
+    char* encryption = EncryptionName(algorithm);
+    char* textResult = NULL;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if ((0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &textResult, NULL, log))) && (NULL != textResult))
     {
-        for (i = 0; i < userListSize; i++)
+        RemovePrefixUpTo(textResult, ' ');
+
+        if (0 == strcmp(textResult, encryption))
         {
-            if (false == userList[i].hasPassword)
+            OsConfigLogInfo(log, "CheckPasswordHashingAlgorithm: the correct user password encryption algorithm '%s' (%d) is currently set in '/etc/login.defs'", encryption, algorithm);
+            OsConfigCaptureSuccessReason(reason, "The correct user password encryption algorithm '%s' (%d) is currently set in '/etc/login.defs'", encryption, algorithm);
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckPasswordHashingAlgorithm: the user password encryption algorithm currently set in '/etc/login.defs' to '%s' is different from the required '%s' (%d) ", 
+                textResult, encryption, algorithm);
+            OsConfigCaptureReason(reason, "The user password encryption algorithm currently set in '/etc/login.defs' to '%s' is different from the required '%s' (%d) ",
+                textResult, encryption, algorithm);
+        }
+
+        FREE_MEMORY(textResult);
+    }
+    else
+    {
+        if (0 == status)
+        {
+            status = ENOENT;
+        }
+
+        OsConfigLogError(log, "CheckPasswordHashingAlgorithm: failed to read 'ENCRYPT_METHOD' from '/etc/login.defs' (%d)", status);
+        OsConfigCaptureReason(reason, "Failed to read 'ENCRYPT_METHOD' from '/etc/login.defs' (%d)", status);
+    }
+
+    return status;
+}
+
+int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
+{
+    const char* etcLoginDefs = "/etc/login.defs"; 
+    const char* tempLoginDefs = "/etc/~login.defs.copy";
+    onst char* encryptMethodWithSpace = "ENCRYPT_METHOD ";
+    const char* lineTemplate = "\n%s%s\n";
+    char* encryption = EncryptionName(algorithm);
+    char* original = NULL;
+    char* line = NULL;
+    int status = 0;
+
+    if ((md5 != algorithm) && (sha256 != algorithm) && (sha512 != algorithm))
+    {
+        OsConfigLogError(log, "SetPasswordHashingAlgorithm: unsupported algorithm argument (%u, not: %u, %u, or %u)", algorithm, md5, sha256, sha512);
+        return EINVAL;
+    }
+    else if (NULL == (line = FormatAllocateString(lineTemplate, encryptMethodWithSpace, encryption)))
+    {
+        OsConfigLogError(log, "SetPasswordHashingAlgorithm: out of memory");
+        return ENOMEM;
+    }
+    
+    if (0 == (status = RemoveMarkedLinesFromFile(etcLoginDefs, encryptMethodWithSpace, log)))
+    {
+        if (NULL != (original = LoadStringFromFile(etcLoginDefs, false, log)))
+        {
+            if (true == SavePayloadToFile(tempLoginDefs, original, strlen(original), log))
             {
-                continue;
-            }
-            else
-            {
-                if (algorithm == userList[i].passwordEncryption)
+                if (true == AppendToFile(tempLoginDefs, line, strlen(line), log))
                 {
-                    OsConfigLogInfo(log, "CheckPasswordHashingAlgorithm: user '%s' (%u, %u) has a password encrypted with the proper algorithm %s (%d)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, EncryptionName(userList[i].passwordEncryption), userList[i].passwordEncryption);
+                    rename(tempLoginDefs, etcLoginDefs);
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has a password encrypted with algorithm %d (%s) instead of %d (%s)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordEncryption, EncryptionName(userList[i].passwordEncryption), 
-                        algorithm, EncryptionName(algorithm));
-                    OsConfigCaptureReason(reason, "User '%s' (%u, %u) has a password encrypted with algorithm %d (%s) instead of %d (%s)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordEncryption,
-                        EncryptionName(userList[i].passwordEncryption), algorithm, EncryptionName(algorithm));
+                    OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed appending '%s' to to temp file '%s", line, tempLoginDefs);
                     status = ENOENT;
                 }
+
+                remove(tempLoginDefs);
             }
+            else
+            {
+                OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed saving copy of '%s' to temp file '%s", etcLoginDefs, tempLoginDefs);
+                status = EPERM;
+            }
+
+            FREE_MEMORY(original);
+        }
+        else
+        {
+            OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed reading '%s", etcLoginDefs);
+            status = EACCES;
         }
     }
-
-    FreeUsersList(&userList, userListSize);
+    else
+    {
+        OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed removing existing ENCRYPT_METHOD entries from '%s' ", etcLoginDefs);
+    }
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckPasswordHashingAlgorithm: all users who have passwords have them encrypted with algorithm %s (%d)", EncryptionName(algorithm), algorithm);
-        OsConfigCaptureSuccessReason(reason, "All users who have passwords have them encrypted with algorithm '%s' (%d)", EncryptionName(algorithm), algorithm);
+        OsConfigLogError(log, "SetPasswordHashingAlgorithm: added '%s' to '%s", line, etcLoginDefs);
     }
+
+    FREE_MEMORY(line);
 
     return status;
 }

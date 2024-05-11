@@ -1169,7 +1169,7 @@ static char* AuditEnsureRestrictedUserHomeDirectories(void* log)
 static char* AuditEnsurePasswordHashingAlgorithm(void* log)
 {
     char* reason = NULL;
-    CheckPasswordHashingAlgorithm(atoi(g_desiredEnsurePasswordHashingAlgorithm ? 
+    CheckPasswordHashingAlgorithm((unsigned int)atoi(g_desiredEnsurePasswordHashingAlgorithm ? 
         g_desiredEnsurePasswordHashingAlgorithm : g_defaultEnsurePasswordHashingAlgorithm), &reason, log);
     return reason;
 }
@@ -2788,8 +2788,7 @@ static int RemediateEnsureRestrictedUserHomeDirectories(char* value, void* log)
 static int RemediateEnsurePasswordHashingAlgorithm(char* value, void* log)
 {
     InitEnsurePasswordHashingAlgorithm(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetPasswordHashingAlgorithm((unsigned int)atoi(g_desiredEnsurePasswordHashingAlgorithm), log);
 }
 
 static int RemediateEnsureMinDaysBetweenPasswordChanges(char* value, void* log)

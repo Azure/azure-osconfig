@@ -102,6 +102,7 @@ int SetUserHomeDirectories(void* log);
 int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, char** reason, void* log);
 int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, unsigned int modeForRoot, unsigned int modeForOthers, void* log);
 int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, void* log);
+int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log);
 int CheckMinDaysBetweenPasswordChanges(long days, char** reason, void* log);
 int SetMinDaysBetweenPasswordChanges(long days, void* log);
 int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, void* log);
