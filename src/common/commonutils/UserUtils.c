@@ -1951,6 +1951,7 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, void* l
     if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log))) && (NULL != textResult))
     {
         RemovePrefixBlanks(textResult);
+        RemovePrefixUpTo(textResult, ' ');
         RemoveTrailingBlanks(textResult);
 
         if (0 == strcmp(textResult, encryption))
