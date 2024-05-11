@@ -1948,9 +1948,10 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, void* l
     char* textResult = NULL;
     int status = 0;
 
-    if ((0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &textResult, NULL, log))) && (NULL != textResult))
+    if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log))) && (NULL != textResult))
     {
-        RemovePrefixUpTo(textResult, ' ');
+        RemovePrefixBlanks(textResult);
+        RemoveTrailingBlanks(textResult);
 
         if (0 == strcmp(textResult, encryption))
         {
