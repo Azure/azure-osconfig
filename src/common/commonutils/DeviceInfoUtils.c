@@ -766,9 +766,7 @@ long GetPassWarnAge(void* log)
 static int SetPasswordDays(const char* name, long days, void* log)
 {
     const char* etcLoginDefs = "/etc/login.defs";
-    const char* newlineTemplate = "%s %ld\n";
     char* value = NULL;
-    char* original = NULL;
     long currentDays = -1;
     int status = 0;
 
