@@ -1364,7 +1364,7 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
         OsConfigLogError(log, "SetEtcLoginDefValue: invalid argument");
         return EINVAL;
     }
-    else if (NULL == (newline = FormatAllocateString(newLineTemplate, name, value)))
+    else if (NULL == (newline = FormatAllocateString(newlineTemplate, name, value)))
     {
         OsConfigLogError(log, "SetEtcLoginDefValue: out of memory");
         return ENOMEM;
