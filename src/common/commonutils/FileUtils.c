@@ -1350,6 +1350,55 @@ int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* 
     return result;
 }
 
+int SetEtcLoginDefValue(const char* name, const char* value, void* log)
+{
+    const char* etcLoginDefs = "/etc/login.defs";
+    const char* tempLoginDefs = "/etc/~login.defs.copy";
+    const char* newlineTemplate = "%s %s\n";
+    char* newline = NULL;
+    char* original = NULL;
+    int status = 0;
+
+    if ((NULL == name) || (0 == strlen(name)) || (NULL == value) || (0 == strlen(value)))
+    {
+        OsConfigLogError(log, "SetEtcLoginDefValue: invalid argument");
+        return EINVAL;
+    }
+    else if (NULL == (newline = FormatAllocateString(newLineTemplate, name, value)))
+    {
+        OsConfigLogError(log, "SetEtcLoginDefValue: out of memory");
+        return ENOMEM;
+    }
+
+    if (NULL != (original = LoadStringFromFile(etcLoginDefs, false, log)))
+    {
+        if (SavePayloadToFile(tempLoginDefs, original, strlen(original), log))
+        {
+            if (0 == (status = ReplaceMarkedLinesInFile(tempLoginDefs, name, newline, log)))
+            {
+                rename(tempLoginDefs, etcLoginDefs);
+            }
+            remove(tempLoginDefs);
+        }
+        else
+        {
+            OsConfigLogError(log, "SetEtcLoginDefValue: failed saving copy of '%s' to temp file '%s", etcLoginDefs, tempLoginDefs);
+            status = EPERM;
+        }
+
+        FREE_MEMORY(original);
+    }
+    else
+    {
+        OsConfigLogError(log, "SetEtcLoginDefValue: failed reading '%s", etcLoginDefs);
+        status = EACCES;
+    }
+
+    FREE_MEMORY(newline);
+
+    return status;
+}
+
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, void* log)
 {
     char* contents = NULL;

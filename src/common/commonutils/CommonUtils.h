@@ -97,7 +97,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
 int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
 int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
-
+int SetEtcLoginDefValue(const char* name, const char* value, void* log);
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
@@ -140,6 +140,9 @@ int CheckLoginUmask(const char* desired, char** reason, void* log);
 long GetPassMinDays(void* log);
 long GetPassMaxDays(void* log);
 long GetPassWarnAge(void* log);
+int SetPassMinDays(long days, void* log);
+int SetPassMaxDays(long days, void* log);
+int SetPassWarnAge(long days, void* log);
 bool IsCurrentOs(const char* name, void* log);
 
 void RemovePrefixBlanks(char* target);

@@ -763,6 +763,59 @@ long GetPassWarnAge(void* log)
     return GetPasswordDays("PASS_WARN_AGE", log);
 }
 
+static int SetPasswordDays(const char* name, long days, void* log)
+{
+    const char* etcLoginDefs = "/etc/login.defs";
+    const char* newlineTemplate = "%s %l\n";
+    char* value = NULL;
+    char* original = NULL;
+    long currentDays = -1;
+    int status = 0;
+
+    if ((NULL == name) || (0 == strlen(name)))
+    {
+        OsConfigLogError(log, "SetPasswordDays: invalid argument");
+        return EINVAL;
+    }
+    else if (NULL == (value = FormatAllocateString("%l", days)))
+    {
+        OsConfigLogError(log, "SetPasswordDays: out of memory");
+        return ENOMEM;
+    }
+
+    if (days == (currentDays = GetPasswordDays(name, log)))
+    {
+        OsConfigLogInfo(log, "SetPasswordDays: '%s' already set to %l days in '%s'", name, days, etcLoginDefs);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "SetPasswordDays: '%s' set to %l days in '%s' instead of %l days", name, currentDays, etcLoginDefs, days);
+        if (0 == (status = SetEtcLoginDefValue(name, value, log)))
+        {
+            OsConfigLogInfo(log, "SetPasswordDays: '%s' is now set to %l days in '%s'", name, days, etcLoginDefs);
+        }
+    }
+
+    FREE_MEMORY(value);
+
+    return status;
+}
+
+int SetPassMinDays(long days, void* log)
+{
+    return SetPasswordDays("PASS_MIN_DAYS", days, log);
+}
+
+int SetPassMaxDays(long days, void* log)
+{
+    return SetPasswordDays("PASS_MAX_DAYS", days, log);
+}
+
+int SetPassWarnAge(long days, void* log)
+{
+    return SetPasswordDays("PASS_WARN_AGE", days, log);
+}
+
 bool IsCurrentOs(const char* name, void* log)
 {
     char* prettyName = NULL;

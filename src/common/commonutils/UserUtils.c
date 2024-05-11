@@ -2009,13 +2009,8 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, void* l
 
 int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
 {
-    const char* etcLoginDefs = "/etc/login.defs"; 
-    const char* tempLoginDefs = "/etc/~login.defs.copy";
-    const char* encryptMethodWithSpace = "ENCRYPT_METHOD ";
-    const char* lineTemplate = "%s%s\n";
+    const char* encryptMethod = "ENCRYPT_METHOD ";
     char* encryption = EncryptionName(algorithm);
-    char* original = NULL;
-    char* line = NULL;
     int status = 0;
 
     if ((md5 != algorithm) && (sha256 != algorithm) && (sha512 != algorithm))
@@ -2026,35 +2021,13 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
     
     if (0 != CheckPasswordHashingAlgorithm(algorithm, NULL, log))
     {
-        if (NULL != (line = FormatAllocateString(lineTemplate, encryptMethodWithSpace, encryption)))
+        if (0 == (status = SetEtcLoginDefValue(encryptMethod, encryption, log)))
         {
-            if (NULL != (original = LoadStringFromFile(etcLoginDefs, false, log)))
-            {
-                if (SavePayloadToFile(tempLoginDefs, original, strlen(original), log))
-                {
-                    status = ReplaceMarkedLinesInFile(tempLoginDefs, encryptMethodWithSpace, line, log);
-                    remove(tempLoginDefs);
-                }
-                else
-                {
-                    OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed saving copy of '%s' to temp file '%s", etcLoginDefs, tempLoginDefs);
-                    status = EPERM;
-                }
-
-                FREE_MEMORY(original);
-            }
-            else
-            {
-                OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed reading '%s", etcLoginDefs);
-                status = EACCES;
-            }
-
-            FREE_MEMORY(line);
+            OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: successfully set 'ENCRYPT_METHOD' to '%s' in '/etc/login.defs'", algorithm);
         }
         else
         {
-            OsConfigLogError(log, "SetPasswordHashingAlgorithm: out of memory");
-            return ENOMEM;
+            OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed to set 'ENCRYPT_METHOD' to '%s' in '/etc/login.defs' (%d)", algorithm, status);
         }
     }
 
@@ -2169,7 +2142,7 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log)
 
                     FREE_MEMORY(command);
 
-                    if (0 == status)
+                    if (_status && (0 == status))
                     {
                         status = _status;
                     }
@@ -2185,8 +2158,20 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log)
         OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: all users who have passwords have correct number of minimum days (%ld) between changes", days);
     }
 
-    //TODO: add set for PASS_MIN_DAYS in /etc/login.defs
+    if (0 == (_status = SetPassMinDays(days, log)))
+    {
+        OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: 'PASS_MIN_DAYS' is set to %ld days in '/etc/login.defs'", days);
+    }
+    else
+    {
+        OsConfigLogError(log, "SetMinDaysBetweenPasswordChanges: failed to set 'PASS_MIN_DAYS' to %ld days in '/etc/login.defs' (%d)", days, _status);
+    }
 
+    if (_status && (0 == status))
+    {
+        status = _status;
+    }
+    
     return status;
 }
 
@@ -2316,7 +2301,19 @@ int SetMaxDaysBetweenPasswordChanges(long days, void* log)
         OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: all users who have passwords have correct number of maximum days (%ld) between changes", days);
     }
 
-    //TODO: add set for PASS_MAX_DAYS in /etc/login.defs
+    if (0 == (_status = SetPassMaxDays(days, log)))
+    {
+        OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: 'PASS_MAX_DAYS' is set to %ld days in '/etc/login.defs'", days);
+    }
+    else
+    {
+        OsConfigLogError(log, "SetMaxDaysBetweenPasswordChanges: failed to set 'PASS_MAX_DAYS' to %ld days in '/etc/login.defs' (%d)", days, _status);
+    }
+
+    if (_status & (0 == status))
+    {
+        status = _status;
+    }
 
     return status;
 }
@@ -2507,7 +2504,19 @@ int SetPasswordExpirationWarning(long days, void* log)
         OsConfigLogInfo(log, "SetPasswordExpirationWarning: all users who have passwords have correct number of maximum days (%ld) between changes", days);
     }
 
-    //TODO: add set for PASS_WARN_AGE in /etc/login.defs
+    if (0 == (_status = SetPassWarnAge(days, log)))
+    {
+        OsConfigLogInfo(log, "SetPasswordExpirationWarning: 'PASS_WARN_AGE' is set to %ld days in '/etc/login.defs'", days);
+    }
+    else
+    {
+        OsConfigLogError(log, "SetPasswordExpirationWarning: failed to set 'PASS_WARN_AGE' to %ld days in '/etc/login.defs' (%d)", days, _status);
+    }
+
+    if (_status && (0 == status))
+    {
+        status = _status;
+    }
 
     return status;
 }
