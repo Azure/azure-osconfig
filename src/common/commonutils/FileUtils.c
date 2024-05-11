@@ -559,7 +559,7 @@ int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, void* lo
                         }
                     }
 
-                    line[0] = 0;
+                    memset(line, 0, lineMax + 1);
                 }
                 
                 fclose(tempHandle);
