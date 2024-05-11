@@ -2009,7 +2009,7 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
         "ABC 123/n";
 
     const char* marker2 = "Test";
-    const char* newline1 = "456 DEF\n";
+    const char* newline2 = "456 DEF\n";
     const char* outFile2 =
         "456 DEF\n"
         "456 DEF\n"
