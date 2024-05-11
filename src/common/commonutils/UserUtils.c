@@ -1935,7 +1935,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: all users who can login have now proper restricted access for their home directories");
+        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: all users who can login have proper restricted access for their home directories");
     }
 
     return status;
