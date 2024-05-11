@@ -1982,3 +1982,64 @@ TEST_F(CommonUtilsTest, RemoveMarkedLinesFromFile)
 
     EXPECT_TRUE(Cleanup(m_path));
 }
+
+int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, void* log);
+TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
+{
+    const char* inFile =
+        "+Test line one\n"
+        "   Test line two   \n"
+        " Test Line 3 +\n"
+        "Test KLine 4\n"
+        "abc Test4 0456 # rt 4 $"
+        "Test2:     12 $!    test test\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
+
+    const char* marker1 = "+";
+    const char* newline1 = "ABC 123\n";
+    const char* outFile1 =
+        "ABC 123\n"
+        "   Test line two   \n"
+        "ABC 123\n"
+        "Test KLine 4\n"
+        "abc Test4 0456 # rt 4 $"
+        "Test2:     12 $!    test test\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "ABC 123/n";
+
+    const char* marker2 = "Test";
+    const char* newline1 = "456 DEF\n";
+    const char* outFile2 =
+        "456 DEF\n"
+        "456 DEF\n"
+        "456 DEF\n"
+        "456 DEF\n"
+        "456 DEF\n"
+        "456 DEF\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
+
+    char* contents = nullptr;
+
+    EXPECT_TRUE(CreateTestFile(m_path, inFile));
+
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, "+", "T", nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, "+", "", nullptr));
+
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker1, newline1, nullptr));
+    EXPECT_STREQ(outFile1, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(m_path));
+
+    EXPECT_TRUE(CreateTestFile(m_path, inFile));
+
+    EXPECT_EQ(0, RemoveMarkedLinesFromFile(m_path, marker2, newline2, nullptr));
+    EXPECT_STREQ(outFile2, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(m_path));
+}

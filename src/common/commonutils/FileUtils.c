@@ -597,6 +597,91 @@ int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, void* lo
     return status;
 }
 
+int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, void* log)
+{
+    const char* tempFileNameTemplate = "/tmp/~temp%d%d";
+    char* tempFileName = NULL;
+    FILE* fileHandle = NULL;
+    FILE* tempHandle = NULL;
+    long lineMax = sysconf(_SC_LINE_MAX);
+    char* line = NULL;
+    size_t newlineLength = newline ? strlen(newline) : 0;
+    int status = 0;
+
+    if ((NULL == fileName) || (false == FileExists(fileName)) || (NULL == marker) || (NULL == newline) || (0 == newlineLength))
+    {
+        OsConfigLogError(log, "ReplaceMarkedLinesInFile called with invalid arguments");
+        return EINVAL;
+    }
+    else if (NULL == (line = malloc(lineMax + 1)))
+    {
+        OsConfigLogError(log, "ReplaceMarkedLinesInFile: out of memory");
+        return ENOMEM;
+    }
+
+    if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, rand(), rand())))
+    {
+        if (NULL != (fileHandle = fopen(fileName, "r")))
+        {
+            if (NULL != (tempHandle = fopen(tempFileName, "w")))
+            {
+                while (NULL != fgets(line, lineMax + 1, fileHandle))
+                {
+                    if (NULL != strstr(line, marker))
+                    {
+                        OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: replacing from file '%s' the line '%s' with '%s'", fileName, line, newline);
+                        memset(line, 0, lineMax + 1);
+                        memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
+                    }
+
+                    if (EOF == fputs(line, tempHandle))
+                    {
+                        if (0 == (status = errno))
+                        {
+                            status = EPERM;
+                        }
+
+                        OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
+                    }
+
+                    memset(line, 0, lineMax + 1);
+                }
+
+                fclose(tempHandle);
+            }
+            else
+            {
+                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s'", tempFileName);
+                status = EACCES;
+            }
+
+            fclose(fileHandle);
+        }
+        else
+        {
+            OsConfigLogError(log, "ReplaceMarkedLinesInFile: cannot read from '%s'", fileName);
+            status = EACCES;
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "ReplaceMarkedLinesInFile: out of memory");
+        status = ENOMEM;
+    }
+
+    FREE_MEMORY(line);
+
+    if (0 == status)
+    {
+        rename(tempFileName, fileName);
+        remove(tempFileName);
+    }
+
+    FREE_MEMORY(tempFileName);
+
+    return status;
+}
+
 int FindTextInFile(const char* fileName, const char* text, void* log)
 {
     char* contents = NULL;
