@@ -1357,7 +1357,7 @@ int RepairRootGroup(void* log)
             if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
             {
                 // Delete from temporary file any lines containing "root"
-                if (0 == (status = ReplaceMarkedLinesInFile(tempFileName, g_root, NULL, log)))
+                if (0 == (status = ReplaceMarkedLinesInFile(tempFileName, g_root, NULL, '#', log)))
                 {
                     // Free the previously loaded content, we'll reload
                     FREE_MEMORY(original);
@@ -2055,6 +2055,8 @@ int CheckMinDaysBetweenPasswordChanges(long days, char** reason, void* log)
                 {
                     OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) has a minimum time between password changes of %ld days (requested: %ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
+                    OsConfigCaptureSuccessReason(reason, "User '%s' (%u, %u) has a minimum time between password changes of %ld days (requested: %ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
                 }
                 else
                 {
@@ -2093,6 +2095,10 @@ int CheckMinDaysBetweenPasswordChanges(long days, char** reason, void* log)
         OsConfigLogError(log, "CheckMinDaysBetweenPasswordChanges: configured PASS_MIN_DAYS in /etc/login.defs %ld days is less than requested %ld days", etcLoginDefsDays, days);
         OsConfigCaptureReason(reason, "Configured 'PASS_MIN_DAYS' in '/etc/login.defs' of %ld days is less than requested %ld days", etcLoginDefsDays, days);
         status = ENOENT;
+    }
+    else
+    {
+        OsConfigCaptureSuccessReason(reason, "'PASS_MIN_DAYS' is set to %ld days in '/etc/login.defs' (requested: %ld)", etcLoginDefsDays, days);
     }
 
     return status;
@@ -2204,6 +2210,8 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, void* log)
                 {
                     OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has a maximum time between password changes of %ld days (requested: %ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
+                    OsConfigCaptureSuccessReason(reason, "User '%s' (%u, %u) has a maximum time between password changes of %ld days(requested: %ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
                 }
                 else
                 {
@@ -2236,6 +2244,10 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, void* log)
         OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: configured PASS_MAX_DAYS in /etc/login.defs %ld days is more than requested %ld days", etcLoginDefsDays, days);
         OsConfigCaptureReason(reason, "Configured 'PASS_MAX_DAYS' in '/etc/login.defs' of %ld days is more than requested %ld days", etcLoginDefsDays, days);
         status = ENOENT;
+    }
+    else
+    {
+        OsConfigCaptureSuccessReason(reason, "'PASS_MAX_DAYS' is set to %ld days in '/etc/login.defs' (requested: %ld)", etcLoginDefsDays, days);
     }
 
     return status;
@@ -2355,6 +2367,8 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                         {
                             OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days (requested maximum: %ld)",
                                 userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
+                            OsConfigCaptureSuccessReason(reason, "Password for user '%s' (%u, %u) will expire in %ld days (requested maximum: %ld)",
+                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
                         }
                         else
                         {
@@ -2407,6 +2421,8 @@ int CheckPasswordExpirationWarning(long days, char** reason, void* log)
                 {
                     OsConfigLogInfo(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) has a password expiration warning time of %ld days (requested: %ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
+                    OsConfigCaptureSuccessReason(reason, "User '%s' (%u, %u) has a password expiration warning time of %ld days (requested: %ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
                 }
                 else
                 {
@@ -2439,6 +2455,10 @@ int CheckPasswordExpirationWarning(long days, char** reason, void* log)
         OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: configured PASS_WARN_AGE in /etc/login.defs %ld days is less than requested %ld days", etcLoginDefsDays, days);
         OsConfigCaptureReason(reason, "Configured 'PASS_WARN_AGE' in '/etc/login.defs' of %ld days is less than requested %ld days", etcLoginDefsDays, days);
         status = ENOENT;
+    }
+    else
+    {
+        OsConfigCaptureSuccessReason(reason, "'PASS_WARN_AGE' is set to %ld days in '/etc/login.defs' (requested: %ld)", etcLoginDefsDays, days);
     }
 
     return status;
@@ -2542,6 +2562,8 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, void* log)
                 if (userList[i].lastPasswordChange <= daysCurrent)
                 {
                     OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) has %lu days since last password change",
+                        userList[i].username, userList[i].userId, userList[i].groupId, daysCurrent - userList[i].lastPasswordChange);
+                    OsConfigCaptureSuccessReason(reason, "User '%s' (%u, %u) has %lu days since last password change",
                         userList[i].username, userList[i].userId, userList[i].groupId, daysCurrent - userList[i].lastPasswordChange);
                 }
                 else

@@ -787,7 +787,7 @@ static int SetPasswordDays(const char* name, long days, void* log)
     }
     else
     {
-        OsConfigLogInfo(log, "SetPasswordDays: '%s' set to %ld days in '%s' instead of %ld days", name, currentDays, etcLoginDefs, days);
+        OsConfigLogInfo(log, "SetPasswordDays: '%s' is set to %ld days in '%s' instead of %ld days", name, currentDays, etcLoginDefs, days);
         if (0 == (status = SetEtcLoginDefValue(name, value, log)))
         {
             OsConfigLogInfo(log, "SetPasswordDays: '%s' is now set to %ld days in '%s'", name, days, etcLoginDefs);

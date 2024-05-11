@@ -513,13 +513,14 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
     return status;
 }
 
-int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, void* log)
+int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, void* log)
 {
     const char* tempFileNameTemplate = "/tmp/~%dtemp%d";
     char* tempFileName = NULL;
     FILE* fileHandle = NULL;
     FILE* tempHandle = NULL;
     char* line = NULL;
+    char* found = NULL;
     long lineMax = sysconf(_SC_LINE_MAX);
     long newlineLength = newline ? (long)strlen(newline) : 0;
     bool skipLine = false;
@@ -546,11 +547,16 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                 {
                     if (NULL != strstr(line, marker))
                     {
-                        if ((NULL != newline) && (0 < newlineLength))
+                        if ((commentCharacter != line[0]) && (NULL != newline) && (0 < newlineLength))
                         {
                             OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: replacing from file '%s' the line '%s' with '%s'", fileName, line, newline);
                             memset(line, 0, lineMax + 1);
                             memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
+                            skipLine = false;
+                        }
+                        else if (commentCharacter == line[0])
+                        {
+                            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: keeping '%c'-commented out line '%s'", commentCharacter, line);
                             skipLine = false;
                         }
                         else
@@ -1374,7 +1380,7 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
     {
         if (SavePayloadToFile(tempLoginDefs, original, strlen(original), log))
         {
-            if (0 == (status = ReplaceMarkedLinesInFile(tempLoginDefs, name, newline, log)))
+            if (0 == (status = ReplaceMarkedLinesInFile(tempLoginDefs, name, newline, '#', log)))
             {
                 rename(tempLoginDefs, etcLoginDefs);
             }

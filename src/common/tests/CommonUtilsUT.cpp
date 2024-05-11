@@ -1941,7 +1941,7 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
 {
     const char* inFile =
         "+Test line one\n"
-        "   Test line two   \n"
+        "#   Test line two   \n"
         " Test Line 3 +\n"
         "Test KLine 4\n"
         "abc Test4 0456 # rt 4 $"
@@ -1953,7 +1953,7 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
     const char* newline1 = "ABC 123\n";
     const char* outFile1 =
         "ABC 123\n"
-        "   Test line two   \n"
+        "#   Test line two   \n"
         "ABC 123\n"
         "Test KLine 4\n"
         "abc Test4 0456 # rt 4 $"
@@ -1965,7 +1965,7 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
     const char* newline2 = "456 DEF\n";
     const char* outFile2 =
         "456 DEF\n"
-        "456 DEF\n"
+        "#   Test line two   \n"
         "456 DEF\n"
         "456 DEF\n"
         "456 DEF\n"
@@ -1974,7 +1974,7 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
 
     const char* marker3 = "+";
     const char* outFile3 =
-        "   Test line two   \n"
+        "#   Test line two   \n"
         "Test KLine 4\n"
         "abc Test4 0456 # rt 4 $"
         "Test2:     12 $!    test test\n"
@@ -1982,6 +1982,7 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
 
     const char* marker4 = "Test";
     const char* outFile4 =
+        "#   Test line two   \n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
         "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
 
@@ -1989,32 +1990,32 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
 
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
-    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, "+", "T", nullptr));
-    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, "+", "T", '#', nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, nullptr, nullptr, '#', nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, nullptr, nullptr, '#', nullptr));
 
-    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker1, newline1, nullptr));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker1, newline1, '#', nullptr));
     EXPECT_STREQ(outFile1, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
-    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker2, newline2, nullptr));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker2, newline2, '#', nullptr));
     EXPECT_STREQ(outFile2, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
-    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker3, nullptr, nullptr));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker3, nullptr, '#', nullptr));
     EXPECT_STREQ(outFile3, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
-    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker4, "", nullptr));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker4, "", '#', nullptr));
     EXPECT_STREQ(outFile4, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 
