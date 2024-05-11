@@ -1937,52 +1937,6 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     FREE_MEMORY(integers);
 }
 
-TEST_F(CommonUtilsTest, RemoveMarkedLinesFromFile)
-{
-    const char* inFile =
-        "+Test line one\n"
-        "   Test line two   \n"
-        " Test Line 3 +\n"
-        "Test KLine 4\n"
-        "abc Test4 0456 # rt 4 $"
-        "Test2:     12 $!    test test\n"
-        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
-        "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
-
-    const char* outFile =
-        "   Test line two   \n"
-        "Test KLine 4\n"
-        "abc Test4 0456 # rt 4 $"
-        "Test2:     12 $!    test test\n"
-        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n";
-
-    const char* outFile2 =
-        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
-        "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
-
-    char* contents = nullptr;
-
-    EXPECT_TRUE(CreateTestFile(m_path, inFile));
-    
-    EXPECT_EQ(EINVAL, RemoveMarkedLinesFromFile(nullptr, "+", nullptr));
-    EXPECT_EQ(EINVAL, RemoveMarkedLinesFromFile(nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, RemoveMarkedLinesFromFile(m_path, nullptr, nullptr));
-
-    EXPECT_EQ(0, RemoveMarkedLinesFromFile(m_path, "+", nullptr));
-    EXPECT_STREQ(outFile, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
-    
-    EXPECT_TRUE(Cleanup(m_path));
-
-    EXPECT_TRUE(CreateTestFile(m_path, inFile));
-    
-    EXPECT_EQ(0, RemoveMarkedLinesFromFile(m_path, "Test", nullptr));
-    EXPECT_STREQ(outFile2, contents = LoadStringFromFile(m_path, false, nullptr));
-    FREE_MEMORY(contents);
-
-    EXPECT_TRUE(Cleanup(m_path));
-}
-
 TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
 {
     const char* inFile =

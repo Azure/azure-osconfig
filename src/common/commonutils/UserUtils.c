@@ -1357,7 +1357,7 @@ int RepairRootGroup(void* log)
             if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
             {
                 // Delete from temporary file any lines containing "root"
-                if (0 == (status = RemoveMarkedLinesFromFile(tempFileName, g_root, log)))
+                if (0 == (status = ReplaceMarkedLinesInFile(tempFileName, g_root, NULL, log)))
                 {
                     // Free the previously loaded content, we'll reload
                     FREE_MEMORY(original);
@@ -2032,20 +2032,7 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
             {
                 if (SavePayloadToFile(tempLoginDefs, original, strlen(original), log))
                 {
-                    if (0 == (status = RemoveMarkedLinesFromFile(tempLoginDefs, encryptMethodWithSpace, log)))
-                    {
-                        if (AppendToFile(tempLoginDefs, line, strlen(line), log))
-                        {
-                            rename(tempLoginDefs, etcLoginDefs);
-                            OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: '%s' is added to '%s", line, etcLoginDefs);
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed to append '%s' to '%s", line, etcLoginDefs);
-                            status = ENOENT;
-                        }
-                    }
-                    
+                    status = ReplaceMarkedLinesInFile(tempLoginDefs, encryptMethodWithSpace, line, log);
                     remove(tempLoginDefs);
                 }
                 else

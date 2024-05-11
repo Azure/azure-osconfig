@@ -2729,19 +2729,19 @@ static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* val
 static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, void* log)
 {
     UNUSED(value);
-    return RemoveMarkedLinesFromFile(g_etcPasswd, "+", log);
+    return ReplaceMarkedLinesInFile(g_etcPasswd, "+", NULL, log);
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(char* value, void* log)
 {
     UNUSED(value);
-    return RemoveMarkedLinesFromFile(g_etcShadow, "+", log);
+    return ReplaceMarkedLinesInFile(g_etcShadow, "+", NULL, log);
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(char* value, void* log)
 {
     UNUSED(value);
-    return RemoveMarkedLinesFromFile(g_etcGroup, "+", log);
+    return ReplaceMarkedLinesInFile(g_etcGroup, "+", NULL, log);
 }
 
 static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, void* log)
