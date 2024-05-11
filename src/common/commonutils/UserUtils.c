@@ -2044,7 +2044,7 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
 
     if (0 == status)
     {
-        OsConfigLogError(log, "SetPasswordHashingAlgorithm: added '%s' to '%s", line, etcLoginDefs);
+        OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: added '%s' to '%s", line, etcLoginDefs);
     }
 
     FREE_MEMORY(line);
