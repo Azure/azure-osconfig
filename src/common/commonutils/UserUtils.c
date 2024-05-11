@@ -2023,11 +2023,11 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
     {
         if (0 == (status = SetEtcLoginDefValue(encryptMethod, encryption, log)))
         {
-            OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: successfully set 'ENCRYPT_METHOD' to '%s' in '/etc/login.defs'", algorithm);
+            OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: successfully set 'ENCRYPT_METHOD' to '%s' in '/etc/login.defs'", encryption);
         }
         else
         {
-            OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed to set 'ENCRYPT_METHOD' to '%s' in '/etc/login.defs' (%d)", algorithm, status);
+            OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed to set 'ENCRYPT_METHOD' to '%s' in '/etc/login.defs' (%d)", encryption, status);
         }
     }
 
