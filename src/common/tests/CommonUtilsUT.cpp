@@ -2037,7 +2037,7 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
 
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
-    EXPECT_EQ(0, RemoveMarkedLinesFromFile(m_path, marker2, newline2, nullptr));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker2, newline2, nullptr));
     EXPECT_STREQ(outFile2, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 
