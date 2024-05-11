@@ -606,9 +606,10 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     char* line = NULL;
     long lineMax = sysconf(_SC_LINE_MAX);
     long newlineLength = newline ? (long)strlen(newline) : 0;
+    bool skipLine = false;
     int status = 0;
 
-    if ((NULL == fileName) || (false == FileExists(fileName)) || (NULL == marker) || (NULL == newline) || (0 == newlineLength))
+    if ((NULL == fileName) || (false == FileExists(fileName)) || (NULL == marker))
     {
         OsConfigLogError(log, "ReplaceMarkedLinesInFile called with invalid arguments");
         return EINVAL;
@@ -629,22 +630,35 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                 {
                     if (NULL != strstr(line, marker))
                     {
-                        OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: replacing from file '%s' the line '%s' with '%s'", fileName, line, newline);
-                        memset(line, 0, lineMax + 1);
-                        memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
+                        if ((NULL != newline) && (0 < newlineLength))
+                        {
+                            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: replacing from file '%s' the line '%s' with '%s'", fileName, line, newline);
+                            memset(line, 0, lineMax + 1);
+                            memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
+                            skipLine = false;
+                        }
+                        else
+                        {
+                            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: skipping from file '%s' the line '%s'", fileName, line);
+                            skipLine = true;
+                        }
                     }
 
-                    if (EOF == fputs(line, tempHandle))
+                    if (false == skipLine)
                     {
-                        if (0 == (status = errno))
+                        if (EOF == fputs(line, tempHandle))
                         {
-                            status = EPERM;
-                        }
+                            if (0 == (status = errno))
+                            {
+                                status = EPERM;
+                            }
 
-                        OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
+                            OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
+                        }
                     }
 
                     memset(line, 0, lineMax + 1);
+                    skipLine = false;
                 }
 
                 fclose(tempHandle);
