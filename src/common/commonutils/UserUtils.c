@@ -1999,55 +1999,61 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
         OsConfigLogError(log, "SetPasswordHashingAlgorithm: unsupported algorithm argument (%u, not: %u, %u, or %u)", algorithm, md5, sha256, sha512);
         return EINVAL;
     }
-    else if (NULL == (line = FormatAllocateString(lineTemplate, encryptMethodWithSpace, encryption)))
-    {
-        OsConfigLogError(log, "SetPasswordHashingAlgorithm: out of memory");
-        return ENOMEM;
-    }
     
-    if (0 == (status = RemoveMarkedLinesFromFile(etcLoginDefs, encryptMethodWithSpace, log)))
+    if (0 != CheckPasswordHashingAlgorithm(algorithm, NULL, void* log)
     {
-        if (NULL != (original = LoadStringFromFile(etcLoginDefs, false, log)))
+        if (NULL != (line = FormatAllocateString(lineTemplate, encryptMethodWithSpace, encryption)))
         {
-            if (true == SavePayloadToFile(tempLoginDefs, original, strlen(original), log))
+            if (0 == (status = RemoveMarkedLinesFromFile(etcLoginDefs, encryptMethodWithSpace, log)))
             {
-                if (true == AppendToFile(tempLoginDefs, line, strlen(line), log))
+                if (NULL != (original = LoadStringFromFile(etcLoginDefs, false, log)))
                 {
-                    rename(tempLoginDefs, etcLoginDefs);
+                    if (true == SavePayloadToFile(tempLoginDefs, original, strlen(original), log))
+                    {
+                        if (true == AppendToFile(tempLoginDefs, line, strlen(line), log))
+                        {
+                            rename(tempLoginDefs, etcLoginDefs);
+                        }
+                        else
+                        {
+                            OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed appending '%s' to to temp file '%s", line, tempLoginDefs);
+                            status = ENOENT;
+                        }
+
+                        remove(tempLoginDefs);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed saving copy of '%s' to temp file '%s", etcLoginDefs, tempLoginDefs);
+                        status = EPERM;
+                    }
+
+                    FREE_MEMORY(original);
                 }
                 else
                 {
-                    OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed appending '%s' to to temp file '%s", line, tempLoginDefs);
-                    status = ENOENT;
+                    OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed reading '%s", etcLoginDefs);
+                    status = EACCES;
                 }
-
-                remove(tempLoginDefs);
             }
             else
             {
-                OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed saving copy of '%s' to temp file '%s", etcLoginDefs, tempLoginDefs);
-                status = EPERM;
+                OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed removing existing ENCRYPT_METHOD entries from '%s' ", etcLoginDefs);
             }
 
-            FREE_MEMORY(original);
+            if (0 == status)
+            {
+                OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: '%s' is added to '%s", line, etcLoginDefs);
+            }
+
+            FREE_MEMORY(line);
         }
         else
         {
-            OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed reading '%s", etcLoginDefs);
-            status = EACCES;
+            OsConfigLogError(log, "SetPasswordHashingAlgorithm: out of memory");
+            return ENOMEM;
         }
     }
-    else
-    {
-        OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed removing existing ENCRYPT_METHOD entries from '%s' ", etcLoginDefs);
-    }
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: added '%s' to '%s", line, etcLoginDefs);
-    }
-
-    FREE_MEMORY(line);
 
     return status;
 }
