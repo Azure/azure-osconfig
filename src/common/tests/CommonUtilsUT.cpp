@@ -2006,7 +2006,7 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
         "abc Test4 0456 # rt 4 $"
         "Test2:     12 $!    test test\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
-        "ABC 123/n";
+        "ABC 123\n";
 
     const char* marker2 = "Test";
     const char* newline2 = "456 DEF\n";
