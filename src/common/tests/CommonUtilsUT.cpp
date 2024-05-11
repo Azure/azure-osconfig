@@ -1960,15 +1960,25 @@ TEST_F(CommonUtilsTest, RemoveMarkedLinesFromFile)
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
         "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
 
+    const char* outFile3 =
+        "Replacement 123\n"
+        "Replacement 123\n"
+        "Replacement 123\n"
+        "Replacement 123\n"
+        "Replacement 123\n"
+        "Replacement 123\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
+
     char* contents = nullptr;
 
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
     
-    EXPECT_EQ(EINVAL, RemoveMarkedLinesFromFile(nullptr, "+", nullptr));
-    EXPECT_EQ(EINVAL, RemoveMarkedLinesFromFile(nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, RemoveMarkedLinesFromFile(m_path, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, RemoveMarkedLinesFromFile(nullptr, "+", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, RemoveMarkedLinesFromFile(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, RemoveMarkedLinesFromFile(m_path, nullptr, nullptr, nullptr));
 
-    EXPECT_EQ(0, RemoveMarkedLinesFromFile(m_path, "+", nullptr));
+    EXPECT_EQ(0, RemoveMarkedLinesFromFile(m_path, "+", nullptr, nullptr));
     EXPECT_STREQ(outFile, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
     
@@ -1976,9 +1986,13 @@ TEST_F(CommonUtilsTest, RemoveMarkedLinesFromFile)
 
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
     
-    EXPECT_EQ(0, RemoveMarkedLinesFromFile(m_path, "Test", nullptr));
+    EXPECT_EQ(0, RemoveMarkedLinesFromFile(m_path, "Test", nullptr, nullptr));
     EXPECT_STREQ(outFile2, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
-    
+
+    EXPECT_EQ(0, RemoveMarkedLinesFromFile(m_path, "Test", "Replacement 123\n", nullptr));
+    EXPECT_STREQ(outFile3, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+
     EXPECT_TRUE(Cleanup(m_path));
 }

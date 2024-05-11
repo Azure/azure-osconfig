@@ -1350,47 +1350,71 @@ int RepairRootGroup(void* log)
 
     if (false == found)
     {
-        if (0 == (status = RemoveMarkedLinesFromFile(etcGroup, g_root, log)))
+        // Load content of /etc/group
+        if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
         {
-            if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
+            // Save content loaded from /etc/group to temporary file
+            if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
             {
-                if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
+                // Delete from temporary file any lines containing "root"
+                if (0 == (status = RemoveMarkedLinesFromFile(tempFileName, g_root, NULL, log)))
                 {
-                    if (true == AppendToFile(tempFileName, original, strlen(original), log))
+                    // Free the previously loaded content, we'll reload
+                    FREE_MEMORY(original);
+
+                    // Load the fixed content of temporary file
+                    if (NULL != (original = LoadStringFromFile(tempFileName, false, log)))
                     {
-                        rename(tempFileName, etcGroup);
+                        // Delete the previously created temporary file, we'll recreate
+                        remove(tempFileName);
+                        
+                        // Save correct root line to the recreated temporary file
+                        if (true == SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
+                        {
+                            // Append to temporary file the cleaned content
+                            if (true == AppendToFile(tempFileName, original, strlen(original), log))
+                            {
+                                // In a single atomic operation move edited contents from temporary file to /etc/group
+                                rename(tempFileName, etcGroup);
+                            }
+                            else
+                            {
+                                OsConfigLogError(log, "RepairRootGroup: failed appending to to temp file '%s", tempFileName);
+                                status = ENOENT;
+                            }
+
+                            remove(tempFileName);
+                        }
                     }
                     else
                     {
-                        OsConfigLogError(log, "RepairRootGroup: failed appending to to temp file '%s", tempFileName);
-                        status = ENOENT;
+                        OsConfigLogError(log, "RepairRootGroup: failed reading '%s", tempFileName);
+                        status = EACCES;
                     }
-
-                    remove(tempFileName);
                 }
                 else
                 {
-                    OsConfigLogError(log, "RepairRootGroup: failed saving to temp file '%s", tempFileName);
-                    status = EPERM;
+                    OsConfigLogError(log, "RepairRootGroup: failed removing potentially corrupted root entries from '%s' ", etcGroup);
                 }
-
-                FREE_MEMORY(original);
             }
             else
             {
-                OsConfigLogError(log, "RepairRootGroup: failed reading '%s", etcGroup);
-                status = EACCES;
+                OsConfigLogError(log, "RepairRootGroup: failed saving to temp file '%s", tempFileName);
+                status = EPERM;
             }
+
+            FREE_MEMORY(original);
         }
         else
         {
-            OsConfigLogError(log, "RepairRootGroup: failed removing corrupted root entries from '%s' ", etcGroup);
+            OsConfigLogError(log, "RepairRootGroup: failed reading '%s", etcGroup);
+            status = EACCES;
         }
     }
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "RepairRootGroup: root group was repaired and exists with gid 0");
+        OsConfigLogInfo(log, "RepairRootGroup: root group exists with gid 0");
     }
 
     return status;
@@ -1988,7 +2012,7 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
     const char* etcLoginDefs = "/etc/login.defs"; 
     const char* tempLoginDefs = "/etc/~login.defs.copy";
     const char* encryptMethodWithSpace = "ENCRYPT_METHOD ";
-    const char* lineTemplate = "\n%s%s\n";
+    const char* lineTemplate = "%s%s\n";
     char* encryption = EncryptionName(algorithm);
     char* original = NULL;
     char* line = NULL;
@@ -2004,46 +2028,36 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
     {
         if (NULL != (line = FormatAllocateString(lineTemplate, encryptMethodWithSpace, encryption)))
         {
-            if (0 == (status = RemoveMarkedLinesFromFile(etcLoginDefs, encryptMethodWithSpace, log)))
+            if (NULL != (original = LoadStringFromFile(etcLoginDefs, false, log)))
             {
-                if (NULL != (original = LoadStringFromFile(etcLoginDefs, false, log)))
+                if (true == SavePayloadToFile(tempLoginDefs, original, strlen(original), log))
                 {
-                    if (true == SavePayloadToFile(tempLoginDefs, original, strlen(original), log))
+                    if (0 == (status = RemoveMarkedLinesFromFile(tempLoginDefs, encryptMethodWithSpace, line, log)))
                     {
-                        if (true == AppendToFile(tempLoginDefs, line, strlen(line), log))
-                        {
-                            rename(tempLoginDefs, etcLoginDefs);
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed appending '%s' to to temp file '%s", line, tempLoginDefs);
-                            status = ENOENT;
-                        }
-
-                        remove(tempLoginDefs);
+                        rename(tempLoginDefs, etcLoginDefs);
+                        
+                        OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: '%s' is added to '%s", line, etcLoginDefs);
                     }
-                    else
-                    {
-                        OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed saving copy of '%s' to temp file '%s", etcLoginDefs, tempLoginDefs);
-                        status = EPERM;
-                    }
-
-                    FREE_MEMORY(original);
+                    
+                    remove(tempLoginDefs);
                 }
                 else
                 {
-                    OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed reading '%s", etcLoginDefs);
-                    status = EACCES;
+                    OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed saving copy of '%s' to temp file '%s", etcLoginDefs, tempLoginDefs);
+                    status = EPERM;
                 }
+
+                FREE_MEMORY(original);
             }
             else
             {
-                OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed removing existing ENCRYPT_METHOD entries from '%s' ", etcLoginDefs);
+                OsConfigLogError(log, "SetPasswordHashingAlgorithm: failed reading '%s", etcLoginDefs);
+                status = EACCES;
             }
 
             if (0 == status)
             {
-                OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: '%s' is added to '%s", line, etcLoginDefs);
+                
             }
 
             FREE_MEMORY(line);

@@ -729,8 +729,8 @@ static long GetPasswordDays(const char* name, void* log)
 
         if (0 == ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log))
         {
-            RemovePrefixUpTo(result, ' ');
             RemovePrefixBlanks(result);
+            RemovePrefixUpTo(result, ' ');
             RemoveTrailingBlanks(result);
 
             days = atol(result);
