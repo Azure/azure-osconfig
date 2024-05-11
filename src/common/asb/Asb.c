@@ -2794,36 +2794,36 @@ static int RemediateEnsurePasswordHashingAlgorithm(char* value, void* log)
 static int RemediateEnsureMinDaysBetweenPasswordChanges(char* value, void* log)
 {
     InitEnsureMinDaysBetweenPasswordChanges(value);
-    return SetMinDaysBetweenPasswordChanges(atoi(g_desiredEnsureMinDaysBetweenPasswordChanges), log);
+    return SetMinDaysBetweenPasswordChanges(atol(g_desiredEnsureMinDaysBetweenPasswordChanges), log);
 }
 
 static int RemediateEnsureInactivePasswordLockPeriod(char* value, void* log)
 {
     InitEnsureInactivePasswordLockPeriod(value);
-    return SetLockoutAfterInactivityLessThan(atoi(g_desiredEnsureInactivePasswordLockPeriod), log);
+    return SetLockoutAfterInactivityLessThan(atol(g_desiredEnsureInactivePasswordLockPeriod), log);
 }
 
 static int RemediateEnsureMaxDaysBetweenPasswordChanges(char* value, void* log)
 {
     InitEnsureMaxDaysBetweenPasswordChanges(value);
-    return SetMaxDaysBetweenPasswordChanges(atoi(g_desiredEnsureMaxDaysBetweenPasswordChanges), log);
+    return SetMaxDaysBetweenPasswordChanges(atol(g_desiredEnsureMaxDaysBetweenPasswordChanges), log);
 }
 
 static int RemediateEnsurePasswordExpiration(char* value, void* log)
 {
     InitEnsurePasswordExpiration(value);
 
-    return ((0 == SetMinDaysBetweenPasswordChanges(atoi(g_desiredEnsureMinDaysBetweenPasswordChanges ? 
+    return ((0 == SetMinDaysBetweenPasswordChanges(atol(g_desiredEnsureMinDaysBetweenPasswordChanges ? 
         g_desiredEnsureMinDaysBetweenPasswordChanges : g_defaultEnsureMinDaysBetweenPasswordChanges), log)) &&
-        (0 == SetMaxDaysBetweenPasswordChanges(atoi(g_desiredEnsureMaxDaysBetweenPasswordChanges ? 
+        (0 == SetMaxDaysBetweenPasswordChanges(atol(g_desiredEnsureMaxDaysBetweenPasswordChanges ? 
         g_desiredEnsureMaxDaysBetweenPasswordChanges : g_defaultEnsureMaxDaysBetweenPasswordChanges), log)) &&
-        (0 == CheckPasswordExpirationLessThan(atoi(g_desiredEnsurePasswordExpiration), NULL, log))) ? 0 : ENOENT;
+        (0 == CheckPasswordExpirationLessThan(atol(g_desiredEnsurePasswordExpiration), NULL, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePasswordExpirationWarning(char* value, void* log)
 {
     InitEnsurePasswordExpirationWarning(value);
-    return SetPasswordExpirationWarning(atoi(g_desiredEnsurePasswordExpirationWarning), log);
+    return SetPasswordExpirationWarning(atol(g_desiredEnsurePasswordExpirationWarning), log);
 }
 
 static int RemediateEnsureSystemAccountsAreNonLogin(char* value, void* log)
