@@ -1626,7 +1626,7 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin)
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
             {
                 continue;
             }
@@ -1647,6 +1647,74 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckAllUsersHomeDirectoriesExist: all users who can login have home directories that exist");
         OsConfigCaptureSuccessReason(reason, "All users who can login have home directories that exist"); 
+    }
+
+    return status;
+}
+
+int SetUserHomeDirectories(void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    unisgned int defaultHomeDirAccess = 750;
+    int status = 0, _status = 0;;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            {
+                continue;
+            }
+            else if (NULL != userList[i].home)
+            {
+                // If the home directory does not exist, create it
+                if (false == DirectoryExists(userList[i].home)
+                {
+                    OsConfigLogError(log, "SetUserHomeDirectories: user '%s' (%u, %u) home directory '%s' not found",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+
+                    if (0 == (_status = mkdir(userList[i].home, defaultHomeDirAccess)))
+                    {
+                        OsConfigLogInfo(log, "SetUserHomeDirectories: user '%s' (%u, %u) has now home directory '%s'",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                    }
+                    else
+                    {
+                        if (0 == (_status = errno))
+                        {
+                            _status = EACCESS;
+                        }
+
+                        OsConfigLogError(log, "SetUserHomeDirectories: cannot create home directory '%s' for user '%s' (%u, %u) (%d)",
+                            userList[i].home, userList[i].username, userList[i].userId, userList[i].groupId, _status);
+                    }
+                }
+
+                // If the home directory does not have correct ownership and access, correct this
+                if (true == DirectoryExists(userList[i].home)
+                {
+                    if (0 != (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, defaultHomeDirAccess, log)))
+                    {
+                        OsConfigLogError(log, "SetUserHomeDirectories: failed to set access and ownership for home directory '%s' of user '%s' (%u, %u) (%d)",
+                            userList[i].home, userList[i].username, userList[i].userId, userList[i].groupId, _status);
+                    }
+                }
+
+                if (_status && (0 != status))
+                {
+                    status = _status;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetUserHomeDirectories: all users who can login have home directories that exist, have correct ownership, and access");
     }
 
     return status;

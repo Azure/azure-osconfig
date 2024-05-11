@@ -98,6 +98,7 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log);
 int SetDefaultRootAccountGroupIsGidZero(void* log);
 int CheckAllUsersHomeDirectoriesExist(char** reason, void* log);
 int CheckUsersOwnTheirHomeDirectories(char** reason, void* log);
+int SetUserHomeDirectories(void* log);
 int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, char** reason, void* log);
 int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, unsigned int modeForRoot, unsigned int modeForOthers, void* log);
 int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, void* log);
