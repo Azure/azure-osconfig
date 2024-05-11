@@ -513,28 +513,6 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
     return status;
 }
 
-static char* FlattenLine(char* line)
-{
-    size_t length = 0;
-    size_t i = 0;
-
-    if (NULL != line)
-    {
-        if (0 < (lenght = strlen(line)))
-        {
-            for (i = 0; i < length; i++)
-            {
-                if (EOL == line[i])
-                {
-                    line[i] = ' ';
-                }
-            }
-        }
-    }
-
-    return line;
-}
-
 int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, const char* replacement, void* log)
 {
     const char* tempFileNameTemplate = "/tmp/~temporary%d";
@@ -568,7 +546,7 @@ int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, const ch
                     {
                         if (NULL == replacement)
                         {
-                            OsConfigLogInfo(log, "RemoveMarkedLinesFromFile: skipping  from file '%s' the line '%s'", fileName, FlattenLine(line));
+                            OsConfigLogInfo(log, "RemoveMarkedLinesFromFile: skipping  from file '%s' the line '%s'", fileName, line);
                         }
                         else
                         {
@@ -583,8 +561,7 @@ int RemoveMarkedLinesFromFile(const char* fileName, const char* marker, const ch
                             }
                             else
                             {
-                                OsConfigLogInfo(log, "RemoveMarkedLinesFromFile: in file '%s', replaced line '%s' with '%s'",
-                                    fileName, FlattenLine(line), FlattenLine(replacement));
+                                OsConfigLogInfo(log, "RemoveMarkedLinesFromFile: in file '%s', replaced line '%s' with '%s'", fileName, line, replacement);
                             }
                         }
                     }
