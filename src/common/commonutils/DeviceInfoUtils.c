@@ -358,7 +358,7 @@ long GetTotalMemory(void* log)
     
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(log, "Total memory: %lu kB", totalMemory);
+        OsConfigLogInfo(log, "Total memory: %ldu kB", totalMemory);
     }
     
     return totalMemory;
@@ -377,7 +377,7 @@ long GetFreeMemory(void* log)
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(log, "Free memory: %lu kB", freeMemory);
+        OsConfigLogInfo(log, "Free memory: %ldu kB", freeMemory);
     }
 
     return freeMemory;
@@ -742,7 +742,7 @@ static long GetPasswordDays(const char* name, void* log)
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(log, "%s: %ld", name, days);
+        OsConfigLogInfo(log, "%s: %ldd", name, days);
     }
 
     return days;
@@ -766,7 +766,7 @@ long GetPassWarnAge(void* log)
 static int SetPasswordDays(const char* name, long days, void* log)
 {
     const char* etcLoginDefs = "/etc/login.defs";
-    const char* newlineTemplate = "%s %l\n";
+    const char* newlineTemplate = "%s %ld\n";
     char* value = NULL;
     char* original = NULL;
     long currentDays = -1;
@@ -777,7 +777,7 @@ static int SetPasswordDays(const char* name, long days, void* log)
         OsConfigLogError(log, "SetPasswordDays: invalid argument");
         return EINVAL;
     }
-    else if (NULL == (value = FormatAllocateString("%l", days)))
+    else if (NULL == (value = FormatAllocateString("%ld", days)))
     {
         OsConfigLogError(log, "SetPasswordDays: out of memory");
         return ENOMEM;
@@ -785,14 +785,14 @@ static int SetPasswordDays(const char* name, long days, void* log)
 
     if (days == (currentDays = GetPasswordDays(name, log)))
     {
-        OsConfigLogInfo(log, "SetPasswordDays: '%s' already set to %l days in '%s'", name, days, etcLoginDefs);
+        OsConfigLogInfo(log, "SetPasswordDays: '%s' already set to %ld days in '%s'", name, days, etcLoginDefs);
     }
     else
     {
-        OsConfigLogInfo(log, "SetPasswordDays: '%s' set to %l days in '%s' instead of %l days", name, currentDays, etcLoginDefs, days);
+        OsConfigLogInfo(log, "SetPasswordDays: '%s' set to %ld days in '%s' instead of %ld days", name, currentDays, etcLoginDefs, days);
         if (0 == (status = SetEtcLoginDefValue(name, value, log)))
         {
-            OsConfigLogInfo(log, "SetPasswordDays: '%s' is now set to %l days in '%s'", name, days, etcLoginDefs);
+            OsConfigLogInfo(log, "SetPasswordDays: '%s' is now set to %ld days in '%s'", name, days, etcLoginDefs);
         }
     }
 
