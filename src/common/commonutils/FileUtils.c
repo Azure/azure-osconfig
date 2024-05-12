@@ -652,21 +652,18 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                 {
                     if (NULL != strstr(line, marker))
                     {
-                        if ((commentCharacter != line[0]) && ('\n' != line[0]) && (NULL != newline) && (1 < newlineLength))
+                        if ((commentCharacter != line[0]) && (EOL != line[0]) && (NULL != newline) && (1 < newlineLength))
                         {
-                            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: replacing  line '%s' with '%s'", line, newline);
                             memset(line, 0, lineMax + 1);
                             memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
                             skipLine = false;
                         }
                         else if (commentCharacter == line[0])
                         {
-                            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: keeping '%c'-commented out line '%s'", commentCharacter, line);
                             skipLine = false;
                         }
                         else
                         {
-                            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: skipping line '%s'", line);
                             skipLine = true;
                         }
                     }

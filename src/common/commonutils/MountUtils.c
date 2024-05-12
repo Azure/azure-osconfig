@@ -410,8 +410,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
         }
 
         remove(tempFileNameOne);
-        //remove(tempFileNameTwo);
-        //remove(tempFileNameThree);
+        remove(tempFileNameTwo);
+        remove(tempFileNameThree);
     }
 
     FREE_MEMORY(newLine);
