@@ -405,7 +405,11 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 }
                 
                 // When done assembling the final temp mount file two, move it in an atomic step to real mount file
-                rename(tempFileNameTwo, fsMountTable);
+                if (0 != (status = rename(tempFileNameTwo, fsMountTable)))
+                {
+                    OsConfigLogError(log, "SetFileSystemMountingOption:  rename('%s' to '%s') failed with %d", tempFileNameTwo, fsMountTable, errno);
+                    status = (0 == (status = errno) ? ENOENT : errno;
+                }
             }
         }
 

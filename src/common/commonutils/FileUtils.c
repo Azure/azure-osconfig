@@ -106,6 +106,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     const char* tempFileNameTemplate = "/tmp/~OSConfig.Temp%u";
     char* tempFileName = NULL;
     char* fileContents = NULL;
+    int status = 0;
     bool result = false;
 
     srand(rand());
@@ -151,8 +152,13 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
 
     if (result)
     {
-        rename(tempFileName, fileName);
-        //remove(tempFileName);
+        if (0 != (status = rename(tempFileName, fileName)))
+        {
+            OsConfigLogError(log, "InternalSecureSaveToFile: rename('%s' to '%s') failed with %d", tempFileName, fileName, errno);
+            result = false;
+        }
+
+        remove(tempFileName);
     }
 
     FREE_MEMORY(tempFileName);
@@ -715,7 +721,12 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 
     if (0 == status)
     {
-        rename(tempFileName, fileName);
+        if (0 != (status = rename(tempFileName, fileName)))
+        {
+            OsConfigLogError(log, "ReplaceMarkedLinesInFile: rename('%s' to '%s') failed with %d", tempFileName, fileName, errno);
+            status = (0 == (status = errno) ? ENOENT : errno;
+        }
+        
         remove(tempFileName);
     }
 
@@ -1488,7 +1499,11 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
         {
             if (0 == (status = ReplaceMarkedLinesInFile(tempLoginDefs, name, newline, '#', log)))
             {
-                rename(tempLoginDefs, etcLoginDefs);
+                if (0 != (status = rename(tempLoginDefs, etcLoginDefs)))
+                {
+                    OsConfigLogError(log, "SetEtcLoginDefValue: rename('%s' to '%s') failed with %d", tempLoginDefs, etcLoginDefs, errno);
+                    status = (0 == (status = errno) ? ENOENT : errno;
+                }
             }
             
             remove(tempLoginDefs);
