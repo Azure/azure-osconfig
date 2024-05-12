@@ -724,7 +724,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         if (0 != (status = rename(tempFileName, fileName)))
         {
             OsConfigLogError(log, "ReplaceMarkedLinesInFile: rename('%s' to '%s') failed with %d", tempFileName, fileName, errno);
-            status = (0 == (status = errno) ? ENOENT : errno;
+            status = (0 == (status = errno)) ? ENOENT : errno;
         }
         
         remove(tempFileName);
@@ -1502,7 +1502,7 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
                 if (0 != (status = rename(tempLoginDefs, etcLoginDefs)))
                 {
                     OsConfigLogError(log, "SetEtcLoginDefValue: rename('%s' to '%s') failed with %d", tempLoginDefs, etcLoginDefs, errno);
-                    status = (0 == (status = errno) ? ENOENT : errno;
+                    status = (0 == (status = errno)) ? ENOENT : errno;
                 }
             }
             

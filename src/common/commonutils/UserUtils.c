@@ -1383,7 +1383,7 @@ int RepairRootGroup(void* log)
                                 if (0 != (status = rename(tempFileName, etcGroup)))
                                 {
                                     OsConfigLogError(log, "RepairRootGroup:  rename('%s' to '%s') failed with %d", tempFileName, etcGroup, errno);
-                                    status = (0 == (status = errno) ? ENOENT : errno;
+                                    status = (0 == (status = errno)) ? ENOENT : errno;
                                 }
                             }
                             else
