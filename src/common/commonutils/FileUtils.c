@@ -104,7 +104,7 @@ bool SecureSaveToFile(const char* fileName, const char* payload, const int paylo
 {
     const char* tempFileNameTemplate = "/tmp/~OSConfig.TempFile%u";
     char* tempFileName = NULL;
-    bool result = true;
+    bool result = false;
 
     if ((false == FileExists(fileName)) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
@@ -121,6 +121,7 @@ bool SecureSaveToFile(const char* fileName, const char* payload, const int paylo
     {
         rename(tempFileName, fileName);
         remove(tempFileName);
+        OsConfigLogInfo(log, "SecureSaveToFile: requested payload successfully saved to '%s'", fileName);
     }
     else
     {
