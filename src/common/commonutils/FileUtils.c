@@ -154,7 +154,8 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
 
     FREE_MEMORY(tempFileName);
 
-    OsConfigLogInfo(log, "InternalSecureSaveToFile('%s', '%s', '%s', %d) complete with '%s'", result ? "true" : "false");
+    OsConfigLogInfo(log, "InternalSecureSaveToFile('%s', '%s', '%s', %d) complete with '%s'", 
+        fileName, mode, payload, payloadSizeBytes, result ? "true" : "false");
 
     return result;
 }
