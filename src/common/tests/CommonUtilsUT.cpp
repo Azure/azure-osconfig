@@ -106,6 +106,31 @@ TEST_F(CommonUtilsTest, SavePayloadToFileInvalidArgument)
     EXPECT_FALSE(SavePayloadToFile(m_path, m_data, 0, nullptr));
 }
 
+TEST_F(CommonUtilsTest, SecureSaveToFile)
+{
+    char* contents = NULL;
+
+    EXPECT_FALSE(SecureSaveToFile(nullptr, m_data, sizeof(m_data), nullptr));
+    EXPECT_FALSE(SecureSaveToFile(m_path, nullptr, sizeof(m_data), nullptr));
+    EXPECT_FALSE(SecureSaveToFile(m_path, m_data, -1, nullptr));
+    EXPECT_FALSE(SecureSaveToFile(m_path, m_data, 0, nullptr));
+
+    EXPECT_TRUE(SecureSaveToFile(m_path, m_data, strlen(m_data), nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+
+    EXPECT_TRUE(SecureSaveToFile(m_path, m_dataWithEol, strlen(m_dataWithEol), nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+
+    EXPECT_TRUE(SecureSaveToFile(m_path, m_dataWithEol, strlen(m_dataWithEol), nullptr));
+    EXPECT_STREQ(m_dataWithEol, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
 TEST_F(CommonUtilsTest, AppendToFile)
 {
     const char* original = "First line of text\n";

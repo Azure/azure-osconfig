@@ -100,6 +100,37 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
     return SaveToFile(fileName, "w", payload, payloadSizeBytes, log);
 }
 
+bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+{
+    const char* tempFileNameTemplate = "/tmp/~OSConfig.TempFile%u";
+    char* tempFileName = NULL;
+    result = false;
+
+    if ((false = FileExists(fileName)) || (NULL == payload) || (0 >= payloadSizeBytes))
+    {
+        OsConfigLogError(log, "SecureSaveToFile called with invalid arguments");
+        return result;
+    }
+    else if (NULL == (tempFileName = FormatAllocateString(tempFileNameTemplate, rand())))
+    {
+        OsConfigLogError(log, "SecureSaveToFile: out of memory");
+        return result;
+    }
+
+    if (true == (result = SavePayloadToFile(tempFileName, payload, payloadSizeBytes, log)))
+    {
+        rename(tempFileName, fileName);
+        remove(tempFileName);
+    }
+    else
+    {
+        OsConfigLogError(log, "SecureSaveToFile: failed save to temporary file");
+    }
+
+    FREE_MEMORY(tempFileName);
+    return result;
+}
+
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
     return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
@@ -1383,6 +1414,7 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
             {
                 rename(tempLoginDefs, etcLoginDefs);
             }
+            
             remove(tempLoginDefs);
         }
         else
