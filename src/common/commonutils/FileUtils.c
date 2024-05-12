@@ -106,7 +106,7 @@ bool SecureSaveToFile(const char* fileName, const char* payload, const int paylo
     char* tempFileName = NULL;
     bool result = false;
 
-    if ((false == FileExists(fileName)) || (NULL == payload) || (0 >= payloadSizeBytes))
+    if ((NULL == fileName) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
         OsConfigLogError(log, "SecureSaveToFile called with invalid arguments");
         return false;
@@ -116,8 +116,6 @@ bool SecureSaveToFile(const char* fileName, const char* payload, const int paylo
         OsConfigLogError(log, "SecureSaveToFile: out of memory");
         return false;
     }
-
-    OsConfigLogInfo(log, "SecureSaveToFile: temporary file is '%s'", tempFileName);//////////
 
     if (true == (result = SavePayloadToFile(tempFileName, payload, payloadSizeBytes, log)))
     {
