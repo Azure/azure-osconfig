@@ -155,7 +155,7 @@ TEST_F(CommonUtilsTest, AppendToFile)
 
 TEST_F(CommonUtilsTest, MakeFileBackupCopy)
 {
-    const char* fileCopyPath = "~test.test.copy";
+    const char* fileCopyPath = "/tmp/~test.test.copy";
     char* contents = NULL;
     
     EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
@@ -173,8 +173,8 @@ TEST_F(CommonUtilsTest, MakeFileBackupCopy)
 
 TEST_F(CommonUtilsTest, ConcatenateFiles)
 {
-    const char* testPath1 = "~test1.test";
-    const char* testPath2 = "~test2.test";
+    const char* testPath1 = "/tmp/~test1.test";
+    const char* testPath2 = "/tmp/~test2.test";
     const char* original = "First line of text\n";
     const char* added = "Second line of text\nAnd third line of text";
     const char* complete = "First line of text\nSecond line of text\nAnd third line of text";
