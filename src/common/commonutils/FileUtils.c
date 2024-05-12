@@ -108,7 +108,7 @@ bool SecureSaveToFile(const char* fileName, const char* payload, const int paylo
 
     if ((NULL == fileName) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
-        OsConfigLogError(log, "SecureSaveToFile called with invalid arguments");
+        OsConfigLogError(log, "SecureSaveToFile: invalid arguments");
         return false;
     }
     else if (NULL == (tempFileName = FormatAllocateString(tempFileNameTemplate, rand())))
