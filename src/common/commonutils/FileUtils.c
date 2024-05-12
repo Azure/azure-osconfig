@@ -117,8 +117,12 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         return false;
     }
 
-    OsConfigLogInfo(log, "#### InternalSecureSaveToFile: saving file '%s', mode '%s', payload: '%s'", fileName, mode, payload);
-    if (true == (result = SaveToFile(tempFileName, mode, payload, payloadSizeBytes, log)))
+    if ((0 == strcmp(mode, "a")) && (false == (result = MakeFileBackupCopy(fileName, tempFileName, log))))
+    {
+        OsConfigLogError(log, "InternalSecureSaveToFile: failed to make a copy of '%s'", fileName);
+    }
+
+    if (result && (true == (result = SaveToFile(tempFileName, mode, payload, payloadSizeBytes, log))))
     {
         rename(tempFileName, fileName);
         remove(tempFileName);
