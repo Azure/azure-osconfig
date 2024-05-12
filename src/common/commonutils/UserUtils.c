@@ -784,10 +784,15 @@ static int RemoveUser(SIMPLIFIED_USER* user, void* log)
     char* command = NULL;
     int status = 0, _status = 0;
 
-    if ((NULL == user) || (0 == user->userId))
+    if (NULL == user)
     {
         OsConfigLogError(log, "RemoveUser: invalid argument");
         return EINVAL;
+    }
+    else if || (0 == user->userId)
+    {
+        OsConfigLogError(log, "RemoveUser: cannot remove root user (uid 0)");
+        return EPERM;
     }
 
     if (NULL != (command = FormatAllocateString(commandTemplate, user->username)))
@@ -2715,6 +2720,39 @@ int CheckSystemAccountsAreNonLogin(char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckSystemAccountsAreNonLogin: all system accounts are non-login");
         OsConfigCaptureSuccessReason(reason, "All system accounts are non-login");
+    }
+
+    return status;
+}
+
+int RemoveSystemAccountsThatCanLogin(void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if ((userList[i].isLocked || userList[i].noLogin || userList[i].cannotLogin) && userList[i].hasPassword)
+            {
+                OsConfigLogError(log, "RemoveSystemAccountsThatCanLogin: user '%s' (%u, %u, '%s', '%s') appears system but can login with a password",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
+                
+                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                {
+                    status = _status;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "RemoveSystemAccountsThatCanLogin: all system accounts are non-login");
     }
 
     return status;

@@ -114,6 +114,7 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, void* log);
 int CheckLockoutAfterInactivityLessThan(long days, char** reason, void* log);
 int SetLockoutAfterInactivityLessThan(long days, void* log);
 int CheckSystemAccountsAreNonLogin(char** reason, void* log);
+int RemoveSystemAccountsThatCanLogin(void* log);
 int CheckRootPasswordForSingleUserMode(char** reason, void* log);
 int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, char** reason, void* log);
 int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, void* log);

@@ -2829,15 +2829,15 @@ static int RemediateEnsurePasswordExpirationWarning(char* value, void* log)
 static int RemediateEnsureSystemAccountsAreNonLogin(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return RemoveSystemAccountsThatCanLogin(log);
 }
 
 static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    OsConfigLogInfo(log, "For single user mode the root user account must have a password set. "
+        "Manually set a password for root user account if necessary. Automatic remediation is not possible");
+    return 0;
 }
 
 static int RemediateEnsureDotDoesNotAppearInRootsPath(char* value, void* log)
@@ -2885,8 +2885,8 @@ static int RemediateEnsureAutomountingDisabled(char* value, void* log)
 static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    OsConfigLogInfo(log, "Automatic remediation is not possible");
+    return 0;
 }
 
 static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, void* log)
