@@ -177,7 +177,7 @@ TEST_F(CommonUtilsTest, ConcatenateFiles)
     const char* testPath2 = "~test2.test";
     const char* original = "First line of text\n";
     const char* added = "Second line of text\nAnd third line of text";
-    const char* complete = "First line of text\n\nSecond line of text\nAnd third line of text";
+    const char* complete = "First line of text\nSecond line of text\nAnd third line of text";
     char* contents = NULL;
 
     EXPECT_FALSE(ConcatenateFiles(nullptr, nullptr, nullptr));

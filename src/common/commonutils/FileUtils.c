@@ -206,7 +206,7 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
 
 bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, void* log)
 {
-    const char* appendTemplate = "%s";//"\n%s";
+    const char* appendTemplate = "%s";
     char* contents = NULL;
     char* newContents = NULL;
     size_t contentsLength = 0;
@@ -220,18 +220,27 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, voi
 
     if (NULL != (contents = LoadStringFromFile(secondFileName, false, log)))
     {
-        contentsLength = strlen(contents) + strlen(appendTemplate);
-        if (NULL != (newContents = malloc(contentsLength + 1)))
+        contentsLength = strlen(contents);
+
+        if (EOL == contents[contentsLength - 1])
         {
-            memset(newContents, 0, contentsLength + 1);
-            snprintf(newContents, contentsLength + 1, appendTemplate, contents);
-
-            if (true == (result = AppendToFile(firstFileName, newContents, contentsLength + 1, log)))
+            result = AppendToFile(firstFileName, contents, contentsLength, log);
+        }
+        else
+        {
+            contentsLength += strlen(appendTemplate);
+            if (NULL != (newContents = malloc(contentsLength + 1)))
             {
-                OsConfigLogInfo(log, "ConcatenateFiles: successfully concatanated '%s' and '%s'", firstFileName, secondFileName);
+                memset(newContents, 0, contentsLength + 1);
+                snprintf(newContents, contentsLength + 1, appendTemplate, contents);
+                result = AppendToFile(firstFileName, newContents, contentsLength + 1, log);
+                FREE_MEMORY(newContents);
             }
-
-            FREE_MEMORY(newContents);
+            else
+            {
+                OsConfigLogError(log, "ConcatenateFiles: out of memory");
+                result = false;
+            }
         }
 
         FREE_MEMORY(contents);
