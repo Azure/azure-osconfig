@@ -138,7 +138,8 @@ bool SecureSaveToFile(const char* fileName, const char* payload, const int paylo
 
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
-    return InternalSecureSaveToFile(fileName, "a", payload, payloadSizeBytes, log);
+    //return InternalSecureSaveToFile(fileName, "a", payload, payloadSizeBytes, log);
+    return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
 }
 
 bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
