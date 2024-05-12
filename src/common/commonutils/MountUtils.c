@@ -190,7 +190,6 @@ static int CopyMountTableFile(const char* source, const char* target, void* log)
 int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
 {
     const char* fsMountTable = "/etc/fstab";
-    const char* tempFsMountTableCopy = "/etc/~fstab.copy";
     const char* mountTable = "/etc/mtab";
     const char tempFileNameTemplate[] = "/tmp/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
