@@ -643,7 +643,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                 {
                     if (NULL != strstr(line, marker))
                     {
-                        if ((commentCharacter != line[0]) && (EOL != line[0]) && (NULL != newline) && (0 < newlineLength))
+                        if ((commentCharacter != line[0]) && ('\n' != line[0]) && (NULL != newline) && (1 < newlineLength))
                         {
                             OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: replacing  line '%s' with '%s'", line, newline);
                             memset(line, 0, lineMax + 1);
