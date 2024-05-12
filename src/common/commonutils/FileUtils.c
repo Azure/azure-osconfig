@@ -124,24 +124,35 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         {
             if (true == (result = SaveToFile(tempFileName, "w", fileContents, strlen(fileContents), log)))
             {
-                result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log);
+                if (false == (result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log)))
+                {
+                    OsConfigLogError(log, "InternalSecureSaveToFile: failed to append second part to temporary file");
+                }
+            }
+            else
+            {
+                OsConfigLogError(log, "InternalSecureSaveToFile: failed to write first part to temporary file");
             }
             
             FREE_MEMORY(fileContents);
         }
         else
         {
-            OsConfigLogError(log, "InternalSecureSaveToFile: failed to make a file copy of '%s'", fileName);
+            OsConfigLogError(log, "InternalSecureSaveToFile: failed to read from '%s'", fileName);
             result = false;
         }
     }
     else
     {
-        result = SaveToFile(tempFileName, "w", payload, payloadSizeBytes, log);
+        if (false == (result = SaveToFile(tempFileName, "w", payload, payloadSizeBytes, log)))
+        {
+            OsConfigLogError(log, "InternalSecureSaveToFile: failed to save to temporary file");
+        }
     }
         
     if (result && (false == FileExists(tempFileName)))
     {
+        OsConfigLogError(log, "InternalSecureSaveToFile: failed to create temporary file");
         result = false;
     }
 
