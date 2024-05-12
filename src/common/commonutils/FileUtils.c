@@ -104,7 +104,7 @@ bool SecureSaveToFile(const char* fileName, const char* payload, const int paylo
 {
     const char* tempFileNameTemplate = "/tmp/~OSConfig.TempFile%u";
     char* tempFileName = NULL;
-    result = false;
+    bool result = false;
 
     if ((false = FileExists(fileName)) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
@@ -546,7 +546,7 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
 
 int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, void* log)
 {
-    const char* tempFileNameTemplate = "/tmp/~%dtemp%d";
+    const char* tempFileNameTemplate = "/tmp/~OSConfig.ReplacingLines%u";
     char* tempFileName = NULL;
     FILE* fileHandle = NULL;
     FILE* tempHandle = NULL;
@@ -567,7 +567,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         return ENOMEM;
     }
 
-    if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, rand(), rand())))
+    if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, rand())))
     {
         if (NULL != (fileHandle = fopen(fileName, "r")))
         {
