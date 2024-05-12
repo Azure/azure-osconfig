@@ -397,7 +397,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 {
                     if (0 == ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', log))
                     {
-                        if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo))
+                        if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo, log))
                         {
                             rename(tempFileNameThree, tempFileNametwo);
                         }
