@@ -102,7 +102,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
 bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
-    const char* tempFileNameTemplate = "/tmp/~OSConfig.TempFile%u";
+    const char* tempFileNameTemplate = "/tmp/~OSConfig.Temp%d";
     char* tempFileName = NULL;
     bool result = false;
 
@@ -116,6 +116,8 @@ bool SecureSaveToFile(const char* fileName, const char* payload, const int paylo
         OsConfigLogError(log, "SecureSaveToFile: out of memory");
         return false;
     }
+
+    OsConfigLogInfo(log, "SecureSaveToFile: temporary file is '%s'", tempFileName);//////////
 
     if (true == (result = SavePayloadToFile(tempFileName, payload, payloadSizeBytes, log)))
     {
