@@ -46,6 +46,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log);
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
 bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
+bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, void* log);
 
 void SetCommandLogging(bool commandLogging);
 bool IsCommandLoggingEnabled(void);

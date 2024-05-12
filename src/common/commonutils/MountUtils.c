@@ -190,6 +190,7 @@ static int CopyMountTableFile(const char* source, const char* target, void* log)
 int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
 {
     const char* fsMountTable = "/etc/fstab";
+    const char* tempFsMountTableCopy = "/etc/~fstab.copy";
     const char* mountTable = "/etc/mtab";
     const char tempFileNameTemplate[] = "/tmp/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
@@ -200,6 +201,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
     char* newLine = NULL;
     char* tempFileNameOne = NULL;
     char* tempFileNameTwo = NULL;
+    char* tempFileNameThree = NULL;
     struct mntent* mountStruct = NULL;
     bool matchFound = false;
     int lineNumber = 1;
@@ -218,7 +220,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
     }
 
     if ((NULL == (tempFileNameOne = FormatAllocateString(tempFileNameTemplate, 1))) ||
-        (NULL == (tempFileNameTwo = FormatAllocateString(tempFileNameTemplate, 2))))
+        (NULL == (tempFileNameTwo = FormatAllocateString(tempFileNameTemplate, 2))) ||
+        (NULL == (tempFileNameThree = FormatAllocateString(tempFileNameTemplate, 3))))
     {
         OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
         status = ENOMEM;
@@ -387,6 +390,22 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
         if (0 == status)
         {
+            // Try to preserve the commented out lines from original /etc/fstab
+            /*if (MakeFileBackupCopy(fsMountTable, tempFileNameThree, log))
+            {
+                if (0 == (status = ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', log)))
+                {
+                    if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo))
+                    {
+                        rename(tempFileNameThree, tempFileNametwo);
+                    }
+                }
+            }
+            else
+            {
+                OsConfigLogError(log, "SetFileSystemMountingOption: unable to make a temporary back copy of '%s'", fsMountTable);
+            }*/
+            
             // Copy from the manually built temp mount file one to the temp mount file two using the *mntent API to ensure correct format
             if (0 == (status = CopyMountTableFile(tempFileNameOne, tempFileNameTwo, log)))
             {

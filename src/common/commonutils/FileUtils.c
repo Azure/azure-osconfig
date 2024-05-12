@@ -100,7 +100,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
     return SaveToFile(fileName, "w", payload, payloadSizeBytes, log);
 }
 
-bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     const char* tempFileNameTemplate = "/tmp/~OSConfig.Temp%d";
     char* tempFileName = NULL;
@@ -108,32 +108,37 @@ bool SecureSaveToFile(const char* fileName, const char* payload, const int paylo
 
     if ((NULL == fileName) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
-        OsConfigLogError(log, "SecureSaveToFile: invalid arguments");
+        OsConfigLogError(log, "InternalSecureSaveToFile: invalid arguments");
         return false;
     }
     else if (NULL == (tempFileName = FormatAllocateString(tempFileNameTemplate, rand())))
     {
-        OsConfigLogError(log, "SecureSaveToFile: out of memory");
+        OsConfigLogError(log, "InternalSecureSaveToFile: out of memory");
         return false;
     }
 
-    if (true == (result = SavePayloadToFile(tempFileName, payload, payloadSizeBytes, log)))
+    if (true == (result = SaveToFile(tempFileName, mode, payload, payloadSizeBytes, log)))
     {
         rename(tempFileName, fileName);
         remove(tempFileName);
     }
     else
     {
-        OsConfigLogError(log, "SecureSaveToFile: failed save to temporary file");
+        OsConfigLogError(log, "InternalSecureSaveToFile: failed save to temporary file");
     }
 
     FREE_MEMORY(tempFileName);
     return result;
 }
 
+bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+{
+    return InternalSecureSaveToFile(fileName, "w", payload, payloadSizeBytes, log);
+}
+
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
-    return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
+    return InternalSecureSaveToFile(fileName, "a", payload, payloadSizeBytes, log);
 }
 
 bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
@@ -170,6 +175,41 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
 
     FREE_MEMORY(fileContents);
     FREE_MEMORY(newFileName);
+
+    return result;
+}
+
+bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, void* log)
+{
+    char* contents = NULL;
+    char* newContents = NULL;
+    size_t contentsLength = 0;
+    bool result = false;
+    
+    if ((NULL == firstFileName) || (NULL == secondFileName))
+    {
+        OsConfigLogError(log, "ConcatenateFiles: invalid arguments");
+        return false;
+    }
+
+    if (NULL != (contents = LoadStringFromFile(secondFileName, false, log)))
+    {
+        contentsLength = strlen(contents);
+        if (NULL != (newContents = malloc(contents + 2)))
+        {
+            memset(newContents, 0, contents + 2);
+            snprintf(newContents, contents + 1, "\n%s", contents);
+
+            if (true == (result = AppendToFile(firstFileName, newContents, contents + 1, log)))
+            {
+                OsConfigLogInfo(log, "ConcatenateFiles: successfully concatanated '%s' and '%s'", firstFileName, secondFileName);
+            }
+
+            FREE_MEMORY(newContents);
+        }
+
+        FREE_MEMORY(contents);
+    }
 
     return result;
 }
