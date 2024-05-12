@@ -56,6 +56,8 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
     int i = 0;
     bool result = true;
 
+    OsConfigLogInfo(log, "SaveToFile: ######## here '%s'%s", fileName, mode);
+
     if (fileName && mode && payload && (0 < payloadSizeBytes))
     {
         if (NULL != (file = fopen(fileName, mode)))
