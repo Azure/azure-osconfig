@@ -206,7 +206,7 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
 
 bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, void* log)
 {
-    const char* appendTemplate = "\n%s";
+    const char* appendTemplate = "%s";//"\n%s";
     char* contents = NULL;
     char* newContents = NULL;
     size_t contentsLength = 0;
