@@ -118,7 +118,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         return false;
     }
 
-    if ((0 == strcmp(mode, "a") && FileExists(fileName))
+    if ((0 == strcmp(mode, "a") && FileExists(fileName)))
     {
         if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
         {
