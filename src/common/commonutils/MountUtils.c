@@ -399,7 +399,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     {
                         if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo, log))
                         {
-                            rename(tempFileNameThree, tempFileNametwo);
+                            rename(tempFileNameThree, tempFileNameTwo);
                         }
                     }
                 }
