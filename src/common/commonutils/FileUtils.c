@@ -92,8 +92,6 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
         OsConfigLogError(log, "SaveToFile: invalid arguments ('%s', '%s', '%s', %d)", fileName, mode, payload, payloadSizeBytes);
     }
 
-    OsConfigLogInfo(log, "SaveToFile: ###1### '%s' ('%s') %s", mode, payload, result ? "OK" : "FAIL");
-    
     return result;
 }
 
@@ -119,6 +117,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         return false;
     }
 
+    OsConfigLogInfo(log, "#### InternalSecureSaveToFile: saving file '%s', mode '%s', payload: '%s'", fileName, mode, payload);
     if (true == (result = SaveToFile(tempFileName, mode, payload, payloadSizeBytes, log)))
     {
         rename(tempFileName, fileName);
@@ -140,7 +139,6 @@ bool SecureSaveToFile(const char* fileName, const char* payload, const int paylo
 
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
-    OsConfigLogInfo(log, "AppendToFile: ###2### '%s' ('%s')", "a", payload);
     return InternalSecureSaveToFile(fileName, "a", payload, payloadSizeBytes, log);
 }
 
