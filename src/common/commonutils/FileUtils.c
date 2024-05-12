@@ -121,7 +121,6 @@ bool SecureSaveToFile(const char* fileName, const char* payload, const int paylo
     {
         rename(tempFileName, fileName);
         remove(tempFileName);
-        OsConfigLogInfo(log, "SecureSaveToFile: requested payload successfully saved to '%s'", fileName);
     }
     else
     {
@@ -149,7 +148,7 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
         {
             if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
             {
-                result = SavePayloadToFile(backupName, fileContents, strlen(fileContents), log);
+                result = SecureSaveToFile(backupName, fileContents, strlen(fileContents), log);
             }
             else
             {
