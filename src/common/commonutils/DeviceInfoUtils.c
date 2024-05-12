@@ -614,7 +614,7 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
         {
             OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
                 distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
-            OsConfigCaptureReason(reason, "Distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
+            OsConfigCaptureReason(reason, "Distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match, automatic remediation is not possible",
                 distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
         }
     }
@@ -629,7 +629,7 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
         else
         {
             OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s') and installed image ('%s', '%s') do not match", linuxName, kernelName, kernelVersion);
-            OsConfigCaptureReason(reason, "Distro ('%s') and installed image ('%s', '%s') do not match", linuxName, kernelName, kernelVersion);
+            OsConfigCaptureReason(reason, "Distro ('%s') and installed image ('%s', '%s') do not match, automatic remediation is not possible", linuxName, kernelName, kernelVersion);
         }
     }
     

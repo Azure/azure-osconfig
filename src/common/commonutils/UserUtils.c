@@ -2810,7 +2810,8 @@ int CheckRootPasswordForSingleUserMode(char** reason, void* log)
         else if ((false == rootHasPassword) && (false == usersWithPassword))
         {
             OsConfigLogError(log, "CheckRootPasswordForSingleUserMode: single user mode and root does not have password");
-            OsConfigCaptureReason(reason, "Single user mode and root does not have a password set");
+            OsConfigCaptureReason(reason, "Single user mode and root does not have a password set, must manually set a password "
+                "for root user, automatic remediation is not possible");
             status = ENOENT;
         }
     }
