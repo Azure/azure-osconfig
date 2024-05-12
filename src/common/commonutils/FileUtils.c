@@ -645,7 +645,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                     {
                         if ((commentCharacter != line[0]) && (NULL != newline) && (0 < newlineLength))
                         {
-                            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: replacing from file '%s' the line '%s' with '%s'", fileName, line, newline);
+                            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: replacing  line '%s' with '%s'", line, newline);
                             memset(line, 0, lineMax + 1);
                             memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
                             skipLine = false;
@@ -657,7 +657,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                         }
                         else
                         {
-                            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: skipping from file '%s' the line '%s'", fileName, line);
+                            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: skipping line '%s'", line);
                             skipLine = true;
                         }
                     }
