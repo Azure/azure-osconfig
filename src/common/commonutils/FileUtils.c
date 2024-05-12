@@ -182,6 +182,7 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
 
 bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, void* log)
 {
+    const char appendTemplate = "\n%s";
     char* contents = NULL;
     char* newContents = NULL;
     size_t contentsLength = 0;
@@ -195,11 +196,11 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, voi
 
     if (NULL != (contents = LoadStringFromFile(secondFileName, false, log)))
     {
-        contentsLength = strlen(contents);
-        if (NULL != (newContents = malloc(contentsLength + 2)))
+        contentsLength = strlen(contents) + strlen(appendTemplate);
+        if (NULL != (newContents = malloc(contentsLength + 1)))
         {
-            memset(newContents, 0, contentsLength + 2);
-            snprintf(newContents, contentsLength + 1, "\n%s", contents);
+            memset(newContents, 0, contentsLength + 1);
+            snprintf(newContents, contentsLength + 1, appendTemplate, contents);
 
             if (true == (result = AppendToFile(firstFileName, newContents, contentsLength + 1, log)))
             {
