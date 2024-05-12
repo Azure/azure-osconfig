@@ -109,8 +109,6 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     int status = 0;
     bool result = false;
 
-    srand(rand());
-
     if ((NULL == fileName) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
         OsConfigLogError(log, "InternalSecureSaveToFile: invalid arguments");
