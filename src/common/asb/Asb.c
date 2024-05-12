@@ -826,7 +826,8 @@ static char* AuditEnsureKernelSupportForCpuNx(void* log)
     char* reason = NULL;
     if (false == CheckCpuFlagSupported("nx", &reason, log))
     {
-        OsConfigCaptureReason(&reason, "A CPU that supports the NX (no-execute) bit technology is necessary, automatic remediation is not possible");
+        FREE_MEMORY(reason);
+        reaon = DuplicateString("A CPU that supports the NX (no-execute) bit technology is necessary. Automatic remediation is not possible");
     }
     return reason;
 }
