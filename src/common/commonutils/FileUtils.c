@@ -104,17 +104,17 @@ bool SecureSaveToFile(const char* fileName, const char* payload, const int paylo
 {
     const char* tempFileNameTemplate = "/tmp/~OSConfig.TempFile%u";
     char* tempFileName = NULL;
-    bool result = false;
+    bool result = true;
 
     if ((false == FileExists(fileName)) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
         OsConfigLogError(log, "SecureSaveToFile called with invalid arguments");
-        return result;
+        return false;
     }
     else if (NULL == (tempFileName = FormatAllocateString(tempFileNameTemplate, rand())))
     {
         OsConfigLogError(log, "SecureSaveToFile: out of memory");
-        return result;
+        return false;
     }
 
     if (true == (result = SavePayloadToFile(tempFileName, payload, payloadSizeBytes, log)))
