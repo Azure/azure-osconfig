@@ -171,6 +171,30 @@ TEST_F(CommonUtilsTest, MakeFileBackupCopy)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
+TEST_F(CommonUtilsTest, ConcatenateFiles)
+{
+    const char* testPath1 = "~test1.test";
+    const char* testPath2 = "~test2.test";
+    const char* doubleDataWithEol =
+        "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n\n"
+        "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
+    char* contents = NULL;
+
+    EXPECT_TRUE(CreateTestFile(testPath1, m_dataWithEol));
+    EXPECT_TRUE(CreateTestFile(testPath2, m_dataWithEol));
+
+    EXPECT_EQ(EINVAL, ConcatenateFiles(nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, ConcatenateFiles(testPath1, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, ConcatenateFiles(nullptr, testPath2, nullptr));
+
+    EXPECT_EQ(0, ConcatenateFiles(testPath1, testPath2, nullptr));
+    EXPECT_STREQ(doubleDataWithEol, contents = LoadStringFromFile(testPath1, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(testPath1));
+    EXPECT_TRUE(Cleanup(testPath2));
+}
+
 struct ExecuteCommandOptions
 {
     const char* command;
@@ -2045,28 +2069,4 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(m_path));
-}
-
-TEST_F(CommonUtilsTest, ConcatenateFiles)
-{
-    const char* testPath1 = "~test1.test";
-    const char* testPath2 = "~test2.test";
-    const char* doubleDataWithEol = 
-        "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n\n"
-        "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
-    char* contents = NULL;
-
-    EXPECT_TRUE(CreateTestFile(testPath1, m_dataWithEol));
-    EXPECT_TRUE(CreateTestFile(testPath2, m_dataWithEol));
-
-    EXPECT_EQ(EINVAL, ConcatenateFiles(nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, ConcatenateFiles(testPath1, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, ConcatenateFiles(nullptr, testPath2, nullptr));
-
-    EXPECT_EQ(0, ConcatenateFiles(testPath1, testPath2, nullptr));
-    EXPECT_STREQ(doubleDataWithEol, contents = LoadStringFromFile(testPath1, false, nullptr));
-    FREE_MEMORY(contents);
-
-    EXPECT_TRUE(Cleanup(testPath1));
-    EXPECT_TRUE(Cleanup(testPath2));
 }
