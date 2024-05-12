@@ -175,20 +175,20 @@ TEST_F(CommonUtilsTest, ConcatenateFiles)
 {
     const char* testPath1 = "~test1.test";
     const char* testPath2 = "~test2.test";
-    const char* doubleDataWithEol =
-        "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n\n"
-        "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
+    const char* original = "First line of text\n";
+    const char* added = "Second line of text\nAnd third line of text";
+    const char* complete = "First line of text\n\nSecond line of text\nAnd third line of text";
     char* contents = NULL;
-
-    EXPECT_TRUE(CreateTestFile(testPath1, m_dataWithEol));
-    EXPECT_TRUE(CreateTestFile(testPath2, m_dataWithEol));
 
     EXPECT_FALSE(ConcatenateFiles(nullptr, nullptr, nullptr));
     EXPECT_FALSE(ConcatenateFiles(testPath1, nullptr, nullptr));
     EXPECT_FALSE(ConcatenateFiles(nullptr, testPath2, nullptr));
 
+    EXPECT_TRUE(SavePayloadToFile(testPath1, original, strlen(original), nullptr));
+    EXPECT_TRUE(SavePayloadToFile(testPath2, added, strlen(added), nullptr));
+
     EXPECT_TRUE(ConcatenateFiles(testPath1, testPath2, nullptr));
-    EXPECT_STREQ(doubleDataWithEol, contents = LoadStringFromFile(testPath1, false, nullptr));
+    EXPECT_STREQ(complete, contents = LoadStringFromFile(testPath1, false, nullptr));
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(testPath1));
