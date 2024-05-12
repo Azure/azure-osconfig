@@ -78,12 +78,13 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
                 OsConfigLogError(log, "SaveToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
             }
 
+            fflush(file);
             fclose(file);
         }
         else
         {
             result = false;
-            OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s'(%d)", fileName, mode, errno);
+            OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
         }
     }
     else
@@ -102,10 +103,12 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
-    const char* tempFileNameTemplate = "/tmp/~OSConfig.Temp%d";
+    const char* tempFileNameTemplate = "/tmp/~OSConfig.Temp%u";
     char* tempFileName = NULL;
     char* fileContents = NULL;
     bool result = false;
+
+    srand(rand());
 
     if ((NULL == fileName) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
@@ -149,13 +152,10 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     if (result)
     {
         rename(tempFileName, fileName);
-        remove(tempFileName);
+        //remove(tempFileName);
     }
 
     FREE_MEMORY(tempFileName);
-
-    OsConfigLogInfo(log, "InternalSecureSaveToFile('%s', '%s', '%s', %d) complete with '%s'", 
-        fileName, mode, payload, payloadSizeBytes, result ? "true" : "false");
 
     return result;
 }
