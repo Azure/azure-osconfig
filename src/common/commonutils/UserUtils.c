@@ -2703,11 +2703,11 @@ int CheckSystemAccountsAreNonLogin(char** reason, void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((userList[i].isLocked || userList[i].noLogin || userList[i].cannotLogin) && userList[i].hasPassword)
+            if ((userList[i].isLocked || userList[i].noLogin || userList[i].cannotLogin) && userList[i].hasPassword && userList[i].uid)
             {
-                OsConfigLogError(log, "CheckSystemAccountsAreNonLogin: user '%s' (%u, %u, '%s', '%s') appears system but can login with a password",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
-                OsConfigCaptureReason(reason, "User '%s' (%u, %u, '%s', '%s') appears system but can login with a password",
+                OsConfigLogError(log, "CheckSystemAccountsAreNonLogin: user '%s' (%u, %u, '%s', '%s') is either locked, no-login, or cannot-login, "
+                    "but can login with password", userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
+                OsConfigCaptureReason(reason, "User '%s' (%u, %u, '%s', '%s') is either locked, no-login, or cannot-login, but can login with password",
                     userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
                 status = ENOENT;
             }
@@ -2735,10 +2735,10 @@ int RemoveSystemAccountsThatCanLogin(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((userList[i].isLocked || userList[i].noLogin || userList[i].cannotLogin) && userList[i].hasPassword)
+            if ((userList[i].isLocked || userList[i].noLogin || userList[i].cannotLogin) && userList[i].hasPassword && userList[i].uid)
             {
-                OsConfigLogError(log, "RemoveSystemAccountsThatCanLogin: user '%s' (%u, %u, '%s', '%s') appears system but can login with a password",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
+                OsConfigLogError(log, "RemoveSystemAccountsThatCanLogin: user '%s' (%u, %u, '%s', '%s') is either locked, no-login, or cannot-login, "
+                    "but can login with password",  userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
                 
                 if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
                 {
