@@ -2065,7 +2065,7 @@ TEST_F(CommonUtilsTest, ConcatenateFiles)
 
     EXPECT_EQ(0, ConcatenateFiles(testPath1, testPath2, nullptr));
     EXPECT_STREQ(doubleDataWithEol, contents = LoadStringFromFile(testPath1, false, nullptr));
-    MEMORY_FREE(contents);
+    FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(testPath1));
     EXPECT_TRUE(Cleanup(testPath2));
