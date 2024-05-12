@@ -389,25 +389,21 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
         if (0 == status)
         {
-            // Try to preserve the commented out lines from original /etc/fstab
-            /*if (MakeFileBackupCopy(fsMountTable, tempFileNameThree, log))
-            {
-                if (0 == (status = ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', log)))
-                {
-                    if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo))
-                    {
-                        rename(tempFileNameThree, tempFileNametwo);
-                    }
-                }
-            }
-            else
-            {
-                OsConfigLogError(log, "SetFileSystemMountingOption: unable to make a temporary back copy of '%s'", fsMountTable);
-            }*/
-            
             // Copy from the manually built temp mount file one to the temp mount file two using the *mntent API to ensure correct format
             if (0 == (status = CopyMountTableFile(tempFileNameOne, tempFileNameTwo, log)))
             {
+                // Optionally, try to preserve the commented out lines from original /etc/fstab
+                if (MakeFileBackupCopy(fsMountTable, tempFileNameThree, log))
+                {
+                    if (0 == ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', log)))
+                    {
+                        if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo))
+                        {
+                            rename(tempFileNameThree, tempFileNametwo);
+                        }
+                    }
+                }
+                
                 // When done assembling the final temp mount file two, move it in an atomic step to real mount file
                 rename(tempFileNameTwo, fsMountTable);
             }
@@ -415,11 +411,13 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
         remove(tempFileNameOne);
         remove(tempFileNameTwo);
+        remove(tempFileNameThree);
     }
 
     FREE_MEMORY(newLine);
     FREE_MEMORY(tempFileNameOne);
     FREE_MEMORY(tempFileNameTwo);
+    FREE_MEMORY(tempFileNameThree);
 
     return status;
 }
