@@ -124,7 +124,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         {
             if (true == (result = SaveToFile(tempFileName, "w", fileContents, strlen(fileContents), log)))
             {
-                result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log)))
+                result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log);
             }
             
             FREE_MEMORY(fileContents);
