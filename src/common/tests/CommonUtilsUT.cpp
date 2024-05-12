@@ -183,11 +183,11 @@ TEST_F(CommonUtilsTest, ConcatenateFiles)
     EXPECT_TRUE(CreateTestFile(testPath1, m_dataWithEol));
     EXPECT_TRUE(CreateTestFile(testPath2, m_dataWithEol));
 
-    EXPECT_EQ(EINVAL, ConcatenateFiles(nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, ConcatenateFiles(testPath1, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, ConcatenateFiles(nullptr, testPath2, nullptr));
+    EXPECT_FALSE(ConcatenateFiles(nullptr, nullptr, nullptr));
+    EXPECT_FALSE(ConcatenateFiles(testPath1, nullptr, nullptr));
+    EXPECT_FALSE(ConcatenateFiles(nullptr, testPath2, nullptr));
 
-    EXPECT_EQ(0, ConcatenateFiles(testPath1, testPath2, nullptr));
+    EXPECT_TRUE(ConcatenateFiles(testPath1, testPath2, nullptr));
     EXPECT_STREQ(doubleDataWithEol, contents = LoadStringFromFile(testPath1, false, nullptr));
     FREE_MEMORY(contents);
 
