@@ -122,7 +122,11 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     {
         if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
         {
-            result = SaveToFile(tempFileName, "w", fileContents, strlen(fileContents), log);
+            if (true == (result = SaveToFile(tempFileName, "w", fileContents, strlen(fileContents), log)))
+            {
+                result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log);
+            }
+            
             FREE_MEMORY(fileContents);
         }
         else
@@ -131,18 +135,24 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
             result = false;
         }
     }
+    else
+    {
+        result = SaveToFile(tempFileName, "w", payload, payloadSizeBytes, log);
+    }
         
-    if (result && (true == (result = SaveToFile(tempFileName, mode, payload, payloadSizeBytes, log))))
+    if (result && (false == FileExists(tempFileName)))
+    {
+        result = false;
+    }
+
+    if (result)
     {
         rename(tempFileName, fileName);
         remove(tempFileName);
     }
-    else
-    {
-        OsConfigLogError(log, "InternalSecureSaveToFile: failed save to temporary file");
-    }
 
     FREE_MEMORY(tempFileName);
+
     return result;
 }
 
