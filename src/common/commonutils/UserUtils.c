@@ -789,9 +789,9 @@ static int RemoveUser(SIMPLIFIED_USER* user, void* log)
         OsConfigLogError(log, "RemoveUser: invalid argument");
         return EINVAL;
     }
-    else if || (0 == user->userId)
+    else if (0 == user->userId)
     {
-        OsConfigLogError(log, "RemoveUser: cannot remove root user (uid 0)");
+        OsConfigLogError(log, "RemoveUser: cannot remove user with uid 0 ('%s' %u, %u)", user->username, user->userId, user->groupId);
         return EPERM;
     }
 
