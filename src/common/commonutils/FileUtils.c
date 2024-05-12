@@ -195,12 +195,12 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, voi
     if (NULL != (contents = LoadStringFromFile(secondFileName, false, log)))
     {
         contentsLength = strlen(contents);
-        if (NULL != (newContents = malloc(contents + 2)))
+        if (NULL != (newContents = malloc(contentsLength + 2)))
         {
-            memset(newContents, 0, contents + 2);
-            snprintf(newContents, contents + 1, "\n%s", contents);
+            memset(newContents, 0, contentsLength + 2);
+            snprintf(newContents, contentsLength + 1, "\n%s", contents);
 
-            if (true == (result = AppendToFile(firstFileName, newContents, contents + 1, log)))
+            if (true == (result = AppendToFile(firstFileName, newContents, contentsLength + 1, log)))
             {
                 OsConfigLogInfo(log, "ConcatenateFiles: successfully concatanated '%s' and '%s'", firstFileName, secondFileName);
             }
