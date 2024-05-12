@@ -104,6 +104,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
 {
     const char* tempFileNameTemplate = "/tmp/~OSConfig.Temp%d";
     char* tempFileName = NULL;
+    char* fileContents = NULL;
     bool result = false;
 
     if ((NULL == fileName) || (NULL == payload) || (0 >= payloadSizeBytes))
@@ -117,12 +118,20 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         return false;
     }
 
-    if ((0 == strcmp(mode, "a")) && FileExists(fileName) && (false == MakeFileBackupCopy(fileName, tempFileName, log)))
+    if ((0 == strcmp(mode, "a") && FileExists(fileName))
     {
-        OsConfigLogError(log, "InternalSecureSaveToFile: failed to make a copy of '%s'", fileName);
-        result = false;
+        if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
+        {
+            result = SaveToFile(tempFileName, "w", fileContents, strlen(fileContents), log);
+            FREE_MEMORY(fileContents);
+        }
+        else
+        {
+            OsConfigLogError(log, "InternalSecureSaveToFile: failed to make a file copy of '%s'", fileName);
+            result = false;
+        }
     }
-
+        
     if (result && (true == (result = SaveToFile(tempFileName, mode, payload, payloadSizeBytes, log))))
     {
         rename(tempFileName, fileName);
