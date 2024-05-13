@@ -214,10 +214,7 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
 
 bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, void* log)
 {
-    const char* appendTemplate = "%s";
     char* contents = NULL;
-    char* newContents = NULL;
-    size_t contentsLength = 0;
     bool result = false;
     
     if ((NULL == firstFileName) || (NULL == secondFileName))
@@ -228,29 +225,7 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, voi
 
     if (NULL != (contents = LoadStringFromFile(secondFileName, false, log)))
     {
-        contentsLength = strlen(contents);
-
-        if (EOL == contents[contentsLength - 1])
-        {
-            result = AppendToFile(firstFileName, contents, contentsLength, log);
-        }
-        else
-        {
-            contentsLength += strlen(appendTemplate);
-            if (NULL != (newContents = malloc(contentsLength + 1)))
-            {
-                memset(newContents, 0, contentsLength + 1);
-                snprintf(newContents, contentsLength + 1, appendTemplate, contents);
-                result = AppendToFile(firstFileName, newContents, contentsLength + 1, log);
-                FREE_MEMORY(newContents);
-            }
-            else
-            {
-                OsConfigLogError(log, "ConcatenateFiles: out of memory");
-                result = false;
-            }
-        }
-
+        result = AppendToFile(firstFileName, contents, contentsLength, log);
         FREE_MEMORY(contents);
     }
 
@@ -722,7 +697,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         if (0 != (status = rename(tempFileName, fileName)))
         {
             OsConfigLogError(log, "ReplaceMarkedLinesInFile: rename('%s' to '%s') failed with %d", tempFileName, fileName, errno);
-            status = (0 == (status = errno)) ? ENOENT : errno;
+            status = (0 == errno) ? ENOENT : errno;
         }
         
         remove(tempFileName);
@@ -1500,7 +1475,7 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
                 if (0 != (status = rename(tempLoginDefs, etcLoginDefs)))
                 {
                     OsConfigLogError(log, "SetEtcLoginDefValue: rename('%s' to '%s') failed with %d", tempLoginDefs, etcLoginDefs, errno);
-                    status = (0 == (status = errno)) ? ENOENT : errno;
+                    status = (0 == errno) ? ENOENT : errno;
                 }
             }
             

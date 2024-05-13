@@ -408,7 +408,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 if (0 != (status = rename(tempFileNameTwo, fsMountTable)))
                 {
                     OsConfigLogError(log, "SetFileSystemMountingOption:  rename('%s' to '%s') failed with %d", tempFileNameTwo, fsMountTable, errno);
-                    status = (0 == (status = errno)) ? ENOENT : errno;
+                    status = (0 == errno) ? ENOENT : errno;
                 }
             }
         }
