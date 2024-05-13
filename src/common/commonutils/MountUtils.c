@@ -78,7 +78,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 
                 if (IsFullLoggingEnabled())
                 {
-                    OsConfigLogInfo(log, "CheckFileSystemMountingOption, line %d in %s: mnt_fsname '%s', mnt_dir '%s', mnt_type '%s', mnt_opts '%s', mnt_freq %d, mnt_passno %d", 
+                    OsConfigLogInfo(log, "CheckFileSystemMountingOption, line %d in '%s': mnt_fsname '%s', mnt_dir '%s', mnt_type '%s', mnt_opts '%s', mnt_freq %d, mnt_passno %d", 
                         lineNumber, mountFileName, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, 
                         mountStruct->mnt_freq, mountStruct->mnt_passno);
                 }
@@ -108,13 +108,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     }
     else
     {
-        status = errno;
-        
-        if (0 == status)
-        {
-            status = ENOENT;
-        }
-        
+        status = (0 == errno) ? ENOENT : errno;
         OsConfigLogError(log, "CheckFileSystemMountingOption: could not open file '%s', setmntent() failed (%d)", mountFileName, status);
         OsConfigCaptureReason(reason, "Cannot access '%s', setmntent() failed (%d)", mountFileName, status);
     }
