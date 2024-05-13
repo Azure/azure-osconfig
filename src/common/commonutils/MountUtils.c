@@ -143,11 +143,7 @@ static int CopyMountTableFile(const char* source, const char* target, void* log)
             {
                 if (0 != addmntent(targetHandle, mountStruct))
                 {
-                    if (0 == (status = errno))
-                    {
-                        status = ENOENT;
-                    }
-                    
+                    status = (0 == errno) ? ENOENT: errno;
                     OsConfigLogError(log, "CopyMountTableFile ('%s' to '%s'): failed adding '%s %s %s %s %d %d', addmntent() failed with %d", source, target, 
                         mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno, status);
                     break;
@@ -156,11 +152,7 @@ static int CopyMountTableFile(const char* source, const char* target, void* log)
         }
         else
         {
-            if (0 == (status = errno))
-            {
-                status = ENOENT;
-            }
-            
+            status = (0 == errno) ? ENOENT : errno;
             OsConfigLogError(log, "CopyMountTableFile: could not open source file '%s', setmntent() failed (%d)", source, status);
         }
         
@@ -170,11 +162,7 @@ static int CopyMountTableFile(const char* source, const char* target, void* log)
     }
     else
     {
-        if (0 == (status = errno))
-        {
-            status = ENOENT;
-        }
-
+        status = (0 == errno) ? ENOENT : errno;
         OsConfigLogError(log, "CopyMountTableFile: could not open target file '%s', setmntent() failed (%d)", target, status);
     }
         
@@ -355,11 +343,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     }
                     else
                     {
-                        if (0 == (status = errno))
-                        {
-                            status = ENOENT;
-                        }
-
+                        status = (0 == errno) ? ENOENT : errno;
                         OsConfigLogError(log, "SetFileSystemMountingOption: could not open '%s', setmntent() failed (%d)", mountTable, status);
                     }
                 }
@@ -373,11 +357,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
         }
         else
         {
-            if (0 == (status = errno))
-            {
-                status = ENOENT;
-            }
-
+            status = (0 == errno) ? ENOENT : errno;
             OsConfigLogError(log, "SetFileSystemMountingOption: could not open '%s', setmntent() failed (%d)", fsMountTable, status);
         }
 
