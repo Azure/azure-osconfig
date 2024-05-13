@@ -225,7 +225,7 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, voi
 
     if (NULL != (contents = LoadStringFromFile(secondFileName, false, log)))
     {
-        result = AppendToFile(firstFileName, contents, contentsLength, log);
+        result = AppendToFile(firstFileName, contents, strlen(contents), log);
         FREE_MEMORY(contents);
     }
 
