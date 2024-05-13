@@ -9,6 +9,7 @@ add_library(commonutils STATIC
     DaemonUtils.c
     DeviceInfoUtils.c
     FileUtils.c
+    MountUtils.c
     OtherUtils.c
     PackageUtils.c
     ProxyUtils.c

@@ -942,7 +942,7 @@ static int IncludeRemediationSshConfFile(void* log)
                     memset(newConfiguration, 0, newConfigurationSize);
                     snprintf(newConfiguration, newConfigurationSize, configurationTemplate, inclusion, originalConfiguration);
 
-                    if (true == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log))
+                    if (true == SecureSaveToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log))
                     {
                         OsConfigLogInfo(log, "IncludeRemediationSshConfFile: '%s' is now included into '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
                         status = 0;

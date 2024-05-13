@@ -43,9 +43,10 @@ extern "C"
 #endif
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log);
-
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
+bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
+bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, void* log);
 
 void SetCommandLogging(bool commandLogging);
 bool IsCommandLoggingEnabled(void);
@@ -83,6 +84,7 @@ int UninstallPackage(const char* packageName, void* log);
 unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
 int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* log);
+int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, void* log);
 int FindTextInFile(const char* fileName, const char* text, void* log);
 int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, void* log);
 int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, void* log);
@@ -96,7 +98,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
 int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
 int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
-
+int SetEtcLoginDefValue(const char* name, const char* value, void* log);
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
@@ -139,6 +141,9 @@ int CheckLoginUmask(const char* desired, char** reason, void* log);
 long GetPassMinDays(void* log);
 long GetPassMaxDays(void* log);
 long GetPassWarnAge(void* log);
+int SetPassMinDays(long days, void* log);
+int SetPassMaxDays(long days, void* log);
+int SetPassWarnAge(long days, void* log);
 bool IsCurrentOs(const char* name, void* log);
 
 void RemovePrefixBlanks(char* target);

@@ -19,7 +19,7 @@ using namespace std;
 class CommonUtilsTest : public ::testing::Test
 {
     protected:
-        const char* m_path = "~test.test";
+        const char* m_path = "/tmp/~test.test";
         const char* m_data = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM";
         const char* m_dataWithEol = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
         const char* m_dataLowercase = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 qwertyuiopasdfghjklzxcvbnm";
@@ -106,6 +106,31 @@ TEST_F(CommonUtilsTest, SavePayloadToFileInvalidArgument)
     EXPECT_FALSE(SavePayloadToFile(m_path, m_data, 0, nullptr));
 }
 
+TEST_F(CommonUtilsTest, SecureSaveToFile)
+{
+    char* contents = NULL;
+
+    EXPECT_FALSE(SecureSaveToFile(nullptr, m_data, sizeof(m_data), nullptr));
+    EXPECT_FALSE(SecureSaveToFile(m_path, nullptr, sizeof(m_data), nullptr));
+    EXPECT_FALSE(SecureSaveToFile(m_path, m_data, -1, nullptr));
+    EXPECT_FALSE(SecureSaveToFile(m_path, m_data, 0, nullptr));
+
+    EXPECT_TRUE(SecureSaveToFile(m_path, m_data, strlen(m_data), nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+
+    EXPECT_TRUE(SecureSaveToFile(m_path, m_dataWithEol, strlen(m_dataWithEol), nullptr));
+    EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+
+    EXPECT_TRUE(SecureSaveToFile(m_path, m_dataWithEol, strlen(m_dataWithEol), nullptr));
+    EXPECT_STREQ(m_dataWithEol, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
 TEST_F(CommonUtilsTest, AppendToFile)
 {
     const char* original = "First line of text\n";
@@ -130,7 +155,7 @@ TEST_F(CommonUtilsTest, AppendToFile)
 
 TEST_F(CommonUtilsTest, MakeFileBackupCopy)
 {
-    const char* fileCopyPath = "~test.test.copy";
+    const char* fileCopyPath = "/tmp/~test.test.copy";
     char* contents = NULL;
     
     EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
@@ -144,6 +169,30 @@ TEST_F(CommonUtilsTest, MakeFileBackupCopy)
 
     EXPECT_TRUE(Cleanup(fileCopyPath));
     EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, ConcatenateFiles)
+{
+    const char* testPath1 = "/tmp/~test1.test";
+    const char* testPath2 = "/tmp/~test2.test";
+    const char* original = "First line of text\n";
+    const char* added = "Second line of text\nAnd third line of text";
+    const char* complete = "First line of text\nSecond line of text\nAnd third line of text";
+    char* contents = NULL;
+
+    EXPECT_FALSE(ConcatenateFiles(nullptr, nullptr, nullptr));
+    EXPECT_FALSE(ConcatenateFiles(testPath1, nullptr, nullptr));
+    EXPECT_FALSE(ConcatenateFiles(nullptr, testPath2, nullptr));
+
+    EXPECT_TRUE(SavePayloadToFile(testPath1, original, strlen(original), nullptr));
+    EXPECT_TRUE(SavePayloadToFile(testPath2, added, strlen(added), nullptr));
+
+    EXPECT_TRUE(ConcatenateFiles(testPath1, testPath2, nullptr));
+    EXPECT_STREQ(complete, contents = LoadStringFromFile(testPath1, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(testPath1));
+    EXPECT_TRUE(Cleanup(testPath2));
 }
 
 struct ExecuteCommandOptions
@@ -1308,7 +1357,7 @@ TEST_F(CommonUtilsTest, CheckNoDuplicateUsersGroups)
     EXPECT_EQ(0, CheckNoDuplicateUidsExist(nullptr, nullptr));
     EXPECT_EQ(0, CheckNoDuplicateGidsExist(nullptr, nullptr));
     EXPECT_EQ(0, CheckNoDuplicateUserNamesExist(nullptr, nullptr));
-    EXPECT_EQ(0, CheckNoDuplicateGroupsExist(nullptr, nullptr));
+    EXPECT_EQ(0, CheckNoDuplicateGroupNamesExist(nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, CheckNoPlusEntriesInFile)
@@ -1935,4 +1984,89 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(222, integers[1]);
     EXPECT_EQ(-333, integers[2]);
     FREE_MEMORY(integers);
+}
+
+TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
+{
+    const char* inFile =
+        "+Test line one\n"
+        "#   Test line two   \n"
+        " Test Line 3 +\n"
+        "Test KLine 4\n"
+        "abc Test4 0456 # rt 4 $"
+        "Test2:     12 $!    test test\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
+
+    const char* marker1 = "+";
+    const char* newline1 = "ABC 123\n";
+    const char* outFile1 =
+        "ABC 123\n"
+        "#   Test line two   \n"
+        "ABC 123\n"
+        "Test KLine 4\n"
+        "abc Test4 0456 # rt 4 $"
+        "Test2:     12 $!    test test\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "ABC 123\n";
+
+    const char* marker2 = "Test";
+    const char* newline2 = "456 DEF\n";
+    const char* outFile2 =
+        "456 DEF\n"
+        "#   Test line two   \n"
+        "456 DEF\n"
+        "456 DEF\n"
+        "456 DEF\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
+
+    const char* marker3 = "+";
+    const char* outFile3 =
+        "#   Test line two   \n"
+        "Test KLine 4\n"
+        "abc Test4 0456 # rt 4 $"
+        "Test2:     12 $!    test test\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n";
+
+    const char* marker4 = "Test";
+    const char* outFile4 =
+        "#   Test line two   \n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
+
+    char* contents = nullptr;
+
+    EXPECT_TRUE(CreateTestFile(m_path, inFile));
+
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, "+", "T", '#', nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, nullptr, nullptr, '#', nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, nullptr, nullptr, '#', nullptr));
+
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker1, newline1, '#', nullptr));
+    EXPECT_STREQ(outFile1, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(CreateTestFile(m_path, inFile));
+
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker2, newline2, '#', nullptr));
+    EXPECT_STREQ(outFile2, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(CreateTestFile(m_path, inFile));
+
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker3, nullptr, '#', nullptr));
+    EXPECT_STREQ(outFile3, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(CreateTestFile(m_path, inFile));
+
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker4, "", '#', nullptr));
+    EXPECT_STREQ(outFile4, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(m_path));
 }

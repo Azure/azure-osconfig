@@ -530,6 +530,7 @@ static const char* g_forward = "forward";
 static const char* g_netrc = "netrc";
 static const char* g_rhosts = "rhosts";
 static const char* g_systemdJournald = "systemd-journald";
+static const char* g_allTelnetd = "*telnetd*";
 
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
@@ -823,15 +824,19 @@ static char* AuditEnsurePermissionsOnEtcMotd(void* log)
 static char* AuditEnsureKernelSupportForCpuNx(void* log)
 {
     char* reason = NULL;
-    CheckCpuFlagSupported("nx", &reason, log);
+    if (false == CheckCpuFlagSupported("nx", &reason, log))
+    {
+        FREE_MEMORY(reason);
+        reason = DuplicateString("A CPU that supports the NX (no-execute) bit technology is necessary. Automatic remediation is not possible");
+    }
     return reason;
 }
 
 static char* AuditEnsureNodevOptionOnHomePartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log);
     CheckFileSystemMountingOption(g_etcMtab, g_home, NULL, g_nodev, &reason, log); 
+    CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log);
     return reason;
 }
 
@@ -935,7 +940,7 @@ static char* AuditEnsureXinetdNotInstalled(void* log)
 static char* AuditEnsureAllTelnetdPackagesUninstalled(void* log)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled("*telnetd*", &reason, log);
+    CheckPackageNotInstalled(g_allTelnetd, &reason, log);
     return reason;
 }
 
@@ -1062,7 +1067,7 @@ static char* AuditEnsureNoDuplicateUserNamesExist(void* log)
 static char* AuditEnsureNoDuplicateGroupsExist(void* log)
 {
     char* reason = NULL;
-    CheckNoDuplicateGroupsExist(&reason, log);
+    CheckNoDuplicateGroupNamesExist(&reason, log);
     return reason;
 }
 
@@ -1097,21 +1102,21 @@ static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log)
 static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void* log)
 {
     char* reason = NULL;
-    CheckNoLegacyPlusEntriesInFile("etc/passwd", &reason, log);
+    CheckNoLegacyPlusEntriesInFile(g_etcPasswd, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcShadow(void* log)
 {
     char* reason = NULL;
-    CheckNoLegacyPlusEntriesInFile("etc/shadow", &reason, log);
+    CheckNoLegacyPlusEntriesInFile(g_etcShadow, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcGroup(void* log)
 {
     char* reason = NULL;
-    CheckNoLegacyPlusEntriesInFile("etc/group", &reason, log);
+    CheckNoLegacyPlusEntriesInFile(g_etcGroup, &reason, log);
     return reason;
 }
 
@@ -1168,7 +1173,7 @@ static char* AuditEnsureRestrictedUserHomeDirectories(void* log)
 static char* AuditEnsurePasswordHashingAlgorithm(void* log)
 {
     char* reason = NULL;
-    CheckPasswordHashingAlgorithm(atoi(g_desiredEnsurePasswordHashingAlgorithm ? 
+    CheckPasswordHashingAlgorithm((unsigned int)atoi(g_desiredEnsurePasswordHashingAlgorithm ? 
         g_desiredEnsurePasswordHashingAlgorithm : g_defaultEnsurePasswordHashingAlgorithm), &reason, log);
     return reason;
 }
@@ -2591,8 +2596,8 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 static int RemediateEnsureKernelSupportForCpuNx(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    OsConfigLogInfo(log, "A CPU that supports the NX (no-execute) bit technology is necessary, automatic remediation is not possible");
+    return 0;
 }
 
 static int RemediateEnsureNodevOptionOnHomePartition(char* value, void* log)
@@ -2665,120 +2670,106 @@ static int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value,
 static int RemediateEnsureAllTelnetdPackagesUninstalled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return UninstallPackage(g_allTelnetd, log);
 }
 
 static int RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetAllEtcPasswdGroupsToExistInEtcGroup(log);
 }
 
 static int RemediateEnsureNoDuplicateUidsExist(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetNoDuplicateUids(log);
 }
 
 static int RemediateEnsureNoDuplicateGidsExist(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetNoDuplicateGids(log);
 }
 
 static int RemediateEnsureNoDuplicateUserNamesExist(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetNoDuplicateUserNames(log);
 }
 
 static int RemediateEnsureNoDuplicateGroupsExist(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetNoDuplicateGroupNames(log);
 }
 
 static int RemediateEnsureShadowGroupIsEmpty(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetShadowGroupEmpty(log);
 }
 
 static int RemediateEnsureRootGroupExists(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return RepairRootGroup(log);
 }
 
 static int RemediateEnsureAllAccountsHavePasswords(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    // We cannot automatically add passwords for user accounts that can login and do not have passwords set.
+    // If we try for example to run a command such as usermod, the command line can reveal that password 
+    // in clear before it gets encrypted and saved. Thus we simply delete such accounts:
+    return RemoveUsersWithoutPasswords(log);
 }
 
 static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetRootIsOnlyUidZeroAccount(log);
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ReplaceMarkedLinesInFile(g_etcPasswd, "+", NULL, '#', log);
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ReplaceMarkedLinesInFile(g_etcShadow, "+", NULL, '#', log);
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ReplaceMarkedLinesInFile(g_etcGroup, "+", NULL, '#', log);
 }
 
 static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetDefaultRootAccountGroupIsGidZero(log);
 }
 
 static int RemediateEnsureRootIsOnlyUidZeroAccount(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetRootIsOnlyUidZeroAccount(log);
 }
 
 static int RemediateEnsureAllUsersHomeDirectoriesExist(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetUserHomeDirectories(log);
 }
 
 static int RemediateEnsureUsersOwnTheirHomeDirectories(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetUserHomeDirectories(log);
 }
 
 static int RemediateEnsureRestrictedUserHomeDirectories(char* value, void* log)
@@ -2801,57 +2792,56 @@ static int RemediateEnsureRestrictedUserHomeDirectories(char* value, void* log)
 static int RemediateEnsurePasswordHashingAlgorithm(char* value, void* log)
 {
     InitEnsurePasswordHashingAlgorithm(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetPasswordHashingAlgorithm((unsigned int)atoi(g_desiredEnsurePasswordHashingAlgorithm), log);
 }
 
 static int RemediateEnsureMinDaysBetweenPasswordChanges(char* value, void* log)
 {
     InitEnsureMinDaysBetweenPasswordChanges(value);
-    return SetMinDaysBetweenPasswordChanges(atoi(g_desiredEnsureMinDaysBetweenPasswordChanges), log);
+    return SetMinDaysBetweenPasswordChanges(atol(g_desiredEnsureMinDaysBetweenPasswordChanges), log);
 }
 
 static int RemediateEnsureInactivePasswordLockPeriod(char* value, void* log)
 {
     InitEnsureInactivePasswordLockPeriod(value);
-    return SetLockoutAfterInactivityLessThan(atoi(g_desiredEnsureInactivePasswordLockPeriod), log);
+    return SetLockoutAfterInactivityLessThan(atol(g_desiredEnsureInactivePasswordLockPeriod), log);
 }
 
 static int RemediateEnsureMaxDaysBetweenPasswordChanges(char* value, void* log)
 {
     InitEnsureMaxDaysBetweenPasswordChanges(value);
-    return SetMaxDaysBetweenPasswordChanges(atoi(g_desiredEnsureMaxDaysBetweenPasswordChanges), log);
+    return SetMaxDaysBetweenPasswordChanges(atol(g_desiredEnsureMaxDaysBetweenPasswordChanges), log);
 }
 
 static int RemediateEnsurePasswordExpiration(char* value, void* log)
 {
     InitEnsurePasswordExpiration(value);
 
-    return ((0 == SetMinDaysBetweenPasswordChanges(atoi(g_desiredEnsureMinDaysBetweenPasswordChanges ? 
+    return ((0 == SetMinDaysBetweenPasswordChanges(atol(g_desiredEnsureMinDaysBetweenPasswordChanges ? 
         g_desiredEnsureMinDaysBetweenPasswordChanges : g_defaultEnsureMinDaysBetweenPasswordChanges), log)) &&
-        (0 == SetMaxDaysBetweenPasswordChanges(atoi(g_desiredEnsureMaxDaysBetweenPasswordChanges ? 
+        (0 == SetMaxDaysBetweenPasswordChanges(atol(g_desiredEnsureMaxDaysBetweenPasswordChanges ? 
         g_desiredEnsureMaxDaysBetweenPasswordChanges : g_defaultEnsureMaxDaysBetweenPasswordChanges), log)) &&
-        (0 == CheckPasswordExpirationLessThan(atoi(g_desiredEnsurePasswordExpiration), NULL, log))) ? 0 : ENOENT;
+        (0 == CheckPasswordExpirationLessThan(atol(g_desiredEnsurePasswordExpiration), NULL, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePasswordExpirationWarning(char* value, void* log)
 {
     InitEnsurePasswordExpirationWarning(value);
-    return SetPasswordExpirationWarning(atoi(g_desiredEnsurePasswordExpirationWarning), log);
+    return SetPasswordExpirationWarning(atol(g_desiredEnsurePasswordExpirationWarning), log);
 }
 
 static int RemediateEnsureSystemAccountsAreNonLogin(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return RemoveSystemAccountsThatCanLogin(log);
 }
 
 static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    OsConfigLogInfo(log, "For single user mode the root user account must have a password set. "
+        "Manually set a password for root user account if necessary. Automatic remediation is not possible");
+    return 0;
 }
 
 static int RemediateEnsureDotDoesNotAppearInRootsPath(char* value, void* log)
@@ -2899,8 +2889,8 @@ static int RemediateEnsureAutomountingDisabled(char* value, void* log)
 static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    OsConfigLogInfo(log, "Automatic remediation is not possible");
+    return 0;
 }
 
 static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, void* log)

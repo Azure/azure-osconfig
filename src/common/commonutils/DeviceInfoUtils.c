@@ -614,7 +614,7 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
         {
             OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
                 distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
-            OsConfigCaptureReason(reason, "Distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
+            OsConfigCaptureReason(reason, "Distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match, automatic remediation is not possible",
                 distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
         }
     }
@@ -629,7 +629,7 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
         else
         {
             OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s') and installed image ('%s', '%s') do not match", linuxName, kernelName, kernelVersion);
-            OsConfigCaptureReason(reason, "Distro ('%s') and installed image ('%s', '%s') do not match", linuxName, kernelName, kernelVersion);
+            OsConfigCaptureReason(reason, "Distro ('%s') and installed image ('%s', '%s') do not match, automatic remediation is not possible", linuxName, kernelName, kernelVersion);
         }
     }
     
@@ -729,8 +729,8 @@ static long GetPasswordDays(const char* name, void* log)
 
         if (0 == ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log))
         {
-            RemovePrefixUpTo(result, ' ');
             RemovePrefixBlanks(result);
+            RemovePrefixUpTo(result, ' ');
             RemoveTrailingBlanks(result);
 
             days = atol(result);
@@ -761,6 +761,57 @@ long GetPassMaxDays(void* log)
 long GetPassWarnAge(void* log)
 {
     return GetPasswordDays("PASS_WARN_AGE", log);
+}
+
+static int SetPasswordDays(const char* name, long days, void* log)
+{
+    const char* etcLoginDefs = "/etc/login.defs";
+    char* value = NULL;
+    long currentDays = -1;
+    int status = 0;
+
+    if ((NULL == name) || (0 == strlen(name)))
+    {
+        OsConfigLogError(log, "SetPasswordDays: invalid argument");
+        return EINVAL;
+    }
+    else if (NULL == (value = FormatAllocateString("%ld", days)))
+    {
+        OsConfigLogError(log, "SetPasswordDays: out of memory");
+        return ENOMEM;
+    }
+
+    if (days == (currentDays = GetPasswordDays(name, log)))
+    {
+        OsConfigLogInfo(log, "SetPasswordDays: '%s' already set to %ld days in '%s'", name, days, etcLoginDefs);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "SetPasswordDays: '%s' is set to %ld days in '%s' instead of %ld days", name, currentDays, etcLoginDefs, days);
+        if (0 == (status = SetEtcLoginDefValue(name, value, log)))
+        {
+            OsConfigLogInfo(log, "SetPasswordDays: '%s' is now set to %ld days in '%s'", name, days, etcLoginDefs);
+        }
+    }
+
+    FREE_MEMORY(value);
+
+    return status;
+}
+
+int SetPassMinDays(long days, void* log)
+{
+    return SetPasswordDays("PASS_MIN_DAYS", days, log);
+}
+
+int SetPassMaxDays(long days, void* log)
+{
+    return SetPasswordDays("PASS_MAX_DAYS", days, log);
+}
+
+int SetPassWarnAge(long days, void* log)
+{
+    return SetPasswordDays("PASS_WARN_AGE", days, log);
 }
 
 bool IsCurrentOs(const char* name, void* log)
