@@ -358,7 +358,7 @@ long GetTotalMemory(void* log)
     
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(log, "Total memory: %ldu kB", totalMemory);
+        OsConfigLogInfo(log, "Total memory: %lu kB", totalMemory);
     }
     
     return totalMemory;
@@ -377,7 +377,7 @@ long GetFreeMemory(void* log)
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(log, "Free memory: %ldu kB", freeMemory);
+        OsConfigLogInfo(log, "Free memory: %lu kB", freeMemory);
     }
 
     return freeMemory;
@@ -742,7 +742,7 @@ static long GetPasswordDays(const char* name, void* log)
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(log, "%s: %ldd", name, days);
+        OsConfigLogInfo(log, "%s: %ld", name, days);
     }
 
     return days;
