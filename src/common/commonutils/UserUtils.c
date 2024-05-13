@@ -1715,11 +1715,7 @@ int SetUserHomeDirectories(void* log)
                     }
                     else
                     {
-                        if (0 == (_status = errno))
-                        {
-                            _status = EACCES;
-                        }
-
+                        _status = (0 == errno) ? EACCES : errno;
                         OsConfigLogError(log, "SetUserHomeDirectories: cannot create home directory '%s' for user '%s' (%u, %u) (%d)",
                             userList[i].home, userList[i].username, userList[i].userId, userList[i].groupId, _status);
                     }
