@@ -1496,7 +1496,7 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
     return status;
 }
 
-int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* marker, char commentCharacter, char** reason, void* log)
+int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, void* log)
 {
     const char* authRequired = "auth required";
     FILE* fileHandle = NULL;
@@ -1507,7 +1507,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* mark
     bool found = false;
     int status = ENOENT;
 
-    if ((NULL == fileName) || (NULL == marker))
+    if ((NULL == fileName) || (NULL == pamSo))
     {
         OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: invalid arguments");
         return EINVAL;
@@ -1542,17 +1542,17 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* mark
             // 'deny=5' means deny access if the tally for this user exceeds 5 failed login attempts
             // 'unlock_time=900' means that the account will be automatically unlocked after 900 seconds (15 minutes)
 
-            if (NULL != strstr(line, marker))
+            if ((NULL != strstr(line, authRequired)) && (NULL != strstr(line, pamSo)))
             {
                 if ((commentCharacter != line[0]) && (EOL != line[0]))
                 {
                     if (((-999 != (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny > 0) && (deny < 6)) &&
-                        ((-999 != (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))) && (unlock_time > 0)))
+                        ((-999 != (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))) && (unlockTime > 0)))
                     {
                         OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d and 'unlock_time' found set to %d in '%s' for '%s' ('%s')",
-                            deny, unlock_time, fileName, marker, line);
+                            deny, unlock_time, fileName, pamSo, line);
                         OsConfigCaptureSuccessReason(reason, "'deny' found set to %d and 'unlock_time' found set to %d in '%s' for '%s'",
-                            deny, unlock_time, fileName, marker);
+                            deny, unlock_time, fileName, pamSo);
                         found = true;
                         break;
                     }
@@ -1564,27 +1564,27 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* mark
         {
             if (-999 == deny)
             {
-                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'deny' not found in '%s' for '%s'", fileName, marker);
-                OsConfigCaptureReason(reason, "'deny' not found in '%s' for '%s'", fileName, marker);
+                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'deny' not found in '%s' for '%s'", fileName, pamSo);
+                OsConfigCaptureReason(reason, "'deny' not found in '%s' for '%s'", fileName, pamSo);
             }
             else
             {
                 OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d in '%s' for '%s' instead of a value between 1 and 5", 
-                    deny, fileName, marker);
-                OsConfigCaptureReason(reason, "'deny' found set to %d in '%s' for '%s' instead of a value between 1 and 5", deny, fileName, marker);
+                    deny, fileName, pamSo);
+                OsConfigCaptureReason(reason, "'deny' found set to %d in '%s' for '%s' instead of a value between 1 and 5", deny, fileName, pamSo);
             }
             
 
             if (-999 == unlockTime)
             {
-                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' not found in '%s' for '%s'", fileName, marker);
-                OsConfigCaptureReason(reason, "'unlock_time' not found in '%s' for '%s'", fileName, marker);
+                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
+                OsConfigCaptureReason(reason, "'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
             }
             else
             {
                 OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' found set to %d in '%s' for '%s' instead of a value between 1 and 5",
-                    unlockTime, fileName, marker);
-                OsConfigCaptureReason(reason, "'unlock_time' found set to %d in '%s' for '%s' instead of a value between 1 and 5", unlockTime, fileName, marker);
+                    unlockTime, fileName, pamSo);
+                OsConfigCaptureReason(reason, "'unlock_time' found set to %d in '%s' for '%s' instead of a value between 1 and 5", unlockTime, fileName, pamSo);
             }
             
             status = ENOENT;
