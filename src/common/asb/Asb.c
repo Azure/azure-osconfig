@@ -3032,12 +3032,11 @@ static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, void* log)
 static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)
 {
     unsigned int mode = 0;
-    char* reason = NULL;
     InitEnsurePermissionsOnBootloaderConfig(value);
     mode = (unsigned int)atoi(g_desiredEnsurePermissionsOnBootloaderConfig);
-    return ((0 == SetFileAccess("/boot/grub/grub.cfg", 0, 0, mode, &reason, log)) ||
-        (0 == SetFileAccess("/boot/grub/grub.conf", 0, 0, mode, &reason, log)) ||
-        (0 == SetFileAccess("/boot/grub2/grub.cfg", 0, 0, mode, &reason, log))) ? 0 : ENOENT;
+    return ((0 == SetFileAccess("/boot/grub/grub.cfg", 0, 0, mode, log)) ||
+        (0 == SetFileAccess("/boot/grub/grub.conf", 0, 0, mode, log)) ||
+        (0 == SetFileAccess("/boot/grub2/grub.cfg", 0, 0, mode, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePasswordReuseIsLimited(char* value, void* log)
