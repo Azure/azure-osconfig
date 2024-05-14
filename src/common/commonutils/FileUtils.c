@@ -1640,7 +1640,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     const char* etcPamdLogin = "/etc/pam.d/login";
     const char* etcPamdSystemAuth = "/etc/pam.d/system-auth"; 
     const char* etcPamdPasswordAuth = "/etc/pam.d/password-auth";
-    const char* marker* = "auth";
+    const char* marker = "auth";
 
     int status = ENOENT;
 
