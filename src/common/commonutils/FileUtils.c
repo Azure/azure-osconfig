@@ -1506,7 +1506,6 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     int deny = -999;
     int unlockTime = -999;
     long lineMax = sysconf(_SC_LINE_MAX);
-    bool found = false;
     int status = ENOENT;
 
     if ((NULL == fileName) || (NULL == pamSo))
@@ -1532,6 +1531,8 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     }
     else
     {
+        status = ENOENT;
+
         while (NULL != fgets(line, lineMax + 1, fileHandle))
         {
             // Example of valid lines: 
@@ -1554,12 +1555,12 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                     auth, required, pamSo, deny, unlockTime, fileName, line);
                 OsConfigCaptureSuccessReason(reason, "'%s %s %s' found uncommented with deny' set to %d and 'unlock_time' set to %d in '%s'",
                     auth, required, pamSo, deny, unlockTime, fileName);
-                found = true;
+                status = 0;
                 break;
             }
         }
         
-        if (false == found)
+        if (status)
         {
             if (-999 == deny)
             {
@@ -1572,8 +1573,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                     deny, fileName, pamSo);
                 OsConfigCaptureReason(reason, "'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5", deny, fileName, pamSo);
             }
-            
-
+        
             if (-999 == unlockTime)
             {
                 OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
@@ -1585,8 +1585,6 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                     unlockTime, fileName, pamSo);
                 OsConfigCaptureReason(reason, "'unlock_time' found set to %d in '%s' for '%s' instead of a value between 1 and 5", unlockTime, fileName, pamSo);
             }
-            
-            status = ENOENT;
         }
 
         fclose(fileHandle);
