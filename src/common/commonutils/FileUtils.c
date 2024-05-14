@@ -1545,7 +1545,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             // 'unlock_time=900' means that the account will be automatically unlocked after 900 seconds (15 minutes)
 
             if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) && 
-                (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) && FreeAndReturnTrue(value) && 
+                (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) && FreeAndReturnTrue(authValue) &&
                 (commentCharacter != line[0]) && (EOL != line[0]) &&
                 (-999 != (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny > 0) && (deny < 6) &&
                 (-999 != (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))) && (unlockTime > 0))
