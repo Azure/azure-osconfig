@@ -1498,9 +1498,11 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
 
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, void* log)
 {
-    const char* authRequired = "auth required";
+    const char* auth = "auth";
+    const char* required = "required";
     FILE* fileHandle = NULL;
     char* line = NULL;
+    char* authValue = NULL;
     int deny = -999;
     int unlockTime = -999;
     long lineMax = sysconf(_SC_LINE_MAX);
@@ -1542,21 +1544,18 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             // 'deny=5' means deny access if the tally for this user exceeds 5 failed login attempts
             // 'unlock_time=900' means that the account will be automatically unlocked after 900 seconds (15 minutes)
 
-            if ((NULL != strstr(line, authRequired)) && (NULL != strstr(line, pamSo)))
+            if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) && 
+                (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) && FreeAndReturnTrue(value) && 
+                (commentCharacter != line[0]) && (EOL != line[0]) &&
+                (-999 != (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny > 0) && (deny < 6) &&
+                (-999 != (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))) && (unlockTime > 0))
             {
-                if ((commentCharacter != line[0]) && (EOL != line[0]))
-                {
-                    if (((-999 != (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny > 0) && (deny < 6)) &&
-                        ((-999 != (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))) && (unlockTime > 0)))
-                    {
-                        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d and 'unlock_time' found set to %d in '%s' for '%s' ('%s')",
-                            deny, unlockTime, fileName, pamSo, line);
-                        OsConfigCaptureSuccessReason(reason, "'deny' found set to %d and 'unlock_time' found set to %d in '%s' for '%s'",
-                            deny, unlockTime, fileName, pamSo);
-                        found = true;
-                        break;
-                    }
-                }
+                OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s %s %s' found uncommented with deny' set to %d and 'unlock_time' set to %d in '%s' ('%s')",
+                    auth, required, pamSo, deny, unlockTime, fileName, line);
+                OsConfigCaptureSuccessReason(reason, "'%s %s %s' found uncommented with deny' set to %d and 'unlock_time' set to %d in '%s'",
+                    auth, required, pamSo, deny, unlockTime, fileName);
+                found = true;
+                break;
             }
         }
         

@@ -1738,16 +1738,6 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
 }
 
 
-//int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* marker, char commentCharacter, char** reason, void* log)
-// Example of valid lines: 
-//
-// 'auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900' in /etc/pam.d/login
-// 'auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900' in /etc/pam.d/system-auth
-//
-// where:
-//  
-// 'deny=5' means deny access if the tally for this user exceeds 5 failed login attempts
-// 'unlock_time=900' means that the account will be automatically unlocked after 900 seconds (15 minutes)
 TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 {
     const char* goodTestFileContents[] = {
@@ -1756,11 +1746,14 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth required pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=2000",
         "auth required pam_faillock.so deny=3 unlock_time=600",
         "auth        required      pam_faillock.so preauth silent audit deny=1 unlock_time=2000",
+        "### comment line",
         "auth      required pam_tally2.so file=/var/log/tallylog deny=1 even_deny_root unlock_time=2000",
         "auth required      pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=210",
         "auth required pam_tally2.so     file=/var/log/tallylog deny=2 even_deny_root unlock_time=345",
         "auth required pam_tally2.so file=/var/log/tallylog     deny=3 unlock_time=555",
         "auth required pam_tally2.so file=/var/log/tallylog deny=3     even_deny_root unlock_time=12",
+        "### comment line",
+        "### comment line",
         "auth required pam_tally2.so file=/var/log/tallylog deny=4    unlock_time=3000",
         "auth required pam_tally2.so file=/var/log/tallylog deny=4 even_deny_root     unlock_time=1",
         "auth required pam_tally2.so file=/var/log/tallylog deny=5 unlock_time=203",
@@ -1792,16 +1785,10 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "This is a negative auth test",
         "This is a negative test",
         "auth	[success=1 default=ignore]	pam_unix.so nullok\n"
-        "# here's the fallback if no module succeeds\n"
         "auth	requisite			pam_deny.so\n"
-        "# prime the stack with a positive return value if there isn't one already;\n"
-        "# this avoids us returning an error just because nothing sets a success code\n"
-        "# since the modules above will each just jump around\n"
         "auth	required			pam_permit.so\n"
         "auth required pam_tally2.so file=/var/log/tallylog deny=0 unlock_time=888\n"
-        "# and here are more per-package modules (the Additional block)\n"
         "auth	optional			pam_cap.so\n" 
-        "# end of pam-auth-update config"
     };
 
     int goodTestFileContentsSize = ARRAY_SIZE(goodTestFileContents);
@@ -1815,14 +1802,21 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
     for (i = 0; i < goodTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, goodTestFileContents[i]));
-        EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr, nullptr));
+        if (0 == strstr(goodTestFileContents[i], "pam_tally2.so"))
+        {
+            EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, "pam_tally2.so", '#', nullptr, nullptr)); 
+        }
+        else
+        {
+            EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, "pam_faillock.so", '#', nullptr, nullptr));
+        }
         EXPECT_TRUE(Cleanup(m_path));
     }
 
     for (i = 0; i < badTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, badTestFileContents[i]));
-        EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr, nullptr));
+        EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(m_path, "pam_tally2.so", '#', nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
 }
