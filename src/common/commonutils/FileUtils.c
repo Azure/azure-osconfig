@@ -1550,9 +1550,9 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                         ((-999 != (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))) && (unlockTime > 0)))
                     {
                         OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d and 'unlock_time' found set to %d in '%s' for '%s' ('%s')",
-                            deny, unlock_time, fileName, pamSo, line);
+                            deny, unlockTime, fileName, pamSo, line);
                         OsConfigCaptureSuccessReason(reason, "'deny' found set to %d and 'unlock_time' found set to %d in '%s' for '%s'",
-                            deny, unlock_time, fileName, pamSo);
+                            deny, unlockTime, fileName, pamSo);
                         found = true;
                         break;
                     }
