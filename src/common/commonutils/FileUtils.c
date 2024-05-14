@@ -1766,6 +1766,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     const char* pamPwQualitySo = "pam_pwquality.so";
     const char* ucreditName = "ucredit";
     const char* minclassName = "minclass";
+    char commentCharacter = '#';
     FILE* fileHandle = NULL;
     char* line = NULL;
     long lineMax = sysconf(_SC_LINE_MAX);
@@ -1821,10 +1822,10 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                 {
                     OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s' contains uncommented '%s %s %s' with the expected password creation requirements "
                         "(retry: %d, minlen: %d, minclass: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", etcPamdCommonPassword, password, requisite,
-                        retryOption, pamPwQualitySo, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                        pamPwQualitySo, retryOption, pamPwQualitySo, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
                     OsConfigCaptureSuccessReason(reason, "'%s' contains uncommented '%s %s %s' with the expected password creation requirements "
                         "(retry: %d, minlen: %d, minclass: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", etcPamdCommonPassword, password, requisite,
-                        retryOption, pamPwQualitySo, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                        pamPwQualitySo, retryOption, pamPwQualitySo, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
                     status = 0;
                 }
                 else
