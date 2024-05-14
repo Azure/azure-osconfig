@@ -453,7 +453,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePasswordCreationRequirements",
-    "Payload": "14,4,-1,-1,-1,-1"
+    "Payload": "3,14,4,-1,-1,-1,-1"
   },
   {
     "ObjectType": "Desired",
