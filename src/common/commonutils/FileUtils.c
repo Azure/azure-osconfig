@@ -1544,10 +1544,13 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             //  
             // 'deny=5' means deny access if the tally for this user exceeds 5 failed login attempts
             // 'unlock_time=900' means that the account will be automatically unlocked after 900 seconds (15 minutes)
-
-            if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) && 
+            
+            if ((commentCharacter == line[0]) || (EOL == line[0]))
+            {
+                continue;
+            }
+            else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) && 
                 (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) && FreeAndReturnTrue(authValue) &&
-                (commentCharacter != line[0]) && (EOL != line[0]) &&
                 (-999 != (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny >= 0) && (deny <= 5) &&
                 (-999 != (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))) && (unlockTime > 0))
             {
@@ -1581,9 +1584,9 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             }
             else
             {
-                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' found set to %d in '%s' for '%s' instead of a value between 1 and 5",
+                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' found set to %d in '%s' for '%s' instead of a positive value",
                     unlockTime, fileName, pamSo);
-                OsConfigCaptureReason(reason, "'unlock_time' found set to %d in '%s' for '%s' instead of a value between 1 and 5", unlockTime, fileName, pamSo);
+                OsConfigCaptureReason(reason, "'unlock_time' found set to %d in '%s' for '%s' instead of a positive value", unlockTime, fileName, pamSo);
             }
         }
 

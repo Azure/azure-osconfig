@@ -1737,7 +1737,6 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-
 TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 {
     const char* goodTestFileContents[] = {
@@ -1767,9 +1766,9 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 
     const char* badTestFileContents[] = {
         "auth optional pam_tally2.so file=/var/log/tallylog deny=2 even_deny_root unlock_time=1000",
-        "auth        required      pam_tally2.so  file=/var/log/foolog deny=3 even_deny_root unlock_time=100",
+        "auth        required      pam_tally2.so  file=/var/log/foolog even_deny_root unlock_time=100",
         "auth required  pam_tally.so  file=/var/log/tallylog deny=1 even_deny_root unlock_time=10",
-        "auth required pam_tally2.so  deny=5 even_deny_root unlock_time=2000",
+        "auth required pam_tally2.so  deny=5 even_deny_root",
         "auth required  pam_tally.so  file=/var/log/tallylog deny=1 even_deny_root unlock_time=10",
         "auth required  pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=-1",
         "auth required  pam_tally2.so file=/var/log/tallylog deny=-1 unlock_time=-1",
