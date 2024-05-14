@@ -1822,10 +1822,10 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                 {
                     OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s' contains uncommented '%s %s %s' with the expected password creation requirements "
                         "(retry: %d, minlen: %d, minclass: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", etcPamdCommonPassword, password, requisite,
-                        pamPwQualitySo, retryOption, pamPwQualitySo, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                        pamPwQualitySo, retryOption, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
                     OsConfigCaptureSuccessReason(reason, "'%s' contains uncommented '%s %s %s' with the expected password creation requirements "
                         "(retry: %d, minlen: %d, minclass: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", etcPamdCommonPassword, password, requisite,
-                        pamPwQualitySo, retryOption, pamPwQualitySo, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                        pamPwQualitySo, retryOption, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
                     status = 0;
                 }
                 else
