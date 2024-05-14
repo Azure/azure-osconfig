@@ -2004,5 +2004,5 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
 
     FREE_MEMORY(line);
 
-    return result;
+    return status;
 }
