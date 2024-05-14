@@ -443,7 +443,7 @@ static const char* g_defaultEnsurePasswordExpirationWarning = "7";
 static const char* g_defaultEnsureDefaultUmaskForAllUsers = "077";
 static const char* g_defaultEnsurePermissionsOnBootloaderConfig = "400";
 static const char* g_defaultEnsurePasswordReuseIsLimited = "5";
-static const char* g_defaultEnsurePasswordCreationRequirements = "14,4,-1,-1,-1,-1";
+static const char* g_defaultEnsurePasswordCreationRequirements = "3,14,4,-1,-1,-1,-1";
 static const char* g_defaultEnsureFilePermissionsForAllRsyslogLogFiles = "600,640";
 static const char* g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable = "600,644,664,700,744";
 static const char* g_defaultEnsureUnnecessaryAccountsAreRemoved = "games,test";
@@ -459,6 +459,9 @@ static const char* g_etcGShadowDash = "/etc/gshadow-";
 static const char* g_etcPasswd = "/etc/passwd";
 static const char* g_etcPasswdDash = "/etc/passwd-";
 static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
+static const char* g_etcPamdPasswordAuth = "/etc/pam.d/password-auth";
+static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
+static const char* g_etcPamdLogin = "/etc/pam.d/login";
 static const char* g_etcGroup = "/etc/group";
 static const char* g_etcGroupDash = "/etc/group-";
 static const char* g_etcAnacronTab = "/etc/anacrontab";
@@ -1496,13 +1499,12 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void* log)
 
 static char* AuditEnsurePasswordReuseIsLimited(void* log)
 {
-    const char* etcPamdSystemAuth = "/etc/pam.d/system-auth";
     char* reason = NULL;
     if (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, "remember", '=', 5, &reason, log))
     {
         return reason;
     }
-    CheckIntegerOptionFromFileLessOrEqualWith(etcPamdSystemAuth, "remember", '=', 5, &reason, log);
+    CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, "remember", '=', 5, &reason, log);
     return reason;
 }
 
@@ -1530,13 +1532,13 @@ static char* AuditEnsurePasswordCreationRequirements(void* log)
     char* reason = NULL;
 
     if ((0 == ConvertStringToIntegers(g_desiredEnsurePasswordCreationRequirements ? g_desiredEnsurePasswordCreationRequirements : 
-        g_defaultEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, log)) && (6 == numberOfValues))
+        g_defaultEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, log)) && (7 == numberOfValues))
     {
-        CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], &reason, log);
+        CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], &reason, log);
     }
     else
     {
-        reason = FormatAllocateString("Failed to parse '%s'. There must be 6 numbers, comma separated, in this order: minlen, minclass, dcredit, ucredit, ocredit, lcredit", 
+        reason = FormatAllocateString("Failed to parse '%s'. There must be 7 numbers, comma separated, in this order: retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit", 
             g_desiredEnsurePasswordCreationRequirements ? g_desiredEnsurePasswordCreationRequirements : g_defaultEnsurePasswordCreationRequirements);
     }
 
@@ -1546,21 +1548,22 @@ static char* AuditEnsurePasswordCreationRequirements(void* log)
 
 static char* AuditEnsureLockoutForFailedPasswordAttempts(void* log)
 {
+    const char* pamFailLockSo = "pam_faillock.so";
     char* reason = NULL;
 
-    if (0 == CheckLockoutForFailedPasswordAttempts("/etc/pam.d/system-auth", "pam_faillock.so", '#', &reason, log))
+    if (0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamFailLockSo, '#', &reason, log))
     {
         return reason;
     }
     
     FREE_MEMORY(reason);
-    if (0 == CheckLockoutForFailedPasswordAttempts("/etc/pam.d/password-auth", "pam_faillock.so", '#', &reason, log))
+    if (0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamFailLockSo, '#', &reason, log))
     {
         return reason;
     }
 
     FREE_MEMORY(reason);
-    CheckLockoutForFailedPasswordAttempts("/etc/pam.d/login", "pam_tally2.so", '#', &reason, log);
+    CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, "pam_tally2.so", '#', &reason, log);
     
     return reason;
 }
@@ -3028,9 +3031,13 @@ static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, void* log)
 
 static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)
 {
+    unsigned int mode = 0;
+    char* reason = NULL;
     InitEnsurePermissionsOnBootloaderConfig(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    mode = (unsigned int)atoi(g_desiredEnsurePermissionsOnBootloaderConfig);
+    return ((0 == SetFileAccess("/boot/grub/grub.cfg", 0, 0, mode, &reason, log)) ||
+        (0 == SetFileAccess("/boot/grub/grub.conf", 0, 0, mode, &reason, log)) ||
+        (0 == SetFileAccess("/boot/grub2/grub.cfg", 0, 0, mode, &reason, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePasswordReuseIsLimited(char* value, void* log)

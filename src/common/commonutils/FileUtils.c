@@ -1693,3 +1693,323 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
     return status;
 }
+
+/*
+'password requisite pam_pwquality.so retry=3 minlen=12 difok=1 lcredit=1 ucredit=1 ocredit=1 dcredit=-1' in file /etc/pam.d/common-password
+-------------------------------------------------------------------------------------------------------------------------------------------
+password requisite pam_pwquality.so: This section specifies that the pam_pwquality module is required during password authentication. It performs strength-checking for passwords.
+retry=3: The retry parameter indicates that the user will be prompted at most 3 times to enter a valid password before an error is returned.
+minlen=12: The minlen parameter sets the minimum acceptable length for a password to 12 characters.
+difok=1: The difok parameter controls the number of character changes (inserts, removals, or replacements) between the old and new password that are enough to accept the new password. In this case, it allows 1 change.
+lcredit=1, ucredit=1, ocredit=1, dcredit=-1:
+lcredit: Specifies the minimum number of lowercase letters required in the password (here, at least 1).
+ucredit: Specifies the minimum number of uppercase letters required in the password (again, at least 1).
+ocredit: Specifies the minimum number of other (non-alphanumeric) characters required in the password (at least 1).
+dcredit: Specifies the minimum number of digits required in the password (here, -1 means no requirement).
+How to set password creation requirements via minlen, minclass, dcredit, ucredit, ocredit, lcredit in /etc/pam.d/common-password and /etc/security/pwquality.conf?
+
+'minclass = 4 OR dcredit = -1 ucredit = -1 ocredit = -1 lcredit = -1' in file /etc/security/pwquality.conf
+----------------------------------------------------------------------------------------------------------
+minclass = 4: This parameter specifies the minimum number of required classes of characters for a new password. These classes include:
+Digits
+Uppercase letters
+Lowercase letters
+Other characters (e.g., symbols)
+In this case, the requirement is that a password must contain characters from at least 4 different classes to be considered valid.
+dcredit = -1, ucredit = -1, ocredit = -1, lcredit = -1:
+dcredit: This parameter sets the maximum credit for having digits in the new password. If the value is less than 0 (as in this case), it means there is no specific requirement for the number of digits.
+ucredit: Similarly, this parameter sets the maximum credit for having uppercase letters. Again, with a value less than 0, there is no specific requirement for uppercase letters.
+ocredit: Sets the maximum credit for having other characters (non-alphanumeric symbols). Once more, a value less than 0 means no specific requirement for other characters.
+lcredit: Finally, this parameter sets the maximum credit for having lowercase letters. As before, a value less than 0 implies no specific requirement for lowercase letters.
+
+minlen: Specifies the minimum password length.
+minclass: Sets the minimum number of character types that must be used (e.g., uppercase, lowercase, digits, other).
+dcredit: Limits the maximum number of digits allowed.
+ucredit: Limits the maximum number of uppercase characters allowed.
+ocredit: Limits the maximum number of other characters (e.g., punctuation marks) allowed.
+lcredit: Limits the maximum number of lowercase characters allowed.
+
+Here’s how you can configure these settings:
+
+For Debian-based systems (e.g., Ubuntu): edit the file /etc/pam.d/common-password.
+Add or modify the following line to enforce complexity:
+'password requisite pam_pwquality.so retry=3 minlen=12 difok=1 lcredit=1 ucredit=1 ocredit=1 dcredit=-1' in file /etc/pam.d/common-password
+
+For RedHat-based systems (e.g., CentOS, Rocky Linux): edit the file /etc/security/pwquality.conf.
+Add or modify the following line to enforce complexity:
+'minclass = 4 OR dcredit = -1 ucredit = -1 ocredit = -1 lcredit = -1' in file /etc/security/pwquality.conf
+
+The ASB requires:
+
+Ensure password creation requirements are configured.
+(5.3.1)	Description: Strong passwords protect systems from being hacked through brute force methods.
+Set the following key/value pairs in the appropriate PAM for your distro: 
+minlen=14, minclass = 4, dcredit = -1, ucredit = -1, ocredit = -1, lcredit = -1
+*/
+
+int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log)
+{
+    const char* etcPamdCommonPassword = "/etc/pam.d/common-password";
+    const char* etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
+    bool etcPamdCommonPasswordExists = (0 == CheckFileExists(etcPamdCommonPassword)) ? true : false;
+    bool etcSecurityPwQualityConfExists = (0 == CheckFileExists(etcSecurityPwQualityConf)) ? true : false;
+    const char* fileName = etcSecurityPwQualityConfExists ? etcSecurityPwQualityConf : etcPamdCommonPassword;
+    int retryOption = 0;
+    int minlenOption = 0;
+    int minclassOption = 0;
+    int dcreditOption = 0;
+    int ucreditOption = 0;
+    int ocreditOption = 0;
+    int lcreditOption = 0;
+    int result = 0;
+
+    //'password requisite pam_pwquality.so retry=3 minlen=12 difok=1 lcredit=1 ucredit=1 ocredit=1 dcredit=-1' in file/etc/pam.d/common-password
+    //'minclass = 4 OR dcredit = -1 ucredit = -1 ocredit = -1 lcredit = -1'                                    in file/etc/security/ pwquality.conf
+
+    const char* password = "password";
+    const char* requisite = "requisite";
+    const char* pamPwQualitySo = "pam_pwquality.so";
+    const char* ucreditName = "ucredit";
+    const char* minclassName = "minclass";
+    FILE* fileHandle = NULL;
+    char* line = NULL;
+    char* authValue = NULL;
+    int deny = INT_ENOENT;
+    int unlockTime = INT_ENOENT;
+    long lineMax = sysconf(_SC_LINE_MAX);
+    int status = ENOENT;
+
+    if ((false == etcPamdCommonPasswordExists) && (false == etcSecurityPwQualityConfExists))
+    {
+        OsConfigLogError(log, "CheckPasswordCreationRequirements: neither '%s' or '%s' exist", etcPamdCommonPassword, etcSecurityPwQualityConf);
+        OsConfigCaptureReason(reason, "Neither '%s' or '%s' exist", etcPamdCommonPassword, etcSecurityPwQualityConf);
+        return ENOMEM;
+    }
+    if (NULL == (line = malloc(lineMax + 1)))
+    {
+        OsConfigLogError(log, "CheckPasswordCreationRequirements: out of memory");
+        return ENOMEM;
+    }
+    else
+    {
+        memset(line, 0, lineMax + 1);
+    }
+
+    if (NULL == (fileHandle = fopen(fileName, "r")))
+    {
+        OsConfigLogError(log, "CheckPasswordCreationRequirements: cannot read from '%s'", fileName);
+        OsConfigCaptureReason(reason, "Cannot read from '%s'", fileName);
+        status = EACCES;
+    }
+    else
+    {
+        status = ENOENT;
+
+        while (NULL != fgets(line, lineMax + 1, fileHandle))
+        {
+            // Example of valid lines: 
+            //
+            // 'password requisite pam_pwquality.so retry=3 minlen=14 difok=1 lcredit=-1 ucredit=1 ocredit=-1 dcredit=-1' for file/etc/pam.d/common-password
+            // 'minclass = 4 OR dcredit = -1 ucredit = -1 ocredit = -1 lcredit = -1' for file/etc/security/ pwquality.conf
+
+            if ((commentCharacter == line[0]) || (EOL == line[0]))
+            {
+                status = 0;
+                continue;
+            }
+            else if (etcPamdCommonPasswordExists && (NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) && (NULL != strstr(line, pamPwQualitySo)))
+            {
+                if ((retry == (retryOption = GetIntegerOptionFromBuffer(line, "retry", '=', log))) &&
+                    (minlen == (minlenOption = GetIntegerOptionFromBuffer(line, "minlen", '=', log))) &&
+                    (minclass == (minclassOption = GetIntegerOptionFromBuffer(line, "minclass", '=', log))) &&
+                    (dcredit == (dcreditOption = GetIntegerOptionFromBuffer(line, "dcredit", '=', log))) &&
+                    (ucredit == (ucreditOption = GetIntegerOptionFromBuffer(line, "ucredit", '=', log))) &&
+                    (ocredit == (ocreditOption = GetIntegerOptionFromBuffer(line, "ocredit", '=', log))) &&
+                    (lcredit == (lcreditOption = GetIntegerOptionFromBuffer(line, "lcredit", '=', log))))
+                {
+                    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s' contains uncommented '%s %s %s' with the expected password creation requirements "
+                        "(retry: %d, minlen: %d, minclass: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", etcPamdCommonPassword, password, requisite,
+                        retryOption, pamPwQualitySo, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                    OsConfigCaptureSuccessReason(reason, "'%s' contains uncommented '%s %s %s' with the expected password creation requirements "
+                        "(retry: %d, minlen: %d, minclass: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", etcPamdCommonPassword, password, requisite,
+                        retryOption, pamPwQualitySo, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                    status = 0;
+                }
+                else
+                {
+                    if (INT_ENOENT == retryOption)
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'retry' is missing", etcPamdCommonPassword);
+                        OsConfigCaptureReason(reason, "In '%s' 'retry' is missing", etcPamdCommonPassword);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'retry' is set to %d instead of %d", etcPamdCommonPassword, minlenOption, minlen);
+                        OsConfigCaptureReason(reason, "In '%s' 'retry' is set to %d instead of %d", etcPamdCommonPassword, minlenOption, minlen);
+                    }
+
+                    if (INT_ENOENT == minlenOption)
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'minlen' is missing", etcPamdCommonPassword);
+                        OsConfigCaptureReason(reason, "In '%s' 'minlen' is missing", etcPamdCommonPassword);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'minlen' is set to %d instead of %d", etcPamdCommonPassword, minlenOption, minlen);
+                        OsConfigCaptureReason(reason, "In '%s' 'minlen' is set to %d instead of %d", etcPamdCommonPassword, minlenOption, minlen);
+                    }
+
+                    if (INT_ENOENT == minclassOption)
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'minclass' is missing", etcPamdCommonPassword);
+                        OsConfigCaptureReason(reason, "In '%s' 'minclass' is missing", etcPamdCommonPassword);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'minclass' is set to %d instead of %d", etcPamdCommonPassword, minclassOption, minclass);
+                        OsConfigCaptureReason(reason, "In '%s' 'minclass' is set to %d instead of %d", etcPamdCommonPassword, minclassOption, minclass);
+                    }
+
+                    if (INT_ENOENT == dcreditOption)
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'dcredit' is missing", etcPamdCommonPassword);
+                        OsConfigCaptureReason(reason, "In '%s' 'dcredit' is missing", etcPamdCommonPassword);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'dcredit' is set to '%d' instead of %d", etcPamdCommonPassword, dcreditOption, dcredit);
+                        OsConfigCaptureReason(reason, "In '%s' 'dcredit' is set to '%d' instead of %d", etcPamdCommonPassword, dcreditOption, dcredit);
+                    }
+
+                    if (INT_ENOENT == ucreditOption)
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'ucredit' missing", etcPamdCommonPassword);
+                        OsConfigCaptureReason(reason, "In '%s' 'ucredit' missing", etcPamdCommonPassword);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'ucredit' set to '%d' instead of %d", etcPamdCommonPassword, ucreditOption, ucredit);
+                        OsConfigCaptureReason(reason, "In '%s' 'ucredit' set to '%d' instead of %d", etcPamdCommonPassword, ucreditOption, ucredit);
+                    }
+
+                    if (INT_ENOENT == ocreditOption)
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'ocredit' missing", etcPamdCommonPassword);
+                        OsConfigCaptureReason(reason, "In '%s' 'ocredit' missing", etcPamdCommonPassword);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'ocredit' set to '%d' instead of %d", etcPamdCommonPassword, ocreditOption, ocredit);
+                        OsConfigCaptureReason(reason, "In '%s' 'ocredit' set to '%d' instead of %d", etcPamdCommonPassword, ocreditOption, ocredit);
+                    }
+
+                    if (INT_ENOENT == lcreditOption)
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'lcredit' missing", etcPamdCommonPassword);
+                        OsConfigCaptureReason(reason, "In '%s' 'lcredit' missing", etcPamdCommonPassword);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'lcredid' set to '%d' instead of %d", etcPamdCommonPassword, lcreditOption, lcredit);
+                        OsConfigCaptureReason(reason, "In '%s' 'lcredid' set to '%d' instead of %d", etcPamdCommonPassword, lcreditOption, lcredit);
+                    }
+
+                    status = ENOENT;
+                }
+
+                break;
+            } 
+            else if (etcSecurityPwQualityConfExists && (NULL != strstr(line, minclassName)) && (NULL != strstr(line, ucreditName)))
+            {
+                if ((minclass == (minclassOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "minclass", '=', log))) &&
+                    (dcredit == (dcreditOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "dcredit", '=', log))) &&
+                    (ucredit == (ucreditOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "ucredit", '=', log))) &&
+                    (ocredit == (ocreditOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "ocredit", '=', log))) &&
+                    (lcredit == (lcreditOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "lcredit", '=', log))))
+                {
+                    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s' contains the expected password creation requirements "
+                        "(minclass: %d, dcredit : %d, ucredit : %d, ocredit : %d, lcredit : %d)", etcSecurityPwQualityConf,
+                        minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                    OsConfigCaptureSuccessReason(reason, "'%s' contains the expected password creation requirements "
+                        "(minclass: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", etcSecurityPwQualityConf,
+                        minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                    status = 0;
+                }
+                else
+                {
+                    if (INT_ENOENT == minclassOption)
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: iIn '%s' 'minclass' is missing", etcSecurityPwQualityConf);
+                        OsConfigCaptureReason(reason, "In '%s' 'minclass' is missing", etcSecurityPwQualityConf);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'minclass' is set to %d instead of %d", etcSecurityPwQualityConf, minclassOption, minclass);
+                        OsConfigCaptureReason(reason, "In '%s' 'minclass' is set to %d instead of %d", etcSecurityPwQualityConf, minclassOption, minclass);
+                    }
+
+                    if (INT_ENOENT == dcreditOption)
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'dcredit' is missing", etcSecurityPwQualityConf);
+                        OsConfigCaptureReason(reason, "In '%s' 'dcredit' is missing", etcSecurityPwQualityConf);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'dcredit' is set to '%d' instead of %d", etcSecurityPwQualityConf, dcreditOption, dcredit);
+                        OsConfigCaptureReason(reason, "In '%s' 'dcredit' is set to '%d' instead of %d", etcSecurityPwQualityConf, dcreditOption, dcredit);
+                    }
+
+                    if (INT_ENOENT == ucreditOption)
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'ucredit' missing", etcSecurityPwQualityConf);
+                        OsConfigCaptureReason(reason, "In '%s' 'ucredit' missing", etcSecurityPwQualityConf);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'ucredit' set to '%d' instead of %d", etcSecurityPwQualityConf, ucreditOption, ucredit);
+                        OsConfigCaptureReason(reason, "In '%s' 'ucredit' set to '%d' instead of %d", etcSecurityPwQualityConf, ucreditOption, ucredit);
+                    }
+
+                    if (INT_ENOENT == ocreditOption)
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'ocredit' missing", etcSecurityPwQualityConf);
+                        OsConfigCaptureReason(reason, "In '%s' 'ocredit' missing", etcSecurityPwQualityConf);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'ocredit' set to '%d' instead of %d", etcSecurityPwQualityConf, ocreditOption, ocredit);
+                        OsConfigCaptureReason(reason, "In '%s' 'ocredit' set to '%d' instead of %d", etcSecurityPwQualityConf, ocreditOption, ocredit);
+                    }
+
+                    if (INT_ENOENT == lcreditOption)
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'lcredit' missing", etcSecurityPwQualityConf);
+                        OsConfigCaptureReason(reason, "In '%s' 'lcredit' missing", etcSecurityPwQualityConf);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: in '%s' 'lcredid' set to '%d' instead of %d", etcSecurityPwQualityConf, lcreditOption, lcredit);
+                        OsConfigCaptureReason(reason, "In '%s' 'lcredid' set to '%d' instead of %d", etcSecurityPwQualityConf, lcreditOption, lcredit);
+                    }
+
+                    status = ENOENT;
+
+                }
+                
+                break;
+            }
+            else
+            {
+                status = ENOENT;
+            }
+
+            memset(line, 0, lineMax + 1);
+        }
+
+        fclose(fileHandle);
+    }
+
+    FREE_MEMORY(line);
+
+    return result;
+}
