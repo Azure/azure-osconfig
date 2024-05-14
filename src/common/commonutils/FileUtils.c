@@ -1644,7 +1644,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
     int status = ENOENT;
 
-    if (0 = CheckFileExists(etcPamdSystemAuth, NULL, log))
+    if (0 == CheckFileExists(etcPamdSystemAuth, NULL, log))
     {
         if (0 != (status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, pamFailLockLine, '#', log)))
         {
@@ -1660,7 +1660,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
         }
     }
     
-    if (0 = CheckFileExists(etcPamdPasswordAuth, NULL, log))
+    if (0 == CheckFileExists(etcPamdPasswordAuth, NULL, log))
     {
         if (0 != (status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, pamFailLockLine, '#', log)))
         {
@@ -1676,7 +1676,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
         }
     }
 
-    if (0 = CheckFileExists(etcPamdLogin, NULL, log))
+    if (0 == CheckFileExists(etcPamdLogin, NULL, log))
     {
         if (0 != (status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, pamTally2Line, '#', log)))
         {
