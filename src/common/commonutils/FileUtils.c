@@ -1545,6 +1545,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             // 'deny=5' means deny access if the tally for this user exceeds 5 failed login attempts
             // 'unlock_time=900' means that the account will be automatically unlocked after 900 seconds (15 minutes)
             
+            OsConfigLogInfo(log, "#################### '%s'", line);
             if ((commentCharacter == line[0]) || (EOL == line[0]))
             {
                 continue;
