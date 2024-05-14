@@ -1547,12 +1547,12 @@ static char* AuditEnsurePasswordCreationRequirements(void* log)
 static char* AuditEnsureLockoutForFailedPasswordAttempts(void* log)
 {
     char* reason = NULL;
-    if (0 == CheckLockoutForFailedPasswordAttempts("/etc/pam.d/login", "pam_tally2.so", &reason, log))
+    if (0 == CheckLockoutForFailedPasswordAttempts("/etc/pam.d/login", "pam_tally2.so", '#', &reason, log))
     {
         return reason;
     }
     FREE_MEMORY(reason);
-    CheckLockoutForFailedPasswordAttempts("/etc/pam.d/system-auth", "pam_faillock.so", &reason, log);
+    CheckLockoutForFailedPasswordAttempts("/etc/pam.d/system-auth", "pam_faillock.so", '#', &reason, log);
     return reason;
 }
 
