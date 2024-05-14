@@ -1751,8 +1751,8 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
 {
     const char* etcPamdCommonPassword = "/etc/pam.d/common-password";
     const char* etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
-    bool etcPamdCommonPasswordExists = (0 == CheckFileExists(etcPamdCommonPassword)) ? true : false;
-    bool etcSecurityPwQualityConfExists = (0 == CheckFileExists(etcSecurityPwQualityConf)) ? true : false;
+    bool etcPamdCommonPasswordExists = (0 == CheckFileExists(etcPamdCommonPassword, NULL, log)) ? true : false;
+    bool etcSecurityPwQualityConfExists = (0 == CheckFileExists(etcSecurityPwQualityConf, NULL, log)) ? true : false;
     const char* fileName = etcSecurityPwQualityConfExists ? etcSecurityPwQualityConf : etcPamdCommonPassword;
     int retryOption = 0;
     int minlenOption = 0;
@@ -1761,11 +1761,6 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     int ucreditOption = 0;
     int ocreditOption = 0;
     int lcreditOption = 0;
-    int result = 0;
-
-    //'password requisite pam_pwquality.so retry=3 minlen=12 difok=1 lcredit=1 ucredit=1 ocredit=1 dcredit=-1' in file/etc/pam.d/common-password
-    //'minclass = 4 OR dcredit = -1 ucredit = -1 ocredit = -1 lcredit = -1'                                    in file/etc/security/ pwquality.conf
-
     const char* password = "password";
     const char* requisite = "requisite";
     const char* pamPwQualitySo = "pam_pwquality.so";
@@ -1773,9 +1768,6 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     const char* minclassName = "minclass";
     FILE* fileHandle = NULL;
     char* line = NULL;
-    char* authValue = NULL;
-    int deny = INT_ENOENT;
-    int unlockTime = INT_ENOENT;
     long lineMax = sysconf(_SC_LINE_MAX);
     int status = ENOENT;
 
