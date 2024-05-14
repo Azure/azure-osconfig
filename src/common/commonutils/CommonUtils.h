@@ -100,6 +100,7 @@ int CheckTextFoundInCommandOutput(const char* command, const char* text, char** 
 int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
 int SetEtcLoginDefValue(const char* name, const char* value, void* log);
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, void* log);
+int SetLockoutForFailedPasswordAttempts(void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);

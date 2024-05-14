@@ -1740,6 +1740,10 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
 TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 {
     const char* goodTestFileContents[] = {
+        "auth required pam_tally2.so deny=5 unlock_time=900 even_deny_root",
+        "auth required pam_tally2.so file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root",
+        "auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root",
+        "auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root",
         "auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900",
         "auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900",
         "auth required pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=2000",

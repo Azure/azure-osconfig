@@ -3,6 +3,8 @@
 
 #include "Internal.h"
 
+#define INT_ENOENT -999
+
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 {
     FILE* file = NULL;
@@ -1311,7 +1313,7 @@ static char* GetStringOptionFromBuffer(const char* buffer, const char* option, c
 static int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
 {
     char* stringValue = NULL;
-    int value = -999;
+    int value = INT_ENOENT;
 
     if (NULL != (stringValue = GetStringOptionFromBuffer(buffer, option, separator, log)))
     {
@@ -1354,7 +1356,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log)
 {
     char* contents = NULL;
-    int result = -999;
+    int result = INT_ENOENT;
 
     if (option && (0 == CheckFileExists(fileName, NULL, log)))
     {
@@ -1364,7 +1366,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
         }
         else
         {
-            if (-999 != (result = GetIntegerOptionFromBuffer(contents, option, separator, log)))
+            if (INT_ENOENT != (result = GetIntegerOptionFromBuffer(contents, option, separator, log)))
             {
                 OsConfigLogInfo(log, "GetIntegerOptionFromFile: found '%d' in '%s' for '%s'", result, fileName, option);
             }
@@ -1382,7 +1384,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
 
 int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, void* log)
 {
-    int valueFromFile = -999;
+    int valueFromFile = INT_ENOENT;
     int i = 0;
     int result = ENOENT;
 
@@ -1392,7 +1394,7 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
         return EINVAL;
     }
 
-    if (-999 != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
+    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
     {
         for (i = 0; i < numberOfValues; i++)
         {
@@ -1419,10 +1421,10 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
 
 int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, void* log)
 {
-    int valueFromFile = -999;
+    int valueFromFile = INT_ENOENT;
     int result = ENOENT;
 
-    if (-999 != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
+    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
     {
         if (valueFromFile <= value)
         {
@@ -1503,8 +1505,8 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     FILE* fileHandle = NULL;
     char* line = NULL;
     char* authValue = NULL;
-    int deny = -999;
-    int unlockTime = -999;
+    int deny = INT_ENOENT;
+    int unlockTime = INT_ENOENT;
     long lineMax = sysconf(_SC_LINE_MAX);
     int status = ENOENT;
 
@@ -1543,11 +1545,6 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             //
             // 'auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900' in /etc/pam.d/login
             // 'auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900' in /etc/pam.d/system-auth
-            //
-            // where:
-            //  
-            // 'deny=5' means deny access if the tally for this user exceeds 5 failed login attempts
-            // 'unlock_time=900' means that the account will be automatically unlocked after 900 seconds (15 minutes)
 
             if ((commentCharacter == line[0]) || (EOL == line[0]))
             {
@@ -1556,8 +1553,8 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             }
             else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) && 
                 (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) && FreeAndReturnTrue(authValue) &&
-                (-999 != (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny >= 0) && (deny <= 5) &&
-                (-999 != (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))) && (unlockTime > 0))
+                (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny <= 5) &&
+                (0 <= (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))))
             {
                 OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s %s %s' found uncommented with 'deny' set to %d and 'unlock_time' set to %d in '%s' ('%s')",
                     auth, required, pamSo, deny, unlockTime, fileName, line);
@@ -1577,7 +1574,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
         
         if (status)
         {
-            if (-999 == deny)
+            if (INT_ENOENT == deny)
             {
                 OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'deny' not found in '%s' for '%s'", fileName, pamSo);
                 OsConfigCaptureReason(reason, "'deny' not found in '%s' for '%s'", fileName, pamSo);
@@ -1589,7 +1586,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                 OsConfigCaptureReason(reason, "'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5", deny, fileName, pamSo);
             }
         
-            if (-999 == unlockTime)
+            if (INT_ENOENT == unlockTime)
             {
                 OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
                 OsConfigCaptureReason(reason, "'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
@@ -1606,6 +1603,94 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     }
 
     FREE_MEMORY(line);
+
+    return status;
+}
+
+int SetLockoutForFailedPasswordAttempts(void* log)
+{
+    // These configuration lines are used in the PAM (Pluggable Authentication Module) settings to count
+    // number of attempted accesses and lock user accounts after a specified number of failed login attempts.
+    //
+    // /etc/pam.d/login:
+    //
+    // 'auth required pam_tally2.so file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root'
+    //
+    // /etc/pam.d/system-auth and /etc/pam.d/password-auth:
+    //
+    // 'auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root'
+    //
+    // Where:
+    //
+    // - '[default=die]': Sets the default behavior if the module fails (e.g., due to too many failed login attempts), 
+    //    then the authentication process will terminate immediately.
+    // - 'auth': Specifies that the module is invoked during authentication.
+    // - 'required': The module is essential for authentication to proceed.
+    // - 'pam_tally2.so':The PAM pam_tally2 module, which maintains a count of attempted accesses during the authentication process.
+    // - 'pam_faillock.so': The PAM_faillock module, which maintains a list of failed authentication attempts per user.
+    // - 'file=/var/log/tallylog': The default log file used to keep login counts.
+    // - 'onerr=fail': If an error occurs (e.g., unable to open a file), return with a PAM error code.
+    // - 'audit': Generate an audit record for this event.
+    // - 'silent': Do not display any error messages.
+    // - 'deny=5': Deny access if the tally (failed login attempts) for this user exceeds 5 times.
+    // - 'unlock_time=900': Allow access after 900 seconds (15 minutes) following a failed attempt.
+
+    const char* pamTally2Line = "auth required pam_tally2.so file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root\n";
+    const char* pamFailLockLine = "auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root";
+    const char* etcPamdLogin = "/etc/pam.d/login";
+    const char* etcPamdSystemAuth = "/etc/pam.d/system-auth"; 
+    const char* etcPamdPasswordAuth = "/etc/pam.d/password-auth";
+    const char* marker* "auth";
+
+    int status = ENOENT;
+
+    if (0 = CheckFileExists(etcPamdSystemAuth, NULL, log))
+    {
+        if (0 != (status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, pamFailLockLine, '#', log)))
+        {
+            if (AppendToFile(etcPamdSystemAuth, pamFailLockLine, strlen(pamFailLockLine), log))
+            {
+                OsConfigLogInfo(log, "SetLockoutForFailedPasswordAttempts: line '%s' was added to '%s'", pamFailLockLine, etcPamdSystemAuth);
+                status = 0;
+            }
+            else
+            {
+                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed to append line '%s' to '%s'", pamFailLockLine, etcPamdSystemAuth);
+            }
+        }
+    }
+    
+    if (0 = CheckFileExists(etcPamdPasswordAuth, NULL, log))
+    {
+        if (0 != (status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, pamFailLockLine, '#', log)))
+        {
+            if (AppendToFile(etcPamdPasswordAuth, pamFailLockLine, strlen(pamFailLockLine), log))
+            {
+                OsConfigLogInfo(log, "SetLockoutForFailedPasswordAttempts: line '%s' was added to '%s'", pamFailLockLine, etcPamdPasswordAuth);
+                status = 0;
+            }
+            else
+            {
+                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed to append line '%s' to '%s'", pamFailLockLine, etcPamdPasswordAuth);
+            }
+        }
+    }
+
+    if (0 = CheckFileExists(etcPamdLogin, NULL, log))
+    {
+        if (0 != (status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, pamTally2Line, '#', log)))
+        {
+            if (AppendToFile(etcPamdLogin, pamTally2Line, strlen(pamTally2Line), log))
+            {
+                OsConfigLogInfo(log, "SetLockoutForFailedPasswordAttempts: line '%s' was added to '%s'", pamTally2Line, etcPamdLogin);
+                status = 0;
+            }
+            else
+            {
+                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed to append line '%s' to '%s'", pamTally2Line, etcPamdLogin);
+            }
+        }
+    }
 
     return status;
 }
