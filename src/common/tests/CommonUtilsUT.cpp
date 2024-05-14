@@ -1802,7 +1802,7 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
     for (i = 0; i < goodTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, goodTestFileContents[i]));
-        if (0 == strstr(goodTestFileContents[i], "pam_tally2.so"))
+        if (NULL != strstr(goodTestFileContents[i], "pam_tally2.so"))
         {
             EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, "pam_tally2.so", '#', nullptr, nullptr)); 
         }
