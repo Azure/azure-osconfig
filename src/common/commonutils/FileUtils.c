@@ -1523,6 +1523,10 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
         OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: out of memory");
         return ENOMEM;
     }
+    else
+    {
+        memset(line, 0, lineMax + 1);
+    }
 
     if (NULL == (fileHandle = fopen(fileName, "r")))
     {
@@ -1545,9 +1549,10 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             // 'deny=5' means deny access if the tally for this user exceeds 5 failed login attempts
             // 'unlock_time=900' means that the account will be automatically unlocked after 900 seconds (15 minutes)
             
-            OsConfigLogInfo(log, "#################### '%s'", line);
+            OsConfigLogInfo(log, "Line: '%s' Comment char: 'c' line[0]: 'c'", line, commentCharacter, line[0]);/////////////////
             if ((commentCharacter == line[0]) || (EOL == line[0]))
             {
+                status = 0;
                 continue;
             }
             else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) && 
@@ -1555,13 +1560,20 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                 (-999 != (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny >= 0) && (deny <= 5) &&
                 (-999 != (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))) && (unlockTime > 0))
             {
-                OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s %s %s' found uncommented with deny' set to %d and 'unlock_time' set to %d in '%s' ('%s')",
+                OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s %s %s' found uncommented with 'deny' set to %d and 'unlock_time' set to %d in '%s' ('%s')",
                     auth, required, pamSo, deny, unlockTime, fileName, line);
-                OsConfigCaptureSuccessReason(reason, "'%s %s %s' found uncommented with deny' set to %d and 'unlock_time' set to %d in '%s'",
+                OsConfigCaptureSuccessReason(reason, "'%s %s %s' found uncommented with 'deny' set to %d and 'unlock_time' set to %d in '%s'",
                     auth, required, pamSo, deny, unlockTime, fileName);
+                
                 status = 0;
                 break;
             }
+            else
+            {
+                status = ENOENT;
+            }
+
+            memset(line, 0, lineMax + 1);
         }
         
         if (status)
