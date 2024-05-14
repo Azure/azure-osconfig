@@ -1547,7 +1547,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) && 
                 (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) && FreeAndReturnTrue(authValue) &&
                 (commentCharacter != line[0]) && (EOL != line[0]) &&
-                (-999 != (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny >= 0) && (deny =< 5) &&
+                (-999 != (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny >= 0) && (deny <= 5) &&
                 (-999 != (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))) && (unlockTime > 0))
             {
                 OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s %s %s' found uncommented with deny' set to %d and 'unlock_time' set to %d in '%s' ('%s')",
