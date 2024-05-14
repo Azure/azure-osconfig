@@ -1554,7 +1554,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) && 
                 (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) && FreeAndReturnTrue(authValue) &&
                 (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny <= 5) &&
-                (0 <= (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))))
+                (0 < (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))))
             {
                 OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s %s %s' found uncommented with 'deny' set to %d and 'unlock_time' set to %d in '%s' ('%s')",
                     auth, required, pamSo, deny, unlockTime, fileName, line);
@@ -1612,28 +1612,27 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     // These configuration lines are used in the PAM (Pluggable Authentication Module) settings to count
     // number of attempted accesses and lock user accounts after a specified number of failed login attempts.
     //
-    // /etc/pam.d/login:
+    // For /etc/pam.d/login:
     //
     // 'auth required pam_tally2.so file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root'
     //
-    // /etc/pam.d/system-auth and /etc/pam.d/password-auth:
+    // For /etc/pam.d/system-auth and /etc/pam.d/password-auth:
     //
     // 'auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root'
     //
     // Where:
     //
-    // - '[default=die]': Sets the default behavior if the module fails (e.g., due to too many failed login attempts), 
-    //    then the authentication process will terminate immediately.
-    // - 'auth': Specifies that the module is invoked during authentication.
-    // - 'required': The module is essential for authentication to proceed.
-    // - 'pam_tally2.so':The PAM pam_tally2 module, which maintains a count of attempted accesses during the authentication process.
-    // - 'pam_faillock.so': The PAM_faillock module, which maintains a list of failed authentication attempts per user.
-    // - 'file=/var/log/tallylog': The default log file used to keep login counts.
-    // - 'onerr=fail': If an error occurs (e.g., unable to open a file), return with a PAM error code.
-    // - 'audit': Generate an audit record for this event.
-    // - 'silent': Do not display any error messages.
-    // - 'deny=5': Deny access if the tally (failed login attempts) for this user exceeds 5 times.
-    // - 'unlock_time=900': Allow access after 900 seconds (15 minutes) following a failed attempt.
+    // - 'auth': specifies that the module is invoked during authentication
+    // - 'required': the module is essential for authentication to proceed
+    // - '[default=die]': sets the default behavior if the module fails (e.g., due to too many failed login attempts), then the authentication process will terminate immediately
+    // - 'pam_tally2.so': the PAM pam_tally2 module, which maintains a count of attempted accesses during the authentication process
+    // - 'pam_faillock.so': the PAM_faillock module, which maintains a list of failed authentication attempts per user
+    // - 'file=/var/log/tallylog': the default log file used to keep login counts
+    // - 'onerr=fail': if an error occurs (e.g., unable to open a file), return with a PAM error code
+    // - 'audit': generate an audit record for this event
+    // - 'silent': do not display any error messages
+    // - 'deny=5': deny access if the tally (failed login attempts) for this user exceeds 5 times
+    // - 'unlock_time=900': allow access after 900 seconds (15 minutes) following a failed attempt
 
     const char* pamTally2Line = "auth required pam_tally2.so file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root\n";
     const char* pamFailLockLine = "auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root";
