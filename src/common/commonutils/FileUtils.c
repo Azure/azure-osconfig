@@ -655,11 +655,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                     {
                         if (EOF == fputs(line, tempHandle))
                         {
-                            if (0 == (status = errno))
-                            {
-                                status = EPERM;
-                            }
-
+                            status =  (0 == errno) ? EPERM : errno;
                             OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
                         }
                     }
@@ -1500,73 +1496,104 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
     return status;
 }
 
-int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, void* log)
+int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* marker, char commentCharacter, char** reason, void* log)
 {
-    char* contents = NULL;
-    char* buffer = NULL;
-    char* value = NULL;
-    int option = 0;
+    const char* authRequired = "auth required";
+    FILE* fileHandle = NULL;
+    char* line = NULL;
+    int deny = -999;
+    int unlockTime = -999;
+    long lineMax = sysconf(_SC_LINE_MAX);
+    bool found = false;
     int status = ENOENT;
 
-    if (0 == CheckFileExists(fileName, reason, log))
+    if ((NULL == fileName) || (NULL == marker))
     {
-        if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
-        {
-            OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: cannot read from '%s'", fileName);
-        }
-        else
-        {
-            buffer = contents;
-
-            // Example of valid lines: 
-            //
-            // auth required pam_tally2.so file=/var/log/tallylog deny=5 even_deny_root unlock_time=2000
-            // auth required pam_faillock.so deny=1 even_deny_root unlock_time=300
-            //
-            // To pass, all attributes must be present, including either pam_faillock.so or pam_tally2.so, 
-            // the deny value must be between 1 and 5 (inclusive), the unlock_time set to a positive value, 
-            // with any number of spaces between.The even_deny_root and any other attribute like it are optional.
-            //
-            // There can be multiple 'auth' lines in the file. Only the right one matters.
-
-            while (NULL != (value = GetStringOptionFromBuffer(buffer, "auth", ' ', log)))
-            {
-                if (((0 == strcmp("required", value)) && FreeAndReturnTrue(value)) &&
-                    (((NULL != (value = GetStringOptionFromBuffer(buffer, "required", ' ', log))) && (0 == strcmp("pam_faillock.so", value)) && FreeAndReturnTrue(value)) ||
-                    (((NULL != (value = GetStringOptionFromBuffer(buffer, "required", ' ', log))) && (0 == strcmp("pam_tally2.so", value)) && FreeAndReturnTrue(value)) &&
-                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "pam_tally2.so", ' ', log))) && (0 == strcmp("file=/var/log/tallylog", value)) && FreeAndReturnTrue(value)) &&
-                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "file", '=', log))) && (0 == strcmp("/var/log/tallylog", value)) && FreeAndReturnTrue(value)))) &&
-                    (0 < (option = GetIntegerOptionFromBuffer(buffer, "deny", '=', log))) && (6 > option) && (0 < (option = GetIntegerOptionFromBuffer(buffer, "unlock_time", '=', log))))
-                {
-                    status = 0;
-                    break;
-                }
-                else if (NULL == (buffer = strchr(buffer, EOL)))
-                {
-                    break;
-                }
-                else
-                {
-                    buffer += 1;
-                }
-            }
-
-            FREE_MEMORY(contents);
-        }
+        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: invalid arguments");
+        return EINVAL;
+    }
+    else if (0 != CheckFileExists(fileName, reason, log))
+    {
+        // CheckFileExists logs
+        return ENOENT;
+    }
+    else if (NULL == (line = malloc(lineMax + 1)))
+    {
+        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: out of memory");
+        return ENOMEM;
     }
 
-    if (0 == status)
+    if (NULL == (fileHandle = fopen(fileName, "r")))
     {
-        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
-        OsConfigCaptureSuccessReason(reason, "Valid lockout for failed password attempts line found in '%s'", fileName);
+        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: cannot read from '%s'", fileName);
+        status = EACCES;
     }
     else
     {
-        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
-        OsConfigCaptureReason(reason, "'%s' does not exist, or lockout for failed password attempts not set, "
-            "'auth', 'pam_faillock.so' or 'pam_tally2.so' and 'file=/var/log/tallylog' not found, or 'deny' or "
-            "'unlock_time' not found, or 'deny' not in between 1 and 5, or 'unlock_time' not set to greater than 0", fileName);
+        while (NULL != fgets(line, lineMax + 1, fileHandle))
+        {
+            // Example of valid lines: 
+            //
+            // 'auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900' in /etc/pam.d/login
+            // 'auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900' in /etc/pam.d/system-auth
+            //
+            // where:
+            //  
+            // 'deny=5' means deny access if the tally for this user exceeds 5 failed login attempts
+            // 'unlock_time=900' means that the account will be automatically unlocked after 900 seconds (15 minutes)
+
+            if (NULL != strstr(line, marker))
+            {
+                if ((commentCharacter != line[0]) && (EOL != line[0]))
+                {
+                    if (((-999 != (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny > 0) && (deny < 6)) &&
+                        ((-999 != (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))) && (unlock_time > 0)))
+                    {
+                        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d and 'unlock_time' found set to %d in '%s' for '%s' ('%s')",
+                            deny, unlock_time, fileName, marker, line);
+                        OsConfigCaptureSuccessReason(reason, "'deny' found set to %d and 'unlock_time' found set to %d in '%s' for '%s'",
+                            deny, unlock_time, fileName, marker);
+                        found = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (false == found)
+        {
+            if (-999 == deny)
+            {
+                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'deny' not found in '%s' for '%s'", fileName, marker);
+                OsConfigCaptureReason(reason, "'deny' not found in '%s' for '%s'", fileName, marker);
+            }
+            else
+            {
+                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d in '%s' for '%s' instead of a value between 1 and 5", 
+                    deny, fileName, marker);
+                OsConfigCaptureReason(reason, "'deny' found set to %d in '%s' for '%s' instead of a value between 1 and 5", deny, fileName, marker);
+            }
+            
+
+            if (-999 == unlockTime)
+            {
+                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' not found in '%s' for '%s'", fileName, marker);
+                OsConfigCaptureReason(reason, "'unlock_time' not found in '%s' for '%s'", fileName, marker);
+            }
+            else
+            {
+                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' found set to %d in '%s' for '%s' instead of a value between 1 and 5",
+                    unlockTime, fileName, marker);
+                OsConfigCaptureReason(reason, "'unlock_time' found set to %d in '%s' for '%s' instead of a value between 1 and 5", unlockTime, fileName, marker);
+            }
+            
+            status = ENOENT;
+        }
+
+        fclose(fileHandle);
     }
+
+    FREE_MEMORY(line);
 
     return status;
 }

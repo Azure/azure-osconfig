@@ -1737,9 +1737,22 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
+
+//int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* marker, char commentCharacter, char** reason, void* log)
+// Example of valid lines: 
+//
+// 'auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900' in /etc/pam.d/login
+// 'auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900' in /etc/pam.d/system-auth
+//
+// where:
+//  
+// 'deny=5' means deny access if the tally for this user exceeds 5 failed login attempts
+// 'unlock_time=900' means that the account will be automatically unlocked after 900 seconds (15 minutes)
 TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 {
     const char* goodTestFileContents[] = {
+        "auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900",
+        "auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900",
         "auth required pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=2000",
         "auth required pam_faillock.so deny=3 unlock_time=600",
         "auth        required      pam_faillock.so preauth silent audit deny=1 unlock_time=2000",

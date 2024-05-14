@@ -1546,15 +1546,13 @@ static char* AuditEnsurePasswordCreationRequirements(void* log)
 
 static char* AuditEnsureLockoutForFailedPasswordAttempts(void* log)
 {
-    const char* passwordAuth = "/etc/pam.d/password-auth";
-    const char* commonAuth = "/etc/pam.d/common-auth";
     char* reason = NULL;
-    if (0 == CheckLockoutForFailedPasswordAttempts(passwordAuth, &reason, log))
+    if (0 == CheckLockoutForFailedPasswordAttempts("/etc/pam.d/login", "pam_tally2.so", &reason, log))
     {
         return reason;
     }
     FREE_MEMORY(reason);
-    CheckLockoutForFailedPasswordAttempts(commonAuth, &reason, log);
+    CheckLockoutForFailedPasswordAttempts("/etc/pam.d/system-auth", "pam_faillock.so", &reason, log);
     return reason;
 }
 
