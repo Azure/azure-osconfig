@@ -1796,8 +1796,8 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 
     int i = 0;
 
-    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(nullptr, nullptr, nullptr));
-    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts("~file_that_does_not_exist", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLockoutForFailedPasswordAttempts(nullptr, nullptr, 0, nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckLockoutForFailedPasswordAttempts("~file_that_does_not_exist", "pam_tally2.so", '#', nullptr, nullptr));
 
     for (i = 0; i < goodTestFileContentsSize; i++)
     {
