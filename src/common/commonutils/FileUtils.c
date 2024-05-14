@@ -1547,7 +1547,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) && 
                 (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) && FreeAndReturnTrue(authValue) &&
                 (commentCharacter != line[0]) && (EOL != line[0]) &&
-                (-999 != (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny > 0) && (deny < 6) &&
+                (-999 != (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny >= 0) && (deny =< 5) &&
                 (-999 != (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))) && (unlockTime > 0))
             {
                 OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s %s %s' found uncommented with deny' set to %d and 'unlock_time' set to %d in '%s' ('%s')",
@@ -1568,9 +1568,9 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             }
             else
             {
-                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d in '%s' for '%s' instead of a value between 1 and 5", 
+                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5", 
                     deny, fileName, pamSo);
-                OsConfigCaptureReason(reason, "'deny' found set to %d in '%s' for '%s' instead of a value between 1 and 5", deny, fileName, pamSo);
+                OsConfigCaptureReason(reason, "'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5", deny, fileName, pamSo);
             }
             
 
