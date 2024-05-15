@@ -1985,9 +1985,9 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     // - dcredit: the minimum number of digits required in the password  (negative means no requirement)
     
     const char* etcPamdCommonPasswordLineTemplate = "password requisite pam_pwquality.so retry=%d minlen=%d difok=1 lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
-    const char* etcSecurityPwqualityConfLineTemplate = "minclass=%d OR dcredit =%d ucredit=%d ocredit=%d lcredit=%d";
+    const char* etcSecurityPwQualityConfLineTemplate = "minclass=%d OR dcredit =%d ucredit=%d ocredit=%d lcredit=%d";
     const char* etcPamdCommonPasswordMarker = "password";
-    const char* etcSecurityPwqualityConfMarker = "minclass";
+    const char* etcSecurityPwQualityConfMarker = "minclass";
     const char* etcPamdCommonPassword = "/etc/pam.d/common-password";
     const char* etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
     char* etcPamdCommonPasswordLine = NULL;
