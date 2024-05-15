@@ -369,6 +369,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
             g_etcPamdCommonPassword, password, requisite, pamPwQualitySo);
         OsConfigCaptureReason(reason, "'%s' does not contain a line '%s %s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
             g_etcPamdCommonPassword, password, requisite, pamPwQualitySo);
+        status = ENOENT;
     }
 
     return status;
