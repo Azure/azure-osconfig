@@ -220,7 +220,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
 
     int status = ENOENT;
 
-    if (0 != CheckFileExists(g_etcPamdCommonPassword, NULL, log))
+    if (false == FileExists(g_etcPamdCommonPassword))
     {
         OsConfigLogError(log, "CheckRequirementsForCommonPassword: '%s' does not exist", g_etcPamdCommonPassword);
         OsConfigCaptureReason(reason, "%s' does not exist", g_etcPamdCommonPassword);
@@ -251,6 +251,8 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
             // Example of valid line: 
             // 'password requisite pam_pwquality.so retry=3 minlen=14 lcredit=-1 ucredit=1 ocredit=-1 dcredit=-1'
             
+            OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s'", line); ///////
+
             if ((commentCharacter == line[0]) || (EOL == line[0]))
             {
                 status = 0;
@@ -411,7 +413,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
     long lineMax = sysconf(_SC_LINE_MAX);
     int status = ENOENT, _status = ENOENT;
 
-    if (0 != CheckFileExists(g_etcSecurityPwQualityConf, NULL, log))
+    if (false == FileExists(g_etcSecurityPwQualityConf))
     {
         OsConfigLogError(log, "CheckRequirementsForPwQualityConf: '%s' does not exist", g_etcSecurityPwQualityConf);
         OsConfigCaptureReason(reason, "'%s' does not exist", g_etcSecurityPwQualityConf);
