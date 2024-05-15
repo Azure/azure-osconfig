@@ -474,7 +474,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
             }
             else if (NULL != strstr(line, "ocredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "ocredit", g_etcSecurityPwQualityConf, '=', '#', lcredit, reason, log);
+                _status = CheckPasswordRequirementFromBuffer(line, "ocredit", g_etcSecurityPwQualityConf, '=', '#', ocredit, reason, log);
             }
 
             if (_status && (0 == status))
