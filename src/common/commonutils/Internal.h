@@ -37,4 +37,6 @@
 
 #define PLAIN_STATUS_FROM_ERRNO(a) ((0 == a) ? "passed" : "failed")
 
+#define INT_ENOENT -999
+
 #endif // INTERNAL_H

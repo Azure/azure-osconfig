@@ -1705,6 +1705,10 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
     const char* requisite = "requisite";
     int retryOption = 0;
     int minlenOption = 0;
+    int dcreditOption = 0;
+    int ucreditOption = 0;
+    int ocreditOption = 0;
+    int lcreditOption = 0;
     char commentCharacter = '#';
     FILE* fileHandle = NULL;
     char* line = NULL;

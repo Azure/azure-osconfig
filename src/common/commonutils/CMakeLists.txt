@@ -12,6 +12,7 @@ add_library(commonutils STATIC
     MountUtils.c
     OtherUtils.c
     PackageUtils.c
+    PassUtils.c
     ProxyUtils.c
     SocketUtils.c
     SshUtils.c
