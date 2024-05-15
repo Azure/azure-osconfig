@@ -217,7 +217,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
     FILE* fileHandle = NULL;
     char* line = NULL;
     long lineMax = sysconf(_SC_LINE_MAX);
-
+    bool found = false;
     int status = ENOENT;
 
     if (false == FileExists(g_etcPamdCommonPassword))
@@ -251,8 +251,6 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
             // Example of valid line: 
             // 'password requisite pam_pwquality.so retry=3 minlen=14 lcredit=-1 ucredit=1 ocredit=-1 dcredit=-1'
             
-            OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s'", line); ///////
-
             if ((commentCharacter == line[0]) || (EOL == line[0]))
             {
                 status = 0;
@@ -260,6 +258,8 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
             }
             else if ((NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) && (NULL != strstr(line, pamPwQualitySo)))
             {
+                found = true;
+                
                 if ((retry == (retryOption = GetIntegerOptionFromBuffer(line, "retry", '=', log))) &&
                     (minlen == (minlenOption = GetIntegerOptionFromBuffer(line, "minlen", '=', log))) &&
                     (dcredit == (dcreditOption = GetIntegerOptionFromBuffer(line, "dcredit", '=', log))) &&
@@ -350,15 +350,9 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                             g_etcPamdCommonPassword, lcreditOption, lcredit);
                         OsConfigCaptureReason(reason, "In '%s' 'lcredit' set to '%d' instead of %d", g_etcPamdCommonPassword, lcreditOption, lcredit);
                     }
-
                     status = ENOENT;
+                    break;
                 }
-
-                break;
-            }
-            else
-            {
-                status = ENOENT;
             }
 
             memset(line, 0, lineMax + 1);
@@ -368,6 +362,14 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
     }
 
     FREE_MEMORY(line);
+
+    if (false = found)
+    {
+        OsConfigLogError(log, "CheckRequirementsForCommonPassword: '%s' does not contain a line '%s %s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
+            g_etcPamdCommonPassword, password, requisite, pamPwQualitySo);
+        OsConfigCaptureReason(reason, "'%s' does not contain a line '%s %s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
+            g_etcPamdCommonPassword, password, requisite, pamPwQualitySo);
+    }
 
     return status;
 }
@@ -621,7 +623,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         }
     }
 
-   FREE_MEMORY(line);
+    FREE_MEMORY(line);
 
     return status;
 }
