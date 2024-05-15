@@ -3062,9 +3062,24 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
 
 static int RemediateEnsurePasswordCreationRequirements(char* value, void* log)
 {
+    int* values = NULL;
+    int numberOfValues = 0;
+    int status = 0;
+
     InitEnsurePasswordCreationRequirements(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+
+    if ((0 == ConvertStringToIntegers(g_desiredEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, log)) && (7 == numberOfValues))
+    {
+        status = SetPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], log);
+    }
+    else
+    {
+        OsConfigLogError(log, "RemediateEnsurePasswordCreationRequirements: failed to parse '%s'. There must be 7 numbers, comma separated, "
+            "in this order: retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit", g_desiredEnsurePasswordCreationRequirements);
+    }
+
+    FREE_MEMORY(values);
+    return status;
 }
 
 static int RemediateEnsureLockoutForFailedPasswordAttempts(char* value, void* log)
