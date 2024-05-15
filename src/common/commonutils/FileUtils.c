@@ -1786,10 +1786,10 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'retry' is missing", etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'retry' is missing", etcPamdCommonPassword);
                     }
-                    else
+                    else if (retryOption != retry)
                     {
-                        OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'retry' is set to %d instead of %d", etcPamdCommonPassword, minlenOption, minlen);
-                        OsConfigCaptureReason(reason, "In '%s' 'retry' is set to %d instead of %d", etcPamdCommonPassword, minlenOption, minlen);
+                        OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'retry' is set to %d instead of %d", etcPamdCommonPassword, retryOption, retry);
+                        OsConfigCaptureReason(reason, "In '%s' 'retry' is set to %d instead of %d", etcPamdCommonPassword, retryOption, retry);
                     }
 
                     if (INT_ENOENT == minlenOption)
@@ -1797,7 +1797,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'minlen' is missing", etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'minlen' is missing", etcPamdCommonPassword);
                     }
-                    else
+                    else if (minlenOption != minlen)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'minlen' is set to %d instead of %d", etcPamdCommonPassword, minlenOption, minlen);
                         OsConfigCaptureReason(reason, "In '%s' 'minlen' is set to %d instead of %d", etcPamdCommonPassword, minlenOption, minlen);
@@ -1808,7 +1808,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'minclass' is missing", etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'minclass' is missing", etcPamdCommonPassword);
                     }
-                    else
+                    else if (minclassOption != minclass)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'minclass' is set to %d instead of %d", etcPamdCommonPassword, minclassOption, minclass);
                         OsConfigCaptureReason(reason, "In '%s' 'minclass' is set to %d instead of %d", etcPamdCommonPassword, minclassOption, minclass);
@@ -1819,7 +1819,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'dcredit' is missing", etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'dcredit' is missing", etcPamdCommonPassword);
                     }
-                    else
+                    else if (dcreditOption != dcredit)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'dcredit' is set to '%d' instead of %d", etcPamdCommonPassword, dcreditOption, dcredit);
                         OsConfigCaptureReason(reason, "In '%s' 'dcredit' is set to '%d' instead of %d", etcPamdCommonPassword, dcreditOption, dcredit);
@@ -1830,7 +1830,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'ucredit' missing", etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'ucredit' missing", etcPamdCommonPassword);
                     }
-                    else
+                    else if (ucreditOption != ucredi)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'ucredit' set to '%d' instead of %d", etcPamdCommonPassword, ucreditOption, ucredit);
                         OsConfigCaptureReason(reason, "In '%s' 'ucredit' set to '%d' instead of %d", etcPamdCommonPassword, ucreditOption, ucredit);
@@ -1841,7 +1841,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'ocredit' missing", etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'ocredit' missing", etcPamdCommonPassword);
                     }
-                    else
+                    else if (ocreditOption != ocredit)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'ocredit' set to '%d' instead of %d", etcPamdCommonPassword, ocreditOption, ocredit);
                         OsConfigCaptureReason(reason, "In '%s' 'ocredit' set to '%d' instead of %d", etcPamdCommonPassword, ocreditOption, ocredit);
@@ -1852,7 +1852,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'lcredit' missing", etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'lcredit' missing", etcPamdCommonPassword);
                     }
-                    else
+                    else if (lcreditOption != lcredit)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'lcredid' set to '%d' instead of %d", etcPamdCommonPassword, lcreditOption, lcredit);
                         OsConfigCaptureReason(reason, "In '%s' 'lcredid' set to '%d' instead of %d", etcPamdCommonPassword, lcreditOption, lcredit);
@@ -1883,10 +1883,10 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                 {
                     if (INT_ENOENT == minclassOption)
                     {
-                        OsConfigLogError(log, "CheckPasswordCreationRequirements: iIn '%s' 'minclass' is missing", etcSecurityPwQualityConf);
+                        OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'minclass' is missing", etcSecurityPwQualityConf);
                         OsConfigCaptureReason(reason, "In '%s' 'minclass' is missing", etcSecurityPwQualityConf);
                     }
-                    else
+                    else if (minclassOption != minclass)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'minclass' is set to %d instead of %d", etcSecurityPwQualityConf, minclassOption, minclass);
                         OsConfigCaptureReason(reason, "In '%s' 'minclass' is set to %d instead of %d", etcSecurityPwQualityConf, minclassOption, minclass);
@@ -1897,7 +1897,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'dcredit' is missing", etcSecurityPwQualityConf);
                         OsConfigCaptureReason(reason, "In '%s' 'dcredit' is missing", etcSecurityPwQualityConf);
                     }
-                    else
+                    else if (dcreditOption != dcredit)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'dcredit' is set to '%d' instead of %d", etcSecurityPwQualityConf, dcreditOption, dcredit);
                         OsConfigCaptureReason(reason, "In '%s' 'dcredit' is set to '%d' instead of %d", etcSecurityPwQualityConf, dcreditOption, dcredit);
@@ -1908,7 +1908,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'ucredit' missing", etcSecurityPwQualityConf);
                         OsConfigCaptureReason(reason, "In '%s' 'ucredit' missing", etcSecurityPwQualityConf);
                     }
-                    else
+                    else if (ucreditOption != ucredit)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'ucredit' set to '%d' instead of %d", etcSecurityPwQualityConf, ucreditOption, ucredit);
                         OsConfigCaptureReason(reason, "In '%s' 'ucredit' set to '%d' instead of %d", etcSecurityPwQualityConf, ucreditOption, ucredit);
@@ -1919,7 +1919,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'ocredit' missing", etcSecurityPwQualityConf);
                         OsConfigCaptureReason(reason, "In '%s' 'ocredit' missing", etcSecurityPwQualityConf);
                     }
-                    else
+                    else if (ocreditOption != ocredit)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'ocredit' set to '%d' instead of %d", etcSecurityPwQualityConf, ocreditOption, ocredit);
                         OsConfigCaptureReason(reason, "In '%s' 'ocredit' set to '%d' instead of %d", etcSecurityPwQualityConf, ocreditOption, ocredit);
@@ -1930,7 +1930,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'lcredit' missing", etcSecurityPwQualityConf);
                         OsConfigCaptureReason(reason, "In '%s' 'lcredit' missing", etcSecurityPwQualityConf);
                     }
-                    else
+                    else if (lcreditOption != option)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'lcredid' set to '%d' instead of %d", etcSecurityPwQualityConf, lcreditOption, lcredit);
                         OsConfigCaptureReason(reason, "In '%s' 'lcredid' set to '%d' instead of %d", etcSecurityPwQualityConf, lcreditOption, lcredit);
