@@ -253,7 +253,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
             
             if ((commentCharacter == line[0]) || (EOL == line[0]))
             {
-                status = 0;                                                                                    lcredid
+                status = 0;
                 continue;
             }
             else if ((NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) && (NULL != strstr(line, pamPwQualitySo)))
