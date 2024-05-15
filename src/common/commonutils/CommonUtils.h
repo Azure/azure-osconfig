@@ -97,6 +97,8 @@ int CheckTextFoundInFolder(const char* directory, const char* text, char** reaso
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
 int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
 int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
+char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, void* log);
+int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, void* log);
 int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
 int SetEtcLoginDefValue(const char* name, const char* value, void* log);
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, void* log);

@@ -1273,7 +1273,7 @@ int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char
     return result;
 }
 
-static char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
+char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
 {
     char* found = NULL;
     char* internal = NULL;
@@ -1310,7 +1310,7 @@ static char* GetStringOptionFromBuffer(const char* buffer, const char* option, c
     return result;
 }
 
-static int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
+int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
 {
     char* stringValue = NULL;
     int value = INT_ENOENT;
