@@ -1701,7 +1701,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     const char* pamPwQualitySo = "pam_pwquality.so";
     const char* password = "password";
     const char* requisite = "requisite";
-    const char* minclastName = "minclass";
+    const char* minclasName = "minclass";
     const char* ucreditName = "ucredit";
     
     int retryOption = 0;
