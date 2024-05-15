@@ -546,16 +546,15 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     const char* etcPamdCommonPasswordLineTemplate = "password requisite pam_pwquality.so retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
     const char* etcSecurityPwQualityConfLineTemplate = "%s = %d";
     const char* etcPamdCommonPasswordMarker = "pam_pwquality.so";
-    const char* etcSecurityPwQualityConfMarker = "minclass";
 
     const char* entries[] = { "minclass", "dcredit", "ucredit", "ocredit", "lcredit" };
     int numEntries = ARRAY_SIZE(entries);
     int i = 0;
 
     char* line = NULL;
-    int status = ENOENT, status = ENOENT;
+    int status = ENOENT, _status = ENOENT;
 
-    if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log)))
+    if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, NULL, log)))
     {
         OsConfigLogInfo(log, "SetPasswordCreationRequirements: nothing to remediate");
         return 0;
