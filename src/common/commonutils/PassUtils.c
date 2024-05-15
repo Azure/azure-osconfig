@@ -382,7 +382,7 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
     
     if (desired == (value = GetIntegerOptionFromBuffer(buffer, option, separator, log)))
     {
-        if (commentCharacter != buffer[0]))
+        if (comment != buffer[0])
         {
             OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: '%s' is set to correct value %d in '%s' but is commented out", option, value, fileName);
             OsConfigCaptureReason(reason, "'%s' is set to correct value %d in '%s' but is commented out", option, value, fileName);
@@ -400,7 +400,7 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
         OsConfigCaptureReason(reason, "'%s' is set to %d instead of %d in '%s'", option, value, desired, fileName);
     }
 
-    return value;
+    return status;
 }
 
 static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log)
@@ -450,31 +450,31 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
             if (NULL != strstr(line, "retry"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "retry", g_etcSecurityPwQualityConf, '-', '#', retry, reason, log);
+                _status = CheckPasswordRequirementFromBuffer(line, "retry", g_etcSecurityPwQualityConf, '=', '#', retry, reason, log);
             }
             else if (NULL != strstr(line, "minlen"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "minlen", g_etcSecurityPwQualityConf, '-', '#', minlen, reason, log);
+                _status = CheckPasswordRequirementFromBuffer(line, "minlen", g_etcSecurityPwQualityConf, '=', '#', minlen, reason, log);
             }
             else if (NULL != strstr(line, "minclass"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "minclass", g_etcSecurityPwQualityConf, '-', '#', minclass, reason, log);
+                _status = CheckPasswordRequirementFromBuffer(line, "minclass", g_etcSecurityPwQualityConf, '=', '#', minclass, reason, log);
             }
             else if (NULL != strstr(line, "dcredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "dcredit", g_etcSecurityPwQualityConf, '-', '#', dcredit, reason, log);
+                _status = CheckPasswordRequirementFromBuffer(line, "dcredit", g_etcSecurityPwQualityConf, '=', '#', dcredit, reason, log);
             }
             else if (NULL != strstr(line, "ucredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "ucredit", g_etcSecurityPwQualityConf, '-', '#', ucredit, reason, log);
+                _status = CheckPasswordRequirementFromBuffer(line, "ucredit", g_etcSecurityPwQualityConf, '=', '#', ucredit, reason, log);
             }
             else if (NULL != strstr(line, "lcredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "lcredit", g_etcSecurityPwQualityConf, '-', '#', lcredit, reason, log);
+                _status = CheckPasswordRequirementFromBuffer(line, "lcredit", g_etcSecurityPwQualityConf, '=', '#', lcredit, reason, log);
             }
             else if (NULL != strstr(line, "ocredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "ocredit", g_etcSecurityPwQualityConf, '-', '#', lcredit, reason, log);
+                _status = CheckPasswordRequirementFromBuffer(line, "ocredit", g_etcSecurityPwQualityConf, '=', '#', lcredit, reason, log);
             }
 
             if (_status && (0 == status))
