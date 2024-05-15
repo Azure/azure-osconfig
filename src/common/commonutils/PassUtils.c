@@ -369,7 +369,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
     return status;
 }
 
-static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* option, const char* fileName, char separator, char comment, int desired, void** reason, void* log)
+static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* option, const char* fileName, char separator, char comment, int desired, char** reason, void* log)
 {
     int value = INT_ENOENT;
     int status = ENOENT;
