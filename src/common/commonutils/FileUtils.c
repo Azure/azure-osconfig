@@ -1830,7 +1830,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'ucredit' missing", etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'ucredit' missing", etcPamdCommonPassword);
                     }
-                    else if (ucreditOption != ucredi)
+                    else if (ucreditOption != ucredit)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'ucredit' set to '%d' instead of %d", etcPamdCommonPassword, ucreditOption, ucredit);
                         OsConfigCaptureReason(reason, "In '%s' 'ucredit' set to '%d' instead of %d", etcPamdCommonPassword, ucreditOption, ucredit);
@@ -1930,7 +1930,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'lcredit' missing", etcSecurityPwQualityConf);
                         OsConfigCaptureReason(reason, "In '%s' 'lcredit' missing", etcSecurityPwQualityConf);
                     }
-                    else if (lcreditOption != option)
+                    else if (lcreditOption != lcredit)
                     {
                         OsConfigLogError(log, "CheckPasswordCreationRequirements: in '%s' 'lcredid' set to '%d' instead of %d", etcSecurityPwQualityConf, lcreditOption, lcredit);
                         OsConfigCaptureReason(reason, "In '%s' 'lcredid' set to '%d' instead of %d", etcSecurityPwQualityConf, lcreditOption, lcredit);
