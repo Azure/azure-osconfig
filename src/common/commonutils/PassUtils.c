@@ -499,13 +499,6 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
     int status = ENOENT;
 
-    if ((false == etcPamdCommonPasswordExists) && (false == etcSecurityPwQualityConfExists))
-    {
-        OsConfigLogError(log, "CheckPasswordCreationRequirements: neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
-        OsConfigCaptureReason(reason, "Neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
-        return ENOENT;
-    }
-
     if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
         status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
