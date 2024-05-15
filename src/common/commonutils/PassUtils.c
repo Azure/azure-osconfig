@@ -253,7 +253,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
             
             if ((commentCharacter == line[0]) || (EOL == line[0]))
             {
-                status = 0;
+                status = 0;                                                                                    lcredid
                 continue;
             }
             else if ((NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) && (NULL != strstr(line, pamPwQualitySo)))
@@ -273,6 +273,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                         "(retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", g_etcPamdCommonPassword, password, requisite,
                         pamPwQualitySo, retryOption, minlenOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
                     status = 0;
+                    break;
                 }
                 else
                 {
@@ -343,9 +344,9 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                     }
                     else if (lcreditOption != lcredit)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'lcredid' set to '%d' instead of %d",
+                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'lcredit' set to '%d' instead of %d",
                             g_etcPamdCommonPassword, lcreditOption, lcredit);
-                        OsConfigCaptureReason(reason, "In '%s' 'lcredid' set to '%d' instead of %d", g_etcPamdCommonPassword, lcreditOption, lcredit);
+                        OsConfigCaptureReason(reason, "In '%s' 'lcredit' set to '%d' instead of %d", g_etcPamdCommonPassword, lcreditOption, lcredit);
                     }
 
                     status = ENOENT;
