@@ -2019,7 +2019,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
     if (0 == CheckFileExists(etcSecurityPwQualityConf, NULL, log))
     {
-        if (NULL != (etcPamdCommonPasswordLine = FormatAllocateString(etcSecurityPwQualityConfLineTemplate, minclass, dcredit, ucredit, ocredit, lcredit)))
+        if (NULL != (etcSecurityPwQualityConfLine = FormatAllocateString(etcSecurityPwQualityConfLineTemplate, minclass, dcredit, ucredit, ocredit, lcredit)))
         {
             if (0 != (status = ReplaceMarkedLinesInFile(etcSecurityPwQualityConf, etcSecurityPwQualityConfMarker, etcSecurityPwQualityConfLine, '#', log)))
             {
