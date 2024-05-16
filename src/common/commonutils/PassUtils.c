@@ -528,7 +528,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     //
     // A single line for /etc/pam.d/common-password:
     //
-    // 'password requisite pam_pwquality.so retry=3 minlen=14 difok=1 lcredit=-1 ucredit=-1 ocredit=-1 dcredit=-1'
+    // 'password requisite pam_pwquality.so retry=3 minlen=14 lcredit=-1 ucredit=-1 ocredit=-1 dcredit=-1'
     //
     // Separate lines for /etc/security/pwquality.conf:
     //
@@ -560,7 +560,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     char* line = NULL;
     int status = ENOENT, _status = ENOENT;
 
-    if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, NULL, log)))
+    if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, lcredit, dcredit, ucredit, ocredit, NULL, log)))
     {
         OsConfigLogInfo(log, "SetPasswordCreationRequirements: nothing to remediate");
         return 0;
