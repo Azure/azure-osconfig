@@ -3,8 +3,6 @@
 
 #include "Internal.h"
 
-#define INT_ENOENT -999
-
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 {
     FILE* file = NULL;
