@@ -568,7 +568,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
     if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
-        if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit)))
+        if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
         {
             if (0 == (status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, etcPamdCommonPasswordMarker, line, '#', log)))
             {
