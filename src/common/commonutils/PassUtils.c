@@ -570,7 +570,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     {
         if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit)))
         {
-            if (0 != (status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, etcPamdCommonPasswordMarker, line, '#', log)))
+            if (0 == (status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, etcPamdCommonPasswordMarker, line, '#', log)))
             {
                 if (AppendToFile(g_etcPamdCommonPassword, line, strlen(line), log))
                 {
@@ -597,7 +597,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         {
             if (NULL != (line = FormatAllocateString(etcSecurityPwQualityConfLineTemplate, entries[i])))
             {
-                if (0 != (_status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i], line, '#', log)))
+                if (0 == (_status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i], line, '#', log)))
                 {
                     if (AppendToFile(g_etcSecurityPwQualityConf, line, strlen(line), log))
                     {
