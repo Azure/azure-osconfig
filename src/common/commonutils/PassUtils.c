@@ -560,7 +560,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     char* line = NULL;
     int status = ENOENT, _status = ENOENT;
 
-    if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, lcredit, dcredit, ucredit, ocredit, NULL, log)))
+    if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, minclass, lcredit, dcredit, ucredit, ocredit, NULL, log)))
     {
         OsConfigLogInfo(log, "SetPasswordCreationRequirements: nothing to remediate");
         return 0;
