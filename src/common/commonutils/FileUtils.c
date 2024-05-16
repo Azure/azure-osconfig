@@ -614,6 +614,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     long lineMax = sysconf(_SC_LINE_MAX);
     long newlineLength = newline ? (long)strlen(newline) : 0;
     bool skipLine = false;
+    bool replacedLine = false;
     int status = 0;
 
     if ((NULL == fileName) || (false == FileExists(fileName)) || (NULL == marker))
@@ -642,6 +643,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                             memset(line, 0, lineMax + 1);
                             memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
                             skipLine = false;
+                            replacedLine = true;
                         }
                         else if (commentCharacter == line[0])
                         {
@@ -689,6 +691,17 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     }
 
     FREE_MEMORY(line);
+
+    if ((0 == status) && (false == replacedLine) && (NULL != newline) && (0 != FindTextInFile(tempFileName, marker, log)))
+    {
+        OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: line '%s' did not replace any '%s' line, to be appended at end of '%s'", 
+            newline, marker, fileName);
+        
+        if (false == AppendToFile(tempFileName, newline, strlen(newline), log))
+        {
+            OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to append line '%s' at end of '%s'", newline, fileName);
+        }
+    }
 
     if (0 == status)
     {

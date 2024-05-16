@@ -153,50 +153,17 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
     if (0 == CheckFileExists(etcPamdSystemAuth, NULL, log))
     {
-        if (0 != (status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, pamFailLockLine, '#', log)))
-        {
-            if (AppendToFile(etcPamdSystemAuth, pamFailLockLine, strlen(pamFailLockLine), log))
-            {
-                OsConfigLogInfo(log, "SetLockoutForFailedPasswordAttempts: line '%s' was added to '%s'", pamFailLockLine, etcPamdSystemAuth);
-                status = 0;
-            }
-            else
-            {
-                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed to append line '%s' to '%s'", pamFailLockLine, etcPamdSystemAuth);
-            }
-        }
+        status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, pamFailLockLine, '#', log);
     }
     
     if (0 == CheckFileExists(etcPamdPasswordAuth, NULL, log))
     {
-        if (0 != (status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, pamFailLockLine, '#', log)))
-        {
-            if (AppendToFile(etcPamdPasswordAuth, pamFailLockLine, strlen(pamFailLockLine), log))
-            {
-                OsConfigLogInfo(log, "SetLockoutForFailedPasswordAttempts: line '%s' was added to '%s'", pamFailLockLine, etcPamdPasswordAuth);
-                status = 0;
-            }
-            else
-            {
-                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed to append line '%s' to '%s'", pamFailLockLine, etcPamdPasswordAuth);
-            }
-        }
+        status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, pamFailLockLine, '#', log);
     }
 
     if (0 == CheckFileExists(etcPamdLogin, NULL, log))
     {
-        if (0 != (status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, pamTally2Line, '#', log)))
-        {
-            if (AppendToFile(etcPamdLogin, pamTally2Line, strlen(pamTally2Line), log))
-            {
-                OsConfigLogInfo(log, "SetLockoutForFailedPasswordAttempts: line '%s' was added to '%s'", pamTally2Line, etcPamdLogin);
-                status = 0;
-            }
-            else
-            {
-                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed to append line '%s' to '%s'", pamTally2Line, etcPamdLogin);
-            }
-        }
+        status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, pamTally2Line, '#', log);
     }
 
     return status;
@@ -570,19 +537,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     {
         if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
         {
-            if ((0 != (status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, etcPamdCommonPasswordMarker, line, '#', log))) || 
-                (0 != FindTextInFile(g_etcPamdCommonPassword, etcPamdCommonPasswordMarker, log)))
-            {
-                if (AppendToFile(g_etcPamdCommonPassword, line, strlen(line), log))
-                {
-                    OsConfigLogInfo(log, "SetPasswordCreationRequirements: line '%s' was added to '%s'", line, g_etcPamdCommonPassword);
-                    status = 0;
-                }
-                else
-                {
-                    OsConfigLogError(log, "SetPasswordCreationRequirements: failed to append line '%s' to '%s'", line, g_etcPamdCommonPassword);
-                }
-            }
+            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, etcPamdCommonPasswordMarker, line, '#', log);
         }
         else
         {
@@ -598,20 +553,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         {
             if (NULL != (line = FormatAllocateString(etcSecurityPwQualityConfLineTemplate, entries[i])))
             {
-                if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i], line, '#', log))) ||
-                    (0 != FindTextInFile(g_etcSecurityPwQualityConf, entries[i], log)))
-                {
-                    if (AppendToFile(g_etcSecurityPwQualityConf, line, strlen(line), log))
-                    {
-                        OsConfigLogInfo(log, "SetPasswordCreationRequirements: line '%s' was added to '%s'", line, g_etcSecurityPwQualityConf);
-                        _status = 0;
-                    }
-                    else
-                    {
-                        OsConfigLogError(log, "SetPasswordCreationRequirements: failed to append line '%s' to '%s'", line, g_etcSecurityPwQualityConf);
-                    }
-                }
-
+                _status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i], line, '#', log);
                 FREE_MEMORY(line);
             }
             else
