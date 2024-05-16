@@ -1995,11 +1995,11 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(-333, integers[2]);
     FREE_MEMORY(integers);
 
-    EXPECT_EQ(0, ConvertStringToIntegers("14,4,-1,-1,-1,-1", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(0, ConvertStringToIntegers("3,14,4,-1,-1,-1,-1", ',', &integers, &numIntegers, nullptr));
     EXPECT_EQ(7, numIntegers);
-    EXPECT_EQ(14, integers[0]);
-    EXPECT_EQ(4, integers[1]);
-    EXPECT_EQ(-1, integers[2]);
+    EXPECT_EQ(3, integers[0]);
+    EXPECT_EQ(14, integers[1]);
+    EXPECT_EQ(4, integers[2]);
     EXPECT_EQ(-1, integers[3]);
     EXPECT_EQ(-1, integers[4]);
     EXPECT_EQ(-1, integers[5]);
