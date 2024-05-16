@@ -1452,28 +1452,28 @@ static char* AuditEnsureIpv6ProtocolIsEnabled(void* log)
 static char* AuditEnsureDccpIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckTextNotFoundInFolder(g_etcModProbeD, "install dccp /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install dccp /bin/true", &reason, log);
     return reason;
 }
 
 static char* AuditEnsureSctpIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckTextNotFoundInFolder(g_etcModProbeD, "install sctp /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install sctp /bin/true", &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledSupportForRds(void* log)
 {
     char* reason = NULL;
-    CheckTextNotFoundInFolder(g_etcModProbeD, "install rds /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install rds /bin/true", &reason, log);
     return reason;
 }
 
 static char* AuditEnsureTipcIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckTextNotFoundInFolder(g_etcModProbeD, "install tipc /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install tipc /bin/true", &reason, log);
     return reason;
 }
 
@@ -1511,7 +1511,7 @@ static char* AuditEnsurePasswordReuseIsLimited(void* log)
 static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckTextNotFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", &reason, log);
     return reason;
 }
 
@@ -1571,35 +1571,35 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(void* log)
 static char* AuditEnsureDisabledInstallationOfCramfsFileSystem(void* log)
 {
     char* reason = NULL;
-    CheckTextNotFoundInFolder(g_etcModProbeD, "install cramfs", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install cramfs", &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfFreevxfsFileSystem(void* log)
 {
     char* reason = NULL;
-    CheckTextNotFoundInFolder(g_etcModProbeD, "install freevxfs", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install freevxfs", &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfHfsFileSystem(void* log)
 {
     char* reason = NULL;
-    CheckTextNotFoundInFolder(g_etcModProbeD, "install hfs", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install hfs", &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfHfsplusFileSystem(void* log)
 {
     char* reason = NULL;
-    CheckTextNotFoundInFolder(g_etcModProbeD, "install hfsplus", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install hfsplus", &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfJffs2FileSystem(void* log)
 {
     char* reason = NULL;
-    CheckTextNotFoundInFolder(g_etcModProbeD, "install jffs2", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install jffs2", &reason, log);
     return reason;
 }
 
