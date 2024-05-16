@@ -97,9 +97,14 @@ int CheckTextFoundInFolder(const char* directory, const char* text, char** reaso
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
 int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log);
 int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
+char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, void* log);
+int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, void* log);
 int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, void* log);
 int SetEtcLoginDefValue(const char* name, const char* value, void* log);
-int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, void* log);
+int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, void* log);
+int SetLockoutForFailedPasswordAttempts(void* log);
+int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log);
+int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);

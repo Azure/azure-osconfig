@@ -1740,14 +1740,23 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
 TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 {
     const char* goodTestFileContents[] = {
+        "auth required pam_tally2.so deny=5 unlock_time=900 even_deny_root",
+        "auth required pam_tally2.so file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root",
+        "auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root",
+        "auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root",
+        "auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900",
+        "auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900",
         "auth required pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=2000",
         "auth required pam_faillock.so deny=3 unlock_time=600",
         "auth        required      pam_faillock.so preauth silent audit deny=1 unlock_time=2000",
+        "# comment line",
         "auth      required pam_tally2.so file=/var/log/tallylog deny=1 even_deny_root unlock_time=2000",
         "auth required      pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=210",
         "auth required pam_tally2.so     file=/var/log/tallylog deny=2 even_deny_root unlock_time=345",
         "auth required pam_tally2.so file=/var/log/tallylog     deny=3 unlock_time=555",
         "auth required pam_tally2.so file=/var/log/tallylog deny=3     even_deny_root unlock_time=12",
+        "# comment line",
+        "# comment line",
         "auth required pam_tally2.so file=/var/log/tallylog deny=4    unlock_time=3000",
         "auth required pam_tally2.so file=/var/log/tallylog deny=4 even_deny_root     unlock_time=1",
         "auth required pam_tally2.so file=/var/log/tallylog deny=5 unlock_time=203",
@@ -1756,13 +1765,14 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "This is a positive test\nAnother one with auth test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
         "This is a positive test\nauth required pam_faillock.so deny=3 unlock_time=543",
         "This is a positive test\nAnother one with auth test\nauth required pam_faillock.so deny=5 unlock_time=647"
+        "auth required pam_tally2.so file=/var/log/tallylog deny=0 unlock_time=888"
     };
 
     const char* badTestFileContents[] = {
         "auth optional pam_tally2.so file=/var/log/tallylog deny=2 even_deny_root unlock_time=1000",
-        "auth        required      pam_tally2.so  file=/var/log/foolog deny=3 even_deny_root unlock_time=100",
+        "auth        required      pam_tally2.so  file=/var/log/foolog even_deny_root unlock_time=100",
         "auth required  pam_tally.so  file=/var/log/tallylog deny=1 even_deny_root unlock_time=10",
-        "auth required pam_tally2.so  deny=5 even_deny_root unlock_time=2000",
+        "auth required pam_tally2.so  deny=5 even_deny_root",
         "auth required  pam_tally.so  file=/var/log/tallylog deny=1 even_deny_root unlock_time=10",
         "auth required  pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=-1",
         "auth required  pam_tally2.so file=/var/log/tallylog deny=-1 unlock_time=-1",
@@ -1779,16 +1789,9 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "This is a negative auth test",
         "This is a negative test",
         "auth	[success=1 default=ignore]	pam_unix.so nullok\n"
-        "# here's the fallback if no module succeeds\n"
         "auth	requisite			pam_deny.so\n"
-        "# prime the stack with a positive return value if there isn't one already;\n"
-        "# this avoids us returning an error just because nothing sets a success code\n"
-        "# since the modules above will each just jump around\n"
         "auth	required			pam_permit.so\n"
-        "auth required pam_tally2.so file=/var/log/tallylog deny=0 unlock_time=888\n"
-        "# and here are more per-package modules (the Additional block)\n"
         "auth	optional			pam_cap.so\n" 
-        "# end of pam-auth-update config"
     };
 
     int goodTestFileContentsSize = ARRAY_SIZE(goodTestFileContents);
@@ -1796,20 +1799,27 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 
     int i = 0;
 
-    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(nullptr, nullptr, nullptr));
-    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts("~file_that_does_not_exist", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLockoutForFailedPasswordAttempts(nullptr, nullptr, 0, nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckLockoutForFailedPasswordAttempts("~file_that_does_not_exist", "pam_tally2.so", '#', nullptr, nullptr));
 
     for (i = 0; i < goodTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, goodTestFileContents[i]));
-        EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr, nullptr));
+        if (NULL != strstr(goodTestFileContents[i], "pam_tally2.so"))
+        {
+            EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, "pam_tally2.so", '#', nullptr, nullptr)); 
+        }
+        else
+        {
+            EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, "pam_faillock.so", '#', nullptr, nullptr));
+        }
         EXPECT_TRUE(Cleanup(m_path));
     }
 
     for (i = 0; i < badTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, badTestFileContents[i]));
-        EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr, nullptr));
+        EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(m_path, "pam_tally2.so", '#', nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
 }
@@ -2035,6 +2045,31 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
         "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
 
+    const char* marker5 = "Append";
+    const char* newline5 = "Append this line if not used to replace another";
+    const char* outFile5 =
+        "+Test line one\n"
+        "#   Test line two   \n"
+        " Test Line 3 +\n"
+        "Test KLine 4\n"
+        "abc Test4 0456 # rt 4 $"
+        "Test2:     12 $!    test test\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1\n"
+        "Append this line if not used to replace another";
+
+    const char* marker6 = "0456";
+    const char* newline6 = "Append this line if not used to replace another\n";
+    const char* outFile6 =
+        "+Test line one\n"
+        "#   Test line two   \n"
+        " Test Line 3 +\n"
+        "Test KLine 4\n"
+        "Append this line if not used to replace another\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
+
+
     char* contents = nullptr;
 
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
@@ -2066,6 +2101,20 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
 
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker4, "", '#', nullptr));
     EXPECT_STREQ(outFile4, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(CreateTestFile(m_path, inFile));
+
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker5, newline5, '#', nullptr));
+    EXPECT_STREQ(outFile5, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(CreateTestFile(m_path, inFile));
+
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker6, newline6, '#', nullptr));
+    EXPECT_STREQ(outFile6, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(m_path));

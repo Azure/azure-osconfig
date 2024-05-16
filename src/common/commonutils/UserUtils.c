@@ -3151,7 +3151,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
     FreeUsersList(&userList, userListSize);
 
-    if (0 != status)
+    if (0 == status)
     {
         for (j = 0; j < namesLength; j++)
         {
@@ -3209,7 +3209,7 @@ int RemoveUserAccounts(const char* names, void* log)
 
     if (0 != CheckUserAccountsNotFound(names, NULL, log))
     {
-        OsConfigLogError(log, "RemoveUserAccounts: no such user accounts exist");
+        OsConfigLogInfo(log, "RemoveUserAccounts: user accounts '%s' are not found", names);
         return 0;
     }
 
@@ -3254,147 +3254,4 @@ int RemoveUserAccounts(const char* names, void* log)
     FreeUsersList(&userList, userListSize);
 
     return status;
-}
-
-int CheckPasswordCreationRequirements(int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log)
-{
-    const char* etcPamdCommonPassword = "/etc/pam.d/common-password";
-    const char* etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
-    const char* suse = "SUSE";
-    int minlenOption = 0;
-    int minclassOption = 0;
-    int dcreditOption = 0;
-    int ucreditOption = 0;
-    int ocreditOption = 0;
-    int lcreditOption = 0;
-    int result = 0;
-
-    if (IsCurrentOs(suse, log))
-    {
-        if ((minlen == (minlenOption = GetIntegerOptionFromFile(etcPamdCommonPassword, "minlen", '=', log))) &&
-            ((minclass == (minclassOption = GetIntegerOptionFromFile(etcPamdCommonPassword, "minclass", '=', log))) ||
-            ((dcredit == (dcreditOption = GetIntegerOptionFromFile(etcPamdCommonPassword, "dcredit", '=', log))) &&
-            (ucredit == (ucreditOption = GetIntegerOptionFromFile(etcPamdCommonPassword, "ucredit", '=', log))) &&
-            (ocredit == (ocreditOption = GetIntegerOptionFromFile(etcPamdCommonPassword, "ocredit", '=', log))) &&
-            (lcredit == (lcreditOption = GetIntegerOptionFromFile(etcPamdCommonPassword, "lcredit", '=', log))))))
-        {
-            OsConfigCaptureSuccessReason(reason, "'%s' detected and '%s' contains the expected password creation requirements (minlen: %d, minclass: %d, dcredit: %d, "
-                "ucredit: %d, ocredit: %d, lcredit: %d)", suse, etcPamdCommonPassword, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
-        }
-        else
-        {
-            OsConfigCaptureReason(reason, "'%s' detected", suse);
-
-            if (-999 == minclassOption)
-            {
-                OsConfigCaptureReason(reason, "In '%s' 'minlen' missing", suse, etcPamdCommonPassword);
-            }
-            else
-            {
-                OsConfigCaptureReason(reason, "In '%s' 'minlen' set to %d instead of 14", suse, etcPamdCommonPassword, minlenOption);
-            }
-
-            if (-999 == dcreditOption)
-            {
-                OsConfigCaptureReason(reason, "'dcredit' missing");
-            }
-            else
-            {
-                OsConfigCaptureReason(reason, "'dcredit' set to '%d' instead of -1", dcreditOption);
-            }
-
-            if (-999 == ucreditOption)
-            {
-                OsConfigCaptureReason(reason, "'ucredit' missing");
-            }
-            else
-            {
-                OsConfigCaptureReason(reason, "'ucredit' set to '%d' instead of -1", ucreditOption);
-            }
-
-            if (-999 == ocreditOption)
-            {
-                OsConfigCaptureReason(reason, "'ocredit' missing");
-            }
-            else
-            {
-                OsConfigCaptureReason(reason, "'ocredit' set to '%d' instead of -1", ocreditOption);
-            }
-
-            if (-999 == lcreditOption)
-            {
-                OsConfigCaptureReason(reason, "'lcredit' missing");
-            }
-            else
-            {
-                OsConfigCaptureReason(reason, "'lcredid' set to '%d' instead of -1", lcreditOption);
-            }
-
-            result = ENOENT;
-        }
-    }
-    else
-    {
-        if ((CheckFileExists(etcSecurityPwQualityConf, NULL, log)) &&
-            ((4 == (minclassOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "minclass", '=', log)) ||
-            ((-1 == (dcreditOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "dcredit", '=', log))) &&
-            (-1 == (ucreditOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "ucredit", '=', log))) &&
-            (-1 == (ocreditOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "ocredit", '=', log))) &&
-            (-1 == (lcreditOption = GetIntegerOptionFromFile(etcSecurityPwQualityConf, "lcredit", '=', log)))))))
-        {
-            OsConfigCaptureSuccessReason(reason, "'%s' contains the expected password creation requirements (minlen: %d, minclass: %d, dcredit: %d, ucredit: %d, "
-                "ocredit: %d, lcredit: %d)", etcSecurityPwQualityConf, minlenOption, minclassOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
-        }
-        else
-        {
-            if (-999 == minclassOption)
-            {
-                OsConfigCaptureReason(reason, "'%s' mising, or 'minclass' missing", etcSecurityPwQualityConf);
-            }
-            else
-            {
-                OsConfigCaptureReason(reason, "'%s' mising, or 'minclass' set to %d instead of 4", etcSecurityPwQualityConf, minclassOption);
-            }
-
-            if (-999 == dcreditOption)
-            {
-                OsConfigCaptureReason(reason, "'dcredit' missing");
-            }
-            else
-            {
-                OsConfigCaptureReason(reason, "'dcredit' set to '%d' instead of -1", dcreditOption);
-            }
-
-            if (-999 == ucreditOption)
-            {
-                OsConfigCaptureReason(reason, "'ucredit' missing");
-            }
-            else
-            {
-                OsConfigCaptureReason(reason, "'ucredit' set to '%d' instead of -1", ucreditOption);
-            }
-
-            if (-999 == ocreditOption)
-            {
-                OsConfigCaptureReason(reason, "'ocredit' missing");
-            }
-            else
-            {
-                OsConfigCaptureReason(reason, "'ocredit' set to '%d' instead of -1", ocreditOption);
-            }
-
-            if (-999 == lcreditOption)
-            {
-                OsConfigCaptureReason(reason, "'lcredit' missing");
-            }
-            else
-            {
-                OsConfigCaptureReason(reason, "'lcredid' set to '%d' instead of -1", lcreditOption);
-            }
-
-            result = ENOENT;
-        }
-    }
-
-    return result;
 }

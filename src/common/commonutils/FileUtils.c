@@ -126,6 +126,12 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         {
             if (true == (result = SaveToFile(tempFileName, "w", fileContents, strlen(fileContents), log)))
             {
+                // If there is no EOL at the end of file, add one before the append
+                if (EOL != fileContents[strlen(fileContents) - 1])
+                {
+                    SaveToFile(tempFileName, "a", "\n", 1, log);
+                }
+
                 result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log);
             }
             
@@ -612,6 +618,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     long lineMax = sysconf(_SC_LINE_MAX);
     long newlineLength = newline ? (long)strlen(newline) : 0;
     bool skipLine = false;
+    bool replacedLine = false;
     int status = 0;
 
     if ((NULL == fileName) || (false == FileExists(fileName)) || (NULL == marker))
@@ -640,6 +647,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                             memset(line, 0, lineMax + 1);
                             memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
                             skipLine = false;
+                            replacedLine = true;
                         }
                         else if (commentCharacter == line[0])
                         {
@@ -655,11 +663,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                     {
                         if (EOF == fputs(line, tempHandle))
                         {
-                            if (0 == (status = errno))
-                            {
-                                status = EPERM;
-                            }
-
+                            status =  (0 == errno) ? EPERM : errno;
                             OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
                         }
                     }
@@ -691,6 +695,17 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     }
 
     FREE_MEMORY(line);
+
+    if ((0 == status) && (false == replacedLine) && (NULL != newline) && (0 != FindTextInFile(tempFileName, marker, log)))
+    {
+        OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: line '%s' did not replace any '%s' line, to be appended at end of '%s'", 
+            newline, marker, fileName);
+        
+        if (false == AppendToFile(tempFileName, newline, strlen(newline), log))
+        {
+            OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to append line '%s' at end of '%s'", newline, fileName);
+        }
+    }
 
     if (0 == status)
     {
@@ -1275,7 +1290,7 @@ int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char
     return result;
 }
 
-static char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
+char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
 {
     char* found = NULL;
     char* internal = NULL;
@@ -1312,10 +1327,10 @@ static char* GetStringOptionFromBuffer(const char* buffer, const char* option, c
     return result;
 }
 
-static int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
+int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
 {
     char* stringValue = NULL;
-    int value = -999;
+    int value = INT_ENOENT;
 
     if (NULL != (stringValue = GetStringOptionFromBuffer(buffer, option, separator, log)))
     {
@@ -1358,7 +1373,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log)
 {
     char* contents = NULL;
-    int result = -999;
+    int result = INT_ENOENT;
 
     if (option && (0 == CheckFileExists(fileName, NULL, log)))
     {
@@ -1368,7 +1383,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
         }
         else
         {
-            if (-999 != (result = GetIntegerOptionFromBuffer(contents, option, separator, log)))
+            if (INT_ENOENT != (result = GetIntegerOptionFromBuffer(contents, option, separator, log)))
             {
                 OsConfigLogInfo(log, "GetIntegerOptionFromFile: found '%d' in '%s' for '%s'", result, fileName, option);
             }
@@ -1386,7 +1401,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
 
 int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, void* log)
 {
-    int valueFromFile = -999;
+    int valueFromFile = INT_ENOENT;
     int i = 0;
     int result = ENOENT;
 
@@ -1396,7 +1411,7 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
         return EINVAL;
     }
 
-    if (-999 != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
+    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
     {
         for (i = 0; i < numberOfValues; i++)
         {
@@ -1423,10 +1438,10 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
 
 int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, void* log)
 {
-    int valueFromFile = -999;
+    int valueFromFile = INT_ENOENT;
     int result = ENOENT;
 
-    if (-999 != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
+    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
     {
         if (valueFromFile <= value)
         {
@@ -1496,77 +1511,6 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
     }
 
     FREE_MEMORY(newline);
-
-    return status;
-}
-
-int CheckLockoutForFailedPasswordAttempts(const char* fileName, char** reason, void* log)
-{
-    char* contents = NULL;
-    char* buffer = NULL;
-    char* value = NULL;
-    int option = 0;
-    int status = ENOENT;
-
-    if (0 == CheckFileExists(fileName, reason, log))
-    {
-        if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
-        {
-            OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: cannot read from '%s'", fileName);
-        }
-        else
-        {
-            buffer = contents;
-
-            // Example of valid lines: 
-            //
-            // auth required pam_tally2.so file=/var/log/tallylog deny=5 even_deny_root unlock_time=2000
-            // auth required pam_faillock.so deny=1 even_deny_root unlock_time=300
-            //
-            // To pass, all attributes must be present, including either pam_faillock.so or pam_tally2.so, 
-            // the deny value must be between 1 and 5 (inclusive), the unlock_time set to a positive value, 
-            // with any number of spaces between.The even_deny_root and any other attribute like it are optional.
-            //
-            // There can be multiple 'auth' lines in the file. Only the right one matters.
-
-            while (NULL != (value = GetStringOptionFromBuffer(buffer, "auth", ' ', log)))
-            {
-                if (((0 == strcmp("required", value)) && FreeAndReturnTrue(value)) &&
-                    (((NULL != (value = GetStringOptionFromBuffer(buffer, "required", ' ', log))) && (0 == strcmp("pam_faillock.so", value)) && FreeAndReturnTrue(value)) ||
-                    (((NULL != (value = GetStringOptionFromBuffer(buffer, "required", ' ', log))) && (0 == strcmp("pam_tally2.so", value)) && FreeAndReturnTrue(value)) &&
-                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "pam_tally2.so", ' ', log))) && (0 == strcmp("file=/var/log/tallylog", value)) && FreeAndReturnTrue(value)) &&
-                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "file", '=', log))) && (0 == strcmp("/var/log/tallylog", value)) && FreeAndReturnTrue(value)))) &&
-                    (0 < (option = GetIntegerOptionFromBuffer(buffer, "deny", '=', log))) && (6 > option) && (0 < (option = GetIntegerOptionFromBuffer(buffer, "unlock_time", '=', log))))
-                {
-                    status = 0;
-                    break;
-                }
-                else if (NULL == (buffer = strchr(buffer, EOL)))
-                {
-                    break;
-                }
-                else
-                {
-                    buffer += 1;
-                }
-            }
-
-            FREE_MEMORY(contents);
-        }
-    }
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
-        OsConfigCaptureSuccessReason(reason, "Valid lockout for failed password attempts line found in '%s'", fileName);
-    }
-    else
-    {
-        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
-        OsConfigCaptureReason(reason, "'%s' does not exist, or lockout for failed password attempts not set, "
-            "'auth', 'pam_faillock.so' or 'pam_tally2.so' and 'file=/var/log/tallylog' not found, or 'deny' or "
-            "'unlock_time' not found, or 'deny' not in between 1 and 5, or 'unlock_time' not set to greater than 0", fileName);
-    }
 
     return status;
 }

@@ -121,7 +121,6 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, void* log);
 int CheckUserAccountsNotFound(const char* names, char** reason, void* log);
 int RemoveUserAccounts(const char* names, void* log);
-int CheckPasswordCreationRequirements(int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log);
 
 #ifdef __cplusplus
 }
