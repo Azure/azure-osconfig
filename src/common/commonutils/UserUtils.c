@@ -3209,7 +3209,7 @@ int RemoveUserAccounts(const char* names, void* log)
 
     if (0 != CheckUserAccountsNotFound(names, NULL, log))
     {
-        OsConfigLogInfo(log, "RemoveUserAccounts: user accounts '%s' are not found");
+        OsConfigLogInfo(log, "RemoveUserAccounts: user accounts '%s' are not found", names);
         return 0;
     }
 
