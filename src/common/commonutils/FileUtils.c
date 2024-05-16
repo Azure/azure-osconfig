@@ -696,7 +696,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 
     FREE_MEMORY(line);
 
-    if ((0 == status) && (false == replacedLine) && (NULL != newline) && (0 != FindTextInFile(tempFileName, marker, log)))
+    if ((0 == status) && (false == replacedLine) && (NULL != newline))
     {
         OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: line '%s' did not replace any '%s' line, to be appended at end of '%s'", 
             newline, marker, fileName);
