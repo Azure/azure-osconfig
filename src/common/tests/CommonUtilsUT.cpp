@@ -2046,7 +2046,7 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
         "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
 
     const char* marker5 = "Append";
-    const char* newline5 = "Append this line if not used to replace another";
+    const char* newline5 = "Append this line if not used to replace another\n";
     const char* outFile5 =
         "+Test line one\n"
         "#   Test line two   \n"

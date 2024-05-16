@@ -143,7 +143,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     // - 'unlock_time=900': allow access after 900 seconds (15 minutes) following a failed attempt
 
     const char* pamTally2Line = "auth required pam_tally2.so file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root\n";
-    const char* pamFailLockLine = "auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root";
+    const char* pamFailLockLine = "auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_roo\nt";
     const char* etcPamdLogin = "/etc/pam.d/login";
     const char* etcPamdSystemAuth = "/etc/pam.d/system-auth"; 
     const char* etcPamdPasswordAuth = "/etc/pam.d/password-auth";
@@ -517,7 +517,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     // - dcredit: the minimum number of digits required in the password  (negative means no requirement)
     
     const char* etcPamdCommonPasswordLineTemplate = "password requisite pam_pwquality.so retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
-    const char* etcSecurityPwQualityConfLineTemplate = "%s = %d";
+    const char* etcSecurityPwQualityConfLineTemplate = "%s = %d\n";
     const char* etcPamdCommonPasswordMarker = "pam_pwquality.so";
 
     const char* entries[] = { "minclass", "dcredit", "ucredit", "ocredit", "lcredit" };
