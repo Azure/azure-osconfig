@@ -3151,7 +3151,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
     FreeUsersList(&userList, userListSize);
 
-    if (0 != status)
+    if (0 == status)
     {
         for (j = 0; j < namesLength; j++)
         {
@@ -3209,7 +3209,7 @@ int RemoveUserAccounts(const char* names, void* log)
 
     if (0 != CheckUserAccountsNotFound(names, NULL, log))
     {
-        OsConfigLogError(log, "RemoveUserAccounts: no such user accounts exist");
+        OsConfigLogInfo(log, "RemoveUserAccounts: user accounts '%s' are not found");
         return 0;
     }
 
