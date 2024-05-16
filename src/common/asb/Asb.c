@@ -1021,7 +1021,7 @@ static char* AuditEnsureSldapdNotInstalled(void* log)
 static char* AuditEnsureBind9NotInstalled(void* log)
 {
     char* reason = NULL;
-    CheckPackageInstalled(g_bind9, &reason, log);
+    CheckPackageNotInstalled(g_bind9, &reason, log);
     return reason;
 }
 
