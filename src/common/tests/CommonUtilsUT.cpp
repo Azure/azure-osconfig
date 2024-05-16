@@ -2066,7 +2066,6 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
         " Test Line 3 +\n"
         "Test KLine 4\n"
         "Append this line if not used to replace another\n"
-        "Test2:     12 $!    test test\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
         "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
 
