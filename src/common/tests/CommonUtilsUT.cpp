@@ -2058,6 +2058,19 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
         "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1\n"
         "Append this line if not used to replace another";
 
+    const char* marker6 = "+";
+    const char* newline6 = "Append this line if not used to replace another\n";
+    const char* outFile6 =
+        "Append this line if not used to replace another\n"
+        "#   Test line two   \n"
+        " Test Line 3 +\n"
+        "Test KLine 4\n"
+        "abc Test4 0456 # rt 4 $"
+        "Test2:     12 $!    test test\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1;
+
+
     char* contents = nullptr;
 
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
@@ -2096,6 +2109,13 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
 
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker5, newline5, '#', nullptr));
     EXPECT_STREQ(outFile5, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(CreateTestFile(m_path, inFile));
+
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker6, newline6, '#', nullptr));
+    EXPECT_STREQ(outFile6, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(m_path));
