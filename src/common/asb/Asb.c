@@ -3332,14 +3332,15 @@ static int RemediateEnsureAvahiDaemonServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_avahiDaemon, log);
-    return (0 == strncmp(g_pass, AuditEnsureAvahiDaemonServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
+    return CheckDaemonNotActive(g_avahiDaemon, NULL, log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureCupsServiceisDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_cups, log);
-    return UninstallPackage(g_cups, log);
+    UninstallPackage(g_cups, log);
+    return CheckDaemonNotActive(g_cups, NULL, log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePostfixPackageIsUninstalled(char* value, void* log)
