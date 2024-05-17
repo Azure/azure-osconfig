@@ -696,7 +696,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 
     FREE_MEMORY(line);
 
-    if ((0 == status) && (false == replacedLine) && (NULL != newline) && (0 != FindTextInFile(tempFileName, marker, log)))
+    if ((0 == status) && (false == replacedLine) && (NULL != newline))
     {
         OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: line '%s' did not replace any '%s' line, to be appended at end of '%s'", 
             newline, marker, fileName);
@@ -1054,7 +1054,7 @@ int CheckTextNotFoundInFolder(const char* directory, const char* text, char** re
     }
     else if (0 == result)
     {
-        OsConfigCaptureSuccessReason(reason, "Text '%s' found in at least one file under directory '%s'", text, directory);
+        OsConfigCaptureReason(reason, "Text '%s' found in at least one file under directory '%s'", text, directory);
         result = ENOENT;
     }
 
@@ -1071,7 +1071,7 @@ int CheckTextFoundInFolder(const char* directory, const char* text, char** reaso
     }
     else if (ENOENT == result)
     {
-        OsConfigCaptureSuccessReason(reason, "Text '%s' not found in any file under directory '%s'", text, directory);
+        OsConfigCaptureReason(reason, "Text '%s' not found in any file under directory '%s'", text, directory);
     }
 
     return result;

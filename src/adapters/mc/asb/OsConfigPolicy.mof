@@ -660,7 +660,7 @@ instance of OsConfigResource as $OsConfigResource42ref
     ReportedObjectName = "auditEnsurePasswordCreationRequirements";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePasswordCreationRequirements";
-    DesiredObjectValue = "14,4,-1,-1,-1,-1";
+    DesiredObjectValue = "3,14,4,-1,-1,-1,-1";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "LinuxSecurityBaseline";

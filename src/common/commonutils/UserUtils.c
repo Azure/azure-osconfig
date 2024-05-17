@@ -1981,6 +1981,7 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, void* l
     {
         RemovePrefixBlanks(textResult);
         RemovePrefixUpTo(textResult, ' ');
+        RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
 
         if (0 == strcmp(textResult, encryption))
@@ -2014,7 +2015,7 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, void* l
 
 int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
 {
-    const char* encryptMethod = "ENCRYPT_METHOD ";
+    const char* encryptMethod = "ENCRYPT_METHOD";
     char* encryption = EncryptionName(algorithm);
     int status = 0;
 
