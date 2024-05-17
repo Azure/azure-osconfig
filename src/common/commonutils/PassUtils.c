@@ -229,8 +229,6 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     const char* marker = "auth";
     int status = ENOENT, _status = 0;
 
-    // ReplaceMarkedLinesInFile does a secure file edit
-
     if (0 == CheckFileExists(etcPamdSystemAuth, NULL, log))
     {
         status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, pamFailLockLine, '#', log);

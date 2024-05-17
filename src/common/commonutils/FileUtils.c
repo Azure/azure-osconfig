@@ -707,7 +707,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         }
     }
 
-    if (0 == status)
+    if ((0 == status) && (false == replacedLine))
     {
         if (0 != (status = rename(tempFileName, fileName)))
         {
