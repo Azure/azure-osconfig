@@ -78,16 +78,17 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
             }
             else
             {
-                OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
-                status = ENOMEM;
+                OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: failed reading '%s", g_etcPamdCommonPassword);
+                status = ENOENT;
             }
 
             FREE_MEMORY(newline);
         }
         else
         {
-            OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: failed reading '%s", g_etcPamdCommonPassword);
-            status = EACCES;
+            
+            OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
+            status = ENOMEM;
         }
     }
 
@@ -286,7 +287,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     const char* etcPamdPasswordAuthCopy = "/etc/pam.d/~password-auth.copy";
     const char* marker = "auth";
     char* original = NULL;
-    int status = ENOENT, _status = ENOENT;
+    int status = ENOENT, _status = 0;
 
     if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
     {
@@ -312,6 +313,11 @@ int SetLockoutForFailedPasswordAttempts(void* log)
             }
 
             FREE_MEMORY(original);
+        }
+        else
+        {
+            OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed reading '%s", g_etcPamdSystemAuth);
+            status = ENOENT;
         }
     }
     
@@ -340,12 +346,28 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
             FREE_MEMORY(original);
         }
+        else
+        {
+            OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed reading '%s", etcPamdPasswordAuth);
+            _status = ENOENT;
+        }
 
         if (_status && (0 == status))
         {
             status = _status;
         }
     }
+
+    /*
+    [2024-05-17 14:38:12] [main.c:526] Step 208 of 434
+    [2024-05-17 14:38:12] [main.c:536] Running desired test 'SecurityBaseline.remediateEnsureLockoutForFailedPasswordAttempts'
+    [2024-05-17 14:38:12] [FileUtils.c:285] CheckFileExists: file '/etc/pam.d/system-auth' is not found
+    [2024-05-17 14:38:12] [FileUtils.c:285] CheckFileExists: file '/etc/pam.d/password-auth' is not found
+    [2024-05-17 14:38:12] [FileUtils.c:280] CheckFileExists: file '/etc/pam.d/login' exists
+    [2024-05-17 14:38:12] [Asb.c:5199] AsbMmiSet(SecurityBaseline, remediateEnsureLockoutForFailedPasswordAttempts, , 0) returning 2
+    [2024-05-17 14:38:12] [SecurityBaseline.c:160] MmiSet(0x77c3e1b1d0a0, SecurityBaseline, remediateEnsureLockoutForFailedPasswordAttempts, , 0) returning 2
+    [2024-05-17 14:38:12] [main.c:458] [ERROR] Assertion failed, expected result '0', actual '2'
+    */
 
     if (0 == CheckFileExists(etcPamdLogin, NULL, log))
     {
@@ -371,6 +393,11 @@ int SetLockoutForFailedPasswordAttempts(void* log)
             }
 
             FREE_MEMORY(original);
+        }
+        else
+        {
+            OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed reading '%s", etcPamdLogin);
+            _status = ENOENT;
         }
 
         if (_status && (0 == status))
@@ -774,6 +801,11 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
                 FREE_MEMORY(original);
             }
+            else
+            {
+                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed reading '%s", g_etcPamdCommonPassword);
+                status = EACCES;
+            }
 
             FREE_MEMORY(line);
         }
@@ -807,6 +839,11 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
                     }
 
                     FREE_MEMORY(original);
+                }
+                else
+                {
+                    OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed reading '%s", g_etcSecurityPwQualityConf);
+                    status = EACCES;
                 }
 
                 FREE_MEMORY(line);
