@@ -151,7 +151,6 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     const char* etcPamdSystemAuthCopy = "/etc/pam.d/~system-auth.copy";
     const char* etcPamdPasswordAuthCopy = "/etc/pam.d/~password-auth.copy";
     const char* marker = "auth";
-
     char* original = NULL;
     int status = ENOENT, _status = ENOENT;
 
@@ -599,12 +598,11 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     const char* etcPamdCommonPasswordMarker = "pam_pwquality.so";
     const char* etcPamdCommonPasswordCopy = "/etc/pam.d/~common-password.copy";
     const char* etcSecurityPwQualityConfCopy = "/etc/security/~pwquality.conf.copy";
-    
     const char* entries[] = { "minclass", "dcredit", "ucredit", "ocredit", "lcredit" };
     int numEntries = ARRAY_SIZE(entries);
-    int i = 0;
-
+    char* original = NULL;
     char* line = NULL;
+    int i = 0;
     int status = ENOENT, _status = ENOENT;
 
     if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, minclass, lcredit, dcredit, ucredit, ocredit, NULL, log)))
@@ -625,7 +623,8 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
                     {
                         if (0 != (status = rename(etcPamdCommonPasswordCopy, g_etcPamdCommonPassword)))
                         {
-                            OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: rename('%s' to '%s') failed with %d", etcPamdCommonPasswordCopy, g_etcPamdCommonPassword, errno);
+                            OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: rename('%s' to '%s') failed with %d", 
+                                etcPamdCommonPasswordCopy, g_etcPamdCommonPassword, errno);
                             status = (0 == errno) ? ENOENT : errno;
                         }
                     }
@@ -634,7 +633,8 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
                 }
                 else
                 {
-                    OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed saving copy of '%s' to temp file '%s", etcPamdSystemAuth, etcPamdSystemAuthCopy);
+                    OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed saving copy of '%s' to temp file '%s", 
+                        g_etcPamdCommonPassword, etcPamdCommonPasswordCopy);
                     status = EPERM;
                 }
 
@@ -663,7 +663,8 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
                         {
                             if (0 != (status = rename(etcSecurityPwQualityConfCopy, g_etcSecurityPwQualityConf)))
                             {
-                                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: rename('%s' to '%s') failed with %d", etcSecurityPwQualityConfCopy, g_etcSecurityPwQualityConf, errno);
+                                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: rename('%s' to '%s') failed with %d", 
+                                    etcSecurityPwQualityConfCopy, g_etcSecurityPwQualityConf, errno);
                                 _status = (0 == errno) ? ENOENT : errno;
                             }
                         }
