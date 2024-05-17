@@ -1500,11 +1500,8 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void* log)
 static char* AuditEnsurePasswordReuseIsLimited(void* log)
 {
     char* reason = NULL;
-    if (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, "remember", '=', 5, &reason, log))
-    {
-        return reason;
-    }
-    CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, "remember", '=', 5, &reason, log);
+    CheckEnsurePasswordReuseIsLimited(atoi(g_desiredEnsurePasswordReuseIsLimited ?
+        g_desiredEnsurePasswordReuseIsLimited : g_defaultEnsurePasswordReuseIsLimited), reason, log);
     return reason;
 }
 
@@ -3042,8 +3039,7 @@ static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)
 static int RemediateEnsurePasswordReuseIsLimited(char* value, void* log)
 {
     InitEnsurePasswordReuseIsLimited(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetEnsurePasswordReuseIsLimited(atoi(g_desiredEnsurePasswordReuseIsLimited, log);
 }
 
 static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, void* log)
