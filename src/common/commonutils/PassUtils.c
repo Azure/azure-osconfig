@@ -671,6 +671,10 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
                         remove(etcSecurityPwQualityConfCopy);
                     }
+
+                    FREE_MEMORY(original);
+                }
+
                 FREE_MEMORY(line);
             }
             else
@@ -684,8 +688,6 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
             status = _status;
         }
     }
-
-    FREE_MEMORY(line);
 
     return status;
 }
