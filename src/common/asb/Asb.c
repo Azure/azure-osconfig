@@ -458,7 +458,6 @@ static const char* g_etcGShadow = "/etc/gshadow";
 static const char* g_etcGShadowDash = "/etc/gshadow-";
 static const char* g_etcPasswd = "/etc/passwd";
 static const char* g_etcPasswdDash = "/etc/passwd-";
-static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
 static const char* g_etcPamdPasswordAuth = "/etc/pam.d/password-auth";
 static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
 static const char* g_etcPamdLogin = "/etc/pam.d/login";
@@ -1501,7 +1500,7 @@ static char* AuditEnsurePasswordReuseIsLimited(void* log)
 {
     char* reason = NULL;
     CheckEnsurePasswordReuseIsLimited(atoi(g_desiredEnsurePasswordReuseIsLimited ?
-        g_desiredEnsurePasswordReuseIsLimited : g_defaultEnsurePasswordReuseIsLimited), reason, log);
+        g_desiredEnsurePasswordReuseIsLimited : g_defaultEnsurePasswordReuseIsLimited), &reason, log);
     return reason;
 }
 
@@ -3039,7 +3038,7 @@ static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)
 static int RemediateEnsurePasswordReuseIsLimited(char* value, void* log)
 {
     InitEnsurePasswordReuseIsLimited(value);
-    return SetEnsurePasswordReuseIsLimited(atoi(g_desiredEnsurePasswordReuseIsLimited, log);
+    return SetEnsurePasswordReuseIsLimited(atoi(g_desiredEnsurePasswordReuseIsLimited), log);
 }
 
 static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, void* log)
