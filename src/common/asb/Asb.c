@@ -1630,8 +1630,14 @@ static char* AuditEnsureLoggingIsConfigured(void* log)
 static char* AuditEnsureSyslogPackageIsInstalled(void* log)
 {
     char* reason = NULL;
-    CheckPackageInstalled(g_syslog, &reason, log);
-    CheckPackageInstalled(g_rsyslog, &reason, log);
+    if ((0 == CheckPackageInstalled(g_systemd, &reason, log)) && (0 == CheckPackageInstalled(g_rsyslog, &reason, log)))
+    {
+        return reason;
+    }
+    if ((0 == CheckPackageInstalled(g_systemd, &reason, log)) && (0 == CheckPackageInstalled(g_syslog, &reason, log)))
+    {
+        return reason;
+    }
     CheckPackageInstalled(g_syslogNg, &reason, log);
     return reason;
 }
@@ -3143,7 +3149,7 @@ static int RemediateEnsureSyslogPackageIsInstalled(char* value, void* log)
 {
     UNUSED(value);
     return ((0 == InstallPackage(g_systemd, log) && 
-        ((0 == InstallPackage(g_rsyslog, log)) || (0 == InstallPackage(g_syslog, log)))) ||
+        ((0 == InstallPackage(g_rsyslog, log)) || (0 == InstallPackage(g_syslog, log)))) || 
         ((0 == InstallPackage(g_syslogNg, log)))) ? 0 : ENOENT;
 }
 
