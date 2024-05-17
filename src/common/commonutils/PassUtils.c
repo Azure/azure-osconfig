@@ -38,8 +38,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     const char* etcPamdCommonPasswordTemplate = "password required pam_unix.so sha512 shadow %s=%d\n";
     const char* etcPamdSystemAuthTemplate = "password required pam_pwcheck.so nullok %s=%d\n";
     char* newline = NULL;
-    char* original = NULL;
-    int status = 0;
+    int status = 0, _status = 0;
 
     if (0 == (status = CheckEnsurePasswordReuseIsLimited(remember, NULL, log)))
     {
@@ -607,7 +606,6 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
     const char* entries[] = { "minclass", "dcredit", "ucredit", "ocredit", "lcredit" };
     int numEntries = ARRAY_SIZE(entries);
-    char* original = NULL;
     char* line = NULL;
     int i = 0;
     int status = ENOENT, _status = ENOENT;
@@ -635,9 +633,9 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     {
         for (i = 0; i < numEntries; i++)
         {
-            if (NULL != (line = FormatAllocateString(g_etcSecurityPwQualityConf, entries[i])))
+            if (NULL != (line = FormatAllocateString(etcSecurityPwQualityConfLineTemplate, entries[i])))
             {
-                _status = ReplaceMarkedLinesInFile(etcSecurityPwQualityConfCopy, entries[i], line, '#', log);
+                _status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i], line, '#', log);
                 FREE_MEMORY(line);
             }
             else
