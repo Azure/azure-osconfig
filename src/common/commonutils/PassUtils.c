@@ -147,23 +147,103 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     const char* etcPamdLogin = "/etc/pam.d/login";
     const char* etcPamdSystemAuth = "/etc/pam.d/system-auth"; 
     const char* etcPamdPasswordAuth = "/etc/pam.d/password-auth";
+    const char* etcPamdLoginCopy = "/etc/pam.d/~login.copy";
+    const char* etcPamdSystemAuthCopy = "/etc/pam.d/~system-auth.copy";
+    const char* etcPamdPasswordAuthCopy = "/etc/pam.d/~password-auth.copy";
     const char* marker = "auth";
 
-    int status = ENOENT;
+    char* original = NULL;
+    int status = ENOENT, _status = ENOENT;
 
     if (0 == CheckFileExists(etcPamdSystemAuth, NULL, log))
     {
-        status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, pamFailLockLine, '#', log);
+        if (NULL != (original = LoadStringFromFile(etcPamdSystemAuth, false, log)))
+        {
+            if (SavePayloadToFile(etcPamdSystemAuthCopy, original, strlen(original), log))
+            {
+                if (0 == (status = ReplaceMarkedLinesInFile(etcPamdSystemAuthCopy, marker, pamFailLockLine, '#', log)))
+                {
+                    if (0 != (status = rename(etcPamdSystemAuthCopy, etcPamdSystemAuth)))
+                    {
+                        OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: rename('%s' to '%s') failed with %d", etcPamdSystemAuthCopy, etcPamdSystemAuth, errno);
+                        status = (0 == errno) ? ENOENT : errno;
+                    }
+                }
+
+                remove(etcPamdSystemAuthCopy);
+            }
+            else
+            {
+                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed saving copy of '%s' to temp file '%s", etcPamdSystemAuth, etcPamdSystemAuthCopy);
+                status = EPERM;
+            }
+
+            FREE_MEMORY(original);
+        }
     }
     
     if (0 == CheckFileExists(etcPamdPasswordAuth, NULL, log))
     {
-        status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, pamFailLockLine, '#', log);
+        if (NULL != (original = LoadStringFromFile(etcPamdPasswordAuth, false, log)))
+        {
+            if (SavePayloadToFile(etcPamdPasswordAuthCopy, original, strlen(original), log))
+            {
+                if (0 == (_status = ReplaceMarkedLinesInFile(etcPamdPasswordAuthCopy, marker, pamFailLockLine, '#', log)))
+                {
+                    if (0 != (_status = rename(etcPamdPasswordAuthCopy, etcPamdPasswordAuth)))
+                    {
+                        OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: rename('%s' to '%s') failed with %d", etcPamdPasswordAuthCopy, etcPamdPasswordAuth, errno);
+                        _status = (0 == errno) ? ENOENT : errno;
+                    }
+                }
+
+                remove(etcPamdPasswordAuthCopy);
+            }
+            else
+            {
+                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed saving copy of '%s' to temp file '%s", etcPamdPasswordAuth, etcPamdPasswordAuthCopy);
+                _status = EPERM;
+            }
+
+            FREE_MEMORY(original);
+        }
+
+        if (_status && (0 == status))
+        {
+            status = _status;
+        }
     }
 
     if (0 == CheckFileExists(etcPamdLogin, NULL, log))
     {
-        status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, pamTally2Line, '#', log);
+        if (NULL != (original = LoadStringFromFile(etcPamdLogin, false, log)))
+        {
+            if (SavePayloadToFile(etcPamdLoginCopy, original, strlen(original), log))
+            {
+                if (0 == (_status = ReplaceMarkedLinesInFile(etcPamdLoginCopy, marker, pamTally2Line, '#', log)))
+                {
+                    if (0 != (_status = rename(etcPamdLoginCopy, etcPamdLogin)))
+                    {
+                        OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: rename('%s' to '%s') failed with %d", etcPamdLoginCopy, etcPamdLogin, errno);
+                        _status = (0 == errno) ? ENOENT : errno;
+                    }
+                }
+
+                remove(etcPamdLoginCopy);
+            }
+            else
+            {
+                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed saving copy of '%s' to temp file '%s", etcPamdLogin, etcPamdLoginCopy);
+                _status = EPERM;
+            }
+
+            FREE_MEMORY(original);
+        }
+
+        if (_status && (0 == status))
+        {
+            status = _status;
+        }
     }
 
     return status;
@@ -468,8 +548,6 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
 int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log)
 {
-    const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
-    const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
     int status = ENOENT;
 
     if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
@@ -519,7 +597,9 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     const char* etcPamdCommonPasswordLineTemplate = "password requisite pam_pwquality.so retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
     const char* etcSecurityPwQualityConfLineTemplate = "%s = %d\n";
     const char* etcPamdCommonPasswordMarker = "pam_pwquality.so";
-
+    const char* etcPamdCommonPasswordCopy = "/etc/pam.d/~common-password.copy";
+    const char* etcSecurityPwQualityConfCopy = "/etc/security/~pwquality.conf.copy";
+    
     const char* entries[] = { "minclass", "dcredit", "ucredit", "ocredit", "lcredit" };
     int numEntries = ARRAY_SIZE(entries);
     int i = 0;
@@ -537,7 +617,31 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     {
         if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
         {
-            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, etcPamdCommonPasswordMarker, line, '#', log);
+            if (NULL != (original = LoadStringFromFile(g_etcPamdCommonPassword, false, log)))
+            {
+                if (SavePayloadToFile(etcPamdCommonPasswordCopy, original, strlen(original), log))
+                {
+                    if (0 == (status = ReplaceMarkedLinesInFile(etcPamdCommonPasswordCopy, etcPamdCommonPasswordMarker, line, '#', log)))
+                    {
+                        if (0 != (status = rename(etcPamdCommonPasswordCopy, g_etcPamdCommonPassword)))
+                        {
+                            OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: rename('%s' to '%s') failed with %d", etcPamdCommonPasswordCopy, g_etcPamdCommonPassword, errno);
+                            status = (0 == errno) ? ENOENT : errno;
+                        }
+                    }
+
+                    remove(etcPamdCommonPasswordCopy);
+                }
+                else
+                {
+                    OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: failed saving copy of '%s' to temp file '%s", etcPamdSystemAuth, etcPamdSystemAuthCopy);
+                    status = EPERM;
+                }
+
+                FREE_MEMORY(original);
+            }
+
+            FREE_MEMORY(line);
         }
         else
         {
@@ -545,15 +649,27 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         }
     }
 
-    FREE_MEMORY(line);
-
     if (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log))
     {
         for (i = 0; i < numEntries; i++)
         {
             if (NULL != (line = FormatAllocateString(etcSecurityPwQualityConfLineTemplate, entries[i])))
             {
-                _status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i], line, '#', log);
+                if (NULL != (original = LoadStringFromFile(g_etcSecurityPwQualityConf, false, log)))
+                {
+                    if (SavePayloadToFile(etcSecurityPwQualityConfCopy, original, strlen(original), log))
+                    {
+                        if (0 == (_status = ReplaceMarkedLinesInFile(etcSecurityPwQualityConfCopy, entries[i], line, '#', log)))
+                        {
+                            if (0 != (status = rename(etcSecurityPwQualityConfCopy, g_etcSecurityPwQualityConf)))
+                            {
+                                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: rename('%s' to '%s') failed with %d", etcSecurityPwQualityConfCopy, g_etcSecurityPwQualityConf, errno);
+                                _status = (0 == errno) ? ENOENT : errno;
+                            }
+                        }
+
+                        remove(etcSecurityPwQualityConfCopy);
+                    }
                 FREE_MEMORY(line);
             }
             else
