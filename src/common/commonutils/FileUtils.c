@@ -720,7 +720,8 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 
     FREE_MEMORY(tempFileName);
 
-    OsConfigLogInfo(log, "ReplaceMarkedLinesInFile('%s', '%s', '%s', '%c') complete with %d", fileName, marker, newline, commentCharacter, status);
+    OsConfigLogInfo(log, "ReplaceMarkedLinesInFile('%s') complete with %d", fileName, status);
+
     return status;
 }
 

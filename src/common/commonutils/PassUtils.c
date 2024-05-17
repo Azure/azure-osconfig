@@ -227,7 +227,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     const char* etcPamdSystemAuth = "/etc/pam.d/system-auth";
     const char* etcPamdPasswordAuth = "/etc/pam.d/password-auth";
     const char* marker = "auth";
-    int status = ENOENT, _status = 0;
+    int status = 0, _status = 0;
 
     if (0 == CheckFileExists(etcPamdSystemAuth, NULL, log))
     {
@@ -606,7 +606,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     int numEntries = ARRAY_SIZE(entries);
     char* line = NULL;
     int i = 0;
-    int status = ENOENT, _status = ENOENT;
+    int status = 0, _status = 0;
 
     if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, minclass, lcredit, dcredit, ucredit, ocredit, NULL, log)))
     {
