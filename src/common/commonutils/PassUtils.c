@@ -35,8 +35,8 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
 {
     const char* etcPamdCommonPasswordCopy = "/etc/pam.d/~common-password.copy";
     const char* etcPamdSystemAuthCopy = "/etc/pam.d/~system-auth.copy";
-    const char* etcPamdCommonPasswordTemplate = "password required pam_unix.so sha512 shadow %s=%d";
-    const char* etcPamdSystemAuthTemplate = "password required pam_pwcheck.so nullok %s=%d";
+    const char* etcPamdCommonPasswordTemplate = "password required pam_unix.so sha512 shadow %s=%d\n";
+    const char* etcPamdSystemAuthTemplate = "password required pam_pwcheck.so nullok %s=%d\n";
     char* newline = NULL;
     char* original = NULL;
     int status = 0;
