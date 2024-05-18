@@ -705,9 +705,13 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         {
             OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to append line '%s' at end of '%s'", newline, fileName);
         }
+        else
+        {
+            replacedLine = true;
+        }
     }
 
-    if ((0 == status) && (false == replacedLine))
+    if ((0 == status) && replacedLine)
     {
         if (0 != (status = rename(tempFileName, fileName)))
         {
