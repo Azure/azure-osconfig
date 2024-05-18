@@ -2999,29 +2999,33 @@ static int RemediateEnsureIpv6ProtocolIsEnabled(char* value, void* log)
 static int RemediateEnsureDccpIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "/etc/modprobe.d/dccp.conf";
+    const char* payload = "install dccp /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSctpIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "etc/modprobe.d/sctp.conf";
+    const char* payload = "install sctp /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDisabledSupportForRds(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "etc/modprobe.d/rds.conf";
+    const char* payload = "install rds /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureTipcIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "etc/modprobe.d/tipc.conf";
+    const char* payload = "install tipc /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, void* log)
@@ -3092,36 +3096,41 @@ static int RemediateEnsureLockoutForFailedPasswordAttempts(char* value, void* lo
 static int RemediateEnsureDisabledInstallationOfCramfsFileSystem(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "etc/modprobe.d/cramfs.conf";
+    const char* payload = "install cramfs /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDisabledInstallationOfFreevxfsFileSystem(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "etc/modprobe.d/freevxfs.conf";
+    const char* payload = "install freevxfs /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDisabledInstallationOfHfsFileSystem(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "etc/modprobe.d/hfs.conf";
+    const char* payload = "install hfs /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDisabledInstallationOfHfsplusFileSystem(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "etc/modprobe.d/hfsplus.conf";
+    const char* payload = "install hfsplus /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDisabledInstallationOfJffs2FileSystem(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "etc/modprobe.d/jffs2.conf";
+    const char* payload = "install jffs2 /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureVirtualMemoryRandomizationIsEnabled(char* value, void* log)
