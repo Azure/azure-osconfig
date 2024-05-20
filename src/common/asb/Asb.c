@@ -458,7 +458,6 @@ static const char* g_etcGShadow = "/etc/gshadow";
 static const char* g_etcGShadowDash = "/etc/gshadow-";
 static const char* g_etcPasswd = "/etc/passwd";
 static const char* g_etcPasswdDash = "/etc/passwd-";
-static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
 static const char* g_etcPamdPasswordAuth = "/etc/pam.d/password-auth";
 static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
 static const char* g_etcPamdLogin = "/etc/pam.d/login";
@@ -1500,11 +1499,8 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void* log)
 static char* AuditEnsurePasswordReuseIsLimited(void* log)
 {
     char* reason = NULL;
-    if (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, "remember", '=', 5, &reason, log))
-    {
-        return reason;
-    }
-    CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, "remember", '=', 5, &reason, log);
+    CheckEnsurePasswordReuseIsLimited(atoi(g_desiredEnsurePasswordReuseIsLimited ?
+        g_desiredEnsurePasswordReuseIsLimited : g_defaultEnsurePasswordReuseIsLimited), &reason, log);
     return reason;
 }
 
@@ -1634,8 +1630,14 @@ static char* AuditEnsureLoggingIsConfigured(void* log)
 static char* AuditEnsureSyslogPackageIsInstalled(void* log)
 {
     char* reason = NULL;
-    CheckPackageInstalled(g_syslog, &reason, log);
-    CheckPackageInstalled(g_rsyslog, &reason, log);
+    if ((0 == CheckPackageInstalled(g_systemd, &reason, log)) && (0 == CheckPackageInstalled(g_rsyslog, &reason, log)))
+    {
+        return reason;
+    }
+    if ((0 == CheckPackageInstalled(g_systemd, &reason, log)) && (0 == CheckPackageInstalled(g_syslog, &reason, log)))
+    {
+        return reason;
+    }
     CheckPackageInstalled(g_syslogNg, &reason, log);
     return reason;
 }
@@ -2997,29 +2999,33 @@ static int RemediateEnsureIpv6ProtocolIsEnabled(char* value, void* log)
 static int RemediateEnsureDccpIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "/etc/modprobe.d/dccp.conf";
+    const char* payload = "install dccp /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSctpIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "/etc/modprobe.d/sctp.conf";
+    const char* payload = "install sctp /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDisabledSupportForRds(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "/etc/modprobe.d/rds.conf";
+    const char* payload = "install rds /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureTipcIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "/etc/modprobe.d/tipc.conf";
+    const char* payload = "install tipc /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, void* log)
@@ -3042,8 +3048,7 @@ static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)
 static int RemediateEnsurePasswordReuseIsLimited(char* value, void* log)
 {
     InitEnsurePasswordReuseIsLimited(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetEnsurePasswordReuseIsLimited(atoi(g_desiredEnsurePasswordReuseIsLimited), log);
 }
 
 static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, void* log)
@@ -3091,36 +3096,41 @@ static int RemediateEnsureLockoutForFailedPasswordAttempts(char* value, void* lo
 static int RemediateEnsureDisabledInstallationOfCramfsFileSystem(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "/etc/modprobe.d/cramfs.conf";
+    const char* payload = "install cramfs /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDisabledInstallationOfFreevxfsFileSystem(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "/etc/modprobe.d/freevxfs.conf";
+    const char* payload = "install freevxfs /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDisabledInstallationOfHfsFileSystem(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "/etc/modprobe.d/hfs.conf";
+    const char* payload = "install hfs /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDisabledInstallationOfHfsplusFileSystem(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "/etc/modprobe.d/hfsplus.conf";
+    const char* payload = "install hfsplus /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDisabledInstallationOfJffs2FileSystem(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "/etc/modprobe.d/jffs2.conf";
+    const char* payload = "install jffs2 /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureVirtualMemoryRandomizationIsEnabled(char* value, void* log)
@@ -3148,7 +3158,7 @@ static int RemediateEnsureSyslogPackageIsInstalled(char* value, void* log)
 {
     UNUSED(value);
     return ((0 == InstallPackage(g_systemd, log) && 
-        ((0 == InstallPackage(g_rsyslog, log)) || (0 == InstallPackage(g_syslog, log)))) ||
+        ((0 == InstallPackage(g_rsyslog, log)) || (0 == InstallPackage(g_syslog, log)))) || 
         ((0 == InstallPackage(g_syslogNg, log)))) ? 0 : ENOENT;
 }
 
@@ -3337,14 +3347,15 @@ static int RemediateEnsureAvahiDaemonServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_avahiDaemon, log);
-    return (0 == strncmp(g_pass, AuditEnsureAvahiDaemonServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
+    return CheckDaemonNotActive(g_avahiDaemon, NULL, log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureCupsServiceisDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_cups, log);
-    return UninstallPackage(g_cups, log);
+    UninstallPackage(g_cups, log);
+    return CheckDaemonNotActive(g_cups, NULL, log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePostfixPackageIsUninstalled(char* value, void* log)

@@ -3,8 +3,87 @@
 
 #include "Internal.h"
 
-const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
-const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
+static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
+static const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
+static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
+static const char* g_remember = "remember";
+
+int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
+{
+    int status = ENOENT;
+
+    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
+    {
+        // On Debian-based systems 'etc/pam.d/common-password' is expected to exist
+        status = CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', remember, reason, log);
+    }
+    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
+    {
+        // On Red Hat-based systems '/etc/pam.d/system-auth' is expected to exist
+        status = CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, log);
+    }
+    else
+    {
+        OsConfigCaptureReason(reason, "Neither '%s' or '%s' found, unable to check for '%s' option being set",
+            g_etcPamdCommonPassword, g_etcPamdSystemAuth, g_remember);
+    }
+
+    return status;
+}
+
+int SetEnsurePasswordReuseIsLimited(int remember, void* log)
+{
+    const char* etcPamdCommonPasswordCopy = "/etc/pam.d/~common-password.copy";
+    const char* etcPamdSystemAuthCopy = "/etc/pam.d/~system-auth.copy";
+    const char* etcPamdCommonPasswordTemplate = "password required pam_unix.so sha512 shadow %s=%d\n";
+    const char* etcPamdSystemAuthTemplate = "password required pam_pwcheck.so nullok %s=%d\n";
+    char* newline = NULL;
+    int status = 0, _status = 0;
+
+    if (0 == (status = CheckEnsurePasswordReuseIsLimited(remember, NULL, log)))
+    {
+        OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited: '%s' is already set to %d in '%s'", g_remember, remember, g_etcPamdCommonPassword);
+        return 0;
+    }
+
+    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
+    {
+        if (NULL != (newline = FormatAllocateString(etcPamdCommonPasswordTemplate, g_remember, remember)))
+        {
+            status = ReplaceMarkedLinesInFile(etcPamdCommonPasswordCopy, g_remember, newline, '#', log);
+            FREE_MEMORY(newline);
+        }
+        else
+        {
+            
+            OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
+            status = ENOMEM;
+        }
+    }
+
+    if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
+    {
+        if (NULL != (newline = FormatAllocateString(etcPamdSystemAuthTemplate, g_remember, remember)))
+        {
+            _status = ReplaceMarkedLinesInFile(etcPamdSystemAuthCopy, g_remember, newline, '#', log);
+            FREE_MEMORY(newline);
+        }
+        else
+        {
+            OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
+            _status = ENOMEM;
+        }
+    }
+
+    if (_status && (0 == status))
+    {
+        status = _status;
+    }
+
+    FREE_MEMORY(newline);
+
+    return status;
+}
 
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, void* log)
 {
@@ -145,25 +224,30 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     const char* pamTally2Line = "auth required pam_tally2.so file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root\n";
     const char* pamFailLockLine = "auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_roo\nt";
     const char* etcPamdLogin = "/etc/pam.d/login";
-    const char* etcPamdSystemAuth = "/etc/pam.d/system-auth"; 
+    const char* etcPamdSystemAuth = "/etc/pam.d/system-auth";
     const char* etcPamdPasswordAuth = "/etc/pam.d/password-auth";
     const char* marker = "auth";
-
-    int status = ENOENT;
+    int status = 0, _status = 0;
 
     if (0 == CheckFileExists(etcPamdSystemAuth, NULL, log))
     {
         status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, pamFailLockLine, '#', log);
     }
-    
+
     if (0 == CheckFileExists(etcPamdPasswordAuth, NULL, log))
     {
-        status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, pamFailLockLine, '#', log);
+        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, pamFailLockLine, '#', log))) && (0 == status))
+        {
+            status = _status;
+        }
     }
 
     if (0 == CheckFileExists(etcPamdLogin, NULL, log))
     {
-        status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, pamTally2Line, '#', log);
+        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, pamTally2Line, '#', log))) && (0 == status))
+        {
+            status = _status;
+        }
     }
 
     return status;
@@ -468,8 +552,6 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
 int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log)
 {
-    const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
-    const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
     int status = ENOENT;
 
     if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
@@ -522,10 +604,9 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
     const char* entries[] = { "minclass", "dcredit", "ucredit", "ocredit", "lcredit" };
     int numEntries = ARRAY_SIZE(entries);
-    int i = 0;
-
     char* line = NULL;
-    int status = ENOENT, _status = ENOENT;
+    int i = 0;
+    int status = 0, _status = 0;
 
     if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, minclass, lcredit, dcredit, ucredit, ocredit, NULL, log)))
     {
@@ -538,14 +619,13 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
         {
             status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, etcPamdCommonPasswordMarker, line, '#', log);
+            FREE_MEMORY(line);
         }
         else
         {
             OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcPamdCommonPassword);
         }
     }
-
-    FREE_MEMORY(line);
 
     if (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log))
     {
@@ -567,8 +647,6 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
             status = _status;
         }
     }
-
-    FREE_MEMORY(line);
 
     return status;
 }
