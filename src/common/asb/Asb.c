@@ -3372,20 +3372,17 @@ static int RemediateEnsurePostfixPackageIsUninstalled(char* value, void* log)
 
 static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, void* log)
 {
-    int status = 0;
-
+    bool status = false;
     UNUSED(value);
-
-    if (0 == CheckFileExists(g_etcPostfixMainCf, &reason, log))
+    if (0 == CheckFileExists(g_etcPostfixMainCf, NULL, log))
     {
-        status = AppendToFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, strlen(g_inetInterfacesLocalhost), log) ? 0 : ENOENT;
+        status = AppendToFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, strlen(g_inetInterfacesLocalhost), log);
     }
     else
     {
-        status = SecureSaveToFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, strlen(g_inetInterfacesLocalhost), log) ? 0 : ENOENT;
+        status = SecureSaveToFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, strlen(g_inetInterfacesLocalhost), log);
     }
-
-    return status;
+    return status ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, void* log)
