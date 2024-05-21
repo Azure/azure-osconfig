@@ -3383,7 +3383,7 @@ static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, void* l
         // S_IROTH (00004): Read permission, others
         status = mkdir(etcPostfix, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     }
-    return AppendToFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, strlen(g_inetInterfacesLocalhost), log) ? 0 : ENOENT;
+    return ((0 == status) && AppendToFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, strlen(g_inetInterfacesLocalhost), log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, void* log)
