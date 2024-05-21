@@ -1516,3 +1516,45 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
 
     return status;
 }
+
+int DisablePostfixNetworkListening(void* log)
+{
+    const char* etcPostfix = "/etc/postfix/";
+    const char* etcPostfixMainCf = "/etc/postfix/main.cf";
+    const char* inetInterfacesLocalhost = "inet_interfaces localhost";
+
+    // S_IRUSR (00400): Read permission, owner
+    // S_IWUSR (00200): Write permission, owner
+    // S_IRGRP (00040): Read permission, group
+    // S_IROTH (00004): Read permission, others
+    int mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+    int status = 0;
+
+    if (false == DirectoryExists(etcPostfix))
+    {
+        OsConfigLogInfo(log, "DisablePostfixNetworkListening: directory '%s' does not exist", etcPostfix);
+        if (0 == (status = mkdir(etcPostfix, mode)))
+        {
+            OsConfigLogInfo(log, "DisablePostfixNetworkListening: created directory '%s' with %d access", etcPostfix, mode);
+        }
+        else
+        {
+            OsConfigLogError(log, "DisablePostfixNetworkListening: failed creating directory '%s' with %d access", etcPostfix, mode);
+        }
+    }
+
+    if (0 == status)
+    {
+        if (AppendToFile(etcPostfixMainCf, inetInterfacesLocalhost, strlen(inetInterfacesLocalhost), log))
+        {
+            OsConfigLogInfo(log, "DisablePostfixNetworkListening: '%s' was written to '%s'", inetInterfacesLocalhost, etcPostfixMainCf);
+        }
+        else
+        {
+            OsConfigLogError(log, "DisablePostfixNetworkListening: failed writing '%s' to '%s' (%d)", inetInterfacesLocalhost, etcPostfixMainCf, errno);
+            status = ENOENT;
+        }
+    }
+
+    return status;
+}
