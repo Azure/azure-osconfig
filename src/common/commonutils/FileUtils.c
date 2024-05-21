@@ -162,7 +162,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
             result = false;
         }
 
-        //remove(tempFileName);
+        remove(tempFileName);
     }
 
     FREE_MEMORY(tempFileName);

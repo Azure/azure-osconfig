@@ -3372,7 +3372,17 @@ static int RemediateEnsurePostfixPackageIsUninstalled(char* value, void* log)
 
 static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, void* log)
 {
+    const char* etcPostfix = "/etc/postfix/";
+    int status = 0;
     UNUSED(value);
+    if (false == DirectoryExists(etcPostfix))
+    {
+        // S_IRUSR (00400): Read permission, owner
+        // S_IWUSR (00200): Write permission, owner
+        // S_IRGRP (00040): Read permission, group
+        // S_IROTH (00004): Read permission, others
+        status = mkdir(etcPostfix, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    }
     return AppendToFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, strlen(g_inetInterfacesLocalhost), log) ? 0 : ENOENT;
 }
 
