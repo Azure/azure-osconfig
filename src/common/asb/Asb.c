@@ -490,6 +490,7 @@ static const char* g_nosuid = "nosuid";
 static const char* g_noexec = "noexec";
 static const char* g_inetd = "inetd";
 static const char* g_inetUtilsInetd = "inetutils-inetd";
+static const char* g_rlogin = "rlogin";
 static const char* g_xinetd = "xinetd";
 static const char* g_rshServer = "rsh-server";
 static const char* g_nfs = "nfs";
@@ -533,6 +534,12 @@ static const char* g_netrc = "netrc";
 static const char* g_rhosts = "rhosts";
 static const char* g_systemdJournald = "systemd-journald";
 static const char* g_allTelnetd = "*telnetd*";
+static const char* g_samba = "samba";
+static const char* g_etcSambaConf = "/etc/samba/smb.conf";
+static const char* g_rpcSvcgssd = "rpc.svcgssd";
+static const char* g_needSvcgssd = "NEED_SVCGSSD = yes";
+static const char* g_etcPostfixMainCf = "/etc/postfix/main.cf";
+static const char* g_inetInterfacesLocalhost = "inet_interfaces localhost";
 
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
@@ -1935,9 +1942,9 @@ static char* AuditEnsurePostfixPackageIsUninstalled(void* log)
 static char* AuditEnsurePostfixNetworkListeningIsDisabled(void* log)
 {
     char* reason = NULL;
-    if (0 == CheckFileExists("/etc/postfix/main.cf", &reason, log))
+    if (0 == CheckFileExists(g_etcPostfixMainCf, &reason, log))
     {
-        CheckTextIsFoundInFile("/etc/postfix/main.cf", "inet_interfaces localhost", &reason, log);
+        CheckTextIsFoundInFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, &reason, log);
     }
     return reason;
 }
@@ -1977,8 +1984,8 @@ static char* AuditEnsureNetworkFileSystemServiceIsDisabled(void* log)
 static char* AuditEnsureRpcsvcgssdServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", &reason, log);
-    CheckDaemonNotActive("rpc.svcgssd", &reason, log);
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_needSvcgssd, &reason, log);
+    CheckDaemonNotActive(g_rpcSvcgssd, &reason, log);
     return reason;
 }
 
@@ -2013,13 +2020,13 @@ static char* AuditEnsureRshClientNotInstalled(void* log)
 
 static char* AuditEnsureSmbWithSambaIsDisabled(void* log)
 {
-    const char* etcSambaConf = "/etc/samba/smb.conf";
     const char* minProtocol = "min protocol = SMB2";
     char* reason = NULL;
-    if (0 != CheckPackageNotInstalled("samba", &reason, log)) 
+    
+    if (false == CheckDaemonNotActive(g_samba, &reason, log))
     {
-        CheckLineNotFoundOrCommentedOut(etcSambaConf, '#', minProtocol, &reason, log);
-        CheckLineNotFoundOrCommentedOut(etcSambaConf, ';', minProtocol, &reason, log);
+        CheckLineNotFoundOrCommentedOut(g_etcSambaConf, '#', minProtocol, &reason, log);
+        CheckLineNotFoundOrCommentedOut(g_etcSambaConf, ';', minProtocol, &reason, log);
     }
     return reason;
 }
@@ -2069,10 +2076,9 @@ static char* AuditEnsureNoUsersHaveDotRhostsFiles(void* log)
 
 static char* AuditEnsureRloginServiceIsDisabled(void* log)
 {
-    const char* rlogin = "rlogin";
     char* reason = NULL;
-    CheckDaemonNotActive(rlogin, &reason, log);
-    CheckPackageNotInstalled(rlogin, &reason, log);
+    CheckDaemonNotActive(g_rlogin, &reason, log);
+    CheckPackageNotInstalled(g_rlogin, &reason, log);
     CheckPackageNotInstalled(g_inetd, &reason, log);
     CheckPackageNotInstalled(g_inetUtilsInetd, &reason, log);
     CheckTextIsNotFoundInFile(g_etcInetdConf, "login", &reason, log);
@@ -3367,8 +3373,7 @@ static int RemediateEnsurePostfixPackageIsUninstalled(char* value, void* log)
 static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return DisablePostfixNetworkListening(log);
 }
 
 static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, void* log)
@@ -3406,8 +3411,13 @@ static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value, void* 
 static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns    
+    int status = 0;
+    StopAndDisableDaemon(g_rpcSvcgssd, log);
+    if (FileExists(g_etcInetdConf))
+    {
+        status = ReplaceMarkedLinesInFile(g_etcInetdConf, g_needSvcgssd, NULL, '#', log);
+    }
+    return ((0 == status) && (false == IsDaemonActive(g_rpcSvcgssd, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSnmpServerIsDisabled(char* value, void* log)
@@ -3440,9 +3450,24 @@ static int RemediateEnsureRshClientNotInstalled(char* value, void* log)
 
 static int RemediateEnsureSmbWithSambaIsDisabled(char* value, void* log)
 {
+    const char* command = "sed -i '/^\\[global\\]/a min protocol = SMB2' /etc/samba/smb.conf";
+    int status = 0;
+
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+
+    if (IsDaemonActive(g_samba, log))
+    {
+        status = ((0 == ReplaceMarkedLinesInFile(g_etcSambaConf, "SMB1", NULL, '#', log)) && 
+            (0 == ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log))) ? 0 : ENOENT;
+    }
+    else
+    {
+        UninstallPackage(g_samba, log);
+        remove(g_etcSambaConf);
+        status = CheckPackageNotInstalled(g_samba, NULL, log);
+    }
+
+    return status;
 }
 
 static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, void* log)
@@ -3483,8 +3508,13 @@ static int RemediateEnsureNoUsersHaveDotRhostsFiles(char* value, void* log)
 static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_rlogin, log);
+    UninstallPackage(g_rlogin, log);
+    UninstallPackage(g_inetd, log);
+    UninstallPackage(g_inetUtilsInetd, log);
+    return ((0 == CheckPackageNotInstalled(g_rlogin, NULL, log)) && 
+        (0 == CheckPackageNotInstalled(g_inetd, NULL, log)) && 
+        (0 == CheckPackageNotInstalled(g_inetUtilsInetd, NULL, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
