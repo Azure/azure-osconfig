@@ -3372,17 +3372,8 @@ static int RemediateEnsurePostfixPackageIsUninstalled(char* value, void* log)
 
 static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, void* log)
 {
-    bool status = false;
     UNUSED(value);
-    if (0 == CheckFileExists(g_etcPostfixMainCf, NULL, log))
-    {
-        status = AppendToFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, strlen(g_inetInterfacesLocalhost), log);
-    }
-    else
-    {
-        status = SecureSaveToFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, strlen(g_inetInterfacesLocalhost), log);
-    }
-    return status ? 0 : ENOENT;
+    return AppendToFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, strlen(g_inetInterfacesLocalhost), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, void* log)
@@ -3420,9 +3411,13 @@ static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value, void* 
 static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
+    int status = 0;
     StopAndDisableDaemon(g_rpcSvcgssd, log);
-    return ((0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_needSvcgssd, NULL, '#', log)) &&
-        (false == IsDaemonActive(g_rpcSvcgssd, log))) ? 0 : ENOENT;
+    if (FileExists(g_etcInetdConf))
+    {
+        status = ReplaceMarkedLinesInFile(g_etcInetdConf, g_needSvcgssd, NULL, '#', log);
+    }
+    return ((0 == status) && (false == IsDaemonActive(g_rpcSvcgssd, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSnmpServerIsDisabled(char* value, void* log)
@@ -3469,7 +3464,7 @@ static int RemediateEnsureSmbWithSambaIsDisabled(char* value, void* log)
     {
         UninstallPackage(g_samba, log);
         remove(g_etcSambaConf);
-        status = IsPackageInstalled(g_samba, log);
+        status = CheckPackageNotInstalled(g_samba, NULL, log);
     }
 
     return status;
