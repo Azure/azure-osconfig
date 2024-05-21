@@ -3455,7 +3455,7 @@ static int RemediateEnsureRshClientNotInstalled(char* value, void* log)
 
 static int RemediateEnsureSmbWithSambaIsDisabled(char* value, void* log)
 {
-    const char* command = "sed -i '/^\[global\]/a min protocol = SMB2' /etc/samba/smb.conf";
+    const char* command = "sed -i '/^\\[global\]/a min protocol = SMB2' /etc/samba/smb.conf";
     int status = 0;
 
     UNUSED(value);
@@ -3512,13 +3512,14 @@ static int RemediateEnsureNoUsersHaveDotRhostsFiles(char* value, void* log)
 
 static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
 {
+    UNUSED(value);
     StopAndDisableDaemon(g_rlogin, log);
     UninstallPackage(g_rlogin, log);
     UninstallPackage(g_inetd, log);
     UninstallPackage(g_inetUtilsInetd, log);
     return ((0 == CheckPackageNotInstalled(g_rlogin, NULL, log)) && 
         (0 == CheckPackageNotInstalled(g_inetd, NULL, log)) && 
-        (0 == CheckPackageNotInstalled(g_inetUtilsInetd, NULL, log)) ? 0 : ENOENT;
+        (0 == CheckPackageNotInstalled(g_inetUtilsInetd, NULL, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
