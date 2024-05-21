@@ -3455,7 +3455,7 @@ static int RemediateEnsureRshClientNotInstalled(char* value, void* log)
 
 static int RemediateEnsureSmbWithSambaIsDisabled(char* value, void* log)
 {
-    const char* command = "sed -i '/^\\[global\]/a min protocol = SMB2' /etc/samba/smb.conf";
+    const char* command = "sed -i '/^\\[global\\]/a min protocol = SMB2' /etc/samba/smb.conf";
     int status = 0;
 
     UNUSED(value);
