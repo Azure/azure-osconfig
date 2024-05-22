@@ -1630,7 +1630,7 @@ static char* AuditEnsureLoggingIsConfigured(void* log)
 static char* AuditEnsureSyslogPackageIsInstalled(void* log)
 {
     char* reason = NULL;
-    bool IsSystemdInstalled = (0 == CheckPackageInstalled(g_systemd, &reason, log) ? true : false;
+    bool IsSystemdInstalled = (0 == CheckPackageInstalled(g_systemd, &reason, log)) ? true : false;
 
     if ((IsSystemdInstalled && (0 == CheckPackageInstalled(g_rsyslog, &reason, log))) || 
         (IsSystemdInstalled && (0 == CheckPackageInstalled(g_syslog, &reason, log))) ||
