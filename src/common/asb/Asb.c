@@ -1653,7 +1653,7 @@ static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(void* log)
 static char* AuditEnsureALoggingServiceIsEnabled(void* log)
 {
     char* reason = NULL;
-    bool isSystemdNotInstalled = (0 == CheckPackageNotInstalled(g_systemd, &reason, log) ? true : false;
+    bool isSystemdNotInstalled = (0 == CheckPackageNotInstalled(g_systemd, &reason, log)) ? true : false;
     
     if ((isSystemdNotInstalled && (0 == CheckPackageNotInstalled(g_syslogNg, &reason, log)) && CheckDaemonActive(g_rsyslog, &reason, log)) ||
         (isSystemdNotInstalled && (0 == CheckPackageNotInstalled(g_rsyslog, &reason, log)) && CheckDaemonActive(g_syslogNg, &reason, log)) ||
