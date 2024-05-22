@@ -3050,8 +3050,9 @@ static int RemediateEnsurePasswordReuseIsLimited(char* value, void* log)
 static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* fileName = "/etc/modprobe.d/usb-storage.conf";
+    const char* payload = "install usb-storage /bin/true";
+    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
