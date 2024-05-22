@@ -2884,7 +2884,8 @@ static int RemediateEnsureDefaultUmaskForAllUsers(char* value, void* log)
 static int RemediateEnsureAutomountingDisabled(char* value, void* log)
 {
     UNUSED(value);
-    return StopAndDisableDaemon(g_autofs, log);
+    StopAndDisableDaemon(g_autofs, log);
+    return CheckDaemonNotActive(g_autofs, NULL, log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, void* log)
