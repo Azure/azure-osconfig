@@ -3259,7 +3259,7 @@ int RemoveUserAccounts(const char* names, void* log)
 
 int RestrictSuToRootGroup(void* log)
 {
-    const char* etcPamdSu = '/etc/pam.d/su';
+    const char* etcPamdSu = "/etc/pam.d/su";
     const char* suRestrictedToRootGroup = "auth required pam_wheel.so use_uid group=root";
     int status = 0;
     
