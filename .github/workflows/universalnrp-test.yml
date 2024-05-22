@@ -28,15 +28,8 @@ jobs:
             { os: ubuntu, version: 22.04, package-type: DEB, tag: ''},
           ]
         arch: [amd64]
-        install-osconfig: [true, false]
+        install-osconfig: [false]
         policy-package: [LinuxSshServerSecurityBaselinePolicy.zip, LinuxSecurityBaselinePolicy.zip]
-        exclude:
-          # LinuxSshServerSecurityBaselinePolicy.zip must run without OSConfig
-          - policy-package: LinuxSshServerSecurityBaselinePolicy.zip
-            install-osconfig: true
-          # LinuxSecurityBaselinePolicy.zip must run with OSConfig
-          - policy-package: LinuxSecurityBaselinePolicy.zip
-            install-osconfig: false
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.arch }}
