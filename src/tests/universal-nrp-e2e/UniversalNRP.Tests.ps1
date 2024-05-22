@@ -2,7 +2,10 @@
 # UniversalNRP.Tests.ps1
 param (
     [Parameter(Mandatory)]
-    [string] $PolicyPackage
+    [string] $PolicyPackage,
+
+    [bool]
+    $SkipRemediation = $false
 )
 
 Describe 'Validate Universal NRP' {
@@ -36,7 +39,7 @@ Describe 'Validate Universal NRP' {
     }
 
     # Perform Remediation - Set
-    Context "Set" {
+    Context "Set" -Skip:$SkipRemediation {
         BeforeAll {
             Start-GuestConfigurationPackageRemediation -Path $PolicyPackage
             # Wait for remediation to complete
