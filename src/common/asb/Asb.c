@@ -540,6 +540,7 @@ static const char* g_rpcSvcgssd = "rpc.svcgssd";
 static const char* g_needSvcgssd = "NEED_SVCGSSD = yes";
 static const char* g_etcPostfixMainCf = "/etc/postfix/main.cf";
 static const char* g_inetInterfacesLocalhost = "inet_interfaces localhost";
+static const char* g_autofs = "autofs";
 
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
@@ -1321,10 +1322,8 @@ static char* AuditEnsureDefaultUmaskForAllUsers(void* log)
 
 static char* AuditEnsureAutomountingDisabled(void* log)
 {
-    const char* autofs = "autofs";
     char* reason = NULL;
-    CheckPackageInstalled(autofs, &reason, log);
-    CheckDaemonNotActive(autofs, &reason, log);
+    CheckDaemonNotActive(g_autofs, &reason, log);
     return reason;
 }
 
@@ -2885,8 +2884,7 @@ static int RemediateEnsureDefaultUmaskForAllUsers(char* value, void* log)
 static int RemediateEnsureAutomountingDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return StopAndDisableDaemon(g_autofs, log);
 }
 
 static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, void* log)
