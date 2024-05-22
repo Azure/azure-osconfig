@@ -866,7 +866,7 @@ int EnableVirtualMemoryRandomization(void* log)
         }
         else
         {
-            OsConfigLogError(log, "EnableVirtualMemoryRandomization: failed writing '%s' to '%s' (%d)", fullRandomization, procSysKernelRandomizeVaSpace);
+            OsConfigLogError(log, "EnableVirtualMemoryRandomization: failed writing '%s' to '%s' (%d)", fullRandomization, procSysKernelRandomizeVaSpace, errno);
             status = ENOENT;
         }
     }
