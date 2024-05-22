@@ -107,6 +107,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
 int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, void* log);
 int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log);
 int SetEnsurePasswordReuseIsLimited(int remember, void* log);
+int EnableVirtualMemoryRandomization(void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);

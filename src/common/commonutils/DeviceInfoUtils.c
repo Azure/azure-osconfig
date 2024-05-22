@@ -847,3 +847,29 @@ bool IsCurrentOs(const char* name, void* log)
 
     return result;
 }
+
+int EnableVirtualMemoryRandomization(void* log)
+{
+    const char* procSysKernelRandomizeVaSpace = "/proc/sys/kernel/randomize_va_space";
+    const char* fullRandomization = "2";
+    int status = 0;
+
+    if (0 == CheckFileContents(procSysKernelRandomizeVaSpace, fullRandomization, NULL, log))
+    {
+        OsConfigLogInfo(log, "EnableVirtualMemoryRandomization: full virtual memory randomization '%s' is already enabled in '%s'", fullRandomization, procSysKernelRandomizeVaSpace);
+    }
+    else
+    {
+        if (SecureSaveToFile(procSysKernelRandomizeVaSpace, fullRandomization, strlen(fullRandomization), log))
+        {
+            OsConfigLogInfo(log, "EnableVirtualMemoryRandomization: '%s' was written to '%s'", fullRandomization, procSysKernelRandomizeVaSpace);
+        }
+        else
+        {
+            OsConfigLogError(log, "EnableVirtualMemoryRandomization: failed writing '%s' to '%s' (%d)", fullRandomization, procSysKernelRandomizeVaSpace);
+            status = ENOENT;
+        }
+    }
+    
+    return status;
+}

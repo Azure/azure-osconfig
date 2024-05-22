@@ -2736,19 +2736,25 @@ static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* val
 static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, void* log)
 {
     UNUSED(value);
-    return ReplaceMarkedLinesInFile(g_etcPasswd, "+", NULL, '#', log);
+    return ((0 == ReplaceMarkedLinesInFile(g_etcPasswd, "+", NULL, '#', log)) &&
+        (0 == SetFileAccess(g_etcPasswd, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcPasswd ? g_desiredEnsurePermissionsOnEtcPasswd :
+        g_defaultEnsurePermissionsOnEtcPasswd), log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(char* value, void* log)
 {
     UNUSED(value);
-    return ReplaceMarkedLinesInFile(g_etcShadow, "+", NULL, '#', log);
+    return ((0 == ReplaceMarkedLinesInFile(g_etcShadow, "+", NULL, '#', log)) &&
+        (0 == SetFileAccess(g_etcShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadow ? g_desiredEnsurePermissionsOnEtcShadow : 
+        g_defaultEnsurePermissionsOnEtcShadow), log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(char* value, void* log)
 {
     UNUSED(value);
-    return ReplaceMarkedLinesInFile(g_etcGroup, "+", NULL, '#', log);
+    return ((0 == ReplaceMarkedLinesInFile(g_etcGroup, "+", NULL, '#', log)) &&
+        (0 == SetFileAccess(g_etcGroup, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGroup ? g_desiredEnsurePermissionsOnEtcGroup : 
+        g_defaultEnsurePermissionsOnEtcGroup), log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, void* log)
@@ -3126,8 +3132,8 @@ static int RemediateEnsureDisabledInstallationOfJffs2FileSystem(char* value, voi
 static int RemediateEnsureVirtualMemoryRandomizationIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return EnableVirtualMemoryRandomization(log);
+    return 0;
 }
 
 static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(char* value, void* log)
