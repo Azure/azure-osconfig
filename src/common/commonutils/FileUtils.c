@@ -1516,7 +1516,7 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "SetEtcLoginDefValue: successfully set '%s' to '%s' in '/etc/loging.defs'", name, value, status);
+        OsConfigLogInfo(log, "SetEtcLoginDefValue: successfully set '%s' to '%s' in '/etc/loging.defs'", name, value);
     }
 
     return status;
