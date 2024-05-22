@@ -2877,9 +2877,9 @@ static int RemediateEnsureSuRestrictedToRootGroup(char* value, void* log)
 
 static int RemediateEnsureDefaultUmaskForAllUsers(char* value, void* log)
 {
+    const char* umask = "UMASK";
     InitEnsureDefaultUmaskForAllUsers(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetEtcLoginDefValue(umask, g_desiredEnsureDefaultUmaskForAllUsers, log);
 }
 
 static int RemediateEnsureAutomountingDisabled(char* value, void* log)
