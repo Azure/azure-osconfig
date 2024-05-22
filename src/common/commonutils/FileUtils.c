@@ -1514,6 +1514,11 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
 
     FREE_MEMORY(newline);
 
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetEtcLoginDefValue: successfully set '%s' to '%s' in '/etc/loging.defs'", name, value);
+    }
+
     return status;
 }
 

@@ -3256,3 +3256,22 @@ int RemoveUserAccounts(const char* names, void* log)
 
     return status;
 }
+
+int RestrictSuToRootGroup(void* log)
+{
+    const char* etcPamdSu = "/etc/pam.d/su";
+    const char* suRestrictedToRootGroup = "auth required pam_wheel.so use_uid group=root";
+    int status = 0;
+    
+    if (AppendToFile(etcPamdSu, suRestrictedToRootGroup, strlen(suRestrictedToRootGroup), log))
+    {
+        OsConfigLogInfo(log, "RestrictSuToRootGroup: '%s' was written to '%s'", suRestrictedToRootGroup, etcPamdSu);
+    }
+    else
+    {
+        OsConfigLogError(log, "RestrictSuToRootGroup: failed writing '%s' to '%s' (%d)", suRestrictedToRootGroup, etcPamdSu, errno);
+        status = ENOENT;
+    }
+
+    return status;
+}

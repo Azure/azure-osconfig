@@ -540,6 +540,7 @@ static const char* g_rpcSvcgssd = "rpc.svcgssd";
 static const char* g_needSvcgssd = "NEED_SVCGSSD = yes";
 static const char* g_etcPostfixMainCf = "/etc/postfix/main.cf";
 static const char* g_inetInterfacesLocalhost = "inet_interfaces localhost";
+static const char* g_autofs = "autofs";
 
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
@@ -1321,10 +1322,8 @@ static char* AuditEnsureDefaultUmaskForAllUsers(void* log)
 
 static char* AuditEnsureAutomountingDisabled(void* log)
 {
-    const char* autofs = "autofs";
     char* reason = NULL;
-    CheckPackageInstalled(autofs, &reason, log);
-    CheckDaemonNotActive(autofs, &reason, log);
+    CheckDaemonNotActive(g_autofs, &reason, log);
     return reason;
 }
 
@@ -1554,20 +1553,13 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(void* log)
     const char* pamFailLockSo = "pam_faillock.so";
     char* reason = NULL;
 
-    if (0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamFailLockSo, '#', &reason, log))
-    {
-        return reason;
-    }
-    
-    FREE_MEMORY(reason);
-    if (0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamFailLockSo, '#', &reason, log))
+    if ((0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamFailLockSo, '#', &reason, log)) ||
+        (0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamFailLockSo, '#', &reason, log)) ||
+        (0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, "pam_tally2.so", '#', &reason, log)))
     {
         return reason;
     }
 
-    FREE_MEMORY(reason);
-    CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, "pam_tally2.so", '#', &reason, log);
-    
     return reason;
 }
 
@@ -1637,15 +1629,15 @@ static char* AuditEnsureLoggingIsConfigured(void* log)
 static char* AuditEnsureSyslogPackageIsInstalled(void* log)
 {
     char* reason = NULL;
-    if ((0 == CheckPackageInstalled(g_systemd, &reason, log)) && (0 == CheckPackageInstalled(g_rsyslog, &reason, log)))
+    bool IsSystemdInstalled = (0 == CheckPackageInstalled(g_systemd, &reason, log)) ? true : false;
+
+    if ((IsSystemdInstalled && (0 == CheckPackageInstalled(g_rsyslog, &reason, log))) || 
+        (IsSystemdInstalled && (0 == CheckPackageInstalled(g_syslog, &reason, log))) ||
+        (0 == CheckPackageInstalled(g_syslogNg, &reason, log)))
     {
         return reason;
     }
-    if ((0 == CheckPackageInstalled(g_systemd, &reason, log)) && (0 == CheckPackageInstalled(g_syslog, &reason, log)))
-    {
-        return reason;
-    }
-    CheckPackageInstalled(g_syslogNg, &reason, log);
+
     return reason;
 }
 
@@ -1660,22 +1652,15 @@ static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(void* log)
 static char* AuditEnsureALoggingServiceIsEnabled(void* log)
 {
     char* reason = NULL;
-    if ((0 == CheckPackageNotInstalled(g_syslogNg, &reason, log)) && 
-        (0 == CheckPackageNotInstalled(g_systemd, &reason, log)) && 
-        CheckDaemonActive(g_rsyslog, &reason, log))
+    bool isSystemdNotInstalled = (0 == CheckPackageNotInstalled(g_systemd, &reason, log)) ? true : false;
+    
+    if ((isSystemdNotInstalled && (0 == CheckPackageNotInstalled(g_syslogNg, &reason, log)) && CheckDaemonActive(g_rsyslog, &reason, log)) ||
+        (isSystemdNotInstalled && (0 == CheckPackageNotInstalled(g_rsyslog, &reason, log)) && CheckDaemonActive(g_syslogNg, &reason, log)) ||
+        ((0 == CheckPackageInstalled(g_systemd, &reason, log)) && CheckDaemonActive(g_systemdJournald, &reason, log)))
     {
         return reason;
     }
-    FREE_MEMORY(reason);
-    if ((0 == CheckPackageNotInstalled(g_rsyslog, &reason, log)) && 
-        (0 == CheckPackageNotInstalled(g_systemd, &reason, log)) && 
-        CheckDaemonActive(g_syslogNg, &reason, log)) 
-    {
-        return reason;
-    }
-    FREE_MEMORY(reason);
-    CheckPackageInstalled(g_systemd, &reason, log);
-    CheckDaemonActive(g_systemdJournald, &reason, log);
+    
     return reason;
 }
 
@@ -2886,22 +2871,21 @@ static int RemediateEnsureLocalLoginWarningBannerIsConfigured(char* value, void*
 static int RemediateEnsureSuRestrictedToRootGroup(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return RestrictSuToRootGroup(log);
 }
 
 static int RemediateEnsureDefaultUmaskForAllUsers(char* value, void* log)
 {
+    const char* umask = "UMASK";
     InitEnsureDefaultUmaskForAllUsers(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetEtcLoginDefValue(umask, g_desiredEnsureDefaultUmaskForAllUsers, log);
 }
 
 static int RemediateEnsureAutomountingDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_autofs, log);
+    return CheckDaemonNotActive(g_autofs, NULL, log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, void* log)

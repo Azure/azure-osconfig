@@ -121,6 +121,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, void* log);
 int CheckUserAccountsNotFound(const char* names, char** reason, void* log);
 int RemoveUserAccounts(const char* names, void* log);
+int RestrictSuToRootGroup(void* log);
 
 #ifdef __cplusplus
 }
