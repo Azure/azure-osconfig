@@ -2872,7 +2872,7 @@ static int RemediateEnsureLocalLoginWarningBannerIsConfigured(char* value, void*
 static int RemediateEnsureSuRestrictedToRootGroup(char* value, void* log)
 {
     UNUSED(value);
-    return int RestrictSuToRootGroup(log);
+    return RestrictSuToRootGroup(log);
 }
 
 static int RemediateEnsureDefaultUmaskForAllUsers(char* value, void* log)
