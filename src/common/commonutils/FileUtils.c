@@ -630,9 +630,6 @@ int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId
             *ownerId = statStruct.st_uid;
             *groupId = statStruct.st_gid;
             *mode = DecimalToOctal(statStruct.st_mode & 07777);
-
-            OsConfigLogInfo(log, "GetFileAccess: '%s' is owned by user %u, group %u and has access mode %u",
-                name, *ownerId, *groupId, *mode);
         }
         else
         {
@@ -681,15 +678,9 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
 
     if (0 == (status = rename(original, target)))
     {
-        if (0 == SetFileAccess(target, ownerId, groupId, mode, log))
+        if (0 != SetFileAccess(target, ownerId, groupId, mode, log))
         {
-            OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' successfully renamed to '%s' with restored owner %u, group %u and access %u", 
-                original, target, ownerId, groupId, mode);
-        }
-        else
-        {
-            OsConfigLogError(log, "RenameFileWithOwnerAndAccess: '%s' successfully renamed to '%s' without restored original owner and access mode",
-                original, target);
+            OsConfigLogError(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' without restored original owner and access mode", original, target);
         }
     }
     else
