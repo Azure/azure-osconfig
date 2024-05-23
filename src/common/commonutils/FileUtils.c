@@ -103,7 +103,8 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
-    const char* tempFileNameTemplate = "/tmp/~OSConfig.Temp%u";
+    const char* tempFileNameTemplate = "%s/~OSConfig.Temp%u";
+    char* fileDirectory = NULL;
     char* tempFileName = NULL;
     char* fileContents = NULL;
     int status = 0;
@@ -114,7 +115,10 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         OsConfigLogError(log, "InternalSecureSaveToFile: invalid arguments");
         return false;
     }
-    else if (NULL == (tempFileName = FormatAllocateString(tempFileNameTemplate, rand())))
+
+    fileDirectory = dirname(fileName);
+
+    if (NULL == (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "", rand())))
     {
         OsConfigLogError(log, "InternalSecureSaveToFile: out of memory");
         return false;
