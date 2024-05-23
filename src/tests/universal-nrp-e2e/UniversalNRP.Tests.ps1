@@ -4,8 +4,7 @@ param (
     [Parameter(Mandatory)]
     [string] $PolicyPackage,
 
-    [bool]
-    $SkipRemediation = $false
+    [bool] $SkipRemediation = $false
 )
 
 Describe 'Validate Universal NRP' {
