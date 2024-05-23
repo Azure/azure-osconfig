@@ -105,6 +105,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.Temp%u";
     char* fileDirectory = NULL;
+    char* fileNameCopy = NULL;
     char* tempFileName = NULL;
     char* fileContents = NULL;
     int status = 0;
@@ -116,42 +117,47 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         return false;
     }
 
-    fileDirectory = dirname(fileName);
-
-    if (NULL == (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "", rand())))
+    if (FileExists(fileName) && (NULL != (fileNameCopy = DuplicateString(fileName))))
     {
-        OsConfigLogError(log, "InternalSecureSaveToFile: out of memory");
-        return false;
+        fileDirectory = dirname(fileNameCopy);
     }
 
-    if ((0 == strcmp(mode, "a") && FileExists(fileName)))
+    if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
     {
-        if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
+        if ((0 == strcmp(mode, "a") && FileExists(fileName)))
         {
-            if (true == (result = SaveToFile(tempFileName, "w", fileContents, strlen(fileContents), log)))
+            if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
             {
-                // If there is no EOL at the end of file, add one before the append
-                if (EOL != fileContents[strlen(fileContents) - 1])
+                if (true == (result = SaveToFile(tempFileName, "w", fileContents, strlen(fileContents), log)))
                 {
-                    SaveToFile(tempFileName, "a", "\n", 1, log);
+                    // If there is no EOL at the end of file, add one before the append
+                    if (EOL != fileContents[strlen(fileContents) - 1])
+                    {
+                        SaveToFile(tempFileName, "a", "\n", 1, log);
+                    }
+
+                    result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log);
                 }
 
-                result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log);
+                FREE_MEMORY(fileContents);
             }
-            
-            FREE_MEMORY(fileContents);
+            else
+            {
+                OsConfigLogError(log, "InternalSecureSaveToFile: failed to read from '%s'", fileName);
+                result = false;
+            }
         }
         else
         {
-            OsConfigLogError(log, "InternalSecureSaveToFile: failed to read from '%s'", fileName);
-            result = false;
+            result = SaveToFile(tempFileName, "w", payload, payloadSizeBytes, log);
         }
     }
     else
     {
-        result = SaveToFile(tempFileName, "w", payload, payloadSizeBytes, log);
+        OsConfigLogError(log, "InternalSecureSaveToFile: out of memory");
+        result = false;
     }
-        
+
     if (result && (false == FileExists(tempFileName)))
     {
         OsConfigLogError(log, "InternalSecureSaveToFile: failed to create temporary file");
@@ -170,6 +176,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     }
 
     FREE_MEMORY(tempFileName);
+    FREE_MEMORY(fileNameCopy);
 
     return result;
 }
