@@ -630,8 +630,9 @@ int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId
             *ownerId = statStruct.st_uid;
             *groupId = statStruct.st_gid;
             *mode = DecimalToOctal(statStruct.st_mode & 07777);
-            
-            status = 0;
+
+            OsConfigLogInfo(log, "GetFileAccess: '%s' is owned by user %u, group %u and has access mode %u",
+                name, ownerId, groupId, mode);
         }
         else
         {
