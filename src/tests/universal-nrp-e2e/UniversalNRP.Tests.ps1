@@ -4,6 +4,9 @@ param (
     [Parameter(Mandatory)]
     [string] $PolicyPackage,
 
+    [Parameter(Mandatory)]
+    [int] $ResourceCount,
+
     [bool] $SkipRemediation = $false
 )
 
@@ -15,7 +18,7 @@ Describe 'Validate Universal NRP' {
         }
 
         It 'Ensure the total resource instances count' {    
-            $result.resources | Should -HaveCount 20
+            $result.resources | Should -HaveCount $ResourceCount
         }
 
         It 'Ensure resons are properly populated' {
@@ -47,7 +50,7 @@ Describe 'Validate Universal NRP' {
         }
 
         It 'Ensure the total resource instances count' {    
-            $result.resources | Should -HaveCount 20
+            $result.resources | Should -HaveCount $ResourceCount
         }
 
         It 'Ensure resons are properly populated' {

@@ -15,6 +15,9 @@ on:
       policy-package:
         required: true
         type: string
+      resource-count:
+        required: true
+        type: string
       install-osconfig:
         required: false
         type: boolean
@@ -85,6 +88,7 @@ jobs:
           \$params = @{
               PolicyPackage = './${{ inputs.policy-package }}'
               SkipRemediation = \$${{ inputs.skip-remediation }}
+              ResourceCount = ${{ inputs.resource-count }}
           }
           \$container = New-PesterContainer -Path ./src/tests/universal-nrp-e2e/UniversalNRP.Tests.ps1 -Data \$params
           \$pesterConfig = [PesterConfiguration]@{

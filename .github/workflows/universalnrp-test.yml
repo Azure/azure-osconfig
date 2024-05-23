@@ -29,8 +29,8 @@ jobs:
           ]
         policy-package:
           [
-            { path: LinuxSshServerSecurityBaselinePolicy.zip, skip-remediation: false },
-            { path: LinuxSecurityBaselinePolicy.zip, skip-remediation: true },
+            { path: LinuxSshServerSecurityBaselinePolicy.zip, skip-remediation: false, resource-count: 20 },
+            { path: LinuxSecurityBaselinePolicy.zip, skip-remediation: true, resource-count: 168 },
           ]
         arch: [amd64]
         install-osconfig: [false]
@@ -39,6 +39,7 @@ jobs:
       arch: ${{ matrix.arch }}
       package-type: ${{ matrix.target.package-type }}
       policy-package: ${{ matrix.policy-package.path }}
+      resource-count: ${{ matrix.policy-package.resource-count }}
       skip-remediation: ${{ matrix.policy-package.skip-remediation }}
       install-osconfig: ${{ matrix.install-osconfig }}
       tag: ${{ matrix.target.tag }}
