@@ -1380,10 +1380,9 @@ int RepairRootGroup(void* log)
                             if (AppendToFile(tempFileName, original, strlen(original), log))
                             {
                                 // In a single atomic operation move edited contents from temporary file to /etc/group
-                                if (0 != (status = rename(tempFileName, etcGroup)))
+                                if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, etcGroup)))
                                 {
-                                    OsConfigLogError(log, "RepairRootGroup:  rename('%s' to '%s') failed with %d", tempFileName, etcGroup, errno);
-                                    status = (0 == errno) ? ENOENT : errno;
+                                    OsConfigLogError(log, "RepairRootGroup:  RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempFileName, etcGroup, status);
                                 }
                             }
                             else

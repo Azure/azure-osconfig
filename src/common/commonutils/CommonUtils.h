@@ -67,6 +67,8 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
 
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, void* log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
+int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log);
+int RenameFileWithOwnerAndAccess(const char* original, const char* target, void* log);
 
 int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, void* log);
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);

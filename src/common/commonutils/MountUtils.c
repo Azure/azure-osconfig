@@ -373,16 +373,15 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     {
                         if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo, log))
                         {
-                            rename(tempFileNameThree, tempFileNameTwo);
+                            RenameFileWithOwnerAndAccess(tempFileNameThree, tempFileNameTwo, log);
                         }
                     }
                 }
                 
                 // When done assembling the final temp mount file two, move it in an atomic step to real mount file
-                if (0 != (status = rename(tempFileNameTwo, fsMountTable)))
+                if (0 != (status = RenameFileWithOwnerAndAccess(tempFileNameTwo, fsMountTable, log)))
                 {
-                    OsConfigLogError(log, "SetFileSystemMountingOption:  rename('%s' to '%s') failed with %d", tempFileNameTwo, fsMountTable, errno);
-                    status = (0 == errno) ? ENOENT : errno;
+                    OsConfigLogError(log, "SetFileSystemMountingOption:  RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempFileNameTwo, fsMountTable, status);
                 }
             }
         }

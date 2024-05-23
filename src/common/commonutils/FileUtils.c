@@ -156,9 +156,9 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
 
     if (result)
     {
-        if (0 != (status = rename(tempFileName, fileName)))
+        if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, fileName, log)))
         {
-            OsConfigLogError(log, "InternalSecureSaveToFile: rename('%s' to '%s') failed with %d", tempFileName, fileName, errno);
+            OsConfigLogError(log, "InternalSecureSaveToFile: RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempFileName, fileName, status);
             result = false;
         }
 
@@ -608,6 +608,98 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
     return status;
 }
 
+int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
+{
+    struct stat statStruct = {0};
+    int status = ENOENT;
+
+    if ((NULL == name) || (NULL == ownerId) || (NULL == groupId) || (NULL == mode)
+    {
+        OsConfigLogError(log, "GetFileAccess: invalid arguments");
+        return EINVAL;
+    }
+
+    *ownerId = 0;
+    *groupId = 0;
+    *mode = 0;
+
+    if (FileExists(name))
+    {
+        if (0 == (result = stat(name, &statStruct)))
+        {
+            *ownerId = statStruct.st_uid;
+            *groupId = statStruct.st_gid;
+            *mode = DecimalToOctal(statStruct.st_mode & 07777);
+            
+            status = 0;
+        }
+        else
+        {
+            OsConfigLogError(log, "GetFileAccess: stat('%s') failed with %d", name, errno);
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "GetFileAccess: '%s' does not exist", name);
+    }
+
+    return status;
+}
+
+int RenameFileWithOwnerAndAccess(const char* original, const char* target, void* log)
+{
+    unsigned int ownerId = 0;
+    unsigned int groupId = 0;
+    unsigned int mode = 0;
+    int status = 0;
+
+    if ((NULL == original) || (NULL == target))
+    {
+        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: invalid arguments");
+        return EINVAL;
+    }
+    else if (false == FileExists(original))
+    {
+        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: original file '%s' does not exist", original);
+        return EINVAL;
+    }
+    
+    if (0 != GetFileAccess(original, &ownerId, &groupId, &mode, log))
+    {
+        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: cannot read owner and access mode for original file '%s' (%d), using defaults", original);
+
+        ownerId = 0;
+        groupId = 0;
+        
+        // S_IRUSR (00400): Read permission, owner
+        // S_IWUSR (00200): Write permission, owner
+        // S_IRGRP (00040): Read permission, group
+        // S_IROTH (00004): Read permission, others
+        mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+    }
+
+    if (0 == (status = rename(tempFileName, fileName)))
+    {
+        if (0 == SetFileAccess(target, ownerId, groupId, mode, log))
+        {
+            OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' successfully renamed to '%s' with owner %u, group %u and access %u", 
+                original, target, ownerId, groupId, mode);
+        }
+        else
+        {
+            OsConfigLogError(log, "RenameFileWithOwnerAndAccess: '%s' successfully renamed to '%s' without owner and access mode set (%d)",
+                original, target);
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: rename('%s' to '%s') failed with %d", original, target, errno);
+        status = (0 == errno) ? ENOENT : errno;
+    }
+
+    return status;
+}
+
 int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, void* log)
 {
     const char* tempFileNameTemplate = "/tmp/~OSConfig.ReplacingLines%u";
@@ -709,10 +801,9 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 
     if (0 == status)
     {
-        if (0 != (status = rename(tempFileName, fileName)))
+        if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, fileName, log)))
         {
-            OsConfigLogError(log, "ReplaceMarkedLinesInFile: rename('%s' to '%s') failed with %d", tempFileName, fileName, errno);
-            status = (0 == errno) ? ENOENT : errno;
+            OsConfigLogError(log, "ReplaceMarkedLinesInFile: RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempFileName, fileName, status);
         }
         
         remove(tempFileName);
@@ -1489,10 +1580,9 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
         {
             if (0 == (status = ReplaceMarkedLinesInFile(tempLoginDefs, name, newline, '#', log)))
             {
-                if (0 != (status = rename(tempLoginDefs, etcLoginDefs)))
+                if (0 != (status = RenameFileWithOwnerAndAccess(tempLoginDefs, etcLoginDefs, log)))
                 {
-                    OsConfigLogError(log, "SetEtcLoginDefValue: rename('%s' to '%s') failed with %d", tempLoginDefs, etcLoginDefs, errno);
-                    status = (0 == errno) ? ENOENT : errno;
+                    OsConfigLogError(log, "SetEtcLoginDefValue: RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempLoginDefs, etcLoginDefs, status);
                 }
             }
             
