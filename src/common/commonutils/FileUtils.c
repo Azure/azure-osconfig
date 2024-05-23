@@ -693,7 +693,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
         {
             OsConfigLogError(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' without restored original owner and access mode", original, target);
         }
-        else
+        else if (IsFullLoggingEnabled())
         {
             OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode %u", 
                 original, target, ownerId, groupId, mode);
