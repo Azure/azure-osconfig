@@ -625,7 +625,7 @@ int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId
 
     if (FileExists(name))
     {
-        if (0 == (result = stat(name, &statStruct)))
+        if (0 == (status = stat(name, &statStruct)))
         {
             *ownerId = statStruct.st_uid;
             *groupId = statStruct.st_gid;
@@ -666,7 +666,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
     
     if (0 != GetFileAccess(original, &ownerId, &groupId, &mode, log))
     {
-        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: cannot read owner and access mode for original file '%s' (%d), using defaults", original);
+        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: cannot read owner and access mode for original file '%s', using defaults", original);
 
         ownerId = 0;
         groupId = 0;
@@ -678,7 +678,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
         mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
     }
 
-    if (0 == (status = rename(tempFileName, fileName)))
+    if (0 == (status = rename(original, target)))
     {
         if (0 == SetFileAccess(target, ownerId, groupId, mode, log))
         {
@@ -687,7 +687,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
         }
         else
         {
-            OsConfigLogError(log, "RenameFileWithOwnerAndAccess: '%s' successfully renamed to '%s' without owner and access mode set (%d)",
+            OsConfigLogError(log, "RenameFileWithOwnerAndAccess: '%s' successfully renamed to '%s' without owner and access mode set",
                 original, target);
         }
     }
