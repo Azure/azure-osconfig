@@ -613,7 +613,7 @@ int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId
     struct stat statStruct = {0};
     int status = ENOENT;
 
-    if ((NULL == name) || (NULL == ownerId) || (NULL == groupId) || (NULL == mode)
+    if ((NULL == name) || (NULL == ownerId) || (NULL == groupId) || (NULL == mode))
     {
         OsConfigLogError(log, "GetFileAccess: invalid arguments");
         return EINVAL;
