@@ -665,9 +665,9 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
         return EINVAL;
     }
     
-    if (0 != GetFileAccess(original, &ownerId, &groupId, &mode, log))
+    if (0 != GetFileAccess(target, &ownerId, &groupId, &mode, log))
     {
-        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: cannot read owner and access mode for original file '%s', using defaults", original);
+        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: cannot read owner and access mode for original target file '%s', using defaults", target);
 
         ownerId = 0;
         groupId = 0;
@@ -683,12 +683,12 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
     {
         if (0 == SetFileAccess(target, ownerId, groupId, mode, log))
         {
-            OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' successfully renamed to '%s' with owner %u, group %u and access %u", 
+            OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' successfully renamed to '%s' with restored owner %u, group %u and access %u", 
                 original, target, ownerId, groupId, mode);
         }
         else
         {
-            OsConfigLogError(log, "RenameFileWithOwnerAndAccess: '%s' successfully renamed to '%s' without owner and access mode set",
+            OsConfigLogError(log, "RenameFileWithOwnerAndAccess: '%s' successfully renamed to '%s' without restored original owner and access mode",
                 original, target);
         }
     }
