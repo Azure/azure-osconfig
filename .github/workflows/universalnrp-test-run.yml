@@ -86,7 +86,7 @@ jobs:
               PolicyPackage = './${{ inputs.policy-package }}'
               SkipRemediation = \$${{ inputs.skip-remediation }}
           }
-          \$container = New-PesterContainer -Path ./src/tests/universal-nrp-e2e/UniversalNRP.Tests.ps1 -Data $params }
+          \$container = New-PesterContainer -Path ./src/tests/universal-nrp-e2e/UniversalNRP.Tests.ps1 -Data $params
           \$pesterConfig = [PesterConfiguration]@{
               Run = @{
                   Exit = \$true
