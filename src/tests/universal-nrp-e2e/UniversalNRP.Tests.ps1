@@ -2,7 +2,12 @@
 # UniversalNRP.Tests.ps1
 param (
     [Parameter(Mandatory)]
-    [string] $PolicyPackage
+    [string] $PolicyPackage,
+
+    [Parameter(Mandatory)]
+    [int] $ResourceCount,
+
+    [bool] $SkipRemediation = $false
 )
 
 Describe 'Validate Universal NRP' {
@@ -13,7 +18,7 @@ Describe 'Validate Universal NRP' {
         }
 
         It 'Ensure the total resource instances count' {    
-            $result.resources | Should -HaveCount 20
+            $result.resources | Should -HaveCount $ResourceCount
         }
 
         It 'Ensure resons are properly populated' {
@@ -36,7 +41,7 @@ Describe 'Validate Universal NRP' {
     }
 
     # Perform Remediation - Set
-    Context "Set" {
+    Context "Set" -Skip:$SkipRemediation {
         BeforeAll {
             Start-GuestConfigurationPackageRemediation -Path $PolicyPackage
             # Wait for remediation to complete
@@ -45,7 +50,7 @@ Describe 'Validate Universal NRP' {
         }
 
         It 'Ensure the total resource instances count' {    
-            $result.resources | Should -HaveCount 20
+            $result.resources | Should -HaveCount $ResourceCount
         }
 
         It 'Ensure resons are properly populated' {
