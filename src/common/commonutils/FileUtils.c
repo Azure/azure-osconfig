@@ -710,8 +710,10 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
 
 int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, void* log)
 {
-    const char* tempFileNameTemplate = "/tmp/~OSConfig.ReplacingLines%u";
+    const char* tempFileNameTemplate = "%s/~OSConfig.ReplacingLines%u";
     char* tempFileName = NULL;
+    char* fileDirectory = NULL;
+    char* fileNameCopy = NULL;
     FILE* fileHandle = NULL;
     FILE* tempHandle = NULL;
     char* line = NULL;
@@ -732,7 +734,12 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         return ENOMEM;
     }
 
-    if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, rand())))
+    if (FileExists(fileName) && (NULL != (fileNameCopy = DuplicateString(fileName))))
+    {
+        fileDirectory = dirname(fileNameCopy);
+    }
+
+    if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
     {
         if (NULL != (fileHandle = fopen(fileName, "r")))
         {
@@ -818,6 +825,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     }
 
     FREE_MEMORY(tempFileName);
+    FREE_MEMORY(fileNameCopy);
 
     OsConfigLogInfo(log, "ReplaceMarkedLinesInFile('%s') complete with %d", fileName, status);
 

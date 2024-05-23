@@ -1330,7 +1330,7 @@ int RepairRootGroup(void* log)
 {
     const char* etcGroup = "/etc/group";
     const char* rootLine = "root:x:0:\n";
-    const char* tempFileName = "/tmp/~group";
+    const char* tempFileName = "/etc/~group";
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;
