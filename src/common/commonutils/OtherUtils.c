@@ -290,3 +290,23 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
 
     return status;
 }
+
+int DisableAllWirelessInterfaces(void* log)
+{
+    const char* nmCliRadioAllOff = "nmcli radio all off";
+    const char* rfKillBlockAll = "rfkill block all";
+
+    int status = 0;
+    
+    if (0 != (status = ExecuteCommand(NULL, nmCliRadioAllOff, true, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", nmCliRadioAllOff, status);
+    }
+    
+    if (0 != (status = ExecuteCommand(NULL, rfKillBlockAll, true, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
+    }
+
+    return status;
+}

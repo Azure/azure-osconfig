@@ -482,6 +482,7 @@ static const char* g_etcSyslogNgSyslogNgConf = "/etc/syslog-ng/syslog-ng.conf";
 static const char* g_etcNetworkInterfaces = "/etc/network/interfaces";
 static const char* g_etcSysconfigNetwork = "/etc/sysconfig/network";
 static const char* g_etcSysctlConf = "/etc/sysctl.conf";
+static const char* g_etcRcLocal = "/etc/rc.local";
 
 static const char* g_home = "/home";
 static const char* g_devShm = "/dev/shm";
@@ -1420,8 +1421,8 @@ static char* AuditEnsureMartianPacketLoggingIsEnabled(void* log)
 static char* AuditEnsureReversePathSourceValidationIsEnabled(void* log)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", &reason, log);
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", &reason, log);
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "2", &reason, log);
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "2", &reason, log);
     return reason;
 }
 
@@ -1434,12 +1435,12 @@ static char* AuditEnsureTcpSynCookiesAreEnabled(void* log)
 
 static char* AuditEnsureSystemNotActingAsNetworkSniffer(void* log)
 {
-    const char* command = "/sbin/ip addr list";
+    const char* command = "ip address";
     const char* text = "PROMISC";
     char* reason = NULL;
     CheckTextNotFoundInCommandOutput(command, text, &reason, log);
-    CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, &reason, log);
-    CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, &reason, log);
+    CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', text, &reason, log);
+    CheckLineNotFoundOrCommentedOut(g_etcRcLocal, '#', text, &reason, log);
     return reason;
 }
 
@@ -2949,71 +2950,71 @@ static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, void* log)
 static int RemediateEnsureSourceRoutedPacketsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == SecureSaveToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log)) &&
+        (0 == SecureSaveToFile("/proc/sys/net/ipv6/conf/all/accept_source_route", "0", 1, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == SecureSaveToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log)) &&
+        (0 == SecureSaveToFile("/proc/sys/net/ipv6/conf/default/accept_source_route", "0", 1, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureIgnoringBogusIcmpBroadcastResponses(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SecureSaveToFile("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", "1", 1, log);
 }
 
 static int RemediateEnsureIgnoringIcmpEchoPingsToMulticast(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SecureSaveToFile("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", "1", 1, log);
 }
 
 static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.log_martians=1", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.log_martians=1", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "nnet.ipv4.conf.all.log_martians", "net.ipv4.conf.all.log_martians = 1\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.log_martians", "net.ipv4.conf.default.log_martians = 1\n", '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureReversePathSourceValidationIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == SecureSaveToFile("/proc/sys/net/ipv4/conf/all/rp_filter", "2", 1, log)) &&
+        (0 == SecureSaveToFile("/proc/sys/net/ipv4/conf/default/rp_filter", "2", 1, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureTcpSynCookiesAreEnabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SecureSaveToFile("/proc/sys/net/ipv4/tcp_syncookies", "1", 1, log);
 }
 
 static int RemediateEnsureSystemNotActingAsNetworkSniffer(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, "PROMISC", NULL, '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcRcLocal, "PROMISC", NULL, '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAllWirelessInterfacesAreDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return DisableAllWirelessInterfaces(log);
 }
 
 static int RemediateEnsureIpv6ProtocolIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.default.disable_ipv6=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.all.disable_ipv6=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.default.disable_ipv6", "net.ipv6.conf.default.disable_ipv6 = 0\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.all.disable_ipv6", "net.ipv6.conf.all.disable_ipv6 = 0\n", '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDccpIsDisabled(char* value, void* log)

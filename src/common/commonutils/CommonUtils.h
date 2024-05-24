@@ -189,6 +189,8 @@ char* GetHttpProxyData(void* log);
 
 char* RepairBrokenEolCharactersIfAny(const char* value);
 
+int DisableAllWirelessInterfaces(void* log);
+
 typedef struct REPORTED_PROPERTY
 {
     char componentName[MAX_COMPONENT_NAME];
