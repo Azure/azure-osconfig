@@ -103,7 +103,9 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
-    const char* tempFileNameTemplate = "/tmp/~OSConfig.Temp%u";
+    const char* tempFileNameTemplate = "%s/~OSConfig.Temp%u";
+    char* fileDirectory = NULL;
+    char* fileNameCopy = NULL;
     char* tempFileName = NULL;
     char* fileContents = NULL;
     int status = 0;
@@ -114,40 +116,48 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         OsConfigLogError(log, "InternalSecureSaveToFile: invalid arguments");
         return false;
     }
-    else if (NULL == (tempFileName = FormatAllocateString(tempFileNameTemplate, rand())))
+
+    if (FileExists(fileName) && (NULL != (fileNameCopy = DuplicateString(fileName))))
     {
-        OsConfigLogError(log, "InternalSecureSaveToFile: out of memory");
-        return false;
+        fileDirectory = dirname(fileNameCopy);
     }
 
-    if ((0 == strcmp(mode, "a") && FileExists(fileName)))
+    if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
     {
-        if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
+        if ((0 == strcmp(mode, "a") && FileExists(fileName)))
         {
-            if (true == (result = SaveToFile(tempFileName, "w", fileContents, strlen(fileContents), log)))
+            if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
             {
-                // If there is no EOL at the end of file, add one before the append
-                if (EOL != fileContents[strlen(fileContents) - 1])
+                if (true == (result = SaveToFile(tempFileName, "w", fileContents, strlen(fileContents), log)))
                 {
-                    SaveToFile(tempFileName, "a", "\n", 1, log);
+                    // If there is no EOL at the end of file, add one before the append
+                    if (EOL != fileContents[strlen(fileContents) - 1])
+                    {
+                        SaveToFile(tempFileName, "a", "\n", 1, log);
+                    }
+
+                    result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log);
                 }
 
-                result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log);
+                FREE_MEMORY(fileContents);
             }
-            
-            FREE_MEMORY(fileContents);
+            else
+            {
+                OsConfigLogError(log, "InternalSecureSaveToFile: failed to read from '%s'", fileName);
+                result = false;
+            }
         }
         else
         {
-            OsConfigLogError(log, "InternalSecureSaveToFile: failed to read from '%s'", fileName);
-            result = false;
+            result = SaveToFile(tempFileName, "w", payload, payloadSizeBytes, log);
         }
     }
     else
     {
-        result = SaveToFile(tempFileName, "w", payload, payloadSizeBytes, log);
+        OsConfigLogError(log, "InternalSecureSaveToFile: out of memory");
+        result = false;
     }
-        
+
     if (result && (false == FileExists(tempFileName)))
     {
         OsConfigLogError(log, "InternalSecureSaveToFile: failed to create temporary file");
@@ -156,9 +166,9 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
 
     if (result)
     {
-        if (0 != (status = rename(tempFileName, fileName)))
+        if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, fileName, log)))
         {
-            OsConfigLogError(log, "InternalSecureSaveToFile: rename('%s' to '%s') failed with %d", tempFileName, fileName, errno);
+            OsConfigLogError(log, "InternalSecureSaveToFile: RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempFileName, fileName, status);
             result = false;
         }
 
@@ -166,6 +176,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     }
 
     FREE_MEMORY(tempFileName);
+    FREE_MEMORY(fileNameCopy);
 
     return result;
 }
@@ -608,10 +619,101 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
     return status;
 }
 
+int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
+{
+    struct stat statStruct = {0};
+    int status = ENOENT;
+
+    if ((NULL == name) || (NULL == ownerId) || (NULL == groupId) || (NULL == mode))
+    {
+        OsConfigLogError(log, "GetFileAccess: invalid arguments");
+        return EINVAL;
+    }
+
+    *ownerId = 0;
+    *groupId = 0;
+    *mode = 0;
+
+    if (FileExists(name))
+    {
+        if (0 == (status = stat(name, &statStruct)))
+        {
+            *ownerId = statStruct.st_uid;
+            *groupId = statStruct.st_gid;
+            *mode = DecimalToOctal(statStruct.st_mode & 07777);
+        }
+        else
+        {
+            OsConfigLogError(log, "GetFileAccess: stat('%s') failed with %d", name, errno);
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "GetFileAccess: '%s' does not exist", name);
+    }
+
+    return status;
+}
+
+int RenameFileWithOwnerAndAccess(const char* original, const char* target, void* log)
+{
+    unsigned int ownerId = 0;
+    unsigned int groupId = 0;
+    unsigned int mode = 0;
+    int status = 0;
+
+    if ((NULL == original) || (NULL == target))
+    {
+        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: invalid arguments");
+        return EINVAL;
+    }
+    else if (false == FileExists(original))
+    {
+        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: original file '%s' does not exist", original);
+        return EINVAL;
+    }
+    
+    if (0 != GetFileAccess(target, &ownerId, &groupId, &mode, log))
+    {
+        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: cannot read owner and access mode for original target file '%s', using defaults", target);
+
+        ownerId = 0;
+        groupId = 0;
+        
+        // S_IRUSR (00400): Read permission, owner
+        // S_IWUSR (00200): Write permission, owner
+        // S_IRGRP (00040): Read permission, group
+        // S_IROTH (00004): Read permission, others
+        mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+    }
+
+    if (0 == (status = rename(original, target)))
+    {
+        if (0 != SetFileAccess(target, ownerId, groupId, mode, log))
+        {
+            OsConfigLogError(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' without restored original owner and access mode", original, target);
+        }
+        else if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode %u", 
+                original, target, ownerId, groupId, mode);
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: rename('%s' to '%s') failed with %d", original, target, errno);
+        status = (0 == errno) ? ENOENT : errno;
+    }
+
+    return status;
+}
+
 int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, void* log)
 {
-    const char* tempFileNameTemplate = "/tmp/~OSConfig.ReplacingLines%u";
+    const char* tempFileNameTemplate = "%s/~OSConfig.ReplacingLines%u";
     char* tempFileName = NULL;
+    char* fileDirectory = NULL;
+    char* fileNameCopy = NULL;
     FILE* fileHandle = NULL;
     FILE* tempHandle = NULL;
     char* line = NULL;
@@ -632,7 +734,12 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         return ENOMEM;
     }
 
-    if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, rand())))
+    if (FileExists(fileName) && (NULL != (fileNameCopy = DuplicateString(fileName))))
+    {
+        fileDirectory = dirname(fileNameCopy);
+    }
+
+    if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
     {
         if (NULL != (fileHandle = fopen(fileName, "r")))
         {
@@ -709,16 +816,16 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 
     if (0 == status)
     {
-        if (0 != (status = rename(tempFileName, fileName)))
+        if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, fileName, log)))
         {
-            OsConfigLogError(log, "ReplaceMarkedLinesInFile: rename('%s' to '%s') failed with %d", tempFileName, fileName, errno);
-            status = (0 == errno) ? ENOENT : errno;
+            OsConfigLogError(log, "ReplaceMarkedLinesInFile: RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempFileName, fileName, status);
         }
         
         remove(tempFileName);
     }
 
     FREE_MEMORY(tempFileName);
+    FREE_MEMORY(fileNameCopy);
 
     OsConfigLogInfo(log, "ReplaceMarkedLinesInFile('%s') complete with %d", fileName, status);
 
@@ -1489,10 +1596,9 @@ int SetEtcLoginDefValue(const char* name, const char* value, void* log)
         {
             if (0 == (status = ReplaceMarkedLinesInFile(tempLoginDefs, name, newline, '#', log)))
             {
-                if (0 != (status = rename(tempLoginDefs, etcLoginDefs)))
+                if (0 != (status = RenameFileWithOwnerAndAccess(tempLoginDefs, etcLoginDefs, log)))
                 {
-                    OsConfigLogError(log, "SetEtcLoginDefValue: rename('%s' to '%s') failed with %d", tempLoginDefs, etcLoginDefs, errno);
-                    status = (0 == errno) ? ENOENT : errno;
+                    OsConfigLogError(log, "SetEtcLoginDefValue: RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempLoginDefs, etcLoginDefs, status);
                 }
             }
             

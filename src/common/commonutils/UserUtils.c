@@ -1330,7 +1330,7 @@ int RepairRootGroup(void* log)
 {
     const char* etcGroup = "/etc/group";
     const char* rootLine = "root:x:0:\n";
-    const char* tempFileName = "/tmp/~group";
+    const char* tempFileName = "/etc/~group";
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;
@@ -1380,10 +1380,10 @@ int RepairRootGroup(void* log)
                             if (AppendToFile(tempFileName, original, strlen(original), log))
                             {
                                 // In a single atomic operation move edited contents from temporary file to /etc/group
-                                if (0 != (status = rename(tempFileName, etcGroup)))
+                                if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, etcGroup, log)))
                                 {
-                                    OsConfigLogError(log, "RepairRootGroup:  rename('%s' to '%s') failed with %d", tempFileName, etcGroup, errno);
-                                    status = (0 == errno) ? ENOENT : errno;
+                                    OsConfigLogError(log, "RepairRootGroup:  RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", 
+                                        tempFileName, etcGroup, status);
                                 }
                             }
                             else

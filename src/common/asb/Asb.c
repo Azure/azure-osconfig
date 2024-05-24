@@ -2736,25 +2736,19 @@ static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* val
 static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == ReplaceMarkedLinesInFile(g_etcPasswd, "+", NULL, '#', log)) &&
-        (0 == SetFileAccess(g_etcPasswd, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcPasswd ? g_desiredEnsurePermissionsOnEtcPasswd :
-        g_defaultEnsurePermissionsOnEtcPasswd), log))) ? 0 : ENOENT;
+    return ReplaceMarkedLinesInFile(g_etcPasswd, "+", NULL, '#', log);
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == ReplaceMarkedLinesInFile(g_etcShadow, "+", NULL, '#', log)) &&
-        (0 == SetFileAccess(g_etcShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadow ? g_desiredEnsurePermissionsOnEtcShadow : 
-        g_defaultEnsurePermissionsOnEtcShadow), log))) ? 0 : ENOENT;
+    return ReplaceMarkedLinesInFile(g_etcShadow, "+", NULL, '#', log);
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == ReplaceMarkedLinesInFile(g_etcGroup, "+", NULL, '#', log)) &&
-        (0 == SetFileAccess(g_etcGroup, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGroup ? g_desiredEnsurePermissionsOnEtcGroup : 
-        g_defaultEnsurePermissionsOnEtcGroup), log))) ? 0 : ENOENT;
+    return ReplaceMarkedLinesInFile(g_etcGroup, "+", NULL, '#', log);
 }
 
 static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, void* log)
