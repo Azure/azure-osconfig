@@ -2978,7 +2978,7 @@ static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, void* log)
     UNUSED(value);
     return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.log_martians=1", true, false, 0, 0, NULL, NULL, log)) &&
         (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.log_martians=1", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "nnet.ipv4.conf.all.log_martians", "net.ipv4.conf.all.log_martians = 1\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.log_martians", "net.ipv4.conf.all.log_martians = 1\n", '#', log)) &&
         (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.log_martians", "net.ipv4.conf.default.log_martians = 1\n", '#', log))) ? 0 : ENOENT;
 }
 
