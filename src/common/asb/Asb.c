@@ -544,7 +544,6 @@ static const char* g_etcPostfixMainCf = "/etc/postfix/main.cf";
 static const char* g_inetInterfacesLocalhost = "inet_interfaces localhost";
 static const char* g_autofs = "autofs";
 static const char* g_ipv4ll = "ipv4ll";
-static const char* g_noZeroConf = "NOZEROCONF=yes";
 
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
