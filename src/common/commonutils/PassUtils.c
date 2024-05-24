@@ -33,8 +33,6 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
 
 int SetEnsurePasswordReuseIsLimited(int remember, void* log)
 {
-    const char* etcPamdCommonPasswordCopy = "/etc/pam.d/~common-password.copy";
-    const char* etcPamdSystemAuthCopy = "/etc/pam.d/~system-auth.copy";
     const char* etcPamdCommonPasswordTemplate = "password required pam_unix.so sha512 shadow %s=%d\n";
     const char* etcPamdSystemAuthTemplate = "password required pam_pwcheck.so nullok %s=%d\n";
     char* newline = NULL;
@@ -50,7 +48,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     {
         if (NULL != (newline = FormatAllocateString(etcPamdCommonPasswordTemplate, g_remember, remember)))
         {
-            status = ReplaceMarkedLinesInFile(etcPamdCommonPasswordCopy, g_remember, newline, '#', log);
+            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', log);
             FREE_MEMORY(newline);
         }
         else
@@ -65,7 +63,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     {
         if (NULL != (newline = FormatAllocateString(etcPamdSystemAuthTemplate, g_remember, remember)))
         {
-            _status = ReplaceMarkedLinesInFile(etcPamdSystemAuthCopy, g_remember, newline, '#', log);
+            _status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', log);
             FREE_MEMORY(newline);
         }
         else
