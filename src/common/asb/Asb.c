@@ -479,6 +479,10 @@ static const char* g_etcModProbeD = "/etc/modprobe.d";
 static const char* g_etcProfile = "/etc/profile";
 static const char* g_etcRsyslogConf = "/etc/rsyslog.conf";
 static const char* g_etcSyslogNgSyslogNgConf = "/etc/syslog-ng/syslog-ng.conf";
+static const char* g_etcNetworkInterfaces = "/etc/network/interfaces";
+static const char* g_etcSysconfigNetwork = "/etc/sysconfig/network";
+static const char* g_etcSysctlConf = "/etc/sysctl.conf";
+static const char* g_etcRcLocal = "/etc/rc.local";
 
 static const char* g_home = "/home";
 static const char* g_devShm = "/dev/shm";
@@ -541,6 +545,8 @@ static const char* g_needSvcgssd = "NEED_SVCGSSD = yes";
 static const char* g_etcPostfixMainCf = "/etc/postfix/main.cf";
 static const char* g_inetInterfacesLocalhost = "inet_interfaces localhost";
 static const char* g_autofs = "autofs";
+static const char* g_ipv4ll = "ipv4ll";
+static const char* g_sysCtlA = "sysctl -a";
 
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
@@ -1338,31 +1344,37 @@ static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void* log)
 {
     const char* readIpTables = "iptables -S";
     char* reason = NULL;
-    CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, log);
-    CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, log);
-    CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, log);
+    
+    if ((0 != CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, log)))
+    {
+        FREE_MEMORY(reason);
+        reason = DuplicateString("Ensure that all necessary communication channels have explicit "
+            "ACCEPT firewall policies set and then manually set the default firewall policy for "
+            "INPUT, FORWARD and OUTPUT to DROP. Automatic remediation is not possible");
+    }
+        
     return reason;
 }
 
 static char* AuditEnsurePacketRedirectSendingIsDisabled(void* log)
 {
-    const char* command = "sysctl -a";
     char* reason = NULL;
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.send_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.send_redirects = 0", &reason, log);
     return reason;
 }
 
 static char* AuditEnsureIcmpRedirectsIsDisabled(void* log)
 {
-    const char* command = "sysctl -a";
     char* reason = NULL;
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.secure_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.accept_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.accept_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.accept_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.accept_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.secure_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.secure_redirects = 0", &reason, log);
     return reason;
 }
 
@@ -1398,18 +1410,17 @@ static char* AuditEnsureIgnoringIcmpEchoPingsToMulticast(void* log)
 
 static char* AuditEnsureMartianPacketLoggingIsEnabled(void* log)
 {
-    const char* command = "sysctl -a";
     char* reason = NULL;
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.log_martians = 1", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.log_martians = 1", &reason, log);
     return reason;
 }
 
 static char* AuditEnsureReversePathSourceValidationIsEnabled(void* log)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", &reason, log);
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", &reason, log);
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "2", &reason, log);
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "2", &reason, log);
     return reason;
 }
 
@@ -1422,12 +1433,12 @@ static char* AuditEnsureTcpSynCookiesAreEnabled(void* log)
 
 static char* AuditEnsureSystemNotActingAsNetworkSniffer(void* log)
 {
-    const char* command = "/sbin/ip addr list";
+    const char* command = "ip address";
     const char* text = "PROMISC";
     char* reason = NULL;
     CheckTextNotFoundInCommandOutput(command, text, &reason, log);
-    CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, &reason, log);
-    CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, &reason, log);
+    CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', text, &reason, log);
+    CheckLineNotFoundOrCommentedOut(g_etcRcLocal, '#', text, &reason, log);
     return reason;
 }
 
@@ -1450,7 +1461,9 @@ static char* AuditEnsureAllWirelessInterfacesAreDisabled(void* log)
 static char* AuditEnsureIpv6ProtocolIsEnabled(void* log)
 {
     char* reason = NULL;
-    CheckTextFoundInCommandOutput("cat /sys/module/ipv6/parameters/disable", "0", &reason, log);
+    CheckLineFoundNotCommentedOut("/sys/module/ipv6/parameters/disable", '#', "0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.disable_ipv6 = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.disable_ipv6 = 0", &reason, log);
     return reason;
 }
 
@@ -1486,7 +1499,11 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(void* log)
 {
     char* reason = NULL;
     CheckDaemonNotActive(g_avahiDaemon, &reason, log);
-    CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", &reason, log);
+    CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', g_ipv4ll, &reason, log);
+    if (FileExists(g_etcSysconfigNetwork))
+    {
+        CheckLineFoundNotCommentedOut(g_etcSysconfigNetwork, '#', "NOZEROCONF=yes", &reason, log);
+    }
     return reason;
 }
 
@@ -1523,7 +1540,7 @@ static char* AuditEnsureCoreDumpsAreRestricted(void* log)
     char* reason = NULL;
     CheckLineFoundNotCommentedOut("/etc/security/limits.conf", '#', "hard core 0", &reason, log);
     CheckTextFoundInFolder("/etc/security/limits.d", fsSuidDumpable, &reason, log);
-    CheckTextFoundInCommandOutput("sysctl -a", fsSuidDumpable, &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, fsSuidDumpable, &reason, log);
     return reason;
 }
 
@@ -2898,92 +2915,106 @@ static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, void* l
 static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    OsConfigLogInfo(log, "Automatic remediation is not possible. Manually ensure that "
+        "all necessary communication channels have explicit ACCEPT firewall policies set "
+        "and then set the default firewall policy for INPUT, FORWARD and OUTPUT to DROP");
+    return 0;
 }
 
 static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.accept_redirects", "net.ipv4.conf.all.accept_redirects = 0\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.accept_redirects", "net.ipv4.conf.default.accept_redirects = 0\n", '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.default.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.all.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.secure_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.secure_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.accept_redirects", "net.ipv4.conf.default.accept_redirects = 0\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.default.accept_redirects", "net.ipv6.conf.default.accept_redirects = 0\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.accept_redirects", "net.ipv4.conf.all.accept_redirects = 0\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.all.accept_redirects", "net.ipv6.conf.all.accept_redirects = 0\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.secure_redirects", "net.ipv4.conf.default.secure_redirects = 0\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.secure_redirects", "net.ipv4.conf.all.secure_redirects = 0\n", '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSourceRoutedPacketsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == SecureSaveToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log)) &&
+        (0 == SecureSaveToFile("/proc/sys/net/ipv6/conf/all/accept_source_route", "0", 1, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == SecureSaveToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log)) &&
+        (0 == SecureSaveToFile("/proc/sys/net/ipv6/conf/default/accept_source_route", "0", 1, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureIgnoringBogusIcmpBroadcastResponses(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SecureSaveToFile("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", "1", 1, log);
 }
 
 static int RemediateEnsureIgnoringIcmpEchoPingsToMulticast(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SecureSaveToFile("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", "1", 1, log);
 }
 
 static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.log_martians=1", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.log_martians=1", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.log_martians", "net.ipv4.conf.all.log_martians = 1\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.log_martians", "net.ipv4.conf.default.log_martians = 1\n", '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureReversePathSourceValidationIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == SecureSaveToFile("/proc/sys/net/ipv4/conf/all/rp_filter", "2", 1, log)) &&
+        (0 == SecureSaveToFile("/proc/sys/net/ipv4/conf/default/rp_filter", "2", 1, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureTcpSynCookiesAreEnabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SecureSaveToFile("/proc/sys/net/ipv4/tcp_syncookies", "1", 1, log);
 }
 
 static int RemediateEnsureSystemNotActingAsNetworkSniffer(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, "PROMISC", NULL, '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcRcLocal, "PROMISC", NULL, '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAllWirelessInterfacesAreDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return DisableAllWirelessInterfaces(log);
 }
 
 static int RemediateEnsureIpv6ProtocolIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.default.disable_ipv6=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.all.disable_ipv6=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.default.disable_ipv6", "net.ipv6.conf.default.disable_ipv6 = 0\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.all.disable_ipv6", "net.ipv6.conf.all.disable_ipv6 = 0\n", '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDccpIsDisabled(char* value, void* log)
@@ -3021,8 +3052,10 @@ static int RemediateEnsureTipcIsDisabled(char* value, void* log)
 static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_avahiDaemon, log);
+    return ((false == IsDaemonActive(g_avahiDaemon, log)) && 
+        (0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, g_ipv4ll, NULL, '#', log)) && 
+        (0 == ReplaceMarkedLinesInFile(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)

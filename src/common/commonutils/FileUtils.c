@@ -723,10 +723,15 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     bool replacedLine = false;
     int status = 0;
 
-    if ((NULL == fileName) || (false == FileExists(fileName)) || (NULL == marker))
+    if ((NULL == fileName) || (NULL == marker))
     {
         OsConfigLogError(log, "ReplaceMarkedLinesInFile called with invalid arguments");
         return EINVAL;
+    }
+    else if (false == FileExists(fileName))
+    {
+        OsConfigLogInfo(log, "ReplaceMarkedLinesInFile called for a file that does not exist: '%s'", fileName);
+        return 0;
     }
     else if (NULL == (line = malloc(lineMax + 1)))
     {
@@ -734,7 +739,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         return ENOMEM;
     }
 
-    if (FileExists(fileName) && (NULL != (fileNameCopy = DuplicateString(fileName))))
+    if (NULL != (fileNameCopy = DuplicateString(fileName)))
     {
         fileDirectory = dirname(fileNameCopy);
     }
