@@ -2905,8 +2905,9 @@ static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, void* l
 static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == ExecuteCommand(NULL, "iptables - P INPUT DROP", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "iptables - P FORWARD DROP", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "iptables - P OUTPUT DROP", true, false, 0, 0, NULL, NULL, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, void* log)
