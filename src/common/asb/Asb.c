@@ -479,6 +479,8 @@ static const char* g_etcModProbeD = "/etc/modprobe.d";
 static const char* g_etcProfile = "/etc/profile";
 static const char* g_etcRsyslogConf = "/etc/rsyslog.conf";
 static const char* g_etcSyslogNgSyslogNgConf = "/etc/syslog-ng/syslog-ng.conf";
+static const char* g_etcNetworkInterfaces = "/etc/network/interfaces";
+static const char* g_etcSysconfigNetwork = "/etc/sysconfig/network";
 
 static const char* g_home = "/home";
 static const char* g_devShm = "/dev/shm";
@@ -541,6 +543,8 @@ static const char* g_needSvcgssd = "NEED_SVCGSSD = yes";
 static const char* g_etcPostfixMainCf = "/etc/postfix/main.cf";
 static const char* g_inetInterfacesLocalhost = "inet_interfaces localhost";
 static const char* g_autofs = "autofs";
+static const char* g_ipv4ll = "ipv4ll";
+static const char* g_noZeroConf = "NOZEROCONF=yes";
 
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
@@ -1486,7 +1490,11 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(void* log)
 {
     char* reason = NULL;
     CheckDaemonNotActive(g_avahiDaemon, &reason, log);
-    CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", &reason, log);
+    CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', g_ipv4ll, &reason, log);
+    if (FileExists(g_etcSysconfigNetwork))
+    {
+        CheckLineFoundNotCommentedOut(g_etcSysconfigNetwork, '#', "NOZEROCONF=yes", &reason, log);
+    }
     return reason;
 }
 
@@ -3021,8 +3029,10 @@ static int RemediateEnsureTipcIsDisabled(char* value, void* log)
 static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_avahiDaemon, NULL, log);
+    return ((false == IsDaemonActive(g_avahiDaemon)) && 
+        (0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, g_ipv4ll, NULL, '#', log)) && 
+        (0 == ReplaceMarkedLinesInFile(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes", '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)

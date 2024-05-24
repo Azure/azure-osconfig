@@ -730,8 +730,8 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     }
     else if (false == FileExists(fileName))
     {
-        OsConfigLogError(log, "ReplaceMarkedLinesInFile called for a file that does not exist: '%s'", fileName);
-        return EINVAL;
+        OsConfigLogInfo(log, "ReplaceMarkedLinesInFile called for a file that does not exist: '%s'", fileName);
+        return 0;
     }
     else if (NULL == (line = malloc(lineMax + 1)))
     {
