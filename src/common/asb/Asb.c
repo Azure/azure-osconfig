@@ -3029,8 +3029,8 @@ static int RemediateEnsureTipcIsDisabled(char* value, void* log)
 static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    StopAndDisableDaemon(g_avahiDaemon, NULL, log);
-    return ((false == IsDaemonActive(g_avahiDaemon)) && 
+    StopAndDisableDaemon(g_avahiDaemon, log);
+    return ((false == IsDaemonActive(g_avahiDaemon, log)) && 
         (0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, g_ipv4ll, NULL, '#', log)) && 
         (0 == ReplaceMarkedLinesInFile(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes", '#', log))) ? 0 : ENOENT;
 }
