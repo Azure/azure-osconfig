@@ -1341,9 +1341,17 @@ static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void* log)
 {
     const char* readIpTables = "iptables -S";
     char* reason = NULL;
-    CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, log);
-    CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, log);
-    CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, log);
+    
+    if ((0 != CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, log)))
+    {
+        FREE_MEMORY(reason);
+        reason = DuplicateString("Ensure that all necessary communication channels have explicit "
+            "ACCEPT firewall policies set and then manually set the default firewall policy for "
+            "INPUT, FORWARD and OUTPUT to DROP. Automatic remediation is not possible");
+    }
+        
     return reason;
 }
 
@@ -2905,16 +2913,20 @@ static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, void* l
 static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == ExecuteCommand(NULL, "iptables -P INPUT DROP", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ExecuteCommand(NULL, "iptables -P FORWARD DROP", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ExecuteCommand(NULL, "iptables -P OUTPUT DROP", true, false, 0, 0, NULL, NULL, log))) ? 0 : ENOENT;
+    OsConfigLogInfo(log, "Automatic remediation is not possible. Manually ensure that "
+        "all necessary communication channels have explicit ACCEPT firewall policies set "
+        "and then set the default firewall policy for INPUT, FORWARD and OUTPUT to DROP");
+    return 0;
 }
 
 static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, void* log)
 {
+    const char* etcSysctlConf = "/etc/sysctl.conf";
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ReplaceMarkedLinesInFile(etcSysctlConf, "net.ipv4.conf.all.accept_redirects", "net.ipv4.conf.all.accept_redirects = 0\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(etcSysctlConf, "net.ipv4.conf.default.accept_redirects", "net.ipv4.conf.default.accept_redirects = 0\n", '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, void* log)
@@ -3032,7 +3044,7 @@ static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, void* log)
     StopAndDisableDaemon(g_avahiDaemon, log);
     return ((false == IsDaemonActive(g_avahiDaemon, log)) && 
         (0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, g_ipv4ll, NULL, '#', log)) && 
-        (0 == ReplaceMarkedLinesInFile(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes", '#', log))) ? 0 : ENOENT;
+        (0 == ReplaceMarkedLinesInFile(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)
