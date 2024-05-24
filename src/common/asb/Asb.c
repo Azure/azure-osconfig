@@ -546,6 +546,7 @@ static const char* g_etcPostfixMainCf = "/etc/postfix/main.cf";
 static const char* g_inetInterfacesLocalhost = "inet_interfaces localhost";
 static const char* g_autofs = "autofs";
 static const char* g_ipv4ll = "ipv4ll";
+static const char* g_sysCtlA = "sysctl -a";
 
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
@@ -1359,23 +1360,21 @@ static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void* log)
 
 static char* AuditEnsurePacketRedirectSendingIsDisabled(void* log)
 {
-    const char* command = "sysctl -a";
     char* reason = NULL;
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.send_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.send_redirects = 0", &reason, log);
     return reason;
 }
 
 static char* AuditEnsureIcmpRedirectsIsDisabled(void* log)
 {
-    const char* command = "sysctl -a";
     char* reason = NULL;
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.secure_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.accept_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.accept_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.accept_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.accept_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.secure_redirects = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.secure_redirects = 0", &reason, log);
     return reason;
 }
 
@@ -1411,10 +1410,9 @@ static char* AuditEnsureIgnoringIcmpEchoPingsToMulticast(void* log)
 
 static char* AuditEnsureMartianPacketLoggingIsEnabled(void* log)
 {
-    const char* command = "sysctl -a";
     char* reason = NULL;
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", &reason, log);
-    CheckTextFoundInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.log_martians = 1", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.log_martians = 1", &reason, log);
     return reason;
 }
 
@@ -1463,7 +1461,9 @@ static char* AuditEnsureAllWirelessInterfacesAreDisabled(void* log)
 static char* AuditEnsureIpv6ProtocolIsEnabled(void* log)
 {
     char* reason = NULL;
-    CheckTextFoundInCommandOutput("cat /sys/module/ipv6/parameters/disable", "0", &reason, log);
+    CheckLineFoundNotCommentedOut("/sys/module/ipv6/parameters/disable", '#', "0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.disable_ipv6 = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.disable_ipv6 = 0", &reason, log);
     return reason;
 }
 
@@ -1540,7 +1540,7 @@ static char* AuditEnsureCoreDumpsAreRestricted(void* log)
     char* reason = NULL;
     CheckLineFoundNotCommentedOut("/etc/security/limits.conf", '#', "hard core 0", &reason, log);
     CheckTextFoundInFolder("/etc/security/limits.d", fsSuidDumpable, &reason, log);
-    CheckTextFoundInCommandOutput("sysctl -a", fsSuidDumpable, &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, fsSuidDumpable, &reason, log);
     return reason;
 }
 
