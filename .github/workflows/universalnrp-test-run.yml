@@ -132,5 +132,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: success() || failure()
         with:
-          name: universal-nrp-test-${{ inputs.target }}-${{ inputs.install-osconfig == true && 'withOSConfig' || 'withoutOSConfig' }}-logs
+          name: universal-nrp-test-${{ inputs.target }}-${{ steps.normalize.outputs.policyPackage }}-${{ inputs.install-osconfig == true && 'withOSConfig' || 'withoutOSConfig' }}-logs
           path: osconfig-logs/osconfig*
