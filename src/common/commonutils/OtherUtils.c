@@ -305,9 +305,9 @@ int DisableAllWirelessInterfaces(void* log)
 
     int status = 0;
    
-    if (0 == AreAllWirelessInterfacesDisabled(log))
+    if (0 == CheckAllWirelessInterfacesAreDisabled(NULL, log))
     {
-        OsConfigLogInfo(log, "DisableAllWirelessInterfaces: No active wireless interfaces are present");
+        OsConfigLogInfo(log, "DisableAllWirelessInterfaces: no active wireless interfaces are present");
         return 0;
     }
 
