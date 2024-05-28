@@ -412,6 +412,7 @@ static const char* g_initEnsurePasswordCreationRequirementsObject = "initEnsureP
 static const char* g_initEnsureFilePermissionsForAllRsyslogLogFilesObject = "initEnsureFilePermissionsForAllRsyslogLogFiles";
 static const char* g_initEnsureUsersDotFilesArentGroupOrWorldWritableObject = "initEnsureUsersDotFilesArentGroupOrWorldWritable";
 static const char* g_initEnsureUnnecessaryAccountsAreRemovedObject = "initEnsureUnnecessaryAccountsAreRemoved";
+static const char* g_initEnsureDefaultDenyFirewallPolicyIsSetObject = "initEnsureDefaultDenyFirewallPolicyIsSet";
 
 // Default values for checks that support configuration (and initialization)
 static const char* g_defaultEnsurePermissionsOnEtcIssue = "644";
@@ -447,6 +448,7 @@ static const char* g_defaultEnsurePasswordCreationRequirements = "3,14,4,-1,-1,-
 static const char* g_defaultEnsureFilePermissionsForAllRsyslogLogFiles = "600,640";
 static const char* g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable = "600,644,664,700,744";
 static const char* g_defaultEnsureUnnecessaryAccountsAreRemoved = "games,test";
+static const char* g_defaultEnsureDefaultDenyFirewallPolicyIsSet = "0"; //zero: audit-only, non-zero: add forced remediation
 
 static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
@@ -584,6 +586,7 @@ static char* g_desiredEnsurePasswordCreationRequirements = NULL;
 static char* g_desiredEnsureFilePermissionsForAllRsyslogLogFiles = NULL;
 static char* g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable = NULL;
 static char* g_desiredEnsureUnnecessaryAccountsAreRemoved = NULL;
+static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
 
 void AsbInitialize(void* log)
 {
@@ -621,7 +624,8 @@ void AsbInitialize(void* log)
         (NULL == (g_desiredEnsurePasswordCreationRequirements = DuplicateString(g_defaultEnsurePasswordCreationRequirements))) ||
         (NULL == (g_desiredEnsureFilePermissionsForAllRsyslogLogFiles = DuplicateString(g_defaultEnsureFilePermissionsForAllRsyslogLogFiles))) ||
         (NULL == (g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable = DuplicateString(g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable))) ||
-        (NULL == (g_desiredEnsureUnnecessaryAccountsAreRemoved = DuplicateString(g_defaultEnsureUnnecessaryAccountsAreRemoved))))
+        (NULL == (g_desiredEnsureUnnecessaryAccountsAreRemoved = DuplicateString(g_defaultEnsureUnnecessaryAccountsAreRemoved))) ||
+        (NULL == (g_desiredEnsureDefaultDenyFirewallPolicyIsSet = DuplicateString(g_defaultEnsureDefaultDenyFirewallPolicyIsSet))))
     {
         OsConfigLogError(log, "AsbInitialize: failed to allocate memory");
     }
@@ -674,6 +678,7 @@ void AsbShutdown(void* log)
     FREE_MEMORY(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles);
     FREE_MEMORY(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable);
     FREE_MEMORY(g_desiredEnsureUnnecessaryAccountsAreRemoved);
+    FREE_MEMORY(g_desiredEnsureDefaultDenyFirewallPolicyIsSet);
 
     SshAuditCleanup(log);
 }
@@ -1344,15 +1349,17 @@ static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void* log)
 {
     const char* readIpTables = "iptables -S";
     char* reason = NULL;
+    int forceDrop = atoi(g_desiredEnsureDefaultDenyFirewallPolicyIsSet ? 
+        g_desiredEnsureDefaultDenyFirewallPolicyIsSet : g_defaultEnsureDefaultDenyFirewallPolicyIsSet);
     
     if ((0 != CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, log)) ||
         (0 != CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, log)) ||
         (0 != CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, log)))
     {
         FREE_MEMORY(reason);
-        reason = DuplicateString("Ensure that all necessary communication channels have explicit "
+        reason = FormatAllocateString("Ensure that all necessary communication channels have explicit "
             "ACCEPT firewall policies set and then manually set the default firewall policy for "
-            "INPUT, FORWARD and OUTPUT to DROP. Automatic remediation is not possible");
+            "INPUT, FORWARD and OUTPUT to DROP%s", forceDrop ? "." : ". Automatic remediation is not possible");
     }
         
     return reason;
@@ -1461,9 +1468,8 @@ static char* AuditEnsureAllWirelessInterfacesAreDisabled(void* log)
 static char* AuditEnsureIpv6ProtocolIsEnabled(void* log)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut("/sys/module/ipv6/parameters/disable", '#', "0", &reason, log);
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.disable_ipv6 = 0", &reason, log);
     CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.disable_ipv6 = 0", &reason, log);
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.disable_ipv6 = 0", &reason, log);
     return reason;
 }
 
@@ -2376,6 +2382,11 @@ static int InitEnsureUnnecessaryAccountsAreRemoved(char* value)
     return ReplaceString(&g_desiredEnsureUnnecessaryAccountsAreRemoved, value, g_defaultEnsureUnnecessaryAccountsAreRemoved);
 }
 
+static int InitEnsureDefaultDenyFirewallPolicyIsSet(char* value)
+{
+    return ReplaceString(&g_desiredEnsureDefaultDenyFirewallPolicyIsSet, value, g_defaultEnsureDefaultDenyFirewallPolicyIsSet);
+}
+
 static int RemediateEnsurePermissionsOnEtcIssue(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcIssue(value);
@@ -2914,11 +2925,20 @@ static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, void* l
 
 static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, void* log)
 {
+    int status = 0;
     UNUSED(value);
-    OsConfigLogInfo(log, "Automatic remediation is not possible. Manually ensure that "
-        "all necessary communication channels have explicit ACCEPT firewall policies set "
-        "and then set the default firewall policy for INPUT, FORWARD and OUTPUT to DROP");
-    return 0;
+    InitEnsureDefaultDenyFirewallPolicyIsSet(value);
+    if (atoi(g_desiredEnsureDefaultDenyFirewallPolicyIsSet))
+    {
+        status = SetDefaultDenyFirewallPolicy(log);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "Automatic remediation is not possible. Manually ensure that "
+            "all necessary communication channels have explicit ACCEPT firewall policies set "
+            "and then set the default firewall policy for INPUT, FORWARD and OUTPUT to DROP");
+    }
+    return status;
 }
 
 static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, void* log)
@@ -5252,6 +5272,10 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         else if (0 == strcmp(objectName, g_initEnsureUnnecessaryAccountsAreRemovedObject))
         {
             status = InitEnsureUnnecessaryAccountsAreRemoved(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureDefaultDenyFirewallPolicyIsSetObject))
+        {
+            status = InitEnsureDefaultDenyFirewallPolicyIsSet(jsonString);
         }
         else
         {

@@ -308,5 +308,53 @@ int DisableAllWirelessInterfaces(void* log)
         OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
     }
 
+    OsConfigLogInfo(log, "DisableAllWirelessInterfaces completed with %d", status);
+
     return status;
+}
+
+int SetDefaultDenyFirewallPolicy(void* log)
+{
+    const char* acceptInput = "iptables -A INPUT -j ACCEPT";
+    const char* acceptForward = "iptables -A FORWARD -j ACCEPT";
+    const char* acceptOutput = "iptables -A OUTPUT -j ACCEPT";
+    const char* dropInput = "iptables -P INPUT DROP";
+    const char* dropForward = "iptables -P FORWARD DROP";
+    const char* dropOutput = "iptables -P OUTPUT DROP";
+    int status = 0;
+
+    // First, ensure all current traffic is accepted:
+    if (0 != (status = ExecuteCommand(NULL, acceptInput, true, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptInput, status);
+    }
+    else if (0 != (status = ExecuteCommand(NULL, acceptForward, true, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptForward, status);
+    }
+    else if (0 != (status = ExecuteCommand(NULL, acceptOutput, true, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptOutput, status);
+    }
+
+    if (0 == status)
+    {
+        // Then set default to drop:
+        if (0 != (status = ExecuteCommand(NULL, dropInput, true, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropInput, status);
+        }
+        else if (0 != (status = ExecuteCommand(NULL, dropForward, true, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropForward, status);
+        }
+        else if (0 != (status = ExecuteCommand(NULL, dropOutput, true, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropOutput, status);
+        }
+    }
+
+    OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy completed with %d", status);
+
+    return 0;
 }
