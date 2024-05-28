@@ -293,7 +293,7 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
 
 int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
 {
-    return CheckTextNotFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", &reason, log);
+    return CheckTextNotFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", reason, log);
 }
 
 int DisableAllWirelessInterfaces(void* log)
