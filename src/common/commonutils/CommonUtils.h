@@ -189,6 +189,7 @@ char* GetHttpProxyData(void* log);
 
 char* RepairBrokenEolCharactersIfAny(const char* value);
 
+int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log);
 int DisableAllWirelessInterfaces(void* log);
 int SetDefaultDenyFirewallPolicy(void* log);
 
