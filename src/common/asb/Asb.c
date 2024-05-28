@@ -448,7 +448,7 @@ static const char* g_defaultEnsurePasswordCreationRequirements = "3,14,4,-1,-1,-
 static const char* g_defaultEnsureFilePermissionsForAllRsyslogLogFiles = "600,640";
 static const char* g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable = "600,644,664,700,744";
 static const char* g_defaultEnsureUnnecessaryAccountsAreRemoved = "games,test";
-static const char* g_defaultEnsureDefaultDenyFirewallPolicyIsSet = "0"; //0: audit, 1: forced remediation
+static const char* g_defaultEnsureDefaultDenyFirewallPolicyIsSet = "1"; //"0"; //0: audit, 1: forced remediation
 
 static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
