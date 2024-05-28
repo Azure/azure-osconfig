@@ -448,7 +448,7 @@ static const char* g_defaultEnsurePasswordCreationRequirements = "3,14,4,-1,-1,-
 static const char* g_defaultEnsureFilePermissionsForAllRsyslogLogFiles = "600,640";
 static const char* g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable = "600,644,664,700,744";
 static const char* g_defaultEnsureUnnecessaryAccountsAreRemoved = "games,test";
-static const char* g_defaultEnsureDefaultDenyFirewallPolicyIsSet = "1"; //"0"; //0: audit, 1: forced remediation
+static const char* g_defaultEnsureDefaultDenyFirewallPolicyIsSet = "0"; //zero: audit-only, non-zero: add forced remediation
 
 static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
@@ -1349,7 +1349,8 @@ static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void* log)
 {
     const char* readIpTables = "iptables -S";
     char* reason = NULL;
-    int forceDrop = atoi(g_desiredEnsureDefaultDenyFirewallPolicyIsSet ? g_desiredEnsureDefaultDenyFirewallPolicyIsSet : g_defaultEnsureDefaultDenyFirewallPolicyIsSet);
+    int forceDrop = atoi(g_desiredEnsureDefaultDenyFirewallPolicyIsSet ? 
+        g_desiredEnsureDefaultDenyFirewallPolicyIsSet : g_defaultEnsureDefaultDenyFirewallPolicyIsSet);
     
     if ((0 != CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, log)) ||
         (0 != CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, log)) ||

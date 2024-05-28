@@ -308,6 +308,8 @@ int DisableAllWirelessInterfaces(void* log)
         OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
     }
 
+    OsConfigLogInfo(log, "DisableAllWirelessInterfaces completed with %d", status);
+
     return status;
 }
 
@@ -353,5 +355,6 @@ int SetDefaultDenyFirewallPolicy(void* log)
     }
 
     OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy completed with %d", status);
+
     return 0;
 }
