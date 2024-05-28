@@ -291,21 +291,54 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
     return status;
 }
 
+int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
+{
+    return CheckTextNotFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", reason, log);
+}
+
 int DisableAllWirelessInterfaces(void* log)
 {
+    const char* nmcli = "nmcli";
+    const char* rfkill = "rfkill";
     const char* nmCliRadioAllOff = "nmcli radio all off";
     const char* rfKillBlockAll = "rfkill block all";
 
     int status = 0;
-    
-    if (0 != (status = ExecuteCommand(NULL, nmCliRadioAllOff, true, false, 0, 0, NULL, NULL, log)))
+   
+    if (0 == CheckAllWirelessInterfacesAreDisabled(NULL, log))
     {
-        OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", nmCliRadioAllOff, status);
+        OsConfigLogInfo(log, "DisableAllWirelessInterfaces: no active wireless interfaces are present");
+        return 0;
     }
-    
-    if (0 != (status = ExecuteCommand(NULL, rfKillBlockAll, true, false, 0, 0, NULL, NULL, log)))
+
+    if ((0 != IsPresent(nmcli, log)) && (0 != IsPresent(rfkill, log)))
     {
-        OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
+        OsConfigLogInfo(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed", nmcli, rfkill);
+        if (0 != (status = InstallOrUpdatePackage(rfkill, log)))
+        {
+            OsConfigLogError(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed, also failed "
+                "to install '%s', automatic remediation is not possible", nmcli, rfkill, rfkill);
+            status = ENOENT;
+        }
+    }
+
+    if (0 == status)
+    {
+        if (0 == IsPresent(nmcli, log))
+        {
+            if (0 != (status = ExecuteCommand(NULL, nmCliRadioAllOff, true, false, 0, 0, NULL, NULL, log)))
+            {
+                OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", nmCliRadioAllOff, status);
+            }
+        }
+
+        if (0 == IsPresent(rfkill, log))
+        {
+            if (0 != (status = ExecuteCommand(NULL, rfKillBlockAll, true, false, 0, 0, NULL, NULL, log)))
+            {
+                OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
+            }
+        }
     }
 
     OsConfigLogInfo(log, "DisableAllWirelessInterfaces completed with %d", status);
