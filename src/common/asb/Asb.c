@@ -2929,7 +2929,7 @@ static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, void* log)
     InitEnsureDefaultDenyFirewallPolicyIsSet(value);
     if (atoi(g_desiredEnsureDefaultDenyFirewallPolicyIsSet))
     {
-        status = SetDefaultDenyFirewallPolicy(void* log)
+        status = SetDefaultDenyFirewallPolicy(log);
     }
     else
     {
