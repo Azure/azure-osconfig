@@ -313,7 +313,7 @@ int DisableAllWirelessInterfaces(void* log)
 
 int SetDefaultDenyFirewallPolicy(void* log)
 {
-    const char* acceptInput = "iptables -A INPUT-j ACCEPT";
+    const char* acceptInput = "iptables -A INPUT -j ACCEPT";
     const char* acceptForward = "iptables -A FORWARD -j ACCEPT";
     const char* acceptOutput = "iptables -A OUTPUT -j ACCEPT";
     const char* dropInput = "iptables -P INPUT DROP";
