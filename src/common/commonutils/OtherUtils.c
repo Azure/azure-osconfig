@@ -291,22 +291,103 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
     return status;
 }
 
+int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
+{
+    return CheckTextNotFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", reason, log);
+}
+
 int DisableAllWirelessInterfaces(void* log)
 {
+    const char* nmcli = "nmcli";
+    const char* rfkill = "rfkill";
     const char* nmCliRadioAllOff = "nmcli radio all off";
     const char* rfKillBlockAll = "rfkill block all";
 
     int status = 0;
-    
-    if (0 != (status = ExecuteCommand(NULL, nmCliRadioAllOff, true, false, 0, 0, NULL, NULL, log)))
+   
+    if (0 == CheckAllWirelessInterfacesAreDisabled(NULL, log))
     {
-        OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", nmCliRadioAllOff, status);
-    }
-    
-    if (0 != (status = ExecuteCommand(NULL, rfKillBlockAll, true, false, 0, 0, NULL, NULL, log)))
-    {
-        OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
+        OsConfigLogInfo(log, "DisableAllWirelessInterfaces: no active wireless interfaces are present");
+        return 0;
     }
 
+    if ((0 != IsPresent(nmcli, log)) && (0 != IsPresent(rfkill, log)))
+    {
+        OsConfigLogInfo(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed", nmcli, rfkill);
+        if (0 != (status = InstallOrUpdatePackage(rfkill, log)))
+        {
+            OsConfigLogError(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed, also failed "
+                "to install '%s', automatic remediation is not possible", nmcli, rfkill, rfkill);
+            status = ENOENT;
+        }
+    }
+
+    if (0 == status)
+    {
+        if (0 == IsPresent(nmcli, log))
+        {
+            if (0 != (status = ExecuteCommand(NULL, nmCliRadioAllOff, true, false, 0, 0, NULL, NULL, log)))
+            {
+                OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", nmCliRadioAllOff, status);
+            }
+        }
+
+        if (0 == IsPresent(rfkill, log))
+        {
+            if (0 != (status = ExecuteCommand(NULL, rfKillBlockAll, true, false, 0, 0, NULL, NULL, log)))
+            {
+                OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
+            }
+        }
+    }
+
+    OsConfigLogInfo(log, "DisableAllWirelessInterfaces completed with %d", status);
+
     return status;
+}
+
+int SetDefaultDenyFirewallPolicy(void* log)
+{
+    const char* acceptInput = "iptables -A INPUT -j ACCEPT";
+    const char* acceptForward = "iptables -A FORWARD -j ACCEPT";
+    const char* acceptOutput = "iptables -A OUTPUT -j ACCEPT";
+    const char* dropInput = "iptables -P INPUT DROP";
+    const char* dropForward = "iptables -P FORWARD DROP";
+    const char* dropOutput = "iptables -P OUTPUT DROP";
+    int status = 0;
+
+    // First, ensure all current traffic is accepted:
+    if (0 != (status = ExecuteCommand(NULL, acceptInput, true, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptInput, status);
+    }
+    else if (0 != (status = ExecuteCommand(NULL, acceptForward, true, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptForward, status);
+    }
+    else if (0 != (status = ExecuteCommand(NULL, acceptOutput, true, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptOutput, status);
+    }
+
+    if (0 == status)
+    {
+        // Then set default to drop:
+        if (0 != (status = ExecuteCommand(NULL, dropInput, true, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropInput, status);
+        }
+        else if (0 != (status = ExecuteCommand(NULL, dropForward, true, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropForward, status);
+        }
+        else if (0 != (status = ExecuteCommand(NULL, dropOutput, true, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropOutput, status);
+        }
+    }
+
+    OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy completed with %d", status);
+
+    return 0;
 }

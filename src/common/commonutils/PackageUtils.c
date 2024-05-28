@@ -10,7 +10,7 @@ const char* g_dnf = "dnf";
 const char* g_yum = "yum";
 const char* g_zypper = "zypper";
 
-static int IsPresent(const char* what, void* log)
+int IsPresent(const char* what, void* log)
 {
     const char* commandTemplate = "command -v %s";
     char* command = NULL;

@@ -76,6 +76,7 @@ int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, u
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, void* log);
 int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, void* log);
 
+int IsPresent(const char* what, void* log);
 int IsPackageInstalled(const char* packageName, void* log);
 int CheckPackageInstalled(const char* packageName, char** reason, void* log);
 int CheckPackageNotInstalled(const char* packageName, char** reason, void* log);
@@ -189,7 +190,9 @@ char* GetHttpProxyData(void* log);
 
 char* RepairBrokenEolCharactersIfAny(const char* value);
 
+int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log);
 int DisableAllWirelessInterfaces(void* log);
+int SetDefaultDenyFirewallPolicy(void* log);
 
 typedef struct REPORTED_PROPERTY
 {
