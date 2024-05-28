@@ -626,10 +626,11 @@ instance of OsConfigResource as $OsConfigResource40ref
     ResourceID = "Ensure default deny firewall policy is set";
     PayloadKey = "EnsureDefaultDenyFirewallPolicyIsSet";
     ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsureDefaultDenyFirewallPolicyIsSet";
     ReportedObjectName = "auditEnsureDefaultDenyFirewallPolicyIsSet";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDefaultDenyFirewallPolicyIsSet";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "0";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "LinuxSecurityBaseline";

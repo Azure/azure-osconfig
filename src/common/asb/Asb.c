@@ -5272,6 +5272,10 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         {
             status = InitEnsureUnnecessaryAccountsAreRemoved(jsonString);
         }
+        else if (0 == strcmp(objectName, g_initEnsureEnsureDefaultDenyFirewallPolicyIsSetObject))
+        {
+            status = InitEnsureDefaultDenyFirewallPolicyIsSet(jsonString);
+        }
         else
         {
             OsConfigLogError(log, "AsbMmiSet called for an unsupported object name: %s", objectName);

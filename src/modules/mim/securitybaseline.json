@@ -2333,6 +2333,12 @@
           "type": "mimObject",
           "desired": true,
           "schema": "string"
+        },
+        {
+          "name": "initEnsureDefaultDenyFirewallPolicyIsSet",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
         }
       ]
     }
