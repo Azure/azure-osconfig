@@ -11,35 +11,6 @@ param (
 )
 
 Describe 'Validate Universal NRP' {
-    # Perform monitoring - Get
-    Context "Get" {
-        BeforeAll {
-            $result = Get-GuestConfigurationPackageComplianceStatus -Path $PolicyPackage
-        }
-
-        It 'Ensure the total resource instances count' {    
-            $result.resources | Should -HaveCount $ResourceCount
-        }
-
-        It 'Ensure resons are properly populated' {
-            foreach ($instance in $result.resources) {
-                if ($instance.properties.Reasons.Code -eq "PASS") {
-                    $instance.complianceStatus | Should -BeTrue
-                }
-                elseif ($instance.properties.Reasons.Code -eq "FAIL") {
-                    $instance.complianceStatus | Should -BeFalse
-                }
-                else {
-                    throw "Reasons are not properly populated"
-                }
-            }
-        }
-
-        It 'Ensure all resource instances have status' {    
-            $result.resources.complianceStatus | Should -Not -BeNullOrEmpty
-        }
-    }
-
     # Perform Remediation - Set
     Context "Set" -Skip:$SkipRemediation {
         BeforeAll {
@@ -73,6 +44,35 @@ Describe 'Validate Universal NRP' {
 
         It 'Ensure overall audit pass' {
             $result.complianceStatus | Should -BeTrue
+        }
+    }
+
+    # Perform monitoring - Get
+    Context "Get" {
+        BeforeAll {
+            $result = Get-GuestConfigurationPackageComplianceStatus -Path $PolicyPackage
+        }
+
+        It 'Ensure the total resource instances count' {    
+            $result.resources | Should -HaveCount $ResourceCount
+        }
+
+        It 'Ensure resons are properly populated' {
+            foreach ($instance in $result.resources) {
+                if ($instance.properties.Reasons.Code -eq "PASS") {
+                    $instance.complianceStatus | Should -BeTrue
+                }
+                elseif ($instance.properties.Reasons.Code -eq "FAIL") {
+                    $instance.complianceStatus | Should -BeFalse
+                }
+                else {
+                    throw "Reasons are not properly populated"
+                }
+            }
+        }
+
+        It 'Ensure all resource instances have status' {    
+            $result.resources.complianceStatus | Should -Not -BeNullOrEmpty
         }
     }
 }
