@@ -1,4 +1,4 @@
-name: Module Test
+name: Module Test Run
 
 on:
   workflow_call:
