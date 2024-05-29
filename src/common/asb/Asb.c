@@ -1326,7 +1326,7 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void* log)
     {
         return reason;
     }
-    retuYern reason;
+    return reason;
 }
 
 static char* AuditEnsureCronServiceIsEnabled(void* log)
