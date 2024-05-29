@@ -197,7 +197,7 @@ int InstallPackage(const char* packageName, void* log)
 
     if (0 != (status = IsPackageInstalled(packageName, log)))
     {
-        InstallOrUpdatePackage(packageName, log);
+        status = InstallOrUpdatePackage(packageName, log);
     }
     else
     {
