@@ -856,98 +856,134 @@ static char* AuditEnsureKernelSupportForCpuNx(void* log)
 static char* AuditEnsureNodevOptionOnHomePartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_home, NULL, g_nodev, &reason, log); 
-    CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log);
+    if ((0 != CheckFileSystemMountingOption(g_etcMtab, g_home, NULL, g_nodev, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureNodevOptionOnTmpPartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nodev, &reason, log);
-    CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, log);
+    if ((0 != CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nodev, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureNodevOptionOnVarTmpPartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nodev, &reason, log);
-    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, log);
+    if ((0 != CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nodev, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureNosuidOptionOnTmpPartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nosuid, &reason, log);
-    CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, log);
+    if ((0 != CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nosuid, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureNosuidOptionOnVarTmpPartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nosuid, &reason, log);
-    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, log);
+    if ((0 != CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nosuid, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureNoexecOptionOnVarTmpPartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_noexec, &reason, log);
-    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, log);
+    if ((0 != CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_noexec, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureNoexecOptionOnDevShmPartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_devShm, NULL, g_noexec, &reason, log);
-    CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, &reason, log);
+    if ((0 != CheckFileSystemMountingOption(g_etcMtab, g_devShm, NULL, g_noexec, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nodev, &reason, log);
-    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, log);
+    if ((0 != CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nodev, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_noexec, &reason, log);
-    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, log);
+    if ((0 != CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_noexec, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nosuid, &reason, log);
-    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, log);
+    if ((0 != CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nosuid, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_noexec, &reason, log);
-    CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_nosuid, &reason, log);
-    CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_noexec, &reason, log);
-    CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_nosuid, &reason, log);
+    if ((0 != CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_noexec, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_nosuid, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_noexec, &reason, log)) ||
+        (0 != CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_nosuid, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureInetdNotInstalled(void* log)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_inetd, &reason, log);
-    CheckPackageNotInstalled(g_inetUtilsInetd, &reason, log);
+    if ((0 != CheckPackageNotInstalled(g_inetd, &reason, log)) ||
+        (0 != CheckPackageNotInstalled(g_inetUtilsInetd, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -996,8 +1032,11 @@ static char* AuditEnsureReadaheadFedoraNotInstalled(void* log)
 static char* AuditEnsureBluetoothHiddNotInstalled(void* log)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_bluetooth, &reason, log);
-    CheckDaemonNotActive(g_bluetooth, &reason, log);
+    if ((0 != CheckPackageNotInstalled(g_bluetooth, &reason, log)) ||
+        (0 != CheckDaemonNotActive(g_bluetooth, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1151,8 +1190,11 @@ static char* AuditEnsureDefaultRootAccountGroupIsGidZero(void* log)
 static char* AuditEnsureRootIsOnlyUidZeroAccount(void* log)
 {
     char* reason = NULL;
-    CheckRootGroupExists(&reason, log);
-    CheckRootIsOnlyUidZeroAccount(&reason, log);
+    if ((0 != CheckRootGroupExists(&reason, log)) ||
+        (0 != CheckRootIsOnlyUidZeroAccount(&reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1210,9 +1252,12 @@ static char* AuditEnsureMinDaysBetweenPasswordChanges(void* log)
 static char* AuditEnsureInactivePasswordLockPeriod(void* log)
 {
     char* reason = NULL;
-    CheckLockoutAfterInactivityLessThan(atoi(g_desiredEnsureInactivePasswordLockPeriod ? 
-        g_desiredEnsureInactivePasswordLockPeriod : g_defaultEnsureInactivePasswordLockPeriod), &reason, log);
-    CheckUsersRecordedPasswordChangeDates(&reason, log);
+    if ((0 != CheckLockoutAfterInactivityLessThan(atoi(g_desiredEnsureInactivePasswordLockPeriod ? 
+        g_desiredEnsureInactivePasswordLockPeriod : g_defaultEnsureInactivePasswordLockPeriod), &reason, log)) || 
+        (0 != CheckUsersRecordedPasswordChangeDates(&reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1273,39 +1318,51 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void* log)
     const char* path = "PATH";
     const char* dot = ".";
     char* reason = NULL;
-    CheckTextNotFoundInEnvironmentVariable(path, dot, false, &reason, log);
-    CheckMarkedTextNotFoundInFile("/etc/sudoers", "secure_path", dot, &reason, log);
-    CheckMarkedTextNotFoundInFile(g_etcEnvironment, path, dot, &reason, log);
-    CheckMarkedTextNotFoundInFile(g_etcProfile, path, dot, &reason, log);
-    CheckMarkedTextNotFoundInFile("/root/.profile", path, dot, &reason, log);
-    return reason;
+    if ((0 != CheckTextNotFoundInEnvironmentVariable(path, dot, false, &reason, log))) ||
+        (0 != CheckMarkedTextNotFoundInFile("/etc/sudoers", "secure_path", dot, &reason, log)) ||
+        (0 != CheckMarkedTextNotFoundInFile(g_etcEnvironment, path, dot, &reason, log)) ||
+        (0 != CheckMarkedTextNotFoundInFile(g_etcProfile, path, dot, &reason, log)) ||
+        (0 != CheckMarkedTextNotFoundInFile("/root/.profile", path, dot, &reason, log)))
+    {
+        return reason;
+    }
+    retuYern reason;
 }
 
 static char* AuditEnsureCronServiceIsEnabled(void* log)
 {
     char* reason = NULL;
-    CheckPackageInstalled(g_cron, &reason, log);
-    CheckDaemonActive(g_cron, &reason, log);
+    if ((0 != CheckPackageInstalled(g_cron, &reason, log)) ||
+        (0 != CheckDaemonActive(g_cron, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void* log)
 {
     char* reason = NULL;
-    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\m", &reason, log);
-    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\r", &reason, log);
-    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\s", &reason, log);
-    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\v", &reason, log);
+    if ((0 != CheckTextIsNotFoundInFile(g_etcIssueNet, "\\m", &reason, log)) ||
+        (0 != CheckTextIsNotFoundInFile(g_etcIssueNet, "\\r", &reason, log)) ||
+        (0 != CheckTextIsNotFoundInFile(g_etcIssueNet, "\\s", &reason, log)) ||
+        (0 != CheckTextIsNotFoundInFile(g_etcIssueNet, "\\v", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void* log)
 {
     char* reason = NULL;
-    CheckTextIsNotFoundInFile(g_etcIssue, "\\m", &reason, log);
-    CheckTextIsNotFoundInFile(g_etcIssue, "\\r", &reason, log);
-    CheckTextIsNotFoundInFile(g_etcIssue, "\\s", &reason, log);
-    CheckTextIsNotFoundInFile(g_etcIssue, "\\v", &reason, log);
+    if ((0 != CheckTextIsNotFoundInFile(g_etcIssue, "\\m", &reason, log)) ||
+        (0 != CheckTextIsNotFoundInFile(g_etcIssue, "\\r", &reason, log)) ||
+        (0 != CheckTextIsNotFoundInFile(g_etcIssue, "\\s", &reason, log)) ||
+        (0 != CheckTextIsNotFoundInFile(g_etcIssue, "\\v", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1368,36 +1425,48 @@ static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void* log)
 static char* AuditEnsurePacketRedirectSendingIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.send_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.send_redirects = 0", &reason, log);
+    if ((0 != CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.send_redirects = 0", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.send_redirects = 0", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureIcmpRedirectsIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.accept_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.accept_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.accept_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.accept_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.secure_redirects = 0", &reason, log);
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.secure_redirects = 0", &reason, log);
+    if ((0 != CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.accept_redirects = 0", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.accept_redirects = 0", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.accept_redirects = 0", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.accept_redirects = 0", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.secure_redirects = 0", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.secure_redirects = 0", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureSourceRoutedPacketsIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, log);
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", &reason, log);
+    if ((0 != CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, log)) ||
+        (0 != CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void* log)
 {
     char* reason = 0;
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, log);
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", &reason, log);
+    if ((0 != CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, log)) ||
+        (0 != CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1418,16 +1487,22 @@ static char* AuditEnsureIgnoringIcmpEchoPingsToMulticast(void* log)
 static char* AuditEnsureMartianPacketLoggingIsEnabled(void* log)
 {
     char* reason = NULL;
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.log_martians = 1", &reason, log);
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.log_martians = 1", &reason, log);
+    if ((0 != CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.log_martians = 1", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.log_martians = 1", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureReversePathSourceValidationIsEnabled(void* log)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "2", &reason, log);
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "2", &reason, log);
+    if ((0 != CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "2", &reason, log)) ||
+        (0 != CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "2", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1443,9 +1518,12 @@ static char* AuditEnsureSystemNotActingAsNetworkSniffer(void* log)
     const char* command = "ip address";
     const char* text = "PROMISC";
     char* reason = NULL;
-    CheckTextNotFoundInCommandOutput(command, text, &reason, log);
-    CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', text, &reason, log);
-    CheckLineNotFoundOrCommentedOut(g_etcRcLocal, '#', text, &reason, log);
+    if ((0 != CheckTextNotFoundInCommandOutput(command, text, &reason, log)) ||
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', text, &reason, log)) ||
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRcLocal, '#', text, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1468,8 +1546,11 @@ static char* AuditEnsureAllWirelessInterfacesAreDisabled(void* log)
 static char* AuditEnsureIpv6ProtocolIsEnabled(void* log)
 {
     char* reason = NULL;
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.disable_ipv6 = 0", &reason, log);
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.disable_ipv6 = 0", &reason, log);
+    if ((0 != CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.disable_ipv6 = 0", &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.disable_ipv6 = 0", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1504,11 +1585,11 @@ static char* AuditEnsureTipcIsDisabled(void* log)
 static char* AuditEnsureZeroconfNetworkingIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_avahiDaemon, &reason, log);
-    CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', g_ipv4ll, &reason, log);
-    if (FileExists(g_etcSysconfigNetwork))
+    if ((0 != CheckDaemonNotActive(g_avahiDaemon, &reason, log)) ||
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', g_ipv4ll, &reason, log)) ||
+        (FileExists(g_etcSysconfigNetwork) && (0 != CheckLineFoundNotCommentedOut(g_etcSysconfigNetwork, '#', "NOZEROCONF=yes", &reason, log))))
     {
-        CheckLineFoundNotCommentedOut(g_etcSysconfigNetwork, '#', "NOZEROCONF=yes", &reason, log);
+        return reason;
     }
     return reason;
 }
@@ -1519,9 +1600,12 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void* log)
         g_desiredEnsurePermissionsOnBootloaderConfig : g_defaultEnsurePermissionsOnBootloaderConfig;
     unsigned int mode = (unsigned int)atoi(value);
     char* reason = NULL;
-    CheckFileAccess("/boot/grub/grub.cfg", 0, 0, mode, &reason, log);
-    CheckFileAccess("/boot/grub/grub.conf", 0, 0, mode, &reason, log);
-    CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, mode, &reason, log);
+    if ((0 != CheckFileAccess("/boot/grub/grub.cfg", 0, 0, mode, &reason, log)) ||
+        (0 != CheckFileAccess("/boot/grub/grub.conf", 0, 0, mode, &reason, log)) ||
+        (0 != CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, mode, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1544,9 +1628,12 @@ static char* AuditEnsureCoreDumpsAreRestricted(void* log)
 {
     const char* fsSuidDumpable = "fs.suid_dumpable = 0";
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut("/etc/security/limits.conf", '#', "hard core 0", &reason, log);
-    CheckTextFoundInFolder("/etc/security/limits.d", fsSuidDumpable, &reason, log);
-    CheckTextFoundInCommandOutput(g_sysCtlA, fsSuidDumpable, &reason, log);
+    if ((0 != CheckLineFoundNotCommentedOut("/etc/security/limits.conf", '#', "hard core 0", &reason, log)) ||
+        (0 != CheckTextFoundInFolder("/etc/security/limits.d", fsSuidDumpable, &reason, log)) ||
+        (0 != CheckTextFoundInCommandOutput(g_sysCtlA, fsSuidDumpable, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1555,7 +1642,6 @@ static char* AuditEnsurePasswordCreationRequirements(void* log)
     int* values = NULL;
     int numberOfValues = 0;
     char* reason = NULL;
-
     if ((0 == ConvertStringToIntegers(g_desiredEnsurePasswordCreationRequirements ? g_desiredEnsurePasswordCreationRequirements : 
         g_defaultEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, log)) && (7 == numberOfValues))
     {
@@ -1566,7 +1652,6 @@ static char* AuditEnsurePasswordCreationRequirements(void* log)
         reason = FormatAllocateString("Failed to parse '%s'. There must be 7 numbers, comma separated, in this order: retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit", 
             g_desiredEnsurePasswordCreationRequirements ? g_desiredEnsurePasswordCreationRequirements : g_defaultEnsurePasswordCreationRequirements);
     }
-
     FREE_MEMORY(values);
     return reason;
 }
@@ -1575,14 +1660,12 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(void* log)
 {
     const char* pamFailLockSo = "pam_faillock.so";
     char* reason = NULL;
-
     if ((0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamFailLockSo, '#', &reason, log)) ||
         (0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamFailLockSo, '#', &reason, log)) ||
         (0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, "pam_tally2.so", '#', &reason, log)))
     {
         return reason;
     }
-
     return reason;
 }
 
@@ -1636,9 +1719,12 @@ static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void* log)
 {
     const char* password = "password";
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut("/boot/grub/grub.cfg", '#', password, &reason, log);
-    CheckLineFoundNotCommentedOut("/boot/grub/grub.conf", '#', password, &reason, log);
-    CheckLineFoundNotCommentedOut("/boot/grub2/grub.conf", '#', password, &reason, log);
+    if ((0 != CheckLineFoundNotCommentedOut("/boot/grub/grub.cfg", '#', password, &reason, log)) ||
+        (0 != CheckLineFoundNotCommentedOut("/boot/grub/grub.conf", '#', password, &reason, log)) ||
+        (0 != CheckLineFoundNotCommentedOut("/boot/grub2/grub.conf", '#', password, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1667,8 +1753,11 @@ static char* AuditEnsureSyslogPackageIsInstalled(void* log)
 static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(void* log)
 {
     char* reason = NULL;
-    CheckPackageInstalled(g_systemd, &reason, log);
-    CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, &reason, log);
+    if ((0 != CheckPackageInstalled(g_systemd, &reason, log)) ||
+        (0 != CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1717,64 +1806,89 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void* log)
 static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcRsyslogConf, 0, 0, 640, &reason, log);
-    CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, &reason, log);
+    if ((0 != CheckFileAccess(g_etcRsyslogConf, 0, 0, 640, &reason, log)) ||
+        (0 != CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void* log)
 {
     char* reason = NULL;
-    CheckTextIsFoundInFile(g_etcRsyslogConf, "FileGroup adm", &reason, log);
-    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", &reason, log);
+    if ((0 != CheckTextIsFoundInFile(g_etcRsyslogConf, "FileGroup adm", &reason, log)) ||
+        (0 != CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void* log)
 {
+    const char* fileOwnerSyslog = "FileOwner syslog";
     char* reason = NULL;
-    CheckTextIsFoundInFile(g_etcRsyslogConf, "FileOwner syslog", &reason, log);
-    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", &reason, log);
+    if ((0 != CheckTextIsFoundInFile(g_etcRsyslogConf, fileOwnerSyslog, &reason, log)) ||
+        (0 != CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileOwnerSyslog, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureRsyslogNotAcceptingRemoteMessages(void* log)
 {
     char* reason = NULL;
-    CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imudp", &reason, log);
-    CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imtcp", &reason, log);
+    if ((0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imudp", &reason, log)) ||
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imtcp", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureSyslogRotaterServiceIsEnabled(void* log)
 {
     char* reason = NULL;
-    CheckPackageInstalled("logrotate", &reason, log);
-    CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, &reason, log);
+    if ((0 != CheckPackageInstalled("logrotate", &reason, log)) ||
+        (0 != CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureTelnetServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckDaemonNotActive("telnet.socket", &reason, log);
-    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", &reason, log);
+    if ((0 != CheckDaemonNotActive("telnet.socket", &reason, log)) ||
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureRcprshServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckDaemonNotActive("rcp.socket", &reason, log);
-    CheckDaemonNotActive("rsh.socket", &reason, log);
+    if ((0 != CheckDaemonNotActive("rcp.socket", &reason, log)) ||
+        (0 != CheckDaemonNotActive("rsh.socket", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureTftpServiceisDisabled(void* log)
 {
     char* reason = NULL;
-    CheckDaemonNotActive("tftpd-hpa", &reason, log);
-    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "tftp", &reason, log);
+    if ((0 != CheckDaemonNotActive("tftpd-hpa", &reason, log)) ||
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "tftp", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1783,12 +1897,15 @@ static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void* log)
     const char* etcCronAllow = "/etc/cron.allow";
     const char* etcAtAllow = "/etc/at.allow";
     char* reason = NULL;
-    CheckFileNotFound("/etc/cron.deny", &reason, log);
-    CheckFileNotFound("/etc/at.deny", &reason, log);
-    CheckFileExists(etcCronAllow, &reason, log);
-    CheckFileExists(etcAtAllow, &reason, log);
-    CheckFileAccess(etcCronAllow, 0, 0, 600, &reason, log);
-    CheckFileAccess(etcAtAllow, 0, 0, 600, &reason, log);
+    if ((0 != CheckFileNotFound("/etc/cron.deny", &reason, log)) ||
+        (0 != CheckFileNotFound("/etc/at.deny", &reason, log)) ||
+        (0 != CheckFileExists(etcCronAllow, &reason, log)) ||
+        (0 != CheckFileExists(etcAtAllow, &reason, log)) ||
+        (0 != CheckFileAccess(etcCronAllow, 0, 0, 600, &reason, log)) ||
+        (0 != CheckFileAccess(etcAtAllow, 0, 0, 600, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1935,8 +2052,11 @@ static char* AuditEnsureAvahiDaemonServiceIsDisabled(void* log)
 static char* AuditEnsureCupsServiceisDisabled(void* log)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_cups, &reason, log);
-    CheckDaemonNotActive(g_cups, &reason, log);
+    if ((0 != CheckPackageNotInstalled(g_cups, &reason, log)) ||
+        (0 != CheckDaemonNotActive(g_cups, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1960,25 +2080,34 @@ static char* AuditEnsurePostfixNetworkListeningIsDisabled(void* log)
 static char* AuditEnsureRpcgssdServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_rpcgssd, &reason, log);
-    CheckDaemonNotActive(g_rpcGssd, &reason, log);
+    if ((0 != CheckDaemonNotActive(g_rpcgssd, &reason, log)) ||
+        (0 != CheckDaemonNotActive(g_rpcGssd, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsureRpcidmapdServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_rpcidmapd, &reason, log);
-    CheckDaemonNotActive(g_nfsIdmapd, &reason, log);
+    if ((0 != CheckDaemonNotActive(g_rpcidmapd, &reason, log)) ||
+        (0 != CheckDaemonNotActive(g_nfsIdmapd, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
 static char* AuditEnsurePortmapServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_rpcbind, &reason, log);
-    CheckDaemonNotActive(g_rpcbindService, &reason, log);
-    CheckDaemonNotActive(g_rpcbindSocket, &reason, log);
+    if ((0 != CheckDaemonNotActive(g_rpcbind, &reason, log)) ||
+        (0 != CheckDaemonNotActive(g_rpcbindService, &reason, log)) ||
+        (0 != CheckDaemonNotActive(g_rpcbindSocket, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -1992,8 +2121,11 @@ static char* AuditEnsureNetworkFileSystemServiceIsDisabled(void* log)
 static char* AuditEnsureRpcsvcgssdServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_needSvcgssd, &reason, log);
-    CheckDaemonNotActive(g_rpcSvcgssd, &reason, log);
+    if ((0 != CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_needSvcgssd, &reason, log)) ||
+        (0 != CheckDaemonNotActive(g_rpcSvcgssd, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -2021,8 +2153,11 @@ static char* AuditEnsureNisServerIsDisabled(void* log)
 static char* AuditEnsureRshClientNotInstalled(void* log)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_rsh, &reason, log);
-    CheckPackageNotInstalled(g_rshClient, &reason, log);
+    if ((0 != CheckPackageNotInstalled(g_rsh, &reason, log)) ||
+        (0 != CheckPackageNotInstalled(g_rshClient, &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
@@ -2030,11 +2165,11 @@ static char* AuditEnsureSmbWithSambaIsDisabled(void* log)
 {
     const char* minProtocol = "min protocol = SMB2";
     char* reason = NULL;
-    
-    if (false == CheckDaemonNotActive(g_samba, &reason, log))
+    if (CheckDaemonNotActive(g_samba, &reason, log) && 
+        (0 == CheckLineNotFoundOrCommentedOut(g_etcSambaConf, '#', minProtocol, &reason, log) &&
+        (0 == CheckLineNotFoundOrCommentedOut(g_etcSambaConf, ';', minProtocol, &reason, log))))
     {
-        CheckLineNotFoundOrCommentedOut(g_etcSambaConf, '#', minProtocol, &reason, log);
-        CheckLineNotFoundOrCommentedOut(g_etcSambaConf, ';', minProtocol, &reason, log);
+        return reason;
     }
     return reason;
 }
@@ -2085,11 +2220,14 @@ static char* AuditEnsureNoUsersHaveDotRhostsFiles(void* log)
 static char* AuditEnsureRloginServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_rlogin, &reason, log);
-    CheckPackageNotInstalled(g_rlogin, &reason, log);
-    CheckPackageNotInstalled(g_inetd, &reason, log);
-    CheckPackageNotInstalled(g_inetUtilsInetd, &reason, log);
-    CheckTextIsNotFoundInFile(g_etcInetdConf, "login", &reason, log);
+    if ((0 != CheckDaemonNotActive(g_rlogin, &reason, log)) ||
+        (0 != CheckPackageNotInstalled(g_rlogin, &reason, log)) ||
+        (0 != CheckPackageNotInstalled(g_inetd, &reason, log)) ||
+        (0 != CheckPackageNotInstalled(g_inetUtilsInetd, &reason, log)) ||
+        (0 != CheckTextIsNotFoundInFile(g_etcInetdConf, "login", &reason, log)))
+    {
+        return reason;
+    }
     return reason;
 }
 
