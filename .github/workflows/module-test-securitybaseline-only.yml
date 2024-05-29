@@ -1,6 +1,6 @@
 name: Module Test - SecurityBaseline Only
 
-on: [workflow_dispatch, pull_request]
+on: [workflow_dispatch, pull_request, push]
 
 jobs:
   test:
