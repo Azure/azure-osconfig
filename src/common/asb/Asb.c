@@ -1318,7 +1318,7 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void* log)
     const char* path = "PATH";
     const char* dot = ".";
     char* reason = NULL;
-    if ((0 != CheckTextNotFoundInEnvironmentVariable(path, dot, false, &reason, log))) ||
+    if ((0 != CheckTextNotFoundInEnvironmentVariable(path, dot, false, &reason, log)) ||
         (0 != CheckMarkedTextNotFoundInFile("/etc/sudoers", "secure_path", dot, &reason, log)) ||
         (0 != CheckMarkedTextNotFoundInFile(g_etcEnvironment, path, dot, &reason, log)) ||
         (0 != CheckMarkedTextNotFoundInFile(g_etcProfile, path, dot, &reason, log)) ||
