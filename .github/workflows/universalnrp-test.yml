@@ -29,8 +29,8 @@ jobs:
           ]
         policy-package:
           [
-            { path: LinuxSshServerSecurityBaselinePolicy.zip, resource-count: 20 },
-            { path: LinuxSecurityBaselinePolicy.zip, resource-count: 168 },
+            { path: LinuxSshServerSecurityBaselinePolicy.zip, short-name: SSH, resource-count: 20 },
+            { path: LinuxSecurityBaselinePolicy.zip, short-name: ASB, resource-count: 168 },
           ]
         arch: [amd64]
         install-osconfig: [false]
@@ -40,6 +40,7 @@ jobs:
       arch: ${{ matrix.arch }}
       package-type: ${{ matrix.target.package-type }}
       policy-package: ${{ matrix.policy-package.path }}
+      policy-package-short-name: ${{ matrix.policy-package.short-name }}
       resource-count: ${{ matrix.policy-package.resource-count }}
       skip-remediation: ${{ matrix.skip-remediation }}
       install-osconfig: ${{ matrix.install-osconfig }}

@@ -5,25 +5,36 @@ on:
     inputs:
       target:
         required: true
+        description: 'The target OS to use in build / test run.'
         type: string
       arch:
         required: true
+        description: 'The architecture to use in build / test run.'
         type: string
       package-type:
         required: true
+        description: 'The package type to use in the test run (DEB | RPM).'
         type: string
       policy-package:
         required: true
+        description: 'Path to the policy package to use in the test run.'
+        type: string
+      policy-package-short-name:
+        required: true
+        description: 'Short name of the policy package to use in the test result artifact name.'
         type: string
       resource-count:
         required: true
+        description: 'The number of resources in the policy package.'
         type: string
       install-osconfig:
         required: false
+        description: 'Whether to install OSConfig package or not.'
         type: boolean
         default: false
       skip-remediation:
         required: false
+        description: 'Whether to skip remediation or not.'
         type: boolean
         default: false
       tag:
@@ -132,5 +143,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: success() || failure()
         with:
-          name: universal-nrp-test-${{ inputs.target }}-${{ steps.normalize.outputs.policyPackage }}-${{ inputs.skip-remediation == true && 'GetOnly' || 'SetGet' }}-${{ inputs.install-osconfig == true && 'withOSConfig' || 'withoutOSConfig' }}-logs
+          name: universal-nrp-test-${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' }}-logs
           path: osconfig-logs/osconfig*
