@@ -1458,16 +1458,7 @@ static char* AuditEnsureSystemNotActingAsNetworkSniffer(void* log)
 static char* AuditEnsureAllWirelessInterfacesAreDisabled(void* log)
 {
     char* reason = NULL;
-    if (0 == CheckAllWirelessInterfacesAreDisabled(&reason, log))
-    {
-        FREE_MEMORY(reason);
-        reason = FormatAllocateString("%sNo active wireless interfaces are present", g_pass);
-    }
-    else
-    {
-        FREE_MEMORY(reason);
-        reason = DuplicateString("At least one active wireless interface is present");
-    }
+    CheckAllWirelessInterfacesAreDisabled(&reason, log);
     return reason;
 }
 
