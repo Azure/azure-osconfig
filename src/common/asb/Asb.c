@@ -1374,7 +1374,7 @@ static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void* log)
 static char* AuditEnsurePacketRedirectSendingIsDisabled(void* log)
 {
     char* reason = NULL;
-    MariusNi/OsConfig_ASB_May29_2024CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.send_redirects = 0", &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.send_redirects = 0", &reason, log));
     CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.send_redirects = 0", &reason, log);
     return reason;
 }
