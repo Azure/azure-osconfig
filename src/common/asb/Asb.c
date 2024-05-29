@@ -853,10 +853,16 @@ static char* AuditEnsureKernelSupportForCpuNx(void* log)
     return reason;
 }
 
+#define RETURN_REASON_IF_NON_ZERO(call) {\
+    if (call) {\
+        return reason;\
+    }\
+}\
+
 static char* AuditEnsureNodevOptionOnHomePartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_home, NULL, g_nodev, &reason, log); 
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_home, NULL, g_nodev, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log);
     return reason;
 }
@@ -864,7 +870,7 @@ static char* AuditEnsureNodevOptionOnHomePartition(void* log)
 static char* AuditEnsureNodevOptionOnTmpPartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nodev, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nodev, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, log);
     return reason;
 }
@@ -872,7 +878,7 @@ static char* AuditEnsureNodevOptionOnTmpPartition(void* log)
 static char* AuditEnsureNodevOptionOnVarTmpPartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nodev, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nodev, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, log);
     return reason;
 }
@@ -880,7 +886,7 @@ static char* AuditEnsureNodevOptionOnVarTmpPartition(void* log)
 static char* AuditEnsureNosuidOptionOnTmpPartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nosuid, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nosuid, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, log);
     return reason;
 }
@@ -888,7 +894,7 @@ static char* AuditEnsureNosuidOptionOnTmpPartition(void* log)
 static char* AuditEnsureNosuidOptionOnVarTmpPartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nosuid, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nosuid, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, log);
     return reason;
 }
@@ -896,7 +902,7 @@ static char* AuditEnsureNosuidOptionOnVarTmpPartition(void* log)
 static char* AuditEnsureNoexecOptionOnVarTmpPartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_noexec, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_noexec, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, log);
     return reason;
 }
@@ -904,7 +910,7 @@ static char* AuditEnsureNoexecOptionOnVarTmpPartition(void* log)
 static char* AuditEnsureNoexecOptionOnDevShmPartition(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_devShm, NULL, g_noexec, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_devShm, NULL, g_noexec, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, &reason, log);
     return reason;
 }
@@ -912,7 +918,7 @@ static char* AuditEnsureNoexecOptionOnDevShmPartition(void* log)
 static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nodev, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nodev, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, log);
     return reason;
 }
@@ -920,7 +926,7 @@ static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(void* log)
 static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_noexec, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_noexec, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, log);
     return reason;
 }
@@ -928,7 +934,7 @@ static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void* log)
 static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nosuid, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nosuid, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, log);
     return reason;
 }
@@ -936,9 +942,9 @@ static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void* log)
 static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void* log)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_noexec, &reason, log);
-    CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_nosuid, &reason, log);
-    CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_noexec, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_noexec, &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_nosuid, &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_noexec, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_nosuid, &reason, log);
     return reason;
 }
@@ -946,7 +952,7 @@ static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void* log)
 static char* AuditEnsureInetdNotInstalled(void* log)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_inetd, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckPackageNotInstalled(g_inetd, &reason, log));
     CheckPackageNotInstalled(g_inetUtilsInetd, &reason, log);
     return reason;
 }
@@ -996,7 +1002,7 @@ static char* AuditEnsureReadaheadFedoraNotInstalled(void* log)
 static char* AuditEnsureBluetoothHiddNotInstalled(void* log)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_bluetooth, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckPackageNotInstalled(g_bluetooth, &reason, log));
     CheckDaemonNotActive(g_bluetooth, &reason, log);
     return reason;
 }
@@ -1151,7 +1157,7 @@ static char* AuditEnsureDefaultRootAccountGroupIsGidZero(void* log)
 static char* AuditEnsureRootIsOnlyUidZeroAccount(void* log)
 {
     char* reason = NULL;
-    CheckRootGroupExists(&reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckRootGroupExists(&reason, log));
     CheckRootIsOnlyUidZeroAccount(&reason, log);
     return reason;
 }
@@ -1210,8 +1216,8 @@ static char* AuditEnsureMinDaysBetweenPasswordChanges(void* log)
 static char* AuditEnsureInactivePasswordLockPeriod(void* log)
 {
     char* reason = NULL;
-    CheckLockoutAfterInactivityLessThan(atoi(g_desiredEnsureInactivePasswordLockPeriod ? 
-        g_desiredEnsureInactivePasswordLockPeriod : g_defaultEnsureInactivePasswordLockPeriod), &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckLockoutAfterInactivityLessThan(atoi(g_desiredEnsureInactivePasswordLockPeriod ?
+        g_desiredEnsureInactivePasswordLockPeriod : g_defaultEnsureInactivePasswordLockPeriod), &reason, log));
     CheckUsersRecordedPasswordChangeDates(&reason, log);
     return reason;
 }
@@ -1273,10 +1279,10 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void* log)
     const char* path = "PATH";
     const char* dot = ".";
     char* reason = NULL;
-    CheckTextNotFoundInEnvironmentVariable(path, dot, false, &reason, log);
-    CheckMarkedTextNotFoundInFile("/etc/sudoers", "secure_path", dot, &reason, log);
-    CheckMarkedTextNotFoundInFile(g_etcEnvironment, path, dot, &reason, log);
-    CheckMarkedTextNotFoundInFile(g_etcProfile, path, dot, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckTextNotFoundInEnvironmentVariable(path, dot, false, &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckMarkedTextNotFoundInFile("/etc/sudoers", "secure_path", dot, &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckMarkedTextNotFoundInFile(g_etcEnvironment, path, dot, &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckMarkedTextNotFoundInFile(g_etcProfile, path, dot, &reason, log));
     CheckMarkedTextNotFoundInFile("/root/.profile", path, dot, &reason, log);
     return reason;
 }
@@ -1284,7 +1290,7 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void* log)
 static char* AuditEnsureCronServiceIsEnabled(void* log)
 {
     char* reason = NULL;
-    CheckPackageInstalled(g_cron, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckPackageInstalled(g_cron, &reason, log));
     CheckDaemonActive(g_cron, &reason, log);
     return reason;
 }
@@ -1292,9 +1298,9 @@ static char* AuditEnsureCronServiceIsEnabled(void* log)
 static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void* log)
 {
     char* reason = NULL;
-    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\m", &reason, log);
-    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\r", &reason, log);
-    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\s", &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\m", &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\r", &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\s", &reason, log));
     CheckTextIsNotFoundInFile(g_etcIssueNet, "\\v", &reason, log);
     return reason;
 }
@@ -1302,9 +1308,9 @@ static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void* log)
 static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void* log)
 {
     char* reason = NULL;
-    CheckTextIsNotFoundInFile(g_etcIssue, "\\m", &reason, log);
-    CheckTextIsNotFoundInFile(g_etcIssue, "\\r", &reason, log);
-    CheckTextIsNotFoundInFile(g_etcIssue, "\\s", &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckTextIsNotFoundInFile(g_etcIssue, "\\m", &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckTextIsNotFoundInFile(g_etcIssue, "\\r", &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckTextIsNotFoundInFile(g_etcIssue, "\\s", &reason, log));
     CheckTextIsNotFoundInFile(g_etcIssue, "\\v", &reason, log);
     return reason;
 }
