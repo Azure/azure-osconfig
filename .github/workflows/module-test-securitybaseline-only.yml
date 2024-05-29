@@ -28,4 +28,4 @@ jobs:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.arch }}
       package-type: ${{ matrix.target.package-type }}
-      included-tests: SecurityBaseline
+      included-tests: securitybaseline

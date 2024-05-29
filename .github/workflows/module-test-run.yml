@@ -16,10 +16,12 @@ on:
         required: false
         description: 'A regex pattern of tests to include.'
         type: string
+        default: ' '
       excluded-tests:
         required: false
         description: 'A regex pattern of tests to exclude.'
         type: string
+        default: ' '
 
 jobs:
   package:
