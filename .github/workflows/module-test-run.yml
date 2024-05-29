@@ -12,6 +12,10 @@ on:
       package-type:
         required: true
         type: string
+      included-tests:
+        required: false
+        description: 'A regex pattern of tests to include.'
+        type: string
       excluded-tests:
         required: false
         description: 'A regex pattern of tests to exclude.'
@@ -57,9 +61,12 @@ jobs:
             if $(echo $recipe | grep -q -E "${{ inputs.excluded-tests }}"); then
               echo "skipping $name (excluded)"
               continue
+            elif $(echo $recipe | grep -q -E "${{ inputs.included-tests }}"); then
+              echo "testing $name (included)"
+            else
+              echo "skipping $name (not included)"
+              continue
             fi
-
-            echo -n "testing $name ... "
 
             if output=$(sudo ./moduletest $recipe --bin ../bin); then
               echo passed
