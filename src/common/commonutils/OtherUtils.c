@@ -293,7 +293,32 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
 
 int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
 {
-    return CheckTextNotFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", reason, log);
+    /*
+    if [[ -z $(ip link show | grep -E '^[0-9]+: [a-zA-Z0-9]+: <.*UP.*>.*mtu [0-9]+') ]]; then
+        echo "No wireless interfaces are enabled."
+    else
+        echo "Wireless interfaces are enabled."
+    fi
+    */
+    
+    //return CheckTextNotFoundInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", reason, log);
+    const char* command = "ip link show | grep - E '^[0-9]+: [a-zA-Z0-9]+: <.*UP.*>.*mtu [0-9]+'";
+    int status = 0;
+
+    UNUSED(reason);
+
+    if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogError(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
+        status = ENOENT;
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckAllWirelessInterfacesAreDisabled: no wireless interfaces are enabled");
+        status = 0;
+    }
+    
+    return status;
 }
 
 int DisableAllWirelessInterfaces(void* log)

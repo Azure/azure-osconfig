@@ -14,6 +14,12 @@
 #include <Logging.h>
 #include <Asb.h>
 
+#define RETURN_REASON_IF_NON_ZERO(call) {\
+    if (call) {\
+        return reason;\
+    }\
+}\
+
 static const char* g_asbName = "Azure Security Baseline for Linux";
 
 static const char* g_securityBaselineComponentName = "SecurityBaseline";
@@ -852,12 +858,6 @@ static char* AuditEnsureKernelSupportForCpuNx(void* log)
     }
     return reason;
 }
-
-#define RETURN_REASON_IF_NON_ZERO(call) {\
-    if (call) {\
-        return reason;\
-    }\
-}\
 
 static char* AuditEnsureNodevOptionOnHomePartition(void* log)
 {
