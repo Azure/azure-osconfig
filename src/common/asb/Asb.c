@@ -1720,7 +1720,10 @@ static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void* log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NON_ZERO(CheckFileAccess(g_etcRsyslogConf, 0, 0, 640, &reason, log));
-    CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, &reason, log);
+    if (FileExists(g_etcSyslogNgSyslogNgConf))
+    {
+        CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, &reason, log);
+    }
     return reason;
 }
 
@@ -3266,7 +3269,7 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, void
 static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == SetFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, log)) &&
+    return ((false == FileExists(g_etcSyslogNgSyslogNgConf) || (0 == SetFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, log))) &&
         (0 == SetFileAccess(g_etcRsyslogConf, 0, 0, 640, log))) ? 0 : ENOENT;
 }
 
