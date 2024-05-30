@@ -460,6 +460,10 @@ static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
 static const char* g_etcHostsAllow = "/etc/hosts.allow";
 static const char* g_etcHostsDeny = "/etc/hosts.deny";
+static const char* g_etcCronAllow = "/etc/cron.allow";
+static const char* g_etcAtAllow = "/etc/at.allow";
+static const char* g_etcCronDeny = "/etc/cron.deny";
+static const char* g_etcAtDeny = "/etc/at.deny";
 static const char* g_etcShadow = "/etc/shadow";
 static const char* g_etcShadowDash = "/etc/shadow-";
 static const char* g_etcGShadow = "/etc/gshadow";
@@ -491,6 +495,9 @@ static const char* g_etcNetworkInterfaces = "/etc/network/interfaces";
 static const char* g_etcSysconfigNetwork = "/etc/sysconfig/network";
 static const char* g_etcSysctlConf = "/etc/sysctl.conf";
 static const char* g_etcRcLocal = "/etc/rc.local";
+static const char* g_etcSambaConf = "/etc/samba/smb.conf";
+static const char* g_etcPostfixMainCf = "/etc/postfix/main.cf";
+static const char* g_etcCronDailyLogRotate = "/etc/cron.daily/logrotate";
 
 static const char* g_home = "/home";
 static const char* g_devShm = "/dev/shm";
@@ -507,7 +514,8 @@ static const char* g_xinetd = "xinetd";
 static const char* g_rshServer = "rsh-server";
 static const char* g_nfs = "nfs";
 static const char* g_nis = "nis";
-static const char* g_tftpd = "tftpd-hpa";
+static const char* g_tftp = "tftp";
+static const char* g_tftpHpa = "tftpd-hpa";
 static const char* g_readAheadFedora = "readahead-fedora";
 static const char* g_bluetooth = "bluetooth";
 static const char* g_isdnUtilsBase = "isdnutils-base";
@@ -547,14 +555,17 @@ static const char* g_rhosts = "rhosts";
 static const char* g_systemdJournald = "systemd-journald";
 static const char* g_allTelnetd = "*telnetd*";
 static const char* g_samba = "samba";
-static const char* g_etcSambaConf = "/etc/samba/smb.conf";
 static const char* g_rpcSvcgssd = "rpc.svcgssd";
 static const char* g_needSvcgssd = "NEED_SVCGSSD = yes";
-static const char* g_etcPostfixMainCf = "/etc/postfix/main.cf";
 static const char* g_inetInterfacesLocalhost = "inet_interfaces localhost";
 static const char* g_autofs = "autofs";
 static const char* g_ipv4ll = "ipv4ll";
 static const char* g_sysCtlA = "sysctl -a";
+static const char* g_fileCreateMode = "$FileCreateMode";
+static const char* g_logrotate = "logrotate";
+static const char* g_telnet = "telnet";
+static const char* g_rcpSocket = "rcp.socket";
+static const char* g_rshSocket = "rsh.socket";
 
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
@@ -988,7 +999,7 @@ static char* AuditEnsureNisNotInstalled(void* log)
 static char* AuditEnsureTftpdNotInstalled(void* log)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_tftpd, &reason, log);
+    CheckPackageNotInstalled(g_tftpHpa, &reason, log);
     return reason;
 }
 
@@ -1686,19 +1697,14 @@ static char* AuditEnsureALoggingServiceIsEnabled(void* log)
 
 static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void* log)
 {
-    const char* fileCreateMode = "$FileCreateMode";
     int* modes = NULL;
     int numberOfModes = 0;
     char* reason = NULL;
 
-    if (0 == ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles ?
-        g_desiredEnsureFilePermissionsForAllRsyslogLogFiles : g_defaultEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, log))
+    if ((0 == ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles ? g_desiredEnsureFilePermissionsForAllRsyslogLogFiles : 
+        g_defaultEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, log)) && (numberOfModes > 0))
     {
-        CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, fileCreateMode, ' ', modes, numberOfModes, &reason, log);
-        if (0 == FileExists(g_etcSyslogNgSyslogNgConf))
-        {
-            CheckIntegerOptionFromFileEqualWithAny(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', modes, numberOfModes, &reason, log);
-        }
+        CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, g_fileCreateMode, ' ', modes, numberOfModes, &reason, log);
     }
     else
     {
@@ -1708,7 +1714,6 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void* log)
 
     FREE_MEMORY(modes);
     return reason;
-
 }
 
 static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void* log)
@@ -1721,71 +1726,73 @@ static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void* log)
 
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void* log)
 {
+    const char* fileGroup = "$FileGroup adm";
     char* reason = NULL;
-    RETURN_REASON_IF_NON_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, "FileGroup adm", &reason, log));
-    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, fileGroupAdm, &reason, log));
+    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileGroupAdm, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void* log)
 {
+    const char* fileOwner = "$FileOwner syslog";
     char* reason = NULL;
-    RETURN_REASON_IF_NON_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, "FileOwner syslog", &reason, log));
-    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, fileOwner, &reason, log));
+    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileOwner, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureRsyslogNotAcceptingRemoteMessages(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NON_ZERO(CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imudp", &reason, log));
-    CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imtcp", &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "$ModLoad imudp", &reason, log));
+    CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "$ModLoad imtcp", &reason, log);
     return reason;
 }
 
 static char* AuditEnsureSyslogRotaterServiceIsEnabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NON_ZERO(CheckPackageInstalled("logrotate", &reason, log));
-    CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckPackageInstalled(g_logrotate, &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckFileExists(g_etcCronDailyLogRotate, &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, &reason, log));
+    CheckDaemonActive(g_logrotate, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureTelnetServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NON_ZERO(CheckDaemonNotActive("telnet.socket", &reason, log));
-    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckDaemonNotActive(g_telnet, &reason, log));
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_telnet, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureRcprshServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NON_ZERO(CheckDaemonNotActive("rcp.socket", &reason, log));
-    CheckDaemonNotActive("rsh.socket", &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckDaemonNotActive(g_rcpSocket, &reason, log));
+    CheckDaemonNotActive(g_rshSocket, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureTftpServiceisDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NON_ZERO(CheckDaemonNotActive("tftpd-hpa", &reason, log));
-    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "tftp", &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckDaemonNotActive(g_tftpHpa, &reason, log));
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_tftp, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void* log)
 {
-    const char* etcCronAllow = "/etc/cron.allow";
-    const char* etcAtAllow = "/etc/at.allow";
     char* reason = NULL;
-    RETURN_REASON_IF_NON_ZERO(CheckFileNotFound("/etc/cron.deny", &reason, log));
-    RETURN_REASON_IF_NON_ZERO(CheckFileNotFound("/etc/at.deny", &reason, log));
-    RETURN_REASON_IF_NON_ZERO(CheckFileExists(etcCronAllow, &reason, log));
-    RETURN_REASON_IF_NON_ZERO(CheckFileExists(etcAtAllow, &reason, log));
-    RETURN_REASON_IF_NON_ZERO(CheckFileAccess(etcCronAllow, 0, 0, 600, &reason, log));
-    CheckFileAccess(etcAtAllow, 0, 0, 600, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckFileNotFound(g_etcCronDeny, &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckFileNotFound(g_etcAtDeny, &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckFileExists(g_etcCronAllow, &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckFileExists(g_etcAtAllow, &reason, log));
+    RETURN_REASON_IF_NON_ZERO(CheckFileAccess(g_etcCronAllow, 0, 0, 600, &reason, log));
+    CheckFileAccess(g_etcAtAllow, 0, 0, 600, &reason, log);
     return reason;
 }
 
@@ -2531,7 +2538,7 @@ static int RemediateEnsureNisNotInstalled(char* value, void* log)
 static int RemediateEnsureTftpdNotInstalled(char* value, void* log)
 {
     UNUSED(value);
-    return UninstallPackage(g_tftpd, log);
+    return UninstallPackage(g_tftpHpa, log);
 }
 
 static int RemediateEnsureReadaheadFedoraNotInstalled(char* value, void* log)
@@ -3221,9 +3228,30 @@ static int RemediateEnsureALoggingServiceIsEnabled(char* value, void* log)
 
 static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, void* log)
 {
+    const char* formatTemplate = "0%03d";
+    int* modes = NULL;
+    int numberOfModes = 0;
+    char* formattedMode = NULL;
+    int status = 0;
+
     InitEnsureFilePermissionsForAllRsyslogLogFiles(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+
+    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, log))) && (numberOfModes > 0))
+    {
+        if (NULL != (formattedMode = FormatAllocateString(formatTemplate, mode[numberOfModes - 1])))
+        {
+            status = SetEtcConfValue(g_etcRsyslogConf, g_fileCreateMode, formattedMode, log);
+            FREE_MEMORY(formattedMode);
+        }
+        else
+        {
+            OsConfigLogError("RemediateEnsureFilePermissionsForAllRsyslogLogFiles: out of memory");
+            status = ENOMEM;
+        }
+    }
+
+    FREE_MEMORY(modes);
+    return status;
 }
 
 static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, void* log)
@@ -3236,57 +3264,63 @@ static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, voi
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetEtcConfValue(g_etcRsyslogConf, "$FileGroup", "adm", log);
 }
 
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetEtcConfValue(g_etcRsyslogConf, "$FileOwner", "syslog", log);
 }
 
 static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == ReplaceMarkedLinesInFile(g_etcRsyslogConf, "$ModLoad imudp", NULL, '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcRsyslogConf, "$ModLoad imtcp", NULL, '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == InstallPackage(g_logrotate, log)) && FileExists(g_etcCronDailyLogRotate) && 
+        (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, log)) && EnableAndStartDaemon(g_logrotate, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureTelnetServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_telnet, log);
+    return ((false == CheckDaemonActive(g_telnet, NULL, log)) && 
+        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_telnet, NULL, '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRcprshServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_rcpSocket, log);
+    StopAndDisableDaemon(g_rshSocket, log);
+    return ((false == CheckDaemonActive(g_rcpSocket, NULL, log)) && (false == CheckDaemonActive(g_rshSocket, NULL, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureTftpServiceisDisabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_tftpHpa, log);
+    return ((false == CheckDaemonActive(g_tftpHpa, NULL, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_tftp, NULL, '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, void* log)
 {
+    const char* payload = "root";
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    remove(g_atCronDeny);
+    remove(g_atAtDeny);
+    return (SecureSaveToFile(g_etcCronAllow, payload, strlen(payload), log) &&
+        SecureSaveToFile(g_etcAtAllow, payload, strlen(payload), log) &&
+        (0 != CheckFileExists(g_etcCronDeny, NULL, log)) &&
+        (0 != CheckFileExists(g_etcAtDeny, NULL, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSshPortIsConfigured(char* value, void* log)

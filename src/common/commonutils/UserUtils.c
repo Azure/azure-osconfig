@@ -282,7 +282,7 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
     return status;
 }
 
-int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
+int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, char** reason, void* log)
 {
     const char* passwdFile = "/etc/passwd";
 
@@ -344,6 +344,7 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
     if (0 != status)
     {
         OsConfigLogError(log, "EnumerateUsers failed with %d", status);
+        OsConfigCaptureReason(reason, "Failed to enumerate users (%d). User database may be corrupt. Automatic remediation is not possible", status);
     }
     else if (IsFullLoggingEnabled())
     {
@@ -374,7 +375,7 @@ void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size)
     }
 }
 
-int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
+int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, char** reason, void* log)
 {
     gid_t* groupIds = NULL;
     int numberOfGroups = MAX_GROUPS_USER_CAN_BE_IN;
@@ -494,12 +495,17 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
         }
     }
 
+    if (status)
+    {
+        OsConfigCaptureReason(reason, "Failed to enumerate groups for users (%d). User database may be corrupt. Automatic remediation is not possible", status);
+    }
+
     FREE_MEMORY(groupIds);
 
     return status;
 }
 
-int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
+int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, char** reason, void* log)
 {
     const char* groupFile = "/etc/group";
     struct group* groupEntry = NULL;
@@ -577,6 +583,11 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
         status = EPERM;
     }
 
+    if (status)
+    {
+        OsConfigCaptureReason(reason, "Failed to enumerate user groups (%d). User group database may be corrupt. Automatic remediation is not possible", status);
+    }
+
     return status;
 }
 
@@ -592,12 +603,12 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, void* log)
     bool found = false;
     int status = 0;
 
-    if ((0 == (status = EnumerateUsers(&userList, &userListSize, log))) &&
-        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log))))
+    if ((0 == (status = EnumerateUsers(&userList, &userListSize, reason, log))) &&
+        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log))))
     {
         for (i = 0; (i < userListSize) && (0 == status); i++)
         {
-            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, log)))
+            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, reason, log)))
             {
                 for (j = 0; (j < userGroupListSize) && (0 == status); j++)
                 {
@@ -660,12 +671,12 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(void* log)
     bool found = false;
     int status = 0, _status = 0;
 
-    if ((0 == (status = EnumerateUsers(&userList, &userListSize, log))) &&
-        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log))))
+    if ((0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log))) &&
+        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log))))
     {
         for (i = 0; (i < userListSize) && (0 == status); i++)
         {
-            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, log)))
+            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, NULL, log)))
             {
                 for (j = 0; (j < userGroupListSize) && (0 == status); j++)
                 {
@@ -743,7 +754,7 @@ int CheckNoDuplicateUidsExist(char** reason, void* log)
     unsigned int hits = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; (i < userListSize) && (0 == status); i++)
         {
@@ -834,7 +845,7 @@ int SetNoDuplicateUids(void* log)
     unsigned int hits = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -879,7 +890,7 @@ int CheckNoDuplicateGidsExist(char** reason, void* log)
     unsigned int hits = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log)))
     {
         for (i = 0; (i < groupListSize) && (0 == status); i++)
         {
@@ -939,7 +950,7 @@ static int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
         OsConfigLogInfo(log, "RemoveGroup: attempting to delete a group that has users ('%s', %u)", group->groupName, group->groupId);
 
         // Check if this group is the primary group of any existing user
-        if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+        if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
         {
             for (i = 0; i < userListSize; i++)
             {
@@ -985,7 +996,7 @@ int SetNoDuplicateGids(void* log)
     unsigned int hits = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log)))
     {
         for (i = 0; i < groupListSize; i++)
         {
@@ -1028,7 +1039,7 @@ int CheckNoDuplicateUserNamesExist(char** reason, void* log)
     unsigned int hits = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; (i < userListSize) && (0 == status); i++)
         {
@@ -1071,7 +1082,7 @@ int SetNoDuplicateUserNames(void* log)
     unsigned int hits = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1115,7 +1126,7 @@ int CheckNoDuplicateGroupNamesExist(char** reason, void* log)
     unsigned int hits = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log)))
     {
         for (i = 0; (i < groupListSize) && (0 == status); i++)
         {
@@ -1158,7 +1169,7 @@ int SetNoDuplicateGroupNames(void* log)
     unsigned int hits = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log)))
     {
         for (i = 0; i < groupListSize; i++)
         {
@@ -1201,7 +1212,7 @@ int CheckShadowGroupIsEmpty(char** reason, void* log)
     bool found = false;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log)))
     {
         for (i = 0; i < groupListSize; i++)
         {
@@ -1237,11 +1248,11 @@ int SetShadowGroupEmpty(void* log)
     unsigned int i = 0, j = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, log)))
+            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, NULL, log)))
             {
                 for (j = 0; j < userGroupListSize; j++)
                 {
@@ -1300,7 +1311,7 @@ int CheckRootGroupExists(char** reason, void* log)
     bool found = false;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log)))
     {
         for (i = 0; i < groupListSize; i++)
         {
@@ -1338,7 +1349,7 @@ int RepairRootGroup(void* log)
     char* original = NULL;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log)))
     {
         for (i = 0; i < groupListSize; i++)
         {
@@ -1435,7 +1446,7 @@ int CheckAllUsersHavePasswordsSet(char** reason, void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1487,7 +1498,7 @@ int RemoveUsersWithoutPasswords(void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1545,7 +1556,7 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1577,7 +1588,7 @@ int SetRootIsOnlyUidZeroAccount(void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1611,7 +1622,7 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log)
     unsigned int i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1655,7 +1666,7 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1692,7 +1703,7 @@ int SetUserHomeDirectories(void* log)
     unsigned int defaultHomeDirAccess = 750;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1788,7 +1799,7 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1852,7 +1863,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
         return EINVAL;
     }
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1915,7 +1926,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
         return EINVAL;
     }
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2047,7 +2058,7 @@ int CheckMinDaysBetweenPasswordChanges(long days, char** reason, void* log)
     int status = 0;
     long etcLoginDefsDays = GetPassMinDays(log);
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2119,7 +2130,7 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2194,7 +2205,7 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, void* log)
     int status = 0;
     long etcLoginDefsDays = GetPassMaxDays(log);
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2268,7 +2279,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2345,7 +2356,7 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
     long passwordExpirationDate = 0;
     long currentDate = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2413,7 +2424,7 @@ int CheckPasswordExpirationWarning(long days, char** reason, void* log)
     int status = 0;
     long etcLoginDefsDays = GetPassWarnAge(log);
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2479,7 +2490,7 @@ int SetPasswordExpirationWarning(long days, void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2555,7 +2566,7 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, void* log)
     int status = 0;
     long daysCurrent = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2601,7 +2612,7 @@ int CheckLockoutAfterInactivityLessThan(long days, char** reason, void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2640,7 +2651,7 @@ int SetLockoutAfterInactivityLessThan(long days, void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2700,7 +2711,7 @@ int CheckSystemAccountsAreNonLogin(char** reason, void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2732,7 +2743,7 @@ int RemoveSystemAccountsThatCanLogin(void* log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2767,7 +2778,7 @@ int CheckRootPasswordForSingleUserMode(char** reason, void* log)
     bool rootHasPassword = false;
     int status = 0;
     
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2838,7 +2849,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
 
     templateLength = strlen(templateDotPath) + strlen(name) + 1;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2918,7 +2929,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
         return EINVAL;
     }
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -3008,7 +3019,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
         return EINVAL;
     }
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -3101,7 +3112,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
     namesLength = strlen(names);
     
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         status = ENOENT;
 
@@ -3121,7 +3132,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
                     if (0 == strcmp(userList[i].username, name))
                     {
-                        EnumerateUserGroups(&userList[i], &groupList, &groupListSize, log);
+                        EnumerateUserGroups(&userList[i], &groupList, &groupListSize, reason, log);
                         FreeGroupList(&groupList, groupListSize);
 
                         OsConfigLogInfo(log, "CheckUserAccountsNotFound: user '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
@@ -3216,7 +3227,7 @@ int RemoveUserAccounts(const char* names, void* log)
 
     namesLength = strlen(names);
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {

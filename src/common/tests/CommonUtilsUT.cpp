@@ -1303,7 +1303,7 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
     struct SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
 
-    EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr));
+    EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr, nullptr));
     EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd"));
     EXPECT_NE(nullptr, userList);
 
@@ -1311,7 +1311,7 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
     {
         EXPECT_NE(nullptr, userList[i].username);
         
-        EXPECT_EQ(0, EnumerateUserGroups(&userList[i], &groupList, &groupListSize, nullptr));
+        EXPECT_EQ(0, EnumerateUserGroups(&userList[i], &groupList, &groupListSize, nullptr, nullptr));
         EXPECT_NE(nullptr, groupList);
         
         for (unsigned int j = 0; j < groupListSize; j++)
@@ -1332,7 +1332,7 @@ TEST_F(CommonUtilsTest, EnumerateAllGroups)
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
 
-    EXPECT_EQ(0, EnumerateAllGroups(&groupList, &groupListSize, nullptr));
+    EXPECT_EQ(0, EnumerateAllGroups(&groupList, &groupListSize, nullptr, nullptr));
     EXPECT_EQ(groupListSize, GetNumberOfLinesInFile("/etc/group"));
     EXPECT_NE(nullptr, groupList);
 

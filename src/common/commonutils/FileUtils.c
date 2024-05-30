@@ -1575,62 +1575,41 @@ int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* 
     return result;
 }
 
-int SetEtcLoginDefValue(const char* name, const char* value, void* log)
+int SetEtcConfValue(const char* file, const char* name, const char* value, void* log)
 {
-    const char* etcLoginDefs = "/etc/login.defs";
-    const char* tempLoginDefs = "/etc/~login.defs.copy";
     const char* newlineTemplate = "%s %s\n";
     char* newline = NULL;
     char* original = NULL;
     int status = 0;
 
-    if ((NULL == name) || (0 == strlen(name)) || (NULL == value) || (0 == strlen(value)))
+    if ((NULL == file) || (NULL == name) || (0 == strlen(name)) || (NULL == value) || (0 == strlen(value)))
     {
-        OsConfigLogError(log, "SetEtcLoginDefValue: invalid argument");
+        OsConfigLogError(log, "SetEtcConfValue: invalid argument");
         return EINVAL;
     }
     else if (NULL == (newline = FormatAllocateString(newlineTemplate, name, value)))
     {
-        OsConfigLogError(log, "SetEtcLoginDefValue: out of memory");
+        OsConfigLogError(log, "SetEtcConfValue: out of memory");
         return ENOMEM;
     }
 
-    if (NULL != (original = LoadStringFromFile(etcLoginDefs, false, log)))
+    if (0 == (status = ReplaceMarkedLinesInFile(file, name, newline, '#', log)))
     {
-        if (SavePayloadToFile(tempLoginDefs, original, strlen(original), log))
-        {
-            if (0 == (status = ReplaceMarkedLinesInFile(tempLoginDefs, name, newline, '#', log)))
-            {
-                if (0 != (status = RenameFileWithOwnerAndAccess(tempLoginDefs, etcLoginDefs, log)))
-                {
-                    OsConfigLogError(log, "SetEtcLoginDefValue: RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempLoginDefs, etcLoginDefs, status);
-                }
-            }
-            
-            remove(tempLoginDefs);
-        }
-        else
-        {
-            OsConfigLogError(log, "SetEtcLoginDefValue: failed saving copy of '%s' to temp file '%s", etcLoginDefs, tempLoginDefs);
-            status = EPERM;
-        }
-
-        FREE_MEMORY(original);
+        OsConfigLogInfo(log, "SetEtcConfValue: successfully set '%s' to '%s' in '%s'", name, value, file);
     }
     else
     {
-        OsConfigLogError(log, "SetEtcLoginDefValue: failed reading '%s", etcLoginDefs);
-        status = EACCES;
+        OsConfigLogError(log, "SetEtcConfValue: failed to set '%s' to '%s' in '%s' (%d)", name, value, file, status);
     }
 
     FREE_MEMORY(newline);
 
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "SetEtcLoginDefValue: successfully set '%s' to '%s' in '/etc/loging.defs'", name, value);
-    }
-
     return status;
+}
+
+int SetEtcLoginDefValue(const char* name, const char* value, void* log)
+{
+    return SetEtcConfValue("/etc/login.defs", name, value, log);
 }
 
 int DisablePostfixNetworkListening(void* log)
