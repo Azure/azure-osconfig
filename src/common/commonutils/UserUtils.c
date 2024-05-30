@@ -273,7 +273,7 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
     }
     else
     {
-        OsConfigLogError(log, "CheckIfUserHasPassword: getspnam(%s) failed (%d)", user->username, errno);
+        OsConfigLogError(log, "CheckIfUserHasPassword: getspnam('%s') failed (%d)", user->username, errno);
         status = ENOENT;
     }
 
