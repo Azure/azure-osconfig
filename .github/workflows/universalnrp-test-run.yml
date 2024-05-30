@@ -5,25 +5,36 @@ on:
     inputs:
       target:
         required: true
+        description: 'The target OS to use in build / test run.'
         type: string
       arch:
         required: true
+        description: 'The architecture to use in build / test run.'
         type: string
       package-type:
         required: true
+        description: 'The package type to use in the test run (DEB | RPM).'
         type: string
       policy-package:
         required: true
+        description: 'Path to the policy package to use in the test run.'
+        type: string
+      policy-package-short-name:
+        required: true
+        description: 'Short name of the policy package to use in the test result artifact name.'
         type: string
       resource-count:
         required: true
+        description: 'The number of resources in the policy package.'
         type: string
       install-osconfig:
         required: false
+        description: 'Whether to install OSConfig package or not.'
         type: boolean
         default: false
       skip-remediation:
         required: false
+        description: 'Whether to skip remediation or not.'
         type: boolean
         default: false
       tag:
@@ -38,7 +49,7 @@ jobs:
     with:
       target: ${{ inputs.target }}
       arch: ${{ inputs.arch }}
-      artifact: ${{ inputs.target }}-${{ inputs.install-osconfig == true && 'withOSConfig' || 'withoutOSConfig' }}
+      artifact: ${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-binary
       package-type: ${{ inputs.package-type }}
       test: true
 
@@ -55,10 +66,10 @@ jobs:
           package=${{ inputs.policy-package }}
           echo policyPackage=${package%.zip} >> $GITHUB_OUTPUT
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         id: download
         with:
-          name: ${{ inputs.target }}-${{ inputs.install-osconfig == true && 'withOSConfig' || 'withoutOSConfig' }}
+          name: ${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-binary
 
       - name: Create osconfig.json
         run: |
@@ -78,7 +89,6 @@ jobs:
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.download.outputs.download-path }}
         run: |
-          testLogSuffix=${{ inputs.install-osconfig == true && 'withOSConfig' || 'withoutOSConfig' }}
           script="./universalNRPTest.ps1"
           cat >$script <<EOL
           Install-Module -Name GuestConfiguration -Force
@@ -102,7 +112,7 @@ jobs:
               TestResult = @{
                   Enabled      = \$true
                   OutputFormat = 'JUnitXml'
-                  OutputPath   = '${{ inputs.target }}-UniversalNRP-${{ steps.normalize.outputs.policyPackage }}-testResult-$testLogSuffix.xml'
+                  OutputPath   = '${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-testResults.xml'
               }
               Should = @{
                   ErrorAction = 'Continue'
@@ -123,14 +133,14 @@ jobs:
           sudo cp -r /var/log/osconfig* osconfig-logs/
           sudo chown $USER osconfig-logs/*
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: universal-nrp-test
+          name: universal-nrp-test-${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-report
           path: '${{ steps.download.outputs.download-path }}/${{ inputs.target }}*testResult*.xml'
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: universal-nrp-test-${{ inputs.target }}-${{ steps.normalize.outputs.policyPackage }}-${{ inputs.install-osconfig == true && 'withOSConfig' || 'withoutOSConfig' }}-logs
+          name: universal-nrp-test-${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-logs
           path: osconfig-logs/osconfig*
