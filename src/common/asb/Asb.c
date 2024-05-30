@@ -3236,17 +3236,26 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, void
 
     InitEnsureFilePermissionsForAllRsyslogLogFiles(value);
 
-    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, log))) && (numberOfModes > 0))
+    if (0 == (status = ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, log)))
     {
-        if (NULL != (formattedMode = FormatAllocateString(formatTemplate, modes[numberOfModes - 1])))
+        if (numberOfModes > 0)
         {
-            status = SetEtcConfValue(g_etcRsyslogConf, g_fileCreateMode, formattedMode, log);
-            FREE_MEMORY(formattedMode);
+            if (NULL != (formattedMode = FormatAllocateString(formatTemplate, modes[numberOfModes - 1])))
+            {
+                status = SetEtcConfValue(g_etcRsyslogConf, g_fileCreateMode, formattedMode, log);
+                FREE_MEMORY(formattedMode);
+            }
+            else
+            {
+                OsConfigLogError(log, "RemediateEnsureFilePermissionsForAllRsyslogLogFiles: out of memory");
+                status = ENOMEM;
+            }
         }
         else
         {
-            OsConfigLogError(log, "RemediateEnsureFilePermissionsForAllRsyslogLogFiles: out of memory");
-            status = ENOMEM;
+            OsConfigLogError(log, "RemediateEnsureFilePermissionsForAllRsyslogLogFiles: failed to parse desired value '%s'", 
+                g_desiredEnsureFilePermissionsForAllRsyslogLogFiles);
+            status = ENOENT;
         }
     }
 
