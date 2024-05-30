@@ -121,10 +121,10 @@ jobs:
           path: ./build/gtest-output
           output: ${{ matrix.target.name }}-${{ matrix.target.arch }}.xml
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: unit-test
+          name: unit-test-${{ matrix.target.name }}-${{ matrix.target.arch }}
           path: |
             ${{ matrix.target.name }}-${{ matrix.target.arch }}.log
             ${{ matrix.target.name }}-${{ matrix.target.arch }}.xml

@@ -49,7 +49,7 @@ jobs:
     with:
       target: ${{ inputs.target }}
       arch: ${{ inputs.arch }}
-      artifact: ${{ inputs.target }}-${{ inputs.install-osconfig == true && 'withOSConfig' || 'withoutOSConfig' }}
+      artifact: ${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-binary
       package-type: ${{ inputs.package-type }}
       test: true
 
@@ -66,10 +66,10 @@ jobs:
           package=${{ inputs.policy-package }}
           echo policyPackage=${package%.zip} >> $GITHUB_OUTPUT
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         id: download
         with:
-          name: ${{ inputs.target }}-${{ inputs.install-osconfig == true && 'withOSConfig' || 'withoutOSConfig' }}
+          name: ${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-binary
 
       - name: Create osconfig.json
         run: |
@@ -134,13 +134,13 @@ jobs:
           sudo cp -r /var/log/osconfig* osconfig-logs/
           sudo chown $USER osconfig-logs/*
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: universal-nrp-test
+          name: universal-nrp-test-${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-report
           path: '${{ steps.download.outputs.download-path }}/${{ inputs.target }}*testResult*.xml'
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: universal-nrp-test-${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-logs
