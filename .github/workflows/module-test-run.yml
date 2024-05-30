@@ -56,14 +56,14 @@ jobs:
 
           result=0
           recipes=$(ls -d ../../src/modules/test/recipes/*.json)
-
+          includedRegex="${{ inputs.included-tests }}"
           for recipe in $recipes; do
             name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
 
             if $(echo $recipe | grep -q -E "${{ inputs.excluded-tests }}"); then
               echo "skipping $name (excluded)"
               continue
-            elif $(echo $recipe | grep -q -E "${{ inputs.included-tests }}"); then
+            elif $(echo ${recipe,,} | grep -q -E ${includedRegex,,}); then
               echo "testing $name (included)"
             else
               echo "skipping $name (not included)"
