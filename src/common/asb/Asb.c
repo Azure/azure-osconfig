@@ -3329,7 +3329,9 @@ static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, void*
     return (SecureSaveToFile(g_etcCronAllow, payload, strlen(payload), log) &&
         SecureSaveToFile(g_etcAtAllow, payload, strlen(payload), log) &&
         (0 != CheckFileExists(g_etcCronDeny, NULL, log)) &&
-        (0 != CheckFileExists(g_etcAtDeny, NULL, log))) ? 0 : ENOENT;
+        (0 != CheckFileExists(g_etcAtDeny, NULL, log)) &&
+        (0 == SetFileAccess(g_etcCronAllow, 0, 0, 600, log)) &&
+        (0 == SetFileAccess(g_etcAtAllow, 0, 0, 600, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSshPortIsConfigured(char* value, void* log)
