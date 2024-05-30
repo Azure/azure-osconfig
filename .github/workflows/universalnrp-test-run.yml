@@ -89,7 +89,6 @@ jobs:
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.download.outputs.download-path }}
         run: |
-          testLogSuffix=${{ inputs.install-osconfig == true && 'withOSConfig' || 'withoutOSConfig' }}
           script="./universalNRPTest.ps1"
           cat >$script <<EOL
           Install-Module -Name GuestConfiguration -Force
@@ -113,7 +112,7 @@ jobs:
               TestResult = @{
                   Enabled      = \$true
                   OutputFormat = 'JUnitXml'
-                  OutputPath   = '${{ inputs.target }}-UniversalNRP-${{ steps.normalize.outputs.policyPackage }}-testResult-$testLogSuffix.xml'
+                  OutputPath   = '${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-testResults.xml'
               }
               Should = @{
                   ErrorAction = 'Continue'

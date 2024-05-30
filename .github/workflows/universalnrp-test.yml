@@ -65,4 +65,4 @@ jobs:
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: "universal-nrp-test/**/*.xml"
+          files: "universal-nrp-test/*testResults.xml"
