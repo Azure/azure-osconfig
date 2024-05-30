@@ -69,11 +69,11 @@ extern "C"
 {
 #endif
 
-int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log);
+int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, char** reason, void* log);
 void FreeUsersList(SIMPLIFIED_USER** source, unsigned int size);
 
-int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log);
-int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log);
+int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, char** reason, void* log);
+int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, char** reason, void* log);
 void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size);
 
 int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, void* log);
