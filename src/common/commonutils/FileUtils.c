@@ -1579,7 +1579,6 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, void*
 {
     const char* newlineTemplate = "%s %s\n";
     char* newline = NULL;
-    char* original = NULL;
     int status = 0;
 
     if ((NULL == file) || (NULL == name) || (0 == strlen(name)) || (NULL == value) || (0 == strlen(value)))
