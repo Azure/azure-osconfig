@@ -1728,8 +1728,8 @@ static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void* log)
 {
     const char* fileGroup = "$FileGroup adm";
     char* reason = NULL;
-    RETURN_REASON_IF_NON_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, fileGroupAdm, &reason, log));
-    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileGroupAdm, &reason, log);
+    RETURN_REASON_IF_NON_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, fileGroup, &reason, log));
+    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileGroup, &reason, log);
     return reason;
 }
 
@@ -3238,14 +3238,14 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, void
 
     if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, log))) && (numberOfModes > 0))
     {
-        if (NULL != (formattedMode = FormatAllocateString(formatTemplate, mode[numberOfModes - 1])))
+        if (NULL != (formattedMode = FormatAllocateString(formatTemplate, modes[numberOfModes - 1])))
         {
             status = SetEtcConfValue(g_etcRsyslogConf, g_fileCreateMode, formattedMode, log);
             FREE_MEMORY(formattedMode);
         }
         else
         {
-            OsConfigLogError("RemediateEnsureFilePermissionsForAllRsyslogLogFiles: out of memory");
+            OsConfigLogError(log, "RemediateEnsureFilePermissionsForAllRsyslogLogFiles: out of memory");
             status = ENOMEM;
         }
     }
@@ -3315,8 +3315,8 @@ static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, void*
 {
     const char* payload = "root";
     UNUSED(value);
-    remove(g_atCronDeny);
-    remove(g_atAtDeny);
+    remove(g_etcCronDeny);
+    remove(g_etcAtDeny);
     return (SecureSaveToFile(g_etcCronAllow, payload, strlen(payload), log) &&
         SecureSaveToFile(g_etcAtAllow, payload, strlen(payload), log) &&
         (0 != CheckFileExists(g_etcCronDeny, NULL, log)) &&
