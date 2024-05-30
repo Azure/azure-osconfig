@@ -3322,7 +3322,7 @@ static int RemediateEnsureTftpServiceisDisabled(char* value, void* log)
 
 static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, void* log)
 {
-    const char* payload = "root";
+    const char* payload = "root\n";
     UNUSED(value);
     remove(g_etcCronDeny);
     remove(g_etcAtDeny);
