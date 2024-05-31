@@ -298,16 +298,17 @@ int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
 
     if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log)))
     {
+        OsConfigLogError(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
+        OsConfigCaptureReason(reason, "At least one active wireless interface is present");
+        status = EEXIST;
+    }
+    else
+    {
         OsConfigLogInfo(log, "CheckAllWirelessInterfacesAreDisabled: no wireless interfaces are enabled");
         OsConfigCaptureSuccessReason(reason, "No active wireless interfaces are present");
         status = 0;
     }
-    else
-    {
-        OsConfigLogError(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
-        OsConfigCaptureReason(reason, "At least one active wireless interface is present");
-    }
-    
+
     return status;
 }
 
