@@ -293,20 +293,19 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
 
 int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
 {
-    const char* command = "ip link show | grep - E '^[0-9]+: [a-zA-Z0-9]+: <.*UP.*>.*mtu [0-9]+'";
+    const char* command = "iwconfig 2>&1 | egrep -v 'no wireless extensions|not found' | grep Frequency";
     int status = 0;
 
     if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log)))
     {
-        OsConfigLogError(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
-        OsConfigCaptureReason(reason, "At least one active wireless interface is present");
-        status = ENOENT;
-    }
-    else
-    {
         OsConfigLogInfo(log, "CheckAllWirelessInterfacesAreDisabled: no wireless interfaces are enabled");
         OsConfigCaptureSuccessReason(reason, "No active wireless interfaces are present");
         status = 0;
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
+        OsConfigCaptureReason(reason, "At least one active wireless interface is present");
     }
     
     return status;
@@ -316,9 +315,8 @@ int DisableAllWirelessInterfaces(void* log)
 {
     const char* nmcli = "nmcli";
     const char* rfkill = "rfkill";
-    const char* nmCliRadioAllOff = "nmcli radio all off";
+    const char* nmCliRadioAllOff = "nmcli radio wifi off";
     const char* rfKillBlockAll = "rfkill block all";
-
     int status = 0;
    
     if (0 == CheckAllWirelessInterfacesAreDisabled(NULL, log))
