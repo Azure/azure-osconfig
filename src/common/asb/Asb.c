@@ -2884,7 +2884,6 @@ static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, v
 static int RemediateEnsureDotDoesNotAppearInRootsPath(char* value, void* log)
 {
     UNUSED(value);
-    int status = 0;
     /*
     const char* path = "PATH";
     const char* dot = ".";
