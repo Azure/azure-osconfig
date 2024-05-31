@@ -1562,8 +1562,7 @@ static char* AuditEnsureCoreDumpsAreRestricted(void* log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcSecurityLimitsConf, '#', g_hardCoreZero, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInFolder(g_etcSecurityLimitsD, g_fsSuidDumpable, &reason, log));
-    CheckTextFoundInCommandOutput(g_sysCtlA, g_fsSuidDumpable, &reason, log);
+    CheckTextFoundInFolder(g_etcSecurityLimitsD, g_fsSuidDumpable, &reason, log);
     return reason;
 }
 
@@ -3112,9 +3111,14 @@ static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, voi
 static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
 {
     const char* fileName = "/etc/security/limits.d/disable-core-dump.conf";
+    const char* hardCore = "hard core";
+    int status = 0;
     UNUSED(value);
-    return ((0 == ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, "hard core", g_hardCoreZero, '#', log)) &&
-        ((false == DirectoryExists(g_etcSecurityLimitsD)) || (0 == SecureSaveToFile(fileName, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log)))) ? 0 : ENOENT;
+    if ((0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, hardCore, g_hardCoreZero, '#', log))) && DirectoryExists(g_etcSecurityLimitsD))
+    {
+        status = SecureSaveToFile(fileName, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log);
+    }
+    return status;
 }
 
 static int RemediateEnsurePasswordCreationRequirements(char* value, void* log)
