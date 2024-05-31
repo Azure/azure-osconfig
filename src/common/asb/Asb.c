@@ -3116,7 +3116,7 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
     UNUSED(value);
     if ((0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, hardCore, g_hardCoreZero, '#', log))) && DirectoryExists(g_etcSecurityLimitsD))
     {
-        status = SecureSaveToFile(fileName, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log);
+        status = SecureSaveToFile(fileName, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log) ? 0 : ENOENT;
     }
     return status;
 }

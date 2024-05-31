@@ -1902,7 +1902,6 @@ TEST_F(CommonUtilsTest, IsCurrentOs)
     EXPECT_NE(nullptr, name = GetOsPrettyName(nullptr));
     EXPECT_EQ(true, IsCurrentOs(name, nullptr));
     FREE_MEMORY(name);
-
 }
 
 TEST_F(CommonUtilsTest, ConcatenateStrings)
@@ -2129,4 +2128,24 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, RemoveCharacterFromString)
+{
+    char* value = NULL;
+
+    EXPECT_EQ(nullptr, RemoveCharacterFromString(nullptr, 'a', nullptr));
+    EXPECT_EQ(nullptr, RemoveCharacterFromString("", 'a', nullptr));
+
+    EXPECT_NE(nullptr, value = RemoveCharacterFromString("This is a test", ' ', nullptr));
+    EXPECT_STREQ(value, "Thisisatest");
+    FREE_MEMORY(value);
+
+    EXPECT_NE(nullptr, value = RemoveCharacterFromString("This is a test.", '.', nullptr));
+    EXPECT_STREQ(value, "This is a test");
+    FREE_MEMORY(value);
+
+    EXPECT_NE(nullptr, value = RemoveCharacterFromString("This ...is. a . test..", '.', nullptr));
+    EXPECT_STREQ(value, "This is a test");
+    FREE_MEMORY(value);
 }

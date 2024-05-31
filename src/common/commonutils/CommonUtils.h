@@ -123,6 +123,7 @@ char* ConcatenateStrings(const char* first, const char* second);
 char* DuplicateStringToLowercase(const char* source);
 char* FormatAllocateString(const char* format, ...);
 int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log);
+char* RemoveCharacterFromString(const char* source, char what, void* log);
 
 int DisablePostfixNetworkListening(void* log);
 
