@@ -3120,7 +3120,7 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
     const char* fileName = "/etc/security/limits.d/disable-core-dump.conf";
     UNUSED(value);
     return ((0 == ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, "hard core", g_hardCoreZero, '#', log)) &&
-        ((false == DirectoryExists(g_etcSecurityLimitsD)) || (0 = SecureSaveToFile(fileName, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log)))) ? 0 : ENOENT;
+        ((false == DirectoryExists(g_etcSecurityLimitsD)) || (0 == SecureSaveToFile(fileName, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log)))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePasswordCreationRequirements(char* value, void* log)
