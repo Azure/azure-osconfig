@@ -1691,8 +1691,8 @@ static char* AuditEnsureALoggingServiceIsEnabled(void* log)
     char* reason = NULL;
     if (0 == CheckPackageNotInstalled(g_systemd, &reason, log))
     {
-        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_syslogNg, &reason, log)) && (true == CheckDaemonActive(g_rsyslog, &reason, log))) ? 0 : ENOENT);
-        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_rsyslog, &reason, log)) && (true == CheckDaemonActive(g_syslogNg, &reason, log))) ? 0 : ENOENT);
+        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_syslogNg, &reason, log)) && CheckDaemonActive(g_rsyslog, &reason, log)) ? 0 : ENOENT);
+        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_rsyslog, &reason, log)) && CheckDaemonActive(g_syslogNg, &reason, log)) ? 0 : ENOENT);
     }
     CheckDaemonActive(g_systemdJournald, &reason, log);
     return reason;
@@ -3202,11 +3202,12 @@ static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(char* valu
 static int RemediateEnsureLoggingIsConfigured(char* value, void* log)
 {
     UNUSED(value);
-    InstallPackage(g_rsyslog, log);
-    EnableAndStartDaemon(g_rsyslog, log);
-    InstallPackage(g_syslogNg, log);
-    EnableAndStartDaemon(g_syslogNg, log);
-    return (IsDaemonActive(g_syslog, log) && (IsDaemonActive(g_rsyslog, log) || IsDaemonActive(g_syslogNg, log))) ? 0 : ENOENT;
+    return (((0 == InstallPackage(g_systemd, log) && ((0 == InstallPackage(g_rsyslog, log)) || 
+        (0 == InstallPackage(g_syslog, log)))) || ((0 == InstallPackage(g_syslogNg, log)))) &&
+        (((0 == CheckPackageInstalled(g_systemd, NULL, log)) && EnableAndStartDaemon(g_systemdJournald, log)) &&
+        (((0 == CheckPackageInstalled(g_rsyslog, NULL, log)) && EnableAndStartDaemon(g_rsyslog, log)) ||
+        (((0 == CheckPackageInstalled(g_syslog, NULL, log) && EnableAndStartDaemon(g_syslog, log)))))) ||
+        (((0 == CheckPackageInstalled(g_syslogNg, NULL, log)) && EnableAndStartDaemon(g_syslogNg, log)))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSyslogPackageIsInstalled(char* value, void* log)
