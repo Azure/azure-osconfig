@@ -1660,9 +1660,9 @@ static char* AuditEnsureLoggingIsConfigured(void* log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckFileExists("/var/log/syslog", &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckIfDaemonActive(g_syslog, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckIsDaemonActive(g_rsyslog, &reason, log));
-    CheckIfDaemonActive(g_syslogNg, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonActive(g_syslog, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckDaemonActive(g_rsyslog, &reason, log));
+    CheckDaemonActive(g_syslogNg, &reason, log);
     return reason;
 }
 
