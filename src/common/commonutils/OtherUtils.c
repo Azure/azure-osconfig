@@ -438,3 +438,51 @@ char* RemoveCharacterFromString(const char* source, char what, void* log)
     OsConfigLogInfo(log, "RemoveCharacterFromString: removed all instances of '%c' if any from '%s' ('%s)", what, source, target);
     return target;
 }
+
+int RemoveDotsFromPath(void* log)
+{
+    const char* printenv = "printenv PATH";
+    const char* setenvTemplate = "setenv PATH '%s'";
+    char* setenv = NULL;
+    char* path = NULL;
+    char* newPath = NULL;
+    int status = 0;
+
+    if (0 == (status == ExecuteCommand(NULL, printenv, false, false, 0, 0, &path, NULL, log)))
+    {
+        if (NULL != (newPath = RemoveCharacterFromString(path, '.', log)))
+        {
+            if (NULL != (setenv = FormatAllocateString(setenvTemplate, newPath)))
+            {
+                if (0 == (status == ExecuteCommand(NULL, setenv, false, false, 0, 0, NULL, NULL, log)))
+                {
+                    OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set 'PATH' to '%s'", newPath);
+                }
+                else
+                {
+                    OsConfigLogError(log, "RemoveDotsFromPath: '%s failed with '%s'", setenv, status);
+                }
+
+                FREE_MEMORY(setenv);
+            }
+            else
+            {
+                OsConfigLogError(log, "RemoveDotsFromPath: out of memory");
+                status = ENOMEM;
+            }
+
+            FREE_MEMORY(newPath);
+        }
+        else
+        {
+            OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '.' from '%s'", path);
+            status = EINVAL;
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "RemoveDotsFromPath: '%s' failed with %d", printenv, status);
+    }
+
+    return status;
+}

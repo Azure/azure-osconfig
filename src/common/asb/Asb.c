@@ -2884,8 +2884,18 @@ static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, v
 static int RemediateEnsureDotDoesNotAppearInRootsPath(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    int status = 0;
+    /*
+    const char* path = "PATH";
+    const char* dot = ".";
+    char* reason = NULL;
+    RETURN_REASON_IF_NOT_ZERO(CheckTextNotFoundInEnvironmentVariable(path, dot, false, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile("/etc/sudoers", "secure_path", dot, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile(g_etcEnvironment, path, dot, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile(g_etcProfile, path, dot, &reason, log));
+    CheckMarkedTextNotFoundInFile("/root/.profile", path, dot, &reason, log);
+    */
+    return RemoveDotsFromPath(log);
 }
 
 static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, void* log)
