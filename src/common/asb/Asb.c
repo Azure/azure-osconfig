@@ -1592,14 +1592,9 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(void* log)
 {
     const char* pamFailLockSo = "pam_faillock.so";
     char* reason = NULL;
-
-    if ((0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamFailLockSo, '#', &reason, log)) ||
-        (0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamFailLockSo, '#', &reason, log)) ||
-        (0 == CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, "pam_tally2.so", '#', &reason, log)))
-    {
-        return reason;
-    }
-
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamFailLockSo, '#', &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamFailLockSo, '#', &reason, log));
+    CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, "pam_tally2.so", '#', &reason, log);
     return reason;
 }
 
@@ -1653,31 +1648,33 @@ static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void* log)
 {
     const char* password = "password";
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/boot/grub/grub.cfg", '#', password, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/boot/grub/grub.conf", '#', password, &reason, log));
-    CheckLineFoundNotCommentedOut("/boot/grub2/grub.conf", '#', password, &reason, log);
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut("/boot/grub/grub.conf", '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut("/boot/grub2/grub.conf", '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut("/boot/grub/grub.cfg", '#', password, &reason, log));
+    FREE_MEMORY(reason);
+    reason = DuplicateString("Manually set a boot loader password for GRUB. Automatic remediation is not possible");
     return reason;
 }
 
 static char* AuditEnsureLoggingIsConfigured(void* log)
 {
     char* reason = NULL;
-    CheckFileExists("/var/log/syslog", &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileExists("/var/log/syslog", &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckIfDaemonActive(g_syslog, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckIsDaemonActive(g_rsyslog, &reason, log));
+    CheckIfDaemonActive(g_syslogNg, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureSyslogPackageIsInstalled(void* log)
 {
     char* reason = NULL;
-    bool IsSystemdInstalled = (0 == CheckPackageInstalled(g_systemd, &reason, log)) ? true : false;
-
-    if ((IsSystemdInstalled && (0 == CheckPackageInstalled(g_rsyslog, &reason, log))) || 
-        (IsSystemdInstalled && (0 == CheckPackageInstalled(g_syslog, &reason, log))) ||
-        (0 == CheckPackageInstalled(g_syslogNg, &reason, log)))
+    if (0 == CheckPackageInstalled(g_systemd, &reason, log))
     {
-        return reason;
+        RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_syslog, &reason, log));
+        RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_rsyslog, &reason, log));
     }
-
+    CheckPackageInstalled(g_syslogNg, &reason, log);
     return reason;
 }
 
@@ -1692,15 +1689,12 @@ static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(void* log)
 static char* AuditEnsureALoggingServiceIsEnabled(void* log)
 {
     char* reason = NULL;
-    bool isSystemdNotInstalled = (0 == CheckPackageNotInstalled(g_systemd, &reason, log)) ? true : false;
-    
-    if ((isSystemdNotInstalled && (0 == CheckPackageNotInstalled(g_syslogNg, &reason, log)) && CheckDaemonActive(g_rsyslog, &reason, log)) ||
-        (isSystemdNotInstalled && (0 == CheckPackageNotInstalled(g_rsyslog, &reason, log)) && CheckDaemonActive(g_syslogNg, &reason, log)) ||
-        ((0 == CheckPackageInstalled(g_systemd, &reason, log)) && CheckDaemonActive(g_systemdJournald, &reason, log)))
+    if (0 == CheckPackageNotInstalled(g_systemd, &reason, log))
     {
-        return reason;
+        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_syslogNg, &reason, log)) && CheckDaemonActive(g_rsyslog, &reason, log)) ? 0 : ENOENT);
+        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_rsyslog, &reason, log)) && CheckDaemonActive(g_syslogNg, &reason, log)) ? 0 : ENOENT);
     }
-    
+    CheckDaemonActive(g_systemdJournald, &reason, log);
     return reason;
 }
 
@@ -3201,15 +3195,18 @@ static int RemediateEnsureVirtualMemoryRandomizationIsEnabled(char* value, void*
 static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    OsConfigLogInfo(log, "Manually set a boot loader password for GRUB. Automatic remediation is not possible");
+    return 0;
 }
 
 static int RemediateEnsureLoggingIsConfigured(char* value, void* log)
 {
     UNUSED(value);
-    UNUSED(log);
-    return 0; //TODO: add remediation respecting all existing patterns
+    InstallPackage(g_rsyslog, log);
+    EnableAndStartDaemon(g_rsyslog, log);
+    InstallPackage(g_syslogNg, log);
+    EnableAndStartDaemon(g_syslogNg, log);
+    return (IsDaemonActive(g_syslog, log) && (IsDaemonActive(g_rsyslog, log) || IsDaemonActive(g_syslogNg, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSyslogPackageIsInstalled(char* value, void* log)
