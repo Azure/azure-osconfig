@@ -15,7 +15,7 @@
 #include <Asb.h>
 
 #define RETURN_REASON_IF_ZERO(call) {\
-    if (0 == call) {\
+    if (0 == (call)) {\
         return reason;\
     }\
 }\
