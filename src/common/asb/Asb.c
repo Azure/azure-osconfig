@@ -3202,11 +3202,12 @@ static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(char* valu
 static int RemediateEnsureLoggingIsConfigured(char* value, void* log)
 {
     UNUSED(value);
-    return (((0 == InstallPackage(g_systemd, log) && ((0 == InstallPackage(g_rsyslog, log)) || (0 == InstallPackage(g_syslog, log)))) || (0 == InstallPackage(g_syslogNg, log))) &&
+    return (((0 == InstallPackage(g_systemd, log) && ((0 == InstallPackage(g_rsyslog, log)) || 
+        (0 == InstallPackage(g_syslog, log)))) || (0 == InstallPackage(g_syslogNg, log))) &&
         (((0 == CheckPackageInstalled(g_systemd, NULL, log)) && EnableAndStartDaemon(g_systemdJournald, log))) &&
-        (((0 == CheckPackageInstalled(g_rsyslog, NULL, log)) && EnableAndStartDaemon(g_rsyslog, log))) || 
+        ((((0 == CheckPackageInstalled(g_rsyslog, NULL, log)) && EnableAndStartDaemon(g_rsyslog, log))) || 
         (((0 == CheckPackageInstalled(g_syslog, NULL, log)) && EnableAndStartDaemon(g_syslog, log))) ||
-        (((0 == CheckPackageInstalled(g_syslogNg, NULL, log)) && EnableAndStartDaemon(g_syslogNg, log)))) ? 0 : ENOENT;
+        (((0 == CheckPackageInstalled(g_syslogNg, NULL, log)) && EnableAndStartDaemon(g_syslogNg, log))))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSyslogPackageIsInstalled(char* value, void* log)
