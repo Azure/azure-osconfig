@@ -1691,8 +1691,8 @@ static char* AuditEnsureALoggingServiceIsEnabled(void* log)
     char* reason = NULL;
     if (0 == CheckPackageNotInstalled(g_systemd, &reason, log))
     {
-        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_syslogNg, &reason, log)) && CheckDaemonActive(g_rsyslog, &reason, log)) ? 0 : ENOENT);
-        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_rsyslog, &reason, log)) && CheckDaemonActive(g_syslogNg, &reason, log)) ? 0 : ENOENT);
+        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_syslogNg, &reason, log)) && (true == CheckDaemonActive(g_rsyslog, &reason, log))) ? 0 : ENOENT);
+        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_rsyslog, &reason, log)) && (true == CheckDaemonActive(g_syslogNg, &reason, log))) ? 0 : ENOENT);
     }
     CheckDaemonActive(g_systemdJournald, &reason, log);
     return reason;
