@@ -3118,7 +3118,6 @@ static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, voi
 static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
 {
     const char* fileName = "/etc/security/limits.d/disable-core-dump.conf";
-    int status = 0;
     UNUSED(value);
     return ((0 == ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, "hard core", g_hardCoreZero, '#', log)) &&
         ((false == DirectoryExists(g_etcSecurityLimitsD)) || (0 = SecureSaveToFile(fileName, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log)))) ? 0 : ENOENT;
