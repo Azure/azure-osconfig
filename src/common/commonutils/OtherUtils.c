@@ -613,7 +613,7 @@ int ReplaceCharactersInFile(const char* fileName, char* chars, unsigned int numC
         return ENOENT;
     }
 
-    if (NULL != (newFileContents = ReplaceCharactersInString(fileContents, charss, numChars, replacement, log)))
+    if (NULL != (newFileContents = ReplaceCharactersInString(fileContents, chars, numChars, replacement, log)))
     {
         if (false == SecureSaveToFile(fileName, newFileContents, strlen(newFileContents), log))
         {
