@@ -409,6 +409,7 @@ int SetDefaultDenyFirewallPolicy(void* log)
 
 char* RemoveCharacterFromString(const char* source, char what, void* log)
 {
+    char* temp = NULL;
     char* target = NULL;
     size_t sourceLength = 0, i = 0, j = 0;
 
@@ -417,13 +418,13 @@ char* RemoveCharacterFromString(const char* source, char what, void* log)
         OsConfigLogInfo(log, "RemoveCharacterFromString: empty or no string, nothing to replace");
         return NULL;
     }
-    else if (NULL == (target = DuplicateString(source)))
+    else if (NULL == (temp = DuplicateString(source)))
     {
         OsConfigLogInfo(log, "RemoveCharacterFromString: out of memory");
         return NULL;
     }
 
-    memset(target, 0, sourceLength + 1);
+    memset(temp, 0, sourceLength + 1);
 
     for (i = 0, j = 0; i < sourceLength; i++)
     {
@@ -431,57 +432,97 @@ char* RemoveCharacterFromString(const char* source, char what, void* log)
         {
             continue;
         }
-        target[j] = source[i];
+        temp[j] = source[i];
         j++;
     }
 
-    OsConfigLogInfo(log, "RemoveCharacterFromString: removed all instances of '%c' if any from '%s' ('%s)", what, source, target);
+    if (NULL != (target = DuplicateString(temp)))
+    {
+        OsConfigLogInfo(log, "RemoveCharacterFromString: removed all instances of '%c' if any from '%s' ('%s)", what, source, target);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "RemoveCharacterFromString: out of memory");
+    }
+
+    FREE_MEMORY(temp);
+
     return target;
 }
 
 int RemoveDotsFromPath(void* log)
 {
+    const char* path = "PATH";
+    const char* dot = ".";
     const char* printenv = "printenv PATH";
     const char* setenvTemplate = "setenv PATH '%s'";
+    const char* etcSudoers = "/etc/sudoers";
+    const char* etcEnvironment = "/etc/environment";
+    const char* etcProfile = "/etc/profile";
+    const char* securePath = "secure_path";
+    const char* rootProfile = "/root/.profile";
     char* setenv = NULL;
     char* path = NULL;
     char* newPath = NULL;
     int status = 0;
 
-    if (0 == (status == ExecuteCommand(NULL, printenv, false, false, 0, 0, &path, NULL, log)))
+    if (0 != CheckTextNotFoundInEnvironmentVariable(path, dot, false, NULL, log))
     {
-        if (NULL != (newPath = RemoveCharacterFromString(path, '.', log)))
+        if (0 == (status == ExecuteCommand(NULL, printenv, false, false, 0, 0, &path, NULL, log)))
         {
-            if (NULL != (setenv = FormatAllocateString(setenvTemplate, newPath)))
+            if (NULL != (newPath = RemoveCharacterFromString(path, '.', log)))
             {
-                if (0 == (status == ExecuteCommand(NULL, setenv, false, false, 0, 0, NULL, NULL, log)))
+                if (NULL != (setenv = FormatAllocateString(setenvTemplate, newPath)))
                 {
-                    OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set 'PATH' to '%s'", newPath);
+                    if (0 == (status == ExecuteCommand(NULL, setenv, false, false, 0, 0, NULL, NULL, log)))
+                    {
+                        OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set 'PATH' to '%s'", newPath);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "RemoveDotsFromPath: '%s failed with %d", setenv, status);
+                    }
+
+                    FREE_MEMORY(setenv);
                 }
                 else
                 {
-                    OsConfigLogError(log, "RemoveDotsFromPath: '%s failed with %d", setenv, status);
+                    OsConfigLogError(log, "RemoveDotsFromPath: out of memory");
+                    status = ENOMEM;
                 }
 
-                FREE_MEMORY(setenv);
+                FREE_MEMORY(newPath);
             }
             else
             {
-                OsConfigLogError(log, "RemoveDotsFromPath: out of memory");
-                status = ENOMEM;
+                OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '.' from '%s'", path);
+                status = EINVAL;
             }
-
-            FREE_MEMORY(newPath);
         }
         else
         {
-            OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '.' from '%s'", path);
-            status = EINVAL;
+            OsConfigLogError(log, "RemoveDotsFromPath: '%s' failed with %d", printenv, status);
         }
     }
-    else
+
+    if ((0 == status) && (0 != CheckMarkedTextNotFoundInFile(etcSudoers, securePath, dot, NULL, log)))
     {
-        OsConfigLogError(log, "RemoveDotsFromPath: '%s' failed with %d", printenv, status);
+        //TODO fix secure_path in /etc/sudoers
+    }
+
+    if ((0 == status) && (0 != CheckMarkedTextNotFoundInFile(etcEnvironment, path, dot, NULL, log)))
+    {
+        //TODO fix PATH in /etc/environment
+    }
+
+    if ((0 == status) && (0 != CheckMarkedTextNotFoundInFile(etcProfile, path, dot, NULL, log)))
+    {
+        //TODO fix PATH in /etc/profile
+    }
+
+    if ((0 == status) && (0 != CheckMarkedTextNotFoundInFile(rootProfile, path, dot, NULL, log)))
+    {
+        //TODO fix PATH in /root/.profile
     }
 
     return status;
