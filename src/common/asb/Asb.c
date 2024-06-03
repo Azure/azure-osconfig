@@ -2889,7 +2889,7 @@ static int RemediateEnsureDotDoesNotAppearInRootsPath(char* value, void* log)
 
 static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, void* log)
 {
-    const char* escapes = {'\\m', '\r', '\s', '\v'};
+    const char escapes[] = {'\m', '\r', '\s', '\v'};
     unsigned int numEscapes = ARRAY_SIZE(escapes);
     UNUSED(value);
     return ReplaceCharactersInFile(g_etcIssueNet, escapes, numEscapes, ' ', log);
@@ -2897,7 +2897,7 @@ static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, void
 
 static int RemediateEnsureLocalLoginWarningBannerIsConfigured(char* value, void* log)
 {
-    const char* escapes = {'\m', '\r', '\s', '\v'};
+    const char escapes[] = {'\m', '\r', '\s', '\v'};
     unsigned int numEscapes = ARRAY_SIZE(escapes);
     UNUSED(value);
     return ReplaceCharactersInFile(g_etcIssue, escapes, numEscapes, ' ', log);
