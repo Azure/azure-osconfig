@@ -126,7 +126,7 @@ char* FormatAllocateString(const char* format, ...);
 int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log);
 char* RemoveCharacterFromString(const char* source, char what, void* log);
 char* ReplaceCharactersInString(const char* source, const char* chars, unsigned int numChars, char replacement, void* log);
-int ReplaceCharactersInFile(const char* fileName, char* chars, unsigned int numChars, char replacement, void* log);
+int ReplaceCharactersInFile(const char* fileName, const char* chars, unsigned int numChars, char replacement, void* log);
 
 int DisablePostfixNetworkListening(void* log);
 

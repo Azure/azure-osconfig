@@ -591,7 +591,7 @@ int RemoveDotsFromPath(void* log)
     return status;
 }
 
-int ReplaceCharactersInFile(const char* fileName, char* chars, unsigned int numChars, char replacement, void* log)
+int ReplaceCharactersInFile(const char* fileName, const char* chars, unsigned int numChars, char replacement, void* log)
 {
     char* fileContents = NULL;
     char* newFileContents = NULL;
