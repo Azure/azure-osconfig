@@ -2170,12 +2170,11 @@ TEST_F(CommonUtilsTest, ReplaceCharactersInString)
     EXPECT_STREQ(value, "This ###is# a # test##");
     FREE_MEMORY(value);
     
-    EXPECT_NE(nullptr, value = ReplaceCharactersInString("This_is!a#test", sequence, strlen(sequence), nullptr));
+    EXPECT_NE(nullptr, value = ReplaceCharactersInString("This_is!a#test", sequence, 3, ' ', nullptr));
     EXPECT_STREQ(value, "This is a test");
     FREE_MEMORY(value);
 }
 
-int ReplaceCharactersInFile(const char* fileName, char* chars, unsigned int numChars, char replacement, void* log)
 TEST_F(CommonUtilsTest, ReplaceCharactersInFile)
 {
     const char* testContents =
