@@ -2191,8 +2191,8 @@ TEST_F(CommonUtilsTest, ReplaceCharactersInFile)
         "Test Line 4\n"
         "Test Line 5";
 
-    const char chars = "+#@";
-    unisgned int numChars = 3;
+    const char* chars = "+#@";
+    unsigned int numChars = 3;
     char* cleanedContents = NULL;
 
     EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, nullptr, 0, '!', nullptr));
