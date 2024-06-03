@@ -417,7 +417,7 @@ char* RemoveCharacterFromString(const char* source, char what, void* log)
         OsConfigLogInfo(log, "RemoveCharacterFromString: empty or no string, nothing to replace");
         return NULL;
     }
-    else if (NULL == (temp = DuplicateString(source)))
+    else if (NULL == (target = DuplicateString(source)))
     {
         OsConfigLogInfo(log, "RemoveCharacterFromString: out of memory");
         return NULL;
