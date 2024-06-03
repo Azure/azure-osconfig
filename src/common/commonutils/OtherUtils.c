@@ -510,7 +510,7 @@ int RemoveDotsFromPath(void* log)
     {
         for (i = 0; i < numPathLocations; i++)
         {
-            if (0 == CheckMarkedTextNotFoundInFile(pathLocations[i].location, pathLocations[i].path, dot, NULL, log)))
+            if (0 == CheckMarkedTextNotFoundInFile(pathLocations[i].location, pathLocations[i].path, dot, NULL, log))
             {
                 continue;
             }
