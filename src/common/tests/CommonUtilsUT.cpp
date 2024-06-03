@@ -2203,11 +2203,10 @@ TEST_F(CommonUtilsTest, ReplaceCharactersInFile)
 
     EXPECT_TRUE(CreateTestFile(m_path, testContents));
 
-    EXPECT_EQ(0, ReplaceCharactersInFile(m_path, chars, numChars, " ", nullptr));
+    EXPECT_EQ(0, ReplaceCharactersInFile(m_path, chars, numChars, ' ', nullptr));
     EXPECT_NE(nullptr, cleanedContents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_STREQ(cleanedContents, targetContents);
     
     FREE_MEMORY(cleanedContents);
-    FREE_MEMORY(targetContents);
     EXPECT_TRUE(Cleanup(m_path));
 }
