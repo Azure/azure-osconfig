@@ -2150,7 +2150,7 @@ TEST_F(CommonUtilsTest, RemoveCharacterFromString)
     FREE_MEMORY(value);
 }
 
-TEST_F(CommonUtilsTest, RemoveCharacterFromString)
+TEST_F(CommonUtilsTest, ReplaceCharacterInString)
 {
     char* value = NULL;
 
