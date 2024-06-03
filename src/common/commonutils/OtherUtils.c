@@ -462,15 +462,15 @@ int RemoveDotsFromPath(void* log)
     const char* securePath = "secure_path";
     const char* rootProfile = "/root/.profile";
     char* setenv = NULL;
-    char* path = NULL;
+    char* currentPath = NULL;
     char* newPath = NULL;
     int status = 0;
 
     if (0 != CheckTextNotFoundInEnvironmentVariable(path, dot, false, NULL, log))
     {
-        if (0 == (status == ExecuteCommand(NULL, printenv, false, false, 0, 0, &path, NULL, log)))
+        if (0 == (status == ExecuteCommand(NULL, printenv, false, false, 0, 0, &currentPath, NULL, log)))
         {
-            if (NULL != (newPath = RemoveCharacterFromString(path, '.', log)))
+            if (NULL != (newPath = RemoveCharacterFromString(currentPath, '.', log)))
             {
                 if (NULL != (setenv = FormatAllocateString(setenvTemplate, newPath)))
                 {
@@ -495,7 +495,7 @@ int RemoveDotsFromPath(void* log)
             }
             else
             {
-                OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '.' from '%s'", path);
+                OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '.' from '%s'", currentPath);
                 status = EINVAL;
             }
         }
