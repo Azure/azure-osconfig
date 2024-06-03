@@ -2195,11 +2195,11 @@ TEST_F(CommonUtilsTest, ReplaceCharactersInFile)
     unsigned int numChars = 3;
     char* cleanedContents = NULL;
 
-    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, nullptr, 0, '!', nullptr));
-    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, nullptr, 0, '!', nullptr));
-    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, chars, 0, '!', nullptr));
-    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, chars, 0, '!', nullptr));
-    EXPECT_EQ(EEXIST, ReplaceMarkedLinesInFile(m_path, chars, numChars, ' ', nullptr));
+    EXPECT_EQ(EINVAL, ReplaceCharactersInFile(nullptr, nullptr, 0, '!', nullptr));
+    EXPECT_EQ(EINVAL, ReplaceCharactersInFile(m_path, nullptr, 0, '!', nullptr));
+    EXPECT_EQ(EINVAL, ReplaceCharactersInFile(m_path, chars, 0, '!', nullptr));
+    EXPECT_EQ(EINVAL, ReplaceCharactersInFile(nullptr, chars, 0, '!', nullptr));
+    EXPECT_EQ(EEXIST, ReplaceCharactersInFile(m_path, chars, numChars, ' ', nullptr));
 
     EXPECT_TRUE(CreateTestFile(m_path, testContents));
 
