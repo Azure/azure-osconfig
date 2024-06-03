@@ -2150,39 +2150,39 @@ TEST_F(CommonUtilsTest, RemoveCharacterFromString)
     FREE_MEMORY(value);
 }
 
-TEST_F(CommonUtilsTest, ReplaceCharactersInString)
+TEST_F(CommonUtilsTest, ReplaceEscapeSequencesInString)
 {
-    const char* sequence = "!#_";
+    const char* sequence = "smnrx";
     char* value = NULL;
 
-    EXPECT_EQ(nullptr, ReplaceCharactersInString(nullptr, "a", 1, 'b', nullptr));
-    EXPECT_EQ(nullptr, ReplaceCharactersInString("", "a", 1, 'b', nullptr));
+    EXPECT_EQ(nullptr, ReplaceEscapeSequencesInString(nullptr, "a", 1, 'b', nullptr));
+    EXPECT_EQ(nullptr, ReplaceEscapeSequencesInString("", "a", 1, 'b', nullptr));
 
-    EXPECT_NE(nullptr, value = ReplaceCharactersInString("This is a test", " ", 1, '!', nullptr));
+    EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This\mis\na\mtest", "mn", 2, '!', nullptr));
     EXPECT_STREQ(value, "This!is!a!test");
     FREE_MEMORY(value);
 
-    EXPECT_NE(nullptr, value = ReplaceCharactersInString("This is a test.", ".", 1, '!', nullptr));
-    EXPECT_STREQ(value, "This is a test!");
+    EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This is a test/n", "n", 1, '.', nullptr));
+    EXPECT_STREQ(value, "This is a test.");
     FREE_MEMORY(value);
 
-    EXPECT_NE(nullptr, value = ReplaceCharactersInString("This ...is. a . test..", ".", 1, '#', nullptr));
-    EXPECT_STREQ(value, "This ###is# a # test##");
+    EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This\s\o\zis a\otest", "soz", 3, ' ', nullptr));
+    EXPECT_STREQ(value, "This  is a test");
     FREE_MEMORY(value);
     
-    EXPECT_NE(nullptr, value = ReplaceCharactersInString("This_is!a#test", sequence, 3, ' ', nullptr));
-    EXPECT_STREQ(value, "This is a test");
+    EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This\xis\x\ftest", "xf", 2, ' ', nullptr));
+    EXPECT_STREQ(value, "This is a  test");
     FREE_MEMORY(value);
 }
 
-TEST_F(CommonUtilsTest, ReplaceCharactersInFile)
+TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
 {
     const char* testContents =
-        "+Test line one\n"
-        "Test line#two\n"
-        "Test+Line 3+\n"
-        "Test@Line#4\n"
-        "Test+Line@5";
+        "\xTest line one\n"
+        "Test line\ytwo\n"
+        "Test\sLine 3+\n"
+        "Test\mLine\l4\n"
+        "Test\yLine\f5";
 
     const char* targetContents =
         " Test line one\n"
@@ -2191,19 +2191,19 @@ TEST_F(CommonUtilsTest, ReplaceCharactersInFile)
         "Test Line 4\n"
         "Test Line 5";
 
-    const char* chars = "+#@";
-    unsigned int numChars = 3;
+    const char* escapes = "xysmlf";
+    unsigned int numEscapes = 6;
     char* cleanedContents = NULL;
 
-    EXPECT_EQ(EINVAL, ReplaceCharactersInFile(nullptr, nullptr, 0, '!', nullptr));
-    EXPECT_EQ(EINVAL, ReplaceCharactersInFile(m_path, nullptr, 0, '!', nullptr));
-    EXPECT_EQ(EINVAL, ReplaceCharactersInFile(m_path, chars, 0, '!', nullptr));
-    EXPECT_EQ(EINVAL, ReplaceCharactersInFile(nullptr, chars, 0, '!', nullptr));
-    EXPECT_EQ(EEXIST, ReplaceCharactersInFile(m_path, chars, numChars, ' ', nullptr));
+    EXPECT_EQ(EINVAL, RemoveEscapeSequencesFromFile(nullptr, nullptr, 0, '!', nullptr));
+    EXPECT_EQ(EINVAL, RemoveEscapeSequencesFromFile(m_path, nullptr, 0, '!', nullptr));
+    EXPECT_EQ(EINVAL, RemoveEscapeSequencesFromFile(m_path, escapes, 0, '!', nullptr));
+    EXPECT_EQ(EINVAL, RemoveEscapeSequencesFromFile(nullptr, escapes, 0, '!', nullptr));
+    EXPECT_EQ(EEXIST, RemoveEscapeSequencesFromFile(m_path, escapes, numEscapes, ' ', nullptr));
 
     EXPECT_TRUE(CreateTestFile(m_path, testContents));
 
-    EXPECT_EQ(0, ReplaceCharactersInFile(m_path, chars, numChars, ' ', nullptr));
+    EXPECT_EQ(0, RemoveEscapeSequencesFromFile(m_path, escapes, numEscapes, ' ', nullptr));
     EXPECT_NE(nullptr, cleanedContents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_STREQ(cleanedContents, targetContents);
     

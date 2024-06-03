@@ -2892,7 +2892,7 @@ static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, void
     const char escapes[] = {'\m', '\r', '\s', '\v'};
     unsigned int numEscapes = ARRAY_SIZE(escapes);
     UNUSED(value);
-    return ReplaceCharactersInFile(g_etcIssueNet, escapes, numEscapes, ' ', log);
+    return RemoveEscapeSequencesFromFile(g_etcIssueNet, escapes, numEscapes, ' ', log);
 }
 
 static int RemediateEnsureLocalLoginWarningBannerIsConfigured(char* value, void* log)
@@ -2900,7 +2900,7 @@ static int RemediateEnsureLocalLoginWarningBannerIsConfigured(char* value, void*
     const char escapes[] = {'\m', '\r', '\s', '\v'};
     unsigned int numEscapes = ARRAY_SIZE(escapes);
     UNUSED(value);
-    return ReplaceCharactersInFile(g_etcIssue, escapes, numEscapes, ' ', log);
+    return RemoveEscapeSequencesFromFile(g_etcIssue, escapes, numEscapes, ' ', log);
 }
 
 static int RemediateEnsureSuRestrictedToRootGroup(char* value, void* log)
