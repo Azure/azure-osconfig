@@ -440,27 +440,41 @@ char* RemoveCharacterFromString(const char* source, char what, void* log)
     return target;
 }
 
+static typedef struct PATH_LOCATIONS
+{
+    const char* location;
+    const char* path;
+} PATH_LOCATIONS;
+
 int RemoveDotsFromPath(void* log)
 {
+    PATH_LOCATIONS pathLocations[] = {
+        { "/etc/sudoers", "secure_path" },
+        { "/etc/environment", "PATH" },
+        { "/etc/profile", "PATH" },
+        { "/root/.profile", "PATH" }
+    };
+    unsigned int numPathLocations = ARRAY_SIZE(pathLocations), i = 0;
+
     const char* path = "PATH";
     const char* dot = ".";
     const char* printenv = "printenv PATH";
     const char* setenvTemplate = "setenv PATH '%s'";
-    const char* etcSudoers = "/etc/sudoers";
-    const char* etcEnvironment = "/etc/environment";
-    const char* etcProfile = "/etc/profile";
-    const char* securePath = "secure_path";
-    const char* rootProfile = "/root/.profile";
+    //const char* etcSudoers = "/etc/sudoers";
+    //const char* etcEnvironment = "/etc/environment";
+    //const char* etcProfile = "/etc/profile";
+    //const char* securePath = "secure_path";
+    //const char* rootProfile = "/root/.profile";
     char* setenv = NULL;
     char* currentPath = NULL;
     char* newPath = NULL;
-    int status = 0;
+    int status = 0, _status = 0;
 
     if (0 != CheckTextNotFoundInEnvironmentVariable(path, dot, false, NULL, log))
     {
         if (0 == (status == ExecuteCommand(NULL, printenv, false, false, 0, 0, &currentPath, NULL, log)))
         {
-            if (NULL != (newPath = RemoveCharacterFromString(currentPath, '.', log)))
+            if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log)))
             {
                 if (NULL != (setenv = FormatAllocateString(setenvTemplate, newPath)))
                 {
@@ -485,9 +499,11 @@ int RemoveDotsFromPath(void* log)
             }
             else
             {
-                OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '.' from '%s'", currentPath);
+                OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '%c' from '%s'", dot[0], currentPath);
                 status = EINVAL;
             }
+
+            FREE_MEMORY(currentPath);
         }
         else
         {
@@ -495,24 +511,42 @@ int RemoveDotsFromPath(void* log)
         }
     }
 
-    if ((0 == status) && (0 != CheckMarkedTextNotFoundInFile(etcSudoers, securePath, dot, NULL, log)))
+    if (0 == status)
     {
-        //TODO fix secure_path in /etc/sudoers
-    }
+        for (i = 0; i < numPathLocations; i++)
+        {
+            if (0 == CheckMarkedTextNotFoundInFile(pathLocations[i].location, pathLocations[i].path, dot, NULL, log)))
+            {
+                continue;
+            }
 
-    if ((0 == status) && (0 != CheckMarkedTextNotFoundInFile(etcEnvironment, path, dot, NULL, log)))
-    {
-        //TODO fix PATH in /etc/environment
-    }
+            if (NULL != (currentPath = GetStringOptionFromFile(pathLocations[i].location, pathLocations[i].path, ' ', log)))
+            {
+                if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log)))
+                {
+                    if (0 == (_status = SetEtcConfValue(pathLocations[i].location, pathLocations[i].path, newPath, log)))
+                    {
+                        OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set '%s' to '%s' in '%s'", 
+                            pathLocations[i].path, pathLocations[i].location, newPath);
+                    }
 
-    if ((0 == status) && (0 != CheckMarkedTextNotFoundInFile(etcProfile, path, dot, NULL, log)))
-    {
-        //TODO fix PATH in /etc/profile
-    }
+                    FREE_MEMORY(newPath);
+                }
+                else
+                {
+                    OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '%c' from '%s' for '%s'", 
+                        dot[0], currentPath, pathLocations[i].location);
+                    _status = EINVAL;
+                }
 
-    if ((0 == status) && (0 != CheckMarkedTextNotFoundInFile(rootProfile, path, dot, NULL, log)))
-    {
-        //TODO fix PATH in /root/.profile
+                FREE_MEMORY(currentPath);
+            }
+
+            if (_status && (0 == status))
+            {
+                status = _status;
+            }
+        }
     }
 
     return status;
