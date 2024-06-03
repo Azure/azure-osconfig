@@ -2149,3 +2149,27 @@ TEST_F(CommonUtilsTest, RemoveCharacterFromString)
     EXPECT_STREQ(value, "This is a  test");
     FREE_MEMORY(value);
 }
+
+TEST_F(CommonUtilsTest, RemoveCharacterFromString)
+{
+    char* value = NULL;
+
+    EXPECT_EQ(nullptr, ReplaceCharacterInString(nullptr, 'a', 'b', nullptr));
+    EXPECT_EQ(nullptr, ReplaceCharacterInString("", 'a', 'b', nullptr));
+
+    EXPECT_NE(nullptr, value = ReplaceCharacterInString("This is a test", ' ', '!', nullptr));
+    EXPECT_STREQ(value, "This!is!a!test");
+    FREE_MEMORY(value);
+
+    EXPECT_NE(nullptr, value = ReplaceCharacterInString("This is a test.", '.', '!', nullptr));
+    EXPECT_STREQ(value, "This is a test!");
+    FREE_MEMORY(value);
+
+    EXPECT_NE(nullptr, value = ReplaceCharacterInString("This ...is. a . test..", '.', '#', nullptr));
+    EXPECT_STREQ(value, "This ###is# a # test##");
+    FREE_MEMORY(value);
+
+    EXPECT_NE(nullptr, value = ReplaceCharacterInString("This_is_a_test", '_', ' ', nullptr));
+    EXPECT_STREQ(value, "This is a test");
+    FREE_MEMORY(value);
+}

@@ -2889,8 +2889,28 @@ static int RemediateEnsureDotDoesNotAppearInRootsPath(char* value, void* log)
 
 static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, void* log)
 {
+    /*
+    RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\m", &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\r", &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\s", &reason, log));
+    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\v", &reason, log);
+
+    Ensure remote login warning banner is configured properly.
+    (111)	Description: Warning messages inform users who are attempting to login to the system of their legal status 
+    regarding the system and must include the name of the organization that owns the system and any monitoring policies 
+    that are in place. Displaying OS and patch level information in login banners also has the side effect of providing 
+    detailed system information to attackers attempting to target specific exploits of a system. Authorized users can 
+    easily get this information by running the uname -acommand once they have logged in.	
+    
+    Reemdiation: remove any instances of \m \r \s and \v from the /etc/issue.net file
+
+    The /etc/issue.net file supports various escape codes that dynamically display system information. Here are some commonly used ones:
+    \m: Machine (hardware) type (e.g., architecture identifier).
+    \r: Release number of the operating system (e.g., 1.1.9).
+    \s: System name (operating system name).
+    \v: Version of the operating system (e.g., build date).
+    */
     UNUSED(value);
-    UNUSED(log);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 

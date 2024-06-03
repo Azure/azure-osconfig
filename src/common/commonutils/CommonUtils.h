@@ -125,6 +125,7 @@ char* DuplicateStringToLowercase(const char* source);
 char* FormatAllocateString(const char* format, ...);
 int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log);
 char* RemoveCharacterFromString(const char* source, char what, void* log);
+char* ReplaceCharacterInString(const char* source, char what, char replacement, void* log);
 
 int DisablePostfixNetworkListening(void* log);
 

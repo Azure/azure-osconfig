@@ -440,6 +440,36 @@ char* RemoveCharacterFromString(const char* source, char what, void* log)
     return target;
 }
 
+char* ReplaceCharacterInString(const char* source, char what, char replacement, void* log)
+{
+    char* target = NULL;
+    size_t sourceLength = 0, i = 0;
+
+    if ((NULL == source) || (0 == (sourceLength = strlen(source))))
+    {
+        OsConfigLogInfo(log, "ReplaceCharacterInString: empty or no string, nothing to replace");
+        return NULL;
+    }
+    else if (NULL == (target = DuplicateString(source)))
+    {
+        OsConfigLogInfo(log, "ReplaceCharacterInString: out of memory");
+        return NULL;
+    }
+
+    memset(target, 0, sourceLength + 1);
+
+    for (i = 0; i < sourceLength; i++)
+    {
+        target[i] = (what == source[i]) ? replacement : source[i];
+    }
+
+    OsConfigLogInfo(log, "ReplaceCharacterInString: replaced all instances of '%c' if any from '%s' with '%c' ('%s)",
+        what, source, replacement, target);
+
+    return target;
+}
+
+
 typedef struct PATH_LOCATIONS
 {
     const char* location;
