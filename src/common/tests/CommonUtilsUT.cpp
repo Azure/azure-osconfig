@@ -2150,26 +2150,65 @@ TEST_F(CommonUtilsTest, RemoveCharacterFromString)
     FREE_MEMORY(value);
 }
 
-TEST_F(CommonUtilsTest, ReplaceCharacterInString)
+TEST_F(CommonUtilsTest, ReplaceCharactersInString)
 {
+    const char* sequence = "!#_";
     char* value = NULL;
 
-    EXPECT_EQ(nullptr, ReplaceCharacterInString(nullptr, 'a', 'b', nullptr));
-    EXPECT_EQ(nullptr, ReplaceCharacterInString("", 'a', 'b', nullptr));
+    EXPECT_EQ(nullptr, ReplaceCharactersInString(nullptr, "a", 1, 'b', nullptr));
+    EXPECT_EQ(nullptr, ReplaceCharactersInString("", "a", 1, 'b', nullptr));
 
-    EXPECT_NE(nullptr, value = ReplaceCharacterInString("This is a test", ' ', '!', nullptr));
+    EXPECT_NE(nullptr, value = ReplaceCharactersInString("This is a test", " ", 1, '!', nullptr));
     EXPECT_STREQ(value, "This!is!a!test");
     FREE_MEMORY(value);
 
-    EXPECT_NE(nullptr, value = ReplaceCharacterInString("This is a test.", '.', '!', nullptr));
+    EXPECT_NE(nullptr, value = ReplaceCharactersInString("This is a test.", ".", 1, '!', nullptr));
     EXPECT_STREQ(value, "This is a test!");
     FREE_MEMORY(value);
 
-    EXPECT_NE(nullptr, value = ReplaceCharacterInString("This ...is. a . test..", '.', '#', nullptr));
+    EXPECT_NE(nullptr, value = ReplaceCharactersInString("This ...is. a . test..", ".", 1, '#', nullptr));
     EXPECT_STREQ(value, "This ###is# a # test##");
     FREE_MEMORY(value);
-
-    EXPECT_NE(nullptr, value = ReplaceCharacterInString("This_is_a_test", '_', ' ', nullptr));
+    
+    EXPECT_NE(nullptr, value = ReplaceCharactersInString("This_is!a#test", sequence, strlen(sequence), nullptr));
     EXPECT_STREQ(value, "This is a test");
     FREE_MEMORY(value);
+}
+
+int ReplaceCharactersInFile(const char* fileName, char* chars, unsigned int numChars, char replacement, void* log)
+TEST_F(CommonUtilsTest, ReplaceCharactersInFile)
+{
+    const char* testContents =
+        "+Test line one\n"
+        "Test line#two\n"
+        "Test+Line 3+\n"
+        "Test@Line#4\n"
+        "Test+Line@5";
+
+    const char* targetContents =
+        " Test line one\n"
+        "Test line two\n"
+        "Test Line 3 \n"
+        "Test Line 4\n"
+        "Test Line 5";
+
+    const char chars = "+#@";
+    unisgned int numChars = 3;
+    char* cleanedContents = NULL;
+
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, nullptr, 0, '!', nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, nullptr, 0, '!', nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, chars, 0, '!', nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, chars, 0, '!', nullptr));
+    EXPECT_EQ(EEXIST, ReplaceMarkedLinesInFile(m_path, chars, 3, ' ', nullptr));
+
+    EXPECT_TRUE(CreateTestFile(m_path, testContents));
+
+    EXPECT_EQ(0, ReplaceCharactersInFile(m_path, chars, numChars, " ", nullptr));
+    EXPECT_NE(nullptr, cleanedContents = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_STREQ(cleanedContents, targetContents);
+    
+    FREE_MEMORY(cleanedContents);
+    FREE_MEMORY(targetContents);
+    EXPECT_TRUE(Cleanup(m_path));
 }

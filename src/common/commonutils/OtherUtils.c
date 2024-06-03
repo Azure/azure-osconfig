@@ -440,19 +440,25 @@ char* RemoveCharacterFromString(const char* source, char what, void* log)
     return target;
 }
 
-char* ReplaceCharacterInString(const char* source, char what, char replacement, void* log)
+char* ReplaceCharactersInString(const char* source, const char* chars, unsigned int numChars, char replacement, void* log)
 {
     char* target = NULL;
-    size_t sourceLength = 0, i = 0;
+    size_t sourceLength = 0, i = 0, j = 0;
+    bool found = false;
 
     if ((NULL == source) || (0 == (sourceLength = strlen(source))))
     {
-        OsConfigLogInfo(log, "ReplaceCharacterInString: empty or no string, nothing to replace");
+        OsConfigLogInfo(log, "ReplaceCharactersInString: empty or no string, nothing to replace");
+        return NULL;
+    }
+    else if ((NULL == chars) || (0 == numChars))
+    {
+        OsConfigLogInfo(log, "ReplaceCharactersInString: empty or no sequence of characters, nothing to replace");
         return NULL;
     }
     else if (NULL == (target = DuplicateString(source)))
     {
-        OsConfigLogInfo(log, "ReplaceCharacterInString: out of memory");
+        OsConfigLogInfo(log, "ReplaceCharactersInString: out of memory");
         return NULL;
     }
 
@@ -460,15 +466,23 @@ char* ReplaceCharacterInString(const char* source, char what, char replacement, 
 
     for (i = 0; i < sourceLength; i++)
     {
-        target[i] = (what == source[i]) ? replacement : source[i];
+        found = false;
+        for (j = 0; j < numChars; j++)
+        {
+            if (chars[j] == source[i])
+            {
+                found = true;
+                break;
+            }
+        }
+
+        target[i] = found ? replacement : source[i];
     }
 
-    OsConfigLogInfo(log, "ReplaceCharacterInString: replaced all instances of '%c' if any from '%s' with '%c' ('%s)",
-        what, source, replacement, target);
+    OsConfigLogInfo(log, "ReplaceCharactersInString returning '%s'", target);
 
     return target;
 }
-
 
 typedef struct PATH_LOCATIONS
 {
@@ -573,6 +587,48 @@ int RemoveDotsFromPath(void* log)
             }
         }
     }
+
+    return status;
+}
+
+int ReplaceCharactersInFile(const char* fileName, char* chars, unsigned int numChars, char replacement, void* log)
+{
+    char* fileContents = NULL;
+    char* newFileContents = NULL;
+    int status = 0;
+
+    if ((NULL == fileName) || (NULL == chars) || (0 == numChars))
+    {
+        OsConfigLogInfo(log, "ReplaceEscapesFromFile: invalid argument");
+        return EINVAL;
+    }
+    else if (false == FileExists(fileName))
+    {
+        OsConfigLogInfo(log, "ReplaceEscapesFromFile: called for a file that does not exist ('%s')", fileName);
+        return EEXIST;
+    }
+    else if (NULL == (fileContents = LoadStringFromFile(fileName, false, log)))
+    {
+        OsConfigLogInfo(log, "ReplaceEscapesFromFile: cannot read from file '%s'", fileName);
+        return ENOENT;
+    }
+
+    if (NULL != (newFileContents = ReplaceCharactersInString(fileContents, charss, numChars, replacement, log)))
+    {
+        if (false == SecureSaveToFile(fileName, newFileContents, strlen(newFileContents), log))
+        {
+            OsConfigLogInfo(log, "ReplaceEscapesFromFile: failed saving '%s'", fileName);
+            status = ENOENT;
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "ReplaceEscapesFromFile: failed to replace desired characters in '%s'", fileName);
+        status = ENOENT;
+    }
+    
+    FREE_MEMORY(fileContents);
+    FREE_MEMORY(newFileContents);
 
     return status;
 }
