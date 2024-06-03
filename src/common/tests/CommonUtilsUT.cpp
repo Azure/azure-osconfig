@@ -2146,6 +2146,6 @@ TEST_F(CommonUtilsTest, RemoveCharacterFromString)
     FREE_MEMORY(value);
 
     EXPECT_NE(nullptr, value = RemoveCharacterFromString("This ...is. a . test..", '.', nullptr));
-    EXPECT_STREQ(value, "This is a test");
+    EXPECT_STREQ(value, "This is a  test");
     FREE_MEMORY(value);
 }
