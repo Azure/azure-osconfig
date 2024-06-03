@@ -467,6 +467,7 @@ char* ReplaceEscapeSequencesInString(const char* source, const char* escapes, un
     for (i = 0; i < sourceLength; i++)
     {
         found = false;
+
         for (j = 0; j < numEscapes; j++)
         {
             if (('\\' == source[i]) && (escapes[j] == source[i + 1]))
@@ -485,6 +486,8 @@ char* ReplaceEscapeSequencesInString(const char* source, const char* escapes, un
         {
             target[k] = source[i];
         }
+
+        k += 1;
     }
 
     OsConfigLogInfo(log, "ReplaceEscapeSequencesInString returning '%s'", target);
