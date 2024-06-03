@@ -2152,7 +2152,6 @@ TEST_F(CommonUtilsTest, RemoveCharacterFromString)
 
 TEST_F(CommonUtilsTest, ReplaceEscapeSequencesInString)
 {
-    const char* sequence = "smnrx";
     char* value = NULL;
 
     EXPECT_EQ(nullptr, ReplaceEscapeSequencesInString(nullptr, "a", 1, 'b', nullptr));
@@ -2182,7 +2181,7 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
         "Test line\\ytwo\n"
         "Test\\sLine 3+\n"
         "Test\\mLine\l4\n"
-        "Test\\yLine\f5";
+        "Test\\yLine\\f5";
 
     const char* targetContents =
         " Test line one\n"
