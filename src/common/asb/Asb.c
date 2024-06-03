@@ -2910,6 +2910,7 @@ static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, void
     \s: System name (operating system name).
     \v: Version of the operating system (e.g., build date).
     */
+    UNUSED(log);
     UNUSED(value);
     return 0; //TODO: add remediation respecting all existing patterns
 }
