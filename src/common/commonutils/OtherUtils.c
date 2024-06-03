@@ -409,7 +409,6 @@ int SetDefaultDenyFirewallPolicy(void* log)
 
 char* RemoveCharacterFromString(const char* source, char what, void* log)
 {
-    char* temp = NULL;
     char* target = NULL;
     size_t sourceLength = 0, i = 0, j = 0;
 
@@ -424,7 +423,7 @@ char* RemoveCharacterFromString(const char* source, char what, void* log)
         return NULL;
     }
 
-    memset(temp, 0, sourceLength + 1);
+    memset(target, 0, sourceLength + 1);
 
     for (i = 0, j = 0; i < sourceLength; i++)
     {
@@ -432,20 +431,11 @@ char* RemoveCharacterFromString(const char* source, char what, void* log)
         {
             continue;
         }
-        temp[j] = source[i];
+        target[j] = source[i];
         j++;
     }
 
-    if (NULL != (target = DuplicateString(temp)))
-    {
-        OsConfigLogInfo(log, "RemoveCharacterFromString: removed all instances of '%c' if any from '%s' ('%s)", what, source, target);
-    }
-    else
-    {
-        OsConfigLogInfo(log, "RemoveCharacterFromString: out of memory");
-    }
-
-    FREE_MEMORY(temp);
+    OsConfigLogInfo(log, "RemoveCharacterFromString: removed all instances of '%c' if any from '%s' ('%s)", what, source, target);
 
     return target;
 }
