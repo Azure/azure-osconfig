@@ -2180,7 +2180,7 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
         "\\xTest line one\n"
         "Test line\\ytwo\n"
         "Test\\sLine 3+\n"
-        "Test\\mLine\l4\n"
+        "Test\\mLine\\l4\n"
         "Test\\yLine\\f5";
 
     const char* targetContents =
