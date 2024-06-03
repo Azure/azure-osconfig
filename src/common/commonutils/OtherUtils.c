@@ -440,7 +440,7 @@ char* RemoveCharacterFromString(const char* source, char what, void* log)
     return target;
 }
 
-static typedef struct PATH_LOCATIONS
+typedef struct PATH_LOCATIONS
 {
     const char* location;
     const char* path;
@@ -448,6 +448,11 @@ static typedef struct PATH_LOCATIONS
 
 int RemoveDotsFromPath(void* log)
 {
+    const char* path = "PATH";
+    const char* dot = ".";
+    const char* printenv = "printenv PATH";
+    const char* setenvTemplate = "setenv PATH '%s'";
+
     PATH_LOCATIONS pathLocations[] = {
         { "/etc/sudoers", "secure_path" },
         { "/etc/environment", "PATH" },
@@ -455,16 +460,6 @@ int RemoveDotsFromPath(void* log)
         { "/root/.profile", "PATH" }
     };
     unsigned int numPathLocations = ARRAY_SIZE(pathLocations), i = 0;
-
-    const char* path = "PATH";
-    const char* dot = ".";
-    const char* printenv = "printenv PATH";
-    const char* setenvTemplate = "setenv PATH '%s'";
-    //const char* etcSudoers = "/etc/sudoers";
-    //const char* etcEnvironment = "/etc/environment";
-    //const char* etcProfile = "/etc/profile";
-    //const char* securePath = "secure_path";
-    //const char* rootProfile = "/root/.profile";
     char* setenv = NULL;
     char* currentPath = NULL;
     char* newPath = NULL;
