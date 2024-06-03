@@ -2199,7 +2199,7 @@ TEST_F(CommonUtilsTest, ReplaceCharactersInFile)
     EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, nullptr, 0, '!', nullptr));
     EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, chars, 0, '!', nullptr));
     EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, chars, 0, '!', nullptr));
-    EXPECT_EQ(EEXIST, ReplaceMarkedLinesInFile(m_path, chars, 3, ' ', nullptr));
+    EXPECT_EQ(EEXIST, ReplaceMarkedLinesInFile(m_path, chars, numChars, ' ', nullptr));
 
     EXPECT_TRUE(CreateTestFile(m_path, testContents));
 
