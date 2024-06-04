@@ -572,6 +572,7 @@ static const char* g_ipv4ll = "ipv4ll";
 static const char* g_sysCtlA = "sysctl -a";
 static const char* g_fileCreateMode = "$FileCreateMode";
 static const char* g_logrotate = "logrotate";
+static const char* g_logrotateTimer = "logrotate.timer";
 static const char* g_telnet = "telnet";
 static const char* g_rcpSocket = "rcp.socket";
 static const char* g_rshSocket = "rsh.socket";
@@ -1759,7 +1760,7 @@ static char* AuditEnsureSyslogRotaterServiceIsEnabled(void* log)
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_logrotate, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileExists(g_etcCronDailyLogRotate, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, &reason, log));
-    CheckDaemonActive(g_logrotate, &reason, log);
+    CheckDaemonActive(g_logrotateTimer, &reason, log);
     return reason;
 }
 
@@ -3307,7 +3308,7 @@ static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, void* log)
 {
     UNUSED(value);
     return ((0 == InstallPackage(g_logrotate, log)) && FileExists(g_etcCronDailyLogRotate) && 
-        (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, log)) && EnableAndStartDaemon(g_logrotate, log)) ? 0 : ENOENT;
+        (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, log)) && EnableAndStartDaemon(g_logrotateTimer, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureTelnetServiceIsDisabled(char* value, void* log)
