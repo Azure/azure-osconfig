@@ -106,23 +106,14 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
     char* fileContents = NULL;
     bool result = false;
 
-    if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
+    // If the file exists and there is no EOL at the end of file, add one before the append
+    if (FileExists(fileName) && (NULL != (fileContents = LoadStringFromFile(fileName, false, log))) && (EOL != fileContents[strlen(fileContents) - 1]))
     {
-        // If there is no EOL at the end of file, add one before the append
-        if (EOL != fileContents[strlen(fileContents) - 1])
-        {
-            SaveToFile(fileName, "a", "\n", 1, log);
-        }
-
-        result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
-        FREE_MEMORY(fileContents);
-    }
-    else
-    {
-        OsConfigLogError(log, "AppendPayloadToFile: failed to read from '%s'", fileName);
-        result = false;
+        SaveToFile(fileName, "a", "\n", 1, log);
     }
 
+    result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
+    FREE_MEMORY(fileContents);
     return result;
 }
 
