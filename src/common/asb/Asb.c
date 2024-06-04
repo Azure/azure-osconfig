@@ -511,6 +511,7 @@ static const char* g_home = "/home";
 static const char* g_devShm = "/dev/shm";
 static const char* g_tmp = "/tmp";
 static const char* g_varTmp = "/var/tmp";
+static const char* g_varLogJournal = "/var/log/journal";
 static const char* g_media = "/media/";
 static const char* g_nodev = "nodev";
 static const char* g_nosuid = "nosuid";
@@ -1681,7 +1682,7 @@ static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(void* log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_systemd, &reason, log));
-    CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, &reason, log);
+    CheckDirectoryAccess(g_varLogJournal, 0, -1, 2775, false, &reason, log);
     return reason;
 }
 
@@ -2951,10 +2952,6 @@ static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, void* log)
 static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    /*
-    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.send_redirects = 0", &reason, log));
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.send_redirects = 0", &reason, log);
-    */
     return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.send_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
         (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.send_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
         (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.send_redirects", "net.ipv4.conf.all.send_redirects = 0\n", '#', log)) &&
@@ -3231,7 +3228,7 @@ static int RemediateEnsureSystemdJournaldServicePersistsLogMessages(char* value,
 {
     UNUSED(value);
     return ((0 == InstallPackage(g_systemd, log)) &&
-        (0 == SetDirectoryAccess("/var/log/journal", 0, -1, 2775, log))) ? 0 : ENOENT;
+        (0 == SetDirectoryAccess(g_varLogJournal, 0, -1, 2775, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureALoggingServiceIsEnabled(char* value, void* log)
