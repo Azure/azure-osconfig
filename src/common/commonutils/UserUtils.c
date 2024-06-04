@@ -1388,7 +1388,7 @@ int RepairRootGroup(void* log)
                         if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
                         {
                             // Append to temporary file the cleaned content
-                            if (AppendToFile(tempFileName, original, strlen(original), log))
+                            if (AppendPayloadToFile(tempFileName, original, strlen(original), log))
                             {
                                 // In a single atomic operation move edited contents from temporary file to /etc/group
                                 if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, etcGroup, log)))

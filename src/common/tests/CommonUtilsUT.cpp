@@ -153,6 +153,28 @@ TEST_F(CommonUtilsTest, AppendToFile)
     FREE_MEMORY(contents);
 }
 
+TEST_F(CommonUtilsTest, AppendPayloadToFile)
+{
+    const char* original = "First line of text\n";
+    const char* added = "Second line of text\nAnd third line of text";
+    const char* complete = "First line of text\nSecond line of text\nAnd third line of text";
+
+    char* contents = NULL;
+
+    EXPECT_TRUE(SavePayloadToFile(m_path, original, strlen(original), nullptr));
+    EXPECT_STREQ(original, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(AppendPayloadToFile(m_path, added, strlen(added), nullptr));
+    EXPECT_STREQ(complete, contents = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(AppendPayloadToFile(m_path, original, strlen(original), nullptr));
+    EXPECT_STREQ(original, contents = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    FREE_MEMORY(contents);
+}
+
 TEST_F(CommonUtilsTest, MakeFileBackupCopy)
 {
     const char* fileCopyPath = "/tmp/~test.test.copy";
