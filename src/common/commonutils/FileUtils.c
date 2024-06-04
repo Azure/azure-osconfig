@@ -114,8 +114,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
             SaveToFile(fileName, "a", "\n", 1, log);
         }
 
-        result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
-
+        status = SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
         FREE_MEMORY(fileContents);
     }
     else
