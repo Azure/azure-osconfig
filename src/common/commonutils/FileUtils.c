@@ -713,6 +713,30 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
     return status;
 }
 
+int RenameFile(const char* original, const char* target, void* log)
+{
+    int status = 0;
+
+    if ((NULL == original) || (NULL == target))
+    {
+        OsConfigLogError(log, "RenameFile: invalid arguments");
+        return EINVAL;
+    }
+    else if (false == FileExists(original))
+    {
+        OsConfigLogError(log, "RenameFile: original file '%s' does not exist", original);
+        return EINVAL;
+    }
+
+    if (0 != (status = rename(original, target)))
+    {
+        OsConfigLogError(log, "RenameFile: rename('%s' to '%s') failed with %d", original, target, errno);
+        status = (0 == errno) ? ENOENT : errno;
+    }
+
+    return status;
+}
+
 int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, void* log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.ReplacingLines%u";

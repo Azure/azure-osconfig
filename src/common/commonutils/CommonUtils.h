@@ -48,6 +48,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
 bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
 bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, void* log);
+int RenameFile(const char* original, const char* target, void* log);
 
 void SetCommandLogging(bool commandLogging);
 bool IsCommandLoggingEnabled(void);
