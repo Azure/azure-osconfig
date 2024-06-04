@@ -104,7 +104,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
     char* fileContents = NULL;
-    int status = 0;
+    bool reasult = false;
 
     if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
     {
@@ -114,7 +114,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
             SaveToFile(fileName, "a", "\n", 1, log);
         }
 
-        status = SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
+        result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
         FREE_MEMORY(fileContents);
     }
     else
