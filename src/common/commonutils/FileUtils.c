@@ -104,7 +104,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
     char* fileContents = NULL;
-    bool reasult = false;
+    bool result = false;
 
     if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
     {
