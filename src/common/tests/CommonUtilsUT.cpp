@@ -2174,7 +2174,7 @@ TEST_F(CommonUtilsTest, ReplaceEscapeSequencesInString)
     FREE_MEMORY(value);
 
     EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This\\.is\\.a\\:test\\", ".:", 2, ' ', nullptr));
-    EXPECT_STREQ(value, "This is a test");
+    EXPECT_STREQ(value, "This is a test\\");
     FREE_MEMORY(value);
 }
 
@@ -2185,14 +2185,14 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
         "Test line\\ytwo\n"
         "Test\\sLine\\+3+\n"
         "Test\\mLine\\l4\n"
-        "Test\\yLine\\f5";
+        "Test\\yLine\\f5\\";
 
     const char* targetContents =
         " Test line one\n"
         "Test line two\n"
         "Test Line 3+\n"
         "Test Line 4\n"
-        "Test Line 5";
+        "Test Line 5\\";
 
     const char* escapes = "xysmlf+";
     unsigned int numEscapes = 7;
