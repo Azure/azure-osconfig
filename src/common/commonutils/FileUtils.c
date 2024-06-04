@@ -107,13 +107,14 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
     bool result = false;
 
     // If the file exists and there is no EOL at the end of file, add one before the append
-    if (FileExists(fileName) && (NULL != (fileContents = LoadStringFromFile(fileName, false, log))) && (EOL != fileContents[strlen(fileContents) - 1]))
+    if ((NULL != payload) && (payloadSizeBytes > 0) && FileExists(fileName) && 
+        (NULL != (fileContents = LoadStringFromFile(fileName, false, log))) && 
+        (EOL != fileContents[strlen(fileContents) - 1]))
     {
         SaveToFile(fileName, "a", "\n", 1, log);
     }
-
-    result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
     FREE_MEMORY(fileContents);
+    result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
     return result;
 }
 
