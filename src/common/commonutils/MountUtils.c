@@ -361,7 +361,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
             OsConfigLogError(log, "SetFileSystemMountingOption: could not open '%s', setmntent() failed (%d)", fsMountTable, status);
         }
 
-        if (0 == status)
+        if (matchFound && (0 == status))
         {
             // Copy from the manually built temp mount file one to the temp mount file two using the *mntent API to ensure correct format
             if (0 == (status = CopyMountTableFile(tempFileNameOne, tempFileNameTwo, log)))
