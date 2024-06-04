@@ -123,7 +123,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
         result = false;
     }
 
-    return status;
+    return result;
 }
 
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
