@@ -173,7 +173,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 {
     const char* fsMountTable = "/etc/fstab";
     const char* mountTable = "/etc/mtab";
-    const char tempFileNameTemplate[] = "/tmp/~xtab%d";
+    const char tempFileNameTemplate[] = "/etc/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
     const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
 
