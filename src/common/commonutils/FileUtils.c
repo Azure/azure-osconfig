@@ -103,7 +103,28 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
-    return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
+    char* fileContents = NULL;
+    int status = 0;
+
+    if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
+    {
+        // If there is no EOL at the end of file, add one before the append
+        if (EOL != fileContents[strlen(fileContents) - 1])
+        {
+            SaveToFile(fileName, "a", "\n", 1, log);
+        }
+
+        result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
+
+        FREE_MEMORY(fileContents);
+    }
+    else
+    {
+        OsConfigLogError(log, "AppendPayloadToFile: failed to read from '%s'", fileName);
+        result = false;
+    }
+
+    return status;
 }
 
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
