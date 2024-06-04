@@ -163,7 +163,7 @@ static char* EncryptionName(int type)
 
 static bool IsNoLoginUser(SIMPLIFIED_USER* user)
 {
-    const char* noLoginShell[] = {"/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/dev/null", ""};
+    const char* noLoginShell[] = {"/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", ""};
 
     int index = ARRAY_SIZE(noLoginShell);
     bool noLogin = false;
