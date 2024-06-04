@@ -104,7 +104,6 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
     char* fileContents = NULL;
-    bool result = false;
 
     // If the file exists and there is no EOL at the end of file, add one before the append
     if ((NULL != payload) && (payloadSizeBytes > 0) && FileExists(fileName) && 
@@ -113,9 +112,10 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
     {
         SaveToFile(fileName, "a", "\n", 1, log);
     }
+
     FREE_MEMORY(fileContents);
-    result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
-    return result;
+
+    return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
 }
 
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
