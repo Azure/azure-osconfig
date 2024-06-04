@@ -660,6 +660,30 @@ int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId
     return status;
 }
 
+int RenameFile(const char* original, const char* target, void* log)
+{
+    int status = 0;
+
+    if ((NULL == original) || (NULL == target))
+    {
+        OsConfigLogError(log, "RenameFile: invalid arguments");
+        return EINVAL;
+    }
+    else if (false == FileExists(original))
+    {
+        OsConfigLogError(log, "RenameFile: original file '%s' does not exist", original);
+        return EINVAL;
+    }
+
+    if (0 != (status = rename(original, target)))
+    {
+        OsConfigLogError(log, "RenameFile: rename('%s' to '%s') failed with %d", original, target, errno);
+        status = (0 == errno) ? ENOENT : errno;
+    }
+
+    return status;
+}
+
 int RenameFileWithOwnerAndAccess(const char* original, const char* target, void* log)
 {
     unsigned int ownerId = 0;
@@ -707,30 +731,6 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
     else
     {
         OsConfigLogError(log, "RenameFileWithOwnerAndAccess: rename('%s' to '%s') failed with %d", original, target, errno);
-        status = (0 == errno) ? ENOENT : errno;
-    }
-
-    return status;
-}
-
-int RenameFile(const char* original, const char* target, void* log)
-{
-    int status = 0;
-
-    if ((NULL == original) || (NULL == target))
-    {
-        OsConfigLogError(log, "RenameFile: invalid arguments");
-        return EINVAL;
-    }
-    else if (false == FileExists(original))
-    {
-        OsConfigLogError(log, "RenameFile: original file '%s' does not exist", original);
-        return EINVAL;
-    }
-
-    if (0 != (status = rename(original, target)))
-    {
-        OsConfigLogError(log, "RenameFile: rename('%s' to '%s') failed with %d", original, target, errno);
         status = (0 == errno) ? ENOENT : errno;
     }
 
