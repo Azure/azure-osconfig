@@ -2172,6 +2172,10 @@ TEST_F(CommonUtilsTest, ReplaceEscapeSequencesInString)
     EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This\\xis\\xa\\ftest", "xf", 2, ' ', nullptr));
     EXPECT_STREQ(value, "This is a test");
     FREE_MEMORY(value);
+
+    EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This\\.is\\.a\\:test\\", ".:", 2, ' ', nullptr));
+    EXPECT_STREQ(value, "This is a test");
+    FREE_MEMORY(value);
 }
 
 TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
