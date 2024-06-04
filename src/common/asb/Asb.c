@@ -2951,10 +2951,14 @@ static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, void* log)
 static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.accept_redirects", "net.ipv4.conf.all.accept_redirects = 0\n", '#', log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.accept_redirects", "net.ipv4.conf.default.accept_redirects = 0\n", '#', log))) ? 0 : ENOENT;
+    /*
+    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.send_redirects = 0", &reason, log));
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.send_redirects = 0", &reason, log);
+    */
+    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.send_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.send_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.send_redirects", "net.ipv4.conf.all.send_redirects = 0\n", '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.send_redirects", "net.ipv4.conf.default.send_redirects = 0\n", '#', log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, void* log)
