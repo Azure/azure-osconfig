@@ -112,6 +112,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log);
 int SetEnsurePasswordReuseIsLimited(int remember, void* log);
 int EnableVirtualMemoryRandomization(void* log);
+int RemoveDotsFromPath(void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
@@ -123,6 +124,9 @@ char* ConcatenateStrings(const char* first, const char* second);
 char* DuplicateStringToLowercase(const char* source);
 char* FormatAllocateString(const char* format, ...);
 int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log);
+char* RemoveCharacterFromString(const char* source, char what, void* log);
+char* ReplaceEscapeSequencesInString(const char* source, const char* escapes, unsigned int numEscapes, char replacement, void* log);
+int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, unsigned int numEscapes, char replacement, void* log);
 
 int DisablePostfixNetworkListening(void* log);
 

@@ -293,14 +293,14 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
 
 int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
 {
-    const char* command = "ip link show | grep - E '^[0-9]+: [a-zA-Z0-9]+: <.*UP.*>.*mtu [0-9]+'";
+    const char* command = "iwconfig 2>&1 | egrep -v 'no wireless extensions|not found' | grep Frequency";
     int status = 0;
 
     if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log)))
     {
         OsConfigLogError(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
         OsConfigCaptureReason(reason, "At least one active wireless interface is present");
-        status = ENOENT;
+        status = EEXIST;
     }
     else
     {
@@ -308,7 +308,7 @@ int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
         OsConfigCaptureSuccessReason(reason, "No active wireless interfaces are present");
         status = 0;
     }
-    
+
     return status;
 }
 
@@ -316,9 +316,8 @@ int DisableAllWirelessInterfaces(void* log)
 {
     const char* nmcli = "nmcli";
     const char* rfkill = "rfkill";
-    const char* nmCliRadioAllOff = "nmcli radio all off";
+    const char* nmCliRadioAllOff = "nmcli radio wifi off";
     const char* rfKillBlockAll = "rfkill block all";
-
     int status = 0;
    
     if (0 == CheckAllWirelessInterfacesAreDisabled(NULL, log))
@@ -406,4 +405,241 @@ int SetDefaultDenyFirewallPolicy(void* log)
     OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy completed with %d", status);
 
     return 0;
+}
+
+char* RemoveCharacterFromString(const char* source, char what, void* log)
+{
+    char* target = NULL;
+    size_t sourceLength = 0, i = 0, j = 0;
+
+    if ((NULL == source) || (0 == (sourceLength = strlen(source))))
+    {
+        OsConfigLogInfo(log, "RemoveCharacterFromString: empty or no string, nothing to replace");
+        return NULL;
+    }
+    else if (NULL == (target = DuplicateString(source)))
+    {
+        OsConfigLogInfo(log, "RemoveCharacterFromString: out of memory");
+        return NULL;
+    }
+
+    memset(target, 0, sourceLength + 1);
+
+    for (i = 0, j = 0; i < sourceLength; i++)
+    {
+        if (what == source[i])
+        {
+            continue;
+        }
+        target[j] = source[i];
+        j++;
+    }
+
+    OsConfigLogInfo(log, "RemoveCharacterFromString: removed all instances of '%c' if any from '%s' ('%s)", what, source, target);
+
+    return target;
+}
+
+char* ReplaceEscapeSequencesInString(const char* source, const char* escapes, unsigned int numEscapes, char replacement, void* log)
+{
+    char* target = NULL;
+    size_t sourceLength = 0, i = 0, j = 0, k = 0;
+    bool found = false;
+
+    if ((NULL == source) || (0 == (sourceLength = strlen(source))))
+    {
+        OsConfigLogInfo(log, "ReplaceEscapeSequencesInString: empty or no string, nothing to replace");
+        return NULL;
+    }
+    else if ((NULL == escapes) || (0 == numEscapes))
+    {
+        OsConfigLogInfo(log, "ReplaceEscapeSequencesInString: empty or no sequence of characters, nothing to replace");
+        return NULL;
+    }
+    else if (NULL == (target = DuplicateString(source)))
+    {
+        OsConfigLogInfo(log, "ReplaceEscapeSequencesInString: out of memory");
+        return NULL;
+    }
+
+    memset(target, 0, sourceLength + 1);
+
+    for (i = 0; i < sourceLength; i++)
+    {
+        found = false;
+
+        for (j = 0; j < numEscapes; j++)
+        {
+            if (('\\' == source[i]) && (escapes[j] == source[i + 1]))
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if (found)
+        {
+            target[k] = replacement;
+            i += 1;
+        }
+        else
+        {
+            target[k] = source[i];
+        }
+
+        k += 1;
+    }
+
+    OsConfigLogInfo(log, "ReplaceEscapeSequencesInString returning '%s'", target);
+
+    return target;
+}
+
+typedef struct PATH_LOCATIONS
+{
+    const char* location;
+    const char* path;
+} PATH_LOCATIONS;
+
+int RemoveDotsFromPath(void* log)
+{
+    const char* path = "PATH";
+    const char* dot = ".";
+    const char* printenv = "printenv PATH";
+    const char* setenvTemplate = "setenv PATH '%s'";
+
+    PATH_LOCATIONS pathLocations[] = {
+        { "/etc/sudoers", "secure_path" },
+        { "/etc/environment", "PATH" },
+        { "/etc/profile", "PATH" },
+        { "/root/.profile", "PATH" }
+    };
+    unsigned int numPathLocations = ARRAY_SIZE(pathLocations), i = 0;
+    char* setenv = NULL;
+    char* currentPath = NULL;
+    char* newPath = NULL;
+    int status = 0, _status = 0;
+
+    if (0 != CheckTextNotFoundInEnvironmentVariable(path, dot, false, NULL, log))
+    {
+        if (0 == (status == ExecuteCommand(NULL, printenv, false, false, 0, 0, &currentPath, NULL, log)))
+        {
+            if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log)))
+            {
+                if (NULL != (setenv = FormatAllocateString(setenvTemplate, newPath)))
+                {
+                    if (0 == (status == ExecuteCommand(NULL, setenv, false, false, 0, 0, NULL, NULL, log)))
+                    {
+                        OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set 'PATH' to '%s'", newPath);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "RemoveDotsFromPath: '%s failed with %d", setenv, status);
+                    }
+
+                    FREE_MEMORY(setenv);
+                }
+                else
+                {
+                    OsConfigLogError(log, "RemoveDotsFromPath: out of memory");
+                    status = ENOMEM;
+                }
+
+                FREE_MEMORY(newPath);
+            }
+            else
+            {
+                OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '%c' from '%s'", dot[0], currentPath);
+                status = EINVAL;
+            }
+
+            FREE_MEMORY(currentPath);
+        }
+        else
+        {
+            OsConfigLogError(log, "RemoveDotsFromPath: '%s' failed with %d", printenv, status);
+        }
+    }
+
+    if (0 == status)
+    {
+        for (i = 0; i < numPathLocations; i++)
+        {
+            if (0 == CheckMarkedTextNotFoundInFile(pathLocations[i].location, pathLocations[i].path, dot, NULL, log))
+            {
+                continue;
+            }
+
+            if (NULL != (currentPath = GetStringOptionFromFile(pathLocations[i].location, pathLocations[i].path, ' ', log)))
+            {
+                if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log)))
+                {
+                    if (0 == (_status = SetEtcConfValue(pathLocations[i].location, pathLocations[i].path, newPath, log)))
+                    {
+                        OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set '%s' to '%s' in '%s'", 
+                            pathLocations[i].path, pathLocations[i].location, newPath);
+                    }
+
+                    FREE_MEMORY(newPath);
+                }
+                else
+                {
+                    OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '%c' from '%s' for '%s'", 
+                        dot[0], currentPath, pathLocations[i].location);
+                    _status = EINVAL;
+                }
+
+                FREE_MEMORY(currentPath);
+            }
+
+            if (_status && (0 == status))
+            {
+                status = _status;
+            }
+        }
+    }
+
+    return status;
+}
+
+int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, unsigned int numEscapes, char replacement, void* log)
+{
+    char* fileContents = NULL;
+    char* newFileContents = NULL;
+    int status = 0;
+
+    if ((NULL == fileName) || (NULL == escapes) || (0 == numEscapes))
+    {
+        OsConfigLogInfo(log, "ReplaceEscapesFromFile: invalid argument");
+        return EINVAL;
+    }
+    else if (false == FileExists(fileName))
+    {
+        OsConfigLogInfo(log, "ReplaceEscapesFromFile: called for a file that does not exist ('%s')", fileName);
+        return EEXIST;
+    }
+    else if (NULL == (fileContents = LoadStringFromFile(fileName, false, log)))
+    {
+        OsConfigLogInfo(log, "ReplaceEscapesFromFile: cannot read from file '%s'", fileName);
+        return ENOENT;
+    }
+
+    if (NULL != (newFileContents = ReplaceEscapeSequencesInString(fileContents, escapes, numEscapes, replacement, log)))
+    {
+        if (false == SecureSaveToFile(fileName, newFileContents, strlen(newFileContents), log))
+        {
+            OsConfigLogInfo(log, "ReplaceEscapesFromFile: failed saving '%s'", fileName);
+            status = ENOENT;
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "ReplaceEscapesFromFile: failed to replace desired characters in '%s'", fileName);
+        status = ENOENT;
+    }
+    
+    FREE_MEMORY(fileContents);
+    FREE_MEMORY(newFileContents);
+
+    return status;
 }
