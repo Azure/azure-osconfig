@@ -101,6 +101,11 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
     return SaveToFile(fileName, "w", payload, payloadSizeBytes, log);
 }
 
+bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+{
+    return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
+}
+
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.Temp%u";
@@ -813,7 +818,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: line '%s' did not replace any '%s' line, to be appended at end of '%s'", 
             newline, marker, fileName);
         
-        if (false == AppendToFile(tempFileName, newline, strlen(newline), log))
+        if (false == AppendPayloadToFile(tempFileName, newline, strlen(newline), log))
         {
             OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to append line '%s' at end of '%s'", newline, fileName);
         }
