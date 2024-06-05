@@ -3215,10 +3215,15 @@ int RemoveUserAccounts(const char* names, void* log)
         return EINVAL;
     }
 
-    if (EEXIST != CheckUserAccountsNotFound(names, NULL, log))
+    if (0 == (status = CheckUserAccountsNotFound(names, NULL, log)))
     {
         OsConfigLogInfo(log, "RemoveUserAccounts: user accounts '%s' are not found", names);
         return 0;
+    }
+    else if (EEXIST != status)
+    {
+        OsConfigLogError(log, "RemoveUserAccounts: CheckUserAccountsNotFound('%s') failed with %d", names, status);
+        return status;
     }
 
     namesLength = strlen(names);
