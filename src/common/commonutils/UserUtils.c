@@ -3130,7 +3130,11 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
                 }
                 else
                 {
+                    OsConfigLogInfo(log, "### Check user No 1 is '%s' ###", name); ////////////////////////////////////
+
                     TruncateAtFirst(name, ',');
+
+                    OsConfigLogInfo(log, "### Check user No 2 '%s', current user is '%s' ###", name, userList[i].username); ////////////////////////////////////
 
                     if (0 == strcmp(userList[i].username, name))
                     {
