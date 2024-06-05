@@ -3159,7 +3159,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
     if ((false == found) && (0 == status))
     {
-        OsConfigLogInfo(log, "CheckUserAccountsNotFound: none of the requested user accounts ('%s') were found in users database", names);
+        OsConfigLogInfo(log, "CheckUserAccountsNotFound: none of the requested user accounts ('%s') were found in the users database", names);
     }
 
     if (0 == status)
