@@ -3102,7 +3102,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
     SIMPLIFIED_USER* userList = NULL;
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int userListSize = 0, groupListSize = 0, i = 0, j = 0;
-    int status = ENOENT;
+    bool found = false;
+    int status = 0;
 
     if (NULL == names)
     {
@@ -3114,8 +3115,6 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
     
     if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
-        status = ENOENT;
-
         for (i = 0; i < userListSize; i++)
         {
             for (j = 0; j < namesLength; j++)
@@ -3146,17 +3145,12 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
                         OsConfigCaptureReason(reason, "User '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
                             userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
 
-                        status = 0;
+                        found = true;
                     }
                 }
 
                 j += strlen(name);
                 FREE_MEMORY(name);
-            }
-
-            if (0 == status)
-            {
-                break;
             }
         }
     }
@@ -3181,9 +3175,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
                     (0 == FindTextInFile("/etc/shadow", name, log)) ||
                     (0 == FindTextInFile("/etc/group", name, log)))
                 {
-                    status = 0;
-
                     OsConfigCaptureReason(reason, "Account '%s' found mentioned in '/etc/passwd', '/etc/shadow' and/or '/etc/group'", name);
+                    found = true;
                 }
 
                 j += strlen(name);
@@ -3192,14 +3185,17 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
         }
     }
 
-    if (0 != status)
+    if (found)
+    {
+        status = EEXIST;
+    }
+    else if (0 == status)
     {
         OsConfigCaptureSuccessReason(reason, "None of the requested user accounts is present");
-        status = 0;
     }
     else
     {
-        status = EEXIST;
+        OsConfigCaptureReason(reason, "Failed to check for presence of the requested user accounts (%d)", status);
     }
 
     return status;
@@ -3219,7 +3215,7 @@ int RemoveUserAccounts(const char* names, void* log)
         return EINVAL;
     }
 
-    if (0 == CheckUserAccountsNotFound(names, NULL, log))
+    if (EEXIST != CheckUserAccountsNotFound(names, NULL, log))
     {
         OsConfigLogInfo(log, "RemoveUserAccounts: user accounts '%s' are not found", names);
         return 0;

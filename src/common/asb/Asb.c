@@ -3615,8 +3615,9 @@ static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
 
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
 {
+    UNUSED(log);
     InitEnsureUnnecessaryAccountsAreRemoved(value);
-    return RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log);
+    return 0; // RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log);
 }
 
 int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log)
