@@ -3154,7 +3154,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
                 FREE_MEMORY(name);
             }
 
-            if (0 != status)
+            if (0 == status)
             {
                 break;
             }
@@ -3219,7 +3219,7 @@ int RemoveUserAccounts(const char* names, void* log)
         return EINVAL;
     }
 
-    if (0 != CheckUserAccountsNotFound(names, NULL, log))
+    if (0 == CheckUserAccountsNotFound(names, NULL, log))
     {
         OsConfigLogInfo(log, "RemoveUserAccounts: user accounts '%s' are not found", names);
         return 0;
