@@ -59,7 +59,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: universal-nrp-test
-          pattern: universal-nrp-test-*
+          pattern: *-report
           merge-multiple: true  
 
       - name: Publish Test Results
