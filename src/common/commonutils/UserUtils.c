@@ -3120,8 +3120,12 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
         for (i = 0; i < userListSize; i++)
         {
+            OsConfigLogInfo(log, "### i: %u ###", i); ////////////////////////////////////
+
             for (j = 0; j < namesLength; j++)
             {
+                OsConfigLogInfo(log, "### j: %u ###", j); ////////////////////////////////////
+                
                 if (NULL == (name = DuplicateString(&(names[j]))))
                 {
                     OsConfigLogError(log, "CheckUserAccountsNotFound: failed to duplicate string");
@@ -3157,13 +3161,14 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
                 }
 
                 j += strlen(name);
+                OsConfigLogInfo(log, "### j becomes: %u ###", j); ////////////////////////////////////
                 FREE_MEMORY(name);
             }
 
-            if (0 != status)
+            /*if (0 != status)
             {
                 break;
-            }
+            }*/
         }
     }
 
