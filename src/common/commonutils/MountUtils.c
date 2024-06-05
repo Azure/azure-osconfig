@@ -169,6 +169,37 @@ static int CopyMountTableFile(const char* source, const char* target, void* log)
     return status;
 }
 
+static int LineAlreadyExistsInFile(const char* fileName, const char* text)
+{
+    char* contents = NULL;
+    int status = 0;
+
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
+    {
+        return EINVAL;
+    }
+    else if (false == FileExists(fileName))
+    {
+        return ENOENT;
+    }
+
+    if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+    {
+        status = EACCESS;
+    }
+    else
+    {
+        if (NULL == strstr(contents, text))
+        {
+            status = EEXIST;
+        }
+
+        FREE_MEMORY(contents);
+    }
+
+    return status;
+}
+
 int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
 {
     const char* fsMountTable = "/etc/fstab";
@@ -243,29 +274,9 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                             mountStruct->mnt_opts, desiredOption, mountStruct->mnt_freq, mountStruct->mnt_passno);
                     }
 
-                    /*
-                    # /etc/fstab: static file system information.
-                    #
-                    # Use 'blkid' to print the universally unique identifier for a
-                    # device; this may be used with UUID= as a more robust way to name devices
-                    # that works even if disks are added and removed. See fstab(5).
-                    #
-                    # <file system> <mount point>   <type>  <options>       <dump>  <pass>
-                    # / was on /dev/sda6 during installation
-                    # /boot/efi was on /dev/sda3 during installation
-                    # swap was on /dev/sda5 during installation
-                    UUID=744ab6fb-13d3-45b9-9152-8e2b2f133907 none            swap    sw              0       0
-                    UUID=744ab6fb-13d3-45b9-9152-8e2b2f133907 none swap sw 0 0
-                    UUID=744ab6fb-13d3-45b9-9152-8e2b2f133907 none swap sw 0 0
-                    UUID=744ab6fb-13d3-45b9-9152-8e2b2f133907 none swap sw 0 0
-                    UUID=12013753-03b7-420e-9742-04ca763943d6 / ext4 errors=remount-ro 0 1
-                    UUID=A19E-0DCF /boot/efi vfat umask=0077 0 1
-                    tmpfs /dev/shm tmpfs rw,nosuid,nodev,inode64,noexec 0 0
-                    */
-
                     if (NULL != newLine)
                     {
-                        if ((false == FileExists(tempFileNameOne)) || (0 != FindTextInFile(tempFileNameOne, newLine, log)))
+                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine))
                         {
                             if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                             {
@@ -288,7 +299,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                         mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno)))
                     {
-                        if ((false == FileExists(tempFileNameOne)) || (0 != FindTextInFile(tempFileNameOne, newLine, log)))
+                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine))
                         {
                             if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                             {
@@ -354,7 +365,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                                 if (NULL != newLine)
                                 {
-                                    if ((false == FileExists(tempFileNameOne)) || (0 != FindTextInFile(tempFileNameOne, newLine, log)))
+                                    if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine))
                                     {
                                         if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                                         {
