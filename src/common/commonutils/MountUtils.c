@@ -415,7 +415,9 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 // Optionally, try to preserve the commented out lines from original /etc/fstab
                 if (MakeFileBackupCopy(fsMountTable, tempFileNameThree, false, log))
                 {
-                    if (0 == ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', false, log))
+                    // Skip all lines containing either paths or 'UUID' entries 
+                    if ((0 == ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', false, log)) &&
+                        (0 == ReplaceMarkedLinesInFile(tempFileNameThree, "UUID", NULL, '#', false, log)))
                     {
                         if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo, false, log))
                         {
