@@ -3114,6 +3114,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
     
     if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
+        OsConfigLogInfo(log, "### Enumerated %u users ###", userListSize); ////////////////////////////////////
+        
         status = ENOENT;
 
         for (i = 0; i < userListSize; i++)
