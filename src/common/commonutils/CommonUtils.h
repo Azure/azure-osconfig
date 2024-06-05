@@ -47,7 +47,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
 bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
 bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
-bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, void* log);
+bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, bool preserveAccess, void* log);
 int RenameFile(const char* original, const char* target, void* log);
 
 void SetCommandLogging(bool commandLogging);
@@ -65,7 +65,7 @@ bool DirectoryExists(const char* directoryName);
 int CheckFileExists(const char* fileName, char** reason, void* log);
 int CheckFileNotFound(const char* fileName, char** reason, void* log);
 
-bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log);
+bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool preserveAccess, void* log);
 
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, void* log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
@@ -89,7 +89,7 @@ int UninstallPackage(const char* packageName, void* log);
 unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
 int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* log);
-int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, void* log);
+int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, void* log);
 int FindTextInFile(const char* fileName, const char* text, void* log);
 int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, void* log);
 int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, void* log);
