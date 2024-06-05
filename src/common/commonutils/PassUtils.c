@@ -48,7 +48,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     {
         if (NULL != (newline = FormatAllocateString(etcPamdCommonPasswordTemplate, g_remember, remember)))
         {
-            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', log);
+            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log);
             FREE_MEMORY(newline);
         }
         else
@@ -63,7 +63,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     {
         if (NULL != (newline = FormatAllocateString(etcPamdSystemAuthTemplate, g_remember, remember)))
         {
-            _status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', log);
+            _status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
             FREE_MEMORY(newline);
         }
         else
@@ -229,12 +229,12 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
     if (0 == CheckFileExists(etcPamdSystemAuth, NULL, log))
     {
-        status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, pamFailLockLine, '#', log);
+        status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, pamFailLockLine, '#', true, log);
     }
 
     if (0 == CheckFileExists(etcPamdPasswordAuth, NULL, log))
     {
-        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, pamFailLockLine, '#', log))) && (0 == status))
+        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, pamFailLockLine, '#', true, log))) && (0 == status))
         {
             status = _status;
         }
@@ -242,7 +242,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
     if (0 == CheckFileExists(etcPamdLogin, NULL, log))
     {
-        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, pamTally2Line, '#', log))) && (0 == status))
+        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, pamTally2Line, '#', true, log))) && (0 == status))
         {
             status = _status;
         }
@@ -616,7 +616,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     {
         if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
         {
-            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, etcPamdCommonPasswordMarker, line, '#', log);
+            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, etcPamdCommonPasswordMarker, line, '#', true, log);
             FREE_MEMORY(line);
         }
         else
@@ -631,7 +631,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         {
             if (NULL != (line = FormatAllocateString(etcSecurityPwQualityConfLineTemplate, entries[i])))
             {
-                _status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i], line, '#', log);
+                _status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i], line, '#', true, log);
                 FREE_MEMORY(line);
             }
             else

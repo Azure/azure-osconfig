@@ -1373,7 +1373,7 @@ int RepairRootGroup(void* log)
             if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
             {
                 // Delete from temporary file any lines containing "root"
-                if (0 == (status = ReplaceMarkedLinesInFile(tempFileName, g_root, NULL, '#', log)))
+                if (0 == (status = ReplaceMarkedLinesInFile(tempFileName, g_root, NULL, '#', false, log)))
                 {
                     // Free the previously loaded content, we'll reload
                     FREE_MEMORY(original);

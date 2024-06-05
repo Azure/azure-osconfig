@@ -369,9 +369,9 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 // Optionally, try to preserve the commented out lines from original /etc/fstab
                 if (MakeFileBackupCopy(fsMountTable, tempFileNameThree, false, log))
                 {
-                    if (0 == ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', log))
+                    if (0 == ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', false, log))
                     {
-                        if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo, log))
+                        if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo, false, log))
                         {
                             RenameFile(tempFileNameThree, tempFileNameTwo, log);
                         }

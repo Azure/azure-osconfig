@@ -2773,19 +2773,19 @@ static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* val
 static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, void* log)
 {
     UNUSED(value);
-    return ReplaceMarkedLinesInFile(g_etcPasswd, "+", NULL, '#', log);
+    return ReplaceMarkedLinesInFile(g_etcPasswd, "+", NULL, '#', true, log);
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(char* value, void* log)
 {
     UNUSED(value);
-    return ReplaceMarkedLinesInFile(g_etcShadow, "+", NULL, '#', log);
+    return ReplaceMarkedLinesInFile(g_etcShadow, "+", NULL, '#', true, log);
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(char* value, void* log)
 {
     UNUSED(value);
-    return ReplaceMarkedLinesInFile(g_etcGroup, "+", NULL, '#', log);
+    return ReplaceMarkedLinesInFile(g_etcGroup, "+", NULL, '#', true, log);
 }
 
 static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, void* log)
@@ -2956,8 +2956,8 @@ static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, void* log
     UNUSED(value);
     return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.send_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
         (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.send_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.send_redirects", "net.ipv4.conf.all.send_redirects = 0\n", '#', log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.send_redirects", "net.ipv4.conf.default.send_redirects = 0\n", '#', log))) ? 0 : ENOENT;
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.send_redirects", "net.ipv4.conf.all.send_redirects = 0\n", '#', true, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.send_redirects", "net.ipv4.conf.default.send_redirects = 0\n", '#', true, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, void* log)
@@ -2969,12 +2969,12 @@ static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, void* log)
         (0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.all.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
         (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.secure_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
         (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.secure_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.accept_redirects", "net.ipv4.conf.default.accept_redirects = 0\n", '#', log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.default.accept_redirects", "net.ipv6.conf.default.accept_redirects = 0\n", '#', log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.accept_redirects", "net.ipv4.conf.all.accept_redirects = 0\n", '#', log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.all.accept_redirects", "net.ipv6.conf.all.accept_redirects = 0\n", '#', log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.secure_redirects", "net.ipv4.conf.default.secure_redirects = 0\n", '#', log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.secure_redirects", "net.ipv4.conf.all.secure_redirects = 0\n", '#', log))) ? 0 : ENOENT;
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.accept_redirects", "net.ipv4.conf.default.accept_redirects = 0\n", '#', true, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.default.accept_redirects", "net.ipv6.conf.default.accept_redirects = 0\n", '#', true, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.accept_redirects", "net.ipv4.conf.all.accept_redirects = 0\n", '#', true, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.all.accept_redirects", "net.ipv6.conf.all.accept_redirects = 0\n", '#', true, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.secure_redirects", "net.ipv4.conf.default.secure_redirects = 0\n", true, '#', log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.secure_redirects", "net.ipv4.conf.all.secure_redirects = 0\n", '#', true, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSourceRoutedPacketsIsDisabled(char* value, void* log)
@@ -3008,8 +3008,8 @@ static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, void* log)
     UNUSED(value);
     return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.log_martians=1", true, false, 0, 0, NULL, NULL, log)) &&
         (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.log_martians=1", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.log_martians", "net.ipv4.conf.all.log_martians = 1\n", '#', log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.log_martians", "net.ipv4.conf.default.log_martians = 1\n", '#', log))) ? 0 : ENOENT;
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.log_martians", "net.ipv4.conf.all.log_martians = 1\n", '#', true, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.log_martians", "net.ipv4.conf.default.log_martians = 1\n", '#', true, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureReversePathSourceValidationIsEnabled(char* value, void* log)
@@ -3028,8 +3028,8 @@ static int RemediateEnsureTcpSynCookiesAreEnabled(char* value, void* log)
 static int RemediateEnsureSystemNotActingAsNetworkSniffer(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, "PROMISC", NULL, '#', log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcRcLocal, "PROMISC", NULL, '#', log))) ? 0 : ENOENT;
+    return ((0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, "PROMISC", NULL, '#', true, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcRcLocal, "PROMISC", NULL, '#', true, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAllWirelessInterfacesAreDisabled(char* value, void* log)
@@ -3043,8 +3043,8 @@ static int RemediateEnsureIpv6ProtocolIsEnabled(char* value, void* log)
     UNUSED(value);
     return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.default.disable_ipv6=0", true, false, 0, 0, NULL, NULL, log)) &&
         (0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.all.disable_ipv6=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.default.disable_ipv6", "net.ipv6.conf.default.disable_ipv6 = 0\n", '#', log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.all.disable_ipv6", "net.ipv6.conf.all.disable_ipv6 = 0\n", '#', log))) ? 0 : ENOENT;
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.default.disable_ipv6", "net.ipv6.conf.default.disable_ipv6 = 0\n", '#', true, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.all.disable_ipv6", "net.ipv6.conf.all.disable_ipv6 = 0\n", '#', true, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureDccpIsDisabled(char* value, void* log)
@@ -3084,8 +3084,8 @@ static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, void* log)
     UNUSED(value);
     StopAndDisableDaemon(g_avahiDaemon, log);
     return ((false == IsDaemonActive(g_avahiDaemon, log)) && 
-        (0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, g_ipv4ll, NULL, '#', log)) && 
-        (0 == ReplaceMarkedLinesInFile(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', log))) ? 0 : ENOENT;
+        (0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, g_ipv4ll, NULL, '#', true, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', true, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)
@@ -3118,7 +3118,7 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
     const char* hardCore = "hard core";
     int status = 0;
     UNUSED(value);
-    if ((0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, hardCore, g_hardCoreZero, '#', log))) && DirectoryExists(g_etcSecurityLimitsD))
+    if ((0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, hardCore, g_hardCoreZero, '#', true, log))) && DirectoryExists(g_etcSecurityLimitsD))
     {
         status = SecureSaveToFile(fileName, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log) ? 0 : ENOENT;
     }
@@ -3301,8 +3301,8 @@ static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, vo
 static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == ReplaceMarkedLinesInFile(g_etcRsyslogConf, "$ModLoad imudp", NULL, '#', log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcRsyslogConf, "$ModLoad imtcp", NULL, '#', log))) ? 0 : ENOENT;
+    return ((0 == ReplaceMarkedLinesInFile(g_etcRsyslogConf, "$ModLoad imudp", NULL, '#', true, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcRsyslogConf, "$ModLoad imtcp", NULL, '#', true, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, void* log)
@@ -3317,7 +3317,7 @@ static int RemediateEnsureTelnetServiceIsDisabled(char* value, void* log)
     UNUSED(value);
     StopAndDisableDaemon(g_telnet, log);
     return ((false == CheckDaemonActive(g_telnet, NULL, log)) && 
-        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_telnet, NULL, '#', log))) ? 0 : ENOENT;
+        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_telnet, NULL, '#', true, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRcprshServiceIsDisabled(char* value, void* log)
@@ -3333,7 +3333,7 @@ static int RemediateEnsureTftpServiceisDisabled(char* value, void* log)
     UNUSED(value);
     StopAndDisableDaemon(g_tftpHpa, log);
     return ((false == CheckDaemonActive(g_tftpHpa, NULL, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_tftp, NULL, '#', log))) ? 0 : ENOENT;
+        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_tftp, NULL, '#', true, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, void* log)
@@ -3511,7 +3511,7 @@ static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value, void* log)
     StopAndDisableDaemon(g_rpcSvcgssd, log);
     if (FileExists(g_etcInetdConf))
     {
-        status = ReplaceMarkedLinesInFile(g_etcInetdConf, g_needSvcgssd, NULL, '#', log);
+        status = ReplaceMarkedLinesInFile(g_etcInetdConf, g_needSvcgssd, NULL, '#', true, log);
     }
     return ((0 == status) && (false == IsDaemonActive(g_rpcSvcgssd, log))) ? 0 : ENOENT;
 }
@@ -3553,7 +3553,7 @@ static int RemediateEnsureSmbWithSambaIsDisabled(char* value, void* log)
 
     if (IsDaemonActive(g_smbd, log))
     {
-        status = ((0 == ReplaceMarkedLinesInFile(g_etcSambaConf, "SMB1", NULL, '#', log)) && 
+        status = ((0 == ReplaceMarkedLinesInFile(g_etcSambaConf, "SMB1", NULL, '#', true, log)) &&
             (0 == ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log))) ? 0 : ENOENT;
     }
     else
