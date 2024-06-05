@@ -564,6 +564,7 @@ static const char* g_rhosts = "rhosts";
 static const char* g_systemdJournald = "systemd-journald";
 static const char* g_allTelnetd = "*telnetd*";
 static const char* g_samba = "samba";
+static const char* g_smbd = "smbd";
 static const char* g_rpcSvcgssd = "rpc.svcgssd";
 static const char* g_needSvcgssd = "NEED_SVCGSSD = yes";
 static const char* g_inetInterfacesLocalhost = "inet_interfaces localhost";
@@ -2039,7 +2040,7 @@ static char* AuditEnsureSmbWithSambaIsDisabled(void* log)
     const char* minProtocol = "min protocol = SMB2";
     char* reason = NULL;
     
-    if (false == CheckDaemonNotActive(g_samba, &reason, log))
+    if (false == CheckDaemonNotActive(g_smbd, &reason, log))
     {
         RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcSambaConf, '#', minProtocol, &reason, log));
         CheckLineNotFoundOrCommentedOut(g_etcSambaConf, ';', minProtocol, &reason, log);
@@ -3550,7 +3551,7 @@ static int RemediateEnsureSmbWithSambaIsDisabled(char* value, void* log)
 
     UNUSED(value);
 
-    if (IsDaemonActive(g_samba, log))
+    if (IsDaemonActive(g_smbd, log))
     {
         status = ((0 == ReplaceMarkedLinesInFile(g_etcSambaConf, "SMB1", NULL, '#', log)) && 
             (0 == ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log))) ? 0 : ENOENT;
