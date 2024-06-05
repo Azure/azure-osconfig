@@ -65,7 +65,7 @@ bool DirectoryExists(const char* directoryName);
 int CheckFileExists(const char* fileName, char** reason, void* log);
 int CheckFileNotFound(const char* fileName, char** reason, void* log);
 
-bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log);
+bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool preserveAccess, void* log);
 
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, void* log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);

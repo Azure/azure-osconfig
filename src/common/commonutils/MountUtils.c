@@ -283,7 +283,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in '%s'",
                     mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable);
 
-                // No relevant mount entries found in /etc/fstab, try to find and copy entries from /etc/tab if there are any matching
+                // No relevant mount entries found in /etc/fstab, try to find and copy entries from /etc/mtab if there are any matching
                 if (FileExists(mountTable))
                 {
                     if (NULL != (mountHandle = setmntent(mountTable, "r")))
@@ -367,7 +367,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
             if (0 == (status = CopyMountTableFile(tempFileNameOne, tempFileNameTwo, log)))
             {
                 // Optionally, try to preserve the commented out lines from original /etc/fstab
-                if (MakeFileBackupCopy(fsMountTable, tempFileNameThree, log))
+                if (MakeFileBackupCopy(fsMountTable, tempFileNameThree, false, log))
                 {
                     if (0 == ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', log))
                     {

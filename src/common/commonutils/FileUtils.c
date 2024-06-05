@@ -208,7 +208,7 @@ bool AppendToFile(const char* fileName, const char* payload, const int payloadSi
     return InternalSecureSaveToFile(fileName, "a", payload, payloadSizeBytes, log);
 }
 
-bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
+bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool preserveAccess, void* log)
 {
     char* fileContents = NULL;
     char* newFileName = NULL;
@@ -220,7 +220,14 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
         {
             if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
             {
-                result = SecureSaveToFile(backupName, fileContents, strlen(fileContents), log);
+                if (preserveAccess)
+                {
+                    result = SecureSaveToFile(backupName, fileContents, strlen(fileContents), log);
+                }
+                else
+                {
+                    result = SavePayloadToFile(backupName, fileContents, strlen(fileContents), log);
+                }
             }
             else
             {

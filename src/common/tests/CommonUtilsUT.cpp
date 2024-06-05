@@ -184,7 +184,7 @@ TEST_F(CommonUtilsTest, MakeFileBackupCopy)
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
     
-    EXPECT_TRUE(MakeFileBackupCopy(m_path, fileCopyPath, nullptr));
+    EXPECT_TRUE(MakeFileBackupCopy(m_path, fileCopyPath, true, nullptr));
     EXPECT_TRUE(FileExists(fileCopyPath));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(fileCopyPath, false, nullptr));
     FREE_MEMORY(contents);
