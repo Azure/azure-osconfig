@@ -245,7 +245,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                     if (NULL != newLine)
                     {
-                        if (0 != FindTextInFile(tempFileNameOne, newline, log))
+                        if (0 != FindTextInFile(tempFileNameOne, newLine, log))
                         {
                             if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                             {
@@ -268,7 +268,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                         mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno)))
                     {
-                        if (0 != FindTextInFile(tempFileNameOne, newline, log))
+                        if (0 != FindTextInFile(tempFileNameOne, newLine, log))
                         {
                             if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                             {
@@ -334,7 +334,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                                 if (NULL != newLine)
                                 {
-                                    if (0 != FindTextInFile(tempFileNameOne, newline, log))
+                                    if (0 != FindTextInFile(tempFileNameOne, newLine, log))
                                     {
                                         if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                                         {
