@@ -664,13 +664,11 @@ int CheckSshProtocol(char** reason, void* log)
     if (0 == (status = CheckLineFoundNotCommentedOut(g_sshServerConfiguration, '#', protocol, reason, log)))
     {
         OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
-        OsConfigCaptureSuccessReason(reason, "'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
         status = 0;
     }
     else
     {
         OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
-        OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
         status = ENOENT;
 
         if (0 == IsSshConfigIncludeSupported(log))
