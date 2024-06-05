@@ -45,13 +45,13 @@ bool CheckDaemonNotActive(const char* daemonName, char** reason, void* log)
 
     if (true == (result = IsDaemonActive(daemonName, log)))
     {
-        OsConfigLogError(log, "CheckDaemonActive: service '%s' is active", daemonName);
+        OsConfigLogError(log, "CheckDaemonNotActive: service '%s' is active", daemonName);
         OsConfigCaptureReason(reason, "Service '%s' is active", daemonName);
         result = false;
     }
     else
     {
-        OsConfigLogInfo(log, "CheckDaemonActive: service '%s' is inactive", daemonName);
+        OsConfigLogInfo(log, "CheckDaemonNotActive: service '%s' is inactive", daemonName);
         OsConfigCaptureSuccessReason(reason, "Service '%s' is inactive", daemonName);
         result = true;
     }

@@ -101,6 +101,23 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
     return SaveToFile(fileName, "w", payload, payloadSizeBytes, log);
 }
 
+bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+{
+    char* fileContents = NULL;
+
+    // If the file exists and there is no EOL at the end of file, add one before the append
+    if ((NULL != payload) && (payloadSizeBytes > 0) && FileExists(fileName) && 
+        (NULL != (fileContents = LoadStringFromFile(fileName, false, log))) && 
+        (EOL != fileContents[strlen(fileContents) - 1]))
+    {
+        SaveToFile(fileName, "a", "\n", 1, log);
+    }
+
+    FREE_MEMORY(fileContents);
+
+    return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
+}
+
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.Temp%u";
@@ -655,6 +672,30 @@ int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId
     return status;
 }
 
+int RenameFile(const char* original, const char* target, void* log)
+{
+    int status = 0;
+
+    if ((NULL == original) || (NULL == target))
+    {
+        OsConfigLogError(log, "RenameFile: invalid arguments");
+        return EINVAL;
+    }
+    else if (false == FileExists(original))
+    {
+        OsConfigLogError(log, "RenameFile: original file '%s' does not exist", original);
+        return EINVAL;
+    }
+
+    if (0 != (status = rename(original, target)))
+    {
+        OsConfigLogError(log, "RenameFile: rename('%s' to '%s') failed with %d", original, target, errno);
+        status = (0 == errno) ? ENOENT : errno;
+    }
+
+    return status;
+}
+
 int RenameFileWithOwnerAndAccess(const char* original, const char* target, void* log)
 {
     unsigned int ownerId = 0;
@@ -813,7 +854,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: line '%s' did not replace any '%s' line, to be appended at end of '%s'", 
             newline, marker, fileName);
         
-        if (false == AppendToFile(tempFileName, newline, strlen(newline), log))
+        if (false == AppendPayloadToFile(tempFileName, newline, strlen(newline), log))
         {
             OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to append line '%s' at end of '%s'", newline, fileName);
         }
