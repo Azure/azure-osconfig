@@ -3615,6 +3615,7 @@ static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
 
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
 {
+    UNUSED(log);
     InitEnsureUnnecessaryAccountsAreRemoved(value);
     return 0;//RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log);
 }
