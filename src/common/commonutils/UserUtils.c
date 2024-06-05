@@ -3157,6 +3157,11 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
     FreeUsersList(&userList, userListSize);
 
+    if ((false == found) && (0 == status))
+    {
+        OsConfigLogInfo(log, "CheckUserAccountsNotFound: none of the requested user accounts ('%s') were found in users database", names);
+    }
+
     if (0 == status)
     {
         for (j = 0; j < namesLength; j++)
@@ -3191,7 +3196,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
     }
     else if (0 == status)
     {
-        OsConfigCaptureSuccessReason(reason, "None of the requested user accounts is present");
+        OsConfigLogInfo(log, "CheckUserAccountsNotFound: none of the requested user accounts ('%s') is present", names);
+        OsConfigCaptureSuccessReason(reason, "None of the requested user accounts ('%s') is present", names);
     }
     else
     {
