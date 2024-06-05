@@ -695,13 +695,11 @@ int CheckSshProtocol(char** reason, void* log)
             else if (0 == (status = CheckLineFoundNotCommentedOut(g_osconfigRemediationConf, '#', protocol, reason, log)))
             {
                 OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
-                OsConfigCaptureSuccessReason(reason, "'%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
                 status = 0;
             }
             else
             {
                 OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_osconfigRemediationConf);
-                OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s", protocol, g_osconfigRemediationConf);
                 status = ENOENT;
             }
 
