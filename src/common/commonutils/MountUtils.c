@@ -185,7 +185,7 @@ static int LineAlreadyExistsInFile(const char* fileName, const char* text)
 
     if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
     {
-        status = EACCESS;
+        status = EACCES;
     }
     else
     {
