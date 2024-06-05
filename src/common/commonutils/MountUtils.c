@@ -245,10 +245,13 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                     if (NULL != newLine)
                     {
-                        if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                        if (0 != FindTextInFile(tempFileNameOne, newline, log))
                         {
-                            OsConfigLogError(log, "SetFileSystemMountingOption: failed collecting entries from '%s'", fsMountTable);
-                            break;
+                            if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                            {
+                                OsConfigLogError(log, "SetFileSystemMountingOption: failed collecting entries from '%s'", fsMountTable);
+                                break;
+                            }
                         }
                     }
                     else
@@ -265,11 +268,20 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                         mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno)))
                     {
-                        if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                        if (0 != FindTextInFile(tempFileNameOne, newline, log))
                         {
-                            OsConfigLogError(log, "SetFileSystemMountingOption: failed copying existing entries from '%s'", fsMountTable);
-                            break;
+                            if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                            {
+                                OsConfigLogError(log, "SetFileSystemMountingOption: failed copying existing entries from '%s'", fsMountTable);
+                                break;
+                            }
                         }
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
+                        status = ENOMEM;
+                        break;
                     }
                 }
 
@@ -322,10 +334,13 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                                 if (NULL != newLine)
                                 {
-                                    if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                                    if (0 != FindTextInFile(tempFileNameOne, newline, log))
                                     {
-                                        OsConfigLogError(log, "SetFileSystemMountingOption: failed collecting entry from '%s'", mountTable);
-                                        break;
+                                        if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                                        {
+                                            OsConfigLogError(log, "SetFileSystemMountingOption: failed collecting entry from '%s'", mountTable);
+                                            break;
+                                        }
                                     }
                                 }
                                 else
