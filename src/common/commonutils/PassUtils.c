@@ -73,7 +73,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
         }
     }
 
-    if (_status && (0 == status))
+    if ((0 == _status) || (_status && (0 == status)))
     {
         status = _status;
     }
@@ -639,11 +639,11 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
                 OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcSecurityPwQualityConf);
             }
         }
+    }
 
-        if (_status && (0 == status))
-        {
-            status = _status;
-        }
+    if ((0 == _status) || (_status && (0 == status)))
+    {
+        status = _status;
     }
 
     return status;
