@@ -1,6 +1,6 @@
 # Introduction
 
-Azure Device OS Configuration (OSConfig) is a modular configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI (via Azure PnP, IoT Hub, Azure Policy), GitOps, as well as local management (such as from Out Of Box Experience, OOBE). For more information on OSConfig see [OSConfig North Star Architecture](docs/architecture.md).
+Azure Device OS Configuration (OSConfig) is a modular configuration stack forï¿½Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI (via Azure PnP, IoT Hub, Azure Policy), GitOps, as well as local management (such as from Out Of Box Experience, OOBE). For more information on OSConfig see [OSConfig North Star Architecture](docs/architecture.md).
 
 # Code of conduct
 
@@ -24,6 +24,41 @@ Most contributions require you to agree to a Contributor License Agreement (CLA)
 7. The PR triggers a series of GitHub actions that will validate the new submitted changes.
 
 The OSConfig Core team will respond to a PR that passes all checks in 3 business days.
+
+# Devloop
+The OSConfig devloop consists of the following: Code / Test / Release devloop:
+
+```mermaid
+flowchart LR
+    Code --> Tests --> Release --> Code
+```
+```mermaid
+flowchart LR
+    repo[("`Repo
+            azure-osconfig`")] -- Pull repo --> dev["`Local Devbox
+                                                            /
+                                                        Online`"]
+    subgraph Code
+    dev --> topicBranch("`Checkout topic branch
+                        _git checkout -b
+                        user/alias/feature_`")
+    topicBranch --> code(Make code changes) --> CI(Run Unit Tests) --> doTestsPass{"Tests Pass?"}
+    end
+    doTestsPass -- Fails --> code
+    doTestsPass -- Passes --> Push(Push changes upstream) --> repo
+    repo -- Triggered on PR --> finishedFeatureBranch(("`Feature branch changes
+                                    _user/alias/feature_`"))
+    subgraph Tests
+    finishedFeatureBranch --> cloudCI(CI - Containers)
+    finishedFeatureBranch --> cloudE2E(E2E - VMs)
+    end
+    repo -- Triggered daily on 'main' --> insiders-fast
+    repo -- Triggered on-demand --> prod
+    subgraph Release
+    insiders-fast --> pmc[(packages.microsoft.com)]
+    prod --> pmc
+    end
+```
 
 # Contact
 
