@@ -2631,8 +2631,9 @@ static int RemediateEnsureTalkClientIsNotInstalled(char* value, void* log)
 static int RemediateEnsureCronServiceIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    return (((0 == InstallPackage(g_cron, log)) || (0 == InstallPackage(g_cronie, log))) &&
-        EnableAndStartDaemon(g_crond, log)) ? 0 : ENOENT;
+
+    return (((0 == InstallPackage(g_cron, log)) && EnableAndStartDaemon(g_cron, log)) || 
+        (((0 == InstallPackage(g_cronie, log)) && EnableAndStartDaemon(g_crond, log)))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
