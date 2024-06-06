@@ -34,24 +34,9 @@ bool IsFullLoggingEnabled()
     return g_fullLoggingEnabled;
 }
 
-static int _OctalToDecimal(int octal)
-{
-    int internalOctal = octal;
-    int decimal = 0;
-    int i = 0;
-
-    while (internalOctal)
-    {
-        decimal += (internalOctal % 10) * pow(8, i++);
-        internalOctal = internalOctal / 10;
-    }
-
-    return decimal;
-}
-
 static int RestrictAccessToRootOnly(const char* fileName)
 {
-    return chmod(fileName, /*S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP*/_OctalToDecimal(777));
+    return chmod(fileName, /*S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP*/S_IRWXU | S_IRWXG | S_IRWXO);
 }
 
 OSCONFIG_LOG_HANDLE OpenLog(const char* logFileName, const char* bakLogFileName)
