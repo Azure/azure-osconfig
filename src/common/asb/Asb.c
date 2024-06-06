@@ -535,9 +535,13 @@ static const char* g_slapd = "slapd";
 static const char* g_bind9 = "bind9";
 static const char* g_dovecotCore = "dovecot-core";
 static const char* g_auditd = "auditd";
+static const char* g_auditLibs = "audit-libs";
+static const char* g_auditLibsDevel = "audit-libs-devel";
 static const char* g_prelink = "prelink";
 static const char* g_talk = "talk";
 static const char* g_cron = "cron";
+static const char* g_crond = "crond";
+static const char* g_cronie = "cronie";
 static const char* g_syslog = "syslog";
 static const char* g_rsyslog = "rsyslog";
 static const char* g_syslogNg = "syslog-ng";
@@ -1083,7 +1087,9 @@ static char* AuditEnsureDovecotCoreNotInstalled(void* log)
 static char* AuditEnsureAuditdInstalled(void* log)
 {
     char* reason = NULL;
-    CheckPackageInstalled(g_auditd, &reason, log);
+    RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_auditd, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_auditLibs, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_auditLibsDevel, &reason, log));
     return reason;
 }
 
@@ -1314,8 +1320,11 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void* log)
 static char* AuditEnsureCronServiceIsEnabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_cron, &reason, log));
-    CheckDaemonActive(g_cron, &reason, log);
+    if ((0 == CheckPackageInstalled(g_cron, &reason, log)) || 
+        (0 == CheckPackageInstalled(g_cronie, &reason, log)))
+    {
+        CheckDaemonActive(g_crond, &reason, log);
+    }
     return reason;
 }
 
@@ -2604,7 +2613,7 @@ static int RemediateEnsureDovecotCoreNotInstalled(char* value, void* log)
 static int RemediateEnsureAuditdInstalled(char* value, void* log)
 {
     UNUSED(value);
-    return InstallPackage(g_auditd, log);
+    return ((0 == InstallPackage(g_auditd, log)) || (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePrelinkIsDisabled(char* value, void* log)
@@ -2622,14 +2631,14 @@ static int RemediateEnsureTalkClientIsNotInstalled(char* value, void* log)
 static int RemediateEnsureCronServiceIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    return (0 == InstallPackage(g_cron, log) &&
-        EnableAndStartDaemon(g_cron, log)) ? 0 : ENOENT;
+    return ((0 == InstallPackage(g_cron, log)) || (0 == InstallPackage(g_cronie, log))) &&
+        EnableAndStartDaemon(g_crond, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 {
     UNUSED(value);
-    return (0 == InstallPackage(g_auditd, log) &&
+    return (((0 == InstallPackage(g_auditd, log)) || (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))) &&
         EnableAndStartDaemon(g_auditd, log)) ? 0 : ENOENT;
 }
 
