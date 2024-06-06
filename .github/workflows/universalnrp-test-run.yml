@@ -132,8 +132,8 @@ jobs:
         if: success() || failure()
         run: |
           mkdir  osconfig-logs
-          sudo cp -r /var/log/osconfig* osconfig-logs/
-          sudo chown $USER osconfig-logs/*
+          sudo chmod a+r /var/log/osconfig*
+          cp -r /var/log/osconfig* osconfig-logs/
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
