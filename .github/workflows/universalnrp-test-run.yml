@@ -132,6 +132,7 @@ jobs:
         if: success() || failure()
         run: |
           mkdir  osconfig-logs
+          stat /var/log/osconfig_nrp.log
           cp -r /var/log/osconfig* osconfig-logs/
 
       - uses: actions/upload-artifact@v4
