@@ -3505,9 +3505,9 @@ static int RemediateEnsurePortmapServiceIsDisabled(char* value, void* log)
     StopAndDisableDaemon(g_rpcbindService, log);
     StopAndDisableDaemon(g_rpcbind, log);
 
-    return ((0 == CheckDaemonNotActive(g_rpcbind, NULL, log)) &&
-        (0 == CheckDaemonNotActive(g_rpcbindService, NULL, log)) &&
-        (0 == CheckDaemonNotActive(g_rpcbindSocket, NULL, log))) ? 0 : ENOENT;
+    return (CheckDaemonNotActive(g_rpcbind, NULL, log) && 
+        CheckDaemonNotActive(g_rpcbindService, NULL, log) &&
+        CheckDaemonNotActive(g_rpcbindSocket, NULL, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value, void* log)
