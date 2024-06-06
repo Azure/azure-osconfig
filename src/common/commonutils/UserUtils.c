@@ -1373,7 +1373,7 @@ int RepairRootGroup(void* log)
             if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
             {
                 // Delete from temporary file any lines containing "root"
-                if (0 == (status = ReplaceMarkedLinesInFile(tempFileName, g_root, NULL, '#', log)))
+                if (0 == (status = ReplaceMarkedLinesInFile(tempFileName, g_root, NULL, '#', false, log)))
                 {
                     // Free the previously loaded content, we'll reload
                     FREE_MEMORY(original);
@@ -1388,7 +1388,7 @@ int RepairRootGroup(void* log)
                         if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
                         {
                             // Append to temporary file the cleaned content
-                            if (AppendToFile(tempFileName, original, strlen(original), log))
+                            if (AppendPayloadToFile(tempFileName, original, strlen(original), log))
                             {
                                 // In a single atomic operation move edited contents from temporary file to /etc/group
                                 if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, etcGroup, log)))
@@ -3102,7 +3102,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
     SIMPLIFIED_USER* userList = NULL;
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int userListSize = 0, groupListSize = 0, i = 0, j = 0;
-    int status = ENOENT;
+    bool found = false;
+    int status = 0;
 
     if (NULL == names)
     {
@@ -3114,8 +3115,6 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
     
     if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
-        status = ENOENT;
-
         for (i = 0; i < userListSize; i++)
         {
             for (j = 0; j < namesLength; j++)
@@ -3146,22 +3145,22 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
                         OsConfigCaptureReason(reason, "User '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
                             userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
 
-                        status = 0;
+                        found = true;
                     }
                 }
 
                 j += strlen(name);
                 FREE_MEMORY(name);
             }
-
-            if (0 != status)
-            {
-                break;
-            }
         }
     }
 
     FreeUsersList(&userList, userListSize);
+
+    if ((false == found) && (0 == status))
+    {
+        OsConfigLogInfo(log, "CheckUserAccountsNotFound: none of the requested user accounts ('%s') were found in the users database", names);
+    }
 
     if (0 == status)
     {
@@ -3181,9 +3180,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
                     (0 == FindTextInFile("/etc/shadow", name, log)) ||
                     (0 == FindTextInFile("/etc/group", name, log)))
                 {
-                    status = 0;
-
                     OsConfigCaptureReason(reason, "Account '%s' found mentioned in '/etc/passwd', '/etc/shadow' and/or '/etc/group'", name);
+                    found = true;
                 }
 
                 j += strlen(name);
@@ -3192,14 +3190,18 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
         }
     }
 
-    if (0 != status)
+    if (found)
     {
-        OsConfigCaptureSuccessReason(reason, "None of the requested user accounts is present");
-        status = 0;
+        status = EEXIST;
+    }
+    else if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckUserAccountsNotFound: none of the requested user accounts ('%s') is present", names);
+        OsConfigCaptureSuccessReason(reason, "None of the requested user accounts ('%s') is present", names);
     }
     else
     {
-        status = EEXIST;
+        OsConfigCaptureReason(reason, "Failed to check for presence of the requested user accounts (%d)", status);
     }
 
     return status;
@@ -3219,10 +3221,15 @@ int RemoveUserAccounts(const char* names, void* log)
         return EINVAL;
     }
 
-    if (0 != CheckUserAccountsNotFound(names, NULL, log))
+    if (0 == (status = CheckUserAccountsNotFound(names, NULL, log)))
     {
         OsConfigLogInfo(log, "RemoveUserAccounts: user accounts '%s' are not found", names);
         return 0;
+    }
+    else if (EEXIST != status)
+    {
+        OsConfigLogError(log, "RemoveUserAccounts: CheckUserAccountsNotFound('%s') failed with %d", names, status);
+        return status;
     }
 
     namesLength = strlen(names);

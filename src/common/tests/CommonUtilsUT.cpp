@@ -153,6 +153,28 @@ TEST_F(CommonUtilsTest, AppendToFile)
     FREE_MEMORY(contents);
 }
 
+TEST_F(CommonUtilsTest, AppendPayloadToFile)
+{
+    const char* original = "First line of text\n";
+    const char* added = "Second line of text\nAnd third line of text";
+    const char* complete = "First line of text\nSecond line of text\nAnd third line of text";
+
+    char* contents = NULL;
+
+    EXPECT_TRUE(SavePayloadToFile(m_path, original, strlen(original), nullptr));
+    EXPECT_STREQ(original, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(AppendPayloadToFile(m_path, added, strlen(added), nullptr));
+    EXPECT_STREQ(complete, contents = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    FREE_MEMORY(contents);
+
+    EXPECT_TRUE(AppendPayloadToFile(m_path, original, strlen(original), nullptr));
+    EXPECT_STREQ(original, contents = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    FREE_MEMORY(contents);
+}
+
 TEST_F(CommonUtilsTest, MakeFileBackupCopy)
 {
     const char* fileCopyPath = "/tmp/~test.test.copy";
@@ -162,7 +184,7 @@ TEST_F(CommonUtilsTest, MakeFileBackupCopy)
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
     
-    EXPECT_TRUE(MakeFileBackupCopy(m_path, fileCopyPath, nullptr));
+    EXPECT_TRUE(MakeFileBackupCopy(m_path, fileCopyPath, true, nullptr));
     EXPECT_TRUE(FileExists(fileCopyPath));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(fileCopyPath, false, nullptr));
     FREE_MEMORY(contents);
@@ -180,14 +202,14 @@ TEST_F(CommonUtilsTest, ConcatenateFiles)
     const char* complete = "First line of text\nSecond line of text\nAnd third line of text";
     char* contents = NULL;
 
-    EXPECT_FALSE(ConcatenateFiles(nullptr, nullptr, nullptr));
-    EXPECT_FALSE(ConcatenateFiles(testPath1, nullptr, nullptr));
-    EXPECT_FALSE(ConcatenateFiles(nullptr, testPath2, nullptr));
+    EXPECT_FALSE(ConcatenateFiles(nullptr, nullptr, true, nullptr));
+    EXPECT_FALSE(ConcatenateFiles(testPath1, nullptr, true, nullptr));
+    EXPECT_FALSE(ConcatenateFiles(nullptr, testPath2, true, nullptr));
 
     EXPECT_TRUE(SavePayloadToFile(testPath1, original, strlen(original), nullptr));
     EXPECT_TRUE(SavePayloadToFile(testPath2, added, strlen(added), nullptr));
 
-    EXPECT_TRUE(ConcatenateFiles(testPath1, testPath2, nullptr));
+    EXPECT_TRUE(ConcatenateFiles(testPath1, testPath2, true, nullptr));
     EXPECT_STREQ(complete, contents = LoadStringFromFile(testPath1, false, nullptr));
     FREE_MEMORY(contents);
 
@@ -2084,46 +2106,46 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
 
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
-    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, "+", "T", '#', nullptr));
-    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, nullptr, nullptr, '#', nullptr));
-    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, nullptr, nullptr, '#', nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, "+", "T", '#', false, nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, nullptr, nullptr, '#', false, nullptr));
+    EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, nullptr, nullptr, '#', false, nullptr));
 
-    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker1, newline1, '#', nullptr));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker1, newline1, '#', true, nullptr));
     EXPECT_STREQ(outFile1, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
-    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker2, newline2, '#', nullptr));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker2, newline2, '#', true, nullptr));
     EXPECT_STREQ(outFile2, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
-    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker3, nullptr, '#', nullptr));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker3, nullptr, '#', true, nullptr));
     EXPECT_STREQ(outFile3, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
-    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker4, "", '#', nullptr));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker4, "", '#', true, nullptr));
     EXPECT_STREQ(outFile4, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
-    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker5, newline5, '#', nullptr));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker5, newline5, '#', false, nullptr));
     EXPECT_STREQ(outFile5, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_TRUE(CreateTestFile(m_path, inFile));
 
-    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker6, newline6, '#', nullptr));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker6, newline6, '#', false, nullptr));
     EXPECT_STREQ(outFile6, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
 

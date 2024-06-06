@@ -169,11 +169,42 @@ static int CopyMountTableFile(const char* source, const char* target, void* log)
     return status;
 }
 
+static int LineAlreadyExistsInFile(const char* fileName, const char* text)
+{
+    char* contents = NULL;
+    int status = 0;
+
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
+    {
+        return EINVAL;
+    }
+    else if (false == FileExists(fileName))
+    {
+        return ENOENT;
+    }
+
+    if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+    {
+        status = EACCES;
+    }
+    else
+    {
+        if (NULL == strstr(contents, text))
+        {
+            status = EEXIST;
+        }
+
+        FREE_MEMORY(contents);
+    }
+
+    return status;
+}
+
 int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
 {
     const char* fsMountTable = "/etc/fstab";
     const char* mountTable = "/etc/mtab";
-    const char tempFileNameTemplate[] = "/tmp/~xtab%d";
+    const char tempFileNameTemplate[] = "/etc/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
     const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
 
@@ -245,10 +276,13 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                     if (NULL != newLine)
                     {
-                        if (0 != (status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine))
                         {
-                            OsConfigLogError(log, "SetFileSystemMountingOption: failed collecting entries from '%s'", fsMountTable);
-                            break;
+                            if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                            {
+                                OsConfigLogError(log, "SetFileSystemMountingOption: failed collecting entries from '%s'", fsMountTable);
+                                break;
+                            }
                         }
                     }
                     else
@@ -265,11 +299,20 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                         mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno)))
                     {
-                        if (0 != (status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine))
                         {
-                            OsConfigLogError(log, "SetFileSystemMountingOption: failed copying existing entries from '%s'", fsMountTable);
-                            break;
+                            if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                            {
+                                OsConfigLogError(log, "SetFileSystemMountingOption: failed copying existing entries from '%s'", fsMountTable);
+                                break;
+                            }
                         }
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
+                        status = ENOMEM;
+                        break;
                     }
                 }
 
@@ -283,7 +326,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 OsConfigLogInfo(log, "SetFileSystemMountingOption: mount directory '%s' and/or mount type '%s' not found in '%s'",
                     mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", fsMountTable);
 
-                // No relevant mount entries found in /etc/fstab, try to find and copy entries from /etc/tab if there are any matching
+                // No relevant mount entries found in /etc/fstab, try to find and copy entries from /etc/mtab if there are any matching
                 if (FileExists(mountTable))
                 {
                     if (NULL != (mountHandle = setmntent(mountTable, "r")))
@@ -322,10 +365,13 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                                 if (NULL != newLine)
                                 {
-                                    if (0 != (status = AppendToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                                    if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine))
                                     {
-                                        OsConfigLogError(log, "SetFileSystemMountingOption: failed collecting entry from '%s'", mountTable);
-                                        break;
+                                        if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                                        {
+                                            OsConfigLogError(log, "SetFileSystemMountingOption: failed collecting entry from '%s'", mountTable);
+                                            break;
+                                        }
                                     }
                                 }
                                 else
@@ -361,19 +407,21 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
             OsConfigLogError(log, "SetFileSystemMountingOption: could not open '%s', setmntent() failed (%d)", fsMountTable, status);
         }
 
-        if (0 == status)
+        if (matchFound && (0 == status))
         {
             // Copy from the manually built temp mount file one to the temp mount file two using the *mntent API to ensure correct format
             if (0 == (status = CopyMountTableFile(tempFileNameOne, tempFileNameTwo, log)))
             {
                 // Optionally, try to preserve the commented out lines from original /etc/fstab
-                if (MakeFileBackupCopy(fsMountTable, tempFileNameThree, log))
+                if (MakeFileBackupCopy(fsMountTable, tempFileNameThree, false, log))
                 {
-                    if (0 == ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', log))
+                    // Skip all lines containing either paths or 'UUID' entries 
+                    if ((0 == ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', false, log)) &&
+                        (0 == ReplaceMarkedLinesInFile(tempFileNameThree, "UUID", NULL, '#', false, log)))
                     {
-                        if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo, log))
+                        if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo, false, log))
                         {
-                            RenameFileWithOwnerAndAccess(tempFileNameThree, tempFileNameTwo, log);
+                            RenameFile(tempFileNameThree, tempFileNameTwo, log);
                         }
                     }
                 }

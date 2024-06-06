@@ -101,6 +101,23 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
     return SaveToFile(fileName, "w", payload, payloadSizeBytes, log);
 }
 
+bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+{
+    char* fileContents = NULL;
+
+    // If the file exists and there is no EOL at the end of file, add one before the append
+    if ((NULL != payload) && (payloadSizeBytes > 0) && FileExists(fileName) && 
+        (NULL != (fileContents = LoadStringFromFile(fileName, false, log))) && 
+        (EOL != fileContents[strlen(fileContents) - 1]))
+    {
+        SaveToFile(fileName, "a", "\n", 1, log);
+    }
+
+    FREE_MEMORY(fileContents);
+
+    return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
+}
+
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.Temp%u";
@@ -191,7 +208,7 @@ bool AppendToFile(const char* fileName, const char* payload, const int payloadSi
     return InternalSecureSaveToFile(fileName, "a", payload, payloadSizeBytes, log);
 }
 
-bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
+bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool preserveAccess, void* log)
 {
     char* fileContents = NULL;
     char* newFileName = NULL;
@@ -203,7 +220,14 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
         {
             if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
             {
-                result = SecureSaveToFile(backupName, fileContents, strlen(fileContents), log);
+                if (preserveAccess)
+                {
+                    result = SecureSaveToFile(backupName, fileContents, strlen(fileContents), log);
+                }
+                else
+                {
+                    result = SavePayloadToFile(backupName, fileContents, strlen(fileContents), log);
+                }
             }
             else
             {
@@ -229,7 +253,7 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, void* log)
     return result;
 }
 
-bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, void* log)
+bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, bool preserveAccess, void* log)
 {
     char* contents = NULL;
     bool result = false;
@@ -242,7 +266,15 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, voi
 
     if (NULL != (contents = LoadStringFromFile(secondFileName, false, log)))
     {
-        result = AppendToFile(firstFileName, contents, strlen(contents), log);
+        if (preserveAccess)
+        {
+            result = AppendToFile(firstFileName, contents, strlen(contents), log);
+        }
+        else
+        {
+            result = AppendPayloadToFile(firstFileName, contents, strlen(contents), log);
+        }
+        
         FREE_MEMORY(contents);
     }
 
@@ -655,6 +687,30 @@ int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId
     return status;
 }
 
+int RenameFile(const char* original, const char* target, void* log)
+{
+    int status = 0;
+
+    if ((NULL == original) || (NULL == target))
+    {
+        OsConfigLogError(log, "RenameFile: invalid arguments");
+        return EINVAL;
+    }
+    else if (false == FileExists(original))
+    {
+        OsConfigLogError(log, "RenameFile: original file '%s' does not exist", original);
+        return EINVAL;
+    }
+
+    if (0 != (status = rename(original, target)))
+    {
+        OsConfigLogError(log, "RenameFile: rename('%s' to '%s') failed with %d", original, target, errno);
+        status = (0 == errno) ? ENOENT : errno;
+    }
+
+    return status;
+}
+
 int RenameFileWithOwnerAndAccess(const char* original, const char* target, void* log)
 {
     unsigned int ownerId = 0;
@@ -708,7 +764,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
     return status;
 }
 
-int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, void* log)
+int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, void* log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.ReplacingLines%u";
     char* tempFileName = NULL;
@@ -813,7 +869,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: line '%s' did not replace any '%s' line, to be appended at end of '%s'", 
             newline, marker, fileName);
         
-        if (false == AppendToFile(tempFileName, newline, strlen(newline), log))
+        if (false == AppendPayloadToFile(tempFileName, newline, strlen(newline), log))
         {
             OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to append line '%s' at end of '%s'", newline, fileName);
         }
@@ -821,9 +877,19 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 
     if (0 == status)
     {
-        if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, fileName, log)))
+        if (preserveAccess)
         {
-            OsConfigLogError(log, "ReplaceMarkedLinesInFile: RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempFileName, fileName, status);
+            if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, fileName, log)))
+            {
+                OsConfigLogError(log, "ReplaceMarkedLinesInFile: RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempFileName, fileName, status);
+            }
+        }
+        else
+        {
+            if (0 != (status = RenameFile(tempFileName, fileName, log)))
+            {
+                OsConfigLogError(log, "ReplaceMarkedLinesInFile: RenameFile('%s' to '%s') failed with %d", tempFileName, fileName, status);
+            }
         }
         
         remove(tempFileName);
@@ -1592,7 +1658,7 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, void*
         return ENOMEM;
     }
 
-    if (0 == (status = ReplaceMarkedLinesInFile(file, name, newline, '#', log)))
+    if (0 == (status = ReplaceMarkedLinesInFile(file, name, newline, '#', true, log)))
     {
         OsConfigLogInfo(log, "SetEtcConfValue: successfully set '%s' to '%s' in '%s'", name, value, file);
     }
