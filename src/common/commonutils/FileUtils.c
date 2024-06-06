@@ -133,12 +133,17 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         OsConfigLogError(log, "InternalSecureSaveToFile: invalid arguments");
         return false;
     }
-
-    if (FileExists(fileName) && (NULL != (fileNameCopy = DuplicateString(fileName))))
+    else if (NULL == (fileNameCopy = DuplicateString(fileName)))
     {
-        fileDirectory = dirname(fileNameCopy);
+        OsConfigLogError(log, "InternalSecureSaveToFile: out of memory");
+        return false;
     }
 
+    if (NULL == (fileDirectory = dirname(fileNameCopy)))
+    {
+        OsConfigLogInfo(log, "InternalSecureSaveToFile: no directory name for '%s' (%d)", fileNameCopy, errno);
+    }
+ 
     if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
     {
         if ((0 == strcmp(mode, "a") && FileExists(fileName)))
