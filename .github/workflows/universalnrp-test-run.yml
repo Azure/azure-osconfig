@@ -126,7 +126,7 @@ jobs:
 
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
           ls -l
-          sudo chown $USER *testResults.xml
+          sudo chmod a+r *testResults.xml
 
       - name: Stage OSConfig Logs
         if: success() || failure()
@@ -134,6 +134,7 @@ jobs:
           mkdir  osconfig-logs
           sudo cp -r /var/log/osconfig* osconfig-logs/
           sudo chown $USER osconfig-logs/*
+          sudo chmod a+r osconfig-logs/*
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
