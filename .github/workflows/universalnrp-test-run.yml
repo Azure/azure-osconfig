@@ -125,22 +125,24 @@ jobs:
           EOL
 
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
+          ls -l
+          sudo chmod a+r *testResults.xml
 
       - name: Stage OSConfig Logs
         if: success() || failure()
         run: |
           mkdir  osconfig-logs
-          sudo cp -r /var/log/osconfig* osconfig-logs/
-          sudo chown $USER osconfig-logs/*
+          sudo chmod a+r /var/log/osconfig*
+          cp -r /var/log/osconfig* osconfig-logs/
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: universal-nrp-test-${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-report
-          path: '${{ steps.download.outputs.download-path }}/${{ inputs.target }}*testResult*.xml'
+          name: ${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-report
+          path: '${{ steps.download.outputs.download-path }}/*testResults.xml'
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: universal-nrp-test-${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-logs
+          name: ${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-logs
           path: osconfig-logs/osconfig*
