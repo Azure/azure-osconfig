@@ -141,7 +141,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
 
     if (NULL == (fileDirectory = dirname(fileNameCopy)))
     {
-        OsConfigLogInfo(log, "InternalSecureSaveToFile: no directory name for '%s' (%d)", errno);
+        OsConfigLogInfo(log, "InternalSecureSaveToFile: no directory name for '%s' (%d)", fileNameCopy, errno);
     }
  
     if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
