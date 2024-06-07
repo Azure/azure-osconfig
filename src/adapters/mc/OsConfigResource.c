@@ -74,8 +74,8 @@ void __attribute__((destructor)) Destroy()
     CloseLog(&g_log);
 
     // Allow others read access to the NRP logs
-    SetFileAccess(LOG_FILE, 0, 0, 644, NULL);
-    SetFileAccess(ROLLED_LOG_FILE, 0, 0, 644, NULL);
+    SetFileAccess(LOG_FILE, 0, 0, 6774, NULL);
+    SetFileAccess(ROLLED_LOG_FILE, 0, 0, 6774, NULL);
 }
 
 static void LogCurrentDistro(MI_Context* context)
