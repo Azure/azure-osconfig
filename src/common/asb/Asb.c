@@ -1320,11 +1320,8 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void* log)
 static char* AuditEnsureCronServiceIsEnabled(void* log)
 {
     char* reason = NULL;
-    if ((0 == CheckPackageInstalled(g_cron, &reason, log)) || 
-        (0 == CheckPackageInstalled(g_cronie, &reason, log)))
-    {
-        CheckDaemonActive(g_crond, &reason, log);
-    }
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_cron, &reason, log)) && CheckDaemonActive(g_cron, &reason, log)) ? 0 : ENOENT);
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_cronie, &reason, log)) && CheckDaemonActive(g_crond, &reason, log)) ? 0 : ENOENT);
     return reason;
 }
 
