@@ -3501,10 +3501,21 @@ static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, void* log)
 static int RemediateEnsurePortmapServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    StopAndDisableDaemon(g_rpcbind, log);
-    StopAndDisableDaemon(g_rpcbindService, log);
-    StopAndDisableDaemon(g_rpcbindSocket, log);
-    return (0 == strncmp(g_pass, AuditEnsurePortmapServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
+    if (IsDaemonActive(g_rpcbindSocket, log))
+    {
+        StopAndDisableDaemon(g_rpcbindSocket, log);
+    }
+    if (IsDaemonActive(g_rpcbindService, log))
+    {
+        StopAndDisableDaemon(g_rpcbindService, log);
+    }
+    if (IsDaemonActive(g_rpcbind, log))
+    {
+        StopAndDisableDaemon(g_rpcbind, log);
+    }
+    return (CheckDaemonNotActive(g_rpcbind, NULL, log) && 
+        CheckDaemonNotActive(g_rpcbindService, NULL, log) &&
+        CheckDaemonNotActive(g_rpcbindSocket, NULL, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value, void* log)
