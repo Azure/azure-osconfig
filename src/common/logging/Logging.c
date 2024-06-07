@@ -36,7 +36,7 @@ bool IsFullLoggingEnabled()
 
 static int RestrictAccessToRootOnly(const char* fileName)
 {
-    return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP | S_IROTH);
+    return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
 }
 
 OSCONFIG_LOG_HANDLE OpenLog(const char* logFileName, const char* bakLogFileName)
