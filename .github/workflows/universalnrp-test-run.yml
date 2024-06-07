@@ -71,11 +71,6 @@ jobs:
         with:
           name: ${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-binary
 
-      - name: Create osconfig.json
-        run: |
-          sudo mkdir -p /etc/osconfig
-          sudo cp -r ./src/adapters/pnp/daemon/osconfig.json /etc/osconfig/osconfig.json
-
       - name: Install OSConfig
         if: ${{ inputs.install-osconfig }}
         working-directory: ${{ steps.download.outputs.download-path }}
