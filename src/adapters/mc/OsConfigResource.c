@@ -72,6 +72,10 @@ void __attribute__((destructor)) Destroy()
     OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library unloaded by host process %d", getpid());
 
     CloseLog(&g_log);
+
+    // Allow others read-only access to the NRP logs
+    SetFileAccess(LOG_FILE, 0, 0, 744, NULL);
+    SetFileAccess(OSCONFIG_LOG_HANDLE, 0, 0, 744, NULL);
 }
 
 static void LogCurrentDistro(MI_Context* context)
