@@ -29,17 +29,40 @@ jobs:
           ]
         policy-package:
           [
-            { path: LinuxSshServerSecurityBaselinePolicy.zip, skip-remediation: false, resource-count: 20 },
-            { path: LinuxSecurityBaselinePolicy.zip, skip-remediation: true, resource-count: 168 },
+            { path: LinuxSshServerSecurityBaselinePolicy.zip, short-name: SSH, resource-count: 20 },
+            { path: LinuxSecurityBaselinePolicy.zip, short-name: ASB, resource-count: 168 },
           ]
         arch: [amd64]
         install-osconfig: [false]
+        skip-remediation: [true, false]
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.arch }}
       package-type: ${{ matrix.target.package-type }}
       policy-package: ${{ matrix.policy-package.path }}
+      policy-package-short-name: ${{ matrix.policy-package.short-name }}
       resource-count: ${{ matrix.policy-package.resource-count }}
-      skip-remediation: ${{ matrix.policy-package.skip-remediation }}
+      skip-remediation: ${{ matrix.skip-remediation }}
       install-osconfig: ${{ matrix.install-osconfig }}
       tag: ${{ matrix.target.tag }}
+
+  report:
+    name: Report
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    if: always()
+    steps:
+      - name: Download Test Report Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: universal-nrp-test
+          pattern: '*-report'
+          merge-multiple: true  
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: 'universal-nrp-test/*testResults.xml'

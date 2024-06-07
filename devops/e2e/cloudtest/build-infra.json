@@ -15,6 +15,12 @@
             "parameters": {
                 "command": "apt list --installed"
             }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo apt update && sudo apt upgrade -y"
+            }
         }
     ]
 }

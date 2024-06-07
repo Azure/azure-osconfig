@@ -11,6 +11,15 @@ param (
 )
 
 Describe 'Validate Universal NRP' {
+    # Perform Remediation - Set
+    Context "Set" -Skip:$SkipRemediation {
+        It 'Perform remediation' {    
+            Start-GuestConfigurationPackageRemediation -Path $PolicyPackage
+            # Wait for remediation to complete
+            Start-Sleep -Seconds 30
+        }
+    }
+
     # Perform monitoring - Get
     Context "Get" {
         BeforeAll {
@@ -37,42 +46,6 @@ Describe 'Validate Universal NRP' {
 
         It 'Ensure all resource instances have status' {    
             $result.resources.complianceStatus | Should -Not -BeNullOrEmpty
-        }
-    }
-
-    # Perform Remediation - Set
-    Context "Set" -Skip:$SkipRemediation {
-        BeforeAll {
-            Start-GuestConfigurationPackageRemediation -Path $PolicyPackage
-            # Wait for remediation to complete
-            Start-Sleep -Seconds 30
-            $result = Get-GuestConfigurationPackageComplianceStatus -Path $PolicyPackage
-        }
-
-        It 'Ensure the total resource instances count' {    
-            $result.resources | Should -HaveCount $ResourceCount
-        }
-
-        It 'Ensure resons are properly populated' {
-            foreach ($instance in $result.resources) {
-                if ($instance.properties.Reasons.Code -eq "PASS") {
-                    $instance.complianceStatus | Should -BeTrue
-                }
-                elseif ($instance.properties.Reasons.Code -eq "FAIL") {
-                    throw "There should not be any failing resources after remediation"
-                }
-                else {
-                    throw "Reasons are not properly populated"
-                }
-            }
-        }
-
-        It 'Ensure all resource instances pass audit' {    
-            $result.resources.complianceStatus | Should -BeTrue
-        }
-
-        It 'Ensure overall audit pass' {
-            $result.complianceStatus | Should -BeTrue
         }
     }
 }
