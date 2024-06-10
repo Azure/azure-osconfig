@@ -120,6 +120,7 @@ jobs:
           EOL
 
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
+          Start-Sleep -Seconds 10
           ls -l
 
       - name: Stage OSConfig Logs
