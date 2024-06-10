@@ -119,8 +119,8 @@ jobs:
           Invoke-Pester -Configuration \$pesterConfig
           EOL
 
+          sudo chmod a+r '${{ steps.download.outputs.download-path }}'
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
-          sleep 10s
           ls -l
 
       - name: Stage OSConfig Logs
