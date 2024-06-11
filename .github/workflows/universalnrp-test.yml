@@ -45,3 +45,24 @@ jobs:
       skip-remediation: ${{ matrix.skip-remediation }}
       install-osconfig: ${{ matrix.install-osconfig }}
       tag: ${{ matrix.target.tag }}
+
+report:
+    name: Report
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    if: always()
+    steps:
+      - name: Download Test Report Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: universal-nrp-test
+          pattern: '*-report'
+          merge-multiple: true  
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: 'universal-nrp-test/*testResults.xml'
