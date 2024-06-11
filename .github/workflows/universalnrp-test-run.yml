@@ -105,7 +105,7 @@ jobs:
                   Verbosity = 'Detailed'
               }
               TestResult = @{
-                  Enabled      = \$true
+                  Enabled      = \$false
                   OutputFormat = 'JUnitXml'
                   OutputPath   = '${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-testResults.xml'
               }
