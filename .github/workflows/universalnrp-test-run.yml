@@ -120,8 +120,6 @@ jobs:
           EOL
 
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
-          ls -l
-          sudo chmod a+r *testResults.xml
 
       - name: Stage OSConfig Logs
         if: success() || failure()
