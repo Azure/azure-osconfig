@@ -121,7 +121,8 @@ jobs:
 
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
           ls -l
-          [[ $(lsb_release -is) == "Ubuntu" ]] && sudo chmod 777 ${{ steps.download.outputs.download-path }}/*testResults.xml
+          [[ $(lsb_release -is) == "Ubuntu" ]] && sudo chmod 644 *testResults.xml
+          stat *testResults.xml
 
       - name: Stage OSConfig Logs
         if: success() || failure()
