@@ -46,7 +46,7 @@ jobs:
       install-osconfig: ${{ matrix.install-osconfig }}
       tag: ${{ matrix.target.tag }}
 
-report:
+  report:
     name: Report
     needs: test
     runs-on: ubuntu-latest
