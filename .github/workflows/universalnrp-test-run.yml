@@ -121,7 +121,6 @@ jobs:
 
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
           ls -l
-          ls -l ${{ steps.download.outputs.download-path }}
 
       - name: Stage OSConfig Logs
         if: success() || failure()
