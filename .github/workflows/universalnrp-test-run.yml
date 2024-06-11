@@ -105,7 +105,7 @@ jobs:
                   Verbosity = 'Detailed'
               }
               TestResult = @{
-                  Enabled      = \$false
+                  Enabled      = \$true
                   OutputFormat = 'JUnitXml'
                   OutputPath   = '${{ inputs.target }}-${{ inputs.policy-package-short-name }}-${{ inputs.skip-remediation == true && 'Get' || 'Set' }}${{ inputs.install-osconfig == true && '-package' || '' }}-testResults.xml'
               }
@@ -119,7 +119,9 @@ jobs:
           Invoke-Pester -Configuration \$pesterConfig
           EOL
 
+          sudo chmod a+r *testResults.xml
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
+          ls -l
 
       - name: Stage OSConfig Logs
         if: success() || failure()
