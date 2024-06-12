@@ -46,6 +46,7 @@ jobs:
       install-osconfig: ${{ matrix.install-osconfig }}
       tag: ${{ matrix.target.tag }}
 
+  # See for more details: https://github.com/marketplace/actions/publish-test-results
   report:
     name: Report
     needs: test

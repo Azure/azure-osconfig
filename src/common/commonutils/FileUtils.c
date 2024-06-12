@@ -736,7 +736,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
     
     if (0 != GetFileAccess(target, &ownerId, &groupId, &mode, log))
     {
-        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: cannot read owner and access mode for original target file '%s', using defaults", target);
+        OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: cannot read owner and access mode for original target file '%s', using defaults", target);
 
         ownerId = 0;
         groupId = 0;

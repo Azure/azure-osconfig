@@ -1075,7 +1075,7 @@ static int SaveRemediationToSshdConfig(void* log)
                 memset(newConfiguration, 0, newConfigurationSize);
                 snprintf(newConfiguration, newConfigurationSize, configurationTemplate, remediation, originalConfiguration);
 
-                if (true == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log))
+                if (true == SecureSaveToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log))
                 {
                     OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' is now updated to include the following remediation values:\n---\n%s---", g_sshServerConfiguration, remediation);
                     status = 0;
