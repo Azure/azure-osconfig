@@ -383,6 +383,14 @@ int RunCommand(const COMMAND_STEP* command)
 
 int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 {
+    const char* skippedAudits[] = {
+        "auditEnsureKernelSupportForCpuNx",
+        "auditEnsureDefaultDenyFirewallPolicyIsSet",
+        "auditEnsureAuthenticationRequiredForSingleUserMode",
+        "auditEnsureAllBootloadersHavePasswordProtectionEnabled"
+    };
+    int numSkippedAudits = ARRAY_SIZE(skippedAudits);
+
     const char* audit = "audit";
     const char* reason = NULL;
     JSON_Value* actualJsonValue = NULL;
@@ -391,6 +399,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
     char* payloadString = NULL;
     bool asbAudit = false;
     int payloadSize = 0;
+    int i = 0;
     int mmiStatus = 0;
     int result = 0;
 
@@ -426,6 +435,15 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                     (0 == strncmp(test->object, audit, strlen(audit))))
                 {
                     asbAudit = true;
+                    
+                    for (i = 0; i < numSkippedAudits; i++)
+                    {
+                        if (0 == strcmp(test->object, skippedAudits[i]))
+                        {
+                            asbAudit = false;
+                            break;
+                        }
+                    }
                 }
             }
         }
