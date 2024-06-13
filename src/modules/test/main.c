@@ -422,33 +422,11 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                     LOG_ERROR("Failed to parse JSON payload: %s", payloadString);
                     result = EINVAL;
                 }
-                else if ((0 == strcmp(test->component, SECURITY_BASELINE)) && (0 == strncmp(test->object, audit, strlen(audit))))
+                else if ((0 == strcmp(test->component, SECURITY_BASELINE)) && 
+                    (0 == strncmp(test->object, audit, strlen(audit))))
                 {
                     asbAudit = true;
                 }
-            }
-        }
-
-        ///////////////////////////
-        if (test->payload != NULL)
-        {
-            if (actualJsonValue != NULL)
-            {
-                if (NULL == (expectedJsonValue = json_parse_string(test->payload)))
-                {
-                    LOG_ERROR("Failed to parse expected JSON payload: %s", test->payload);
-                    result = EINVAL;
-                }
-                else if (!json_value_equals(expectedJsonValue, actualJsonValue))
-                {
-                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", json_serialize_to_string(expectedJsonValue), json_serialize_to_string(actualJsonValue));
-                    result = -1;
-                }
-            }
-            else
-            {
-                LOG_ERROR("Assertion failed, expected: '%s', actual: (null)", test->payload);
-                result = -1;
             }
         }
 
@@ -474,7 +452,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                     LOG_ERROR("Failed to parse expected JSON payload: %s", test->payload);
                     result = -1;
                 }
-                else if (PARSON_FALSE == json_value_equals(expectedJsonValue, actualJsonValue))
+                else if (0 == json_value_equals(expectedJsonValue, actualJsonValue))
                 {
                     LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", 
                         json_serialize_to_string(expectedJsonValue), json_serialize_to_string(actualJsonValue));
