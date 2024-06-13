@@ -462,6 +462,10 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                     LOG_ERROR("Assertion failed, expected: '%s...', actual: '%s'", SECURITY_AUDIT_PASS, reason);
                     result = -1;
                 }
+                else
+                {
+                    LOG_INFO("Assertion passed ('%s')", reason);
+                }
             }
             else if (actualJsonValue != NULL)
             {
