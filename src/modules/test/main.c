@@ -434,7 +434,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                         LOG_ERROR("Assertion failed, json_value_get_string('%s') failed", json_serialize_to_string(actualJsonValue));
                         result = -1;
                     }
-                    else if (0 != strncmp(payloadString, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))
+                    else if (0 != strncmp(reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))
                     {
                         LOG_ERROR("Assertion failed, expected: '%s...', actual: '%s'", SECURITY_AUDIT_PASS, reason);
                         result = -1;
@@ -458,6 +458,10 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
             LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
             result = -1;
         }
+
+        
+        json_value_free(actualJsonValue);
+        FREE_MEMORY(payloadString);
     }
     else if (test->type == DESIRED)
     {
