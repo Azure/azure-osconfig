@@ -436,14 +436,14 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                     }
                     else
                     {
-                        if (NULL == (serializedPayload = json_serialize_to_string(payloadString)))
+                        if (NULL == (serializedPayload = json_serialize_to_string(actualJsonValue)))
                         {
                             LOG_ERROR("Assertion failed, json_serialize_to_string('%s') failed", payloadString);
                             result = -1;
                         }
                         else if (0 != strncmp(payloadString, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))
                         {
-                            LOG_ERROR("Assertion failed, expected: '%s...', actual: '%s'", SECURITY_AUDIT_PASS, payloadString);
+                            LOG_ERROR("Assertion failed, expected: '%s...', actual: '%s'", SECURITY_AUDIT_PASS, serializedPayload);
                             result = -1;
                         }
                     }
