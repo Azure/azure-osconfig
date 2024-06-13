@@ -460,7 +460,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                 else if (0 != strncmp(reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))
                 {
                     LOG_ERROR("Assertion failed, expected: '%s...', actual: '%s'", SECURITY_AUDIT_PASS, reason);
-                    result = -1;
+                    result = EFAULT;
                 }
                 else
                 {
@@ -472,26 +472,26 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                 if (NULL == (expectedJsonValue = json_parse_string(test->payload)))
                 {
                     LOG_ERROR("Failed to parse expected JSON payload: %s", test->payload);
-                    result = -1;
+                    result = EFAULT;
                 }
                 else if (0 == json_value_equals(expectedJsonValue, actualJsonValue))
                 {
                     LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", 
                         json_serialize_to_string(expectedJsonValue), json_serialize_to_string(actualJsonValue));
-                    result = -1;
+                    result = EFAULT;
                 }
             }
             else
             {
                 LOG_ERROR("Assertion failed, expected: '%s', actual: (null)", test->payload);
-                result = -1;
+                result = EFAULT;
             }
         }
 
         if (test->status != mmiStatus)
         {
             LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
-            result = -1;
+            result = EFAULT;
         }
         
         json_value_free(expectedJsonValue);
@@ -505,7 +505,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         if (test->status != mmiStatus)
         {
             LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
-            result = -1;
+            result = EFAULT;
         }
     }
     else
