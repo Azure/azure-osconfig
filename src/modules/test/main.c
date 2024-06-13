@@ -25,6 +25,7 @@
 #define RECIPE_JSON "Json"
 #define RECIPE_STATUS "ExpectedResult"
 #define RECIPE_WAIT_SECONDS "WaitSeconds"
+#define SECURITY_BASELINE "SecurityBaseline"
 
 #define RECIPE_RUN_COMMAND "RunCommand"
 
@@ -429,6 +430,14 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                 {
                     LOG_ERROR("Failed to parse expected JSON payload: %s", test->payload);
                     result = EINVAL;
+                }
+                if (0 == strcmp(test->component, SECURITY_BASELINE))
+                {
+                    if (0 != strncmp(payloadString, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))
+                    {
+                        LOG_ERROR("Assertion failed, expected: '%s...', actual: '%s'", SECURITY_AUDIT_PASS, payloadString);
+                        result = -1;
+                    }
                 }
                 else if (!json_value_equals(expectedJsonValue, actualJsonValue))
                 {
