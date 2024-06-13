@@ -464,7 +464,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                 }
                 else
                 {
-                    LOG_INFO("Assertion passed ('%s')", reason);
+                    LOG_INFO("Assertion passed ('%s'): %s", SECURITY_AUDIT_PASS, reason + strlen(SECURITY_AUDIT_PASS));
                 }
             }
             else if (actualJsonValue != NULL)
