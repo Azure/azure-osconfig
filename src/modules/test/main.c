@@ -388,7 +388,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
     JSON_Value* expectedJsonValue = NULL;
     MMI_JSON_STRING payload = NULL;
     char* payloadString = NULL;
-    char* reason = NULL;
+    const char* reason = NULL;
     int payloadSize = 0;
     int mmiStatus = 0;
 
