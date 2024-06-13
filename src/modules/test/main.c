@@ -422,7 +422,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
             }
         }
 
-        if (test->payload != NULL)
+        if (test->payload || (0 == strcmp(test->component, SECURITY_BASELINE)))
         {
             if (actualJsonValue != NULL)
             {
