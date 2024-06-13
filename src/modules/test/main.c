@@ -388,6 +388,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
     JSON_Value* expectedJsonValue = NULL;
     MMI_JSON_STRING payload = NULL;
     char* payloadString = NULL;
+    char* serializedPayload = NULL;
     int payloadSize = 0;
     int mmiStatus = 0;
 
@@ -426,17 +427,25 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         {
             if (actualJsonValue != NULL)
             {
-                if (NULL == (expectedJsonValue = json_parse_string(test->payload)))
-                {
-                    LOG_ERROR("Failed to parse expected JSON payload: %s", test->payload);
-                    result = EINVAL;
-                }
                 if (0 == strcmp(test->component, SECURITY_BASELINE))
                 {
-                    if (0 != strncmp(payloadString, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))
+                    if (NULL == (expectedJsonValue = json_parse_string(test->payload)))
                     {
-                        LOG_ERROR("Assertion failed, expected: '%s...', actual: '%s'", SECURITY_AUDIT_PASS, payloadString);
+                        LOG_ERROR("Failed to parse expected JSON payload: %s", test->payload);
                         result = -1;
+                    }
+                    else
+                    {
+                        if (NULL == (serializedPayload = json_serialize_to_string(payloadString)))
+                        {
+                            LOG_ERROR("Assertion failed, json_serialize_to_string('%s') failed", payloadString);
+                            result = -1;
+                        }
+                        else if (0 != strncmp(payloadString, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))
+                        {
+                            LOG_ERROR("Assertion failed, expected: '%s...', actual: '%s'", SECURITY_AUDIT_PASS, payloadString);
+                            result = -1;
+                        }
                     }
                 }
                 else if (!json_value_equals(expectedJsonValue, actualJsonValue))
