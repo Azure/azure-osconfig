@@ -25,6 +25,7 @@
 #define RECIPE_JSON "Json"
 #define RECIPE_STATUS "ExpectedResult"
 #define RECIPE_WAIT_SECONDS "WaitSeconds"
+#define SECURITY_BASELINE "SecurityBaseline"
 
 #define RECIPE_RUN_COMMAND "RunCommand"
 
@@ -382,13 +383,25 @@ int RunCommand(const COMMAND_STEP* command)
 
 int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 {
-    int result = 0;
+    const char* skippedAudits[] = {
+        "auditEnsureKernelSupportForCpuNx",
+        "auditEnsureDefaultDenyFirewallPolicyIsSet",
+        "auditEnsureAuthenticationRequiredForSingleUserMode",
+        "auditEnsureAllBootloadersHavePasswordProtectionEnabled"
+    };
+    int numSkippedAudits = ARRAY_SIZE(skippedAudits);
+
+    const char* audit = "audit";
+    const char* reason = NULL;
     JSON_Value* actualJsonValue = NULL;
     JSON_Value* expectedJsonValue = NULL;
     MMI_JSON_STRING payload = NULL;
     char* payloadString = NULL;
+    bool asbAudit = false;
     int payloadSize = 0;
+    int i = 0;
     int mmiStatus = 0;
+    int result = 0;
 
     if (test == NULL)
     {
@@ -418,36 +431,72 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                     LOG_ERROR("Failed to parse JSON payload: %s", payloadString);
                     result = EINVAL;
                 }
+                else if ((0 == strcmp(test->component, SECURITY_BASELINE)) && 
+                    (0 == strncmp(test->object, audit, strlen(audit))))
+                {
+                    asbAudit = true;
+                    
+                    for (i = 0; i < numSkippedAudits; i++)
+                    {
+                        if (0 == strcmp(test->object, skippedAudits[i]))
+                        {
+                            asbAudit = false;
+                            break;
+                        }
+                    }
+                }
             }
         }
 
-        if (test->payload != NULL)
+        if (test->payload || asbAudit)
         {
-            if (actualJsonValue != NULL)
+            if (asbAudit)
+            {
+                if (NULL == (reason = json_value_get_string(actualJsonValue)))
+                {
+                    LOG_ERROR("Assertion failed, json_value_get_string('%s') failed", json_serialize_to_string(actualJsonValue));
+                    result = -1;
+                }
+                else if (0 != strncmp(reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))
+                {
+                    LOG_ERROR("Assertion failed, expected: '%s...', actual: '%s'", SECURITY_AUDIT_PASS, reason);
+                    result = EFAULT;
+                }
+                else
+                {
+                    LOG_INFO("Assertion passed with reason: '%s'", reason + strlen(SECURITY_AUDIT_PASS));
+                }
+            }
+            else if (actualJsonValue != NULL)
             {
                 if (NULL == (expectedJsonValue = json_parse_string(test->payload)))
                 {
                     LOG_ERROR("Failed to parse expected JSON payload: %s", test->payload);
-                    result = EINVAL;
+                    result = EFAULT;
                 }
-                else if (!json_value_equals(expectedJsonValue, actualJsonValue))
+                else if (0 == json_value_equals(expectedJsonValue, actualJsonValue))
                 {
-                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", json_serialize_to_string(expectedJsonValue), json_serialize_to_string(actualJsonValue));
-                    result = -1;
+                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", 
+                        json_serialize_to_string(expectedJsonValue), json_serialize_to_string(actualJsonValue));
+                    result = EFAULT;
                 }
             }
             else
             {
                 LOG_ERROR("Assertion failed, expected: '%s', actual: (null)", test->payload);
-                result = -1;
+                result = EFAULT;
             }
         }
 
         if (test->status != mmiStatus)
         {
             LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
-            result = -1;
+            result = EFAULT;
         }
+        
+        json_value_free(expectedJsonValue);
+        json_value_free(actualJsonValue);
+        FREE_MEMORY(payloadString);
     }
     else if (test->type == DESIRED)
     {
@@ -456,7 +505,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         if (test->status != mmiStatus)
         {
             LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
-            result = -1;
+            result = EFAULT;
         }
     }
     else

@@ -18,6 +18,7 @@
 
 #include <CommonUtils.h>
 #include <Logging.h>
+#include <Asb.h>
 #include <Mmi.h>
 #include <version.h>
 

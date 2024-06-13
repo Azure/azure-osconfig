@@ -8,6 +8,7 @@ add_library(testlib Module.c)
 target_link_libraries(testlib
     ${CMAKE_DL_LIBS}
     commonutils
+    asb
     logging
     pthread
     parsonlib)
