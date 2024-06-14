@@ -130,6 +130,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.Temp%u";
+    char* fileDirectory = NULL;
     char* fileNameCopy = NULL;
     char* tempFileName = NULL;
     char* fileContents = NULL;
