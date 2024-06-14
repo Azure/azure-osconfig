@@ -524,19 +524,19 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         {
             if ((0 == strcmp(test->component, SECURITY_BASELINE)) && (0 == strncmp(test->object, remediate, strlen(remediate))))
             {
-                asbRemediate = true;
+                asbRemediation = true;
 
                 for (i = 0; i < numSkippedRemediations; i++)
                 {
                     if (0 == strcmp(test->object, skippedRemediations[i]))
                     {
-                        asbRemediate = false;
+                        asbRemediation = false;
                         break;
                     }
                 }
             }
 
-            if (false == asbRemediate)
+            if (false == asbRemediation)
             {
                 LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
                 result = EFAULT;
