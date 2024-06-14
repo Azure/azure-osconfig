@@ -53,13 +53,19 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     FILE* file = NULL;
+    char* fileNameCopy = NULL;
     char* directory = NULL;
     int i = 0;
     bool result = true;
 
     if (fileName && mode && payload && (0 < payloadSizeBytes))
     {
-        if (NULL != (directory = dirname((char*)fileName)))
+        if (NULL == (fileNameCopy = DuplicateString(fileName)))
+        {
+            OsConfigLogError(log, "SaveToFile: out of memory");
+            result = false;
+        }
+        else if (NULL != (directory = dirname((char*)fileNameCopy)))
         {
             if (true == DirectoryExists(directory))
             {
@@ -75,6 +81,8 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
                     result = false;
                 }
             }
+
+            FREE_MEMORY(fileNameCopy);
         }
 
         if (result)
