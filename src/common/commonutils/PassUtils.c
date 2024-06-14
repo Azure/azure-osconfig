@@ -605,7 +605,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     const char* etcPamdCommonPasswordLineTemplate = "password requisite pam_pwquality.so retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
     const char* etcSecurityPwQualityConfLineTemplate = "%s = %d\n";
     const char* etcPamdCommonPasswordMarker = "pam_pwquality.so";
-    PASSWORD_CREATION_REQUIREMENTS* entries[] = {{"minclass", 0 }, {"dcredit", 0}, {"ucredit", 0}, {"ocredit", 0}, {"lcredit", 0}};
+    PASSWORD_CREATION_REQUIREMENTS entries[] = {{"minclass", 0 }, {"dcredit", 0}, {"ucredit", 0}, {"ocredit", 0}, {"lcredit", 0}};
     int numEntries = ARRAY_SIZE(entries);
     char* line = NULL;
     int i = 0, status = 0, _status = 0;
