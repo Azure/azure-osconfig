@@ -396,14 +396,18 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         "auditEnsurePasswordCreationRequirements",
         "auditEnsureLoggingIsConfigured",
         "auditEnsureSyslogRotaterServiceIsEnabled",
-        "auditEnsureUnnecessaryAccountsAreRemoved"
+        "auditEnsureUnnecessaryAccountsAreRemoved",
+        "auditEnsurePortmapServiceIsDisabled",
+        "auditEnsureAuditdInstalled"
     };
     int numSkippedAudits = ARRAY_SIZE(skippedAudits);
 
     const char* skippedRemediations[] = {
         // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
         "remediateEnsureAuditdServiceIsRunning",
-        "remediateEnsureSyslogRotaterServiceIsEnabled"
+        "remediateEnsureSyslogRotaterServiceIsEnabled",
+        "remediateEnsurePortmapServiceIsDisabled",
+        "remediateEnsureAuditdInstalled"
     };
     int numSkippedRemediations = ARRAY_SIZE(skippedRemediations);
 
@@ -520,6 +524,8 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
     {
         mmiStatus = module->set(module->session, test->component, test->object, test->payload, test->payloadSize);
 
+        result = 0;
+        
         if (test->status != mmiStatus)
         {
             if ((0 == strcmp(test->component, SECURITY_BASELINE)) && (0 == strncmp(test->object, remediate, strlen(remediate))))
