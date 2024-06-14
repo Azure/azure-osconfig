@@ -53,14 +53,7 @@ jobs:
 
           for recipe in $recipes; do
             name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
-
-            if $(echo $recipe | grep -q -E "${{ inputs.excluded-tests }}"); then
-              echo "skipping $name (excluded)"
-              continue
-            fi
-
             echo -n "testing $name ... "
-
             sudo ./moduletest $recipe --bin ../bin > ${{ inputs.target }}-${{ inputs.arch }}-$name-testResult.log 2>&1
             ls -l
           done
