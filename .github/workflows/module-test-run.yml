@@ -53,9 +53,19 @@ jobs:
 
           for recipe in $recipes; do
             name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
+
             echo -n "testing $name ... "
-            sudo ./moduletest $recipe --bin ../bin > ${{ inputs.target }}-${{ inputs.arch }}-$name-testResult.log 2>&1
+
+            if output=$(sudo ./moduletest $recipe --bin ../bin | tee stdout.log)); then
+              echo passed
+            else
+              echo failed
+              result=1
+              echo "::warning file=$name.log::Error(s) in module-test for '$name'"
+            fi
             ls -l
+            echo "$output"
+            echo "$output" > ../../$name.log
           done
 
           exit $result
@@ -64,4 +74,4 @@ jobs:
         if: success() || failure()
         with:
           name: ${{ inputs.target }}-${{ inputs.arch }}-report
-          path: '${{ steps.download.outputs.download-path }}/*testResult.log'
+          path: '"$output" > ../../$name.log'
