@@ -53,7 +53,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     FILE* file = NULL;
-    const char* directory = NULL;
+    char* directory = NULL;
     int i = 0;
     bool result = true;
 
@@ -87,7 +87,7 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
             result = false;
             OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
 
-            if ((NULL != (directory = dirname(fileName)) && (false == DirectoryExists(directory))))
+            if ((NULL != (directory = dirname((char*)fileName)) && (false == DirectoryExists(directory))))
             {
                 OsConfigLogError(log, "SaveToFile: target directory '%s' does not exist", directory);
             }
