@@ -3302,7 +3302,7 @@ static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(char* value, void* l
 static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == InstallPackage(g_logrotate, log)) && (0 == CheckFileExists(g_etcCronDailyLogRotate)) && 
+    return ((0 == InstallPackage(g_logrotate, log)) && (0 == CheckFileExists(g_etcCronDailyLogRotate, NULL, log)) && 
         (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, log)) && EnableAndStartDaemon(g_logrotateTimer, log)) ? 0 : ENOENT;
 }
 
