@@ -79,5 +79,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: ${{ inputs.target }}-logs
-          path: '*.log'
+          name: ${{ inputs.target }}-${{ inputs.arch }}-report
+          path: '${{ steps.download.outputs.download-path }}/*testResult.log'
