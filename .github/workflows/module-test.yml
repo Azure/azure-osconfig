@@ -1,6 +1,10 @@
 name: Module Test
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
 
 jobs:
   test:
@@ -11,17 +15,17 @@ jobs:
       matrix:
         target:
           [
-            { os: centos, version: 8, package-type: RPM, excluded-tests: "Pmc|Sample" },
-            { os: debian, version: 10, package-type: DEB, excluded-tests: "Sample" },
-            { os: debian, version: 11, package-type: DEB, excluded-tests: "Sample" },
-            { os: mariner, version: 2, package-type: RPM, excluded-tests: "Pmc|Sample" },
-            { os: oraclelinux, version: 8, package-type: RPM, excluded-tests: "Pmc|Sample" },
-            { os: rhel, version: 8, package-type: RPM, excluded-tests: "Pmc|Sample" },
-            { os: rhel, version: 9, package-type: RPM, excluded-tests: "Pmc|Sample" },
-            { os: rockylinux, version: 9, package-type: RPM, excluded-tests: "Pmc|Sample" },
-            { os: sles, version: 15, package-type: RPM, excluded-tests: "Pmc|Sample" },
-            { os: ubuntu, version: 20.04, package-type: DEB, excluded-tests: "Sample" },
-            { os: ubuntu, version: 22.04, package-type: DEB, excluded-tests: "Sample" },
+            { os: centos, version: 8, package-type: RPM },
+            { os: debian, version: 10, package-type: DEB },
+            { os: debian, version: 11, package-type: DEB },
+            { os: mariner, version: 2, package-type: RPM },
+            { os: oraclelinux, version: 8, package-type: RPM },
+            { os: rhel, version: 8, package-type: RPM },
+            { os: rhel, version: 9, package-type: RPM },
+            { os: rockylinux, version: 9, package-type: RPM },
+            { os: sles, version: 15, package-type: RPM },
+            { os: ubuntu, version: 20.04, package-type: DEB },
+            { os: ubuntu, version: 22.04, package-type: DEB },
           ]
         arch: [amd64]
     with:

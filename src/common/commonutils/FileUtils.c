@@ -104,18 +104,27 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
     char* fileContents = NULL;
+    bool result = false;
 
     // If the file exists and there is no EOL at the end of file, add one before the append
     if ((NULL != payload) && (payloadSizeBytes > 0) && FileExists(fileName) && 
         (NULL != (fileContents = LoadStringFromFile(fileName, false, log))) && 
         (EOL != fileContents[strlen(fileContents) - 1]))
     {
-        SaveToFile(fileName, "a", "\n", 1, log);
+        if (false == SaveToFile(fileName, "a", "\n", 1, log))
+        {
+            OsConfigLogError(log, "AppendPayloadToFile: failed to append EOL to '%s'", fileName);
+        }
     }
 
     FREE_MEMORY(fileContents);
 
-    return SaveToFile(fileName, "a", payload, payloadSizeBytes, log);
+    if (false == (result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log)))
+    {
+        OsConfigLogError(log, "AppendPayloadToFile: failed to append '%s' to '%s'", payload, fileName);
+    }
+
+    return result;
 }
 
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
@@ -142,6 +151,13 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     if (NULL == (fileDirectory = dirname(fileNameCopy)))
     {
         OsConfigLogInfo(log, "InternalSecureSaveToFile: no directory name for '%s' (%d)", fileNameCopy, errno);
+    }
+    else if (false == DirectoryExists(fileDirectory))
+    {
+        if (0 != mkdir(fileDirectory, 644))
+        {
+            OsConfigLogError(log, "InternalSecureSaveToFile: mkdir(%s) failed with %d", fileDirectory, errno);
+        }
     }
  
     if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
