@@ -61,7 +61,8 @@ jobs:
 
             echo -n "testing $name ... "
 
-            if output=$(sudo ./moduletest $recipe --bin ../bin); then
+            #if output=$(sudo ./moduletest $recipe --bin ../bin); then
+            if output=$(sudo ./moduletest $recipe --bin ../bin) > ${{ inputs.target }}-${{ inputs.arch }}-testResult.log 2>&1; then
               echo passed
             else
               echo failed
