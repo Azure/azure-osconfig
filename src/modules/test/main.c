@@ -542,13 +542,13 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 
             if (false == asbRemediation)
             {
-                LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
-                result = EFAULT;
+                LOG_INFO("Assertion passed, actual result '%d', component '%s' and object '%s'", mmiStatus, test->component, test->object);
+                result = 0;
             }
             else
             {
-                LOG_INFO("Assertion passed, actual result '%d', component '%s' and object '%s'", mmiStatus, test->component, test->object);
-                result = 0;
+                LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
+                result = EFAULT;
             }
         }
     }
