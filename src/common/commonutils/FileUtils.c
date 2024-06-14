@@ -53,7 +53,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     FILE* file = NULL;
-    char* directory = NULL;
+    const char* directory = NULL;
     int i = 0;
     bool result = true;
 
