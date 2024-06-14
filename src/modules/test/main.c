@@ -523,9 +523,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
     else if (test->type == DESIRED)
     {
         mmiStatus = module->set(module->session, test->component, test->object, test->payload, test->payloadSize);
-
-        result = 0;
-        
+                
         if (test->status != mmiStatus)
         {
             if ((0 == strcmp(test->component, SECURITY_BASELINE)) && (0 == strncmp(test->object, remediate, strlen(remediate))))
@@ -546,6 +544,11 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
             {
                 LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
                 result = EFAULT;
+            }
+            else
+            {
+                LOG_INFO("Assertion passed, actual result '%d', component '%s' and object '%s'", mmiStatus, test->component, test->object);
+                result = 0;
             }
         }
     }
