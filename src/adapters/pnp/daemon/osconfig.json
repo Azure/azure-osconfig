@@ -9,10 +9,6 @@
   "IotHubProtocol": 2,
   "Reported": [
     {
-      "ComponentName": "Adhs",
-      "ObjectName": "optIn"
-    },
-    {
       "ComponentName": "CommandRunner",
       "ObjectName": "commandStatus"
     },
@@ -47,22 +43,6 @@
     {
       "ComponentName": "Configuration",
       "ObjectName": "refreshInterval"
-    },
-    {
-      "ComponentName": "DeliveryOptimization",
-      "ObjectName": "percentageDownloadThrottle"
-    },
-    {
-      "ComponentName": "DeliveryOptimization",
-      "ObjectName": "cacheHostSource"
-    },
-    {
-      "ComponentName": "DeliveryOptimization",
-      "ObjectName": "cacheHost"
-    },
-    {
-      "ComponentName": "DeliveryOptimization",
-      "ObjectName": "cacheHostFallback"
     },
     {
       "ComponentName": "DeviceInfo",
@@ -127,42 +107,6 @@
     {
       "ComponentName": "DeviceInfo",
       "ObjectName": "osConfigVersion"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "configurationStatus"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "configurationStatusDetail"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "defaultPolicies"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "state"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "fingerprint"
-    },
-    {
-      "ComponentName": "HostName",
-      "ObjectName": "name"
-    },
-    {
-      "ComponentName": "HostName",
-      "ObjectName": "hosts"
-    },
-    {
-      "ComponentName": "Networking",
-      "ObjectName": "networkConfiguration"
-    },
-    {
-      "ComponentName": "PackageManager",
-      "ObjectName": "state"
     },
     {
       "ComponentName": "SecurityBaseline",
@@ -835,30 +779,6 @@
     {
       "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
-    },
-    {
-      "ComponentName": "Tpm",
-      "ObjectName": "tpmStatus"
-    },
-    {
-      "ComponentName": "Tpm",
-      "ObjectName": "tpmVersion"
-    },
-    {
-      "ComponentName": "Tpm",
-      "ObjectName": "tpmManufacturer"
-    },
-    {
-      "ComponentName": "Ztsi",
-      "ObjectName": "enabled"
-    },
-    {
-      "ComponentName": "Ztsi",
-      "ObjectName": "maxScheduledAttestationsPerDay"
-    },
-    {
-      "ComponentName": "Ztsi",
-      "ObjectName": "maxManualAttestationsPerDay"
     }
   ],
   "ReportingIntervalSeconds": 300
