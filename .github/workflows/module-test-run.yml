@@ -49,23 +49,23 @@ jobs:
           sudo chmod +x ./moduletest
 
           result=0
-          recipes=$(ls -d ../../src/modules/test/recipes/*.json)
+          recipes=$(ls -d ../../src/tests/e2e-test-recipes/*.json)
 
           for recipe in $recipes; do
             name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
 
             echo -n "testing $name ... "
 
-            if output=$(sudo ./moduletest $recipe --bin ../bin | tee stdout.log); then
+            if output=$(sudo ./moduletest $recipe --bin ../bin); then
               echo passed
             else
               echo failed
               result=1
               echo "::warning file=$name.log::Error(s) in module-test for '$name'"
             fi
-            ls -l
+
             echo "$output"
-            echo "$output" > $name.log
+            echo "$output" > ../../$name.log
           done
 
           exit $result
@@ -73,5 +73,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: ${{ inputs.target }}-${{ inputs.arch }}-report
+          name: ${{ inputs.target }}-logs
           path: '*.log'
