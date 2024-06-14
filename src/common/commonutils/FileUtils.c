@@ -53,68 +53,38 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     FILE* file = NULL;
-    char* fileNameCopy = NULL;
-    char* directory = NULL;
     int i = 0;
     bool result = true;
 
     if (fileName && mode && payload && (0 < payloadSizeBytes))
     {
-        if (NULL == (fileNameCopy = DuplicateString(fileName)))
+        if (NULL != (file = fopen(fileName, mode)))
         {
-            OsConfigLogError(log, "SaveToFile: out of memory");
-            result = false;
-        }
-        else if (NULL != (directory = dirname((char*)fileNameCopy)))
-        {
-            if (true == DirectoryExists(directory))
+            if (true == (result = LockFile(file, log)))
             {
-                OsConfigLogInfo(log, "SaveToFile: target directory '%s' exists", directory);
-            }
-            else
-            {
-                OsConfigLogInfo(log, "SaveToFile: target directory '%s' does not exist", directory);
-
-                if (0 != mkdir(directory, 644))
+                for (i = 0; i < payloadSizeBytes; i++)
                 {
-                    OsConfigLogError(log, "SaveToFile: mkdir(%s) failed with %d", directory, errno);
-                    result = false;
-                }
-            }
-
-            FREE_MEMORY(fileNameCopy);
-        }
-
-        if (result)
-        {
-            if (NULL != (file = fopen(fileName, mode)))
-            {
-                if (true == (result = LockFile(file, log)))
-                {
-                    for (i = 0; i < payloadSizeBytes; i++)
+                    if (payload[i] != fputc(payload[i], file))
                     {
-                        if (payload[i] != fputc(payload[i], file))
-                        {
-                            result = false;
-                            OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
-                        }
+                        result = false;
+                        OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
                     }
-
-                    UnlockFile(file, log);
-                }
-                else
-                {
-                    OsConfigLogError(log, "SaveToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
                 }
 
-                fflush(file);
-                fclose(file);
+                UnlockFile(file, log);
             }
             else
             {
-                result = false;
-                OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
+                OsConfigLogError(log, "SaveToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
             }
+
+            fflush(file);
+            fclose(file);
+        }
+        else
+        {
+            result = false;
+            OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
         }
     }
     else
@@ -160,7 +130,6 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.Temp%u";
-    char* fileDirectory = NULL;
     char* fileNameCopy = NULL;
     char* tempFileName = NULL;
     char* fileContents = NULL;
