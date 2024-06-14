@@ -169,7 +169,7 @@ static int CopyMountTableFile(const char* source, const char* target, void* log)
     return status;
 }
 
-static int LineAlreadyExistsInFile(const char* fileName, const char* text, void* log)
+static int LineAlreadyExistsInFile(const char* fileName, const char* text)
 {
     char* contents = NULL;
     int status = 0;
@@ -191,16 +191,10 @@ static int LineAlreadyExistsInFile(const char* fileName, const char* text, void*
     {
         if (NULL == strstr(contents, text))
         {
-            OsConfigLogInfo(log, "LineAlreadyExistsInFile: '%s' not found in '%s'", text, fileName);
             status = EEXIST;
         }
 
         FREE_MEMORY(contents);
-    }
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "LineAlreadyExistsInFile: '%s' found in '%s'", text, fileName);
     }
 
     return status;
@@ -283,7 +277,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                     if (NULL != newLine)
                     {
-                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log))
+                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine))
                         {
                             if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                             {
@@ -306,7 +300,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                         mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno)))
                     {
-                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log))
+                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine))
                         {
                             if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                             {
@@ -372,7 +366,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                                 if (NULL != newLine)
                                 {
-                                    if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log))
+                                    if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine))
                                     {
                                         if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                                         {

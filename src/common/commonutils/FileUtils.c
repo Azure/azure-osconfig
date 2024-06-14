@@ -149,11 +149,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
 
     FREE_MEMORY(fileContents);
 
-    if (true == (result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log)))
-    {
-        OsConfigLogInfo(log, "AppendPayloadToFile: '%s' was appended to '%s'", payload, fileName);
-    }
-    else
+    if (false == (result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log)))
     {
         OsConfigLogError(log, "AppendPayloadToFile: failed to append '%s' to '%s'", payload, fileName);
     }
