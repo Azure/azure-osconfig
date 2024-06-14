@@ -213,7 +213,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
     const char tempFileNameTemplate[] = "/etc/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
     const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
-    const char* remountAll = "mount -a";
+    const char* mountAll = "mount -a";
 
     FILE* fsMountHandle = NULL;
     FILE* mountHandle = NULL;
