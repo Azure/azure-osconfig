@@ -156,6 +156,13 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     {
         OsConfigLogInfo(log, "InternalSecureSaveToFile: no directory name for '%s' (%d)", fileNameCopy, errno);
     }
+    else if (false == DirectoryExists(fileDirectory))
+    {
+        if (0 != mkdir(fileDirectory, 777))
+        {
+            OsConfigLogError(log, "InternalSecureSaveToFile: mkdir(%s) failed with %d", fileDirectory, errno);
+        }
+    }
  
     if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
     {
