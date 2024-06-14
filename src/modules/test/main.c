@@ -398,7 +398,9 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         "auditEnsureSyslogRotaterServiceIsEnabled",
         "auditEnsureUnnecessaryAccountsAreRemoved",
         "auditEnsurePortmapServiceIsDisabled",
-        "auditEnsureAuditdInstalled"
+        "auditEnsureAuditdInstalled",
+        "auditEnsureRemoteLoginWarningBannerIsConfigured",
+        "auditEnsureZeroconfNetworkingIsDisabled"
     };
     int numSkippedAudits = ARRAY_SIZE(skippedAudits);
 
@@ -407,7 +409,9 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         "remediateEnsureAuditdServiceIsRunning",
         "remediateEnsureSyslogRotaterServiceIsEnabled",
         "remediateEnsurePortmapServiceIsDisabled",
-        "remediateEnsureAuditdInstalled"
+        "remediateEnsureAuditdInstalled",
+        "remediateEnsureRemoteLoginWarningBannerIsConfigured",
+        "remediateEnsureZeroconfNetworkingIsDisabled"
     };
     int numSkippedRemediations = ARRAY_SIZE(skippedRemediations);
 
