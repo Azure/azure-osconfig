@@ -59,37 +59,53 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
 
     if (fileName && mode && payload && (0 < payloadSizeBytes))
     {
-        if (NULL != (file = fopen(fileName, mode)))
+        if (NULL != (directory = dirname((char*)fileName)))
         {
-            if (true == (result = LockFile(file, log)))
+            if (true == DirectoryExists(directory))
             {
-                for (i = 0; i < payloadSizeBytes; i++)
-                {
-                    if (payload[i] != fputc(payload[i], file))
-                    {
-                        result = false;
-                        OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
-                    }
-                }
-
-                UnlockFile(file, log);
+                OsConfigLogInfo(log, "SaveToFile: target directory '%s' exists", directory);
             }
             else
             {
-                OsConfigLogError(log, "SaveToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
+                OsConfigLogInfo(log, "SaveToFile: target directory '%s' does not exist", directory);
+
+                if (0 != mkdir(directory, 644))
+                {
+                    OsConfigLogError(log, "SaveToFile: mkdir(%s) failed with %d", directory, errno);
+                    result = false;
+                }
             }
-
-            fflush(file);
-            fclose(file);
         }
-        else
-        {
-            result = false;
-            OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
 
-            if ((NULL != (directory = dirname((char*)fileName)) && (false == DirectoryExists(directory))))
+        if (result)
+        {
+            if (NULL != (file = fopen(fileName, mode)))
             {
-                OsConfigLogError(log, "SaveToFile: target directory '%s' does not exist", directory);
+                if (true == (result = LockFile(file, log)))
+                {
+                    for (i = 0; i < payloadSizeBytes; i++)
+                    {
+                        if (payload[i] != fputc(payload[i], file))
+                        {
+                            result = false;
+                            OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
+                        }
+                    }
+
+                    UnlockFile(file, log);
+                }
+                else
+                {
+                    OsConfigLogError(log, "SaveToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
+                }
+
+                fflush(file);
+                fclose(file);
+            }
+            else
+            {
+                result = false;
+                OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
             }
         }
     }
@@ -164,7 +180,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     }
     else if (false == DirectoryExists(fileDirectory))
     {
-        if (0 != mkdir(fileDirectory, 777))
+        if (0 != mkdir(fileDirectory, 644))
         {
             OsConfigLogError(log, "InternalSecureSaveToFile: mkdir(%s) failed with %d", fileDirectory, errno);
         }
