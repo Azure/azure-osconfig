@@ -213,6 +213,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
     const char tempFileNameTemplate[] = "/etc/~xtab%d";
     const char* newLineAsIsTemplate = "\n%s %s %s %s %d %d";
     const char* newLineAddNewTemplate = "\n%s %s %s %s,%s %d %d";
+    const char* remountAll = "mount -a";
 
     FILE* fsMountHandle = NULL;
     FILE* mountHandle = NULL;
@@ -433,7 +434,14 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 }
                 
                 // When done assembling the final temp mount file two, move it in an atomic step to real mount file
-                if (0 != (status = RenameFileWithOwnerAndAccess(tempFileNameTwo, fsMountTable, log)))
+                if (0 == (status = RenameFileWithOwnerAndAccess(tempFileNameTwo, fsMountTable, log)))
+                {
+                    if (0 != (status = ExecuteCommand(NULL, mountAll, false, false, 0, 0, NULL, NULL, NULL)))
+                    {
+                        OsConfigLogError(log, "SetFileSystemMountingOption: '%s' failed with %d", mountAll, status);
+                    }
+                }
+                else
                 {
                     OsConfigLogError(log, "SetFileSystemMountingOption:  RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempFileNameTwo, fsMountTable, status);
                 }

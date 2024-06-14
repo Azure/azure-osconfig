@@ -491,7 +491,6 @@ static const char* g_etcMotd = "/etc/motd";
 static const char* g_etcEnvironment = "/etc/environment";
 static const char* g_etcFstab = "/etc/fstab";
 static const char* g_etcFstabCopy = "/etc/fstab.copy";
-static const char* g_etcMtab = "/etc/mtab";
 static const char* g_etcInetdConf = "/etc/inetd.conf";
 static const char* g_etcModProbeD = "/etc/modprobe.d";
 static const char* g_etcProfile = "/etc/profile";
@@ -890,7 +889,6 @@ static char* AuditEnsureKernelSupportForCpuNx(void* log)
 static char* AuditEnsureNodevOptionOnHomePartition(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_home, NULL, g_nodev, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log);
     return reason;
 }
@@ -898,7 +896,6 @@ static char* AuditEnsureNodevOptionOnHomePartition(void* log)
 static char* AuditEnsureNodevOptionOnTmpPartition(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nodev, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, log);
     return reason;
 }
@@ -906,7 +903,6 @@ static char* AuditEnsureNodevOptionOnTmpPartition(void* log)
 static char* AuditEnsureNodevOptionOnVarTmpPartition(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nodev, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, log);
     return reason;
 }
@@ -914,7 +910,6 @@ static char* AuditEnsureNodevOptionOnVarTmpPartition(void* log)
 static char* AuditEnsureNosuidOptionOnTmpPartition(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nosuid, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, log);
     return reason;
 }
@@ -922,7 +917,6 @@ static char* AuditEnsureNosuidOptionOnTmpPartition(void* log)
 static char* AuditEnsureNosuidOptionOnVarTmpPartition(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_nosuid, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, log);
     return reason;
 }
@@ -930,7 +924,6 @@ static char* AuditEnsureNosuidOptionOnVarTmpPartition(void* log)
 static char* AuditEnsureNoexecOptionOnVarTmpPartition(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_varTmp, NULL, g_noexec, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, log);
     return reason;
 }
@@ -938,7 +931,6 @@ static char* AuditEnsureNoexecOptionOnVarTmpPartition(void* log)
 static char* AuditEnsureNoexecOptionOnDevShmPartition(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_devShm, NULL, g_noexec, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, &reason, log);
     return reason;
 }
@@ -946,7 +938,6 @@ static char* AuditEnsureNoexecOptionOnDevShmPartition(void* log)
 static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nodev, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, log);
     return reason;
 }
@@ -954,7 +945,6 @@ static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(void* log)
 static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_noexec, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, log);
     return reason;
 }
@@ -962,7 +952,6 @@ static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void* log)
 static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcMtab, g_media, NULL, g_nosuid, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, log);
     return reason;
 }
@@ -970,8 +959,6 @@ static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void* log)
 static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_noexec, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcMtab, NULL, g_nfs, g_nosuid, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_noexec, &reason, log));
     CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_nosuid, &reason, log);
     return reason;
