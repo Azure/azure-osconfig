@@ -396,7 +396,6 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         "auditEnsurePasswordCreationRequirements",
         "auditEnsureLoggingIsConfigured",
         "auditEnsureSyslogRotaterServiceIsEnabled",
-        "auditEnsureUnnecessaryAccountsAreRemoved",
         "auditEnsurePortmapServiceIsDisabled",
         "auditEnsureAuditdInstalled",
         "auditEnsureRemoteLoginWarningBannerIsConfigured",
