@@ -675,7 +675,7 @@ void AsbInitialize(void* log)
         }
     }
     
-    if (NULL != (prettyName = GetOsPrettyName(GetLog())))
+    if (NULL != (prettyName = GetOsPrettyName(log)))
     {
         OsConfigLogInfo(log, "AsbInitialize: running on '%s'", prettyName);
         FREE_MEMORY(prettyName);
