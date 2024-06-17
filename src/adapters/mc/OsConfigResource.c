@@ -78,21 +78,6 @@ void __attribute__((destructor)) Destroy()
     SetFileAccess(ROLLED_LOG_FILE, 0, 0, 6774, NULL);
 }
 
-static void LogCurrentDistro(MI_Context* context)
-{
-    char* prettyName = NULL;
-    if (NULL != (prettyName = GetOsPrettyName(GetLog())))
-    {
-        LogInfo(context, GetLog(), "[OsConfigResource] Running on '%s'", prettyName);
-        FREE_MEMORY(prettyName);
-    }
-    else
-    {
-        LogInfo(context, GetLog(), "[OsConfigResource] Running on an unknown distribution without a valid PRETTY_NAME in /etc/os-release");
-    }
-    return;
-}
-
 static void LogOsConfigVersion(MI_Context* context)
 {
     const char* deviceInfoComponent = "DeviceInfo";
@@ -178,8 +163,6 @@ void MI_CALL OsConfigResource_Load(
         g_mpiHandle = NULL;
     }
     
-    LogCurrentDistro(context);
-
     AsbInitialize(GetLog());
 
     LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d)", getpid());

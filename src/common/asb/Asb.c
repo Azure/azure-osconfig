@@ -625,6 +625,8 @@ static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
 
 void AsbInitialize(void* log)
 {
+    char* prettyName = NULL;
+    
     InitializeSshAudit(log);
 
     if ((NULL == (g_desiredEnsurePermissionsOnEtcIssue = DuplicateString(g_defaultEnsurePermissionsOnEtcIssue))) ||
@@ -673,6 +675,16 @@ void AsbInitialize(void* log)
         }
     }
     
+    if (NULL != (prettyName = GetOsPrettyName(GetLog())))
+    {
+        OsConfigLogInfo(log, "AsbInitialize: running on '%s'", prettyName);
+        FREE_MEMORY(prettyName);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "AsbInitialize: running on an unknown distribution without a valid PRETTY_NAME in /etc/os-release");
+    }
+
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
 
@@ -3487,7 +3499,11 @@ static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, void* log)
 static int RemediateEnsurePortmapServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    StopDaemon(g_rpcbindSocket, log);
+    if (IsDaemonActive(g_rpcbindSocket, log))
+    {
+        RestartDaemon(g_rpcbindSocket, log);
+        StopDaemon(g_rpcbindSocket, log);
+    }
     StopDaemon(g_rpcbind, log);
     DisableDaemon(g_rpcbindSocket, log);
     DisableDaemon(g_rpcbind, log);
