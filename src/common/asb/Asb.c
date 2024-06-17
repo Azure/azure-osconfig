@@ -3499,12 +3499,22 @@ static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, void* log)
 static int RemediateEnsurePortmapServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    if (IsDaemonActive(g_rpcbindSocket, log))
+    if (CheckDaemonActive(g_rpcbind, NULL, log))
+    {
+        StopDaemon(g_rpcbind, log);
+        DisableDaemon(g_rpcbind, log);
+    }
+    if (CheckDaemonActive(g_rpcbindSocket, NULL, log))
     {
         RestartDaemon(g_rpcbindSocket, log);
         StopDaemon(g_rpcbindSocket, log);
+        DisableDaemon(g_rpcbindSocket, log);
     }
-    StopDaemon(g_rpcbind, log);
+    if (IsDaemonActive(g_rpcbind, log))
+    {
+        StopDaemon(g_rpcbind, log);
+        DisableDaemon(g_rpcbind, log);
+    }
     DisableDaemon(g_rpcbindSocket, log);
     DisableDaemon(g_rpcbind, log);
     return (CheckDaemonNotActive(g_rpcbindSocket, NULL, log) && CheckDaemonNotActive(g_rpcbind, NULL, log)) ? 0 : ENOENT;
