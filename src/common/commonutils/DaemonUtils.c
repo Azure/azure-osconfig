@@ -101,25 +101,47 @@ bool EnableAndStartDaemon(const char* daemonName, void* log)
     return status;
 }
 
-void StopAndDisableDaemon(const char* daemonName, void* log)
+bool StopDaemon(const char* daemonName, void* log)
 {
     const char* stopTemplate = "sudo systemctl stop %s";
-    const char* disableTemplate = "sudo systemctl disable %s";
     char stopCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
-    char disableCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
     int commandResult = 0;
+    bool status = true;
 
     snprintf(stopCommand, sizeof(stopCommand), stopTemplate, daemonName);
-    snprintf(disableCommand, sizeof(disableCommand), disableTemplate, daemonName);
 
     if (0 != (commandResult = ExecuteCommand(NULL, stopCommand, false, false, 0, 0, NULL, NULL, log)))
     {
         OsConfigLogError(log, "Failed to stop service '%s' (%d)", daemonName, commandResult);
+        status = false;
     }
-    
+
+    return status;
+}
+
+bool DisableDaemon(const char* daemonName, void* log)
+{
+    const char* disableTemplate = "sudo systemctl disable %s";
+    char disableCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
+    int commandResult = 0;
+    bool status = true;
+
+    snprintf(disableCommand, sizeof(disableCommand), disableTemplate, daemonName);
+
     if (0 != (commandResult = ExecuteCommand(NULL, disableCommand, false, false, 0, 0, NULL, NULL, log)))
     {
         OsConfigLogError(log, "Failed to disable service '%s' (%d)", daemonName, commandResult);
+        return false;
+    }
+
+    return status;
+}
+
+void StopAndDisableDaemon(const char* daemonName, void* log)
+{
+    if (true == StopDaemon(daemonName, log))
+    {
+        DisableDaemon(daemonName, log));
     }
 }
 

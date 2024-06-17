@@ -552,7 +552,7 @@ static const char* g_rpcgssd = "rpcgssd";
 static const char* g_rpcGssd = "rpc-gssd";
 static const char* g_rpcidmapd = "rpcidmapd";
 static const char* g_nfsIdmapd = "nfs-idmapd";
-static const char* g_rpcbindService = "rpcbind.service";
+static const char* g_rpcbind = "rpcbind";
 static const char* g_rpcbindSocket = "rpcbind.socket";
 static const char* g_nfsServer = "nfs-server";
 static const char* g_snmpd = "snmpd";
@@ -1980,8 +1980,8 @@ static char* AuditEnsureRpcidmapdServiceIsDisabled(void* log)
 static char* AuditEnsurePortmapServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcbindService, &reason, log));
-    CheckDaemonNotActive(g_rpcbindSocket, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcbindSocket, &reason, log));
+    CheckDaemonNotActive(g_rpcbind, &reason, log);
     return reason;
 }
 
@@ -3487,16 +3487,11 @@ static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, void* log)
 static int RemediateEnsurePortmapServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    if (IsDaemonActive(g_rpcbindService, log))
-    {
-        StopAndDisableDaemon(g_rpcbindService, log);
-    }
-    if (IsDaemonActive(g_rpcbindSocket, log))
-    {
-        StopAndDisableDaemon(g_rpcbindSocket, log);
-    }
-    return (CheckDaemonNotActive(g_rpcbindService, NULL, log) &&
-        CheckDaemonNotActive(g_rpcbindSocket, NULL, log)) ? 0 : ENOENT;
+    StopDaemon(g_rpcbindSocket, log);
+    StopDaemon(g_rpcbind, log);
+    DisableDaemon(g_rpcbindSocket, log);
+    DisableDaemon(g_rpcbind, log);
+    return (CheckDaemonNotActive(g_rpcbindSocket, NULL, log) && CheckDaemonNotActive(g_rpcbind, NULL, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value, void* log)
