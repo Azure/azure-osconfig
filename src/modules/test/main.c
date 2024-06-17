@@ -395,7 +395,6 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         "auditEnsurePasswordCreationRequirements",
         "auditEnsureLoggingIsConfigured",
         "auditEnsureSyslogRotaterServiceIsEnabled",
-        "auditEnsurePortmapServiceIsDisabled",
         "auditEnsureAuditdInstalled",
         "auditEnsureRemoteLoginWarningBannerIsConfigured",
         "auditEnsureZeroconfNetworkingIsDisabled"
@@ -406,7 +405,6 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
         "remediateEnsureAuditdServiceIsRunning",
         "remediateEnsureSyslogRotaterServiceIsEnabled",
-        "remediateEnsurePortmapServiceIsDisabled",
         "remediateEnsureAuditdInstalled",
         "remediateEnsureRemoteLoginWarningBannerIsConfigured",
         "remediateEnsureZeroconfNetworkingIsDisabled"
