@@ -1539,7 +1539,7 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void* log)
 
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubCfg, 0, 0, mode, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubConf, 0, 0, mode, &reason, log));
-    CheckFileAccess(g_bootGrubGrubCfg, 0, 0, mode, &reason, log);
+    CheckFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, &reason, log);
     return reason;
 }
 
