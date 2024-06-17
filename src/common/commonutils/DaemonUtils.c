@@ -141,7 +141,7 @@ void StopAndDisableDaemon(const char* daemonName, void* log)
 {
     if (true == StopDaemon(daemonName, log))
     {
-        DisableDaemon(daemonName, log));
+        DisableDaemon(daemonName, log);
     }
 }
 
