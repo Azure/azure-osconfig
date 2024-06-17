@@ -128,3 +128,24 @@ jobs:
           path: |
             ${{ matrix.target.name }}-${{ matrix.target.arch }}.log
             ${{ matrix.target.name }}-${{ matrix.target.arch }}.xml
+
+  report:
+    name: Report
+    needs: unit-test
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    if: always()
+    steps:
+      - name: Download Test Report Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ci-test
+          pattern: 'unit-test-*'
+          merge-multiple: true  
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: 'ci-test/*.xml'
