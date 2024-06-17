@@ -3093,7 +3093,7 @@ static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)
     
     return ((FileExists(g_bootGrubGrubCfg) && (0 == SetFileAccess(g_bootGrubGrubCfg, 0, 0, mode, log))) ||
         (FileExists(g_bootGrubGrubConf) && (0 == SetFileAccess(g_bootGrubGrubConf, 0, 0, mode, log))) ||
-        (FileExists(g_bootGrub2GrubCfg) && (0 == SetFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, log))) ? 0 : ENOENT;
+        (FileExists(g_bootGrub2GrubCfg) && (0 == SetFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, log)))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePasswordReuseIsLimited(char* value, void* log)
