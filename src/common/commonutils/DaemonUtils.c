@@ -103,7 +103,7 @@ bool EnableAndStartDaemon(const char* daemonName, void* log)
 
 bool StopDaemon(const char* daemonName, void* log)
 {
-    const char* stopTemplate = "sudo systemctl stop %s";
+    const char* stopTemplate = "sudo systemctl stop -f %s";
     char stopCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
     int commandResult = 0;
     bool status = true;
