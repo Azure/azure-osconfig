@@ -396,7 +396,6 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         "auditEnsurePasswordCreationRequirements",
         "auditEnsureLoggingIsConfigured",
         "auditEnsureSyslogRotaterServiceIsEnabled",
-        "auditEnsureUnnecessaryAccountsAreRemoved",
         "auditEnsurePortmapServiceIsDisabled",
         "auditEnsureAuditdInstalled",
         "auditEnsureRemoteLoginWarningBannerIsConfigured",
@@ -526,9 +525,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
     }
     else if (test->type == DESIRED)
     {
-        mmiStatus = module->set(module->session, test->component, test->object, test->payload, test->payloadSize);
-                
-        if (test->status != mmiStatus)
+        if (test->status != (mmiStatus = module->set(module->session, test->component, test->object, test->payload, test->payloadSize)))
         {
             if ((0 == strcmp(test->component, SECURITY_BASELINE)) && (0 == strncmp(test->object, remediate, strlen(remediate))))
             {

@@ -11,6 +11,8 @@
 
 static const char* g_root = "root";
 static const char* g_shadow = "shadow";
+static const char* g_etcShadow = "/etc/shadow";
+static const char* g_etcPasswd = "/etc/passwd";
 
 static void ResetUserEntry(SIMPLIFIED_USER* target)
 {
@@ -3097,8 +3099,10 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
 int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 {
+    const char* userTemplate = "%s:";
     size_t namesLength = 0;
     char* name = NULL;
+    char* decoratedName = NULL;
     SIMPLIFIED_USER* userList = NULL;
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int userListSize = 0, groupListSize = 0, i = 0, j = 0;
@@ -3176,12 +3180,20 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
             {
                 TruncateAtFirst(name, ',');
 
-                if ((0 == FindTextInFile("/etc/passwd", name, log)) ||
-                    (0 == FindTextInFile("/etc/shadow", name, log)) ||
-                    (0 == FindTextInFile("/etc/group", name, log)))
+                if (NULL == (decoratedName = FormatAllocateString(userTemplate, name)))
                 {
-                    OsConfigCaptureReason(reason, "Account '%s' found mentioned in '/etc/passwd', '/etc/shadow' and/or '/etc/group'", name);
-                    found = true;
+                    OsConfigLogInfo(log, "CheckUserAccountsNotFound: out of memory, unable to check for user '%s' presence in '%s' andr '%s'", 
+                        name, g_etcPasswd, g_etcShadow);
+                }
+                else
+                {
+                    if ((0 == FindTextInFile(g_etcPasswd, decoratedName, log)) || (0 == FindTextInFile(g_etcShadow, decoratedName, log)))
+                    {
+                        OsConfigCaptureReason(reason, "Account '%s' found mentioned in '%s' and/or '%s'", name, g_etcPasswd, g_etcShadow);
+                        found = true;
+                    }
+
+                    FREE_MEMORY(decoratedName);
                 }
 
                 j += strlen(name);
@@ -3209,8 +3221,10 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
 int RemoveUserAccounts(const char* names, void* log)
 {
+    const char* userTemplate = "%s:";
     size_t namesLength = 0;
     char* name = NULL;
+    char* decoratedName = NULL;
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     int status = 0, _status = 0;
@@ -3271,6 +3285,46 @@ int RemoveUserAccounts(const char* names, void* log)
     }
 
     FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        for (j = 0; j < namesLength; j++)
+        {
+            if (NULL == (name = DuplicateString(&(names[j]))))
+            {
+                OsConfigLogError(log, "RemoveUserAccounts: failed to duplicate string");
+                status = ENOMEM;
+                break;
+            }
+            else
+            {
+                TruncateAtFirst(name, ',');
+
+                if (NULL == (decoratedName = FormatAllocateString(userTemplate, name)))
+                {
+                    OsConfigLogInfo(log, "RemoveUserAccounts: out of memory, unable to check for user '%s' presence in '%s' andr '%s'",
+                        name, g_etcPasswd, g_etcShadow);
+                }
+                else
+                {
+                    if (0 == FindTextInFile(g_etcPasswd, decoratedName, log))
+                    {
+                        ReplaceMarkedLinesInFile(g_etcPasswd, decoratedName, NULL, '#', true, log);
+                    }
+
+                    if (0 == FindTextInFile(g_etcShadow, decoratedName, log))
+                    {
+                        ReplaceMarkedLinesInFile(g_etcShadow, decoratedName, NULL, '#', true, log);
+                    }
+
+                    FREE_MEMORY(decoratedName);
+                }
+
+                j += strlen(name);
+                FREE_MEMORY(name);
+            }
+        }
+    }
 
     return status;
 }
