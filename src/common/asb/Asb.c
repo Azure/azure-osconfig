@@ -1669,10 +1669,11 @@ static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void* log)
 static char* AuditEnsureLoggingIsConfigured(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileExists("/var/log/syslog", &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonActive(g_syslog, &reason, log) ? 0 : ENOENT);
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rsyslog, &reason, log) ? 0 : ENOENT);
-    CheckDaemonActive(g_syslogNg, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_systemd, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonActive(g_systemdJournald, &reason, log) ? 0 : ENOENT);
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_rsyslog, &reason, log)) && CheckDaemonActive(g_rsyslog, &reason, log)) ? 0 : ENOENT);
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_syslog, &reason, log)) && CheckDaemonActive(g_syslog, &reason, log)) ? 0 : ENOENT);
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_syslogNg, &reason, log)) && CheckDaemonActive(g_syslogNg, &reason, log)) ? 0 : ENOENT);
     return reason;
 }
 
@@ -3218,7 +3219,7 @@ static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(char* valu
 static int RemediateEnsureLoggingIsConfigured(char* value, void* log)
 {
     UNUSED(value);
-    return (((0 == InstallPackage(g_systemd, log) && ((0 == InstallPackage(g_rsyslog, log)) || 
+    return (((0 == InstallPackage(g_systemd, log) && ((0 == InstallPackage(g_rsyslog, log)) ||
         (0 == InstallPackage(g_syslog, log)))) || (0 == InstallPackage(g_syslogNg, log))) &&
         (((0 == CheckPackageInstalled(g_systemd, NULL, log)) && EnableAndStartDaemon(g_systemdJournald, log))) &&
         ((((0 == CheckPackageInstalled(g_rsyslog, NULL, log)) && EnableAndStartDaemon(g_rsyslog, log))) || 
