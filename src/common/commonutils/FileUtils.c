@@ -157,7 +157,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     }
     else if (false == DirectoryExists(fileDirectory))
     {
-        if (0 != mkdir(fileDirectory, mode))
+        if (0 != mkdir(fileDirectory, access))
         {
             OsConfigLogError(log, "InternalSecureSaveToFile: mkdir(%s) failed with %d", fileDirectory, errno);
         }
