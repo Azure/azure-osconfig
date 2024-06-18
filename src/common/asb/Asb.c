@@ -1532,7 +1532,7 @@ static char* AuditEnsureTipcIsDisabled(void* log)
 static char* AuditEnsureZeroconfNetworkingIsDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_avahiDaemon, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_avahiDaemon, &reason, log) ? 0 : ENOENT);
     RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', g_ipv4ll, &reason, log));
     if (FileExists(g_etcSysconfigNetwork))
     {
@@ -1670,8 +1670,8 @@ static char* AuditEnsureLoggingIsConfigured(void* log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckFileExists("/var/log/syslog", &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonActive(g_syslog, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckDaemonActive(g_rsyslog, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonActive(g_syslog, &reason, log) ? 0 : ENOENT);
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rsyslog, &reason, log) ? 0 : ENOENT);
     CheckDaemonActive(g_syslogNg, &reason, log);
     return reason;
 }
@@ -1775,7 +1775,7 @@ static char* AuditEnsureSyslogRotaterServiceIsEnabled(void* log)
 static char* AuditEnsureTelnetServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_telnet, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_telnet, &reason, log) ? 0 : ENOENT);
     CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_telnet, &reason, log);
     return reason;
 }
@@ -1783,7 +1783,7 @@ static char* AuditEnsureTelnetServiceIsDisabled(void* log)
 static char* AuditEnsureRcprshServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rcpSocket, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rcpSocket, &reason, log) ? 0 : ENOENT);
     CheckDaemonNotActive(g_rshSocket, &reason, log);
     return reason;
 }
@@ -1791,7 +1791,7 @@ static char* AuditEnsureRcprshServiceIsDisabled(void* log)
 static char* AuditEnsureTftpServiceisDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_tftpHpa, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_tftpHpa, &reason, log) ? 0 : ENOENT);
     CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_tftp, &reason, log);
     return reason;
 }
@@ -1799,8 +1799,8 @@ static char* AuditEnsureTftpServiceisDisabled(void* log)
 static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcCronDeny, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcAtDeny, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcCronDeny, &reason, log) ? 0 : ENOENT);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcAtDeny, &reason, log) ? 0 : ENOENT);
     RETURN_REASON_IF_NOT_ZERO(CheckFileExists(g_etcCronAllow, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileExists(g_etcAtAllow, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronAllow, 0, 0, 600, &reason, log));
@@ -1976,7 +1976,7 @@ static char* AuditEnsurePostfixNetworkListeningIsDisabled(void* log)
 static char* AuditEnsureRpcgssdServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcgssd, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcgssd, &reason, log) ? 0 : ENOENT);
     CheckDaemonNotActive(g_rpcGssd, &reason, log);
     return reason;
 }
@@ -1984,7 +1984,7 @@ static char* AuditEnsureRpcgssdServiceIsDisabled(void* log)
 static char* AuditEnsureRpcidmapdServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcidmapd, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcidmapd, &reason, log) ? 0 : ENOENT);
     CheckDaemonNotActive(g_nfsIdmapd, &reason, log);
     return reason;
 }
@@ -1992,7 +1992,7 @@ static char* AuditEnsureRpcidmapdServiceIsDisabled(void* log)
 static char* AuditEnsurePortmapServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcbindSocket, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcbindSocket, &reason, log) ? 0 : ENOENT);
     CheckDaemonNotActive(g_rpcbind, &reason, log);
     return reason;
 }
@@ -2100,7 +2100,7 @@ static char* AuditEnsureNoUsersHaveDotRhostsFiles(void* log)
 static char* AuditEnsureRloginServiceIsDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rlogin, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rlogin, &reason, log) ? 0 : ENOENT);
     RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_rlogin, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_inetd, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_inetUtilsInetd, &reason, log));
@@ -2987,21 +2987,21 @@ static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, void* log)
 static int RemediateEnsureSourceRoutedPacketsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == SecureSaveToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log)) &&
-        (0 == SecureSaveToFile("/proc/sys/net/ipv6/conf/all/accept_source_route", "0", 1, log))) ? 0 : ENOENT;
+    return (SecureSaveToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log) &&
+        SecureSaveToFile("/proc/sys/net/ipv6/conf/all/accept_source_route", "0", 1, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == SecureSaveToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log)) &&
-        (0 == SecureSaveToFile("/proc/sys/net/ipv6/conf/default/accept_source_route", "0", 1, log))) ? 0 : ENOENT;
+    return (SecureSaveToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log) &&
+        SecureSaveToFile("/proc/sys/net/ipv6/conf/default/accept_source_route", "0", 1, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureIgnoringBogusIcmpBroadcastResponses(char* value, void* log)
 {
     UNUSED(value);
-    return SecureSaveToFile("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", "1", 1, log);
+    return SecureSaveToFile("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", "1", 1, log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureIgnoringIcmpEchoPingsToMulticast(char* value, void* log)
@@ -3022,14 +3022,14 @@ static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, void* log)
 static int RemediateEnsureReversePathSourceValidationIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == SecureSaveToFile("/proc/sys/net/ipv4/conf/all/rp_filter", "2", 1, log)) &&
-        (0 == SecureSaveToFile("/proc/sys/net/ipv4/conf/default/rp_filter", "2", 1, log))) ? 0 : ENOENT;
+    return (SecureSaveToFile("/proc/sys/net/ipv4/conf/all/rp_filter", "2", 1, log) &&
+        SecureSaveToFile("/proc/sys/net/ipv4/conf/default/rp_filter", "2", 1, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureTcpSynCookiesAreEnabled(char* value, void* log)
 {
     UNUSED(value);
-    return SecureSaveToFile("/proc/sys/net/ipv4/tcp_syncookies", "1", 1, log);
+    return SecureSaveToFile("/proc/sys/net/ipv4/tcp_syncookies", "1", 1, log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSystemNotActingAsNetworkSniffer(char* value, void* log)
@@ -3324,7 +3324,7 @@ static int RemediateEnsureTelnetServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_telnet, log);
-    return ((false == CheckDaemonActive(g_telnet, NULL, log)) && 
+    return (CheckDaemonNotActive(g_telnet, NULL, log) &&
         (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_telnet, NULL, '#', true, log))) ? 0 : ENOENT;
 }
 
@@ -3333,14 +3333,14 @@ static int RemediateEnsureRcprshServiceIsDisabled(char* value, void* log)
     UNUSED(value);
     StopAndDisableDaemon(g_rcpSocket, log);
     StopAndDisableDaemon(g_rshSocket, log);
-    return ((false == CheckDaemonActive(g_rcpSocket, NULL, log)) && (false == CheckDaemonActive(g_rshSocket, NULL, log))) ? 0 : ENOENT;
+    return (CheckDaemonNotActive(g_rcpSocket, NULL, log) && CheckDaemonNotActive(g_rshSocket, NULL, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureTftpServiceisDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_tftpHpa, log);
-    return ((false == CheckDaemonActive(g_tftpHpa, NULL, log)) &&
+    return (CheckDaemonNotActive(g_tftpHpa, NULL, log) &&
         (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_tftp, NULL, '#', true, log))) ? 0 : ENOENT;
 }
 
