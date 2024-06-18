@@ -435,8 +435,6 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
         return INT_ENOENT;
     }
 
-    OsConfigLogInfo(log, "CheckPasswordRequirementFromBuffer: --- '%s' ----", buffer); //////////////////////////////
-
     if (desired == (value = GetIntegerOptionFromBuffer(buffer, option, separator, log)))
     {
         if (comment == buffer[0])
@@ -455,8 +453,8 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
     {
         if (comment == buffer[0])
         {
-            OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: '%s' is set to %d instead of %d in '%s' but it's commented out", option, value, desired, fileName);
-            OsConfigCaptureReason(reason, "'%s' is set to %d instead of %d in '%s' but it's commented out", option, value, desired, fileName);
+            OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: '%s' is set to %d instead of %d in '%s' and it's commented out", option, value, desired, fileName);
+            OsConfigCaptureReason(reason, "'%s' is set to %d instead of %d in '%s' and it's commented out", option, value, desired, fileName);
         }
         else
         {
@@ -663,12 +661,6 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
                 OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcSecurityPwQualityConf);
             }
         }
-
-        /////////////
-        char* payload = LoadStringFromFile(g_etcSecurityPwQualityConf, false, log);
-        OsConfigLogInfo(log, "SetPasswordCreationRequirements: %s >>>\n'%s'\n<<<", g_etcSecurityPwQualityConf, payload); //////////////////////////////
-        FREE_MEMORY(payload);
-        /////////////
     }
 
     if ((0 == _status) || (_status && (0 == status)))
