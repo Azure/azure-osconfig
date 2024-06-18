@@ -194,6 +194,7 @@ bool StopDaemon(const char* daemonName, void* log);
 bool DisableDaemon(const char* daemonName, void* log);
 void StopAndDisableDaemon(const char* daemonName, void* log);
 bool RestartDaemon(const char* daemonName, void* log);
+bool MaskDaemon(const char* daemonName, void* log);
 
 char* GetHttpProxyData(void* log);
 

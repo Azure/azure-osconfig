@@ -167,3 +167,21 @@ bool RestartDaemon(const char* daemonName, void* log)
 
     return status;
 }
+
+bool MaskDaemon(const char* daemonName, void* log)
+{
+    const char* maskTemplate = "sudo systemctl mask %s";
+    char maskCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
+    int commandResult = 0;
+    bool status = true;
+
+    snprintf(maskCommand, sizeof(maskCommand), maskTemplate, daemonName);
+
+    if (0 != (commandResult = ExecuteCommand(NULL, maskCommand, false, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogError(log, "Failed to mask service '%s' (%d)", daemonName, commandResult);
+        status = false;
+    }
+
+    return status;
+}
