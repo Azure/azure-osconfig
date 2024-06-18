@@ -134,6 +134,9 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     char* fileNameCopy = NULL;
     char* tempFileName = NULL;
     char* fileContents = NULL;
+    unsigned int ownerId = 0;
+    unsigned int groupId = 0;
+    unsigned int mode = 644;
     int status = 0;
     bool result = false;
 
@@ -154,13 +157,25 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     }
     else if (false == DirectoryExists(fileDirectory))
     {
-        if (0 != mkdir(fileDirectory, 644))
+        if (0 != mkdir(fileDirectory, mode))
         {
             OsConfigLogError(log, "InternalSecureSaveToFile: mkdir(%s) failed with %d", fileDirectory, errno);
         }
     }
  
-    OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' %s", fileDirectory, DirectoryExists(fileDirectory) ? "exists" : "does not exist");
+    if (DirectoryExists(fileDirectory))
+    {
+        OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists", fileDirectory);
+        if (0 == GetDirectoryAccess(fileDirectory, &ownerId, &groupId, &mode, log))
+        {
+            OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' is owned by user (%u, %u) and has access mode %u", 
+                fileDirectory, ownerId, groupId, mode);
+            if (0 != SetDirectoryAccess(fileDirectory, 0, 0, 644, log))
+            {
+                OsConfigLogError(log, "InternalSecureSaveToFile: unable to get temporary access to directory '%s'", fileDirectory);
+            }
+        }
+    }
 
     if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
     {
@@ -217,6 +232,11 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
 
     FREE_MEMORY(tempFileName);
     FREE_MEMORY(fileNameCopy);
+
+    if (0 != SetDirectoryAccess(fileDirectory, ownerId, groupId, mode, log))
+    {
+        OsConfigLogError(log, "InternalSecureSaveToFile: unable to restore original access to directory '%s'", fileDirectory);
+    }
 
     return result;
 }
@@ -674,14 +694,14 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
     return status;
 }
 
-int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
+static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
 {
-    struct stat statStruct = {0};
+    struct stat statStruct = { 0 };
     int status = ENOENT;
 
     if ((NULL == name) || (NULL == ownerId) || (NULL == groupId) || (NULL == mode))
     {
-        OsConfigLogError(log, "GetFileAccess: invalid arguments");
+        OsConfigLogError(log, "GetAccess: invalid arguments");
         return EINVAL;
     }
 
@@ -689,7 +709,7 @@ int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId
     *groupId = 0;
     *mode = 0;
 
-    if (FileExists(name))
+    if ((isDirectory && DirectoryExists(name)) || ((false == isDirectory) && FileExists(name)))
     {
         if (0 == (status = stat(name, &statStruct)))
         {
@@ -699,15 +719,25 @@ int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId
         }
         else
         {
-            OsConfigLogError(log, "GetFileAccess: stat('%s') failed with %d", name, errno);
+            OsConfigLogError(log, "GetAccess: stat('%s') failed with %d", name, errno);
         }
     }
     else
     {
-        OsConfigLogInfo(log, "GetFileAccess: '%s' does not exist", name);
+        OsConfigLogInfo(log, "GetAccess: '%s' does not exist", name);
     }
 
     return status;
+}
+
+int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
+{
+    return GetAccess(false, name, ownerId, groupId, mode, log);
+}
+
+int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
+{
+    return GetAccess(true, name, ownerId, groupId, mode, log);
 }
 
 int RenameFile(const char* original, const char* target, void* log)
