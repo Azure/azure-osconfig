@@ -392,7 +392,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         "auditEnsureAuditdServiceIsRunning",
         "auditEnsurePermissionsOnEtcPasswdDash",
         "auditEnsureSyslogRotaterServiceIsEnabled",
-        "auditEnsureAuditdInstalled",
+        //"auditEnsureAuditdInstalled",
         "auditEnsureRemoteLoginWarningBannerIsConfigured",
         "auditEnsureZeroconfNetworkingIsDisabled"
     };
@@ -402,7 +402,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
         "remediateEnsureAuditdServiceIsRunning",
         "remediateEnsureSyslogRotaterServiceIsEnabled",
-        "remediateEnsureAuditdInstalled",
+        //"remediateEnsureAuditdInstalled",
         "remediateEnsureRemoteLoginWarningBannerIsConfigured",
         "remediateEnsureZeroconfNetworkingIsDisabled"
     };
