@@ -155,26 +155,18 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     {
         OsConfigLogInfo(log, "InternalSecureSaveToFile: no directory name for '%s' (%d)", fileNameCopy, errno);
     }
-    else if (false == DirectoryExists(fileDirectory))
+    else
     {
-        if (0 != mkdir(fileDirectory, access))
-        {
-            OsConfigLogError(log, "InternalSecureSaveToFile: mkdir(%s) failed with %d", fileDirectory, errno);
-        }
+        TruncateAtFirst(fileDirectory, '/');
     }
- 
+    
     if (DirectoryExists(fileDirectory))
     {
-        OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists", fileDirectory);
         if (0 == GetDirectoryAccess(fileDirectory, &ownerId, &groupId, &access, log))
         {
-            OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' is owned by user (%u, %u) and has access mode %u", 
+            OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists, is owned by user (%u, %u) and has access mode %u", 
                 fileDirectory, ownerId, groupId, access);
-            if (0 != SetDirectoryAccess(fileDirectory, 0, 0, 644, log))
-            {
-                OsConfigLogError(log, "InternalSecureSaveToFile: unable to get temporary access to directory '%s'", fileDirectory);
-            }
-        }
+        }    
     }
 
     if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
@@ -232,11 +224,6 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
 
     FREE_MEMORY(tempFileName);
     FREE_MEMORY(fileNameCopy);
-
-    if (0 != SetDirectoryAccess(fileDirectory, ownerId, groupId, access, log))
-    {
-        OsConfigLogError(log, "InternalSecureSaveToFile: unable to restore original access to directory '%s'", fileDirectory);
-    }
 
     return result;
 }
