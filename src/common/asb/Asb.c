@@ -1669,11 +1669,11 @@ static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void* log)
 static char* AuditEnsureLoggingIsConfigured(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_systemd, NULL, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonActive(g_systemdJournald, NULL, log) ? 0 : ENOENT);
-    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_rsyslog, NULL, log)) && CheckDaemonActive(g_rsyslog, NULL, log)) ? 0 : ENOENT);
-    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_syslog, NULL, log)) && CheckDaemonActive(g_syslog, NULL, log)) ? 0 : ENOENT);
-    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_syslogNg, NULL, log)) && CheckDaemonActive(g_syslogNg, NULL, log)) ? 0 : ENOENT);
+    RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_systemd, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonActive(g_systemdJournald, &reason, log) ? 0 : ENOENT);
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_rsyslog, &reason, log)) && CheckDaemonActive(g_rsyslog, &reason, log)) ? 0 : ENOENT);
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_syslog, &reason, log)) && CheckDaemonActive(g_syslog, &reason, log)) ? 0 : ENOENT);
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_syslogNg, &reason, log)) && CheckDaemonActive(g_syslogNg, &reason, log)) ? 0 : ENOENT);
     return reason;
 }
 
