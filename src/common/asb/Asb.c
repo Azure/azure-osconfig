@@ -533,6 +533,7 @@ static const char* g_sendmail = "sendmail";
 static const char* g_slapd = "slapd";
 static const char* g_bind9 = "bind9";
 static const char* g_dovecotCore = "dovecot-core";
+static const char* g_audit = "audit";
 static const char* g_auditd = "auditd";
 static const char* g_auditLibs = "audit-libs";
 static const char* g_auditLibsDevel = "audit-libs-devel";
@@ -1088,6 +1089,7 @@ static char* AuditEnsureDovecotCoreNotInstalled(void* log)
 static char* AuditEnsureAuditdInstalled(void* log)
 {
     char* reason = NULL;
+    RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_audit, &reason, log));
     RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_auditd, &reason, log));
     RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_auditLibs, &reason, log));
     RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_auditLibsDevel, &reason, log));
@@ -2611,7 +2613,8 @@ static int RemediateEnsureDovecotCoreNotInstalled(char* value, void* log)
 static int RemediateEnsureAuditdInstalled(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == InstallPackage(g_auditd, log)) || (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))) ? 0 : ENOENT;
+    return ((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) ||
+        (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePrelinkIsDisabled(char* value, void* log)
@@ -2637,8 +2640,8 @@ static int RemediateEnsureCronServiceIsEnabled(char* value, void* log)
 static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 {
     UNUSED(value);
-    return (((0 == InstallPackage(g_auditd, log)) || (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))) &&
-        EnableAndStartDaemon(g_auditd, log)) ? 0 : ENOENT;
+    return (((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) || (0 == InstallPackage(g_auditLibs, log)) ||
+        (0 == InstallPackage(g_auditLibsDevel, log))) && EnableAndStartDaemon(g_auditd, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureKernelSupportForCpuNx(char* value, void* log)
