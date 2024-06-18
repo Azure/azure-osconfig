@@ -3007,7 +3007,7 @@ static int RemediateEnsureIgnoringBogusIcmpBroadcastResponses(char* value, void*
 static int RemediateEnsureIgnoringIcmpEchoPingsToMulticast(char* value, void* log)
 {
     UNUSED(value);
-    return SavePayloadToFile("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", "1", 1, log);
+    return SavePayloadToFile("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", "1", 1, log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, void* log)
