@@ -6,6 +6,7 @@
 static int ExecuteSystemctlCommand(const char* command, const char* daemonName, void* log)
 {
     const char* commandTemplate = "systemctl %s %s";
+    char* formattedCommand = NULL;
     int result = 0;
 
     if ((NULL == command) || (NULL == daemonName))
@@ -13,14 +14,14 @@ static int ExecuteSystemctlCommand(const char* command, const char* daemonName, 
         OsConfigLogError(log, "ExecuteSystemctlCommand: invalid arguments");
         return EINVAL;
     }
-    else if (NULL == (command = FormatAllocateString(commandTemplate, command, daemonName)))
+    else if (NULL == (formattedCommand = FormatAllocateString(commandTemplate, command, daemonName)))
     {
         OsConfigLogError(log, "ExecuteSystemctlCommand: out of memory");
         return ENOMEM;
     }
 
-    result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
-    FREE_MEMORY(command);
+    result = ExecuteCommand(NULL, formattedCommand, false, false, 0, 0, NULL, NULL, log);
+    FREE_MEMORY(formattedCommand);
     return result;
 }
 
