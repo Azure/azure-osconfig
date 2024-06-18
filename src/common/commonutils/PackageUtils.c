@@ -26,7 +26,7 @@ int IsPresent(const char* what, void* log)
     {
         if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogInfo(log, "IsPresent: '%s' is locally present");
+            OsConfigLogInfo(log, "IsPresent: '%s' is locally installed", what);
         }
     }
     else
