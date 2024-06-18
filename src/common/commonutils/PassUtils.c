@@ -434,15 +434,15 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
         OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: invalid arguments");
         return INT_ENOENT;
     }
-    
+
+    OsConfigLogInfo(log, "CheckPasswordRequirementFromBuffer: --- '%s' ----", buffer); //////////////////////////////
+
     if (desired == (value = GetIntegerOptionFromBuffer(buffer, option, separator, log)))
     {
-        OsConfigLogInfo(log, "CheckPasswordRequirementFromBuffer: buffer is '%s'", buffer); //////
-        
-        if (comment != buffer[0])
+        if (comment == buffer[0])
         {
-            OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: '%s' is set to correct value %d in '%s' but is commented out", option, value, fileName);
-            OsConfigCaptureReason(reason, "'%s' is set to correct value %d in '%s' but is commented out", option, value, fileName);
+            OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: '%s' is set to correct value %d in '%s' but it's commented out", option, value, fileName);
+            OsConfigCaptureReason(reason, "'%s' is set to correct value %d in '%s' but it's commented out", option, value, fileName);
         }
         else
         {
@@ -453,8 +453,16 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
     }
     else
     {
-        OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: '%s' is set to %d instead of %d in '%s'", option, value, desired, fileName);
-        OsConfigCaptureReason(reason, "'%s' is set to %d instead of %d in '%s'", option, value, desired, fileName);
+        if (comment == buffer[0])
+        {
+            OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: '%s' is set to %d instead of %d in '%s' but it's commented out", option, value, desired, fileName);
+            OsConfigCaptureReason(reason, "'%s' is set to %d instead of %d in '%s' but it's commented out", option, value, desired, fileName);
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: '%s' is set to %d instead of %d in '%s'", option, value, desired, fileName);
+            OsConfigCaptureReason(reason, "'%s' is set to %d instead of %d in '%s'", option, value, desired, fileName);
+        }
     }
 
     return status;
@@ -651,6 +659,12 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
                 OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcSecurityPwQualityConf);
             }
         }
+
+        /////////////
+        char* payload = LoadStringFromFile(g_etcSecurityPwQualityConf, false, log);
+        OsConfigLogInfo(log, "SetPasswordCreationRequirements: %s >>>\n'%s'\n<<<", g_etcSecurityPwQualityConf, payload); //////////////////////////////
+        FREE_MEMORY(payload);
+        /////////////
     }
 
     if ((0 == _status) || (_status && (0 == status)))
