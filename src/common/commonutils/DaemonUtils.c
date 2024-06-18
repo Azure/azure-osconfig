@@ -6,7 +6,6 @@
 static int ExecuteSystemctlCommand(const char* command, const char* daemonName, void* log)
 {
     const char* commandTemplate = "systemctl %s %s";
-    char* command = NULL;
     int result = 0;
 
     if ((NULL == command) || (NULL == daemonName))
