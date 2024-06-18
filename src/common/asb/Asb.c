@@ -21,7 +21,7 @@
 }\
 
 #define RETURN_REASON_IF_NOT_ZERO(call) {\
-    if (call) {\
+    if (0 != (call)) {\
         return reason;\
     }\
 }\
