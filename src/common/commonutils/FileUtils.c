@@ -157,7 +157,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     }
     else
     {
-        TruncateAtFirst(fileDirectory, '/');
+        TruncateAtFirst(fileDirectory + 1, '/');
     }
     
     if (DirectoryExists(fileDirectory))
