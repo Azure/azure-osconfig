@@ -3501,7 +3501,7 @@ static int RemediateEnsurePortmapServiceIsDisabled(char* value, void* log)
     UNUSED(value);
     if (CheckDaemonActive(g_rpcbind, NULL, log))
     {
-        RestartDaemon(g_rpcbindSocket, log);
+        RestartDaemon(g_rpcbind, log);
         StopDaemon(g_rpcbind, log);
         DisableDaemon(g_rpcbind, log);
     }
@@ -3513,7 +3513,7 @@ static int RemediateEnsurePortmapServiceIsDisabled(char* value, void* log)
     }
     if (IsDaemonActive(g_rpcbind, log))
     {
-        RestartDaemon(g_rpcbindSocket, log);
+        RestartDaemon(g_rpcbind, log);
         StopDaemon(g_rpcbind, log);
         DisableDaemon(g_rpcbind, log);
     }
