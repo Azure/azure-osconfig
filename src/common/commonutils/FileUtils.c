@@ -136,7 +136,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     char* fileContents = NULL;
     unsigned int ownerId = 0;
     unsigned int groupId = 0;
-    unsigned int mode = 644;
+    unsigned int access = 644;
     int status = 0;
     bool result = false;
 
@@ -166,10 +166,10 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     if (DirectoryExists(fileDirectory))
     {
         OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists", fileDirectory);
-        if (0 == GetDirectoryAccess(fileDirectory, &ownerId, &groupId, &mode, log))
+        if (0 == GetDirectoryAccess(fileDirectory, &ownerId, &groupId, &access, log))
         {
             OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' is owned by user (%u, %u) and has access mode %u", 
-                fileDirectory, ownerId, groupId, mode);
+                fileDirectory, ownerId, groupId, access);
             if (0 != SetDirectoryAccess(fileDirectory, 0, 0, 644, log))
             {
                 OsConfigLogError(log, "InternalSecureSaveToFile: unable to get temporary access to directory '%s'", fileDirectory);
@@ -233,7 +233,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     FREE_MEMORY(tempFileName);
     FREE_MEMORY(fileNameCopy);
 
-    if (0 != SetDirectoryAccess(fileDirectory, ownerId, groupId, mode, log))
+    if (0 != SetDirectoryAccess(fileDirectory, ownerId, groupId, access, log))
     {
         OsConfigLogError(log, "InternalSecureSaveToFile: unable to restore original access to directory '%s'", fileDirectory);
     }
