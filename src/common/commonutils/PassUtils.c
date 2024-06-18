@@ -595,6 +595,8 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     //
     // Separate lines for /etc/security/pwquality.conf:
     //
+    // 'retry = 3'
+    // 'minlen = 14'
     // 'minclass = 4' 
     // 'dcredit = -1'
     // 'ucredit = -1'
@@ -615,7 +617,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     const char* etcPamdCommonPasswordLineTemplate = "password requisite pam_pwquality.so retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
     const char* etcSecurityPwQualityConfLineTemplate = "%s = %d\n";
     const char* etcPamdCommonPasswordMarker = "pam_pwquality.so";
-    PASSWORD_CREATION_REQUIREMENTS entries[] = {{"minclass", 0 }, {"dcredit", 0}, {"ucredit", 0}, {"ocredit", 0}, {"lcredit", 0}};
+    PASSWORD_CREATION_REQUIREMENTS entries[] = {{"retry", 0}, {"minlen", 0}, {"minclass", 0}, {"dcredit", 0}, {"ucredit", 0}, {"ocredit", 0}, {"lcredit", 0}};
     int numEntries = ARRAY_SIZE(entries);
     char* line = NULL;
     int i = 0, status = 0, _status = 0;
@@ -641,11 +643,13 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
     if (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log))
     {
-        entries[0].value = minclass;
-        entries[1].value = dcredit;
-        entries[2].value = ucredit;
-        entries[3].value = ocredit;
-        entries[4].value = lcredit;
+        entries[0].value = retry;
+        entries[1].value = minlen;
+        entries[2].value = minclass;
+        entries[3].value = dcredit;
+        entries[4].value = ucredit;
+        entries[5].value = ocredit;
+        entries[6].value = lcredit;
         
         for (i = 0; i < numEntries; i++)
         {
