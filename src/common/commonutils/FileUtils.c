@@ -934,7 +934,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     FREE_MEMORY(tempFileName);
     FREE_MEMORY(fileNameCopy);
 
-    OsConfigLogInfo(log, "ReplaceMarkedLinesInFile('%s') complete with %d", fileName, status);
+    OsConfigLogInfo(log, "ReplaceMarkedLinesInFile('%s', '%s') complete with %d", fileName, marker, status);
 
     return status;
 }
