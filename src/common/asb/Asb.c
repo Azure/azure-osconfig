@@ -3498,44 +3498,21 @@ static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, void* log)
 
 static int RemediateEnsurePortmapServiceIsDisabled(char* value, void* log)
 {
-    int i = 0;
     UNUSED(value);
-    for (i = 0; i < 10; i++)
+    if (CheckDaemonActive(g_rpcbind, NULL, log))
     {
-        if (CheckDaemonActive(g_rpcbind, NULL, log))
-        {
-            RestartDaemon(g_rpcbind, log);
-            StopDaemon(g_rpcbind, log);
-            DisableDaemon(g_rpcbind, log);
-            MaskDaemon(g_rpcbind, log);
-        }
+        RestartDaemon(g_rpcbind, log);
+        StopDaemon(g_rpcbind, log);
+        DisableDaemon(g_rpcbind, log);
+        MaskDaemon(g_rpcbind, log);
+    }
 
-        if (CheckDaemonActive(g_rpcbindSocket, NULL, log))
-        {
-            RestartDaemon(g_rpcbindSocket, log);
-            StopDaemon(g_rpcbindSocket, log);
-            DisableDaemon(g_rpcbindSocket, log);
-            MaskDaemon(g_rpcbindSocket, log);
-        }
-
-        /*if (CheckDaemonActive(g_rpcbind, NULL, log))
-        {
-            StopDaemon(g_rpcbind, log);
-            DisableDaemon(g_rpcbind, log);
-            MaskDaemon(g_rpcbind, log);
-        }
-
-        if (CheckDaemonActive(g_rpcbindSocket, NULL, log))
-        {
-            StopDaemon(g_rpcbindSocket, log);
-            DisableDaemon(g_rpcbindSocket, log);
-            MaskDaemon(g_rpcbindSocket, log);
-        }*/
-
-        if (CheckDaemonNotActive(g_rpcbindSocket, NULL, log) && CheckDaemonNotActive(g_rpcbind, NULL, log))
-        {
-            break;
-        }
+    if (CheckDaemonActive(g_rpcbindSocket, NULL, log))
+    {
+        RestartDaemon(g_rpcbindSocket, log);
+        StopDaemon(g_rpcbindSocket, log);
+        DisableDaemon(g_rpcbindSocket, log);
+        MaskDaemon(g_rpcbindSocket, log);
     }
     return (CheckDaemonNotActive(g_rpcbindSocket, NULL, log) && CheckDaemonNotActive(g_rpcbind, NULL, log)) ? 0 : ENOENT;
 }

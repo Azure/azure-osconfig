@@ -80,7 +80,11 @@ static bool CommandDaemon(const char* command, const char* daemonName, void* log
     int result = 0;
     bool status = true;
 
-    if (0 != (result = ExecuteSystemctlCommand(command, daemonName, log)))
+    if (0 == (result = ExecuteSystemctlCommand(command, daemonName, log)))
+    {
+        OsConfigLogInfo(log, "Succeeded to %s service '%s'", command, daemonName);
+    }
+    else
     {
         OsConfigLogError(log, "Failed to %s service '%s' (%d)", command, daemonName, result);
         status = false;
@@ -105,8 +109,6 @@ bool EnableAndStartDaemon(const char* daemonName, void* log)
 
     if (false == IsDaemonActive(daemonName, log))
     {
-        OsConfigLogInfo(log, "Starting service '%s'", daemonName);
-
         if (EnableDaemon(daemonName, log) && StartDaemon(daemonName, log))
         {
             status = true;
