@@ -166,7 +166,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         {
             if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
             {
-                if (true == (result = SaveToFile(tempFileName, "w", fileContents, strlen(fileContents), log)))
+                if (true == (result = SaveToFile(tempFileName, "a", fileContents, strlen(fileContents), log)))
                 {
                     // If there is no EOL at the end of file, add one before the append
                     if (EOL != fileContents[strlen(fileContents) - 1])
