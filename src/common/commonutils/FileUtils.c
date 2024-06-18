@@ -129,7 +129,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
 
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
-    const char* tempFileNameTemplate = "%s/~OSConfig.Temp%u";
+    const char* tempFileNameTemplate = "%s/~OSConfig%u";
     char* fileDirectory = NULL;
     char* fileNameCopy = NULL;
     char* tempFileName = NULL;
@@ -160,6 +160,8 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
         }
     }
  
+    OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' %s", fileDirectory, DirectoryExists(fileDirectory) ? "exists" : "does not exist");
+
     if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
     {
         if ((0 == strcmp(mode, "a") && FileExists(fileName)))
@@ -171,7 +173,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
                     // If there is no EOL at the end of file, add one before the append
                     if (EOL != fileContents[strlen(fileContents) - 1])
                     {
-                        SaveToFile(tempFileName, "a", "\n", 1, log);
+                        SaveToFile(tempFileName, "w", "\n", 1, log);
                     }
 
                     result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log);
