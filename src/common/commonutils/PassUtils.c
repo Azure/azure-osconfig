@@ -437,6 +437,8 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
     
     if (desired == (value = GetIntegerOptionFromBuffer(buffer, option, separator, log)))
     {
+        OsConfigLogInfo(log, "CheckPasswordRequirementFromBuffer: buffer is '%s'", buffer); //////
+        
         if (comment != buffer[0])
         {
             OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: '%s' is set to correct value %d in '%s' but is commented out", option, value, fileName);
