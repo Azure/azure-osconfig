@@ -74,6 +74,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
 
 int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, void* log);
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
+int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log);
 
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, void* log);
 int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, void* log);
@@ -189,9 +190,14 @@ bool FreeAndReturnTrue(void* value);
 bool IsDaemonActive(const char* daemonName, void* log);
 bool CheckDaemonActive(const char* daemonName, char** reason, void* log);
 bool CheckDaemonNotActive(const char* daemonName, char** reason, void* log);
+bool StartDaemon(const char* daemonName, void* log);
+bool StopDaemon(const char* daemonName, void* log);
+bool EnableDaemon(const char* daemonName, void* log);
+bool DisableDaemon(const char* daemonName, void* log);
 bool EnableAndStartDaemon(const char* daemonName, void* log);
 void StopAndDisableDaemon(const char* daemonName, void* log);
 bool RestartDaemon(const char* daemonName, void* log);
+bool MaskDaemon(const char* daemonName, void* log);
 
 char* GetHttpProxyData(void* log);
 

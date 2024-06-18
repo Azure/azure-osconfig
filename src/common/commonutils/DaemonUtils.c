@@ -3,17 +3,33 @@
 
 #include "Internal.h"
 
-#define MAX_DAEMON_COMMAND_LENGTH 256
+static int ExecuteSystemctlCommand(const char* command, const char* daemonName, void* log)
+{
+    const char* commandTemplate = "systemctl %s %s";
+    char* formattedCommand = NULL;
+    int result = 0;
+
+    if ((NULL == command) || (NULL == daemonName))
+    {
+        OsConfigLogError(log, "ExecuteSystemctlCommand: invalid arguments");
+        return EINVAL;
+    }
+    else if (NULL == (formattedCommand = FormatAllocateString(commandTemplate, command, daemonName)))
+    {
+        OsConfigLogError(log, "ExecuteSystemctlCommand: out of memory");
+        return ENOMEM;
+    }
+
+    result = ExecuteCommand(NULL, formattedCommand, false, false, 0, 0, NULL, NULL, log);
+    FREE_MEMORY(formattedCommand);
+    return result;
+}
 
 bool IsDaemonActive(const char* daemonName, void* log)
 {
-    const char* isActiveTemplate = "systemctl is-active %s";
-    char isActiveCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
     bool status = true;
 
-    snprintf(isActiveCommand, sizeof(isActiveCommand), isActiveTemplate, daemonName);
-
-    if (ESRCH == ExecuteCommand(NULL, isActiveCommand, false, false, 0, 0, NULL, NULL, log))
+    if (ESRCH == ExecuteSystemctlCommand("is-active", daemonName, log))
     {
         status = false;
     }
@@ -59,38 +75,43 @@ bool CheckDaemonNotActive(const char* daemonName, char** reason, void* log)
     return result;
 }
 
+static bool CommandDaemon(const char* command, const char* daemonName, void* log)
+{
+    int result = 0;
+    bool status = true;
+
+    if (0 == (result = ExecuteSystemctlCommand(command, daemonName, log)))
+    {
+        OsConfigLogInfo(log, "Succeeded to %s service '%s'", command, daemonName);
+    }
+    else
+    {
+        OsConfigLogError(log, "Failed to %s service '%s' (%d)", command, daemonName, result);
+        status = false;
+    }
+
+    return status;
+}
+
+bool EnableDaemon(const char* daemonName, void* log)
+{
+    return CommandDaemon("enable", daemonName, log);
+}
+
+bool StartDaemon(const char* daemonName, void* log)
+{
+    return CommandDaemon("start", daemonName, log);
+}
+
 bool EnableAndStartDaemon(const char* daemonName, void* log)
 {
-    const char* enableTemplate = "systemctl enable %s";
-    const char* startTemplate = "systemctl start %s";
-    char enableCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
-    char startCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
-    int commandResult = 0;
     bool status = true;
 
     if (false == IsDaemonActive(daemonName, log))
     {
-        snprintf(enableCommand, sizeof(enableCommand), enableTemplate, daemonName);
-        snprintf(startCommand, sizeof(startCommand), startTemplate, daemonName);
-
-        OsConfigLogInfo(log, "Starting service '%s'", daemonName);
-
-        if (0 == (commandResult == ExecuteCommand(NULL, enableCommand, false, false, 0, 0, NULL, NULL, log)))
+        if (EnableDaemon(daemonName, log) && StartDaemon(daemonName, log))
         {
-            if (0 == (commandResult == ExecuteCommand(NULL, startCommand, false, false, 0, 0, NULL, NULL, log)))
-            {
-                status = true;
-            }
-            else
-            {
-                OsConfigLogError(log, "Cannot start service '%s' (%d)", daemonName, commandResult);
-                status = false;
-            }
-        }
-        else
-        {
-            OsConfigLogError(log, "Failed to enable service '%s' (%d)", daemonName, commandResult);
-            status = false;
+            status = true;
         }
     }
     else
@@ -101,47 +122,30 @@ bool EnableAndStartDaemon(const char* daemonName, void* log)
     return status;
 }
 
+bool StopDaemon(const char* daemonName, void* log)
+{
+    return CommandDaemon("stop", daemonName, log);
+}
+
+bool DisableDaemon(const char* daemonName, void* log)
+{
+    return CommandDaemon("disable", daemonName, log);
+}
+
 void StopAndDisableDaemon(const char* daemonName, void* log)
 {
-    const char* stopTemplate = "sudo systemctl stop %s";
-    const char* disableTemplate = "sudo systemctl disable %s";
-    char stopCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
-    char disableCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
-    int commandResult = 0;
-
-    snprintf(stopCommand, sizeof(stopCommand), stopTemplate, daemonName);
-    snprintf(disableCommand, sizeof(disableCommand), disableTemplate, daemonName);
-
-    if (0 != (commandResult = ExecuteCommand(NULL, stopCommand, false, false, 0, 0, NULL, NULL, log)))
+    if (true == StopDaemon(daemonName, log))
     {
-        OsConfigLogError(log, "Failed to stop service '%s' (%d)", daemonName, commandResult);
-    }
-    
-    if (0 != (commandResult = ExecuteCommand(NULL, disableCommand, false, false, 0, 0, NULL, NULL, log)))
-    {
-        OsConfigLogError(log, "Failed to disable service '%s' (%d)", daemonName, commandResult);
+        DisableDaemon(daemonName, log);
     }
 }
 
 bool RestartDaemon(const char* daemonName, void* log)
 {
-    const char* restartTemplate = "systemctl restart %s";
-    char restartCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
-    int commandResult = 0;
-    bool status = true;
+    return CommandDaemon("restart", daemonName, log);
+}
 
-    if (true == IsDaemonActive(daemonName, log))
-    {
-        snprintf(restartCommand, sizeof(restartCommand), restartTemplate, daemonName);
-
-        OsConfigLogInfo(log, "Restarting service '%s'", daemonName);
-
-        if (0 != (commandResult = ExecuteCommand(NULL, restartCommand, false, false, 0, 0, NULL, NULL, log)))
-        {
-            OsConfigLogError(log, "Failed to restart service '%s' (%d)", daemonName, commandResult);
-            status = false;
-        }
-    }
-
-    return status;
+bool MaskDaemon(const char* daemonName, void* log)
+{
+    return CommandDaemon("mask", daemonName, log);
 }

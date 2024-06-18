@@ -129,11 +129,14 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
 
 static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
-    const char* tempFileNameTemplate = "%s/~OSConfig.Temp%u";
+    const char* tempFileNameTemplate = "%s/~OSConfig%u";
     char* fileDirectory = NULL;
     char* fileNameCopy = NULL;
     char* tempFileName = NULL;
     char* fileContents = NULL;
+    unsigned int ownerId = 0;
+    unsigned int groupId = 0;
+    unsigned int access = 644;
     int status = 0;
     bool result = false;
 
@@ -152,26 +155,28 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     {
         OsConfigLogInfo(log, "InternalSecureSaveToFile: no directory name for '%s' (%d)", fileNameCopy, errno);
     }
-    else if (false == DirectoryExists(fileDirectory))
+    
+    if (DirectoryExists(fileDirectory))
     {
-        if (0 != mkdir(fileDirectory, 644))
+        if (0 == GetDirectoryAccess(fileDirectory, &ownerId, &groupId, &access, log))
         {
-            OsConfigLogError(log, "InternalSecureSaveToFile: mkdir(%s) failed with %d", fileDirectory, errno);
-        }
+            OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists, is owned by user (%u, %u) and has access mode %u", 
+                fileDirectory, ownerId, groupId, access);
+        }    
     }
- 
+
     if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
     {
         if ((0 == strcmp(mode, "a") && FileExists(fileName)))
         {
             if (NULL != (fileContents = LoadStringFromFile(fileName, false, log)))
             {
-                if (true == (result = SaveToFile(tempFileName, "w", fileContents, strlen(fileContents), log)))
+                if (true == (result = SaveToFile(tempFileName, "a", fileContents, strlen(fileContents), log)))
                 {
                     // If there is no EOL at the end of file, add one before the append
                     if (EOL != fileContents[strlen(fileContents) - 1])
                     {
-                        SaveToFile(tempFileName, "a", "\n", 1, log);
+                        SaveToFile(tempFileName, "w", "\n", 1, log);
                     }
 
                     result = SaveToFile(tempFileName, "a", payload, payloadSizeBytes, log);
@@ -672,14 +677,14 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
     return status;
 }
 
-int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
+static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
 {
-    struct stat statStruct = {0};
+    struct stat statStruct = { 0 };
     int status = ENOENT;
 
     if ((NULL == name) || (NULL == ownerId) || (NULL == groupId) || (NULL == mode))
     {
-        OsConfigLogError(log, "GetFileAccess: invalid arguments");
+        OsConfigLogError(log, "GetAccess: invalid arguments");
         return EINVAL;
     }
 
@@ -687,7 +692,7 @@ int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId
     *groupId = 0;
     *mode = 0;
 
-    if (FileExists(name))
+    if ((isDirectory && DirectoryExists(name)) || ((false == isDirectory) && FileExists(name)))
     {
         if (0 == (status = stat(name, &statStruct)))
         {
@@ -697,15 +702,25 @@ int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId
         }
         else
         {
-            OsConfigLogError(log, "GetFileAccess: stat('%s') failed with %d", name, errno);
+            OsConfigLogError(log, "GetAccess: stat('%s') failed with %d", name, errno);
         }
     }
     else
     {
-        OsConfigLogInfo(log, "GetFileAccess: '%s' does not exist", name);
+        OsConfigLogInfo(log, "GetAccess: '%s' does not exist", name);
     }
 
     return status;
+}
+
+int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
+{
+    return GetAccess(false, name, ownerId, groupId, mode, log);
+}
+
+int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
+{
+    return GetAccess(true, name, ownerId, groupId, mode, log);
 }
 
 int RenameFile(const char* original, const char* target, void* log)
