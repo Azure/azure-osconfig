@@ -391,8 +391,6 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
         "auditEnsureAuditdServiceIsRunning",
         "auditEnsurePermissionsOnEtcPasswdDash",
-        "auditEnsureReversePathSourceValidationIsEnabled",
-        "auditEnsurePasswordCreationRequirements",
         "auditEnsureLoggingIsConfigured",
         "auditEnsureSyslogRotaterServiceIsEnabled",
         "auditEnsureAuditdInstalled",

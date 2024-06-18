@@ -3506,7 +3506,6 @@ static int RemediateEnsurePortmapServiceIsDisabled(char* value, void* log)
         DisableDaemon(g_rpcbind, log);
         MaskDaemon(g_rpcbind, log);
     }
-
     if (CheckDaemonActive(g_rpcbindSocket, NULL, log))
     {
         RestartDaemon(g_rpcbindSocket, log);
