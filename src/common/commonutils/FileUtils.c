@@ -155,10 +155,6 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     {
         OsConfigLogInfo(log, "InternalSecureSaveToFile: no directory name for '%s' (%d)", fileNameCopy, errno);
     }
-    else
-    {
-        TruncateAtFirst(fileDirectory + 1, '/');
-    }
     
     if (DirectoryExists(fileDirectory))
     {

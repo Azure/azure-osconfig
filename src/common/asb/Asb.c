@@ -2987,27 +2987,27 @@ static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, void* log)
 static int RemediateEnsureSourceRoutedPacketsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    return (SecureSaveToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log) &&
-        SecureSaveToFile("/proc/sys/net/ipv6/conf/all/accept_source_route", "0", 1, log)) ? 0 : ENOENT;
+    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log) &&
+        SavePayloadToFile("/proc/sys/net/ipv6/conf/all/accept_source_route", "0", 1, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    return (SecureSaveToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log) &&
-        SecureSaveToFile("/proc/sys/net/ipv6/conf/default/accept_source_route", "0", 1, log)) ? 0 : ENOENT;
+    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log) &&
+        SavePayloadToFile("/proc/sys/net/ipv6/conf/default/accept_source_route", "0", 1, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureIgnoringBogusIcmpBroadcastResponses(char* value, void* log)
 {
     UNUSED(value);
-    return SecureSaveToFile("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", "1", 1, log) ? 0 : ENOENT;
+    return SavePayloadToFile("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", "1", 1, log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureIgnoringIcmpEchoPingsToMulticast(char* value, void* log)
 {
     UNUSED(value);
-    return SecureSaveToFile("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", "1", 1, log);
+    return SavePayloadToFile("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", "1", 1, log);
 }
 
 static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, void* log)
@@ -3022,14 +3022,14 @@ static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, void* log)
 static int RemediateEnsureReversePathSourceValidationIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    return (SecureSaveToFile("/proc/sys/net/ipv4/conf/all/rp_filter", "2", 1, log) &&
-        SecureSaveToFile("/proc/sys/net/ipv4/conf/default/rp_filter", "2", 1, log)) ? 0 : ENOENT;
+    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/rp_filter", "2", 1, log) &&
+        SavePayloadToFile("/proc/sys/net/ipv4/conf/default/rp_filter", "2", 1, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureTcpSynCookiesAreEnabled(char* value, void* log)
 {
     UNUSED(value);
-    return SecureSaveToFile("/proc/sys/net/ipv4/tcp_syncookies", "1", 1, log) ? 0 : ENOENT;
+    return SavePayloadToFile("/proc/sys/net/ipv4/tcp_syncookies", "1", 1, log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSystemNotActingAsNetworkSniffer(char* value, void* log)
