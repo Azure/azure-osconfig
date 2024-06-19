@@ -1341,7 +1341,7 @@ static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void* log)
     else if (IsCurrentOs(PRETTY_NAME_SLES_15, log))
     {
         FREE_MEMORY(reason);
-        reason = FormatAllocateString("'%s' does not exist in '%s'", g_etcIssueNet, PRETTY_NAME_SLES_15);
+        reason = FormatAllocateString("%s'%s' does not exist in '%s'", g_pass, g_etcIssueNet, PRETTY_NAME_SLES_15);
     }
     return reason;
 }
@@ -2657,6 +2657,7 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
             ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log);
             StartDaemon(g_auditd, log);
         }
+        sleep(5);
         status = CheckDaemonActive(g_auditd, NULL, log) ? 0 : ENOENT;
     }
     return status;
