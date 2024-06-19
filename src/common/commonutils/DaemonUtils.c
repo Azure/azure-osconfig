@@ -21,10 +21,7 @@ static int ExecuteSystemctlCommand(const char* command, const char* daemonName, 
     }
 
     result = ExecuteCommand(NULL, formattedCommand, false, false, 0, 0, NULL, NULL, log);
-    OsConfigLogInfo(log, "ExecuteSystemctlCommand: '%s' completed with %d (errno: %d)", formattedCommand, result, errno);
-
     FREE_MEMORY(formattedCommand);
-
     return result;
 }
 
