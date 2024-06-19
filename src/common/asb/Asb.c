@@ -2641,7 +2641,7 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 {
     UNUSED(value);
     return (((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) || (0 == InstallPackage(g_auditLibs, log)) ||
-        (0 == InstallPackage(g_auditLibsDevel, log))) && EnableAndStartDaemon(g_auditd, log)) ? 0 : ENOENT;
+        (0 == InstallPackage(g_auditLibsDevel, log))) && EnableDaemon(g_auditd, log) && RestartDaemon(g_auditd, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureKernelSupportForCpuNx(char* value, void* log)
