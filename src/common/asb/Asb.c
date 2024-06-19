@@ -2662,7 +2662,7 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
             for (i = 0; i < 10; i++)
             {
                 sleep(1);
-                RestartDaemon(g_auditd, log);
+                StartDaemon(g_auditd, log);
                 if (CheckDaemonActive(g_auditd, NULL, log))
                 {
                     status = 0;
