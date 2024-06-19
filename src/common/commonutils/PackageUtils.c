@@ -24,7 +24,10 @@ int IsPresent(const char* what, void* log)
 
     if (NULL != (command = FormatAllocateString(commandTemplate, what)))
     {
-        status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "IsPresent: '%s' is locally installed", what);
+        }
     }
     else
     {
@@ -54,7 +57,10 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
         return ENOMEM;
     }
 
-    status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
+    if (0 != (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogError(log, "CheckOrInstallPackage: '%s' failed with %d (errno: %d)", command, status, errno);
+    }
 
     FREE_MEMORY(command);
 
@@ -95,7 +101,7 @@ int IsPackageInstalled(const char* packageName, void* log)
     }
     else
     {
-        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is not found", packageName);
+        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is not found (%d)", packageName, status);
     }
 
     return status;

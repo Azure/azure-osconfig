@@ -389,10 +389,8 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         "auditEnsureAuthenticationRequiredForSingleUserMode",
         "auditEnsureAllBootloadersHavePasswordProtectionEnabled",
         // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
-        "auditEnsureAuditdServiceIsRunning",
         "auditEnsurePermissionsOnEtcPasswdDash",
         "auditEnsureSyslogRotaterServiceIsEnabled",
-        "auditEnsureAuditdInstalled",
         "auditEnsureRemoteLoginWarningBannerIsConfigured",
         "auditEnsureZeroconfNetworkingIsDisabled"
     };
@@ -400,9 +398,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 
     const char* skippedRemediations[] = {
         // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
-        "remediateEnsureAuditdServiceIsRunning",
         "remediateEnsureSyslogRotaterServiceIsEnabled",
-        "remediateEnsureAuditdInstalled",
         "remediateEnsureRemoteLoginWarningBannerIsConfigured",
         "remediateEnsureZeroconfNetworkingIsDisabled"
     };
