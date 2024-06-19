@@ -1331,10 +1331,18 @@ static char* AuditEnsureCronServiceIsEnabled(void* log)
 static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\m", &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\r", &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\s", &reason, log));
-    CheckTextIsNotFoundInFile(g_etcIssueNet, "\\v", &reason, log);
+    if (0 == CheckFileExists(g_etcIssueNet, &reason, log))
+    {
+        RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\m", &reason, log));
+        RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\r", &reason, log));
+        RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\s", &reason, log));
+        CheckTextIsNotFoundInFile(g_etcIssueNet, "\\v", &reason, log);
+    }
+    else if (IsCurrentOs(PRETTY_NAME_SLES_15, log))
+    {
+        FREE_MEMORY(reason);
+        reason = FormatAllocateString("%s'%s' does not exist in '%s'", g_pass, g_etcIssueNet, PRETTY_NAME_SLES_15);
+    }
     return reason;
 }
 
@@ -2639,17 +2647,29 @@ static int RemediateEnsureCronServiceIsEnabled(char* value, void* log)
 
 static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 {
-    int status = ENOENT;
+    int status = ENOENT, i = 0;
     UNUSED(value);
-    if (((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) ||
-        (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))))
+    if (((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) || 
+        (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))) && EnableDaemon(g_auditd, log))
     { 
-        if (false == EnableAndStartDaemon(g_auditd, log))
+        if (StartDaemon(g_auditd, log))
+        {
+            status = 0;
+        }
+        else
         {
             ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log);
-            StartDaemon(g_auditd, log);
+            for (i = 0; i < 10; i++)
+            {
+                sleep(1);
+                StartDaemon(g_auditd, log);
+                if (CheckDaemonActive(g_auditd, NULL, log))
+                {
+                    status = 0;
+                    break;
+                }
+            }
         }
-        status = CheckDaemonActive(g_auditd, NULL, log) ? 0 : ENOENT;
     }
     return status;
 }
@@ -2915,8 +2935,13 @@ static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, void
 {
     const char* escapes = "mrsv";
     unsigned int numEscapes = 4;
+    int status = 0;
     UNUSED(value);
-    return RemoveEscapeSequencesFromFile(g_etcIssueNet, escapes, numEscapes, ' ', log);
+    if (0 == CheckFileExists(g_etcIssueNet, NULL, log))
+    {
+        status = RemoveEscapeSequencesFromFile(g_etcIssueNet, escapes, numEscapes, ' ', log);
+    }
+    return status;
 }
 
 static int RemediateEnsureLocalLoginWarningBannerIsConfigured(char* value, void* log)

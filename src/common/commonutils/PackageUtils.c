@@ -26,7 +26,7 @@ int IsPresent(const char* what, void* log)
     {
         if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogInfo(log, "IsPresent: '%s' is locally installed", what);
+            OsConfigLogInfo(log, "'%s' is locally present", what);
         }
     }
     else
@@ -59,7 +59,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
 
     if (0 != (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
     {
-        OsConfigLogError(log, "CheckOrInstallPackage: '%s' failed with %d (errno: %d)", command, status, errno);
+        OsConfigLogError(log, "'%s' failed with %d (errno: %d)", command, status, errno);
     }
 
     FREE_MEMORY(command);
