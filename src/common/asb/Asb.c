@@ -2639,9 +2639,18 @@ static int RemediateEnsureCronServiceIsEnabled(char* value, void* log)
 
 static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 {
+    int status = ENOENT;
     UNUSED(value);
-    return (((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) || (0 == InstallPackage(g_auditLibs, log)) ||
-        (0 == InstallPackage(g_auditLibsDevel, log))) && EnableDaemon(g_auditd, log) && RestartDaemon(g_auditd, log)) ? 0 : ENOENT;
+    if (((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) ||
+        (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))))
+    { 
+        if (false == EnableAndStartDaemon(g_auditd, log))
+        {
+            RestartDaemon(g_auditd, log);
+        }
+        status = CheckDaemonActive(g_auditd, NULL, log) ? 0 : ENOENT;
+    }
+    return status;
 }
 
 static int RemediateEnsureKernelSupportForCpuNx(char* value, void* log)
