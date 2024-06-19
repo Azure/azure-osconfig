@@ -517,7 +517,7 @@ instance of OsConfigResource as $OsConfigResource32ref
 
 instance of OsConfigResource as $OsConfigResource33ref
 {
-    ResourceID = "Ensure permissions on /etc/issue.net (/run/issue on SLES 15 and alike) are configured";
+    ResourceID = "Ensure permissions on /etc/issue.net are configured";
     PayloadKey = "EnsurePermissionsOnEtcIssueNet";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsurePermissionsOnEtcIssueNet";
