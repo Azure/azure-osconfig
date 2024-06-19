@@ -1331,7 +1331,7 @@ static char* AuditEnsureCronServiceIsEnabled(void* log)
 static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void* log)
 {
     char* reason = NULL;
-    if (0 == CheckFileExists(g_etcIssueNet, reason, log))
+    if (0 == CheckFileExists(g_etcIssueNet, &reason, log))
     {
         RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\m", &reason, log));
         RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\r", &reason, log));
@@ -1341,7 +1341,7 @@ static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void* log)
     else if (IsCurrentOs(PRETTY_NAME_SLES_15, log))
     {
         FREE_MEMORY(reason);
-        reason = DuplicateString("'%s' does not exist in '%s'", g_etcIssueNet, PRETTY_NAME_SLES_15);
+        reason = FormatAllocateString("'%s' does not exist in '%s'", g_etcIssueNet, PRETTY_NAME_SLES_15);
     }
     return reason;
 }
