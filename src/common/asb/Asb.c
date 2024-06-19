@@ -2652,7 +2652,11 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
     if (((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) || 
         (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))) && EnableDaemon(g_auditd, log))
     { 
-        if (false == StartDaemon(g_auditd, log))
+        if (StartDaemon(g_auditd, log))
+        {
+            status = 0;
+        }
+        else
         {
             ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log);
             for (i = 0; i < 10; i++)
