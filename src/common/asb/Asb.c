@@ -1779,7 +1779,7 @@ static char* AuditEnsureSyslogRotaterServiceIsEnabled(void* log)
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_logrotate, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, &reason, log));
-    CheckDaemonActive(g_logrotateTimer, log);
+    CheckDaemonActive(g_logrotateTimer, &reason, log);
     return reason;
 }
 
