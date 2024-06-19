@@ -2661,6 +2661,7 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
             ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log);
             for (i = 0; i < 10; i++)
             {
+                sleep(1);
                 RestartDaemon(g_auditd, log);
                 if (CheckDaemonActive(g_auditd, NULL, log))
                 {
