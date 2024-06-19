@@ -3364,7 +3364,7 @@ static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, void* log)
         status = 0;
         if (false == IsCurrentOs(PRETTY_NAME_SLES_15, log))
         {
-            status = EnableAndStartDaemon(g_logrotateTimer, log)) ? 0 : ENOENT;
+            status = EnableAndStartDaemon(g_logrotateTimer, log) ? 0 : ENOENT;
         }
     }
     return status;
