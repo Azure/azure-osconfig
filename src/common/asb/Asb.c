@@ -1778,8 +1778,8 @@ static char* AuditEnsureSyslogRotaterServiceIsEnabled(void* log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_logrotate, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckFileExists(g_etcCronDailyLogRotate, &reason, log));
-    CheckFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, &reason, log));
+    CheckDaemonActive(g_logrotateTimer, log);
     return reason;
 }
 
@@ -3355,7 +3355,7 @@ static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(char* value, void* l
 static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == InstallPackage(g_logrotate, log)) && (0 == CheckFileExists(g_etcCronDailyLogRotate, NULL, log)) && 
+    return ((0 == InstallPackage(g_logrotate, log)) && 
         (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, log)) && EnableAndStartDaemon(g_logrotateTimer, log)) ? 0 : ENOENT;
 }
 

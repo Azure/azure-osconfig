@@ -390,14 +390,12 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         "auditEnsureAllBootloadersHavePasswordProtectionEnabled",
         // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
         "auditEnsurePermissionsOnEtcPasswdDash",
-        "auditEnsureSyslogRotaterServiceIsEnabled",
         "auditEnsureZeroconfNetworkingIsDisabled"
     };
     int numSkippedAudits = ARRAY_SIZE(skippedAudits);
 
     const char* skippedRemediations[] = {
         // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
-        "remediateEnsureSyslogRotaterServiceIsEnabled",
         "remediateEnsureZeroconfNetworkingIsDisabled"
     };
     int numSkippedRemediations = ARRAY_SIZE(skippedRemediations);
