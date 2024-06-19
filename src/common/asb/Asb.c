@@ -1779,7 +1779,10 @@ static char* AuditEnsureSyslogRotaterServiceIsEnabled(void* log)
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_logrotate, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, &reason, log));
-    CheckDaemonActive(g_logrotateTimer, &reason, log);
+    if (false == IsCurrentOs(PRETTY_NAME_SLES_15, log))
+    {
+        CheckDaemonActive(g_logrotateTimer, &reason, log);
+    }
     return reason;
 }
 
@@ -3354,9 +3357,17 @@ static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(char* value, void* l
 
 static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, void* log)
 {
+    int status = ENOENT;
     UNUSED(value);
-    return ((0 == InstallPackage(g_logrotate, log)) && 
-        (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, log)) && EnableAndStartDaemon(g_logrotateTimer, log)) ? 0 : ENOENT;
+    if ((0 == InstallPackage(g_logrotate, log)) && (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, log)))
+    {
+        status = 0;
+        if (false == IsCurrentOs(PRETTY_NAME_SLES_15, log))
+        {
+            status = EnableAndStartDaemon(g_logrotateTimer, log)) ? 0 : ENOENT;
+        }
+    }
+    return status;
 }
 
 static int RemediateEnsureTelnetServiceIsDisabled(char* value, void* log)
