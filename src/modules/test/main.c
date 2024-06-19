@@ -391,7 +391,6 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
         "auditEnsurePermissionsOnEtcPasswdDash",
         "auditEnsureSyslogRotaterServiceIsEnabled",
-        "auditEnsureRemoteLoginWarningBannerIsConfigured",
         "auditEnsureZeroconfNetworkingIsDisabled"
     };
     int numSkippedAudits = ARRAY_SIZE(skippedAudits);
@@ -399,7 +398,6 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
     const char* skippedRemediations[] = {
         // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
         "remediateEnsureSyslogRotaterServiceIsEnabled",
-        "remediateEnsureRemoteLoginWarningBannerIsConfigured",
         "remediateEnsureZeroconfNetworkingIsDisabled"
     };
     int numSkippedRemediations = ARRAY_SIZE(skippedRemediations);
