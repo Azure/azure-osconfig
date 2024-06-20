@@ -850,7 +850,7 @@ bool IsCurrentOs(const char* name, void* log)
 
 bool IsRedHatBased(void* log)
 {
-    const char* distros[] = {"Red Hat", "CentOS", "AlmaLinux", "Oracle Linux", "Rocky Linux"};
+    const char* distros[] = {"Red Hat", "CentOS", "AlmaLinux", "Rocky Linux", "Oracle Linux"};
     int numDistros = ARRAY_SIZE(distros);
     char* prettyName = NULL;
     size_t prettyNameLength = 0;
@@ -860,7 +860,7 @@ bool IsRedHatBased(void* log)
 
     if ((NULL == (prettyName = GetOsPrettyName(log))) || (0 == (prettyNameLength = strlen(prettyName))))
     {
-        OsConfigLogError(log, "IsRedHatBased: no valid PRETTY_NAME found in /etc/os-release, assuming not Red Hat based");
+        OsConfigLogError(log, "IsRedHatBased: no valid PRETTY_NAME found in /etc/os-release, cannot check if Red Hat based, assuming not");
     }
     else
     {
@@ -869,9 +869,21 @@ bool IsRedHatBased(void* log)
             nameLength = strlen(distros[i]);
             if (true == (result = (0 == strncmp(distros[i], prettyName, ((nameLength <= prettyNameLength) ? nameLength : prettyNameLength) ? true : false))))
             {
-                OsConfigLogInfo(log, "Running on '%s' which is Red Hat based", prettyName);
+                if (0 == i)
+                {
+                    OsConfigLogInfo(log, "Running on '%s' which is Red Hat", prettyName);
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "Running on '%s' which is Red Hat based", prettyName);
+                }
                 break;
             }
+        }
+
+        if (false == result)
+        {
+            OsConfigLogInfo(log, "Running on '%s' which is not Red Hat based", prettyName);
         }
     }
 
