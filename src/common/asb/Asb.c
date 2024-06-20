@@ -624,6 +624,12 @@ static char* g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable = NULL;
 static char* g_desiredEnsureUnnecessaryAccountsAreRemoved = NULL;
 static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
 
+static bool IsRedHatBased(void* log)
+{
+    return (IsCurrentOs("Red Hat", log) && IsCurrentOs("CentOS", log) && IsCurrentOs("AlmaLinux", log) &&
+        IsCurrentOs("Oracle Linux", log) && IsCurrentOs("Rocky Linux", log)) ? true : false;
+}
+
 void AsbInitialize(void* log)
 {
     char* prettyName = NULL;
@@ -1779,7 +1785,7 @@ static char* AuditEnsureSyslogRotaterServiceIsEnabled(void* log)
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_logrotate, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, &reason, log));
-    if (false == IsCurrentOs(PRETTY_NAME_SLES_15, log))
+    if (false == IsRedHatBased(log))
     {
         CheckDaemonActive(g_logrotateTimer, &reason, log);
     }
@@ -3362,7 +3368,7 @@ static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, void* log)
     if ((0 == InstallPackage(g_logrotate, log)) && (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, log)))
     {
         status = 0;
-        if (false == IsCurrentOs(PRETTY_NAME_SLES_15, log))
+        if (false == IsRedHatBased(log))
         {
             status = EnableAndStartDaemon(g_logrotateTimer, log) ? 0 : ENOENT;
         }
