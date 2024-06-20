@@ -869,7 +869,7 @@ bool IsRedHatBased(void* log)
             nameLength = strlen(distros[i]);
             if (true == (result = (0 == strncmp(distros[i], prettyName, ((nameLength <= prettyNameLength) ? nameLength : prettyNameLength) ? true : false))))
             {
-                OsConfigLogInfo(log, "'%s' ('%s') is Red Hat based", name, prettyName);
+                OsConfigLogInfo(log, "Running on '%s' which is Red Hat based", prettyName);
                 break;
             }
         }
