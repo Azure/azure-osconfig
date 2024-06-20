@@ -2650,7 +2650,7 @@ static int RemediateEnsureCronServiceIsEnabled(char* value, void* log)
 
 static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 {
-    int status = 0;
+    int status = 0, i = 0;
     UNUSED(value);
     if (IsPackageInstalled(g_audit, log) && InstallPackage(g_audit, log) &&
         IsPackageInstalled(g_auditd, log) && InstallPackage(g_auditd, log) &&
@@ -2659,13 +2659,22 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
     {
         status = ENOENT;
     }
-    else if (CheckDaemonActive(g_auditd, NULL, log))
+    else if ((false == CheckDaemonActive(g_auditd, NULL, log)) && (false == EnableAndStartDaemon(g_auditd, log)))
     {
-        status = 0;
-    }
-    else
-    {
-        status = EnableAndStartDaemon(g_auditd, log) ? 0 : ENOENT;
+        ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log);
+        if (0 != (status = StartDaemon(g_auditd, log) ? 0 : ENOENT))
+        {
+            for (i = 0; i < 3; i++)
+            {
+                sleep(1);
+                StartDaemon(g_auditd, log);
+                if (CheckDaemonActive(g_auditd, NULL, log))
+                {
+                    status = 0;
+                    break;
+                }
+            }
+        }
     }
     return status;
 }
