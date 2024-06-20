@@ -626,8 +626,8 @@ static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
 
 static bool IsRedHatBased(void* log)
 {
-    return (IsCurrentOs("Red Hat", log) && IsCurrentOs("CentOS", log) && IsCurrentOs("AlmaLinux", log) &&
-        IsCurrentOs("Oracle Linux", log) && IsCurrentOs("Rocky Linux", log)) ? true : false;
+    return (IsCurrentOs("Red Hat", log) || IsCurrentOs("CentOS", log) || IsCurrentOs("AlmaLinux", log) ||
+        IsCurrentOs("Oracle Linux", log) || IsCurrentOs("Rocky Linux", log)) ? true : false;
 }
 
 void AsbInitialize(void* log)
