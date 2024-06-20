@@ -166,6 +166,7 @@ int SetPassMinDays(long days, void* log);
 int SetPassMaxDays(long days, void* log);
 int SetPassWarnAge(long days, void* log);
 bool IsCurrentOs(const char* name, void* log);
+bool IsRedHatBased(void* log);
 
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);
