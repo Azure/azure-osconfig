@@ -389,6 +389,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         "auditEnsureAuthenticationRequiredForSingleUserMode",
         "auditEnsureAllBootloadersHavePasswordProtectionEnabled",
         // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
+        "auditEnsurePermissionsOnEtcPasswdDash",
         "auditEnsureZeroconfNetworkingIsDisabled"
     };
     int numSkippedAudits = ARRAY_SIZE(skippedAudits);

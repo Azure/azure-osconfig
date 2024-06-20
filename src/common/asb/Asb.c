@@ -2662,10 +2662,10 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
         else
         {
             ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log);
-            for (i = 0; i < 10; i++)
+            for (i = 0; i < 3; i++)
             {
-                sleep(1);
-                StartDaemon(g_auditd, log);
+                sleep(3);
+                RestartDaemon(g_auditd, log);
                 if (CheckDaemonActive(g_auditd, NULL, log))
                 {
                     status = 0;
