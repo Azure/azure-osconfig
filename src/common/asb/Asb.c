@@ -2650,31 +2650,19 @@ static int RemediateEnsureCronServiceIsEnabled(char* value, void* log)
 
 static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 {
-    int status = ENOENT, i = 0;
     UNUSED(value);
-    if (((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) || 
-        (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))) && EnableDaemon(g_auditd, log))
-    { 
-        if (StartDaemon(g_auditd, log))
-        {
-            status = 0;
-        }
-        else
-        {
-            ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log);
-            for (i = 0; i < 3; i++)
-            {
-                sleep(3);
-                RestartDaemon(g_auditd, log);
-                if (CheckDaemonActive(g_auditd, NULL, log))
-                {
-                    status = 0;
-                    break;
-                }
-            }
-        }
+    if (IsPackageInstalled(g_audit, log) && InstallPackage(g_audit, log) &&
+        IsPackageInstalled(g_auditd, log) && InstallPackage(g_auditd, log) &&
+        IsPackageInstalled(g_auditLibs, log) && InstallPackage(g_auditLibs, log) &&
+        IsPackageInstalled(g_auditLibsDevel, log) && InstallPackage(g_auditLibsDevel, log))
+    {
+        return ENOENT;
     }
-    return status;
+    else if (CheckDaemonActive(g_auditd, &reason, log))
+    {
+        return 0;
+    }
+    return EnableAndStartDaemon(g_auditd, log) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureKernelSupportForCpuNx(char* value, void* log)
