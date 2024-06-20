@@ -430,10 +430,8 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 // When done assembling the final temp mount file two, move it in an atomic step to real mount file
                 if (0 == (status = RenameFileWithOwnerAndAccess(tempFileNameTwo, fsMountTable, log)))
                 {
-                    if (0 != (status = ExecuteCommand(NULL, mountAll, false, false, 0, 0, NULL, NULL, NULL)))
-                    {
-                        OsConfigLogError(log, "SetFileSystemMountingOption: '%s' failed with %d", mountAll, status);
-                    }
+                    // Command may fail when one configured mount point is not present, so ignore failures
+                    ExecuteCommand(NULL, mountAll, false, false, 0, 0, NULL, NULL, NULL);
                 }
                 else
                 {
