@@ -2652,10 +2652,10 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 {
     int status = 0, i = 0;
     UNUSED(value);
-    if (IsPackageInstalled(g_audit, log) && InstallPackage(g_audit, log) &&
-        IsPackageInstalled(g_auditd, log) && InstallPackage(g_auditd, log) &&
-        IsPackageInstalled(g_auditLibs, log) && InstallPackage(g_auditLibs, log) &&
-        IsPackageInstalled(g_auditLibsDevel, log) && InstallPackage(g_auditLibsDevel, log))
+    if ((0 != IsPackageInstalled(g_audit, log)) && (0 != IsPackageInstalled(g_auditd, log)) &&
+        (0 != IsPackageInstalled(g_auditLibs, log)) && (0 != IsPackageInstalled(g_auditLibsDevel, log)) &&
+        (0 != InstallPackage(g_audit, log)) && (0 != InstallPackage(g_auditd, log)) &&
+        (0 != InstallPackage(g_auditLibs, log)) && (0 != InstallPackage(g_auditLibsDevel, log)))
     {
         status = ENOENT;
     }
