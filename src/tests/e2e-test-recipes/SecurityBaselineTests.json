@@ -333,7 +333,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcPasswdDash",
-    "Payload": "600"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",
@@ -637,7 +637,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcPasswdDash",
-    "Payload": "600"
+    "Payload": "644"
   },
   {
     "ObjectType": "Desired",

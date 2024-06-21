@@ -436,7 +436,7 @@ static const char* g_defaultEnsurePermissionsOnEtcShadowDash = "400";
 static const char* g_defaultEnsurePermissionsOnEtcGShadow = "400";
 static const char* g_defaultEnsurePermissionsOnEtcGShadowDash = "400";
 static const char* g_defaultEnsurePermissionsOnEtcPasswd = "644";
-static const char* g_defaultEnsurePermissionsOnEtcPasswdDash = "600";
+static const char* g_defaultEnsurePermissionsOnEtcPasswdDash = "644";
 static const char* g_defaultEnsurePermissionsOnEtcGroup = "644";
 static const char* g_defaultEnsurePermissionsOnEtcGroupDash = "644";
 static const char* g_defaultEnsurePermissionsOnEtcAnacronTab = "600";
@@ -624,11 +624,7 @@ static char* g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable = NULL;
 static char* g_desiredEnsureUnnecessaryAccountsAreRemoved = NULL;
 static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
 
-static bool IsRedHatBased(void* log)
-{
-    return (IsCurrentOs("Red Hat", log) || IsCurrentOs("CentOS", log) || IsCurrentOs("AlmaLinux", log) ||
-        IsCurrentOs("Oracle Linux", log) || IsCurrentOs("Rocky Linux", log)) ? true : false;
-}
+static const int g_shadowGid = 42;
 
 void AsbInitialize(void* log)
 {
@@ -779,7 +775,7 @@ static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void* log)
 static char* AuditEnsurePermissionsOnEtcShadow(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadow ? 
+    CheckFileAccess(g_etcShadow, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcShadow ?
         g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow), &reason, log);
     return reason;
 }
@@ -787,7 +783,7 @@ static char* AuditEnsurePermissionsOnEtcShadow(void* log)
 static char* AuditEnsurePermissionsOnEtcShadowDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadowDash ? 
+    CheckFileAccess(g_etcShadowDash, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcShadowDash ?
         g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash), &reason, log);
     return reason;
 }
@@ -795,7 +791,7 @@ static char* AuditEnsurePermissionsOnEtcShadowDash(void* log)
 static char* AuditEnsurePermissionsOnEtcGShadow(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadow ? 
+    CheckFileAccess(g_etcGShadow, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcGShadow ?
         g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow), &reason, log);
     return reason;
 }
@@ -803,7 +799,7 @@ static char* AuditEnsurePermissionsOnEtcGShadow(void* log)
 static char* AuditEnsurePermissionsOnEtcGShadowDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash ? 
+    CheckFileAccess(g_etcGShadowDash, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash ?
         g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash), &reason, log);
     return reason;
 }
@@ -2454,25 +2450,25 @@ static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
 static int RemediateEnsurePermissionsOnEtcShadow(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcShadow(value);
-    return SetFileAccess(g_etcShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadow), log);
+    return SetFileAccess(g_etcShadow, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcShadow), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcShadowDash(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcShadowDash(value);
-    return SetFileAccess(g_etcShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadowDash), log);
+    return SetFileAccess(g_etcShadowDash, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcShadowDash), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadow(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcGShadow(value);
-    return SetFileAccess(g_etcGShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadow), log);
+    return SetFileAccess(g_etcGShadow, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcGShadow), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadowDash(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcGShadowDash(value);
-    return SetFileAccess(g_etcGShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash), log);
+    return SetFileAccess(g_etcGShadowDash, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswd(char* value, void* log)
@@ -2656,19 +2652,21 @@ static int RemediateEnsureCronServiceIsEnabled(char* value, void* log)
 
 static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 {
-    int status = ENOENT, i = 0;
+    int status = 0, i = 0;
     UNUSED(value);
-    if (((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) || 
-        (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))) && EnableDaemon(g_auditd, log))
-    { 
-        if (StartDaemon(g_auditd, log))
+    if ((0 != IsPackageInstalled(g_audit, log)) && (0 != IsPackageInstalled(g_auditd, log)) &&
+        (0 != IsPackageInstalled(g_auditLibs, log)) && (0 != IsPackageInstalled(g_auditLibsDevel, log)) &&
+        (0 != InstallPackage(g_audit, log)) && (0 != InstallPackage(g_auditd, log)) &&
+        (0 != InstallPackage(g_auditLibs, log)) && (0 != InstallPackage(g_auditLibsDevel, log)))
+    {
+        status = ENOENT;
+    }
+    else if ((false == CheckDaemonActive(g_auditd, NULL, log)) && (false == EnableAndStartDaemon(g_auditd, log)))
+    {
+        ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log);
+        if (0 != (status = StartDaemon(g_auditd, log) ? 0 : ENOENT))
         {
-            status = 0;
-        }
-        else
-        {
-            ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log);
-            for (i = 0; i < 10; i++)
+            for (i = 0; i < 3; i++)
             {
                 sleep(1);
                 StartDaemon(g_auditd, log);

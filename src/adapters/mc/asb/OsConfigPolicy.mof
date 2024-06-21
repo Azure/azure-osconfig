@@ -1059,7 +1059,7 @@ instance of OsConfigResource as $OsConfigResource68ref
     ReportedObjectName = "auditEnsurePermissionsOnEtcPasswdDash";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcPasswdDash";
-    DesiredObjectValue = "600";
+    DesiredObjectValue = "644";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "LinuxSecurityBaseline";
