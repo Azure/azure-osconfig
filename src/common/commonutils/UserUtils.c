@@ -3318,14 +3318,17 @@ int RemoveUserAccounts(const char* names, void* log)
                 }
                 else
                 {
-                    if (0 == FindTextInFile(g_etcPasswd, decoratedName, log))
+                    if (false == userAccountsNotFound)
                     {
-                        ReplaceMarkedLinesInFile(g_etcPasswd, decoratedName, NULL, '#', true, log);
-                    }
+                        if (0 == FindTextInFile(g_etcPasswd, decoratedName, log))
+                        {
+                            ReplaceMarkedLinesInFile(g_etcPasswd, decoratedName, NULL, '#', true, log);
+                        }
 
-                    if (0 == FindTextInFile(g_etcShadow, decoratedName, log))
-                    {
-                        ReplaceMarkedLinesInFile(g_etcShadow, decoratedName, NULL, '#', true, log);
+                        if (0 == FindTextInFile(g_etcShadow, decoratedName, log))
+                        {
+                            ReplaceMarkedLinesInFile(g_etcShadow, decoratedName, NULL, '#', true, log);
+                        }
                     }
 
                     if (0 == FindTextInFile(g_etcPasswdDash, decoratedName, log))
