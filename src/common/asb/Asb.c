@@ -3689,14 +3689,7 @@ static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
 {
     InitEnsureUnnecessaryAccountsAreRemoved(value);
-    
-    SetFileAccess(g_etcPasswd, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswd), log);
-    SetFileAccess(g_etcShadow, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcShadow), log);
-    SetFileAccess(g_etcPasswdDash, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswdDash), log);
-
-
-    return (0 == RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log)) &&
-
+    return RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log);
 }
 
 int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log)
