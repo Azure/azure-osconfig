@@ -3221,6 +3221,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
 int RemoveUserAccounts(const char* names, void* log)
 {
+    const char* etcPasswdDash = "/etc/passwd-";
+    const char* etcShadowDash = "/etc/shadow-";
     const char* userTemplate = "%s:";
     size_t namesLength = 0;
     char* name = NULL;
@@ -3315,6 +3317,16 @@ int RemoveUserAccounts(const char* names, void* log)
                     if (0 == FindTextInFile(g_etcShadow, decoratedName, log))
                     {
                         ReplaceMarkedLinesInFile(g_etcShadow, decoratedName, NULL, '#', true, log);
+                    }
+
+                    if (0 == FindTextInFile(etcPasswdDash, decoratedName, log))
+                    {
+                        ReplaceMarkedLinesInFile(etcPasswdDash, decoratedName, NULL, '#', true, log);
+                    }
+
+                    if (0 == FindTextInFile(etcShadowDash, decoratedName, log))
+                    {
+                        ReplaceMarkedLinesInFile(etcShadowDash, decoratedName, NULL, '#', true, log);
                     }
 
                     FREE_MEMORY(decoratedName);

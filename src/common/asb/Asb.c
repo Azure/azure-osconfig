@@ -624,6 +624,8 @@ static char* g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable = NULL;
 static char* g_desiredEnsureUnnecessaryAccountsAreRemoved = NULL;
 static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
 
+static const int g_shadowGid = 42;
+
 void AsbInitialize(void* log)
 {
     char* prettyName = NULL;
@@ -773,7 +775,7 @@ static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void* log)
 static char* AuditEnsurePermissionsOnEtcShadow(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadow ? 
+    CheckFileAccess(g_etcShadow, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcShadow ?
         g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow), &reason, log);
     return reason;
 }
@@ -781,7 +783,7 @@ static char* AuditEnsurePermissionsOnEtcShadow(void* log)
 static char* AuditEnsurePermissionsOnEtcShadowDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadowDash ? 
+    CheckFileAccess(g_etcShadowDash, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcShadowDash ?
         g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash), &reason, log);
     return reason;
 }
@@ -789,7 +791,7 @@ static char* AuditEnsurePermissionsOnEtcShadowDash(void* log)
 static char* AuditEnsurePermissionsOnEtcGShadow(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadow ? 
+    CheckFileAccess(g_etcGShadow, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcGShadow ?
         g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow), &reason, log);
     return reason;
 }
@@ -797,7 +799,7 @@ static char* AuditEnsurePermissionsOnEtcGShadow(void* log)
 static char* AuditEnsurePermissionsOnEtcGShadowDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash ? 
+    CheckFileAccess(g_etcGShadowDash, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash ?
         g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash), &reason, log);
     return reason;
 }
@@ -2448,25 +2450,25 @@ static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
 static int RemediateEnsurePermissionsOnEtcShadow(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcShadow(value);
-    return SetFileAccess(g_etcShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadow), log);
+    return SetFileAccess(g_etcShadow, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcShadow), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcShadowDash(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcShadowDash(value);
-    return SetFileAccess(g_etcShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcShadowDash), log);
+    return SetFileAccess(g_etcShadowDash, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcShadowDash), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadow(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcGShadow(value);
-    return SetFileAccess(g_etcGShadow, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadow), log);
+    return SetFileAccess(g_etcGShadow, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcGShadow), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadowDash(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcGShadowDash(value);
-    return SetFileAccess(g_etcGShadowDash, 0, 42, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash), log);
+    return SetFileAccess(g_etcGShadowDash, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswd(char* value, void* log)
@@ -3687,7 +3689,14 @@ static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
 {
     InitEnsureUnnecessaryAccountsAreRemoved(value);
-    return RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log);
+    
+    SetFileAccess(g_etcPasswd, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswd), log);
+    SetFileAccess(g_etcShadow, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcShadow), log);
+    SetFileAccess(g_etcPasswdDash, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswdDash), log);
+
+
+    return (0 == RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log)) &&
+
 }
 
 int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log)
