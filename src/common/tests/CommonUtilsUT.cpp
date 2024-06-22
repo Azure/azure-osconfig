@@ -217,14 +217,6 @@ TEST_F(CommonUtilsTest, ConcatenateFiles)
     EXPECT_TRUE(Cleanup(testPath2));
 }
 
-TEST_F(CommonUtilsTest, IsAFileOrDirectory)
-{
-    EXPECT_TRUE(IsAFile("/etc/passwd", NULL));
-    EXPECT_FALSE(IsADirectory("/etc/passwd", NULL));
-    EXPECT_FALSE(IsAFile("/etc", NULL));
-    EXPECT_TRUE(IsADirectory("/etc", NULL));
-}
-
 struct ExecuteCommandOptions
 {
     const char* command;
@@ -634,6 +626,14 @@ TEST_F(CommonUtilsTest, DirectoryExists)
     EXPECT_FALSE(DirectoryExists(m_path));
     EXPECT_FALSE(DirectoryExists("This directory does not exist"));
     EXPECT_TRUE(DirectoryExists("/etc"));
+}
+
+TEST_F(CommonUtilsTest, IsAFileOrDirectory)
+{
+    EXPECT_TRUE(IsAFile("/etc/passwd", NULL));
+    EXPECT_FALSE(IsADirectory("/etc/passwd", NULL));
+    EXPECT_FALSE(IsAFile("/etc", NULL));
+    EXPECT_TRUE(IsADirectory("/etc", NULL));
 }
 
 struct HttpProxyOptions
