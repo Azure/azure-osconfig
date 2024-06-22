@@ -321,7 +321,7 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
     return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
 }
 
-static bool IsATrue(bool directory, char* name, void* log)
+static bool IsATrue(bool directory, const char* name, void* log)
 {
     struct stat statStruct = {0};
     int format = 0;
