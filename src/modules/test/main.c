@@ -388,15 +388,10 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         "auditEnsureDefaultDenyFirewallPolicyIsSet",
         "auditEnsureAuthenticationRequiredForSingleUserMode",
         "auditEnsureAllBootloadersHavePasswordProtectionEnabled",
-        // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
-        "auditEnsureZeroconfNetworkingIsDisabled"
     };
     int numSkippedAudits = ARRAY_SIZE(skippedAudits);
 
-    const char* skippedRemediations[] = {
-        // Following are temporarily disabled and they will be re-enabled and fixed one by one for all target distros
-        "remediateEnsureZeroconfNetworkingIsDisabled"
-    };
+    const char* skippedRemediations[] = {};
     int numSkippedRemediations = ARRAY_SIZE(skippedRemediations);
 
     const char* audit = "audit";
