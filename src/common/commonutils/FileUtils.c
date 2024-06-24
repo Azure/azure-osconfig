@@ -321,7 +321,7 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
     return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
 }
 
-static bool IsATrue(bool directory, const char* name, void* log)
+static bool IsATrueFileOrDirectory(bool directory, const char* name, void* log)
 {
     struct stat statStruct = {0};
     int format = 0;
@@ -330,7 +330,7 @@ static bool IsATrue(bool directory, const char* name, void* log)
 
     if (NULL == name)
     {
-        OsConfigLogError(log, "IsATrue: invalid argument");
+        OsConfigLogError(log, "IsATrueFileOrDirectoryFileOrDirectory: invalid argument");
         return false;
     }
 
@@ -341,56 +341,56 @@ static bool IsATrue(bool directory, const char* name, void* log)
         switch (format)
         {
             case S_IFBLK:
-                OsConfigLogError(log, "IsATrue: '%s' is a block device", name);
+                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a block device", name);
                 break;
 
             case S_IFCHR:
-                OsConfigLogError(log, "IsATrue: '%s' is a character device", name);
+                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a character device", name);
                 break;
 
             case S_IFDIR:
                 if (directory)
                 {
-                    OsConfigLogInfo(log, "IsATrue: '%s' is a directory", name);
+                    OsConfigLogInfo(log, "IsATrueFileOrDirectory: '%s' is a directory", name);
                     result = true;
                 }
                 else
                 {
-                    OsConfigLogError(log, "IsATrue: '%s' is a directory", name);
+                    OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a directory", name);
                 }
                 break;
 
             case S_IFIFO:
-                OsConfigLogError(log, "IsATrue: '%s' is a FIFO pipe", name);
+                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a FIFO pipe", name);
                 break;
 
             case S_IFLNK:
-                OsConfigLogError(log, "IsATrue: '%s' is a symnlink", name);
+                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a symnlink", name);
                 break;
 
             case S_IFREG:
                 if (false == directory)
                 {
-                    OsConfigLogInfo(log, "IsATrue: '%s' is a regular file", name);
+                    OsConfigLogInfo(log, "IsATrueFileOrDirectory: '%s' is a regular file", name);
                     result = true;
                 }
                 else
                 {
-                    OsConfigLogError(log, "IsATrue: '%s' is a regular file", name);
+                    OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a regular file", name);
                 }
                 break;
 
             case S_IFSOCK:
-                OsConfigLogError(log, "IsATrue: '%s' is a socket", name);
+                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a socket", name);
                 break;
 
             default:
-                OsConfigLogError(log, "IsATrue: '%s' is of an unknown format 0x%X", name, format);
+                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is of an unknown format 0x%X", name, format);
         }
     }
     else
     {
-        OsConfigLogError(log, "IsATrue: stat('%s') failed with %d (errno: %d)", name, status, errno);
+        OsConfigLogError(log, "IsATrueFileOrDirectory: stat('%s') failed with %d (errno: %d)", name, status, errno);
     }
 
     return result;
@@ -398,12 +398,12 @@ static bool IsATrue(bool directory, const char* name, void* log)
 
 bool IsAFile(const char* fileName, void* log)
 {
-    return IsATrue(false, fileName, log);
+    return IsATrueFileOrDirectory(false, fileName, log);
 }
 
 bool IsADirectory(const char* fileName, void* log)
 {
-    return IsATrue(true, fileName, log);
+    return IsATrueFileOrDirectory(true, fileName, log);
 }
    
 bool FileExists(const char* fileName)
