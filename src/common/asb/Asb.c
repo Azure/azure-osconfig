@@ -1546,7 +1546,7 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(void* log)
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_avahiDaemon, &reason, log) ? 0 : ENOENT);
     RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', g_ipv4ll, &reason, log));
-    if (FileExists(g_etcSysconfigNetwork))
+    if (FileExists(g_etcSysconfigNetwork) && IsAFile(g_etcSysconfigNetwork, log))
     {
         CheckLineFoundNotCommentedOut(g_etcSysconfigNetwork, '#', "NOZEROCONF=yes", &reason, log);
     }
@@ -2664,8 +2664,9 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
     else if ((false == CheckDaemonActive(g_auditd, NULL, log)) && (false == EnableAndStartDaemon(g_auditd, log)))
     {
         ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log);
-        if (0 != (status = StartDaemon(g_auditd, log) ? 0 : ENOENT))
+        if (false == StartDaemon(g_auditd, log))
         {
+            status = ENOENT;
             for (i = 0; i < 3; i++)
             {
                 sleep(1);
@@ -3134,11 +3135,20 @@ static int RemediateEnsureTipcIsDisabled(char* value, void* log)
 
 static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, void* log)
 {
+    int status = 0;
     UNUSED(value);
     StopAndDisableDaemon(g_avahiDaemon, log);
-    return ((false == IsDaemonActive(g_avahiDaemon, log)) && 
-        (0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, g_ipv4ll, NULL, '#', true, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', true, log))) ? 0 : ENOENT;
+    if (0 == (status = (CheckDaemonNotActive(g_avahiDaemon, NULL, log) ? 0 : ENOENT)))
+    {
+        if (0 == (status = ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, g_ipv4ll, NULL, '#', true, log)))
+        {
+            if (FileExists(g_etcSysconfigNetwork) && IsAFile(g_etcSysconfigNetwork, log))
+            {
+                status = ReplaceMarkedLinesInFile(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', true, log);
+            }
+        }
+    }
+    return status;
 }
 
 static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)

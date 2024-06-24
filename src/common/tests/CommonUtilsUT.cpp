@@ -628,6 +628,14 @@ TEST_F(CommonUtilsTest, DirectoryExists)
     EXPECT_TRUE(DirectoryExists("/etc"));
 }
 
+TEST_F(CommonUtilsTest, IsAFileOrDirectory)
+{
+    EXPECT_TRUE(IsAFile("/etc/passwd", NULL));
+    EXPECT_FALSE(IsADirectory("/etc/passwd", NULL));
+    EXPECT_FALSE(IsAFile("/etc", NULL));
+    EXPECT_TRUE(IsADirectory("/etc", NULL));
+}
+
 struct HttpProxyOptions
 {
     const char* data;

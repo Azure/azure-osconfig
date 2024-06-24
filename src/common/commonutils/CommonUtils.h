@@ -60,6 +60,8 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
+bool IsAFile(const char* fileName, void* log);
+bool IsADirectory(const char* fileName, void* log);
 bool FileExists(const char* fileName);
 bool DirectoryExists(const char* directoryName);
 int CheckFileExists(const char* fileName, char** reason, void* log);

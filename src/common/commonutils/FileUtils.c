@@ -321,6 +321,91 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
     return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
 }
 
+static bool IsATrueFileOrDirectory(bool directory, const char* name, void* log)
+{
+    struct stat statStruct = {0};
+    int format = 0;
+    int status = 0;
+    bool result = false;
+
+    if (NULL == name)
+    {
+        OsConfigLogError(log, "IsATrueFileOrDirectoryFileOrDirectory: invalid argument");
+        return false;
+    }
+
+    if (-1 != (status = lstat(name, &statStruct)))
+    {
+        format = S_IFMT & statStruct.st_mode;
+        
+        switch (format)
+        {
+            case S_IFBLK:
+                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a block device", name);
+                break;
+
+            case S_IFCHR:
+                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a character device", name);
+                break;
+
+            case S_IFDIR:
+                if (directory)
+                {
+                    OsConfigLogInfo(log, "IsATrueFileOrDirectory: '%s' is a directory", name);
+                    result = true;
+                }
+                else
+                {
+                    OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a directory", name);
+                }
+                break;
+
+            case S_IFIFO:
+                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a FIFO pipe", name);
+                break;
+
+            case S_IFLNK:
+                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a symnlink", name);
+                break;
+
+            case S_IFREG:
+                if (false == directory)
+                {
+                    OsConfigLogInfo(log, "IsATrueFileOrDirectory: '%s' is a regular file", name);
+                    result = true;
+                }
+                else
+                {
+                    OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a regular file", name);
+                }
+                break;
+
+            case S_IFSOCK:
+                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a socket", name);
+                break;
+
+            default:
+                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is of an unknown format 0x%X", name, format);
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "IsATrueFileOrDirectory: stat('%s') failed with %d (errno: %d)", name, status, errno);
+    }
+
+    return result;
+}
+
+bool IsAFile(const char* fileName, void* log)
+{
+    return IsATrueFileOrDirectory(false, fileName, log);
+}
+
+bool IsADirectory(const char* fileName, void* log)
+{
+    return IsATrueFileOrDirectory(true, fileName, log);
+}
+   
 bool FileExists(const char* fileName)
 {
     return ((NULL != fileName) && (-1 != access(fileName, F_OK))) ? true : false;
