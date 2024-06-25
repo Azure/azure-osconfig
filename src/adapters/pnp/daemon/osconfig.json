@@ -781,5 +781,5 @@
       "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
     }
   ],
-  "ReportingIntervalSeconds": 300
+  "ReportingIntervalSeconds": 3
 }
