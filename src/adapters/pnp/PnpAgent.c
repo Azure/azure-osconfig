@@ -421,6 +421,8 @@ static void ReportProperties()
 
 static void AgentDoWork(void)
 {
+    const char* aziotIdentityService = "aziot-identity-service";
+
     char* connectionString = NULL;
 
     unsigned int currentTime = time(NULL);
@@ -428,7 +430,7 @@ static void AgentDoWork(void)
 
     if (timeInterval <= (currentTime - g_lastTime))
     {
-        if ((NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource))
+        if ((0 == IsPackageInstalled(aziotIdentityService, GetLog()) && (NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource))
         {
             IotHubDeInitialize();
 
