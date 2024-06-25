@@ -10,7 +10,7 @@
     "remediateEnsurePermissionsOnEtcGShadow": "400",
     "remediateEnsurePermissionsOnEtcGShadowDash": "400",
     "remediateEnsurePermissionsOnEtcPasswd": "644",
-    "remediateEnsurePermissionsOnEtcPasswdDash": "600",
+    "remediateEnsurePermissionsOnEtcPasswdDash": "644",
     "remediateEnsurePermissionsOnEtcGroup": "644",
     "remediateEnsurePermissionsOnEtcGroupDash": "644",
     "remediateEnsurePermissionsOnEtcAnacronTab": "600",
