@@ -91,9 +91,6 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
                     mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
                 }
 
-                OsConfigLogInfo(log, "Watcher:  CallMpiSetDesired('%.*s', %d) returned %d", 
-                    payloadSizeBytes, payload, payloadSizeBytes, mpiResult);
-
                 if (MPI_OK == mpiResult)
                 {
                     *hash = payloadHash;
