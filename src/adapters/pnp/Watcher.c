@@ -268,17 +268,17 @@ void InitializeWatcher(const char* jsonConfiguration, void* log)
     RestrictFileAccessToCurrentAccountOnly(RC_FILE);
     RestrictFileAccessToCurrentAccountOnly(GIT_DC_FILE);
 
-    if (NULL != mpiHandle)
+    if (NULL != g_mpiHandle)
     {
-        CallMpiClose(mpiHandle, GetLog());
-        mpiHandle = NULL;
+        CallMpiClose(g_mpiHandle, GetLog());
+        g_mpiHandle = NULL;
     }
 
     if (true == EnableAndStartDaemon(g_mpiServer, GetLog()))
     {
         sleep(1);
 
-        if (NULL == (mpiHandle = CallMpiOpen(MPI_CLIENT_NAME, MAX_PAYLOAD_LENGTH, GetLog())))
+        if (NULL == (g_mpiHandle = CallMpiOpen(MPI_CLIENT_NAME, MAX_PAYLOAD_LENGTH, GetLog())))
         {
             OsConfigLogError(GetLog(), "Watcher: MpiOpen failed");
         }
