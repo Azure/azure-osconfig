@@ -89,6 +89,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
                 if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
                 {
                     mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
+                    OsConfigLogInfo(log, "Watcher:  CallMpiSetDesired('%.*s', %d) returned %d", payloadSizeBytes, payload, payloadSizeBytes, mpiResult);
                 }
             
                 if (MPI_OK == mpiResult)
