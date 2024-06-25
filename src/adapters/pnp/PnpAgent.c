@@ -184,6 +184,12 @@ static IOTHUB_DEVICE_CLIENT_LL_HANDLE CallIotHubInitialize(void)
     return moduleHandle;
 }
 
+static bool IsAisInstalled(void)
+{
+    const char* aziotIdentityService = "aziot-identity-service";
+    return (0 == IsPackageInstalled(aziotIdentityService, GetLog())) ? true : false;
+}
+
 static void RefreshConnection()
 {
     char* connectionString = NULL;
@@ -191,22 +197,25 @@ static void RefreshConnection()
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
 
-    // If initialized with AIS, try to get a new connection string same way:
-    if ((FromAis == g_connectionStringSource) && (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
+    if (IsAisInstalled())
     {
-        FREE_MEMORY(g_iotHubConnectionString);
-        if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
+        // If initialized with AIS, try to get a new connection string same way:
+        if ((FromAis == g_connectionStringSource) && (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
         {
-            OsConfigLogError(GetLog(), "RefreshConnection: out of memory making copy of the connection string");
-            FREE_MEMORY(connectionString);
+            FREE_MEMORY(g_iotHubConnectionString);
+            if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
+            {
+                OsConfigLogError(GetLog(), "RefreshConnection: out of memory making copy of the connection string");
+                FREE_MEMORY(connectionString);
+            }
         }
-    }
-    else
-    {
-        if (FromAis == g_connectionStringSource)
+        else
         {
-            // No new connection string from AIS, try to refresh using the existing connection string before bailing out:
-            OsConfigLogError(GetLog(), "RefreshConnection: failed to obtain a new connection string from AIS, trying refresh with existing connection string");
+            if (FromAis == g_connectionStringSource)
+            {
+                // No new connection string from AIS, try to refresh using the existing connection string before bailing out:
+                OsConfigLogError(GetLog(), "RefreshConnection: failed to obtain a new connection string from AIS, trying refresh with existing connection string");
+            }
         }
     }
 
@@ -421,8 +430,6 @@ static void ReportProperties()
 
 static void AgentDoWork(void)
 {
-    const char* aziotIdentityService = "aziot-identity-service";
-
     char* connectionString = NULL;
 
     unsigned int currentTime = time(NULL);
@@ -430,7 +437,7 @@ static void AgentDoWork(void)
 
     if (timeInterval <= (currentTime - g_lastTime))
     {
-        if ((0 == IsPackageInstalled(aziotIdentityService, GetLog()) && (NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource))
+        if (IsAisInstalled() && (NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource))
         {
             IotHubDeInitialize();
 
