@@ -5,6 +5,9 @@
 #include "inc/PnpAgent.h"
 #include "inc/AisUtils.h"
 
+#define MPI_CLIENT_NAME "OSConfig Watcher"
+#define MAX_PAYLOAD_LENGTH 0
+
 // The local Desired Configuration (DC) and Reported Configuration (RC) files
 #define DC_FILE "/etc/osconfig/osconfig_desired.json"
 #define RC_FILE "/etc/osconfig/osconfig_reported.json"
@@ -12,6 +15,8 @@
 // The local clone for Git Desired Configuration (DC) 
 #define GIT_DC_CLONE "/etc/osconfig/gitops/"
 #define GIT_DC_FILE GIT_DC_CLONE "osconfig_desired.json"
+
+const char* g_mpiServer = "osconfig-platform";
 
 static int g_localManagement = 0;
 static size_t g_reportedHash = 0;
@@ -24,6 +29,8 @@ static size_t g_gitDesiredHash = 0;
 
 static bool g_gitCloneInitialized = false;
 
+static MPI_HANDLE g_mpiHandle = NULL;
+
 static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
 {
     char* payload = NULL;
@@ -32,7 +39,7 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
     
-    if (fileName && hash)
+    if (fileName && hash && g_mpiHandle)
     {
         mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
         if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
@@ -66,7 +73,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
 
-    if (fileName && hash)
+    if (fileName && hash && g_mpiHandle)
     {
         RestrictFileAccessToCurrentAccountOnly(fileName);
 
@@ -76,7 +83,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
             // Do not call MpiSetDesired unless this desired configuration is different from previous
             if ((*hash != (payloadHash = HashString(payload))) && payloadHash)
             {
-                OsConfigLogInfo(log, "Watcher processing DC payload from %s", fileName);
+                OsConfigLogInfo(log, "Watcher: processing DC payload from '%s'", fileName);
 
                 mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
                 if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
@@ -90,6 +97,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
                 }
             }
         }
+
         FREE_MEMORY(payload);
     }
 }
@@ -259,6 +267,30 @@ void InitializeWatcher(const char* jsonConfiguration, void* log)
     RestrictFileAccessToCurrentAccountOnly(DC_FILE);
     RestrictFileAccessToCurrentAccountOnly(RC_FILE);
     RestrictFileAccessToCurrentAccountOnly(GIT_DC_FILE);
+
+    if (NULL != mpiHandle)
+    {
+        CallMpiClose(mpiHandle, GetLog());
+        mpiHandle = NULL;
+    }
+
+    if (true == EnableAndStartDaemon(g_mpiServer, GetLog()))
+    {
+        sleep(1);
+
+        if (NULL == (mpiHandle = CallMpiOpen(MPI_CLIENT_NAME, MAX_PAYLOAD_LENGTH, GetLog())))
+        {
+            OsConfigLogError(GetLog(), "Watcher: MpiOpen failed");
+        }
+        else
+        {
+            OsConfigLogInfo(GetLog(), "Watcher: initialized with MPI session '%p'", g_mpiHandle);
+        }
+    }
+    else
+    {
+        OsConfigLogError(GetLog(), "Watcher: the OSConfig Platform service '%s' is not active on this device", g_mpiServer);
+    }
 }
 
 void WatcherDoWork(void* log)
@@ -289,6 +321,11 @@ void WatcherDoWork(void* log)
 
 void WatcherCleanup(void* log)
 {
+    OsConfigLogInfo(log, "Watcher: closing MPI session '%p' and shutting down", g_mpiHandle);
+
+    CallMpiClose(g_mpiHandle, GetLog());
+    g_mpiHandle = NULL;
+    
     DeleteGitClone(GIT_DC_CLONE, log);
 
     FREE_MEMORY(g_gitRepositoryUrl);
