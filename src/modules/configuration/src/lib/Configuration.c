@@ -221,7 +221,7 @@ static int UpdateConfigurationFile(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_commandLoggingEnabledObject, commandLoggingEnabled ? "true" : "false");
             }
 
-            if (JSONSuccess == json_object_set_number(jsonObject, iotHubtManagementEnabledName, (double)(iotHubtManagementEnabled ? 1 : 0)))
+            if (JSONSuccess == json_object_set_number(jsonObject, iotHubtManagementEnabledName, (double)(g_iotHubtManagementEnabled ? 1 : 0)))
             {
                 g_iotHubtManagementEnabled = iotHubtManagementEnabled;
             }
