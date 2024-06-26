@@ -173,13 +173,16 @@ static void SignalReloadConfiguration(int incomingSignal)
 
 static IOTHUB_DEVICE_CLIENT_LL_HANDLE CallIotHubInitialize(void)
 {
-    IOTHUB_DEVICE_CLIENT_LL_HANDLE moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, g_x509PrivateKeyHandle,
-        &g_proxyOptions, (PROTOCOL_MQTT_WS == g_iotHubProtocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol);
-
-    if (NULL == moduleHandle)
+    IOTHUB_DEVICE_CLIENT_LL_HANDLE moduleHandle = NULL;
+    
+    if (g_isIotHubEnabled)
     {
-        OsConfigLogError(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
-        IotHubDeInitialize();
+        if (NULL == (moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, g_x509PrivateKeyHandle,
+            &g_proxyOptions, (PROTOCOL_MQTT_WS == g_iotHubProtocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
+        {
+            OsConfigLogError(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
+            IotHubDeInitialize();
+        }
     }
 
     return moduleHandle;
@@ -250,13 +253,15 @@ static void SignalChild(int signal)
 
 static void SignalProcessDesired(int incomingSignal)
 {
-    OsConfigLogInfo(GetLog(), "Processing desired twin updates");
-    ProcessDesiredTwinUpdates();
-
-    // Reset the signal handler for the next use otherwise the default handler will be invoked instead
-    signal(SIGUSR1, SignalProcessDesired);
-
     UNUSED(incomingSignal);
+    if (g_isIotHubEnabled)
+    {
+        OsConfigLogInfo(GetLog(), "Processing desired twin updates");
+        ProcessDesiredTwinUpdates();
+
+        // Reset the signal handler for the next use otherwise the default handler will be invoked instead
+        signal(SIGUSR1, SignalProcessDesired);
+    }
 }
 
 static void ForkDaemon()
@@ -323,6 +328,11 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
 {
     bool status = true;
 
+    if (false == g_isIotHubEnabled)
+    {
+        return status;
+    }
+
     if (g_mpiHandle && IsDaemonActive(OSCONFIG_PLATFORM, GetLog()))
     {
         // Platform is already running
@@ -362,11 +372,11 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
 
 static bool InitializeAgent(void)
 {
-    bool status = RefreshMpiClientSession(NULL);
+    bool status = 0; 
 
     g_lastTime = (unsigned int)time(NULL);
 
-    if (status && g_isIotHubEnabled && g_iotHubConnectionString)
+    if (g_isIotHubEnabled && g_iotHubConnectionString && (0 == (status = RefreshMpiClientSession(NULL))))
     {
         if (NULL == (g_moduleHandle = CallIotHubInitialize()))
         {
@@ -393,16 +403,19 @@ static bool InitializeAgent(void)
 
 void CloseAgent(void)
 {
-    IotHubDeInitialize();
-
-    if (NULL != g_mpiHandle)
+    if (g_isIotHubEnabled)
     {
-        CallMpiClose(g_mpiHandle, GetLog());
-        g_mpiHandle = NULL;
+        IotHubDeInitialize();
+
+        if (NULL != g_mpiHandle)
+        {
+            CallMpiClose(g_mpiHandle, GetLog());
+            g_mpiHandle = NULL;
+        }
     }
 
     FREE_MEMORY(g_reportedProperties);
-    
+
     WatcherCleanup(GetLog());
     
     OsConfigLogInfo(GetLog(), "OSConfig Agent terminated");
@@ -464,14 +477,14 @@ static void AgentDoWork(void)
         WatcherDoWork(GetLog());
 
         // Process reported updates to the IoT Hub
-        if (g_moduleHandle)
+        if (g_isIotHubEnabled && g_moduleHandle)
         {
             ReportProperties();
         }
 
         g_lastTime = (unsigned int)time(NULL);
     }
-    else
+    else if (g_isIotHubEnabled)
     {
         IotHubDoWork();
     }
@@ -600,29 +613,29 @@ int main(int argc, char *argv[])
     FREE_MEMORY(productName);
     FREE_MEMORY(productVendor);
     FREE_MEMORY(encodedProductInfo);
-    
-    OsConfigLogInfo(GetLog(), "Protocol: %s", (PROTOCOL_MQTT_WS == g_iotHubProtocol) ? "MQTT over Web Socket" : "MQTT");
-
-    if (PROTOCOL_MQTT_WS == g_iotHubProtocol)
-    {
-        // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
-        if (NULL != (proxyData = GetHttpProxyData(GetLog())))
-        {
-            if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
-            {
-                // Assign the string pointers and trasfer ownership to the SDK
-                g_proxyOptions.host_address = proxyHostAddress;
-                g_proxyOptions.port = proxyPort;
-                g_proxyOptions.username = proxyUsername;
-                g_proxyOptions.password = proxyPassword;
-
-                FREE_MEMORY(proxyData);
-            }
-        }
-    }
 
     if (g_isIotHubEnabled)
     {
+        OsConfigLogInfo(GetLog(), "Protocol: %s", (PROTOCOL_MQTT_WS == g_iotHubProtocol) ? "MQTT over Web Socket" : "MQTT");
+
+        if (PROTOCOL_MQTT_WS == g_iotHubProtocol)
+        {
+            // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
+            if (NULL != (proxyData = GetHttpProxyData(GetLog())))
+            {
+                if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
+                {
+                    // Assign the string pointers and trasfer ownership to the SDK
+                    g_proxyOptions.host_address = proxyHostAddress;
+                    g_proxyOptions.port = proxyPort;
+                    g_proxyOptions.username = proxyUsername;
+                    g_proxyOptions.password = proxyPassword;
+
+                    FREE_MEMORY(proxyData);
+                }
+            }
+        }
+
         if ((argc < 2) || ((2 == argc) && forkDaemon))
         {
             g_connectionStringSource = FromAis;
@@ -683,13 +696,13 @@ int main(int argc, char *argv[])
     signal(SIGHUP, SignalReloadConfiguration);
     signal(SIGUSR1, SignalProcessDesired);
 
-    if (!RefreshMpiClientSession(NULL))
+    if (false == RefreshMpiClientSession(NULL))
     {
         OsConfigLogError(GetLog(), "Failed to start the OSConfig Platform");
         goto done;
     }
 
-    if (!InitializeAgent())
+    if (false == InitializeAgent())
     {
         OsConfigLogError(GetLog(), "Failed to initialize the OSConfig Agent");
         goto done;
