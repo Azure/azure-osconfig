@@ -226,11 +226,11 @@ static int UpdateConfigurationFile(void)
 
             if (JSONSuccess == json_object_set_number(jsonObject, iotHubtManagementEnabledName, (double)(iotHubtManagementEnabled ? 1 : 0)))
             {
-                g_iotHubtManagementEnabled = iotHubtManagementEnabled;
+                g_iotHubtManagementEnabled = iotHubManagementEnabled;
             }
             else
             {
-                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_iotHubManagementEnabledObject, iotHubtManagementEnabled ? "true" : "false");
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_iotHubManagementEnabledObject, iotHubManagementEnabled ? "true" : "false");
             }
 
             if (JSONSuccess == json_object_set_number(jsonObject, iotHubProtocolName, (double)iotHubProtocol))
