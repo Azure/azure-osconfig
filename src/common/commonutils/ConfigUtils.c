@@ -61,7 +61,7 @@ bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
     return IsOptionEnabledInJsonConfig(jsonString, FULL_LOGGING);
 }
 
-bool IsIoTHubManagementEnabledInJsonConfig(const char* jsonString)
+bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString)
 {
     return IsOptionEnabledInJsonConfig(jsonString, IOT_HUB_MANAGEMENT);
 }

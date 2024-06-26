@@ -549,7 +549,7 @@ int main(int argc, char *argv[])
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, GetLog());
         g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties, GetLog());
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog());
-        g_isIotHubEnabled = IsIoTHubManagementEnabledInJsonConfig(jsonConfiguration);
+        g_isIotHubEnabled = IsIotHubManagementEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, GetLog());
     }
 

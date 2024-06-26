@@ -87,7 +87,7 @@ static char* LoadConfigurationFromFile(const char* fileName)
         g_localManagementEnabled = (GetLocalManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
         g_fullLoggingEnabled = IsFullLoggingEnabledInJsonConfig(jsonConfiguration);
         g_commandLoggingEnabled = IsCommandLoggingEnabledInJsonConfig(jsonConfiguration);
-        g_iotHubManagementEnabled = IsIoTHubManagementEnabledInJsonConfig(jsonConfiguration);
+        g_iotHubManagementEnabled = IsIotHubManagementEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
@@ -614,7 +614,6 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
             if (0 == strcmp(stringTrue, payloadString))
             {
                 g_iotHubManagementEnabled = true;
-                
             }
             else if (0 == strcmp(stringFalse, payloadString))
             {
