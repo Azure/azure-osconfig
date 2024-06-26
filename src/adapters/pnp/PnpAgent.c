@@ -195,45 +195,43 @@ static void RefreshConnection()
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
 
-    if (false == g_isIotHubEnabled)
+    if (g_isIotHubEnabled)
     {
-        return;
-    }
-
-    // If initialized with AIS, try to get a new connection string same way:
-    if ((FromAis == g_connectionStringSource) && (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
-    {
-        FREE_MEMORY(g_iotHubConnectionString);
-        if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
+        // If initialized with AIS, try to get a new connection string same way:
+        if ((FromAis == g_connectionStringSource) && (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
         {
-            OsConfigLogError(GetLog(), "RefreshConnection: out of memory making copy of the connection string");
-            FREE_MEMORY(connectionString);
+            FREE_MEMORY(g_iotHubConnectionString);
+            if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
+            {
+                OsConfigLogError(GetLog(), "RefreshConnection: out of memory making copy of the connection string");
+                FREE_MEMORY(connectionString);
+            }
         }
-    }
-    else
-    {
-        if (FromAis == g_connectionStringSource)
-        {
-            // No new connection string from AIS, try to refresh using the existing connection string before bailing out:
-            OsConfigLogError(GetLog(), "RefreshConnection: failed to obtain a new connection string from AIS, trying refresh with existing connection string");
-        }
-    }
-
-    IotHubDeInitialize();
-    g_moduleHandle = NULL;
-    
-    if ((NULL == g_moduleHandle) && (NULL != g_iotHubConnectionString))
-    {
-        if (NULL == (g_moduleHandle = CallIotHubInitialize()))
+        else
         {
             if (FromAis == g_connectionStringSource)
             {
-                FREE_MEMORY(g_iotHubConnectionString);
+                // No new connection string from AIS, try to refresh using the existing connection string before bailing out:
+                OsConfigLogError(GetLog(), "RefreshConnection: failed to obtain a new connection string from AIS, trying refresh with existing connection string");
             }
-            else if (!IsWatcherActive())
+        }
+
+        IotHubDeInitialize();
+        g_moduleHandle = NULL;
+
+        if ((NULL == g_moduleHandle) && (NULL != g_iotHubConnectionString))
+        {
+            if (NULL == (g_moduleHandle = CallIotHubInitialize()))
             {
-                g_exitState = IotHubInitializationFailure;
-                SignalInterrupt(SIGQUIT);
+                if (FromAis == g_connectionStringSource)
+                {
+                    FREE_MEMORY(g_iotHubConnectionString);
+                }
+                else if (!IsWatcherActive())
+                {
+                    g_exitState = IotHubInitializationFailure;
+                    SignalInterrupt(SIGQUIT);
+                }
             }
         }
     }
@@ -328,41 +326,38 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
 {
     bool status = true;
 
-    if (g_isIotHubEnabled)
+    if (g_mpiHandle && IsDaemonActive(OSCONFIG_PLATFORM, GetLog()))
     {
-        if (g_mpiHandle && IsDaemonActive(OSCONFIG_PLATFORM, GetLog()))
-        {
-            // Platform is already running
-
-            if (platformAlreadyRunning)
-            {
-                *platformAlreadyRunning = true;
-            }
-
-            return status;
-        }
+        // Platform is already running
 
         if (platformAlreadyRunning)
         {
-            *platformAlreadyRunning = false;
+            *platformAlreadyRunning = true;
         }
 
-        if (true == (status = EnableAndStartDaemon(OSCONFIG_PLATFORM, GetLog())))
-        {
-            sleep(1);
+        return status;
+    }
 
-            if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes, GetLog())))
-            {
-                OsConfigLogError(GetLog(), "MpiOpen failed");
-                g_exitState = PlatformInitializationFailure;
-                status = false;
-            }
-        }
-        else
+    if (platformAlreadyRunning)
+    {
+        *platformAlreadyRunning = false;
+    }
+
+    if (true == (status = EnableAndStartDaemon(OSCONFIG_PLATFORM, GetLog())))
+    {
+        sleep(1);
+
+        if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes, GetLog())))
         {
-            OsConfigLogError(GetLog(), "Platform could not be started");
+            OsConfigLogError(GetLog(), "MpiOpen failed");
             g_exitState = PlatformInitializationFailure;
+            status = false;
         }
+    }
+    else
+    {
+        OsConfigLogError(GetLog(), "Platform could not be started");
+        g_exitState = PlatformInitializationFailure;
     }
 
     return status;
@@ -374,19 +369,22 @@ static bool InitializeAgent(void)
 
     g_lastTime = (unsigned int)time(NULL);
 
-    if (g_isIotHubEnabled && g_iotHubConnectionString && (0 == (status = RefreshMpiClientSession(NULL))))
+    if (0 == (status = RefreshMpiClientSession(NULL)))
     {
-        if (NULL == (g_moduleHandle = CallIotHubInitialize()))
+        if (g_isIotHubEnabled && g_iotHubConnectionString)
         {
-            if (FromAis == g_connectionStringSource)
+            if (NULL == (g_moduleHandle = CallIotHubInitialize()))
             {
-                // We will try to get a new connnection string from AIS and try to connect with that
-                FREE_MEMORY(g_iotHubConnectionString);
-            }
-            else if (false == IsWatcherActive())
-            {
-                g_exitState = IotHubInitializationFailure;
-                status = false;
+                if (FromAis == g_connectionStringSource)
+                {
+                    // We will try to get a new connnection string from AIS and try to connect with that
+                    FREE_MEMORY(g_iotHubConnectionString);
+                }
+                else if (false == IsWatcherActive())
+                {
+                    g_exitState = IotHubInitializationFailure;
+                    status = false;
+                }
             }
         }
     }
@@ -404,12 +402,12 @@ void CloseAgent(void)
     if (g_isIotHubEnabled)
     {
         IotHubDeInitialize();
+    }
 
-        if (NULL != g_mpiHandle)
-        {
-            CallMpiClose(g_mpiHandle, GetLog());
-            g_mpiHandle = NULL;
-        }
+    if (NULL != g_mpiHandle)
+    {
+        CallMpiClose(g_mpiHandle, GetLog());
+        g_mpiHandle = NULL;
     }
 
     FREE_MEMORY(g_reportedProperties);
