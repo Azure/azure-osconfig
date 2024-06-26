@@ -555,11 +555,11 @@ int main(int argc, char *argv[])
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
     
-    snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
-    OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
-
     snprintf(g_productName, sizeof(g_productName), g_productNameTemplate, g_modelVersion, OSCONFIG_VERSION);
     OsConfigLogInfo(GetLog(), "Product name: %s", g_productName);
+
+    snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
+    OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
 
     osName = GetOsName(GetLog());
     osVersion = GetOsVersion(GetLog());
@@ -684,12 +684,6 @@ int main(int argc, char *argv[])
     }
     signal(SIGHUP, SignalReloadConfiguration);
     signal(SIGUSR1, SignalProcessDesired);
-
-    /*if (false == RefreshMpiClientSession(NULL))
-    {
-        OsConfigLogError(GetLog(), "Failed to start the OSConfig Platform");
-        goto done;
-    }*/
 
     if (false == InitializeAgent())
     {
