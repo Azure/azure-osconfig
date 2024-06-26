@@ -35,17 +35,17 @@ This diagram shows the current North Star architecture of OSConfig. In this diag
 
 ## 3.1. Introduction
 
-The OSConfig agent is a thin client running as a daemon (Linux background service) and implements several adapters: a watcher for the Reported Configuration/Desired Configuration (RC/DC), a watcher for GitOps and a PnP agent for [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/).
+The OSConfig Agent is a thin client running as a daemon (Linux background service) and it's implementing the following adapters: a Watcher for the Reported Configuration/Desired Configuration (RC/DC), a Watcher for GitOps and a PnP Agent for [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/).
 
-The agent communicates with the OSConfig Management Platform over the Management Platform Interface (MPI) IPC REST API.
+The Agent communicates with the OSConfig Management Platform over the Management Platform Interface (MPI) REST API.
 
 <img src="assets/agent.png" alt="OSConfig Agent" width=50%/>
 
-The agent is completely decoupled from the platform and the modules. A new module can be installed, and, optionally, PnP interface(s) published as part of the OSConfig Model and that will be enough to make OSConfig use the respective module, without the need to recompile the agent or the platform.
+The Agent is completely decoupled from the Platform and the Modules. A new Module can be installed, and, optionally, PnP interface(s) published as part of the OSConfig Model and that will be enough to make OSConfig use it, without the need to recompile the Agent or the Platform.
 
 ## 3.2. RC/DC Watcher
 
-The RC/DC Watcher monitors the Desired Configuration (DC) file and acts on detected file changes by making MpiSetDesired calls to the Management Platform. The Watcher also makes MpiGetReported calls to the Management Platform and writes the reported configuration to the Reported Configuration (RC) file. 
+The RC/DC Watcher monitors the Desired Configuration (DC) file and acts on file changes detected there by making MpiSetDesired calls to the Management Platform. The Watcher also makes periodic MpiGetReported calls to the Management Platform, updating the Reported Configuration (RC) file. 
 
 The RC/DC files are written in JSON and follow the [MIM schema](../src/modules/schema/mim.schema.json).
 
@@ -55,7 +55,7 @@ The RC/DC files by default reside under `/etc/osconfig/` as `/etc/osconfig/oscon
 
 ## 3.3. GitOps Watcher
 
-The RC/DC Watcher clones a Git repository, monitors the GitOps Desired Configuration (DC) file and acts on detected file changes by making MpiSetDesired calls to the Management Platform. 
+The GitOps Watcher clones a Git repository and branch containing a Desired Configuration (DC) file, monitors the cloned DC file and when it detects changes it makes MpiSetDesired calls to the Management Platform. 
 
 The GitOps DC file by default is named `osconfig_desired.json`, is located in the root of the repository and is locally cloned at `/etc/osconfig/gitops/osconfig_desired.json`.
 
@@ -65,25 +65,25 @@ The Git clone is automatically deleted when the GitOps Watcher terminates. While
 
 ## 3.4. AIS Client
 
-The agent uses HTTP helper APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to make GET and POST requests to the [Azure Identity Services (AIS)](https://azure.github.io/iot-identity-service/) (identity, key, certificates) to build the device/module identity to connect to the IoT Hub with. 
+The Agent uses HTTP helper APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to make GET and POST requests to the [Azure Identity Services (AIS)](https://azure.github.io/iot-identity-service/) (identity, key, certificates) to build the device/module identity to connect to the IoT Hub with. 
 
 ## 3.5. IoT Hub Client
 
-The agent's IoT Hub Client uses the IoT Client APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to connect to the [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/), receive Desired Twin updates, and make Reported Twin updates.
+The Agent's IoT Hub Client uses the IoT Client APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to connect to the [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/), receive Desired Twin updates, and make Reported Twin updates.
 
 The IoT Hub Client does not attempt to parse the property values. 
 
 ## 3.6. Desired and Reported Twins
 
-The twins start empty and gradually get filled in with content (desired, from the remote authority and reported, from the device). 
+The Twins start empty and gradually get filled in with content (desired, from the remote authority and reported, from the device). 
 
-When the agent starts, it receives the full Desired Twin and dispatches that to the platform. From there on, incremental changes of the Desired Twin are communicated to agent, one (full or partial) property at a time. 
+When the Agent starts, it receives the full Desired Twin and dispatches that to the Platform. From there on, incremental changes of the Desired Twin are communicated to the Agent, one (full or partial) property at a time. 
 
-In the opposite direction, the OSConfig agent periodically updates the Reported Twin with one property value at a time, reading via the platform from the modules. 
+In the opposite direction, the OSConfig Agent periodically updates the Reported Twin with one property value at a time, reading via the Platform from the Modules. 
 
 ## 3.7. MPI Client
 
-The agent implements an MPI Client and it uses it to make Management Platform Interface (MPI) calls to the platform as IPC REST API calls over HTTP and the Unix Domain Sockets (UDS).
+The Agent links to the common MPI Client library and it uses it to make Management Platform Interface (MPI) calls to the Platform as IPC REST API calls over HTTP and Unix Domain Sockets (UDS).
 
 # 4. OSConfig Management Platform
 
@@ -91,35 +91,33 @@ The agent implements an MPI Client and it uses it to make Management Platform In
 
 The OSConfig Management Platform runs in its own daemon process. The platform communicates with the management authority adapters (the OSConfig Agent, the Universal NRP, etc) over the Management Platform Interface (MPI) REST API. 
 
-The platform communicates to the OSConfig Management Modules over the Management Modules Interface (MMI) REST API.
+The platform communicates to the OSConfig Management Modules over the Management Modules Interface (MMI) API.
 
 <img src="assets/platform.png" alt="OSConfig Management Platform" width=60%/>
  
 The platform includes the following main components:
 
-- Management Platform Interface (MPI): MPI as an IPC REST API over HTTP and UDS. This is the main adapter interface.
-- Watcher: monitors for desired configuration file for updates. This is the other adapter interface, for both agentless and agent management authorities.
-- Orchestrator: receives, orchestrates, serializes requests for modules into the Modules Manager. The management authorities and their adapters can make their own MPI requests. The Orchestrator's role is to orchestrate between local and remote management authorities and also help orchestrate for each authority following the Module Interface Model (MIM) contracts and for PnP without modifying passing-through requests in either direction. 
-- Modules Manager: receives serialized requests over the MPI C API, dispatches the requests to Module Hosts over the MMI REST API.
-- MMI Client: makes MMI REST API calls to Module Hosts over HTTP and UDS. 
+- Management Platform Interface (MPI): MPI as an IPC REST API over HTTP and UDS. This is the main interface for Adapters.
+- Modules Manager: receives serialized requests over the MPI C API, dispatches the requests to Modules over the MMI API.
+- MMI Client: makes MMI API calls to Modules. 
 
-The platform also includes several utility libraries which are shared with all OSConfig components, including adapters and modules:
+The Platform also includes several utility libraries which are shared with all OSConfig components, including Adapters and Modules:
 
 - Logging: file and console circular logging library.
 - CommonUtils: various utility APIs useful for accesing and working with the Linux OS.
+- MpiClient: client for the MPI REST API
+- Asb: the implementation of the Azure Security Baseline, shared among the Universal NRP Adapter and the SecurityBaseline Module.
 
-The platform is completely decoupled from the adapters and the modules. The platform can function without any particular adapter. New modules can be installed without changing or recompiling the platform.
+The Platform is completely decoupled from the Adapters and the Modules. The Platform can function without any particular adapter. New Modules can be installed without changing or recompiling the platform.
 
 ## 4.2. Management Platform Interface (MPI)
 
-The Management Platform Interface (MPI) provides a way for the OSConfig Management Platform to be invoked by management authority adapters. 
+The Management Platform Interface (MPI) provides a way for the OSConfig Management Platform to be invoked by management authority Adapters. 
 
 The MPI has two different implementations:
 
-- REST API over Unix Domain Sockets (UDS) for inter-process communication (IPC) with the adapters.
-- C API for internal in-process communication between the Orchestrator and the Modules Manager.
-
-The MPI REST API is implemented as a Linux Static Library (.a), either alone or combined with the Orchestrator, linked into the platform's main binary, and exporting the REST API over Unix Domain Sockets (UDS). The adapter MPI clients make such MPI REST API calls over HTTP.
+- REST API over Unix Domain Sockets (UDS) for inter-process communication (IPC) with the Adapters.
+- C API for internal in-process communication between the MPI REST API server and the Modules Manager.
 
 MPI REST API calls include GET (MpiGet, MpiGetReported) and POST (MpiSet, MpiSetDesired). 
 
@@ -152,9 +150,7 @@ This format is following the MIM JSON payload schema described in the [OSConfig 
 
 ## 4.3. Orchestrator
 
-The Orchestrator receives management requests from adapters over the Management Platform Interface (MPI) IPC REST API. The Orchestrator combines the requests in a serial sequence that it feeds into the Module Manager to dispatch the requests to the respective Management Modules.
-
-The Orchestrator can be implemented as a Linux Static Library (.a) either alone or combined with the MPI and linked into the platform's main binary.
+The Orchestrator receives management requests from Adapters over the Management Platform Interface (MPI) IPC REST API. The Orchestrator combines the requests in a serial sequence that it feeds into the Module Manager to dispatch the requests to the respective Management Modules.
 
 <img src="assets/orchestration.png" alt="Orchestrator" width=50%/>
 
@@ -181,9 +177,7 @@ Special OSConfig Management Modules that implement more complex scenarios and on
 
 ## 4.4. Modules Manager
 	
-The Modules Manager receives serialized MPI C API requests from the Orchestrator and dispatches the requests over MMI to the appropriate Management Modules in the order they arrive. Also, the Modules Manager returns the modules responses to the Orchestrator. 
-
-The Modules Manager is implemented as a Linux Static Library (.a) exporting the MPI C API. 
+The Modules Manager receives serialized MPI C API requests from the MPI REST API server and/or from the Orchestrator and dispatches the requests over MMI to the appropriate Management Modules. The Modules Manager returns the Modules responses to the MPI REST API server and/or the Orchestrator. 
 
 <img src="assets/modulesmanager.png" alt="Modules Manager" width=40%/>
 
@@ -229,7 +223,7 @@ Like the MPI, the MMI has two different implementations:
 - REST API over Unix Domain Sockets (UDS) for inter-process communication (IPC) between the Management Platform (the Modules Manager) and the Module Hosts.
 - C API for internal in-process communication between the Modules Hosts and their modules.
 
-The MMI REST API allows modules to be directly called by any management authority if needed. This is also the main channel of communication of modules with the OSConfig Management Platform. This API is implemented as a Linux Static Library (.a) linked into the Module Host binary and exporting the REST API over Unix Domain Sockets (UDS). The MMI Client make such MPI REST API calls over HTTP.
+The MMI REST API allows Modules to be directly called by any management authority Adapter if needed. This is also the main channel of communication of modules with the OSConfig Management Platform.
 
 REST API calls include: GET (MmiGet, MmiGetInfo) and POST (MmiSet).
 
@@ -249,7 +243,7 @@ The Downloader can be a Dynamically Linked Shared Object library (.so) provided 
 
 The OSConfig Management Platform and the Management Modules may need to persist data locally to be available across device reboot. 
 
-To make it easier for module developers, OSConfig can provide a Secure Store storage component either as a Dynamically Linked Shared Object library (.so) loaded by the OSConfig Platform or running in its own separate daemon process. 
+To make it easier for Module developers, OSConfig can provide a Secure Store storage component either as a Dynamically Linked Shared Object library (.so) loaded by the OSConfig Platform or running in its own separate daemon process. 
 
 The store can be accessed over a Store REST API modeled after the MPI REST API. The Store API can store and retrieve MIM settings per MIM components and MIM objects, per management authority, and can also add audit logging, to record who did what and when. A Store Client API can be provided as a static library. 
 
@@ -277,7 +271,7 @@ Each Management Module typically implements one OS configuration function. OSCon
 
 <img src="assets/modules.png" alt="Management Modules" width=80%/> 
 
-Modules are implemented as Dynamically Linked Shared Object libraries (.so). Each Module runs loaded into its own Module Host process, isolated from the other modules.  The Module Hosts implement the Management Module Interface (MMI) as an IPC REST API and make MMI C API calls into their hosted modules.
+Modules are implemented as Dynamically Linked Shared Object libraries (.so). Each Module runs loaded either in the Platform process, or into its own Module Host process, isolated from the other modules. The Module Hosts implement the Management Module Interface (MMI) as an IPC REST API and make MMI C API calls into their hosted modules.
 
 In summary, each module must:
 
@@ -293,17 +287,17 @@ For more information about modules and MIM see the [OSConfig Management Modules]
  
 ## 5.2. Module Interface Model (MIM)
 
-The Module Interface Model (MIM) is a PnP/DTDL-agnostic model  that is composed of components, objects, and settings. A module that can be described by a set of components, objects and settings can be translated to PnP and DTDL and still be generic enough so it could be reused for other platforms. 
+The Module Interface Model (MIM) is composed of Components, Objects, and Settings. A Module that can be described by a set of Components, Objects and Settings can be translated to PnP and DTDL and still be generic enough so it could be reused for other managament platforms. 
 
 The Module Management Interface (MMI) is used to transport desired and reported object payloads (to and from the module) that follow the MIM. 
 
-This model assumes a declarative style of communication between the upper layer and the module, where the desired and reported configuration of the device is communicated in bulk (for PnP this configuration being stored on the Twins), not a procedural style with multi-step negotiation.
+The MIM assumes a declarative style of communication between the upper layer and the module, where the desired and reported configuration of the device is communicated in bulk (for PnP this configuration being stored on the Twins), not a procedural style with multi-step negotiation.
 
 For more information about the MIM see the [OSConfig Management Modules](modules.md) specification.
 
 ## 5.3. OSQuery Module
 
-The OSQuery Module implements an adapter for [OSQuery](https://www.osquery.io/). This module can support multiple MIM components and PnP interfaces that are read-only (all reported, no desired configuration) and leverage OSQuery to retrieve the respective configuration from the device. To be decided.
+The OSQuery Module implements an adapter for [OSQuery](https://www.osquery.io/). This module can support multiple MIM components and PnP interfaces that are read-only (all reported, no desired configuration) and leverage OSQuery to retrieve the respective configuration from the device.
 
 ## 5.5. Orchestrator Module
 
@@ -313,11 +307,11 @@ A new kind of OSConfig Management Module can be added: an Orchestrator Module lo
 
 # 6. OSConfig Universal Native Resource Provider (NRP)
 
-The OSConfig Universal Native Resource Provider (NRP) adapter links OSConfig to the [Azure Automanage Machine Configuration (MC)](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/). 
+The OSConfig Universal Native Resource Provider (NRP) Adapter links OSConfig to the [Azure Automanage Machine Configuration (MC)](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/). 
 
-Using MC and the OSConfig Universal NRP, we can create Azure Policies that automatically target for compliance audit or remediation all Linux Arc devices in a particular Azure subscription or Azure resource group. 
+Using MC and the OSConfig Universal NRP, we can create Azure Policies that automatically target for compliance audit or remediation all Linux Arc devices in a particular Azure subscription and Azure resource group. 
 
-The Universal NRP is used with the SecurityBaseline module to audit and remediate the [Azure Security Baseline for Linux](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux). In the future the Universal NRP could be used for other scenarios.
+The Universal NRP can audit and remediate the the [Azure Security Baseline for Linux](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux) either by itself (acting as 'OSConfig for MC') or via the SecurityBaseline module. In the future the Universal NRP could be used for other scenarios.
 
 <img src="assets/5_guestconfig.png" alt="OSConfig NRP" width=70%/>
 

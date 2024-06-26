@@ -6,7 +6,7 @@ Author: [MariusNi](https://github.com/MariusNi)
 
 Azure OSConfig is a modular security configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI, GitOps, as well as local management.
 
-This document describes the development roadmap of the OSConfig project.
+This document describes the development roadmap of the Azure OSConfig project.
 
 During any of these stages OSConfig can be extended by adding new [OSConfig Management Modules](modules.md).
 
@@ -44,8 +44,7 @@ The modules become detached Shared Object (.so) libraries, partners can develop 
 
 OSConfig continues to run as a monolithic process and can accept requests from agentless management authorities like OOBE. More module scenarios are enabled (TPM, etc.)
 
-- The Watcher is introduced. OSConfig can accept requests from Local Management Authorities (like OOBE). 
-- The Orchestrator is introduced to orchestrate input from multiple authorities.
+- The RC/DC Watcher is introduced. OSConfig can accept requests from Local Management Authorities (like OOBE). 
 - Modules continue to work unchanged, same as in previous release, as Dynamically Loaded Shared Object libraries exporting the MMI C API. 
 - The Modules Manager is introduced and loads the module libraries in-proc.
 - Tpm and other new Management Modules can appear (not shown in diagram).
@@ -55,7 +54,7 @@ OSConfig continues to run as a monolithic process and can accept requests from a
  
 # 4. Detached Platform (codename Copper)
 
-The concept of Adapters is introduced. The Management Platform runs in its own process. OSConfig can accept request from both local and remote management authorities.
+The concept of OSConfig Adapters is introduced. The Management Platform runs in its own daemon process. OSConfig can accept request from both local and remote management authorities.
 
 - The OSConfig separates the Agent and the Management Platform into two separate daemon processes.
 - The IPC REST API over Unix Domain Sockets (UDS) and HTTP for MPI is introduced.
@@ -67,16 +66,28 @@ The concept of Adapters is introduced. The Management Platform runs in its own p
 
 # 5. GitOps, Azure Policy, Security Baseline (codename Germanium)
 
-The Universal NRP and the Security Modules can be used to audit and remediate the Linux Security Baseline over Azure Policy and AutoManage Machine Configuration.
+The Universal NRP and the SecurityBaseline Module can be used to audit and remediate the Linux Security Baseline over Azure Policy and AutoManage Machine Configuration.
 
-- A new OSConfig Universal NRP is added for Azure Policy and Machine Configuration.
 - A new GitOps DC Watcher is added for accepting desired configuration from a Git repository.
+- A new OSConfig Universal NRP is added for Azure Policy and Machine Configuration.
 - A new SecurityModule module implements the Azure Security Baseline for Linux.
 - Modules continue to work unchanged, same as in previous releases, as Dynamically Loaded Shared Object libraries exporting the MMI C API. The Platform loads these libraries in-proc.
 
 <img src="assets/7_osconfig_ge.png" alt="Germanium" width=70%/>
+
+# 6. SSH Posture Control, ASB v2, OSConfig for MC, IoT Hub becomes optional (codename Dilithium)
+
+- A new Azure Policy for SSH Posture Control is published, running via the OSConfig Universal NRP.
+- A new Azure Security Baseline (ASB) for Linux v2 implementation is added into the separate ASB libraries.
+- The Universal NRP and the SecurityBaseline module both link to the same ASB libraries.
+- The concept of 'OSConfig for MC'is introduced, where the Universal NRP implements this speacialized, targeted OSConfig, inside of a single NRP.
+- The RC/DC channel becomes by default enabled, while the IoT Hub channel becomes by default disabled.
+- The SecurityBaseline module works with the RC/DC Watcher for executing ASB v2 when invoked by local managamenet authorities.
+- Modules continue to work as Dynamically Loaded Shared Object libraries exporting the MMI C API. The Platform loads these libraries in-proc.
+
+<img src="assets/8_osconfig_di.png" alt="Dilithium" width=70%/>
   
-# 6. Isolated Modules - the current North Star (codename Krypton)
+# 7. Isolated Modules - the current North Star (codename Krypton)
 
 Main target scenario: OSConfig Management Modules run isolated in their own processes, Azure Policy and GitHub
 
