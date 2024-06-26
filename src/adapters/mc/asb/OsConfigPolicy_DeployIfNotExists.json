@@ -1,9 +1,9 @@
 {
     "properties": {
-        "displayName": "[Preview] SSH Posture Control policy",
+        "displayName": "Azure Security Baseline for Linux policy",
         "policyType": "Custom",
         "mode": "Indexed",
-        "description": "This policy ensures that the SSH Server is securely configured on the Linux device",
+        "description": "This policy audits the Azure Security Baseline for Linux",
         "metadata": {
             "category": "Guest Configuration",
             "version": "1.0.0.0",
@@ -14,8 +14,8 @@
                 "name": "OsConfigPolicy",
                 "version": "1.0.0",
                 "contentType": "Custom",
-                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaselinePolicy.zip",
-                "contentHash": "18F07A4F4F2E76DADEA169B41829A8DADBD2024BBAD374B3C5A20CEB4ECD15BE",
+                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaselinePolicy.zip",
+                "contentHash": "DF222B0DB9E2A4A5AFC19475130BC2097E22158FC4B11028756775FFCDF1A62B",
                 "configurationParameter": {
                     "accessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
                     "ignoreHosts": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
@@ -39,7 +39,7 @@
             }
         },
         "parameters": {
-            "includeArcMachines": {
+            "IncludeArcMachines": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Include Arc connected machines",
@@ -56,11 +56,12 @@
                 "type": "string",
                 "metadata": {
                     "displayName": "Effect",
-                    "description": "Configures between remediation (DeployIfNotExists) or audit-only (AuditIfNotExists) policy execution mode. Default is AuditIfNotExists"
+                    "description": "Configures between remediation (DeployIfNotExists), audit-only (AuditIfNotExists), or disabled (Disabled) policy execution mode. Default is AuditIfNotExists"
                 },
                 "allowedValues": [
                     "DeployIfNotExists",
-                    "AuditIfNotExists"
+                    "AuditIfNotExists",
+                    "Disabled"
                 ],
                 "defaultValue": "AuditIfNotExists"
             },
@@ -623,8 +624,8 @@
                                                 "name": "OsConfigPolicy",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
-                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaselinePolicy.zip",
-                                                "contentHash": "18F07A4F4F2E76DADEA169B41829A8DADBD2024BBAD374B3C5A20CEB4ECD15BE",
+                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaselinePolicy.zip",
+                                                "contentHash": "DF222B0DB9E2A4A5AFC19475130BC2097E22158FC4B11028756775FFCDF1A62B",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -714,8 +715,8 @@
                                                 "name": "OsConfigPolicy",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
-                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaselinePolicy.zip",
-                                                "contentHash": "18F07A4F4F2E76DADEA169B41829A8DADBD2024BBAD374B3C5A20CEB4ECD15BE",
+                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaselinePolicy.zip",
+                                                "contentHash": "DF222B0DB9E2A4A5AFC19475130BC2097E22158FC4B11028756775FFCDF1A62B",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -805,8 +806,8 @@
                                                 "name": "OsConfigPolicy",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
-                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaselinePolicy.zip",
-                                                "contentHash": "18F07A4F4F2E76DADEA169B41829A8DADBD2024BBAD374B3C5A20CEB4ECD15BE",
+                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaselinePolicy.zip",
+                                                "contentHash": "DF222B0DB9E2A4A5AFC19475130BC2097E22158FC4B11028756775FFCDF1A62B",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {

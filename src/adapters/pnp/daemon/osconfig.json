@@ -23,6 +23,10 @@
     },
     {
       "ComponentName": "Configuration",
+      "ObjectName": "iotHubManagement"
+    },
+    {
+      "ComponentName": "Configuration",
       "ObjectName": "iotHubProtocol"
     },
     {
