@@ -330,7 +330,7 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
     {
         // Platform is already running
 
-        if (platformAlreadyRunning)
+        if (NULL != platformAlreadyRunning)
         {
             *platformAlreadyRunning = true;
         }
@@ -338,7 +338,7 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
         return status;
     }
 
-    if (platformAlreadyRunning)
+    if (NULL != platformAlreadyRunning)
     {
         *platformAlreadyRunning = false;
     }
@@ -356,7 +356,7 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
     }
     else
     {
-        OsConfigLogError(GetLog(), "Platform could not be started");
+        OsConfigLogError(GetLog(), "The OSConfig Platform cannot be started");
         g_exitState = PlatformInitializationFailure;
     }
 
@@ -391,7 +391,7 @@ static bool InitializeAgent(void)
 
     if (status)
     {
-        OsConfigLogInfo(GetLog(), "OSConfig Agent intialized");
+        OsConfigLogInfo(GetLog(), "The OSConfig Agent session is now intialized");
     }
 
     return status;
@@ -411,10 +411,8 @@ void CloseAgent(void)
     }
 
     FREE_MEMORY(g_reportedProperties);
-
-    WatcherCleanup(GetLog());
     
-    OsConfigLogInfo(GetLog(), "OSConfig Agent terminated");
+    OsConfigLogInfo(GetLog(), "The OSConfig Agent session is closed");
 }
 
 static void ReportProperties()
@@ -553,11 +551,6 @@ int main(int argc, char *argv[])
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog());
         g_isIotHubEnabled = IsIoTHubManagementEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, GetLog());
-
-        // Call the Watcher to initialize itself
-        InitializeWatcher(jsonConfiguration, GetLog());
-
-        FREE_MEMORY(jsonConfiguration);
     }
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
@@ -692,17 +685,21 @@ int main(int argc, char *argv[])
     signal(SIGHUP, SignalReloadConfiguration);
     signal(SIGUSR1, SignalProcessDesired);
 
-    if (false == RefreshMpiClientSession(NULL))
+    /*if (false == RefreshMpiClientSession(NULL))
     {
         OsConfigLogError(GetLog(), "Failed to start the OSConfig Platform");
         goto done;
-    }
+    }*/
 
     if (false == InitializeAgent())
     {
         OsConfigLogError(GetLog(), "Failed to initialize the OSConfig Agent");
         goto done;
     }
+
+    // Call the Watcher to initialize itself
+    InitializeWatcher(jsonConfiguration, GetLog());
+    FREE_MEMORY(jsonConfiguration);
 
     while (0 == g_stopSignal)
     {
@@ -725,6 +722,8 @@ done:
     FREE_MEMORY(connectionString);
     FREE_MEMORY(g_iotHubConnectionString);
 
+    WatcherCleanup(GetLog());
+    
     CloseAgent();
     
     StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog());
