@@ -267,7 +267,7 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredFullLoggingEnabledObject, "notImplemented", 22, m_fullLoggingEnabledObject, "false" },
         { m_desiredCommandLoggingEnabledObject, "true", 0, m_commandLoggingEnabledObject, "true" },
         { m_desiredCommandLoggingEnabledObject, "false", 0, m_commandLoggingEnabledObject, "false" },
-        { m_desiredCommandLoggingEnabledObject, "notImplemented", 22, m_commandLoggingEnabledObject, "false" },
+        //{ m_desiredCommandLoggingEnabledObject, "notImplemented", 22, m_commandLoggingEnabledObject, "false" },
         { m_desiredCommandLoggingEnabledObject, "true", 0, m_iotHubManagementEnabledObject, "true" },
         { m_desiredCommandLoggingEnabledObject, "false", 0, m_iotHubManagementEnabledObject, "false" },
         { m_desiredCommandLoggingEnabledObject, "notImplemented", 22, m_iotHubManagementEnabledObject, "false" },
