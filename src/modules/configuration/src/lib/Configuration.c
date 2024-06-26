@@ -19,6 +19,7 @@ static const char* g_refreshIntervalObject = "refreshInterval";
 static const char* g_localManagementEnabledObject = "localManagementEnabled";
 static const char* g_fullLoggingEnabledObject = "fullLoggingEnabled";
 static const char* g_commandLoggingEnabledObject = "commandLoggingEnabled";
+static const char* g_iotHubManagementEnabledObject = "iotHubManagementEnabled";
 static const char* g_iotHubProtocolObject = "iotHubProtocol";
 static const char* g_gitManagementEnabledObject = "gitManagementEnabled";
 static const char* g_gitBranchObject = "gitBranch";
@@ -27,6 +28,7 @@ static const char* g_desiredRefreshIntervalObject = "desiredRefreshInterval";
 static const char* g_desiredLocalManagementEnabledObject = "desiredLocalManagementEnabled";
 static const char* g_desiredFullLoggingEnabledObject = "desiredFullLoggingEnabled";
 static const char* g_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
+static const char* g_desiredIotHubManagementEnabledObject = "desiredIotHubManagementEnabled";
 static const char* g_desiredIotHubProtocolObject = "desiredIotHubProtocol";
 static const char* g_desiredGitManagementEnabledObject = "desiredGitManagementEnabled";
 static const char* g_desiredGitBranchObject = "desiredGitBranch";
@@ -47,8 +49,8 @@ static const char* g_configurationModuleInfo = "{\"Name\": \"Configuration\","
     "\"Description\": \"Provides functionality to manage OSConfig configuration on device\","
     "\"Manufacturer\": \"Microsoft\","
     "\"VersionMajor\": 1,"
-    "\"VersionMinor\": 3,"
-    "\"VersionInfo\": \"Zinc\","
+    "\"VersionMinor\": 4,"
+    "\"VersionInfo\": \"Dilithium\","
     "\"Components\": [\"Configuration\"],"
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
@@ -60,6 +62,7 @@ static int g_refreshInterval = DEFAULT_REPORTING_INTERVAL;
 static bool g_localManagementEnabled = false;
 static bool g_fullLoggingEnabled = false;
 static bool g_commandLoggingEnabled = false;
+static bool g_iotHubManagementEnabled = false;
 static int g_iotHubProtocol = 0;
 static bool g_gitManagementEnabled = false;
 static char* g_gitBranch = NULL;
@@ -127,6 +130,7 @@ static int UpdateConfigurationFile(void)
     const char* fullLoggingEnabledName = "FullLogging";
     const char* localManagementEnabledName = "LocalManagement";
     const char* modelVersionName = "ModelVersion";
+    const char* iotHubtManagementEnabledName = "iotHubtManagementEnabled";
     const char* iotHubProtocolName = "IotHubProtocol";
     const char* refreshIntervalName = "ReportingIntervalSeconds";
     const char* gitManagementEnabledName = "GitManagement";
@@ -216,7 +220,16 @@ static int UpdateConfigurationFile(void)
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_commandLoggingEnabledObject, commandLoggingEnabled ? "true" : "false");
             }
-            
+
+            if (JSONSuccess == json_object_set_number(jsonObject, iotHubtManagementEnabledName, (double)(iotHubtManagementEnabled ? 1 : 0)))
+            {
+                g_iotHubtManagementEnabled = iotHubtManagementEnabled;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_iotHubtManagementEnabled, iotHubtManagementEnabled ? "true" : "false");
+            }
+
             if (JSONSuccess == json_object_set_number(jsonObject, iotHubProtocolName, (double)iotHubProtocol))
             {
                 g_iotHubProtocol = iotHubProtocol;
@@ -423,6 +436,10 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         {
             snprintf(buffer, maximumLength, "%s", g_commandLoggingEnabled ? "true" : "false");
         }
+        else if (0 == strcmp(objectName, g_iotHubManagementEnabledObject))
+        {
+            snprintf(buffer, maximumLength, "%s", g_iotHubManagementEnabled ? "true" : "false");
+        }
         else if (0 == strcmp(objectName, g_iotHubProtocolObject))
         {
             snprintf(buffer, maximumLength, "%u", g_iotHubProtocol);
@@ -586,6 +603,23 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_desiredCommandLoggingEnabledObject, payloadString);
+                status = EINVAL;
+            }
+        }
+        else if (0 == strcmp(objectName, g_desiredIotHubManagementEnabledObject))
+        {
+            if (0 == strcmp(stringTrue, payloadString))
+            {
+                g_iotHubManagementEnabled = true;
+                
+            }
+            else if (0 == strcmp(stringFalse, payloadString))
+            {
+                g_iotHubManagementEnabled = false;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_desiredIotHubManagementEnabledObject, payloadString);
                 status = EINVAL;
             }
         }
