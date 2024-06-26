@@ -131,7 +131,7 @@ static int UpdateConfigurationFile(void)
     const char* fullLoggingEnabledName = "FullLogging";
     const char* localManagementEnabledName = "LocalManagement";
     const char* modelVersionName = "ModelVersion";
-    const char* iotHubtManagementEnabledName = "iotHubtManagementEnabled";
+    const char* iotHubtManagementEnabledName = "IotHubManagement";
     const char* iotHubProtocolName = "IotHubProtocol";
     const char* refreshIntervalName = "ReportingIntervalSeconds";
     const char* gitManagementEnabledName = "GitManagement";
