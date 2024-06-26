@@ -226,7 +226,7 @@ static int UpdateConfigurationFile(void)
 
             if (JSONSuccess == json_object_set_number(jsonObject, iotHubtManagementEnabledName, (double)(iotHubtManagementEnabled ? 1 : 0)))
             {
-                g_iotHubtManagementEnabled = iotHubManagementEnabled;
+                g_iotHubManagementEnabled = iotHubManagementEnabled;
             }
             else
             {
