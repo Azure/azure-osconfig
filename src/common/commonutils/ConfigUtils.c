@@ -14,6 +14,8 @@
 #define REPORTED_SETTING_NAME "ObjectName"
 #define MODEL_VERSION_NAME "ModelVersion"
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
+
+#define IOT_HUB_MANAGEMENT "IotHubManagement"
 #define LOCAL_MANAGEMENT "LocalManagement"
 
 #define COMMAND_LOGGING "CommandLogging"
@@ -28,7 +30,7 @@
 #define MIN_DEVICE_MODEL_ID 7
 #define MAX_DEVICE_MODEL_ID 999
 
-static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* loggingSetting)
+static bool IsOptionEnabledInJsonConfig(const char* jsonString, const char* setting)
 {
     bool result = false;
     JSON_Value* rootValue = NULL;
@@ -40,7 +42,7 @@ static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* log
         {
             if (NULL != (rootObject = json_value_get_object(rootValue)))
             {
-                result = (0 == (int)json_object_get_number(rootObject, loggingSetting)) ? false : true;
+                result = (0 == (int)json_object_get_number(rootObject, setting)) ? false : true;
             }
             json_value_free(rootValue);
         }
@@ -51,12 +53,17 @@ static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* log
 
 bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString)
 {
-    return IsLoggingEnabledInJsonConfig(jsonString, COMMAND_LOGGING);
+    return IsOptionEnabledInJsonConfig(jsonString, COMMAND_LOGGING);
 }
 
 bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
 {
-    return IsLoggingEnabledInJsonConfig(jsonString, FULL_LOGGING);
+    return IsOptionEnabledInJsonConfig(jsonString, FULL_LOGGING);
+}
+
+bool IsIoTHubManagementEnabledInJsonConfig(const char* jsonString)
+{
+    return IsOptionEnabledInJsonConfig(jsonString, IOT_HUB_MANAGEMENT);
 }
 
 static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue, void* log)

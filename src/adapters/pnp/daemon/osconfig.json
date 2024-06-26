@@ -6,6 +6,7 @@
   "GitBranch": " ",
   "LocalManagement": 1,
   "ModelVersion": 18,
+  "IotHubManagement": 0,
   "IotHubProtocol": 2,
   "Reported": [
     {
