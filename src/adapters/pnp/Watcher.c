@@ -35,7 +35,7 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
     
-    if (fileName && hash && g_mpiHandle)
+    if (fileName && hash)
     {
         mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
         if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
@@ -69,7 +69,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
 
-    if (fileName && hash && g_mpiHandle)
+    if (fileName && hash)
     {
         RestrictFileAccessToCurrentAccountOnly(fileName);
 
@@ -293,7 +293,7 @@ void WatcherDoWork(void* log)
 
 void WatcherCleanup(void* log)
 {
-    OsConfigLogInfo(log, "Watcher: closing MPI session '%p' and shutting down", g_mpiHandle);
+    OsConfigLogInfo(log, "Watcher shutting down");
 
     DeleteGitClone(GIT_DC_CLONE, log);
 
