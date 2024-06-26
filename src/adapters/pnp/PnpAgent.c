@@ -328,43 +328,41 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
 {
     bool status = true;
 
-    if (false == g_isIotHubEnabled)
+    if (g_isIotHubEnabled)
     {
-        return status;
-    }
+        if (g_mpiHandle && IsDaemonActive(OSCONFIG_PLATFORM, GetLog()))
+        {
+            // Platform is already running
 
-    if (g_mpiHandle && IsDaemonActive(OSCONFIG_PLATFORM, GetLog()))
-    {
-        // Platform is already running
+            if (platformAlreadyRunning)
+            {
+                *platformAlreadyRunning = true;
+            }
+
+            return status;
+        }
 
         if (platformAlreadyRunning)
         {
-            *platformAlreadyRunning = true;
+            *platformAlreadyRunning = false;
         }
 
-        return status;
-    }
-
-    if (platformAlreadyRunning)
-    {
-        *platformAlreadyRunning = false;
-    }
-    
-    if (true == (status = EnableAndStartDaemon(OSCONFIG_PLATFORM, GetLog())))
-    {
-        sleep(1);
-        
-        if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes, GetLog())))
+        if (true == (status = EnableAndStartDaemon(OSCONFIG_PLATFORM, GetLog())))
         {
-            OsConfigLogError(GetLog(), "MpiOpen failed");
-            g_exitState = PlatformInitializationFailure;
-            status = false;
+            sleep(1);
+
+            if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes, GetLog())))
+            {
+                OsConfigLogError(GetLog(), "MpiOpen failed");
+                g_exitState = PlatformInitializationFailure;
+                status = false;
+            }
         }
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "Platform could not be started");
-        g_exitState = PlatformInitializationFailure;
+        else
+        {
+            OsConfigLogError(GetLog(), "Platform could not be started");
+            g_exitState = PlatformInitializationFailure;
+        }
     }
 
     return status;
@@ -372,7 +370,7 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
 
 static bool InitializeAgent(void)
 {
-    bool status = 0; 
+    bool status = true; 
 
     g_lastTime = (unsigned int)time(NULL);
 
