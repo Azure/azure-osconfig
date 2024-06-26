@@ -87,6 +87,7 @@ static char* LoadConfigurationFromFile(const char* fileName)
         g_localManagementEnabled = (GetLocalManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
         g_fullLoggingEnabled = IsFullLoggingEnabledInJsonConfig(jsonConfiguration);
         g_commandLoggingEnabled = IsCommandLoggingEnabledInJsonConfig(jsonConfiguration);
+        g_iotHubManagementEnabled = IsIoTHubManagementEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
@@ -146,6 +147,7 @@ static int UpdateConfigurationFile(void)
     bool localManagementEnabled = g_localManagementEnabled;
     bool fullLoggingEnabled = g_fullLoggingEnabled;
     bool commandLoggingEnabled = g_commandLoggingEnabled;
+    bool iotHubManagementEnabled = g_iotHubManagementEnabled;
     int iotHubProtocol = g_iotHubProtocol;
     bool gitManagementEnabled = g_gitManagementEnabled;
     char* gitBranch = DuplicateString(g_gitBranch);
@@ -160,7 +162,8 @@ static int UpdateConfigurationFile(void)
     }
 
     if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) || 
-        (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || (iotHubProtocol != g_iotHubProtocol) ||
+        (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || 
+        (iotHubManagementEnabled != g_iotHubManagementEnabled) || (iotHubProtocol != g_iotHubProtocol) || 
         (gitManagementEnabled != g_gitManagementEnabled) || strcmp(gitBranch, g_gitBranch))
     {
         if (NULL == (jsonValue = json_parse_string(existingConfiguration)))
@@ -221,13 +224,13 @@ static int UpdateConfigurationFile(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_commandLoggingEnabledObject, commandLoggingEnabled ? "true" : "false");
             }
 
-            if (JSONSuccess == json_object_set_number(jsonObject, iotHubtManagementEnabledName, (double)(g_iotHubtManagementEnabled ? 1 : 0)))
+            if (JSONSuccess == json_object_set_number(jsonObject, iotHubtManagementEnabledName, (double)(iotHubtManagementEnabled ? 1 : 0)))
             {
                 g_iotHubtManagementEnabled = iotHubtManagementEnabled;
             }
             else
             {
-                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_iotHubtManagementEnabled, iotHubtManagementEnabled ? "true" : "false");
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_iotHubManagementEnabledObject, iotHubtManagementEnabled ? "true" : "false");
             }
 
             if (JSONSuccess == json_object_set_number(jsonObject, iotHubProtocolName, (double)iotHubProtocol))
