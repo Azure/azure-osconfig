@@ -71,6 +71,7 @@ static ConnectionStringSource g_connectionStringSource = FromAis;
 static int g_stopSignal = 0;
 static int g_refreshSignal = 0;
 
+static bool g_isIotHubEnabled = false;
 static char* g_iotHubConnectionString = NULL;
 const char* g_iotHubConnectionStringPrefix = "HostName=";
 
@@ -172,13 +173,16 @@ static void SignalReloadConfiguration(int incomingSignal)
 
 static IOTHUB_DEVICE_CLIENT_LL_HANDLE CallIotHubInitialize(void)
 {
-    IOTHUB_DEVICE_CLIENT_LL_HANDLE moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, g_x509PrivateKeyHandle,
-        &g_proxyOptions, (PROTOCOL_MQTT_WS == g_iotHubProtocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol);
-
-    if (NULL == moduleHandle)
+    IOTHUB_DEVICE_CLIENT_LL_HANDLE moduleHandle = NULL;
+    
+    if (g_isIotHubEnabled)
     {
-        OsConfigLogError(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
-        IotHubDeInitialize();
+        if (NULL == (moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, g_x509PrivateKeyHandle,
+            &g_proxyOptions, (PROTOCOL_MQTT_WS == g_iotHubProtocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
+        {
+            OsConfigLogError(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
+            IotHubDeInitialize();
+        }
     }
 
     return moduleHandle;
@@ -191,40 +195,43 @@ static void RefreshConnection()
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
 
-    // If initialized with AIS, try to get a new connection string same way:
-    if ((FromAis == g_connectionStringSource) && (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
+    if (g_isIotHubEnabled)
     {
-        FREE_MEMORY(g_iotHubConnectionString);
-        if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
+        // If initialized with AIS, try to get a new connection string same way:
+        if ((FromAis == g_connectionStringSource) && (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
         {
-            OsConfigLogError(GetLog(), "RefreshConnection: out of memory making copy of the connection string");
-            FREE_MEMORY(connectionString);
+            FREE_MEMORY(g_iotHubConnectionString);
+            if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
+            {
+                OsConfigLogError(GetLog(), "RefreshConnection: out of memory making copy of the connection string");
+                FREE_MEMORY(connectionString);
+            }
         }
-    }
-    else
-    {
-        if (FromAis == g_connectionStringSource)
-        {
-            // No new connection string from AIS, try to refresh using the existing connection string before bailing out:
-            OsConfigLogError(GetLog(), "RefreshConnection: failed to obtain a new connection string from AIS, trying refresh with existing connection string");
-        }
-    }
-
-    IotHubDeInitialize();
-    g_moduleHandle = NULL;
-    
-    if ((NULL == g_moduleHandle) && (NULL != g_iotHubConnectionString))
-    {
-        if (NULL == (g_moduleHandle = CallIotHubInitialize()))
+        else
         {
             if (FromAis == g_connectionStringSource)
             {
-                FREE_MEMORY(g_iotHubConnectionString);
+                // No new connection string from AIS, try to refresh using the existing connection string before bailing out:
+                OsConfigLogError(GetLog(), "RefreshConnection: failed to obtain a new connection string from AIS, trying refresh with existing connection string");
             }
-            else if (!IsWatcherActive())
+        }
+
+        IotHubDeInitialize();
+        g_moduleHandle = NULL;
+
+        if ((NULL == g_moduleHandle) && (NULL != g_iotHubConnectionString))
+        {
+            if (NULL == (g_moduleHandle = CallIotHubInitialize()))
             {
-                g_exitState = IotHubInitializationFailure;
-                SignalInterrupt(SIGQUIT);
+                if (FromAis == g_connectionStringSource)
+                {
+                    FREE_MEMORY(g_iotHubConnectionString);
+                }
+                else if (!IsWatcherActive())
+                {
+                    g_exitState = IotHubInitializationFailure;
+                    SignalInterrupt(SIGQUIT);
+                }
             }
         }
     }
@@ -244,13 +251,15 @@ static void SignalChild(int signal)
 
 static void SignalProcessDesired(int incomingSignal)
 {
-    OsConfigLogInfo(GetLog(), "Processing desired twin updates");
-    ProcessDesiredTwinUpdates();
-
-    // Reset the signal handler for the next use otherwise the default handler will be invoked instead
-    signal(SIGUSR1, SignalProcessDesired);
-
     UNUSED(incomingSignal);
+    if (g_isIotHubEnabled)
+    {
+        OsConfigLogInfo(GetLog(), "Processing desired twin updates");
+        ProcessDesiredTwinUpdates();
+
+        // Reset the signal handler for the next use otherwise the default handler will be invoked instead
+        signal(SIGUSR1, SignalProcessDesired);
+    }
 }
 
 static void ForkDaemon()
@@ -321,7 +330,7 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
     {
         // Platform is already running
 
-        if (platformAlreadyRunning)
+        if (NULL != platformAlreadyRunning)
         {
             *platformAlreadyRunning = true;
         }
@@ -329,15 +338,15 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
         return status;
     }
 
-    if (platformAlreadyRunning)
+    if (NULL != platformAlreadyRunning)
     {
         *platformAlreadyRunning = false;
     }
-    
+
     if (true == (status = EnableAndStartDaemon(OSCONFIG_PLATFORM, GetLog())))
     {
         sleep(1);
-        
+
         if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes, GetLog())))
         {
             OsConfigLogError(GetLog(), "MpiOpen failed");
@@ -347,7 +356,7 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
     }
     else
     {
-        OsConfigLogError(GetLog(), "Platform could not be started");
+        OsConfigLogError(GetLog(), "The OSConfig Platform cannot be started");
         g_exitState = PlatformInitializationFailure;
     }
 
@@ -356,30 +365,33 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
 
 static bool InitializeAgent(void)
 {
-    bool status = RefreshMpiClientSession(NULL);
+    bool status = true; 
 
     g_lastTime = (unsigned int)time(NULL);
 
-    if (status && g_iotHubConnectionString)
+    if (0 == (status = RefreshMpiClientSession(NULL)))
     {
-        if (NULL == (g_moduleHandle = CallIotHubInitialize()))
+        if (g_isIotHubEnabled && g_iotHubConnectionString)
         {
-            if (FromAis == g_connectionStringSource)
+            if (NULL == (g_moduleHandle = CallIotHubInitialize()))
             {
-                // We will try to get a new connnection string from AIS and try to connect with that
-                FREE_MEMORY(g_iotHubConnectionString);
-            }
-            else if (!IsWatcherActive())
-            {
-                g_exitState = IotHubInitializationFailure;
-                status = false;
+                if (FromAis == g_connectionStringSource)
+                {
+                    // We will try to get a new connnection string from AIS and try to connect with that
+                    FREE_MEMORY(g_iotHubConnectionString);
+                }
+                else if (false == IsWatcherActive())
+                {
+                    g_exitState = IotHubInitializationFailure;
+                    status = false;
+                }
             }
         }
     }
 
     if (status)
     {
-        OsConfigLogInfo(GetLog(), "OSConfig PnP Agent intialized");
+        OsConfigLogInfo(GetLog(), "The OSConfig Agent session is now intialized");
     }
 
     return status;
@@ -387,7 +399,10 @@ static bool InitializeAgent(void)
 
 void CloseAgent(void)
 {
-    IotHubDeInitialize();
+    if (g_isIotHubEnabled)
+    {
+        IotHubDeInitialize();
+    }
 
     if (NULL != g_mpiHandle)
     {
@@ -397,9 +412,7 @@ void CloseAgent(void)
 
     FREE_MEMORY(g_reportedProperties);
     
-    WatcherCleanup(GetLog());
-    
-    OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
+    OsConfigLogInfo(GetLog(), "The OSConfig Agent session is closed");
 }
 
 static void ReportProperties()
@@ -428,7 +441,7 @@ static void AgentDoWork(void)
 
     if (timeInterval <= (currentTime - g_lastTime))
     {
-        if ((NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource))
+        if (g_isIotHubEnabled && (NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource))
         {
             IotHubDeInitialize();
 
@@ -458,14 +471,14 @@ static void AgentDoWork(void)
         WatcherDoWork(GetLog());
 
         // Process reported updates to the IoT Hub
-        if (g_moduleHandle)
+        if (g_isIotHubEnabled && g_moduleHandle)
         {
             ReportProperties();
         }
 
         g_lastTime = (unsigned int)time(NULL);
     }
-    else
+    else if (g_isIotHubEnabled)
     {
         IotHubDoWork();
     }
@@ -521,7 +534,7 @@ int main(int argc, char *argv[])
     CloseLog(&g_agentLog);
     g_agentLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
 
-    OsConfigLogInfo(GetLog(), "OSConfig PnP Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
+    OsConfigLogInfo(GetLog(), "OSConfig Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
     if (IsCommandLoggingEnabled() || IsFullLoggingEnabled())
@@ -536,21 +549,17 @@ int main(int argc, char *argv[])
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, GetLog());
         g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties, GetLog());
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog());
+        g_isIotHubEnabled = IsIotHubManagementEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, GetLog());
-
-        // Call the Watcher to initialize itself
-        InitializeWatcher(jsonConfiguration, GetLog());
-
-        FREE_MEMORY(jsonConfiguration);
     }
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
     
-    snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
-    OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
-
     snprintf(g_productName, sizeof(g_productName), g_productNameTemplate, g_modelVersion, OSCONFIG_VERSION);
     OsConfigLogInfo(GetLog(), "Product name: %s", g_productName);
+
+    snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
+    OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
 
     osName = GetOsName(GetLog());
     osVersion = GetOsVersion(GetLog());
@@ -593,77 +602,80 @@ int main(int argc, char *argv[])
     FREE_MEMORY(productName);
     FREE_MEMORY(productVendor);
     FREE_MEMORY(encodedProductInfo);
-    
-    OsConfigLogInfo(GetLog(), "Protocol: %s", (PROTOCOL_MQTT_WS == g_iotHubProtocol) ? "MQTT over Web Socket" : "MQTT");
 
-    if (PROTOCOL_MQTT_WS == g_iotHubProtocol)
+    if (g_isIotHubEnabled)
     {
-        // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
-        if (NULL != (proxyData = GetHttpProxyData(GetLog())))
-        {
-            if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
-            {
-                // Assign the string pointers and trasfer ownership to the SDK
-                g_proxyOptions.host_address = proxyHostAddress;
-                g_proxyOptions.port = proxyPort;
-                g_proxyOptions.username = proxyUsername;
-                g_proxyOptions.password = proxyPassword;
+        OsConfigLogInfo(GetLog(), "Protocol: %s", (PROTOCOL_MQTT_WS == g_iotHubProtocol) ? "MQTT over Web Socket" : "MQTT");
 
-                FREE_MEMORY(proxyData);
-            }
-        }
-    }
-
-    if ((argc < 2) || ((2 == argc) && forkDaemon))
-    {
-        g_connectionStringSource = FromAis;
-        if (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle)))
+        if (PROTOCOL_MQTT_WS == g_iotHubProtocol)
         {
-            if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
+            // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
+            if (NULL != (proxyData = GetHttpProxyData(GetLog())))
             {
-                OsConfigLogError(GetLog(), "Out of memory making copy of the connection string from AIS");
-                g_exitState = NoConnectionString;
-                goto done;
-            }
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Failed to obtain a connection string from AIS, to retry");
-        }
-    }
-    else
-    {
-        if (0 == strncmp(argv[1], g_iotHubConnectionStringPrefix, strlen(g_iotHubConnectionStringPrefix)))
-        {
-            g_connectionStringSource = FromCommandline;
-            if (0 != mallocAndStrcpy_s(&connectionString, argv[1]))
-            {
-                OsConfigLogError(GetLog(), "Out of memory making copy of the connection string from the command line");
-                g_exitState = NoConnectionString;
-                goto done;
-            }
-        }
-        else
-        {
-            g_connectionStringSource = FromFile;
-            connectionString = LoadStringFromFile(argv[1], true, GetLog());
-            if (NULL == connectionString)
-            {
-                OsConfigLogError(GetLog(), "Failed to load a connection string from %s", argv[1]);
-
-                if (!IsWatcherActive())
+                if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
                 {
+                    // Assign the string pointers and trasfer ownership to the SDK
+                    g_proxyOptions.host_address = proxyHostAddress;
+                    g_proxyOptions.port = proxyPort;
+                    g_proxyOptions.username = proxyUsername;
+                    g_proxyOptions.password = proxyPassword;
+
+                    FREE_MEMORY(proxyData);
+                }
+            }
+        }
+
+        if ((argc < 2) || ((2 == argc) && forkDaemon))
+        {
+            g_connectionStringSource = FromAis;
+            if (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle)))
+            {
+                if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
+                {
+                    OsConfigLogError(GetLog(), "Out of memory making copy of the connection string from AIS");
                     g_exitState = NoConnectionString;
                     goto done;
                 }
             }
+            else
+            {
+                OsConfigLogError(GetLog(), "Failed to obtain a connection string from AIS, to retry");
+            }
         }
-    }
+        else
+        {
+            if (0 == strncmp(argv[1], g_iotHubConnectionStringPrefix, strlen(g_iotHubConnectionStringPrefix)))
+            {
+                g_connectionStringSource = FromCommandline;
+                if (0 != mallocAndStrcpy_s(&connectionString, argv[1]))
+                {
+                    OsConfigLogError(GetLog(), "Out of memory making copy of the connection string from the command line");
+                    g_exitState = NoConnectionString;
+                    goto done;
+                }
+            }
+            else
+            {
+                g_connectionStringSource = FromFile;
+                connectionString = LoadStringFromFile(argv[1], true, GetLog());
+                if (NULL == connectionString)
+                {
+                    OsConfigLogError(GetLog(), "Failed to load a connection string from %s", argv[1]);
 
-    if (connectionString && (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString)))
-    {
-        OsConfigLogError(GetLog(), "Out of memory making copy of the connection string");
-        goto done;
+                    if (!IsWatcherActive())
+                    {
+                        g_exitState = NoConnectionString;
+                        goto done;
+                    }
+                }
+            }
+        }
+
+        if (connectionString && (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString)))
+        {
+            OsConfigLogError(GetLog(), "Out of memory making copy of the connection string");
+            goto done;
+        }
     }
 
     for (int i = 0; i < stopSignalsCount; i++)
@@ -673,17 +685,15 @@ int main(int argc, char *argv[])
     signal(SIGHUP, SignalReloadConfiguration);
     signal(SIGUSR1, SignalProcessDesired);
 
-    if (!RefreshMpiClientSession(NULL))
+    if (false == InitializeAgent())
     {
-        OsConfigLogError(GetLog(), "Failed to start the platform");
+        OsConfigLogError(GetLog(), "Failed to initialize the OSConfig Agent");
         goto done;
     }
 
-    if (!InitializeAgent())
-    {
-        OsConfigLogError(GetLog(), "Failed to initialize the OSConfig PnP Agent");
-        goto done;
-    }
+    // Call the Watcher to initialize itself
+    InitializeWatcher(jsonConfiguration, GetLog());
+    FREE_MEMORY(jsonConfiguration);
 
     while (0 == g_stopSignal)
     {
@@ -699,13 +709,15 @@ int main(int argc, char *argv[])
     }
 
 done:
-    OsConfigLogInfo(GetLog(), "OSConfig PnP Agent (PID: %d) exiting with %d", pid, g_stopSignal);
+    OsConfigLogInfo(GetLog(), "OSConfig Agent (PID: %d) exiting with %d", pid, g_stopSignal);
 
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
     FREE_MEMORY(connectionString);
     FREE_MEMORY(g_iotHubConnectionString);
 
+    WatcherCleanup(GetLog());
+    
     CloseAgent();
     
     StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog());

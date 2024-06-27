@@ -31,6 +31,12 @@
           "schema": "boolean"
         },
         {
+          "name": "desiredIotHubManagementEnabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "boolean"
+        },
+        {
           "name": "desiredIotHubProtocol",
           "type": "mimObject",
           "desired": true,
@@ -91,6 +97,12 @@
         },
         {
           "name": "commandLoggingEnabled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "boolean"
+        },
+        {
+          "name": "iotHubManagamentEnabled",
           "type": "mimObject",
           "desired": false,
           "schema": "boolean"

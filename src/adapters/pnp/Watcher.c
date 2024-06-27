@@ -16,8 +16,6 @@
 #define GIT_DC_CLONE "/etc/osconfig/gitops/"
 #define GIT_DC_FILE GIT_DC_CLONE "osconfig_desired.json"
 
-const char* g_mpiServer = "osconfig-platform";
-
 static int g_localManagement = 0;
 static size_t g_reportedHash = 0;
 static size_t g_desiredHash = 0;
@@ -29,8 +27,6 @@ static size_t g_gitDesiredHash = 0;
 
 static bool g_gitCloneInitialized = false;
 
-static MPI_HANDLE g_mpiHandle = NULL;
-
 static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
 {
     char* payload = NULL;
@@ -39,7 +35,7 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
     
-    if (fileName && hash && g_mpiHandle)
+    if (fileName && hash)
     {
         mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
         if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
@@ -73,7 +69,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
 
-    if (fileName && hash && g_mpiHandle)
+    if (fileName && hash)
     {
         RestrictFileAccessToCurrentAccountOnly(fileName);
 
@@ -267,30 +263,6 @@ void InitializeWatcher(const char* jsonConfiguration, void* log)
     RestrictFileAccessToCurrentAccountOnly(DC_FILE);
     RestrictFileAccessToCurrentAccountOnly(RC_FILE);
     RestrictFileAccessToCurrentAccountOnly(GIT_DC_FILE);
-
-    if (NULL != g_mpiHandle)
-    {
-        CallMpiClose(g_mpiHandle, GetLog());
-        g_mpiHandle = NULL;
-    }
-
-    if (true == EnableAndStartDaemon(g_mpiServer, GetLog()))
-    {
-        sleep(1);
-
-        if (NULL == (g_mpiHandle = CallMpiOpen(MPI_CLIENT_NAME, MAX_PAYLOAD_LENGTH, GetLog())))
-        {
-            OsConfigLogError(GetLog(), "Watcher: MpiOpen failed");
-        }
-        else
-        {
-            OsConfigLogInfo(GetLog(), "Watcher: initialized with MPI session '%p'", g_mpiHandle);
-        }
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "Watcher: the OSConfig Platform service '%s' is not active on this device", g_mpiServer);
-    }
 }
 
 void WatcherDoWork(void* log)
@@ -321,11 +293,8 @@ void WatcherDoWork(void* log)
 
 void WatcherCleanup(void* log)
 {
-    OsConfigLogInfo(log, "Watcher: closing MPI session '%p' and shutting down", g_mpiHandle);
+    OsConfigLogInfo(log, "Watcher shutting down");
 
-    CallMpiClose(g_mpiHandle, GetLog());
-    g_mpiHandle = NULL;
-    
     DeleteGitClone(GIT_DC_CLONE, log);
 
     FREE_MEMORY(g_gitRepositoryUrl);

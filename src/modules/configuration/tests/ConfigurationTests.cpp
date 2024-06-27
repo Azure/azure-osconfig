@@ -16,8 +16,8 @@ class ConfigurationTest : public ::testing::Test
             "\"Description\": \"Provides functionality to manage OSConfig configuration on device\","
             "\"Manufacturer\": \"Microsoft\","
             "\"VersionMajor\": 1,"
-            "\"VersionMinor\": 3,"
-            "\"VersionInfo\": \"Zinc\","
+            "\"VersionMinor\": 4,"
+            "\"VersionInfo\": \"Dilithium\","
             "\"Components\": [\"Configuration\"],"
             "\"Lifetime\": 2,"
             "\"UserAccount\": 0}";
@@ -30,6 +30,7 @@ class ConfigurationTest : public ::testing::Test
         const char* m_localManagementEnabledObject = "localManagementEnabled";
         const char* m_fullLoggingEnabledObject = "fullLoggingEnabled";
         const char* m_commandLoggingEnabledObject = "commandLoggingEnabled";
+        const char* m_iotHubManagementEnabledObject = "iotHubManagementEnabled";
         const char* m_iotHubProtocolObject = "iotHubProtocol";
         const char* m_gitManagementEnabledObject = "gitManagementEnabled";
         const char* m_gitBranchObject = "gitBranch";
@@ -38,6 +39,7 @@ class ConfigurationTest : public ::testing::Test
         const char* m_desiredLocalManagementEnabledObject = "desiredLocalManagementEnabled";
         const char* m_desiredFullLoggingEnabledObject = "desiredFullLoggingEnabled";
         const char* m_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
+        const char* m_desiredIotHubManagementEnabledObject = "desiredIotHubManagementEnabled";
         const char* m_desiredIotHubProtocolObject = "desiredIotHubProtocol";
         const char* m_desiredGitManagementEnabledObject = "desiredGitManagementEnabled";
         const char* m_desiredGitBranchObject = "desiredGitBranch";
@@ -48,6 +50,7 @@ class ConfigurationTest : public ::testing::Test
                 "\"FullLogging\" : 0,"
                 "\"LocalManagement\" : 0,"
                 "\"ModelVersion\" : 15,"
+                "\"IotHubManagement\" : 0,"
                 "\"IotHubProtocol\" : 2,"
                 "\"ReportingIntervalSeconds\": 30,"
                 "\"GitManagement\" : 1,"
@@ -129,6 +132,7 @@ TEST_F(ConfigurationTest, MmiGet)
         m_localManagementEnabledObject,
         m_fullLoggingEnabledObject,
         m_commandLoggingEnabledObject,
+        m_iotHubManagementEnabledObject,
         m_iotHubProtocolObject,
         m_gitManagementEnabledObject,
         m_gitBranchObject
@@ -165,6 +169,7 @@ TEST_F(ConfigurationTest, MmiGetTruncatedPayload)
         m_localManagementEnabledObject,
         m_fullLoggingEnabledObject,
         m_commandLoggingEnabledObject,
+        m_iotHubManagementEnabledObject,
         m_iotHubProtocolObject,
         m_gitManagementEnabledObject,
         m_gitBranchObject
@@ -263,6 +268,9 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredCommandLoggingEnabledObject, "true", 0, m_commandLoggingEnabledObject, "true" },
         { m_desiredCommandLoggingEnabledObject, "false", 0, m_commandLoggingEnabledObject, "false" },
         { m_desiredCommandLoggingEnabledObject, "notImplemented", 22, m_commandLoggingEnabledObject, "false" },
+        { m_desiredIotHubManagementEnabledObject, "true", 0, m_iotHubManagementEnabledObject, "true" },
+        { m_desiredIotHubManagementEnabledObject, "false", 0, m_iotHubManagementEnabledObject, "false" },
+        { m_desiredIotHubManagementEnabledObject, "notImplemented", 22, m_iotHubManagementEnabledObject, "false" },
         { m_desiredIotHubProtocolObject, "\"auto\"", 0, m_iotHubProtocolObject, "\"auto\"" },
         { m_desiredIotHubProtocolObject, "\"mqtt\"", 0, m_iotHubProtocolObject, "\"mqtt\"" },
         { m_desiredIotHubProtocolObject, "\"mqttWebSocket\"", 0, m_iotHubProtocolObject, "\"mqttWebSocket\"" },

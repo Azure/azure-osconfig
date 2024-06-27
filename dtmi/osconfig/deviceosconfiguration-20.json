@@ -1,0 +1,33 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:osconfig:deviceosconfiguration;20",
+  "@type": "Interface",
+  "displayName": "Device OS Configuration",
+  "contents": [
+    {
+      "schema": "dtmi:osconfig:adhs;1",
+      "@type": "Component",
+      "name": "Adhs"
+    },
+    {
+      "schema": "dtmi:osconfig:commandrunner;3",
+      "@type": "Component",
+      "name": "CommandRunner"
+    },
+    {
+      "schema": "dtmi:osconfig:configuration;4",
+      "@type": "Component",
+      "name": "Configuration"
+    },
+    {
+      "schema": "dtmi:osconfig:deviceinfo;5",
+      "@type": "Component",
+      "name": "DeviceInfo"
+    },
+    {
+      "schema": "dtmi:osconfig:securitybaseline;2",
+      "@type": "Component",
+      "name": "SecurityBaseline"
+    }
+  ]
+}

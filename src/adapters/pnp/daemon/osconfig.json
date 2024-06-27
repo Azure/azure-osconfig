@@ -5,7 +5,8 @@
   "GitRepositoryUrl": " ",
   "GitBranch": " ",
   "LocalManagement": 1,
-  "ModelVersion": 18,
+  "ModelVersion": 20,
+  "IotHubManagement": 0,
   "IotHubProtocol": 2,
   "Reported": [
     {
@@ -19,6 +20,10 @@
     {
       "ComponentName": "Configuration",
       "ObjectName": "fullLoggingEnabled"
+    },
+    {
+      "ComponentName": "Configuration",
+      "ObjectName": "iotHubManagement"
     },
     {
       "ComponentName": "Configuration",
@@ -781,5 +786,5 @@
       "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
     }
   ],
-  "ReportingIntervalSeconds": 300
+  "ReportingIntervalSeconds": 30
 }

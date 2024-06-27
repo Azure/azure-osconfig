@@ -219,6 +219,7 @@ typedef struct REPORTED_PROPERTY
 
 bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString);
 bool IsFullLoggingEnabledInJsonConfig(const char* jsonString);
+bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString);
 int GetReportingIntervalFromJsonConfig(const char* jsonString, void* log);
 int GetModelVersionFromJsonConfig(const char* jsonString, void* log);
 int GetLocalManagementFromJsonConfig(const char* jsonString, void* log);

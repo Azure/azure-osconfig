@@ -32,7 +32,7 @@ cmake --version
 gcc --version
 ```
 
-Install and configure the *Azure IoT Identity Service (AIS)* package as described at [azure.github.io/iot-identity-service/](https://azure.github.io/iot-identity-service/).
+For IoT Hub management, you can install and configure the *Azure IoT Identity Service (AIS)* package as described at [azure.github.io/iot-identity-service/](https://azure.github.io/iot-identity-service/).
 
 ### Build
 
@@ -60,16 +60,10 @@ Source | Destination | Description
 [src/adapters/pnp/daemon/osconfig.service](src/adapters/pnp/daemon/osconfig.service) | /etc/systemd/system/osconfig.service | The service unit for the OSConfig Agent
 [src/platform/daemon/osconfig-platform.service](src/platform/daemon/osconfig-platform.service) | /etc/systemd/system/osconfig-platform.service | The service unit for the OSConfig Platform
 [src/adapters/pnp/daemon/osconfig.toml](src/adapters/pnp/daemon/osconfig.toml) | /etc/aziot/identityd/config.d/osconfig.toml | The OSConfig Module configuration for AIS
-[src/modules/securitybaseline/](src/modules/securitybaseline/) | /usr/lib/osconfig/securitybaseline.so | The SecurityBaseline module binary
 [src/modules/deviceinfo/](src/modules/deviceinfo/) | /usr/lib/osconfig/deviceinfo.so | The DeviceInfo module binary
-[src/modules/configuration/](src/modules/configuration/) | /usr/lib/osconfig/configuration.so | The Configuration module binary
 [src/modules/commandrunner/](src/modules/commandrunner/) | /usr/lib/osconfig/commandrunner.so | The CommandRunner module binary
-[src/modules/firewall/](src/modules/firewall/) | /usr/lib/osconfig/firewall.so | The Firewall module binary
-[src/modules/adhs/](src/modules/adhs/) | /usr/lib/osconfig/adhs.so | The Azure Device Health Services (ADHS) module binary
-[src/modules/deliveryoptimization/](src/modules/deliveryoptimization/) | /usr/lib/osconfig/deliveryoptimization.so | The Delivery Optimization (DO) module binary
-[src/modules/hostname/](src/modules/hostname/) | /usr/lib/osconfig/hostname.so | The HostName module binary
-[src/modules/networking/](src/modules/networking/) | /usr/lib/osconfig/networking.so | The Networking module binary
-[src/modules/tpm/](src/modules/tpm/) | /usr/lib/osconfig/tpm.so | The TPM module binary
+[src/modules/configuration/](src/modules/configuration/) | /usr/lib/osconfig/configuration.so | The Configuration module binary
+[src/modules/securitybaseline/](src/modules/securitybaseline/) | /usr/lib/osconfig/securitybaseline.so | The SecurityBaseline module binary
 
 ### Enable and start OSConfig for the first time
 
@@ -122,6 +116,16 @@ Only the root user can view these log files.
 
 OSConfig can be configured via `/etc/osconfig/osconfig.json`. After changing this configuration file, restart OSConfig to apply the configuration changes. Only the root user can view or edit this configuration file.
 
+### Enabling management via IoT Hub 
+
+Originally OSConfig was developed with the IoT Hub management channel by default and always enabled. Currently, this managament channel is by default disabled. You can enable it via the OSConfig general configuration file at `/etc/osconfig/osconfig.json`. Edit there the integer value named "IotHubManagement" to a non-zero value:
+
+```json
+{
+    "IotHubManagement": 0
+}
+```
+
 ### Adjusting the reporting interval
 
 OSConfig periodically reports device data at a default time period of 30 seconds. This interval period can be adjusted between 1 second and 86,400 seconds (24 hours) via the OSConfig general configuration file at `/etc/osconfig/osconfig.json`. Edit there the integer value named "ReportingIntervalSeconds" to a value between 1 and 86400:
@@ -132,7 +136,7 @@ OSConfig periodically reports device data at a default time period of 30 seconds
 }
 ```
 
-This same interval is also used for RC/DC and GitOps DC processing.
+This interval is used for RC/DC, GitOps DC, and IoT Hub processing.
 
 ### Enabling logging of system commands executed by OSConfig for debugging purposes
 
