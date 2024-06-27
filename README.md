@@ -122,7 +122,7 @@ Originally OSConfig was developed with the IoT Hub management channel by default
 
 ```json
 {
-    "ReportingIntervalSeconds": 0
+    "IotHubManagement": 0
 }
 ```
 
