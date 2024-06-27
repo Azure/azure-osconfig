@@ -1,6 +1,5 @@
 Azure Device OS Configuration (OSConfig) - Roadmap
 ==================================================
-Author: [MariusNi](https://github.com/MariusNi)
 
 # 1. Introduction
 
