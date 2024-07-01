@@ -259,25 +259,25 @@ TEST_F(ConfigurationTest, MmiSet)
     {
         { m_desiredRefreshIntervalObject, "5", 0, m_refreshIntervalObject, "5" },
         { m_desiredRefreshIntervalObject, "30", 0, m_refreshIntervalObject, "30" },
-        { m_desiredLocalManagementEnabledObject, "\"true\"", 0, m_localManagementEnabledObject, "\"true\"" },
-        { m_desiredLocalManagementEnabledObject, "\"false\"", 0, m_localManagementEnabledObject, "\"false\"" },
+        { m_desiredLocalManagementEnabledObject, "true", 0, m_localManagementEnabledObject, "\"true\"" },
+        { m_desiredLocalManagementEnabledObject, "false", 0, m_localManagementEnabledObject, "\"false\"" },
         { m_desiredLocalManagementEnabledObject, "notImplemented", 22, m_localManagementEnabledObject, "\"false\"" },
-        { m_desiredFullLoggingEnabledObject, "\"true\"", 0, m_fullLoggingEnabledObject, "\"true\"" },
-        { m_desiredFullLoggingEnabledObject, "\"false\"", 0, m_fullLoggingEnabledObject, "\"false\"" },
+        { m_desiredFullLoggingEnabledObject, "true", 0, m_fullLoggingEnabledObject, "\"true\"" },
+        { m_desiredFullLoggingEnabledObject, "false", 0, m_fullLoggingEnabledObject, "\"false\"" },
         { m_desiredFullLoggingEnabledObject, "notImplemented", 22, m_fullLoggingEnabledObject, "\"false\"" },
-        { m_desiredCommandLoggingEnabledObject, "\"true\"", 0, m_commandLoggingEnabledObject, "\"true\"" },
-        { m_desiredCommandLoggingEnabledObject, "\"false\"", 0, m_commandLoggingEnabledObject, "\"false\"" },
+        { m_desiredCommandLoggingEnabledObject, "true", 0, m_commandLoggingEnabledObject, "\"true\"" },
+        { m_desiredCommandLoggingEnabledObject, "false", 0, m_commandLoggingEnabledObject, "\"false\"" },
         { m_desiredCommandLoggingEnabledObject, "notImplemented", 22, m_commandLoggingEnabledObject, "\"false\"" },
-        { m_desiredIotHubManagementEnabledObject, "\"true\"", 0, m_iotHubManagementEnabledObject, "\"true\"" },
-        { m_desiredIotHubManagementEnabledObject, "\"false\"", 0, m_iotHubManagementEnabledObject, "\"false\"" },
+        { m_desiredIotHubManagementEnabledObject, "true", 0, m_iotHubManagementEnabledObject, "\"true\"" },
+        { m_desiredIotHubManagementEnabledObject, "false", 0, m_iotHubManagementEnabledObject, "\"false\"" },
         { m_desiredIotHubManagementEnabledObject, "notImplemented", 22, m_iotHubManagementEnabledObject, "\"false\"" },
         { m_desiredIotHubProtocolObject, "\"auto\"", 0, m_iotHubProtocolObject, "\"auto\"" },
         { m_desiredIotHubProtocolObject, "\"mqtt\"", 0, m_iotHubProtocolObject, "\"mqtt\"" },
         { m_desiredIotHubProtocolObject, "\"mqttWebSocket\"", 0, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
         { m_desiredIotHubProtocolObject, "\"notImplemented\"", 22, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
-        { m_desiredGitManagementEnabledObject, "\"true\"", 0, m_gitManagementEnabledObject, "\"true\"" },
-        { m_desiredGitManagementEnabledObject, "\"false\"", 0, m_gitManagementEnabledObject, "\"false\"" },
-        { m_desiredGitBranchObject, "\"\\\"Foo\\/Test\\\"\"", 0, m_gitBranchObject, "\"\\\"Foo\\/Test\\\"\"" }
+        { m_desiredGitManagementEnabledObject, "true", 0, m_gitManagementEnabledObject, "\"true\"" },
+        { m_desiredGitManagementEnabledObject, "false", 0, m_gitManagementEnabledObject, "\"false\"" },
+        { m_desiredGitBranchObject, "\Foo\Test\", 0, m_gitBranchObject, "\"\\\"Foo\\/Test\\\"\"" }
     };
     
     int numTestCombinations = ARRAY_SIZE(testCombinations);
