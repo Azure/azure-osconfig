@@ -33,9 +33,9 @@ static const char* g_desiredIotHubProtocolObject = "desiredIotHubProtocol";
 static const char* g_desiredGitManagementEnabledObject = "desiredGitManagementEnabled";
 static const char* g_desiredGitBranchObject = "desiredGitBranch";
 
-const char* g_auto = "\"auto\"";
-const char* g_mqtt = "\"mqtt\"";
-const char* g_mqttWebSocket = "\"mqttWebSocket\"";
+const char* g_auto = "auto";
+const char* g_mqtt = "mqtt";
+const char* g_mqttWebSocket = "mqttWebSocket";
 
 static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
 
