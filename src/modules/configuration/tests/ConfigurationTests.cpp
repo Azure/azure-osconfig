@@ -277,7 +277,7 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredIotHubProtocolObject, "\"notImplemented\"", 22, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
         { m_desiredGitManagementEnabledObject, "true", 0, m_gitManagementEnabledObject, "\"true\"" },
         { m_desiredGitManagementEnabledObject, "false", 0, m_gitManagementEnabledObject, "\"false\"" },
-        { m_desiredGitBranchObject, "\Foo\Test\", 0, m_gitBranchObject, "\"\\\"Foo\\/Test\\\"\"" }
+        { m_desiredGitBranchObject, "/Foo/Test/", 0, m_gitBranchObject, "/Foo/Test" }
     };
     
     int numTestCombinations = ARRAY_SIZE(testCombinations);
