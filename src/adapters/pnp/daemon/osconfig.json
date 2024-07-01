@@ -1,9 +1,9 @@
 {
   "CommandLogging": 0,
-  "FullLogging": 1,
+  "FullLogging": 0,
   "GitManagement": 0,
   "GitRepositoryUrl": " ",
-  "GitBranch": "none",
+  "GitBranch": " ",
   "LocalManagement": 1,
   "ModelVersion": 20,
   "IotHubManagement": 0,
