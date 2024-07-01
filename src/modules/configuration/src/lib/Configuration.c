@@ -563,13 +563,13 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
                 if (NULL == (jsonString = (char*)json_value_get_string(jsonValue)))
                 {
                     status = EINVAL;
-                    OsConfigLogError(log, "MmiSet(%s, %s): json_value_get_string(%s) failed", componentName, objectName, payloadString);
+                    OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_value_get_string(%s) failed", componentName, objectName, payloadString);
                 }
             }
             else
             {
                 status = EINVAL;
-                OsConfigLogError(log, "MmiSet(%s, %s): json_parse_string(%s) failed", componentName, objectName, payloadString);
+                OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_parse_string(%s) failed", componentName, objectName, payloadString);
             }
         }
         else
