@@ -251,6 +251,7 @@ static int UpdateConfigurationFile(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_gitManagementEnabledObject, gitManagementEnabled ? "true" : "false");
             }
 
+            OsConfigLogInfo(ConfigurationGetLog(), "######################## gitBranch: '%s'", gitBranch);
             if (JSONSuccess == json_object_set_string(jsonObject, gitBranchName, gitBranch))
             {
                 FREE_MEMORY(g_gitBranch);
