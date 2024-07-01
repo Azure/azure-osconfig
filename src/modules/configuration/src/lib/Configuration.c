@@ -457,7 +457,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
             status = EINVAL;
         }
 
-        if (NULL == buffer)
+        if ((0 == status) && (NULL == buffer))
         {
             OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) failed due to out of memory condition", componentName, objectName);
             status = ENOMEM;
@@ -469,12 +469,12 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         if (NULL == (jsonValue = json_value_init_string(buffer)))
         {
             OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s): json_value_init_string(%s) failed", componentName, objectName, buffer);
-            status = ENOMEM;
+            status = ENOENT;
         }
         else if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
         {
             OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s): json_serialize_to_string(%s) failed", componentName, objectName, buffer);
-            status = ENOMEM;
+            status = ENOENT;
         }
         else
         {
