@@ -282,7 +282,7 @@ static int UpdateConfigurationFile(void)
 
     if (MMI_OK == status)
     {
-        OsConfigLogInfo(ConfigurationGetLog(), "New configuration successfully applied: %s", /*IsFullLoggingEnabled()*/1 ? newConfiguration : "-");
+        OsConfigLogInfo(ConfigurationGetLog(), "New configuration successfully applied: %s", newConfiguration/*IsFullLoggingEnabled() ? newConfiguration : "-"*/);
     }
     else
     {
