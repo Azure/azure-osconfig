@@ -72,7 +72,7 @@
     "remediateEnsurePasswordHashingAlgorithm": "6",
     "remediateEnsureMinDaysBetweenPasswordChanges": "7",
     "remediateEnsureInactivePasswordLockPeriod": "30",
-    "remediateMaxDaysBetweenPasswordChanges": "365",
+    "remediateEnsureMaxDaysBetweenPasswordChanges": "365",
     "remediateEnsurePasswordExpiration": "365",
     "remediateEnsurePasswordExpirationWarning": "7",
     "remediateEnsureSystemAccountsAreNonLogin": "",
