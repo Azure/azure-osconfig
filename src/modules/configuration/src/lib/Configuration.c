@@ -368,12 +368,11 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
 
 int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
-    int status = MMI_OK;
+    JSON_Value* jsonValue = NULL;
+    char* serializedValue = NULL;
     char* buffer = NULL;
     char* configuration = NULL;
-    const size_t minimumLength = 20;
-    size_t branchLength = 0;
-    size_t maximumLength = 0;
+    int status = MMI_OK;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -384,23 +383,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
 
     *payload = NULL;
     *payloadSizeBytes = 0;
-
-    branchLength = g_gitBranch ? strlen(g_gitBranch) : 0;
-    maximumLength = branchLength + 3;
-
-    if (maximumLength < minimumLength)
-    {
-        maximumLength = minimumLength;
-    }
-
-    if (NULL == (buffer = malloc(maximumLength)))
-    {
-        OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) failed due to out of memory condition", componentName, objectName);
-        status = ENOMEM;
-        return status;
-    }
-
-    memset(buffer, 0, maximumLength);
 
     if (!IsValidSession(clientSession))
     {
@@ -421,27 +403,27 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     {
         if (0 == strcmp(objectName, g_modelVersionObject))
         {
-            snprintf(buffer, maximumLength, "%u", g_modelVersion);
+            buffer = FormatAllocateString, "%u", g_modelVersion);
         }
         else if (0 == strcmp(objectName, g_refreshIntervalObject))
         {
-            snprintf(buffer, maximumLength, "%u", g_refreshInterval);
+            buffer = FormatAllocateString, "%u", g_refreshInterval);
         }
         else if (0 == strcmp(objectName, g_localManagementEnabledObject))
         {
-            snprintf(buffer, maximumLength, "%s", g_localManagementEnabled ? "true" : "false");
+            buffer = FormatAllocateString, "%s", g_localManagementEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_fullLoggingEnabledObject))
         {
-            snprintf(buffer, maximumLength, "%s", g_fullLoggingEnabled ? "true" : "false");
+            buffer = FormatAllocateString, "%s", g_fullLoggingEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_commandLoggingEnabledObject))
         {
-            snprintf(buffer, maximumLength, "%s", g_commandLoggingEnabled ? "true" : "false");
+            buffer = FormatAllocateString, "%s", g_commandLoggingEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_iotHubManagementEnabledObject))
         {
-            snprintf(buffer, maximumLength, "%s", g_iotHubManagementEnabled ? "true" : "false");
+            buffer = FormatAllocateString, "%s", g_iotHubManagementEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_iotHubProtocolObject))
         {
@@ -449,26 +431,26 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
             switch (g_iotHubProtocol)
             {
                 case 1:
-                    snprintf(buffer, maximumLength, "%s", g_mqtt);
+                    buffer = FormatAllocateString, "%s", g_mqtt);
                     break;
 
                 case 2:
-                    snprintf(buffer, maximumLength, "%s", g_mqttWebSocket);
+                    buffer = FormatAllocateString, "%s", g_mqttWebSocket);
                     break;
 
                 case 0:
                 default:
-                    snprintf(buffer, maximumLength, "%s", g_auto);
+                    buffer = FormatAllocateString, "%s", g_auto);
 
             }
         }
         else if (0 == strcmp(objectName, g_gitManagementEnabledObject))
         {
-            snprintf(buffer, maximumLength, "%s", g_gitManagementEnabled ? "true" : "false");
+            buffer = FormatAllocateString, "%s", g_gitManagementEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_gitBranchObject))
         {
-            snprintf(buffer, maximumLength, """%s""", g_gitBranch);
+            buffer = FormatAllocateString, "%s", g_gitBranch);
             OsConfigLogInfo(ConfigurationGetLog(), "gitBranch buffer: '%s'", buffer);//////////////////////////////////
         }
         else
@@ -476,36 +458,65 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
             OsConfigLogError(ConfigurationGetLog(), "MmiGet called for an unsupported object (%s)", objectName);
             status = EINVAL;
         }
+
+        if (NULL == buffer)
+        {
+            OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) failed due to out of memory condition", componentName, objectName);
+            status = ENOMEM;
+        }
     }
 
     if (MMI_OK == status)
     {
-        *payloadSizeBytes = strlen(buffer);
-
-        if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
+        if (NULL == (jsonValue = json_value_init_string(buffer)))
         {
-            OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported buffer will be truncated",
-                componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
-
-            *payloadSizeBytes = g_maxPayloadSizeBytes;
+            OsConfigLogError(log, "json_value_init_string(%s) failed", componentName, objectName, buffer);
+            status = ENOMEM;
         }
-
-        *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
-        if (*payload)
+        else if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
         {
-            memcpy(*payload, buffer, *payloadSizeBytes);
+            OsConfigLogError(log, "json_serialize_to_string(%s) failed", componentName, objectName, buffer);
+            status = ENOMEM;
         }
         else
         {
-            OsConfigLogError(ConfigurationGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
-            *payloadSizeBytes = 0;
-            status = ENOMEM;
+            *payloadSizeBytes = (int)strlen(serializedValue);
+
+            if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
+            {
+                OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported buffer will be truncated",
+                    componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+
+                *payloadSizeBytes = g_maxPayloadSizeBytes;
+            }
+
+            *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
+            if (*payload)
+            {
+                memcpy(*payload, serializedValue, *payloadSizeBytes);
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
+                *payloadSizeBytes = 0;
+                status = ENOMEM;
+            }
         }
     }    
 
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(ConfigurationGetLog(), "MmiGet(%p, %s, %s, '%.*s', %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    }
+
+    if (NULL != serializedValue)
+    {
+        json_free_serialized_string(serializedValue);
+    }
+
+    if (NULL != jsonValue)
+    {
+        json_value_free(jsonValue);
     }
 
     FREE_MEMORY(configuration);
