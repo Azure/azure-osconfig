@@ -687,23 +687,14 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_desiredGitBranchObject))
         {
-            if (NULL != (jsonValue = json_parse_string(jsonString)))
+            if (jsonString)
             {
-                jsonString = json_value_get_string(jsonValue);
-                if (jsonString)
-                {
-                    FREE_MEMORY(g_gitBranch);
-                    g_gitBranch = DuplicateString(jsonString);
-                }
-                else
-                {
-                    OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_value_get_string failed)", g_desiredGitBranchObject);
-                    status = EINVAL;
-                }
+                FREE_MEMORY(g_gitBranch);
+                g_gitBranch = DuplicateString(jsonString);
             }
             else
             {
-                OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_parse_string failed)", g_desiredGitBranchObject);
+                OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_value_get_string failed)", g_desiredGitBranchObject);
                 status = EINVAL;
             }
         }
