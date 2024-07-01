@@ -427,7 +427,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_iotHubProtocolObject))
         {
-            snprintf(buffer, maximumLength, "%u", g_iotHubProtocol);
             switch (g_iotHubProtocol)
             {
                 case 1:
@@ -470,12 +469,12 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     {
         if (NULL == (jsonValue = json_value_init_string(buffer)))
         {
-            OsConfigLogError(log, "json_value_init_string(%s) failed", componentName, objectName, buffer);
+            OsConfigLogError(ConfigurationGetLog(), "json_value_init_string(%s) failed", componentName, objectName, buffer);
             status = ENOMEM;
         }
         else if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
         {
-            OsConfigLogError(log, "json_serialize_to_string(%s) failed", componentName, objectName, buffer);
+            OsConfigLogError(ConfigurationGetLog(), "json_serialize_to_string(%s) failed", componentName, objectName, buffer);
             status = ENOMEM;
         }
         else
