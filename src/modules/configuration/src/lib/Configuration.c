@@ -469,6 +469,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         else if (0 == strcmp(objectName, g_gitBranchObject))
         {
             snprintf(buffer, maximumLength, """%s""", g_gitBranch);
+            OsConfigLogInfo(ConfigurationGetLog(), "gitBranch buffer: '%s'", buffer);//////////////////////////////////
         }
         else
         {
