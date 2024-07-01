@@ -787,7 +787,7 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
 
                     if (NULL == (objectValue = json_parse_string(payloadJson)))
                     {
-                        if (1/*IsFullLoggingEnabled()*/)
+                        if (IsFullLoggingEnabled())
                         {
                             OsConfigLogError(GetPlatformLog(), "MmiGet(%s, %s) returned an invalid payload '%s'", g_reported[i].component, g_reported[i].object, payloadJson);
                         }
