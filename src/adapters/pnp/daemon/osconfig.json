@@ -23,7 +23,7 @@
     },
     {
       "ComponentName": "Configuration",
-      "ObjectName": "iotHubManagement"
+      "ObjectName": "iotHubManagementEnabled"
     },
     {
       "ComponentName": "Configuration",
