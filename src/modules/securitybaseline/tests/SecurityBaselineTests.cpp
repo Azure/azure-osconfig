@@ -326,7 +326,7 @@ TEST_F(SecurityBaselineTest, MmiSetInvalidComponent)
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, "Test123", m_remediateEnsureSshPermitRootLoginIsDisabledObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, "TestComponentName", "remediateEnsurePermissionsOnEtcIssue", (MMI_JSON_STRING)payload, payloadSizeBytes));
     SecurityBaselineMmiClose(handle);
 }
 
@@ -337,21 +337,21 @@ TEST_F(SecurityBaselineTest, MmiSetInvalidObject)
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, "Test123", (MMI_JSON_STRING)payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, "TestObjectName", (MMI_JSON_STRING)payload, payloadSizeBytes));
     SecurityBaselineMmiClose(handle);
 }
 
 TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
 {
     MMI_HANDLE handle = NULL;
-    const char* payload = m_pass;
+    const char* payload = "644";
     int payloadSizeBytes = strlen(payload);
 
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateEnsureSshPermitRootLoginIsDisabledObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, "remediateEnsurePermissionsOnEtcIssue", (MMI_JSON_STRING)payload, payloadSizeBytes));
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
     SecurityBaselineMmiClose(handle);
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateEnsureSshPermitRootLoginIsDisabledObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, "remediateEnsurePermissionsOnEtcIssue", (MMI_JSON_STRING)payload, payloadSizeBytes));
 }
 
 TEST_F(SecurityBaselineTest, MmiGet)
