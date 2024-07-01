@@ -386,7 +386,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     *payloadSizeBytes = 0;
 
     branchLength = g_gitBranch ? strlen(g_gitBranch) : 0;
-    maximumLength = branchLength + 1;
+    maximumLength = branchLength + 3;
 
     if (maximumLength < minimumLength)
     {
