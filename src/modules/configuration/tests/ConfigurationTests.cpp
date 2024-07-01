@@ -257,8 +257,8 @@ TEST_F(ConfigurationTest, MmiSet)
 
     ConfigurationCombination testCombinations[] = 
     {
-        { m_desiredRefreshIntervalObject, "5", 0, m_refreshIntervalObject, "5" },
-        { m_desiredRefreshIntervalObject, "30", 0, m_refreshIntervalObject, "30" },
+        { m_desiredRefreshIntervalObject, "5", 0, m_refreshIntervalObject, "\"5\"" },
+        { m_desiredRefreshIntervalObject, "30", 0, m_refreshIntervalObject, "\"30\"" },
         { m_desiredLocalManagementEnabledObject, "true", 0, m_localManagementEnabledObject, "\"true\"" },
         { m_desiredLocalManagementEnabledObject, "false", 0, m_localManagementEnabledObject, "\"false\"" },
         { m_desiredLocalManagementEnabledObject, "notImplemented", 22, m_localManagementEnabledObject, "\"false\"" },
