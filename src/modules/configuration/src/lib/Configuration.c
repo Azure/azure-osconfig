@@ -403,27 +403,27 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     {
         if (0 == strcmp(objectName, g_modelVersionObject))
         {
-            buffer = FormatAllocateString, "%u", g_modelVersion);
+            buffer = FormatAllocateString("%u", g_modelVersion);
         }
         else if (0 == strcmp(objectName, g_refreshIntervalObject))
         {
-            buffer = FormatAllocateString, "%u", g_refreshInterval);
+            buffer = FormatAllocateString("%u", g_refreshInterval);
         }
         else if (0 == strcmp(objectName, g_localManagementEnabledObject))
         {
-            buffer = FormatAllocateString, "%s", g_localManagementEnabled ? "true" : "false");
+            buffer = FormatAllocateString("%s", g_localManagementEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_fullLoggingEnabledObject))
         {
-            buffer = FormatAllocateString, "%s", g_fullLoggingEnabled ? "true" : "false");
+            buffer = FormatAllocateString("%s", g_fullLoggingEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_commandLoggingEnabledObject))
         {
-            buffer = FormatAllocateString, "%s", g_commandLoggingEnabled ? "true" : "false");
+            buffer = FormatAllocateString("%s", g_commandLoggingEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_iotHubManagementEnabledObject))
         {
-            buffer = FormatAllocateString, "%s", g_iotHubManagementEnabled ? "true" : "false");
+            buffer = FormatAllocateString("%s", g_iotHubManagementEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_iotHubProtocolObject))
         {
@@ -431,26 +431,26 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
             switch (g_iotHubProtocol)
             {
                 case 1:
-                    buffer = FormatAllocateString, "%s", g_mqtt);
+                    buffer = FormatAllocateString("%s", g_mqtt);
                     break;
 
                 case 2:
-                    buffer = FormatAllocateString, "%s", g_mqttWebSocket);
+                    buffer = FormatAllocateString("%s", g_mqttWebSocket);
                     break;
 
                 case 0:
                 default:
-                    buffer = FormatAllocateString, "%s", g_auto);
+                    buffer = FormatAllocateString("%s", g_auto);
 
             }
         }
         else if (0 == strcmp(objectName, g_gitManagementEnabledObject))
         {
-            buffer = FormatAllocateString, "%s", g_gitManagementEnabled ? "true" : "false");
+            buffer = FormatAllocateString("%s", g_gitManagementEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_gitBranchObject))
         {
-            buffer = FormatAllocateString, "%s", g_gitBranch);
+            buffer = FormatAllocateString("%s", g_gitBranch);
             OsConfigLogInfo(ConfigurationGetLog(), "gitBranch buffer: '%s'", buffer);//////////////////////////////////
         }
         else
