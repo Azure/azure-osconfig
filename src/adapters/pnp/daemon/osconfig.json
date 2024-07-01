@@ -3,7 +3,7 @@
   "FullLogging": 0,
   "GitManagement": 0,
   "GitRepositoryUrl": " ",
-  "GitBranch": " ",
+  "GitBranch": "none",
   "LocalManagement": 1,
   "ModelVersion": 20,
   "IotHubManagement": 0,

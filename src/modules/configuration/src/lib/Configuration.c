@@ -504,7 +504,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
 
     if (0 == strcmp(objectName, g_gitBranchObject))//(IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(ConfigurationGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+        OsConfigLogInfo(ConfigurationGetLog(), "MmiGet(%p, %s, %s, '%.*s', %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
 
     FREE_MEMORY(configuration);
