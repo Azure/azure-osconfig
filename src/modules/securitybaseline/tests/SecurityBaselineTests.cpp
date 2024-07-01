@@ -448,7 +448,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
 {
     MMI_HANDLE handle = nullptr;
 
-    const char* payload = "PASS";
+    const char* payload = m_pass;
 
     const char* mimObjects[] = {
         // Initialization
@@ -658,7 +658,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
 TEST_F(SecurityBaselineTest, MmiSetInvalidComponent)
 {
     MMI_HANDLE handle = NULL;
-    const char* payload = "PASS";
+    const char* payload = m_pass;
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
@@ -669,7 +669,7 @@ TEST_F(SecurityBaselineTest, MmiSetInvalidComponent)
 TEST_F(SecurityBaselineTest, MmiSetInvalidObject)
 {
     MMI_HANDLE handle = NULL;
-    const char* payload = "PASS";
+    const char* payload = m_pass;
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
@@ -680,7 +680,7 @@ TEST_F(SecurityBaselineTest, MmiSetInvalidObject)
 TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
 {
     MMI_HANDLE handle = NULL;
-    const char* payload = "PASS";
+    const char* payload = m_pass;
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateEnsureSshPermitRootLoginIsDisabledObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
