@@ -58,6 +58,10 @@ jobs:
           clean: true
           ref: ${{ inputs.ref }}
 
+      - name: Setup QEMU
+        if: ${{ matrix.target.arch != 'amd64' }}
+        uses: docker/setup-qemu-action@v3
+
       - name: Run container
         id: container
         uses: ./.github/actions/container-run
@@ -65,7 +69,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           container: azure/azure-osconfig/${{ inputs.target }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
-          useQEMU: ${{ inputs.arch != 'amd64' }}
           tag: ${{ inputs.container-tag }}
 
       - name: Set tweak

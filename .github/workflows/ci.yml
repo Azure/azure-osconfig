@@ -84,6 +84,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
+      - name: Setup QEMU
+        if: ${{ matrix.target.arch != 'amd64' }}
+        uses: docker/setup-qemu-action@v3
+
       - name: Run container
         id: container
         uses: ./.github/actions/container-run
@@ -91,7 +95,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           container: azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
-          useQEMU: ${{ matrix.target.arch != 'amd64' }}
           tag: ${{ matrix.target.tag }}
 
       - name: Generate build
