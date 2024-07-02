@@ -274,10 +274,10 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredIotHubProtocolObject, "\"auto\"", 0, m_iotHubProtocolObject, "\"auto\"" },
         { m_desiredIotHubProtocolObject, "\"mqtt\"", 0, m_iotHubProtocolObject, "\"mqtt\"" },
         { m_desiredIotHubProtocolObject, "\"mqttWebSocket\"", 0, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
-        { m_desiredIotHubProtocolObject, "\"notImplemented\"", 22, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
+        { m_desiredIotHubProtocolObject, "notImplemented", 22, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
         { m_desiredGitManagementEnabledObject, "true", 0, m_gitManagementEnabledObject, "true" },
         { m_desiredGitManagementEnabledObject, "false", 0, m_gitManagementEnabledObject, "false" },
-        { m_desiredGitBranchObject, "\"Foo/Test\"", 0, m_gitBranchObject, "\"Foo/Test\"" }
+        { m_desiredGitBranchObject, "\"Test\\/Foo\"", 0, m_gitBranchObject, "\"Test\\/Foo\"" }
     };
     
     int numTestCombinations = ARRAY_SIZE(testCombinations);
@@ -322,7 +322,7 @@ TEST_F(ConfigurationTest, MmiSetInvalidComponent)
 TEST_F(ConfigurationTest, MmiSetInvalidObject)
 {
     MMI_HANDLE handle = NULL;
-    const char* payload = "false";
+    const char* payload = "\"false\"";
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));

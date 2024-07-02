@@ -2639,7 +2639,7 @@ int CheckLockoutAfterInactivityLessThan(long days, char** reason, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: all non-root users who have passwords have correct number of maximum inactivity days (%ld) before lockout", days);
+        OsConfigLogInfo(log, "CheckLockoutAfterInactivityLessThan: all non-root users who have passwords have correct number of maximum inactivity days (%ld) before lockout", days);
         OsConfigCaptureSuccessReason(reason, "All non-root users who have passwords have correct number of maximum inactivity days (%ld) before lockout", days);
     }
 
@@ -2703,7 +2703,7 @@ int SetLockoutAfterInactivityLessThan(long days, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: all non-root users who have passwords have correct number of maximum inactivity days (%ld) before lockout", days);
+        OsConfigLogInfo(log, "SetLockoutAfterInactivityLessThan: all non-root users who have passwords have correct number of maximum inactivity days (%ld) before lockout", days);
     }
 
     return status;
