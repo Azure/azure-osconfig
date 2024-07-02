@@ -583,13 +583,13 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
                         }
                         else
                         {
-                            OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): unsupported %s value: %s", componentName, objectName, jsonString);
+                            OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): unsupported value: '%s'", componentName, objectName, payloadString);
                             status = EINVAL;
                         }
                     }
                     else
                     {
-                        OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_value_get_string(%s) failed", componentName, objectName, payloadString);
+                        OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_value_get_string('%s') failed", componentName, objectName, payloadString);
                         status = EINVAL;
                     }
                 }
@@ -614,7 +614,7 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
                     }
                     else
                     {
-                        OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_value_get_string(%s) failed", componentName, objectName, payloadString);
+                        OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_value_get_string('%s') failed", componentName, objectName, payloadString);
                         status = EINVAL;
                     }
                 }
