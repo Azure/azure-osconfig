@@ -392,11 +392,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         OsConfigLogError(ConfigurationGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
         status = EINVAL;
     }
-    else if (NULL == (configuration = LoadConfigurationFromFile(g_configurationFile)))
-    {
-        OsConfigLogError(ConfigurationGetLog(), "Cannot load configuration from %s, MmiGet failed", g_configurationFile);
-        status = ENOENT;
-    }
     else
     {
         if (0 == strcmp(objectName, g_modelVersionObject))
@@ -469,7 +464,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         if ((0 == status) && (NULL == jsonValue))
         {
             OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) failed due to json_value_init_* failure", componentName, objectName);
-            status = ENENT;
+            status = ENOENT;
         }
     }
 
