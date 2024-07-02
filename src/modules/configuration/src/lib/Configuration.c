@@ -370,8 +370,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
 {
     JSON_Value* jsonValue = NULL;
     char* serializedValue = NULL;
-    char* buffer = NULL;
-    char* configuration = NULL;
     int status = MMI_OK;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
@@ -403,53 +401,64 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     {
         if (0 == strcmp(objectName, g_modelVersionObject))
         {
-            buffer = FormatAllocateString("%u", g_modelVersion);
+            //buffer = FormatAllocateString("%u", g_modelVersion);
+            jsonValue = json_value_init_number((double)g_modelVersion);
         }
         else if (0 == strcmp(objectName, g_refreshIntervalObject))
         {
-            buffer = FormatAllocateString("%u", g_refreshInterval);
+            //buffer = FormatAllocateString("%u", g_refreshInterval);
+            jsonValue = json_value_init_number((double)g_refreshInterval);
         }
         else if (0 == strcmp(objectName, g_localManagementEnabledObject))
         {
-            buffer = FormatAllocateString("%s", g_localManagementEnabled ? "true" : "false");
+            //buffer = FormatAllocateString("%s", g_localManagementEnabled ? "true" : "false");
+            jsonValue = json_value_init_boolean(g_localManagementEnabled ? 1 : 0);
         }
         else if (0 == strcmp(objectName, g_fullLoggingEnabledObject))
         {
-            buffer = FormatAllocateString("%s", g_fullLoggingEnabled ? "true" : "false");
+            //buffer = FormatAllocateString("%s", g_fullLoggingEnabled ? "true" : "false");
+            jsonValue = json_value_init_boolean(g_fullLoggingEnabled ? 1 : 0);
         }
         else if (0 == strcmp(objectName, g_commandLoggingEnabledObject))
         {
-            buffer = FormatAllocateString("%s", g_commandLoggingEnabled ? "true" : "false");
+            //buffer = FormatAllocateString("%s", g_commandLoggingEnabled ? "true" : "false");
+            jsonValue = json_value_init_boolean(g_commandLoggingEnabled ? 1 : 0);
         }
         else if (0 == strcmp(objectName, g_iotHubManagementEnabledObject))
         {
-            buffer = FormatAllocateString("%s", g_iotHubManagementEnabled ? "true" : "false");
+            //buffer = FormatAllocateString("%s", g_iotHubManagementEnabled ? "true" : "false");
+            jsonValue = json_value_init_boolean(g_iotHubManagementEnabled ? 1 : 0);
         }
         else if (0 == strcmp(objectName, g_iotHubProtocolObject))
         {
             switch (g_iotHubProtocol)
             {
                 case 1:
-                    buffer = FormatAllocateString("%s", g_mqtt);
+                    //buffer = FormatAllocateString("%s", g_mqtt);
+                    jsonValue = json_value_init_string(g_mqtt);
                     break;
 
                 case 2:
-                    buffer = FormatAllocateString("%s", g_mqttWebSocket);
+                    //buffer = FormatAllocateString("%s", g_mqttWebSocket);
+                    jsonValue = json_value_init_string(g_mqttWebSocket);
                     break;
 
                 case 0:
                 default:
-                    buffer = FormatAllocateString("%s", g_auto);
+                    //buffer = FormatAllocateString("%s", g_auto);
+                    jsonValue = json_value_init_string(g_auto);
 
             }
         }
         else if (0 == strcmp(objectName, g_gitManagementEnabledObject))
         {
-            buffer = FormatAllocateString("%s", g_gitManagementEnabled ? "true" : "false");
+            //buffer = FormatAllocateString("%s", g_gitManagementEnabled ? "true" : "false");
+            jsonValue = json_value_init_boolean(g_gitManagementEnabled ? 1 : 0);
         }
         else if (0 == strcmp(objectName, g_gitBranchObject))
         {
-            buffer = FormatAllocateString("%s", g_gitBranch);
+            //buffer = FormatAllocateString("%s", g_gitBranch);
+            jsonValue = json_value_init_string(g_gitBranch);
         }
         else
         {
@@ -457,21 +466,16 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
             status = EINVAL;
         }
 
-        if ((0 == status) && (NULL == buffer))
+        if ((0 == status) && (NULL == jsonValue))
         {
-            OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) failed due to out of memory condition", componentName, objectName);
-            status = ENOMEM;
+            OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) failed due to json_value_init_* failure", componentName, objectName);
+            status = ENENT;
         }
     }
 
     if (MMI_OK == status)
     {
-        if (NULL == (jsonValue = json_value_init_string(buffer)))
-        {
-            OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s): json_value_init_string(%s) failed", componentName, objectName, buffer);
-            status = ENOENT;
-        }
-        else if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
+        if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
         {
             OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s): json_serialize_to_string(%s) failed", componentName, objectName, buffer);
             status = ENOENT;
@@ -516,9 +520,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     {
         json_value_free(jsonValue);
     }
-
-    FREE_MEMORY(configuration);
-    FREE_MEMORY(buffer);
 
     return status;
 }
