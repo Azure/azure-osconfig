@@ -25,9 +25,6 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Setup QEMU
-      uses: docker/setup-qemu-action@v3
-
     - name: Setup container
       id: setup
       run: |
