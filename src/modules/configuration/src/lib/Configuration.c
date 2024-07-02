@@ -396,32 +396,26 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     {
         if (0 == strcmp(objectName, g_modelVersionObject))
         {
-            //buffer = FormatAllocateString("%u", g_modelVersion);
             jsonValue = json_value_init_number((double)g_modelVersion);
         }
         else if (0 == strcmp(objectName, g_refreshIntervalObject))
         {
-            //buffer = FormatAllocateString("%u", g_refreshInterval);
             jsonValue = json_value_init_number((double)g_refreshInterval);
         }
         else if (0 == strcmp(objectName, g_localManagementEnabledObject))
         {
-            //buffer = FormatAllocateString("%s", g_localManagementEnabled ? "true" : "false");
             jsonValue = json_value_init_boolean(g_localManagementEnabled ? 1 : 0);
         }
         else if (0 == strcmp(objectName, g_fullLoggingEnabledObject))
         {
-            //buffer = FormatAllocateString("%s", g_fullLoggingEnabled ? "true" : "false");
             jsonValue = json_value_init_boolean(g_fullLoggingEnabled ? 1 : 0);
         }
         else if (0 == strcmp(objectName, g_commandLoggingEnabledObject))
         {
-            //buffer = FormatAllocateString("%s", g_commandLoggingEnabled ? "true" : "false");
             jsonValue = json_value_init_boolean(g_commandLoggingEnabled ? 1 : 0);
         }
         else if (0 == strcmp(objectName, g_iotHubManagementEnabledObject))
         {
-            //buffer = FormatAllocateString("%s", g_iotHubManagementEnabled ? "true" : "false");
             jsonValue = json_value_init_boolean(g_iotHubManagementEnabled ? 1 : 0);
         }
         else if (0 == strcmp(objectName, g_iotHubProtocolObject))
@@ -429,30 +423,25 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
             switch (g_iotHubProtocol)
             {
                 case 1:
-                    //buffer = FormatAllocateString("%s", g_mqtt);
                     jsonValue = json_value_init_string(g_mqtt);
                     break;
 
                 case 2:
-                    //buffer = FormatAllocateString("%s", g_mqttWebSocket);
                     jsonValue = json_value_init_string(g_mqttWebSocket);
                     break;
 
                 case 0:
                 default:
-                    //buffer = FormatAllocateString("%s", g_auto);
                     jsonValue = json_value_init_string(g_auto);
 
             }
         }
         else if (0 == strcmp(objectName, g_gitManagementEnabledObject))
         {
-            //buffer = FormatAllocateString("%s", g_gitManagementEnabled ? "true" : "false");
             jsonValue = json_value_init_boolean(g_gitManagementEnabled ? 1 : 0);
         }
         else if (0 == strcmp(objectName, g_gitBranchObject))
         {
-            //buffer = FormatAllocateString("%s", g_gitBranch);
             jsonValue = json_value_init_string(g_gitBranch);
         }
         else
@@ -556,10 +545,83 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
 
             if (NULL != (jsonValue = json_parse_string(payloadString)))
             {
-                if (NULL == (jsonString = (char*)json_value_get_string(jsonValue)))
+                if (0 == strcmp(objectName, g_desiredRefreshIntervalObject))
                 {
+                    g_refreshInterval = (unsigned int)json_value_get_number(jsonValue);
+                }
+                else if (0 == strcmp(objectName, g_desiredLocalManagementEnabledObject))
+                {
+                    g_localManagementEnabled = (0 == json_value_get_boolean(jsonValue)) ? false : true;
+                }
+                else if (0 == strcmp(objectName, g_desiredFullLoggingEnabledObject))
+                {
+                    g_fullLoggingEnabled = (0 == json_value_get_boolean(jsonValue)) ? false : true;
+                }
+                else if (0 == strcmp(objectName, g_desiredCommandLoggingEnabledObject))
+                {
+                    g_commandLoggingEnabled = (0 == json_value_get_boolean(jsonValue)) ? false : true;
+                }
+                else if (0 == strcmp(objectName, g_desiredIotHubManagementEnabledObject))
+                {
+                    g_iotHubManagementEnabled = (0 == json_value_get_boolean(jsonValue)) ? false : true;
+                }
+                else if (0 == strcmp(objectName, g_desiredIotHubProtocolObject))
+                {
+                    if (NULL != (jsonString = (char*)json_value_get_string(jsonValue)))
+                    {
+                        if (0 == strcmp(g_auto, jsonString))
+                        {
+                            g_iotHubProtocol = 0;
+                        }
+                        else if (0 == strcmp(g_mqtt, jsonString))
+                        {
+                            g_iotHubProtocol = 1;
+                        }
+                        else if (0 == strcmp(g_mqttWebSocket, jsonString))
+                        {
+                            g_iotHubProtocol = 2;
+                        }
+                        else
+                        {
+                            OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): unsupported %s value: %s", componentName, objectName, jsonString);
+                            status = EINVAL;
+                        }
+                    }
+                    else
+                    {
+                        OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_value_get_string(%s) failed", componentName, objectName, payloadString);
+                        status = EINVAL;
+                    }
+                }
+                else if (0 == strcmp(objectName, g_desiredGitManagementEnabledObject))
+                {
+                    g_gitManagementEnabled = (0 == json_value_get_boolean(jsonValue)) ? false : true;
+                }
+                else if (0 == strcmp(objectName, g_desiredGitBranchObject))
+                {
+                    if (NULL != (jsonString = (char*)json_value_get_string(jsonValue)))
+                    {
+                        if (jsonString)
+                        {
+                            FREE_MEMORY(g_gitBranch);
+                            g_gitBranch = DuplicateString(jsonString);
+                        }
+                        else
+                        {
+                            OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_value_get_string failed)", g_desiredGitBranchObject);
+                            status = EINVAL;
+                        }
+                    }
+                    else
+                    {
+                        OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_value_get_string(%s) failed", componentName, objectName, payloadString);
+                        status = EINVAL;
+                    }
+                }
+                else
+                {
+                    OsConfigLogError(ConfigurationGetLog(), "MmiSet called for an unsupported object name: %s", objectName);
                     status = EINVAL;
-                    OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s): json_value_get_string(%s) failed", componentName, objectName, payloadString);
                 }
             }
             else
@@ -574,133 +636,7 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
             status = ENOMEM;
         }
     }
-
-    if (MMI_OK == status)
-    {
-        if (0 == strcmp(objectName, g_desiredRefreshIntervalObject))
-        {
-            g_refreshInterval = atoi(jsonString);
-        }
-        else if (0 == strcmp(objectName, g_desiredLocalManagementEnabledObject))
-        {
-            if (0 == strcmp(stringTrue, jsonString))
-            {
-                g_localManagementEnabled = true;
-            }
-            else if (0 == strcmp(stringFalse, jsonString))
-            {
-                g_localManagementEnabled = false;
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_desiredLocalManagementEnabledObject, jsonString);
-                status = EINVAL;
-            }
-        }
-        else if (0 == strcmp(objectName, g_desiredFullLoggingEnabledObject))
-        {
-            if (0 == strcmp(stringTrue, jsonString))
-            {
-                g_fullLoggingEnabled = true;
-            }
-            else if (0 == strcmp(stringFalse, jsonString))
-            {
-                g_fullLoggingEnabled = false;
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_desiredFullLoggingEnabledObject, jsonString);
-                status = EINVAL;
-            }
-        }
-        else if (0 == strcmp(objectName, g_desiredCommandLoggingEnabledObject))
-        {
-            if (0 == strcmp(stringTrue, jsonString))
-            {
-                g_commandLoggingEnabled = true;
-            }
-            else if (0 == strcmp(stringFalse, jsonString))
-            {
-                g_commandLoggingEnabled = false;
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_desiredCommandLoggingEnabledObject, jsonString);
-                status = EINVAL;
-            }
-        }
-        else if (0 == strcmp(objectName, g_desiredIotHubManagementEnabledObject))
-        {
-            if (0 == strcmp(stringTrue, jsonString))
-            {
-                g_iotHubManagementEnabled = true;
-            }
-            else if (0 == strcmp(stringFalse, jsonString))
-            {
-                g_iotHubManagementEnabled = false;
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_desiredIotHubManagementEnabledObject, jsonString);
-                status = EINVAL;
-            }
-        }
-        else if (0 == strcmp(objectName, g_desiredIotHubProtocolObject))
-        {
-            if (0 == strcmp(g_auto, jsonString))
-            {
-                g_iotHubProtocol = 0;
-            }
-            else if (0 == strcmp(g_mqtt, jsonString))
-            {
-                g_iotHubProtocol = 1;
-            }
-            else if (0 == strcmp(g_mqttWebSocket, jsonString))
-            {
-                g_iotHubProtocol = 2;
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_desiredIotHubProtocolObject, jsonString);
-                status = EINVAL;
-            }
-        }
-        else if (0 == strcmp(objectName, g_desiredGitManagementEnabledObject))
-        {
-            if (0 == strcmp(stringTrue, jsonString))
-            {
-                g_gitManagementEnabled = true;
-            }
-            else if (0 == strcmp(stringFalse, jsonString))
-            {
-                g_gitManagementEnabled = false;
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_gitManagementEnabledObject, jsonString);
-                status = EINVAL;
-            }
-        }
-        else if (0 == strcmp(objectName, g_desiredGitBranchObject))
-        {
-            if (jsonString)
-            {
-                FREE_MEMORY(g_gitBranch);
-                g_gitBranch = DuplicateString(jsonString);
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_value_get_string failed)", g_desiredGitBranchObject);
-                status = EINVAL;
-            }
-        }
-        else
-        {
-            OsConfigLogError(ConfigurationGetLog(), "MmiSet called for an unsupported object name: %s", objectName);
-            status = EINVAL;
-        }
-    }
-
+    
     if (MMI_OK == status)
     {
         status = UpdateConfigurationFile();
