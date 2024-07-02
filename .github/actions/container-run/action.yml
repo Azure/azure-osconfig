@@ -12,6 +12,11 @@ inputs:
   mount:
     description: The volume to mount.
     required: true
+  useQEMU:
+    description: Use QEMU for emulation.
+    required: false
+    type: boolean
+    default: false
   tag:
     description: The container tag.
     required: false
@@ -26,6 +31,7 @@ runs:
   using: composite
   steps:
     - name: Setup QEMU
+      if: ${{ inputs.useQEMU }}
       uses: docker/setup-qemu-action@v3
 
     - name: Setup container

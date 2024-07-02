@@ -90,6 +90,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           container: azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
+          useQEMU: ${{ matrix.target.arch == 'amd64' && false || true }}
           tag: ${{ matrix.target.tag }}
 
       - name: Generate build
