@@ -65,7 +65,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           container: azure/azure-osconfig/${{ inputs.target }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
-          useQEMU: ${{ inputs.arch == 'amd64' && false || true }}
+          useQEMU: ${{ inputs.arch != 'amd64' }}
           tag: ${{ inputs.container-tag }}
 
       - name: Set tweak
