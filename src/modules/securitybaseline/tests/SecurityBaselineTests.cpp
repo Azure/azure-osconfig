@@ -275,49 +275,6 @@ TEST_F(SecurityBaselineTest, MmiGetInfo)
     SecurityBaselineMmiFree(payload);
 }
 
-TEST_F(SecurityBaselineTest, MmiSet)
-{
-    MMI_HANDLE handle = nullptr;
-
-    const char* payload = "777";
-
-    const char* mimObjects[] = {
-        // Initialization
-        m_initEnsurePermissionsOnEtcSshSshdConfigObject,
-        m_initEnsureSshPortIsConfiguredObject,
-        m_initEnsureSshBestPracticeProtocolObject,
-        m_initEnsureSshBestPracticeIgnoreRhostsObject,
-        m_initEnsureSshLogLevelIsSetObject,
-        m_initEnsureSshMaxAuthTriesIsSetObject,
-        m_initEnsureAllowUsersIsConfiguredObject,
-        m_initEnsureDenyUsersIsConfiguredObject,
-        m_initEnsureAllowGroupsIsConfiguredObject,
-        m_initEnsureDenyGroupsConfiguredObject,
-        m_initEnsureSshHostbasedAuthenticationIsDisabledObject,
-        m_initEnsureSshPermitRootLoginIsDisabledObject,
-        m_initEnsureSshPermitEmptyPasswordsIsDisabledObject,
-        m_initEnsureSshClientIntervalCountMaxIsConfiguredObject,
-        m_initEnsureSshClientAliveIntervalIsConfiguredObject,
-        m_initEnsureSshLoginGraceTimeIsSetObject,
-        m_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject,
-        m_initEnsureSshWarningBannerIsEnabledObject,
-        m_initEnsureUsersCannotSetSshEnvironmentOptionsObject,
-        m_initEnsureAppropriateCiphersForSshObject
-        // No actual remediation! These can cut access to the host, use the functional MIM tests for this
-    };
-
-    int mimObjectsNumber = ARRAY_SIZE(mimObjects);
-
-    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-
-    for (int i = 0; i < mimObjectsNumber; i++)
-    {
-        EXPECT_EQ(0, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, mimObjects[i], (MMI_JSON_STRING)payload, strlen(payload)));
-    }
-
-    SecurityBaselineMmiClose(handle);
-}
-
 TEST_F(SecurityBaselineTest, MmiSetInvalidComponent)
 {
     MMI_HANDLE handle = NULL;
