@@ -472,7 +472,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     {
         if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
         {
-            OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s): json_serialize_to_string(%s) failed", componentName, objectName, buffer);
+            OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s): json_serialize_to_string failed", componentName, objectName);
             status = ENOENT;
         }
         else
