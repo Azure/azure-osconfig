@@ -85,9 +85,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Setup QEMU
-        if: ${{ matrix.target.arch != 'amd64' }}
-        uses: docker/setup-qemu-action@v3
+      # - name: Setup QEMU
+      #   if: ${{ matrix.target.arch != 'amd64' }}
+      #   uses: docker/setup-qemu-action@v3
 
       - name: Run container
         id: container
