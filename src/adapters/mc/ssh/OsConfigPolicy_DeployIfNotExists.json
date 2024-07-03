@@ -11,11 +11,11 @@
                 "Microsoft.GuestConfiguration"
             ],
             "guestConfiguration": {
-                "name": "OsConfigPolicy",
+                "name": "LinuxSshServerSecurityBaselinePolicy",
                 "version": "1.0.0",
                 "contentType": "Custom",
                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaselinePolicy.zip",
-                "contentHash": "18F07A4F4F2E76DADEA169B41829A8DADBD2024BBAD374B3C5A20CEB4ECD15BE",
+                "contentHash": "2C35AFC48E56E365FA866F6B7C8BC7DAC9C48A55004D810E03DB2FE6543C0528",
                 "configurationParameter": {
                     "accessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
                     "ignoreHosts": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
@@ -456,7 +456,7 @@
                         "/providers/Microsoft.Authorization/roleDefinitions/088ab73d-1256-47ae-bea9-9de8e7131f31"
                     ],
                     "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
-                    "name": "[concat('OsConfigPolicy$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
+                    "name": "[concat('LinuxSshServerSecurityBaselinePolicy$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
                     "existenceCondition": {
                         "allOf": [
                             {
@@ -483,7 +483,7 @@
                                     "value": "[field('type')]"
                                 },
                                 "assignmentName": {
-                                    "value": "[concat('OsConfigPolicy$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
+                                    "value": "[concat('LinuxSshServerSecurityBaselinePolicy$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
                                 },
                                 "accessPermissionsForSshdConfig": {
                                     "value": "[parameters('accessPermissionsForSshdConfig')]"
@@ -620,11 +620,11 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "OsConfigPolicy",
+                                                "name": "LinuxSshServerSecurityBaselinePolicy",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaselinePolicy.zip",
-                                                "contentHash": "18F07A4F4F2E76DADEA169B41829A8DADBD2024BBAD374B3C5A20CEB4ECD15BE",
+                                                "contentHash": "2C35AFC48E56E365FA866F6B7C8BC7DAC9C48A55004D810E03DB2FE6543C0528",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -711,11 +711,11 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "OsConfigPolicy",
+                                                "name": "LinuxSshServerSecurityBaselinePolicy",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaselinePolicy.zip",
-                                                "contentHash": "18F07A4F4F2E76DADEA169B41829A8DADBD2024BBAD374B3C5A20CEB4ECD15BE",
+                                                "contentHash": "2C35AFC48E56E365FA866F6B7C8BC7DAC9C48A55004D810E03DB2FE6543C0528",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -802,11 +802,11 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "OsConfigPolicy",
+                                                "name": "LinuxSshServerSecurityBaselinePolicy",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaselinePolicy.zip",
-                                                "contentHash": "18F07A4F4F2E76DADEA169B41829A8DADBD2024BBAD374B3C5A20CEB4ECD15BE",
+                                                "contentHash": "2C35AFC48E56E365FA866F6B7C8BC7DAC9C48A55004D810E03DB2FE6543C0528",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
