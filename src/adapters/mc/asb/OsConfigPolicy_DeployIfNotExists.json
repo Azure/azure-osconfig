@@ -15,7 +15,7 @@
                 "version": "1.0.0",
                 "contentType": "Custom",
                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaselinePolicy.zip",
-                "contentHash": "6DFA195F1736B0876C5978E2419E8B1CA867F2F0118F054D9C965AA7293DF27C",
+                "contentHash": "43ABD924FD490F87A3F0198D24C65877DBBA4ADAEEACE3C4705CC8AECAD930C4",
                 "configurationParameter": {
                     "accessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
                     "ignoreHosts": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
@@ -625,7 +625,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaselinePolicy.zip",
-                                                "contentHash": "6DFA195F1736B0876C5978E2419E8B1CA867F2F0118F054D9C965AA7293DF27C",
+                                                "contentHash": "43ABD924FD490F87A3F0198D24C65877DBBA4ADAEEACE3C4705CC8AECAD930C4",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -716,7 +716,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaselinePolicy.zip",
-                                                "contentHash": "6DFA195F1736B0876C5978E2419E8B1CA867F2F0118F054D9C965AA7293DF27C",
+                                                "contentHash": "43ABD924FD490F87A3F0198D24C65877DBBA4ADAEEACE3C4705CC8AECAD930C4",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -807,7 +807,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaselinePolicy.zip",
-                                                "contentHash": "6DFA195F1736B0876C5978E2419E8B1CA867F2F0118F054D9C965AA7293DF27C",
+                                                "contentHash": "43ABD924FD490F87A3F0198D24C65877DBBA4ADAEEACE3C4705CC8AECAD930C4",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
