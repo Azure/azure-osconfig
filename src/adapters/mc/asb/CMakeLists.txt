@@ -11,7 +11,7 @@ add_library(OsConfigResourceAsb
         ../OsConfigResource.c)
 
 target_link_libraries(OsConfigResourceAsb
-    PRIVATE     z
+    PRIVATE
         commonutils
         logging
         mpiclient
