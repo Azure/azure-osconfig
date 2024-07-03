@@ -42,21 +42,23 @@ jobs:
           EOL
           )"
 
-          arm64Targets="$(cat <<'EOL'
-          [
-            { "name": "debian-10", "arch": "arm64", "tag": "sha-c689eee" },
-            { "name": "debian-11", "arch": "arm64", "tag": "sha-c689eee" },
-            { "name": "debian-12", "arch": "arm64", "tag": "sha-db3d4c8" },
-            { "name": "ubuntu-20.04", "arch": "arm64", "tag": "sha-c689eee" },
-            { "name": "ubuntu-22.04", "arch": "arm64", "tag": "sha-db3d4c8" }
-          ]
-          EOL
-          )"
-
+          # Skip ARM64 CI builds for now
+          #
+          # arm64Targets="$(cat <<'EOL'
+          # [
+          #   { "name": "debian-10", "arch": "arm64", "tag": "sha-c689eee" },
+          #   { "name": "debian-11", "arch": "arm64", "tag": "sha-c689eee" },
+          #   { "name": "debian-12", "arch": "arm64", "tag": "sha-db3d4c8" },
+          #   { "name": "ubuntu-20.04", "arch": "arm64", "tag": "sha-c689eee" },
+          #   { "name": "ubuntu-22.04", "arch": "arm64", "tag": "sha-db3d4c8" }
+          # ]
+          # EOL
+          # )"
+          # 
           # Add arm64 distros only on scheduled runs to prevent long CI times for PRs
-          if [ "${{ github.event_name }}" == "schedule" ]; then
-            matrix=$(jq --argjson arm64Targets "$arm64Targets" '. += $arm64Targets' <<< "$matrix")
-          fi
+          # if [ "${{ github.event_name }}" == "schedule" ]; then
+          #   matrix=$(jq --argjson arm64Targets "$arm64Targets" '. += $arm64Targets' <<< "$matrix")
+          # fi
 
           echo Distros to perform CI on: $matrix
           echo matrix=$matrix >> $GITHUB_OUTPUT
@@ -83,9 +85,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Setup QEMU
-        if: ${{ matrix.target.arch != 'amd64' }}
-        uses: docker/setup-qemu-action@v3
+      # - name: Setup QEMU
+      #   if: ${{ matrix.target.arch != 'amd64' }}
+      #   uses: docker/setup-qemu-action@v3
 
       - name: Run container
         id: container
