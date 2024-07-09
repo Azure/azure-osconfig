@@ -2040,7 +2040,7 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
         return EINVAL;
     }
     
-    if (0 != CheckPasswordHashingAlgorithm(algorithm, NULL, log))
+    if (0 == CheckPasswordHashingAlgorithm(algorithm, NULL, log))
     {
         if (0 == (status = SetEtcLoginDefValue(encryptMethod, encryption, log)))
         {

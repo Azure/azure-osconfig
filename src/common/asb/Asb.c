@@ -585,6 +585,8 @@ static const char* g_fsSuidDumpable = "fs.suid_dumpable = 0";
 static const char* g_bootGrubGrubConf = "/boot/grub/grub.conf";
 static const char* g_bootGrub2GrubCfg = "/boot/grub2/grub.cfg";
 static const char* g_bootGrubGrubCfg = "/boot/grub/grub.cfg";
+static const char* g_minSambaProtocol = "min protocol = SMB2";
+static const char* g_login = "login";
 
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
@@ -2059,13 +2061,16 @@ static char* AuditEnsureRshClientNotInstalled(void* log)
 
 static char* AuditEnsureSmbWithSambaIsDisabled(void* log)
 {
-    const char* minProtocol = "min protocol = SMB2";
     char* reason = NULL;
-    
-    if (false == CheckDaemonNotActive(g_smbd, &reason, log))
+    if (IsDaemonActive(g_smbd, log))
     {
-        RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcSambaConf, '#', minProtocol, &reason, log));
-        CheckLineNotFoundOrCommentedOut(g_etcSambaConf, ';', minProtocol, &reason, log);
+        RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcSambaConf, '#', g_minSambaProtocol, &reason, log));
+        CheckLineFoundNotCommentedOut(g_etcSambaConf, ';', g_minSambaProtocol, &reason, log);
+    }
+    else
+    {
+        RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcSambaConf, &reason, log)); 
+        CheckPackageNotInstalled(g_samba, &reason, log);
     }
     return reason;
 }
@@ -2120,7 +2125,7 @@ static char* AuditEnsureRloginServiceIsDisabled(void* log)
     RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_rlogin, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_inetd, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_inetUtilsInetd, &reason, log));
-    CheckTextIsNotFoundInFile(g_etcInetdConf, "login", &reason, log);
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_login, &reason, log);
     return reason;
 }
 
@@ -3630,14 +3635,20 @@ static int RemediateEnsureRshClientNotInstalled(char* value, void* log)
 static int RemediateEnsureSmbWithSambaIsDisabled(char* value, void* log)
 {
     const char* command = "sed -i '/^\\[global\\]/a min protocol = SMB2' /etc/samba/smb.conf";
+    const char* smb1 = "SMB1";
     int status = 0;
 
     UNUSED(value);
 
     if (IsDaemonActive(g_smbd, log))
     {
-        status = ((0 == ReplaceMarkedLinesInFile(g_etcSambaConf, "SMB1", NULL, '#', true, log)) &&
-            (0 == ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log))) ? 0 : ENOENT;
+        if (0 == (status = ReplaceMarkedLinesInFile(g_etcSambaConf, smb1, NULL, '#', true, log)))
+        {
+            if (0 != FindTextInFile(g_etcSambaConf, g_minSambaProtocol, log))
+            {
+                status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log);
+            }
+        }
     }
     else
     {
@@ -3693,7 +3704,8 @@ static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
     UninstallPackage(g_inetUtilsInetd, log);
     return ((0 == CheckPackageNotInstalled(g_rlogin, NULL, log)) && 
         (0 == CheckPackageNotInstalled(g_inetd, NULL, log)) && 
-        (0 == CheckPackageNotInstalled(g_inetUtilsInetd, NULL, log))) ? 0 : ENOENT;
+        (0 == CheckPackageNotInstalled(g_inetUtilsInetd, NULL, log)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_login, NULL, '#', true, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
