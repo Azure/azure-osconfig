@@ -1494,9 +1494,9 @@ static char* AuditEnsureSystemNotActingAsNetworkSniffer(void* log)
     const char* command = "ip address";
     const char* text = "PROMISC";
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckTextNotFoundInCommandOutput(command, text, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', text, &reason, log));
-    CheckLineNotFoundOrCommentedOut(g_etcRcLocal, '#', text, &reason, log);
+    RETURN_REASON_IF_ZERO(((0 == CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', text, &reason, log)) && 
+        (0 == CheckLineNotFoundOrCommentedOut(g_etcRcLocal, '#', text, &reason, log))) ? 0 : ENOENT);
+    CheckTextNotFoundInCommandOutput(command, text, &reason, log);
     return reason;
 }
 
