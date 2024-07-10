@@ -599,7 +599,7 @@ instance of OsConfigResource as $OsConfigResource38ref
     ReportedObjectName = "auditEnsurePermissionsOnEtcHostsAllow";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcHostsAllow";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "644";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "LinuxSecurityBaseline";
@@ -614,7 +614,7 @@ instance of OsConfigResource as $OsConfigResource39ref
     ReportedObjectName = "auditEnsurePermissionsOnEtcHostsDeny";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcHostsDeny";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "644";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "LinuxSecurityBaseline";
@@ -1633,7 +1633,7 @@ instance of OsConfigResource as $OsConfigResource106ref
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRsyslogNotAcceptingRemoteMessages";
     ExpectedObjectValue = "PASS";
-    DesiredObjectName = "remediateRsyslogNotAcceptingRemoteMessages";
+    DesiredObjectName = "remediateEnsureRsyslogNotAcceptingRemoteMessages";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
@@ -2572,9 +2572,9 @@ instance of OsConfigResource as $OsConfigResource167ref
 
 instance of OMI_ConfigurationDocument
 {
-    Version="0.0.2";
+    Version="0.0.3";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="5/3/2024 10:45:00 AM PST";
+    GenerationDate="7/9/2024 16:07:00 PST";
     Name="LinuxSecurityBaseline";
 };

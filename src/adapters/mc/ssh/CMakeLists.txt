@@ -25,13 +25,13 @@ set_target_properties(OsConfigResourceSsh PROPERTIES OUTPUT_NAME libOsConfigReso
 
 add_custom_target(stage_create_zip_ssh
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaselinePolicy.metaconfig.json" ${PROJECT_BINARY_DIR}/Staging/
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaselinePolicy.mof" ${PROJECT_BINARY_DIR}/Staging/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.metaconfig.json" ${PROJECT_BINARY_DIR}/Staging/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.mof" ${PROJECT_BINARY_DIR}/Staging/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceSsh> ${PROJECT_BINARY_DIR}/Staging/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
     DEPENDS OsConfigResourceSsh)
 
 add_custom_target(create_zip_ssh ALL
-    BYPRODUCTS ${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaselinePolicy.zip
-    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaselinePolicy.zip" --format=zip .
+    BYPRODUCTS ${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaseline.zip
+    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaseline.zip" --format=zip .
     DEPENDS stage_create_zip_ssh
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/Staging/)

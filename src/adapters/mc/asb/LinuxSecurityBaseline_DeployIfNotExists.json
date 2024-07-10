@@ -1,9 +1,9 @@
 {
     "properties": {
-        "displayName": "[Preview] SSH Posture Control policy",
+        "displayName": "Azure Security Baseline for Linux policy",
         "policyType": "Custom",
         "mode": "Indexed",
-        "description": "This policy ensures that the SSH Server is securely configured on the Linux device",
+        "description": "This policy audits the Azure Security Baseline for Linux",
         "metadata": {
             "category": "Guest Configuration",
             "version": "1.0.0.0",
@@ -11,11 +11,11 @@
                 "Microsoft.GuestConfiguration"
             ],
             "guestConfiguration": {
-                "name": "LinuxSshServerSecurityBaselinePolicy",
+                "name": "LinuxSecurityBaseline",
                 "version": "1.0.0",
                 "contentType": "Custom",
-                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaselinePolicy.zip",
-                "contentHash": "354719122019CC893CAB961414A5AA6E8D5C14F517C04C91271DDE3458668E82",
+                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaseline.zip",
+                "contentHash": "588D662DAE1CE6959FBF6596CB65769337E7A46B8888BD25E7114BFDB54E04FF",
                 "configurationParameter": {
                     "accessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
                     "ignoreHosts": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
@@ -39,7 +39,7 @@
             }
         },
         "parameters": {
-            "includeArcMachines": {
+            "IncludeArcMachines": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Include Arc connected machines",
@@ -56,11 +56,12 @@
                 "type": "string",
                 "metadata": {
                     "displayName": "Effect",
-                    "description": "Configures between remediation (DeployIfNotExists) or audit-only (AuditIfNotExists) policy execution mode. Default is AuditIfNotExists"
+                    "description": "Configures between remediation (DeployIfNotExists), audit-only (AuditIfNotExists), or disabled (Disabled) policy execution mode. Default is AuditIfNotExists"
                 },
                 "allowedValues": [
                     "DeployIfNotExists",
-                    "AuditIfNotExists"
+                    "AuditIfNotExists",
+                    "Disabled"
                 ],
                 "defaultValue": "AuditIfNotExists"
             },
@@ -456,7 +457,7 @@
                         "/providers/Microsoft.Authorization/roleDefinitions/088ab73d-1256-47ae-bea9-9de8e7131f31"
                     ],
                     "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
-                    "name": "[concat('LinuxSshServerSecurityBaselinePolicy$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
+                    "name": "[concat('LinuxSecurityBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
                     "existenceCondition": {
                         "allOf": [
                             {
@@ -483,7 +484,7 @@
                                     "value": "[field('type')]"
                                 },
                                 "assignmentName": {
-                                    "value": "[concat('LinuxSshServerSecurityBaselinePolicy$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
+                                    "value": "[concat('LinuxSecurityBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
                                 },
                                 "accessPermissionsForSshdConfig": {
                                     "value": "[parameters('accessPermissionsForSshdConfig')]"
@@ -620,11 +621,11 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "LinuxSshServerSecurityBaselinePolicy",
+                                                "name": "LinuxSecurityBaseline",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
-                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaselinePolicy.zip",
-                                                "contentHash": "354719122019CC893CAB961414A5AA6E8D5C14F517C04C91271DDE3458668E82",
+                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaseline.zip",
+                                                "contentHash": "588D662DAE1CE6959FBF6596CB65769337E7A46B8888BD25E7114BFDB54E04FF",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -711,11 +712,11 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "LinuxSshServerSecurityBaselinePolicy",
+                                                "name": "LinuxSecurityBaseline",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
-                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaselinePolicy.zip",
-                                                "contentHash": "354719122019CC893CAB961414A5AA6E8D5C14F517C04C91271DDE3458668E82",
+                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaseline.zip",
+                                                "contentHash": "588D662DAE1CE6959FBF6596CB65769337E7A46B8888BD25E7114BFDB54E04FF",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -802,11 +803,11 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "LinuxSshServerSecurityBaselinePolicy",
+                                                "name": "LinuxSecurityBaseline",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
-                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaselinePolicy.zip",
-                                                "contentHash": "354719122019CC893CAB961414A5AA6E8D5C14F517C04C91271DDE3458668E82",
+                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaseline.zip",
+                                                "contentHash": "588D662DAE1CE6959FBF6596CB65769337E7A46B8888BD25E7114BFDB54E04FF",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {

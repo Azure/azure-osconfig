@@ -2040,7 +2040,7 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, void* log)
         return EINVAL;
     }
     
-    if (0 != CheckPasswordHashingAlgorithm(algorithm, NULL, log))
+    if (0 == CheckPasswordHashingAlgorithm(algorithm, NULL, log))
     {
         if (0 == (status = SetEtcLoginDefValue(encryptMethod, encryption, log)))
         {
@@ -2792,7 +2792,6 @@ int CheckRootPasswordForSingleUserMode(char** reason, void* log)
                 {
                     OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: root appears to have a password");
                     rootHasPassword = true;
-                    break;
                 }
                 else
                 {
@@ -2800,6 +2799,11 @@ int CheckRootPasswordForSingleUserMode(char** reason, void* log)
                         userList[i].username, userList[i].userId, userList[i].groupId);
                     usersWithPassword = true;
                 }
+            }
+
+            if (rootHasPassword && usersWithPassword)
+            {
+                break;
             }
         }
     }
