@@ -2355,10 +2355,10 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    long timer = 0;
+    time_t currentTime = 0;
     int status = 0;
     long passwordExpirationDate = 0;
-    long currentDate = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
+    long currentDate = time(&currentTime) / NUMBER_OF_SECONDS_IN_A_DAY;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
@@ -2380,32 +2380,7 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                 }
                 else
                 {
-                    /*
-                    // Date of last change (measured in days since 1970-01-01 00:00:00 +0000 UTC) 
-                    long lastPasswordChange;
-    
-                    // Minimum number of days between password changes 
-                    long minimumPasswordAge;
-    
-                    // Maximum number of days between password changes
-                    long maximumPasswordAge;
-    
-                    // Number of days before password expires to warn user to change it 
-                    long warningPeriod;
-    
-                    // Number of days after password expires until account is disabled 
-                    long inactivityPeriod;
-    
-                    // Date when user account expires (measured in days since 1970-01-01 00:00:00 +0000 UTC) 
-                    long expirationDate;                 
-                    */
-                    
                     passwordExpirationDate = userList[i].lastPasswordChange + userList[i].maximumPasswordAge;
-
-                    // Temporary trace for investigation on RHEL 9 about unexpected password expiration values
-                    OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: user '%s' (%u, %u) last password change: %ld days ago, maximum password age: %ld days, expiration date: %ld, current date: %ld",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange, userList[i].maximumPasswordAge, passwordExpirationDate, currentDate);
-                    OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: user '%s' (%u, %u) expirationDate since 1970: %ld days", userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate);
 
                     if (passwordExpirationDate >= currentDate)
                     {
@@ -2427,8 +2402,19 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                     }
                     else if (passwordExpirationDate < currentDate)
                     {
-                        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) expired %ld days ago",
-                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate);
+                        if (userList[i].expirationDate < 0)
+                        {
+                            OsConfigLogError(log, "CheckPasswordExpirationLessThan: the password for user '%s' (%u, %u) has no expiration date (%ld)",
+                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate);
+                            OsConfigCaptureReason(reason, "User '%s' (%u, %u) password has no expiration date (%ld)",
+                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate);
+                            status = ENOENT;
+                        }
+                        else
+                        {
+                            OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) expired %ld days ago (current date: %ld, expiration date: %ld days since the epoch)",
+                                userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate, currentDate, passwordExpirationDate);
+                        }
                     }
                 }
             }
