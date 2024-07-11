@@ -2380,11 +2380,32 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                 }
                 else
                 {
+                    /*
+                    // Date of last change (measured in days since 1970-01-01 00:00:00 +0000 UTC) 
+                    long lastPasswordChange;
+    
+                    // Minimum number of days between password changes 
+                    long minimumPasswordAge;
+    
+                    // Maximum number of days between password changes
+                    long maximumPasswordAge;
+    
+                    // Number of days before password expires to warn user to change it 
+                    long warningPeriod;
+    
+                    // Number of days after password expires until account is disabled 
+                    long inactivityPeriod;
+    
+                    // Date when user account expires (measured in days since 1970-01-01 00:00:00 +0000 UTC) 
+                    long expirationDate;                 
+                    */
+                    
                     passwordExpirationDate = userList[i].lastPasswordChange + userList[i].maximumPasswordAge;
 
                     // Temporary trace for investigation on RHEL 9 about unexpected password expiration values
                     OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: user '%s' (%u, %u) last password change: %ld days ago, maximum password age: %ld days, expiration date: %ld, current date: %ld",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange, userList[i].maximumPasswordAge, passwordExpirationDate, currentDate);
+                    OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: user '%s' (%u, %u) expirationDate since 1970: %ld days", userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate);
 
                     if (passwordExpirationDate >= currentDate)
                     {
