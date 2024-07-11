@@ -1,9 +1,9 @@
 {
     "properties": {
-        "displayName": "[Preview] SSH Posture Control policy",
+        "displayName": "[Preview]: SSH security posture control for Linux (powered by OsConfig)",
         "policyType": "Custom",
         "mode": "Indexed",
-        "description": "This policy ensures that the SSH Server is securely configured on the Linux device",
+        "description": "This policy is powered by Azure OSConfig and its purpose is to ensure that the SSH Server is securely configured on the Linux device",
         "metadata": {
             "category": "Guest Configuration",
             "version": "1.0.0.0",

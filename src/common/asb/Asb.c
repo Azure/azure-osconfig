@@ -1969,7 +1969,6 @@ static char* AuditEnsureAvahiDaemonServiceIsDisabled(void* log)
 static char* AuditEnsureCupsServiceisDisabled(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_cups, &reason, log));
     CheckDaemonNotActive(g_cups, &reason, log);
     return reason;
 }

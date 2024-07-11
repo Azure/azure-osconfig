@@ -1,9 +1,9 @@
 {
     "properties": {
-        "displayName": "Azure Security Baseline for Linux policy",
+        "displayName": "[Preview]: Azure security baseline for Linux (powered by OsConfig)",
         "policyType": "Custom",
         "mode": "Indexed",
-        "description": "This policy audits the Azure Security Baseline for Linux",
+        "description": "This policy is powered by Azure OSConfig and its purpose is to audit and deploy the Azure Security Baseline for Linux",
         "metadata": {
             "category": "Guest Configuration",
             "version": "1.0.0.0",

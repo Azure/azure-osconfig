@@ -2382,6 +2382,12 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                 {
                     passwordExpirationDate = userList[i].lastPasswordChange + userList[i].maximumPasswordAge;
 
+                    //>>>>>>>>>> TEMPORARY
+                    OsConfigLogInfo(log, "###################### user '%s' (%u, %u) last password change: %ld days ago, maximum password age: %ld days, expiration date: %ld, current date: %ld ###############",
+                        userList[i].username, userList[i].userId, userList[i].groupId, 
+                        userList[i].lastPasswordChange, userList[i].maximumPasswordAge, passwordExpirationDate, currentDate);
+                    //<<<<<<<<<<
+
                     if (passwordExpirationDate >= currentDate)
                     {
                         if ((passwordExpirationDate - currentDate) <= days)
