@@ -2355,10 +2355,10 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    long timer = 0;
+    time_t currentTime = 0;
     int status = 0;
     long passwordExpirationDate = 0;
-    long currentDate = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
+    long currentDate = time(&currentTime) / NUMBER_OF_SECONDS_IN_A_DAY;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
@@ -2402,8 +2402,19 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                     }
                     else if (passwordExpirationDate < currentDate)
                     {
-                        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) expired %ld days ago",
-                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate);
+                        if (userList[i].expirationDate < 0)
+                        {
+                            OsConfigLogError(log, "CheckPasswordExpirationLessThan: the password for user '%s' (%u, %u) has no expiration date (%ld)",
+                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate);
+                            OsConfigCaptureReason(reason, "User '%s' (%u, %u) password has no expiration date (%ld)",
+                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate);
+                            status = ENOENT;
+                        }
+                        else
+                        {
+                            OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) expired %ld days ago (current date: %ld, expiration date: %ld days since the epoch)",
+                                userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate, currentDate, passwordExpirationDate);
+                        }
                     }
                 }
             }
