@@ -2433,7 +2433,7 @@ int SetPasswordExpiration(long days, void* log)
     int status = 0, _status = 0;
     long desiredExpirationDate = (time(&currentTime) / NUMBER_OF_SECONDS_IN_A_DAY) + days;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
