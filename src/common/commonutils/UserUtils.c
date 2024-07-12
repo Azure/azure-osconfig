@@ -2400,21 +2400,12 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                             status = ENOENT;
                         }
                     }
-                    else if (passwordExpirationDate < currentDate)
+                    else
                     {
-                        if (userList[i].expirationDate < 0)
-                        {
-                            OsConfigLogError(log, "CheckPasswordExpirationLessThan: the password for user '%s' (%u, %u) has no expiration date (%ld)",
-                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate);
-                            OsConfigCaptureReason(reason, "User '%s' (%u, %u) password has no expiration date (%ld)",
-                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate);
-                            status = ENOENT;
-                        }
-                        else
-                        {
-                            OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) expired %ld days ago (current date: %ld, expiration date: %ld days since the epoch)",
-                                userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate, currentDate, passwordExpirationDate);
-                        }
+                        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) expired %ld days ago (current date: %ld, expiration date: %ld days since the epoch)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate, currentDate, passwordExpirationDate);
+                        OsConfigCaptureSuccessReason(reason, "Password for user '%s' (%u, %u)  expired %ld days ago (current date: %ld, expiration date: %ld days since the epoch)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate, currentDate, passwordExpirationDate);
                     }
                 }
             }
