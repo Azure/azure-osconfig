@@ -2407,13 +2407,13 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                             OsConfigLogError(log, "CheckPasswordExpirationLessThan: the password for user '%s' (%u, %u) has no expiration date (%ld)",
                                 userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate);
                             OsConfigCaptureReason(reason, "User '%s' (%u, %u) password has no expiration date (%ld)",
-                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate);
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate);
                             status = ENOENT;
                         }
                         else
                         {
                             OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) expired %ld days ago (current date: %ld, expiration date: %ld days since the epoch)",
-                                userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate, currentDate, passwordExpirationDate);
+                                userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate, currentDate, userList[i].expirationDate);
                         }
                     }
                 }
@@ -2577,9 +2577,9 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    long timer = 0;
+    time_t currentTime = 0;
     int status = 0;
-    long daysCurrent = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
+    long daysCurrent = time(&currentTime) / NUMBER_OF_SECONDS_IN_A_DAY;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
@@ -2600,11 +2600,22 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, void* log)
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) last recorded password change is in the future (next %ld days)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange - daysCurrent);
-                    OsConfigCaptureReason(reason, "User '%s' (%u, %u) last recorded password change is in the future (next %ld days)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange - daysCurrent);
-                    status = ENOENT;
+                    if (userList[i].expirationDate < 0)
+                    {
+                        OsConfigLogError(log, "CheckUsersRecordedPasswordChangeDates: the password for user '%s' (%u, %u) has no expiration date (%ld)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate);
+                        OsConfigCaptureReason(reason, "User '%s' (%u, %u) password has no expiration date (%ld)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate);
+                        status = ENOENT;
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) last recorded password change is in the future (next %ld days)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange - daysCurrent);
+                        OsConfigCaptureReason(reason, "User '%s' (%u, %u) last recorded password change is in the future (next %ld days)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange - daysCurrent);
+                        status = ENOENT;
+                    }
                 }
             }
         }
