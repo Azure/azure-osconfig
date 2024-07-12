@@ -2290,8 +2290,6 @@ int SetMaxDaysBetweenPasswordChanges(long days, void* log)
                 OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has maximum time between password changes of %ld days while requested is %ld days",
                     userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
 
-                commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
-
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
                     OsConfigLogError(log, "SetMaxDaysBetweenPasswordChanges: cannot allocate memory");
@@ -2670,7 +2668,7 @@ int SetLockoutAfterInactivityLessThan(long days, void* log)
                 OsConfigLogInfo(log, "SetLockoutAfterInactivityLessThan: user '%s' (%u, %u) is locked out after %ld days of inactivity while requested is %ld days",
                     userList[i].username, userList[i].userId, userList[i].groupId, userList[i].inactivityPeriod, days);
 
-                if (NULL == (command = FormatAllocateString(commandTemplatedays, userList[i].username)))
+                if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
                     OsConfigLogError(log, "SetLockoutAfterInactivityLessThan: cannot allocate memory");
                     status = ENOMEM;
