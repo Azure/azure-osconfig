@@ -2909,7 +2909,6 @@ static int RemediateEnsureMaxDaysBetweenPasswordChanges(char* value, void* log)
 static int RemediateEnsurePasswordExpiration(char* value, void* log)
 {
     InitEnsurePasswordExpiration(value);
-
     return ((0 == SetMaxDaysBetweenPasswordChanges(atol(g_desiredEnsureMaxDaysBetweenPasswordChanges ? 
         g_desiredEnsureMaxDaysBetweenPasswordChanges : g_defaultEnsureMaxDaysBetweenPasswordChanges), log)) &&
         (0 == CheckPasswordExpirationLessThan(atol(g_desiredEnsurePasswordExpiration), NULL, log))) ? 0 : ENOENT;
