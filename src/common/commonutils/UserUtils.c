@@ -2129,7 +2129,6 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log)
 {
     const char* commandTemplate = "chage -m %ld %s";
     char* command = NULL;
-    size_t commandLength = 0;
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
@@ -2147,9 +2146,7 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log)
                 OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %ld days",
                     userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
                     
-                commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
-                    
-                if (NULL == (command = malloc(commandLength)))
+                if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
                     OsConfigLogError(log, "SetMinDaysBetweenPasswordChanges: cannot allocate memory");
                     status = ENOMEM;
@@ -2157,9 +2154,6 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log)
                 }
                 else
                 {
-                    memset(command, 0, commandLength);
-                    snprintf(command, commandLength, commandTemplate, days, userList[i].username);
-
                     if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         userList[i].minimumPasswordAge = days;
@@ -2178,6 +2172,7 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log)
         }
     }
 
+    
     FreeUsersList(&userList, userListSize);
 
     if (0 == status)
@@ -2278,7 +2273,6 @@ int SetMaxDaysBetweenPasswordChanges(long days, void* log)
 {
     const char* commandTemplate = "chage -M %ld %s";
     char* command = NULL;
-    size_t commandLength = 0;
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
@@ -2298,7 +2292,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, void* log)
 
                 commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
 
-                if (NULL == (command = malloc(commandLength)))
+                if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
                     OsConfigLogError(log, "SetMaxDaysBetweenPasswordChanges: cannot allocate memory");
                     status = ENOMEM;
@@ -2306,9 +2300,6 @@ int SetMaxDaysBetweenPasswordChanges(long days, void* log)
                 }
                 else
                 {
-                    memset(command, 0, commandLength);
-                    snprintf(command, commandLength, commandTemplate, days, userList[i].username);
-
                     if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         userList[i].maximumPasswordAge = days;
@@ -2380,7 +2371,16 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                 }
                 else
                 {
-                    passwordExpirationDate = userList[i].lastPasswordChange + userList[i].maximumPasswordAge;
+                    if (userList[i].lastPasswordChange < 0)
+                    {
+                        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no recorded change date (%ld)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
+                        passwordExpirationDate = currentDate + userList[i].maximumPasswordAge;
+                    }
+                    else
+                    {
+                        passwordExpirationDate = userList[i].lastPasswordChange + userList[i].maximumPasswordAge;
+                    }
 
                     if (passwordExpirationDate >= currentDate)
                     {
@@ -2491,7 +2491,6 @@ int SetPasswordExpirationWarning(long days, void* log)
 {
     const char* commandTemplate = "chage -W %ld %s";
     char* command = NULL;
-    size_t commandLength = 0;
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
@@ -2509,9 +2508,7 @@ int SetPasswordExpirationWarning(long days, void* log)
                 OsConfigLogError(log, "SetPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is %ld days, less than requested %ld days",
                     userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
 
-                commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
-
-                if (NULL == (command = malloc(commandLength)))
+                if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
                     OsConfigLogError(log, "SetPasswordExpirationWarning: cannot allocate memory");
                     status = ENOMEM;
@@ -2519,9 +2516,6 @@ int SetPasswordExpirationWarning(long days, void* log)
                 }
                 else
                 {
-                    memset(command, 0, commandLength);
-                    snprintf(command, commandLength, commandTemplate, days, userList[i].username);
-
                     if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         userList[i].warningPeriod = days;
@@ -2582,7 +2576,14 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, void* log)
             }
             else
             {
-                if (userList[i].lastPasswordChange <= daysCurrent)
+                if (userList[i].lastPasswordChange < 0)
+                {
+                    OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: password for user '%s' (%u, %u) has no recorded change date (%ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
+                    OsConfigCaptureSuccessReason(reason, "User '%s' (%u, %u) has no recorded last password change date (%ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
+                }
+                else if (userList[i].lastPasswordChange <= daysCurrent)
                 {
                     OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) has %lu days since last password change",
                         userList[i].username, userList[i].userId, userList[i].groupId, daysCurrent - userList[i].lastPasswordChange);
@@ -2652,7 +2653,6 @@ int SetLockoutAfterInactivityLessThan(long days, void* log)
 {
     const char* commandTemplate = "chage -I %ld %s";
     char* command = NULL;
-    size_t commandLength = 0;
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
@@ -2670,9 +2670,7 @@ int SetLockoutAfterInactivityLessThan(long days, void* log)
                 OsConfigLogInfo(log, "SetLockoutAfterInactivityLessThan: user '%s' (%u, %u) is locked out after %ld days of inactivity while requested is %ld days",
                     userList[i].username, userList[i].userId, userList[i].groupId, userList[i].inactivityPeriod, days);
 
-                commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
-
-                if (NULL == (command = malloc(commandLength)))
+                if (NULL == (command = FormatAllocateString(commandTemplatedays, userList[i].username)))
                 {
                     OsConfigLogError(log, "SetLockoutAfterInactivityLessThan: cannot allocate memory");
                     status = ENOMEM;
@@ -2680,9 +2678,6 @@ int SetLockoutAfterInactivityLessThan(long days, void* log)
                 }
                 else
                 {
-                    memset(command, 0, commandLength);
-                    snprintf(command, commandLength, commandTemplate, days, userList[i].username);
-
                     if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         userList[i].inactivityPeriod = days;
