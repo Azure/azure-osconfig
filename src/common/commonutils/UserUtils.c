@@ -2417,7 +2417,7 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
 
 int SetPasswordExpirationLessThan(long days, void* log)
 {
-    const char* commandTemplate = "chage -d %ld %s";
+    const char* commandTemplate = "chage -M %ld %s";
     char* command = NULL;
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
