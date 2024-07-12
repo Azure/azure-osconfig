@@ -2909,7 +2909,7 @@ static int RemediateEnsureMaxDaysBetweenPasswordChanges(char* value, void* log)
 static int RemediateEnsurePasswordExpiration(char* value, void* log)
 {
     InitEnsurePasswordExpiration(value);
-    return SetPasswordExpiration(atol(g_desiredEnsurePasswordExpiration), log);
+    return SetPasswordExpirationLessThan(atol(g_desiredEnsurePasswordExpiration), log);
 }
 
 static int RemediateEnsurePasswordExpirationWarning(char* value, void* log)

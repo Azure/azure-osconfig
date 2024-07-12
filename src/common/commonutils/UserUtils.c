@@ -2423,7 +2423,7 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
     return status;
 }
 
-int SetPasswordExpiration(long days, void* log)
+int SetPasswordExpirationLessThan(long days, void* log)
 {
     const char* commandTemplate = "chage -d %ld %s";
     char* command = NULL;
@@ -2431,7 +2431,11 @@ int SetPasswordExpiration(long days, void* log)
     unsigned int userListSize = 0, i = 0;
     time_t currentTime = 0;
     int status = 0, _status = 0;
-    long desiredExpirationDate = (time(&currentTime) / NUMBER_OF_SECONDS_IN_A_DAY) + days;
+    long todaysDate = time(&currentTime) / NUMBER_OF_SECONDS_IN_A_DAY;
+    long desiredExpirationDate = todaysDate + days;
+
+    OsConfigLogInfo(log, "SetPasswordExpirationLessThan: today's date is %ld days since epoch, desired password expiration in %ld days, on day %ld since epoch", 
+        todaysDate, days, desiredExpirationDate);
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
@@ -2441,45 +2445,47 @@ int SetPasswordExpiration(long days, void* log)
             {
                 continue;
             }
+            else if ((userList[i].expirationDate >= todaysDate) && (userList[i].expirationDate <= desiredExpirationDate))
+            {
+                OsConfigLogInfo(log, "SetPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days from today",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate - todaysDate);
+            }
             else
             {
-                if (userList[i].expirationDate != desiredExpirationDate)
+                if (userList[i].expirationDate < 0)
                 {
-                    if (userList[i].expirationDate < 0)
-                    {
-                        OsConfigLogError(log, "SetPasswordExpiration: password for user '%s' (%u, %u) has no expiration date (%ld days since epoch)",
-                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate);
-                    }
-                    else
-                    {
-                        OsConfigLogError(log, "SetPasswordExpiration: password for user '%s' (%u, %u) has an expiration date of %ld instead of %ld",
-                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate, desiredExpirationDate);
-                    }
+                    OsConfigLoginfo(log, "SetPasswordExpirationLessThan: password for user '%s' (%u, %u) has no expiration date (%ld days since epoch)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate);
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "SetPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days instead of in %ld days or less",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate - todaysDate, days);
+                }
                     
-                    FREE_MEMORY(command);
-                    if (NULL != (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
+                FREE_MEMORY(command);
+                if (NULL != (command = FormatAllocateString(commandTemplate, desiredExpirationDate, userList[i].username)))
+                {
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
-                        if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-                        {
-                            OsConfigLogInfo(log, "SetPasswordExpiration: password for user '%s' (%u, %u) has now an expiration date of %ld",
-                                userList[i].username, userList[i].userId, userList[i].groupId, desiredExpirationDate);
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "SetPasswordExpiration: '%s' failed with %d (%d)", command, status, errno);
-
-                            if (0 == status)
-                            {
-                                status = _status;
-                            }
-                        }
+                        OsConfigLogInfo(log, "SetPasswordExpirationLessThan: password for user '%s' (%u, %u) will now expire in %ld days from today",
+                            userList[i].username, userList[i].userId, userList[i].groupId, days);
                     }
                     else
                     {
-                        OsConfigLogError(log, "SetPasswordExpiration: cannot allocate memory");
-                        status = ENOMEM;
-                        break;
+                        OsConfigLogError(log, "SetPasswordExpirationLessThan: '%s' failed with %d (%d)", command, status, errno);
+
+                        if (0 == status)
+                        {
+                            status = _status;
+                        }
                     }
+                }
+                else
+                {
+                    OsConfigLogError(log, "SetPasswordExpirationLessThan: cannot allocate memory");
+                    status = ENOMEM;
+                    break;
                 }
             }
         }
@@ -2491,7 +2497,7 @@ int SetPasswordExpiration(long days, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "SetPasswordExpiration: passwords for all users who have them will expire in %ld days from today", days);
+        OsConfigLogInfo(log, "SetPasswordExpirationLessThan: passwords for all users who have them will expire in %ld days from today or less", days);
     }
 
     return status;
