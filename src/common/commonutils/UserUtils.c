@@ -2454,7 +2454,7 @@ int SetPasswordExpirationLessThan(long days, void* log)
             {
                 if (userList[i].expirationDate < 0)
                 {
-                    OsConfigLoginfo(log, "SetPasswordExpirationLessThan: password for user '%s' (%u, %u) has no expiration date (%ld days since epoch)",
+                    OsConfigLogInfo(log, "SetPasswordExpirationLessThan: password for user '%s' (%u, %u) has no expiration date (%ld days since epoch)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate);
                 }
                 else
