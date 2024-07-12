@@ -108,6 +108,7 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log);
 int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, void* log);
 int SetMaxDaysBetweenPasswordChanges(long days, void* log);
 int CheckPasswordExpirationLessThan(long days, char** reason, void* log);
+int SetPasswordExpiration(long days, void* log);
 int CheckPasswordExpirationWarning(long days, char** reason, void* log);
 int SetPasswordExpirationWarning(long days, void* log);
 int CheckUsersRecordedPasswordChangeDates(char** reason, void* log);
