@@ -2171,7 +2171,6 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log)
             }
         }
     }
-
     
     FreeUsersList(&userList, userListSize);
 
