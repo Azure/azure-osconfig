@@ -2463,7 +2463,6 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                     }
                 }
             }
-            }
         }
     }
 
