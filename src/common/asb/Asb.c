@@ -1270,7 +1270,7 @@ static char* AuditEnsureMaxDaysBetweenPasswordChanges(void* log)
 static char* AuditEnsurePasswordExpiration(void* log)
 {
     char* reason = NULL;
-    CheckPasswordExpirationLessThan(atoi(g_desiredEnsurePasswordExpiration ? 
+    CheckPasswordExpirationLessThan(atol(g_desiredEnsurePasswordExpiration ? 
         g_desiredEnsurePasswordExpiration : g_defaultEnsurePasswordExpiration), &reason, log);
     return reason;
 }
@@ -1278,7 +1278,7 @@ static char* AuditEnsurePasswordExpiration(void* log)
 static char* AuditEnsurePasswordExpirationWarning(void* log)
 {
     char* reason = NULL;
-    CheckPasswordExpirationWarning(atoi(g_desiredEnsurePasswordExpirationWarning ? 
+    CheckPasswordExpirationWarning(atol(g_desiredEnsurePasswordExpirationWarning ? 
         g_desiredEnsurePasswordExpirationWarning : g_defaultEnsurePasswordExpirationWarning), &reason, log);
     return reason;
 }
@@ -2910,7 +2910,7 @@ static int RemediateEnsurePasswordExpiration(char* value, void* log)
 {
     InitEnsurePasswordExpiration(value);
     return ((0 == EnsureUsersHaveDatesOfLastPasswordChanges(log)) &&
-        (0 == SetMaxDaysBetweenPasswordChanges(g_desiredEnsurePasswordExpiration, log)) &&
+        (0 == SetMaxDaysBetweenPasswordChanges(atol(g_desiredEnsurePasswordExpiration), log)) &&
         (0 == CheckPasswordExpirationLessThan(atol(g_desiredEnsurePasswordExpiration), NULL, log))) ? 0 : ENOENT;
 }
 
