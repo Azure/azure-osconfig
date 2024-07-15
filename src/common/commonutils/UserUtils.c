@@ -2360,7 +2360,7 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(void* log)
             else if (userList[i].lastPasswordChange < 0)
             {
                 OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: password for user '%s' (%u, %u) was never changed",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange, currentDate);
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
 
                 if (NULL == (command = FormatAllocateString(commandTemplate, currentDate, userList[i].username)))
                 {
