@@ -2372,7 +2372,6 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(void* log)
                 {
                     if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
-                        userList[i].maximumPasswordAge = days;
                         OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: user '%s' (%u, %u) date of last password change is now set to %ld days since epoch (today)",
                             userList[i].username, userList[i].userId, userList[i].groupId, currentDate);
                     }
