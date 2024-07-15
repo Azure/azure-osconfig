@@ -2420,22 +2420,21 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                 {
                     OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no expiration date (%ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge);
-                    OsConfigCaptureReason(reason, "User '%s' (%u, %u) password has no expiration date (%ld)",
+                    OsConfigCaptureReason(reason, "Password for user '%s' (%u, %u) has no expiration date (%ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge);
+                    status = ENOENT;
+                }
+                else if (userList[i].lastPasswordChange < 0)
+                {
+                    OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no recorded change date (%ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
+                    OsConfigCaptureReason(reason, "Password for user '%s' (%u, %u) has no recorded last change date (%ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
                     status = ENOENT;
                 }
                 else
                 {
-                    if (userList[i].lastPasswordChange < 0)
-                    {
-                        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no recorded change date (%ld)",
-                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
-                        passwordExpirationDate = currentDate + userList[i].maximumPasswordAge;
-                    }
-                    else
-                    {
-                        passwordExpirationDate = userList[i].lastPasswordChange + userList[i].maximumPasswordAge;
-                    }
+                    passwordExpirationDate = userList[i].lastPasswordChange + userList[i].maximumPasswordAge;
 
                     if (passwordExpirationDate >= currentDate)
                     {
@@ -2450,7 +2449,7 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                         {
                             OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days, more than requested maximum of %ld days",
                                 userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
-                            OsConfigCaptureReason(reason, "User '%s' (%u, %u) password will expire in %ld days, more than requested maximum of %ld days",
+                            OsConfigCaptureReason(reason, "Password for user '%s' (%u, %u) will expire in %ld days, more than requested maximum of %ld days",
                                 userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
                             status = ENOENT;
                         }
@@ -2463,6 +2462,7 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                             userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate, currentDate, passwordExpirationDate);
                     }
                 }
+            }
             }
         }
     }
