@@ -2339,6 +2339,64 @@ int SetMaxDaysBetweenPasswordChanges(long days, void* log)
     return status;
 }
 
+int EnsureUsersHaveDatesOfLastPasswordChanges(void* log)
+{
+    const char* commandTemplate = "chage -d %ld %s";
+    char* command = NULL;
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0, _status = 0;
+    time_t currentTime = 0;
+    long currentDate = time(&currentTime) / NUMBER_OF_SECONDS_IN_A_DAY;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (false == userList[i].hasPassword)
+            {
+                continue;
+            }
+            else if (userList[i].lastPasswordChange < 0)
+            {
+                OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: password for user '%s' (%u, %u) was never changed (%lu)",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
+
+                if (NULL == (command = FormatAllocateString(commandTemplate, currentDate, userList[i].username)))
+                {
+                    OsConfigLogError(log, "EnsureUsersHaveDatesOfLastPasswordChanges: cannot allocate memory");
+                    status = ENOMEM;
+                    break;
+                }
+                else
+                {
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    {
+                        OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: user '%s' (%u, %u) date of last password change is now set to %ld days since epoch (today)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate);
+                    }
+
+                    FREE_MEMORY(command);
+
+                    if (0 == status)
+                    {
+                        status = _status;
+                    }
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: all users who have passwords have dates of last password changes");
+    }
+
+    return status;
+}
+
 int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
@@ -2362,22 +2420,21 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                 {
                     OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no expiration date (%ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge);
-                    OsConfigCaptureReason(reason, "User '%s' (%u, %u) password has no expiration date (%ld)",
+                    OsConfigCaptureReason(reason, "Password for user '%s' (%u, %u) has no expiration date (%ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge);
+                    status = ENOENT;
+                }
+                else if (userList[i].lastPasswordChange < 0)
+                {
+                    OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no recorded change date (%ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
+                    OsConfigCaptureReason(reason, "Password for user '%s' (%u, %u) has no recorded last change date (%ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
                     status = ENOENT;
                 }
                 else
                 {
-                    if (userList[i].lastPasswordChange < 0)
-                    {
-                        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no recorded change date (%ld)",
-                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
-                        passwordExpirationDate = currentDate + userList[i].maximumPasswordAge;
-                    }
-                    else
-                    {
-                        passwordExpirationDate = userList[i].lastPasswordChange + userList[i].maximumPasswordAge;
-                    }
+                    passwordExpirationDate = userList[i].lastPasswordChange + userList[i].maximumPasswordAge;
 
                     if (passwordExpirationDate >= currentDate)
                     {
@@ -2392,7 +2449,7 @@ int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
                         {
                             OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days, more than requested maximum of %ld days",
                                 userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
-                            OsConfigCaptureReason(reason, "User '%s' (%u, %u) password will expire in %ld days, more than requested maximum of %ld days",
+                            OsConfigCaptureReason(reason, "Password for user '%s' (%u, %u) will expire in %ld days, more than requested maximum of %ld days",
                                 userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
                             status = ENOENT;
                         }
