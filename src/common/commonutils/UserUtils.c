@@ -2339,6 +2339,65 @@ int SetMaxDaysBetweenPasswordChanges(long days, void* log)
     return status;
 }
 
+int EnsureUsersHaveDatesOfLastPasswordChanges(void* log)
+{
+    const char* commandTemplate = "chage -d %ld %s";
+    char* command = NULL;
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0, _status = 0;
+    time_t currentTime = 0;
+    long currentDate = time(&currentTime) / NUMBER_OF_SECONDS_IN_A_DAY;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (false == userList[i].hasPassword)
+            {
+                continue;
+            }
+            else if (userList[i].lastPasswordChange < 0)
+            {
+                OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: password for user '%s' (%u, %u) was never changed",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange, currentDate);
+
+                if (NULL == (command = FormatAllocateString(commandTemplate, currentDate, userList[i].username)))
+                {
+                    OsConfigLogError(log, "EnsureUsersHaveDatesOfLastPasswordChanges: cannot allocate memory");
+                    status = ENOMEM;
+                    break;
+                }
+                else
+                {
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    {
+                        userList[i].maximumPasswordAge = days;
+                        OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: user '%s' (%u, %u) date of last password change is now set to %ld days since epoch (today)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate);
+                    }
+
+                    FREE_MEMORY(command);
+
+                    if (0 == status)
+                    {
+                        status = _status;
+                    }
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: all users who have passwords have dates of last password changes");
+    }
+
+    return status;
+}
+
 int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
