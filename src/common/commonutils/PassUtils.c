@@ -33,47 +33,34 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
 
 int SetEnsurePasswordReuseIsLimited(int remember, void* log)
 {
-    const char* etcPamdCommonPasswordTemplate = "password required pam_unix.so sha512 shadow %s=%d\n";
-    const char* etcPamdSystemAuthTemplate = "password required pam_pwcheck.so nullok %s=%d\n";
+    const char* universalTemplate = "password required pam_unix.so sha512 shadow %s=%d retry=3\n";
     char* newline = NULL;
     int status = 0, _status = 0;
 
     if (0 == (status = CheckEnsurePasswordReuseIsLimited(remember, NULL, log)))
     {
-        OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited: '%s' is already set to %d in '%s'", g_remember, remember, g_etcPamdCommonPassword);
+        OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited: '%s' is already set to %d in '%s' or in '%s'", 
+            g_remember, remember, g_etcPamdCommonPassword, g_etcPamdSystemAuth);
         return 0;
+    }
+
+    if (NULL == (newline = FormatAllocateString(universalTemplate, g_remember, remember)))
+    {
+        OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
+        return ENOMEM;
     }
 
     if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
-        if (NULL != (newline = FormatAllocateString(etcPamdCommonPasswordTemplate, g_remember, remember)))
-        {
-            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log);
-            FREE_MEMORY(newline);
-        }
-        else
-        {
-            
-            OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
-            status = ENOMEM;
-        }
+        status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log);
     }
 
     if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
     {
-        if (NULL != (newline = FormatAllocateString(etcPamdSystemAuthTemplate, g_remember, remember)))
-        {
-            _status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
-            FREE_MEMORY(newline);
-        }
-        else
-        {
-            OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
-            _status = ENOMEM;
-        }
+        _status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
     }
 
-    if ((0 == _status) || (_status && (0 == status)))
+    if (_status && (0 == status))
     {
         status = _status;
     }
