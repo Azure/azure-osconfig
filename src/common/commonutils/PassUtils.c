@@ -33,7 +33,28 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
 
 int SetEnsurePasswordReuseIsLimited(int remember, void* log)
 {
-    const char* universalTemplate = "password required pam_unix.so sha512 shadow %s=%d retry=3\n";
+    // This configuration line is used in the PAM (Pluggable Authentication Module) configuration
+    // to set the number of previous passwords to remember in order to prevent password reuse.
+    //
+    // Where:
+    //
+    // - 'password required': This part specifies that the password module is required for authentication.
+    // - 'pam_unix.so': the PAM module responsible for traditional Unix authentication.
+    // - 'sha512': Indicates that the SHA-512 hashing algorithm shall be used to hash passwords.
+    //- 'shadow': Specifies that the password information shall be stored in the /etc/shadow file.
+    //- 'remember=n': This sets the number of previous passwords to remember. In this case, 
+    //   it remembers the last 'n' passwords to prevent reuse.
+    //- 'retry=3': Specifies the number of times a user can retry entering their password before failing.
+    //
+    // An alternative is:
+    //
+    // const char* endsHereIfSucceedsTemplate = "password sufficient pam_unix.so sha512 shadow %s=%d retry=3\n";
+    //
+    // Where 'sufficient' says that if this module succeeds other modules are not invoked. 
+    // While 'required'  says that if this module fails, authentication fails.
+
+    const char* endsHereIfFailsTemplate = "password required pam_unix.so sha512 shadow %s=%d retry=3\n";
+    
     char* newline = NULL;
     int status = 0, _status = 0;
 
@@ -44,7 +65,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
         return 0;
     }
 
-    if (NULL == (newline = FormatAllocateString(universalTemplate, g_remember, remember)))
+    if (NULL == (newline = FormatAllocateString(endsHereIfFailsTemplate, g_remember, remember)))
     {
         OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
         return ENOMEM;
