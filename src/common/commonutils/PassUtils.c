@@ -15,12 +15,14 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
     if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
         // On Debian-based systems '/etc/pam.d/common-password' is expected to exist
-        status = CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', remember, reason, log);
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdCommonPassword, '#', g_remember, NULL, log)) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
     }
     else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
     {
         // On Red Hat-based systems '/etc/pam.d/system-auth' is expected to exist
-        status = CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, log);
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, NULL, log)) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
     }
     else
     {
@@ -33,52 +35,52 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
 
 int SetEnsurePasswordReuseIsLimited(int remember, void* log)
 {
-    const char* etcPamdCommonPasswordTemplate = "password required pam_unix.so sha512 shadow %s=%d\n";
-    const char* etcPamdSystemAuthTemplate = "password required pam_pwcheck.so nullok %s=%d\n";
+    // This configuration line is used in the PAM (Pluggable Authentication Module) configuration
+    // to set the number of previous passwords to remember in order to prevent password reuse.
+    //
+    // Where:
+    //
+    // - 'password required': specifies that the password module is required for authentication
+    // - 'pam_unix.so': the PAM module responsible for traditional Unix authentication
+    // - 'sha512': indicates that the SHA-512 hashing algorithm shall be used to hash passwords
+    //- 'shadow': specifies that the password information shall be stored in the /etc/shadow file
+    //- 'remember=n': sets the number of previous passwords to remember to prevent password reuse
+    //- 'retry=3': the number of times a user can retry entering their password before failing
+    //
+    // An alternative is:
+    //
+    // const char* endsHereIfSucceedsTemplate = "password sufficient pam_unix.so sha512 shadow %s=%d retry=3\n";
+    //
+    // Where 'sufficient' says that if this module succeeds other modules are not invoked. 
+    // While 'required'  says that if this module fails, authentication fails.
+
+    const char* endsHereIfFailsTemplate = "password required pam_unix.so sha512 shadow %s=%d retry=3\n";
+    
     char* newline = NULL;
     int status = 0, _status = 0;
 
-    if (0 == (status = CheckEnsurePasswordReuseIsLimited(remember, NULL, log)))
+    if (NULL == (newline = FormatAllocateString(endsHereIfFailsTemplate, g_remember, remember)))
     {
-        OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited: '%s' is already set to %d in '%s'", g_remember, remember, g_etcPamdCommonPassword);
-        return 0;
-    }
-
-    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
-    {
-        if (NULL != (newline = FormatAllocateString(etcPamdCommonPasswordTemplate, g_remember, remember)))
-        {
-            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log);
-            FREE_MEMORY(newline);
-        }
-        else
-        {
-            
-            OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
-            status = ENOMEM;
-        }
+        OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
+        return ENOMEM;
     }
 
     if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
     {
-        if (NULL != (newline = FormatAllocateString(etcPamdSystemAuthTemplate, g_remember, remember)))
-        {
-            _status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
-            FREE_MEMORY(newline);
-        }
-        else
-        {
-            OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
-            _status = ENOMEM;
-        }
+        status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
     }
 
-    if ((0 == _status) || (_status && (0 == status)))
+    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
-        status = _status;
+        if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log))) && (0 == status))
+        {
+            status = _status;
+        }
     }
 
     FREE_MEMORY(newline);
+
+    OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited(%d) complete with %d", remember, status);
 
     return status;
 }
