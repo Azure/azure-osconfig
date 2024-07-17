@@ -222,7 +222,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     // - 'unlock_time=900': allow access after 900 seconds (15 minutes) following a failed attempt
 
     const char* pamTally2Line = "auth required pam_tally2.so file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root\n";
-    const char* pamFailLockLine = "auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_roo\nt";
+    const char* pamFailLockLine = "auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root\n";
     const char* etcPamdLogin = "/etc/pam.d/login";
     const char* etcPamdSystemAuth = "/etc/pam.d/system-auth";
     const char* etcPamdPasswordAuth = "/etc/pam.d/password-auth";
