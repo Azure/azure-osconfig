@@ -58,13 +58,6 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     char* newline = NULL;
     int status = 0, _status = 0;
 
-    if (0 == (status = CheckEnsurePasswordReuseIsLimited(remember, NULL, log)))
-    {
-        OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited: '%s' is already set to %d in '%s' or in '%s'", 
-            g_remember, remember, g_etcPamdCommonPassword, g_etcPamdSystemAuth);
-        return 0;
-    }
-
     if (NULL == (newline = FormatAllocateString(endsHereIfFailsTemplate, g_remember, remember)))
     {
         OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
