@@ -69,7 +69,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     {
         status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
     }
-    
+
     if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
         if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log))) && (0 == status))
