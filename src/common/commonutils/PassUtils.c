@@ -71,22 +71,22 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
         return ENOMEM;
     }
 
-    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
-    {
-        status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log);
-    }
-
     if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
     {
-        _status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
+        status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
     }
-
-    if (_status && (0 == status))
+    
+    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
-        status = _status;
+        if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log))) && (0 == status))
+        {
+            status = _status;
+        }
     }
 
     FREE_MEMORY(newline);
+
+    OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited(%d) complete with %d", remember, status);
 
     return status;
 }
