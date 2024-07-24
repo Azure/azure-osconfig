@@ -247,7 +247,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     const char* pamFaillockSoPath = "/lib64/security/pam_faillock.so";
     const char* pamTally2SoPath = "/lib64/security/pam_tally2.so";
     const char* marker = "auth";
-    const char* pam = "pam";
+    const char* libPamCrackLib = "libpam-cracklib";
     const char* libPamModules = "libpam-modules";
     int status = 0, _status = 0;
     bool pamFaillockSoExists = (0 == CheckFileExists(pamFaillockSoPath, NULL, log)) ? true : false;
@@ -255,7 +255,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
     if ((false == pamFaillockSoExists) && (false == pamTally2SoExists))
     {
-        if (0 == InstallPamModulePackageIfNotPresent(pam, libPamModules, log))
+        if (0 == InstallPamModulePackageIfNotPresent(libPamCrackLib, libPamModules, log))
         {
             pamFaillockSoExists = (0 == CheckFileExists(pamFaillockSoPath, NULL, log)) ? true : false;
             pamTally2SoExists = (0 == CheckFileExists(pamTally2SoPath, NULL, log)) ? true : false;
