@@ -580,7 +580,7 @@ static const char* g_logrotateTimer = "logrotate.timer";
 static const char* g_telnet = "telnet";
 static const char* g_rcpSocket = "rcp.socket";
 static const char* g_rshSocket = "rsh.socket";
-static const char* g_hardCoreZero = "hard core 0";
+static const char* g_hardCoreZero = "* hard core 0";
 static const char* g_fsSuidDumpable = "fs.suid_dumpable = 0";
 static const char* g_bootGrubGrubConf = "/boot/grub/grub.conf";
 static const char* g_bootGrub2GrubCfg = "/boot/grub2/grub.cfg";
