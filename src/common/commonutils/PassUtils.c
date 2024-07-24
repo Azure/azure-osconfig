@@ -685,13 +685,13 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     {
         if ((false == pamPwQualitySoExists) && (false == pamCrackLibSoExists))
         {
-            if (0 == InstallPamModulePackageIfNotPresent("pam_pwquality", "libpam-pwquality", log))
+            if (0 == InstallPamModulePackageIfNotPresent(pamPwQuality, libPamPwQuality, log))
             {
                 pamPwQualitySoExists = (0 == CheckFileExists(pamPwQualitySoPath, NULL, log)) ? true : false;
             }
             else
             {
-                if (0 == InstallPamModulePackageIfNotPresent("pam_cracklib", "libpam-cracklib", log))
+                if (0 == InstallPamModulePackageIfNotPresent(pamCrackLib, libPamCrackLib, log))
                 {
                     pamCrackLibSoExists = (0 == CheckFileExists(pamCrackLibSoPath, NULL, log)) ? true : false;
                 }
