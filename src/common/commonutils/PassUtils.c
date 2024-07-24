@@ -204,22 +204,12 @@ static int InstallPamModulePackageIfNotPresent(const char* packageOne, const cha
         return ENOENT;
     }
 
-    if ((packageOne && (0 != IsPackageInstalled(packageOne, log))) && (packageTwo && (0 != IsPackageInstalled(libPamPwQuality, log))))
+    if ((packageOne && (0 != IsPackageInstalled(packageOne, log))) && (packageTwo && (0 != IsPackageInstalled(packageTwo, log))))
     {
         status = ((packageOne && (0 == InstallPackage(packageOne, log))) || (packageTwo && (0 == InstallPackage(packageTwo, log)))) ? 0 : ENOENT;
     }
 
     return status;
-}
-
-static int InstallPamPwQualityIfNotPresent(void* log)
-{
-    return InstallPamModulePackageIfNotPresent("pam_pwquality", "libpam-pwquality", log);
-}
-
-static int InstallPamCrackLibIfNotPresent(void* log)
-{
-    return InstallPamModulePackageIfNotPresent("pam_cracklib", "libpam-cracklib", log);
 }
 
 int SetLockoutForFailedPasswordAttempts(void* log)
@@ -631,16 +621,6 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     return status;
 }
 
-static int InstallPamPwQualityIfNotPresent(void* log)
-{
-    return InstallPamModulePackageIfNotPresent("pam_pwquality", "libpam-pwquality", log);
-}
-
-static int InstallPamCrackLibIfNotPresent(void* log)
-{
-    return InstallPamModulePackageIfNotPresent("pam_cracklib", "libpam-cracklib", log);
-}
-
 typedef struct PASSWORD_CREATION_REQUIREMENTS
 {
     const char* name;
@@ -680,9 +660,12 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     // - ocredit: the minimum number of other (non-alphanumeric) characters required in the password (negative means none)
     // - dcredit: the minimum number of digits required in the password  (negative means no requirement)
     
-    const char* etcPamdCommonPasswordLineTemplate = "password requisite pam_pwquality.so retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
+    const char* etcPamdCommonPasswordLineTemplate = "password requisite %s.so retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
     const char* etcSecurityPwQualityConfLineTemplate = "%s = %d\n";
-    const char* etcPamdCommonPasswordMarker = "pam_pwquality.so";
+    const char* pamPwQuality = "pam_pwquality";
+    const char* libPamPwQuality = "libpam-pwquality";
+    const char* pamCrackLib = "pam_cracklib";
+    const char* libPamCrackLib = "libpam-cracklib";
     const char* pamPwQualitySoPath = "/lib64/security/pam_pwquality.so";
     const char* pamCrackLibSoPath = "/lib64/security/pam_cracklib.so";
     PASSWORD_CREATION_REQUIREMENTS entries[] = {{"retry", 0}, {"minlen", 0}, {"minclass", 0}, {"dcredit", 0}, {"ucredit", 0}, {"ocredit", 0}, {"lcredit", 0}};
@@ -702,13 +685,13 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     {
         if ((false == pamPwQualitySoExists) && (false == pamCrackLibSoExists))
         {
-            if (0 == InstallPamPwQualityIfNotPresent(log))
+            if (0 == InstallPamModulePackageIfNotPresent("pam_pwquality", "libpam-pwquality", log))
             {
                 pamPwQualitySoExists = (0 == CheckFileExists(pamPwQualitySoPath, NULL, log)) ? true : false;
             }
             else
             {
-                if (0 == InstallPamCrackLibIfNotPresent(log))
+                if (0 == InstallPamModulePackageIfNotPresent("pam_cracklib", "libpam-cracklib", log))
                 {
                     pamCrackLibSoExists = (0 == CheckFileExists(pamCrackLibSoPath, NULL, log)) ? true : false;
                 }
@@ -722,9 +705,10 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         }
         else
         {
-            if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
+            if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, 
+                pamPwQualitySoExists ? pamPwQuality : pamCrackLib, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
             {
-                status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, etcPamdCommonPasswordMarker, line, '#', true, log);
+                status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamPwQualitySoExists ? pamPwQuality : pamCrackLib, line, '#', true, log);
                 FREE_MEMORY(line);
             }
             else
