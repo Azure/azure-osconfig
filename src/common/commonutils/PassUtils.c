@@ -194,6 +194,34 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     return status;
 }
 
+static int InstallPamModulePackageIfNotPresent(const char* packageOne, const char* packageTwo, void* log)
+{
+    int status = 0;
+
+    if ((NULL == packageOne) && (NULL == packageTwo))
+    {
+        OsConfigLogInfo(log, "InstallPamModulePackageIfNotPresent called with invalid arguments");
+        return ENOENT;
+    }
+
+    if ((packageOne && (0 != IsPackageInstalled(packageOne, log))) && (packageTwo && (0 != IsPackageInstalled(libPamPwQuality, log))))
+    {
+        status = ((packageOne && (0 == InstallPackage(packageOne, log))) || (packageTwo && (0 == InstallPackage(packageTwo, log)))) ? 0 : ENOENT;
+    }
+
+    return status;
+}
+
+static int InstallPamPwQualityIfNotPresent(void* log)
+{
+    return InstallPamModulePackageIfNotPresent("pam_pwquality", "libpam-pwquality", log);
+}
+
+static int InstallPamCrackLibIfNotPresent(void* log)
+{
+    return InstallPamModulePackageIfNotPresent("pam_cracklib", "libpam-cracklib", log);
+}
+
 int SetLockoutForFailedPasswordAttempts(void* log)
 {
     // These configuration lines are used in the PAM (Pluggable Authentication Module) settings to count
@@ -229,13 +257,24 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     const char* pamFaillockSoPath = "/lib64/security/pam_faillock.so";
     const char* pamTally2SoPath = "/lib64/security/pam_tally2.so";
     const char* marker = "auth";
+    const char* pam = "pam";
+    const char* libPamModules = "libpam-modules";
     int status = 0, _status = 0;
     bool pamFaillockSoExists = (0 == CheckFileExists(pamFaillockSoPath, NULL, log)) ? true : false;
     bool pamTally2SoExists = (0 == CheckFileExists(pamTally2SoPath, NULL, log)) ? true : false;
 
     if ((false == pamFaillockSoExists) && (false == pamTally2SoExists))
     {
-        OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: neither 'pam_faillock.so' or 'pam_tally2.so' PAM modules exist, cannot remediate");
+        if (0 == InstallPamModulePackageIfNotPresent(libPamModules, pam, log))
+        {
+            pamFaillockSoExists = (0 == CheckFileExists(pamFaillockSoPath, NULL, log)) ? true : false;
+            pamTally2SoExists = (0 == CheckFileExists(pamTally2SoPath, NULL, log)) ? true : false;
+        }
+    }
+
+    if ((false == pamFaillockSoExists) && (false == pamTally2SoExists))
+    {
+        OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: neither 'pam_faillock.so' or 'pam_tally2.so' PAM modules are present, cannot remediate");
         return ENOENT;
     }
 
@@ -594,30 +633,12 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
 
 static int InstallPamPwQualityIfNotPresent(void* log)
 {
-    const char* pamPwQuality = "pam_pwquality";
-    const char* libPamPwQuality = "libpam-pwquality";
-    int status = 0;
-
-    if ((0 != IsPackageInstalled(pamPwQuality, log)) && (0 != IsPackageInstalled(libPamPwQuality, log)))
-    {
-        status = ((0 == InstallPackage(pamPwQuality, log)) || (0 == InstallPackage(libPamPwQuality, log))) ? 0 : ENOENT;
-    }
-
-    return status;
+    return InstallPamModulePackageIfNotPresent("pam_pwquality", "libpam-pwquality", log);
 }
 
 static int InstallPamCrackLibIfNotPresent(void* log)
 {
-    const char* pamCrackLib = "pam_cracklib";
-    const char* libPamCrackLib = "libpam-cracklib";
-    int status = 0;
-
-    if ((0 != IsPackageInstalled(pamCrackLib, log)) && (0 != IsPackageInstalled(libPamCrackLib, log)))
-    {
-        status = ((0 == InstallPackage(pamCrackLib, log)) || (0 == InstallPackage(libPamCrackLib, log))) ? 0 : ENOENT;
-    }
-
-    return status;
+    return InstallPamModulePackageIfNotPresent("pam_cracklib", "libpam-cracklib", log);
 }
 
 typedef struct PASSWORD_CREATION_REQUIREMENTS
@@ -696,7 +717,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
         if ((false == pamPwQualitySoExists) && (false == pamCrackLibSoExists))
         {
-            OsConfigLogError(log, "SetPasswordCreationRequirements: neither 'pam_pwquality.so' or 'pam_cracklib.so' is present, cannot remediate");
+            OsConfigLogError(log, "SetPasswordCreationRequirements: neither 'pam_pwquality.so' or 'pam_cracklib.so' PAM module is present, cannot remediate");
             status = ENOENT;
         }
         else
