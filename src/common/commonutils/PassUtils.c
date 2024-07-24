@@ -255,7 +255,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
     if ((false == pamFaillockSoExists) && (false == pamTally2SoExists))
     {
-        if (0 == InstallPamModulePackageIfNotPresent(libPamModules, pam, log))
+        if (0 == InstallPamModulePackageIfNotPresent(pam, libPamModules, log))
         {
             pamFaillockSoExists = (0 == CheckFileExists(pamFaillockSoPath, NULL, log)) ? true : false;
             pamTally2SoExists = (0 == CheckFileExists(pamTally2SoPath, NULL, log)) ? true : false;
