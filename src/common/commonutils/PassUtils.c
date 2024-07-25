@@ -298,6 +298,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log)
 {
     const char* pamPwQualitySo = "pam_pwquality.so";
+    const char* pamCrackLibSo = "pam_cracklib.so";
     const char* password = "password";
     const char* requisite = "requisite";
     int retryOption = 0;
@@ -349,7 +350,8 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                 status = 0;
                 continue;
             }
-            else if ((NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) && (NULL != strstr(line, pamPwQualitySo)))
+            else if ((NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) && 
+                ((NULL != strstr(line, pamPwQualitySo)) || (NULL != strstr(line, pamCrackLibSo))))
             {
                 found = true;
                 
@@ -360,13 +362,12 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                     (ocredit == (ocreditOption = GetIntegerOptionFromBuffer(line, "ocredit", '=', log))) &&
                     (lcredit == (lcreditOption = GetIntegerOptionFromBuffer(line, "lcredit", '=', log))))
                 {
-                    OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s' contains uncommented '%s %s %s' with "
+                    OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s' contains uncommented '%s %s' with "
                         "the expected password creation requirements (retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", 
-                        g_etcPamdCommonPassword, password, requisite, pamPwQualitySo, retryOption, minlenOption, 
-                        dcreditOption, ucreditOption, ocreditOption, lcreditOption);
-                    OsConfigCaptureSuccessReason(reason, "'%s' contains uncommented '%s %s %s' with the expected password creation requirements "
+                        g_etcPamdCommonPassword, password, requisite, retryOption, minlenOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                    OsConfigCaptureSuccessReason(reason, "'%s' contains uncommented '%s %s' with the expected password creation requirements "
                         "(retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", g_etcPamdCommonPassword, password, requisite,
-                        pamPwQualitySo, retryOption, minlenOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                        retryOption, minlenOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
                     status = 0;
                     break;
                 }
@@ -458,10 +459,10 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
 
     if (false == found)
     {
-        OsConfigLogError(log, "CheckRequirementsForCommonPassword: '%s' does not contain a line '%s %s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
-            g_etcPamdCommonPassword, password, requisite, pamPwQualitySo);
-        OsConfigCaptureReason(reason, "'%s' does not contain a line '%s %s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
-            g_etcPamdCommonPassword, password, requisite, pamPwQualitySo);
+        OsConfigLogError(log, "CheckRequirementsForCommonPassword: '%s' does not contain a line '%s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
+            g_etcPamdCommonPassword, password, requisite);
+        OsConfigCaptureReason(reason, "'%s' does not contain a line '%s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
+            g_etcPamdCommonPassword, password, requisite);
         status = ENOENT;
     }
 
@@ -701,12 +702,14 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         if ((false == pamPwQualitySoExists) && (false == pamCrackLibSoExists))
         {
             OsConfigLogError(log, "SetPasswordCreationRequirements: neither 'pam_pwquality.so' or 'pam_cracklib.so' PAM modules are present, remediation may not work");
+            // Set the best default
+            pamPwQualitySoExists = true;
         }
 
         if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, 
-            pamCrackLibSoExists ? pamCrackLib : pamPwQuality, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
+            pamPwQualitySoExists ? pamPwQuality : pamCrackLib, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
         {
-            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamCrackLibSoExists ? pamCrackLib : pamPwQuality, line, '#', true, log);
+            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamPwQualitySoExists ? pamPwQuality : pamCrackLib, line, '#', true, log);
             FREE_MEMORY(line);
         }
         else
