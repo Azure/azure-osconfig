@@ -504,7 +504,6 @@ static const char* g_etcSambaConf = "/etc/samba/smb.conf";
 static const char* g_etcPostfixMainCf = "/etc/postfix/main.cf";
 static const char* g_etcCronDailyLogRotate = "/etc/cron.daily/logrotate";
 static const char* g_etcSecurityLimitsConf = "/etc/security/limits.conf";
-static const char* g_etcSecurityLimitsD = "/etc/security/limits.d";
 static const char* g_sysCtlConf = "/etc/sysctl.d/99-sysctl.conf";
 
 static const char* g_home = "/home";
