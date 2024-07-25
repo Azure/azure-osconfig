@@ -269,7 +269,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     //
     // For etc/pam.d/login, /etc/pam.d/system-auth and /etc/pam.d/password-auth when pam_faillock.so exists:
     //
-    // 'auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root'
+    // 'auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root'
     //
     // For etc/pam.d/login, /etc/pam.d/system-auth and /etc/pam.d/password-auth when pam_faillock.so does not exist and pam_tally2.so exists:
     //
@@ -283,7 +283,6 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     //
     // - 'auth': specifies that the module is invoked during authentication
     // - 'required': the module is essential for authentication to proceed
-    // - '[default=die]': sets the default behavior if the module fails (e.g., due to too many failed login attempts), then the authentication process will terminate immediately
     // - 'file=/var/log/tallylog': the default log file used to keep login counts
     // - 'onerr=fail': if an error occurs (e.g., unable to open a file), return with a PAM error code
     // - 'audit': generate an audit record for this event
