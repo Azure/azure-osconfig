@@ -291,7 +291,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     // - 'deny=5': deny access if the tally (failed login attempts) for this user exceeds 5 times
     // - 'unlock_time=900': allow access after 900 seconds (15 minutes) following a failed attempt
 
-    const char* pamFailLockLineTemplate = "auth required [default=die] %s preauth silent audit deny=3 unlock_time=900 even_deny_root\n";
+    const char* pamFailLockLineTemplate = "auth required %s preauth silent audit deny=3 unlock_time=900 even_deny_root\n";
     const char* pamTally2LineTemplate = "auth required %s file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root\n";
     const char* pamTallyDenyLineTemplate = "auth required %s onerr=fail deny=3 unlock_time=900\nauth required %s\n";
     const char* pamFaillockSo = "pam_faillock.so";
