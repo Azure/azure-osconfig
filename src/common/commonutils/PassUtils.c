@@ -33,6 +33,63 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
     return status;
 }
 
+static char* FindPamModule(const char* pamModule, void* log)
+{
+    const char* paths[] = {"/usr/lib/x86_64-linux-gnu/security/%s", "/lib/security/%s", "/usr/lib/security/%s", "/lib64/security/%s"};
+    int numPaths = ARRAY_SIZE(paths);
+    char* result = NULL;
+    int status = 0, i = 0;
+
+    if (NULL == pamModule)
+    {
+        OsConfigLogError(log, "FindPamModule: invalid argument");
+        return NULL;
+    }
+
+    for (i = 0; i < numPaths; i++)
+    {
+        if (NULL != (result = FormatAllocateString(paths[i], pamModule)))
+        {
+            if (0 == (status = CheckFileExists(result, NULL, log)))
+            {
+                break;
+            }
+            else
+            {
+                FREE_MEMORY(result);
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "FindPamModule: out of memory");
+            break;
+        }
+    }
+
+    if (result)
+    {
+        OsConfigLogInfo(log, "FindPamModule: the PAM module '%s' is present on this system as '%s'", pamModule, result);
+    }
+    else
+    {
+        OsConfigLogError(log, "FindPamModule: the PAM module '%s' is not present on this system", pamModule);
+    }
+
+    return result;
+}
+
+static void EnsurePamModulePackagesAreInstalled(void* log)
+{
+    const char* pamPackages[] = {"pam", "libpam-modules", "pam_pwquality", "libpam-pwquality", "libpam-cracklib"};
+    int numPamPackages = ARRAY_SIZE(pamPackages);
+    int i = 0;
+
+    for (i = 0; i < numPamPackages; i++)
+    {
+        InstallPackage(pamPackages[i], log);
+    }
+}
+
 int SetEnsurePasswordReuseIsLimited(int remember, void* log)
 {
     // This configuration line is used in the PAM (Pluggable Authentication Module) configuration
@@ -54,31 +111,42 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     // Where 'sufficient' says that if this module succeeds other modules are not invoked. 
     // While 'required'  says that if this module fails, authentication fails.
 
-    const char* endsHereIfFailsTemplate = "password required pam_unix.so sha512 shadow %s=%d retry=3\n";
-    
+    const char* endsHereIfFailsTemplate = "password required %s sha512 shadow %s=%d retry=3\n";
+    const char* pamUnixSo = "pam_unix.so";
+    char* pamModulePath = NULL;
     char* newline = NULL;
     int status = 0, _status = 0;
 
-    if (NULL == (newline = FormatAllocateString(endsHereIfFailsTemplate, g_remember, remember)))
+    EnsurePamModulePackagesAreInstalled(log);
+
+    if (NULL == (pamModulePath = FindPamModule(pamUnixSo, log)))
     {
-        OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
-        return ENOMEM;
+        return ENOENT;
     }
 
-    if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
+    if (NULL != (newline = FormatAllocateString(endsHereIfFailsTemplate, pamModulePath, g_remember, remember)))
     {
-        status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
-    }
-
-    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
-    {
-        if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log))) && (0 == status))
+        if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
         {
-            status = _status;
+            status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
+        }
+
+        if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
+        {
+            if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log))) && (0 == status))
+            {
+                status = _status;
+            }
         }
     }
-
+    else
+    {
+        OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
+        status = ENOMEM;
+    }
+    
     FREE_MEMORY(newline);
+    FREE_MEMORY(pamModulePath);
 
     OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited(%d) complete with %d", remember, status);
 
@@ -199,21 +267,22 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     // These configuration lines are used in the PAM (Pluggable Authentication Module) settings to count
     // number of attempted accesses and lock user accounts after a specified number of failed login attempts.
     //
-    // For /etc/pam.d/login:
+    // For etc/pam.d/login, /etc/pam.d/system-auth and /etc/pam.d/password-auth when pam_faillock.so exists:
+    //
+    // 'auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root'
+    //
+    // For etc/pam.d/login, /etc/pam.d/system-auth and /etc/pam.d/password-auth when pam_faillock.so does not exist and pam_tally2.so exists:
     //
     // 'auth required pam_tally2.so file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root'
     //
-    // For /etc/pam.d/system-auth and /etc/pam.d/password-auth:
+    // Otherwise, if pam_tally.so and  pam_deny.so exist:
     //
-    // 'auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root'
+    // 'auth required pam_tally.so onerr=fail deny=3 unlock_time=900\nauth required pam_deny.so\n'
     //
     // Where:
     //
     // - 'auth': specifies that the module is invoked during authentication
     // - 'required': the module is essential for authentication to proceed
-    // - '[default=die]': sets the default behavior if the module fails (e.g., due to too many failed login attempts), then the authentication process will terminate immediately
-    // - 'pam_tally2.so': the PAM pam_tally2 module, which maintains a count of attempted accesses during the authentication process
-    // - 'pam_faillock.so': the PAM_faillock module, which maintains a list of failed authentication attempts per user
     // - 'file=/var/log/tallylog': the default log file used to keep login counts
     // - 'onerr=fail': if an error occurs (e.g., unable to open a file), return with a PAM error code
     // - 'audit': generate an audit record for this event
@@ -221,32 +290,81 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     // - 'deny=5': deny access if the tally (failed login attempts) for this user exceeds 5 times
     // - 'unlock_time=900': allow access after 900 seconds (15 minutes) following a failed attempt
 
-    const char* pamTally2Line = "auth required pam_tally2.so file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root\n";
-    const char* pamFailLockLine = "auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root\n";
-    const char* etcPamdLogin = "/etc/pam.d/login";
-    const char* etcPamdSystemAuth = "/etc/pam.d/system-auth";
-    const char* etcPamdPasswordAuth = "/etc/pam.d/password-auth";
-    const char* marker = "auth";
-    int status = 0, _status = 0;
+    const char* pamFailLockLineTemplate = "auth required %s preauth silent audit deny=3 unlock_time=900 even_deny_root\n";
+    const char* pamTally2LineTemplate = "auth required %s file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root\n";
+    const char* pamTallyDenyLineTemplate = "auth required %s onerr=fail deny=3 unlock_time=900\nauth required %s\n";
+    const char* pamFaillockSo = "pam_faillock.so";
+    const char* pamTally2So = "pam_tally2.so";
+    const char* pamTallySo = "pam_tally.so";
+    const char* pamDenySo = "pam_deny.so";
+    const char* pamConfigurations[] = {"/etc/pam.d/login", "/etc/pam.d/system-auth", "/etc/pam.d/password-auth", "/etc/pam.d/common-auth"};
+    int numPamConfigurations = ARRAY_SIZE(pamConfigurations);
+    char* pamModulePath = NULL;
+    char* pamModulePath2 = NULL;
+    char* line = NULL;
+    int i = 0, status = 0, _status = 0;
 
-    if (0 == CheckFileExists(etcPamdSystemAuth, NULL, log))
-    {
-        status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, pamFailLockLine, '#', true, log);
-    }
+    EnsurePamModulePackagesAreInstalled(log);
 
-    if (0 == CheckFileExists(etcPamdPasswordAuth, NULL, log))
+    for (i = 0; i < numPamConfigurations; i++)
     {
-        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, pamFailLockLine, '#', true, log))) && (0 == status))
+        if (0 == CheckFileExists(pamConfigurations[i], NULL, log))
         {
-            status = _status;
-        }
-    }
+            if (NULL != (pamModulePath = FindPamModule(pamFaillockSo, log)))
+            {
+                if (NULL != (line = FormatAllocateString(pamFailLockLineTemplate, pamModulePath)))
+                {
+                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamFaillockSo, line, '#', true, log);
+                    FREE_MEMORY(line);
+                }
+                else
+                {
+                    _status = ENOMEM;
+                }
+                
+                FREE_MEMORY(pamModulePath);
+            }
+            else if (NULL != (pamModulePath = FindPamModule(pamTally2So, log)))
+            {
+                if (NULL != (line = FormatAllocateString(pamTally2LineTemplate, pamModulePath)))
+                {
+                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTally2So, line, '#', true, log);
+                    FREE_MEMORY(line);
+                }
+                else
+                {
+                    _status = ENOMEM;
+                }
 
-    if (0 == CheckFileExists(etcPamdLogin, NULL, log))
-    {
-        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, pamTally2Line, '#', true, log))) && (0 == status))
-        {
-            status = _status;
+                FREE_MEMORY(pamModulePath);
+            }
+            else if ((NULL != (pamModulePath = FindPamModule(pamTallySo, log))) && 
+                (NULL != (pamModulePath2 = FindPamModule(pamDenySo, log))))
+            {
+                if (NULL != (line = FormatAllocateString(pamTallyDenyLineTemplate, pamModulePath, pamModulePath2)))
+                {
+                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTallySo, line, '#', true, log);
+                    FREE_MEMORY(line);
+                }
+                else
+                {
+                    _status = ENOMEM;
+                }
+
+                FREE_MEMORY(pamModulePath);
+                FREE_MEMORY(pamModulePath2);
+            }
+
+            if (_status && (_status != status))
+            {
+                status = _status;
+            }
+
+            if (ENOMEM == status)
+            {
+                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: out of memory");
+                break;
+            }
         }
     }
 
@@ -256,6 +374,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log)
 {
     const char* pamPwQualitySo = "pam_pwquality.so";
+    const char* pamCrackLibSo = "pam_cracklib.so";
     const char* password = "password";
     const char* requisite = "requisite";
     int retryOption = 0;
@@ -307,7 +426,8 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                 status = 0;
                 continue;
             }
-            else if ((NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) && (NULL != strstr(line, pamPwQualitySo)))
+            else if ((NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) && 
+                ((NULL != strstr(line, pamPwQualitySo)) || (NULL != strstr(line, pamCrackLibSo))))
             {
                 found = true;
                 
@@ -318,13 +438,12 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                     (ocredit == (ocreditOption = GetIntegerOptionFromBuffer(line, "ocredit", '=', log))) &&
                     (lcredit == (lcreditOption = GetIntegerOptionFromBuffer(line, "lcredit", '=', log))))
                 {
-                    OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s' contains uncommented '%s %s %s' with "
+                    OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s' contains uncommented '%s %s' with "
                         "the expected password creation requirements (retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", 
-                        g_etcPamdCommonPassword, password, requisite, pamPwQualitySo, retryOption, minlenOption, 
-                        dcreditOption, ucreditOption, ocreditOption, lcreditOption);
-                    OsConfigCaptureSuccessReason(reason, "'%s' contains uncommented '%s %s %s' with the expected password creation requirements "
+                        g_etcPamdCommonPassword, password, requisite, retryOption, minlenOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                    OsConfigCaptureSuccessReason(reason, "'%s' contains uncommented '%s %s' with the expected password creation requirements "
                         "(retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", g_etcPamdCommonPassword, password, requisite,
-                        pamPwQualitySo, retryOption, minlenOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
+                        retryOption, minlenOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
                     status = 0;
                     break;
                 }
@@ -416,10 +535,10 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
 
     if (false == found)
     {
-        OsConfigLogError(log, "CheckRequirementsForCommonPassword: '%s' does not contain a line '%s %s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
-            g_etcPamdCommonPassword, password, requisite, pamPwQualitySo);
-        OsConfigCaptureReason(reason, "'%s' does not contain a line '%s %s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
-            g_etcPamdCommonPassword, password, requisite, pamPwQualitySo);
+        OsConfigLogError(log, "CheckRequirementsForCommonPassword: '%s' does not contain a line '%s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
+            g_etcPamdCommonPassword, password, requisite);
+        OsConfigCaptureReason(reason, "'%s' does not contain a line '%s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
+            g_etcPamdCommonPassword, password, requisite);
         status = ENOENT;
     }
 
@@ -589,9 +708,13 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 {
     // These lines are used for password creation requirements configuration.
     //
-    // A single line for /etc/pam.d/common-password:
+    // A single line for /etc/pam.d/common-password when pam_pwquality.so is present:
     //
     // 'password requisite pam_pwquality.so retry=3 minlen=14 lcredit=-1 ucredit=-1 ocredit=-1 dcredit=-1'
+    //
+    //  Otherwise a single line for /etc/pam.d/common-password when pam_cracklib.so is present:
+    //
+    // 'password required pam_cracklib.so retry=3 minlen=14 dcredit=-1 ucredit=-1 ocredit=-1 lcredit=-1'
     //
     // Separate lines for /etc/security/pwquality.conf:
     //
@@ -614,31 +737,46 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     // - ocredit: the minimum number of other (non-alphanumeric) characters required in the password (negative means none)
     // - dcredit: the minimum number of digits required in the password  (negative means no requirement)
     
-    const char* etcPamdCommonPasswordLineTemplate = "password requisite pam_pwquality.so retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
+    const char* etcPamdCommonPasswordLineTemplate = "password requisite %s retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
     const char* etcSecurityPwQualityConfLineTemplate = "%s = %d\n";
-    const char* etcPamdCommonPasswordMarker = "pam_pwquality.so";
+    const char* pamPwQualitySo = "pam_pwquality.so";
+    const char* pamCrackLibSo = "pam_cracklib.so";
     PASSWORD_CREATION_REQUIREMENTS entries[] = {{"retry", 0}, {"minlen", 0}, {"minclass", 0}, {"dcredit", 0}, {"ucredit", 0}, {"ocredit", 0}, {"lcredit", 0}};
     int numEntries = ARRAY_SIZE(entries);
-    char* line = NULL;
+    bool pamPwQualitySoExists = false;
+    bool pamCrackLibSoExists = false;
+    char* pamModulePath = NULL;
+    char* pamModulePath2 = NULL;
     int i = 0, status = 0, _status = 0;
-
-    if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, minclass, lcredit, dcredit, ucredit, ocredit, NULL, log)))
-    {
-        OsConfigLogInfo(log, "SetPasswordCreationRequirements: nothing to remediate");
-        return 0;
-    }
+    char* line = NULL;
 
     if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
-        if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
+        EnsurePamModulePackagesAreInstalled(log);
+
+        pamPwQualitySoExists = (NULL != (pamModulePath = FindPamModule(pamPwQualitySo, log))) ? true : false;
+        pamCrackLibSoExists = (NULL != (pamModulePath2 = FindPamModule(pamCrackLibSo, log))) ? true : false;
+
+        if (pamPwQualitySoExists || pamCrackLibSoExists)
         {
-            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, etcPamdCommonPasswordMarker, line, '#', true, log);
-            FREE_MEMORY(line);
+            if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, pamPwQualitySoExists ? pamModulePath : pamModulePath2,
+                retry, minlen, lcredit, ucredit, ocredit, dcredit)))
+            {
+                status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamPwQualitySoExists ? pamPwQualitySo : pamCrackLibSo, line, '#', true, log);
+                FREE_MEMORY(line);
+            }
+            else
+            {
+                OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcPamdCommonPassword);
+            }
         }
         else
         {
-            OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcPamdCommonPassword);
+            status = ENOENT;
         }
+
+        FREE_MEMORY(pamModulePath);
+        FREE_MEMORY(pamModulePath2);
     }
 
     if (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log))

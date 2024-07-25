@@ -933,10 +933,18 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                     {
                         if ((commentCharacter != line[0]) && (EOL != line[0]) && (NULL != newline) && (1 < newlineLength))
                         {
-                            memset(line, 0, lineMax + 1);
-                            memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
-                            skipLine = false;
-                            replacedLine = true;
+                            if (replacedLine)
+                            {
+                                // Already replaced this line once
+                                skipLine = true;
+                            }
+                            else
+                            {
+                                memset(line, 0, lineMax + 1);
+                                memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
+                                skipLine = false;
+                                replacedLine = true;
+                            }
                         }
                         else if (commentCharacter == line[0])
                         {

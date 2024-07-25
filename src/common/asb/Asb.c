@@ -504,7 +504,7 @@ static const char* g_etcSambaConf = "/etc/samba/smb.conf";
 static const char* g_etcPostfixMainCf = "/etc/postfix/main.cf";
 static const char* g_etcCronDailyLogRotate = "/etc/cron.daily/logrotate";
 static const char* g_etcSecurityLimitsConf = "/etc/security/limits.conf";
-static const char* g_etcSecurityLimitsD = "/etc/security/limits.d";
+static const char* g_sysCtlConf = "/etc/sysctl.d/99-sysctl.conf";
 
 static const char* g_home = "/home";
 static const char* g_devShm = "/dev/shm";
@@ -580,7 +580,7 @@ static const char* g_logrotateTimer = "logrotate.timer";
 static const char* g_telnet = "telnet";
 static const char* g_rcpSocket = "rcp.socket";
 static const char* g_rshSocket = "rsh.socket";
-static const char* g_hardCoreZero = "hard core 0";
+static const char* g_hardCoreZero = "* hard core 0";
 static const char* g_fsSuidDumpable = "fs.suid_dumpable = 0";
 static const char* g_bootGrubGrubConf = "/boot/grub/grub.conf";
 static const char* g_bootGrub2GrubCfg = "/boot/grub2/grub.cfg";
@@ -1587,7 +1587,7 @@ static char* AuditEnsureCoreDumpsAreRestricted(void* log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcSecurityLimitsConf, '#', g_hardCoreZero, &reason, log));
-    CheckTextFoundInFolder(g_etcSecurityLimitsD, g_fsSuidDumpable, &reason, log);
+    CheckLineFoundNotCommentedOut(g_sysCtlConf, '#', g_fsSuidDumpable, &reason, log);
     return reason;
 }
 
@@ -1615,10 +1615,14 @@ static char* AuditEnsurePasswordCreationRequirements(void* log)
 static char* AuditEnsureLockoutForFailedPasswordAttempts(void* log)
 {
     const char* pamFailLockSo = "pam_faillock.so";
+    const char* pamTally2So = "pam_tally2.so";
     char* reason = NULL;
     RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamFailLockSo, '#', &reason, log));
     RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamFailLockSo, '#', &reason, log));
-    CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, "pam_tally2.so", '#', &reason, log);
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamFailLockSo, '#', &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamTally2So, '#', &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamTally2So, '#', &reason, log));
+    CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTally2So, '#', &reason, log);
     return reason;
 }
 
@@ -3179,13 +3183,18 @@ static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, voi
 
 static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
 {
-    const char* fileName = "/etc/security/limits.d/disable-core-dump.conf";
-    const char* hardCore = "hard core";
     int status = 0;
     UNUSED(value);
-    if ((0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, hardCore, g_hardCoreZero, '#', true, log))) && DirectoryExists(g_etcSecurityLimitsD))
+    if (0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, "hard core", g_hardCoreZero, '#', true, log)))
     {
-        status = SecureSaveToFile(fileName, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log) ? 0 : ENOENT;
+        if (false == FileExists(g_sysCtlConf))
+        {
+            status = SavePayloadToFile(g_sysCtlConf, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log) ? 0 : ENOENT;
+        }
+        else
+        {
+            status = ReplaceMarkedLinesInFile(g_sysCtlConf, "fs.suid_dumpable", g_fsSuidDumpable, '#', true, log);
+        }
     }
     return status;
 }

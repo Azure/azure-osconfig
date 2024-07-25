@@ -2053,21 +2053,16 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
     const char* outFile1 =
         "ABC 123\n"
         "#   Test line two   \n"
-        "ABC 123\n"
         "Test KLine 4\n"
         "abc Test4 0456 # rt 4 $"
         "Test2:     12 $!    test test\n"
-        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
-        "ABC 123\n";
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n";
 
     const char* marker2 = "Test";
     const char* newline2 = "456 DEF\n";
     const char* outFile2 =
         "456 DEF\n"
         "#   Test line two   \n"
-        "456 DEF\n"
-        "456 DEF\n"
-        "456 DEF\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
         "+password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
 
