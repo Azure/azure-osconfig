@@ -123,7 +123,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     {
         return ENOENT;
     }
-    
+
     if (NULL != (newline = FormatAllocateString(endsHereIfFailsTemplate, pamModulePath, g_remember, remember)))
     {
         if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
