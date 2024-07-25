@@ -38,7 +38,7 @@ static char* FindPamModule(const char* pamModule, void* log)
     const char* paths[] = {"/usr/lib/x86_64-linux-gnu/security/%s", "/lib/security/%s", "/usr/lib/security/%s", "/lib64/security/%s"};
     int numPaths = ARRAY_SIZE(paths);
     char* result = NULL;
-    int status = 0;
+    int status = 0, i = 0;
 
     if (NULL == pamModule)
     {
@@ -300,7 +300,9 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     const char* pamDenySo = "pam_deny.so";
     const char* pamConfigurations[] = {"/etc/pam.d/login", "/etc/pam.d/system-auth", "/etc/pam.d/password-auth", "/etc/pam.d/common-auth"};
     int numPamConfigurations = ARRAY_SIZE(pamConfigurations);
-    char* pamModulePath = NULL, pamModulePath2 = NULL, line = NULL;
+    char* pamModulePath = NULL;
+    char* pamModulePath2 = NULL;
+    char* line = NULL;
     int i = 0, status = 0, _status = 0;
 
     EnsurePamModulePackagesAreInstalled(log);
