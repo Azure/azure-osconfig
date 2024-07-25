@@ -52,6 +52,7 @@ static int IsPamModulePresent(const char* pamModule, void* log)
         {
             if (0 == CheckFileExists(pamPath, NULL, log))
             {
+                status = 0;
                 break;
             }
             else
