@@ -3186,7 +3186,7 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
 {
     int status = 0;
     UNUSED(value);
-    if (0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, "hard core", g_hardCoreZero, '#', true, log))
+    if (0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, "hard core", g_hardCoreZero, '#', true, log)))
     {
         if (false == FileExists(g_sysCtlConf))
         {
