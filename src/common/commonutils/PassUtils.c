@@ -320,7 +320,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
             {
                 _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTally2So, pamTally2Line, '#', true, log);
             }
-            else if (pamTallySoExists && pamDenyExists)
+            else if (pamTallySoExists && pamDenySoExists)
             {
                 _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTallySo, pamTallyDenyLine, '#', true, log);
             }
