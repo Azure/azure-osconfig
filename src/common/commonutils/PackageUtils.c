@@ -57,10 +57,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
         return ENOMEM;
     }
 
-    if (0 != (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-    {
-        OsConfigLogError(log, "'%s' failed with %d (errno: %d)", command, status, errno);
-    }
+    status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
 
     FREE_MEMORY(command);
 
@@ -101,7 +98,7 @@ int IsPackageInstalled(const char* packageName, void* log)
     }
     else
     {
-        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is not found (%d)", packageName, status);
+        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is not found (%d, errno: %d)", packageName, status, errno);
     }
 
     return status;
@@ -191,7 +188,7 @@ int InstallOrUpdatePackage(const char* packageName, void* log)
     }
     else
     {
-        OsConfigLogError(log, "InstallOrUpdatePackage: installation or update of package '%s' failed with %d", packageName, status);
+        OsConfigLogError(log, "InstallOrUpdatePackage: installation or update of package '%s' failed with %d (errno: %d)", packageName, status, errno);
     }
 
     return status;
@@ -254,7 +251,7 @@ int UninstallPackage(const char* packageName, void* log)
         }
         else
         {
-            OsConfigLogError(log, "UninstallPackage: uninstallation of package '%s' failed with %d", packageName, status);
+            OsConfigLogError(log, "UninstallPackage: uninstallation of package '%s' failed with %d (errno: %d)", packageName, status, errno);
         }
     }
     else if (EINVAL != status)
