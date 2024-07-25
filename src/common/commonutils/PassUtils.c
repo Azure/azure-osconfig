@@ -700,15 +700,14 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
         if ((false == pamPwQualitySoExists) && (false == pamCrackLibSoExists))
         {
-            OsConfigLogError(log, "SetPasswordCreationRequirements: neither 'pam_pwquality.so' or 'pam_cracklib.so' PAM module is present, cannot remediate");
-            status = ENOENT;
+            OsConfigLogError(log, "SetPasswordCreationRequirements: neither 'pam_pwquality.so' or 'pam_cracklib.so' PAM module is present, remediation may not work");
         }
         else
         {
             if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, 
-                pamPwQualitySoExists ? pamPwQuality : pamCrackLib, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
+                pamCrackLibSoExists ? pamCrackLib : pamPwQuality, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
             {
-                status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamPwQualitySoExists ? pamPwQuality : pamCrackLib, line, '#', true, log);
+                status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamCrackLibSoExists ? pamCrackLib : pamPwQuality, line, '#', true, log);
                 FREE_MEMORY(line);
             }
             else
