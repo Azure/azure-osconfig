@@ -33,6 +33,61 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
     return status;
 }
 
+static int IsPamModulePresent(const char* pamModule, void* log)
+{
+    const char* paths[] = { "/lib/security/%s", "/usr/lib/security/%s", "/lib64/security/%s" };
+    int numPaths = ARRAY_SIZE(paths);
+    char* pamPath = NULL;
+    int i = 0, status = 0;
+
+    if (NULL == pamModule)
+    {
+        OsConfigLogError(log, "IsPamModulePresent: invalid argument");
+        return EINVAL;
+    }
+
+    for (i = 0; i < numPaths; i++)
+    {
+        if (NULL != (pamPath = FormatAllocateString(paths[i], pamModule)))
+        {
+            if (0 == CheckFileExists(pamPath, NULL, log))
+            {
+                break;
+            }
+            else
+            {
+                status = ENOENT;
+                continue;
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "IsPamModulePresent: out of memory");
+            status = EINVAL;
+            break;
+        }
+    }
+
+    if (0 != status)
+    {
+        OsConfigLogError(log, "IsPamModulePresent: the PAM module '%s' is not present on this system", pamModule);
+    }
+
+    return status;
+}
+
+static void EnsurePamModulePackagesAreInstalled(void* log)
+{
+    const char* pamPackages[] = {"pam", "libpam-modules", "pam_pwquality", "libpam-cracklib"};
+    int numPamPackages = ARRAY_SIZE(pamPackages);
+    int i = 0;
+
+    for (i = 0; i < numPamPackages; i++)
+    {
+        InstallPackage(pamPackages[i], log);
+    }
+}
+
 int SetEnsurePasswordReuseIsLimited(int remember, void* log)
 {
     // This configuration line is used in the PAM (Pluggable Authentication Module) configuration
@@ -54,12 +109,19 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     // Where 'sufficient' says that if this module succeeds other modules are not invoked. 
     // While 'required'  says that if this module fails, authentication fails.
 
-    const char* endsHereIfFailsTemplate = "password required pam_unix.so sha512 shadow %s=%d retry=3\n";
+    const char* endsHereIfFailsTemplate = "password required %s sha512 shadow %s=%d retry=3\n";
+    const char* pamUnixSo = "pam_unix.so";
     
     char* newline = NULL;
     int status = 0, _status = 0;
 
-    if (NULL == (newline = FormatAllocateString(endsHereIfFailsTemplate, g_remember, remember)))
+    EnsurePamModulePackagesAreInstalled(log);
+
+    if (0 != status = IsPamModulePresent(pamUnixSo, log))
+    {
+        return ENOENT;
+    }
+    else if (NULL == (newline = FormatAllocateString(endsHereIfFailsTemplate, pamUnixSo, g_remember, remember)))
     {
         OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
         return ENOMEM;
@@ -194,24 +256,6 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     return status;
 }
 
-static int InstallPamModulePackageIfNotPresent(const char* packageOne, const char* packageTwo, void* log)
-{
-    int status = 0;
-
-    if ((NULL == packageOne) && (NULL == packageTwo))
-    {
-        OsConfigLogInfo(log, "InstallPamModulePackageIfNotPresent called with invalid arguments");
-        return ENOENT;
-    }
-
-    if ((packageOne && (0 != IsPackageInstalled(packageOne, log))) && (packageTwo && (0 != IsPackageInstalled(packageTwo, log))))
-    {
-        status = ((packageOne && (0 == InstallPackage(packageOne, log))) || (packageTwo && (0 == InstallPackage(packageTwo, log)))) ? 0 : ENOENT;
-    }
-
-    return status;
-}
-
 int SetLockoutForFailedPasswordAttempts(void* log)
 {
     // These configuration lines are used in the PAM (Pluggable Authentication Module) settings to count
@@ -244,39 +288,32 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     const char* etcPamdLogin = "/etc/pam.d/login";
     const char* etcPamdSystemAuth = "/etc/pam.d/system-auth";
     const char* etcPamdPasswordAuth = "/etc/pam.d/password-auth";
-    const char* pamFaillockSoPath = "/lib64/security/pam_faillock.so";
-    const char* pamTally2SoPath = "/lib64/security/pam_tally2.so";
-    const char* marker = "auth";
-    const char* pam = "pam";
-    const char* libPamModules = "libpam-modules";
+    const char* pamFaillockSo = "pam_faillock.so";
+    const char* pamTally2So = "pam_tally2.so";
     int status = 0, _status = 0;
-    bool pamFaillockSoExists = (0 == CheckFileExists(pamFaillockSoPath, NULL, log)) ? true : false;
-    bool pamTally2SoExists = (0 == CheckFileExists(pamTally2SoPath, NULL, log)) ? true : false;
+    bool pamFaillockSoExists = false;
+    bool pamTally2SoExists = false;
+
+    EnsurePamModulePackagesAreInstalled(log);
+
+    pamFaillockSoExists = (0 == IsPamModulePresent(pamFaillockSo, log)) ? true : false;
+    pamTally2SoExists = (0 == IsPamModulePresent(pamTally2So, log)) ? true : false;
 
     if ((false == pamFaillockSoExists) && (false == pamTally2SoExists))
     {
-        if (0 == InstallPamModulePackageIfNotPresent(libPamModules, pam, log))
-        {
-            pamFaillockSoExists = (0 == CheckFileExists(pamFaillockSoPath, NULL, log)) ? true : false;
-            pamTally2SoExists = (0 == CheckFileExists(pamTally2SoPath, NULL, log)) ? true : false;
-        }
-    }
-
-    if ((false == pamFaillockSoExists) && (false == pamTally2SoExists))
-    {
-        OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: neither 'pam_faillock.so' or 'pam_tally2.so' PAM modules are present, lockout for failed password attempts may not work");
-        // Do not fail, this is a normal limitation for some distributions such as Ubuntu 22.04, just consider best default (pam_faillock.so)
-        pamFaillockSoExists = true;
+        return ENOENT;
     }
 
     if (0 == CheckFileExists(etcPamdSystemAuth, NULL, log))
     {
-        status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, pamFaillockSoExists ? pamFailLockLine : pamTally2Line, '#', true, log);
+        status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, pamFaillockSoExists ? pamFailLockSo : pamTally2So, 
+            pamFaillockSoExists ? pamFailLockLine : pamTally2Line, '#', true, log);
     }
 
     if (0 == CheckFileExists(etcPamdPasswordAuth, NULL, log))
     {
-        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, pamFaillockSoExists ? pamFailLockLine : pamTally2Line, '#', true, log))) && (0 == status))
+        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, pamFaillockSoExists ? pamFailLockSo : pamTally2So, 
+            pamFaillockSoExists ? pamFailLockLine : pamTally2Line, '#', true, log))) && (0 == status))
         {
             status = _status;
         }
@@ -284,7 +321,8 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
     if (0 == CheckFileExists(etcPamdLogin, NULL, log))
     {
-        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, pamFaillockSoExists ? pamFailLockLine : pamTally2Line, '#', true, log))) && (0 == status))
+        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdLogin, pamFaillockSoExists ? pamFailLockSo : pamTally2So, 
+            pamFaillockSoExists ? pamFailLockLine : pamTally2Line, '#', true, log))) && (0 == status))
         {
             status = _status;
         }
@@ -659,20 +697,16 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     // - ocredit: the minimum number of other (non-alphanumeric) characters required in the password (negative means none)
     // - dcredit: the minimum number of digits required in the password  (negative means no requirement)
     
-    const char* etcPamdCommonPasswordLineTemplate = "password requisite %s.so retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
+    const char* etcPamdCommonPasswordLineTemplate = "password requisite %s retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
     const char* etcSecurityPwQualityConfLineTemplate = "%s = %d\n";
-    const char* pamPwQuality = "pam_pwquality";
-    const char* libPamPwQuality = "libpam-pwquality";
-    const char* pamCrackLib = "pam_cracklib";
-    const char* libPamCrackLib = "libpam-cracklib";
-    const char* pamPwQualitySoPath = "/lib64/security/pam_pwquality.so";
-    const char* pamCrackLibSoPath = "/lib64/security/pam_cracklib.so";
+    const char* pamPwQualitySo = "pam_pwquality.so";
+    const char* pamCrackLibSo = "pam_cracklib.so";
     PASSWORD_CREATION_REQUIREMENTS entries[] = {{"retry", 0}, {"minlen", 0}, {"minclass", 0}, {"dcredit", 0}, {"ucredit", 0}, {"ocredit", 0}, {"lcredit", 0}};
     int numEntries = ARRAY_SIZE(entries);
-    char* line = NULL;
+    bool pamPwQualitySoExists = false;
+    bool pamCrackLibSoExists = false;
     int i = 0, status = 0, _status = 0;
-    bool pamPwQualitySoExists = (0 == CheckFileExists(pamPwQualitySoPath, NULL, log)) ? true : false;
-    bool pamCrackLibSoExists = (0 == CheckFileExists(pamCrackLibSoPath, NULL, log)) ? true : false;
+    char* line = NULL;
 
     if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, minclass, lcredit, dcredit, ucredit, ocredit, NULL, log)))
     {
@@ -682,37 +716,28 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
     if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
-        if ((false == pamPwQualitySoExists) && (false == pamCrackLibSoExists))
-        {
-            if (0 == InstallPamModulePackageIfNotPresent(pamPwQuality, libPamPwQuality, log))
-            {
-                pamPwQualitySoExists = (0 == CheckFileExists(pamPwQualitySoPath, NULL, log)) ? true : false;
-            }
-            else
-            {
-                if (0 == InstallPamModulePackageIfNotPresent(pamCrackLib, libPamCrackLib, log))
-                {
-                    pamCrackLibSoExists = (0 == CheckFileExists(pamCrackLibSoPath, NULL, log)) ? true : false;
-                }
-            }
-        }
+        EnsurePamModulePackagesAreInstalled(log);
+
+        pamPwQualitySoExists = (0 == IsPamModulePresent(pamPwQualitySo, log)) ? true : false;
+        pamCrackLibSoExists = (0 == IsPamModulePresent(pamCrackLibSo, log)) ? true : false;
 
         if ((false == pamPwQualitySoExists) && (false == pamCrackLibSoExists))
         {
             OsConfigLogError(log, "SetPasswordCreationRequirements: neither 'pam_pwquality.so' or 'pam_cracklib.so' PAM modules are present, remediation may not work");
-            // Set the best default
-            pamPwQualitySoExists = true;
-        }
-
-        if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, 
-            pamPwQualitySoExists ? pamPwQuality : pamCrackLib, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
-        {
-            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamPwQualitySoExists ? pamPwQuality : pamCrackLib, line, '#', true, log);
-            FREE_MEMORY(line);
+            status = ENOENT;
         }
         else
         {
-            OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcPamdCommonPassword);
+            if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, pamPwQualitySoExists ? pamPwQualitySo : pamCrackLibSo, 
+                retry, minlen, lcredit, ucredit, ocredit, dcredit)))
+            {
+                status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamPwQualitySoExists ? pamPwQualitySo : pamCrackLibSo, line, '#', true, log);
+                FREE_MEMORY(line);
+            }
+            else
+            {
+                OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcPamdCommonPassword);
+            }
         }
     }
 
