@@ -111,13 +111,12 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
 
     const char* endsHereIfFailsTemplate = "password required %s sha512 shadow %s=%d retry=3\n";
     const char* pamUnixSo = "pam_unix.so";
-    
     char* newline = NULL;
     int status = 0, _status = 0;
 
     EnsurePamModulePackagesAreInstalled(log);
 
-    if (0 != status = IsPamModulePresent(pamUnixSo, log))
+    if (0 != IsPamModulePresent(pamUnixSo, log))
     {
         return ENOENT;
     }
