@@ -38,11 +38,12 @@ static char* FindPamModule(const char* pamModule, void* log)
     const char* paths[] = {"/usr/lib/x86_64-linux-gnu/security/%s", "/lib/security/%s", "/usr/lib/security/%s", "/lib64/security/%s"};
     int numPaths = ARRAY_SIZE(paths);
     char* result = NULL;
+    int status = 0;
 
     if (NULL == pamModule)
     {
         OsConfigLogError(log, "FindPamModule: invalid argument");
-        return EINVAL;
+        return NULL;
     }
 
     for (i = 0; i < numPaths; i++)
@@ -61,7 +62,6 @@ static char* FindPamModule(const char* pamModule, void* log)
         else
         {
             OsConfigLogError(log, "FindPamModule: out of memory");
-            status = EINVAL;
             break;
         }
     }
