@@ -265,19 +265,18 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     if ((false == pamFaillockSoExists) && (false == pamTally2SoExists))
     {
         OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: neither 'pam_faillock.so' or 'pam_tally2.so' PAM modules are present, lockout for failed password attempts may not work");
-        // Do not fail, this is a normal limitation for some distributions such as Ubuntu 22.04
+        // Do not fail, this is a normal limitation for some distributions such as Ubuntu 22.04, just consider best default (pam_faillock.so)
+        pamFaillockSoExists = true;
     }
 
     if (0 == CheckFileExists(etcPamdSystemAuth, NULL, log))
     {
-        status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, 
-            pamFaillockSoExists ? pamFailLockLine : pamTally2Line, '#', true, log);
+        status = ReplaceMarkedLinesInFile(etcPamdSystemAuth, marker, pamFaillockSoExists ? pamFailLockLine : pamTally2Line, '#', true, log);
     }
 
     if (0 == CheckFileExists(etcPamdPasswordAuth, NULL, log))
     {
-        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, 
-            pamFaillockSoExists ? pamFailLockLine : pamTally2Line, '#', true, log))) && (0 == status))
+        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdPasswordAuth, marker, pamFaillockSoExists ? pamFailLockLine : pamTally2Line, '#', true, log))) && (0 == status))
         {
             status = _status;
         }
@@ -285,8 +284,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
     if (0 == CheckFileExists(etcPamdLogin, NULL, log))
     {
-        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, 
-            pamFaillockSoExists ? pamFailLockLine : pamTally2Line, '#', true, log))) && (0 == status))
+        if ((0 != (_status = ReplaceMarkedLinesInFile(etcPamdLogin, marker, pamFaillockSoExists ? pamFailLockLine : pamTally2Line, '#', true, log))) && (0 == status))
         {
             status = _status;
         }
