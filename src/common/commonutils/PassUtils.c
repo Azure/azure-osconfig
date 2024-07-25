@@ -264,9 +264,8 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
     if ((false == pamFaillockSoExists) && (false == pamTally2SoExists))
     {
-        OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: neither 'pam_faillock.so' or 'pam_tally2.so' PAM modules are present, cannot set lockout for failed password attempts");
+        OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: neither 'pam_faillock.so' or 'pam_tally2.so' PAM modules are present, lockout for failed password attempts may not work");
         // Do not fail, this is a normal limitation for some distributions such as Ubuntu 22.04
-        return 0;
     }
 
     if (0 == CheckFileExists(etcPamdSystemAuth, NULL, log))
