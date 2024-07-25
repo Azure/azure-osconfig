@@ -700,20 +700,18 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
         if ((false == pamPwQualitySoExists) && (false == pamCrackLibSoExists))
         {
-            OsConfigLogError(log, "SetPasswordCreationRequirements: neither 'pam_pwquality.so' or 'pam_cracklib.so' PAM module is present, remediation may not work");
+            OsConfigLogError(log, "SetPasswordCreationRequirements: neither 'pam_pwquality.so' or 'pam_cracklib.so' PAM modules are present, remediation may not work");
+        }
+
+        if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, 
+            pamCrackLibSoExists ? pamCrackLib : pamPwQuality, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
+        {
+            status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamCrackLibSoExists ? pamCrackLib : pamPwQuality, line, '#', true, log);
+            FREE_MEMORY(line);
         }
         else
         {
-            if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, 
-                pamCrackLibSoExists ? pamCrackLib : pamPwQuality, retry, minlen, lcredit, ucredit, ocredit, dcredit)))
-            {
-                status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamCrackLibSoExists ? pamCrackLib : pamPwQuality, line, '#', true, log);
-                FREE_MEMORY(line);
-            }
-            else
-            {
-                OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcPamdCommonPassword);
-            }
+            OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcPamdCommonPassword);
         }
     }
 
