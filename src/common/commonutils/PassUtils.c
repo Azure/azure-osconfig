@@ -746,6 +746,8 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     int numEntries = ARRAY_SIZE(entries);
     bool pamPwQualitySoExists = false;
     bool pamCrackLibSoExists = false;
+    char* pamModulePath = NULL;
+    char* pamModulePath2 = NULL;
     int i = 0, status = 0, _status = 0;
     char* line = NULL;
 
@@ -759,12 +761,12 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     {
         EnsurePamModulePackagesAreInstalled(log);
 
-        pamPwQualitySoExists = (0 == FindPamModule(pamPwQualitySo, log)) ? true : false;
-        pamCrackLibSoExists = (0 == FindPamModule(pamCrackLibSo, log)) ? true : false;
+        pamPwQualitySoExists = (NULL != (pathModulePath = FindPamModule(pamPwQualitySo, log))) ? true : false;
+        pamCrackLibSoExists = (NULL != (pathModulePath2 = FindPamModule(pamCrackLibSo, log))) ? true : false;
 
         if (pamPwQualitySoExists || pamCrackLibSoExists)
         {
-            if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, pamPwQualitySoExists ? pamPwQualitySo : pamCrackLibSo, 
+            if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, pamPwQualitySoExists ? pamModulePath : pamModulePath2,
                 retry, minlen, lcredit, ucredit, ocredit, dcredit)))
             {
                 status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamPwQualitySoExists ? pamPwQualitySo : pamCrackLibSo, line, '#', true, log);
@@ -779,6 +781,9 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         {
             status = ENOENT;
         }
+
+        FREE_MEMORY(pamModulePath);
+        FREE_MEMORY(pamModulePath2);
     }
 
     if (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log))
