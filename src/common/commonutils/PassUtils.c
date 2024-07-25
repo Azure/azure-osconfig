@@ -33,44 +33,49 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
     return status;
 }
 
-static int IsPamModulePresent(const char* pamModule, void* log)
+static char* FindPamModule(const char* pamModule, void* log)
 {
     const char* paths[] = {"/usr/lib/x86_64-linux-gnu/security/%s", "/lib/security/%s", "/usr/lib/security/%s", "/lib64/security/%s"};
     int numPaths = ARRAY_SIZE(paths);
-    char* pamPath = NULL;
-    int i = 0, status = 0;
+    char* result = NULL;
 
     if (NULL == pamModule)
     {
-        OsConfigLogError(log, "IsPamModulePresent: invalid argument");
+        OsConfigLogError(log, "FindPamModule: invalid argument");
         return EINVAL;
     }
 
     for (i = 0; i < numPaths; i++)
     {
-        if (NULL != (pamPath = FormatAllocateString(paths[i], pamModule)))
+        if (NULL != (result = FormatAllocateString(paths[i], pamModule)))
         {
-            status = CheckFileExists(pamPath, NULL, log);
-            FREE_MEMORY(pamPath);
-            if (0 == status)
+            if (0 == (status = CheckFileExists(result, NULL, log)))
             {
                 break;
+            }
+            else
+            {
+                FREE_MEMORY(result);
             }
         }
         else
         {
-            OsConfigLogError(log, "IsPamModulePresent: out of memory");
+            OsConfigLogError(log, "FindPamModule: out of memory");
             status = EINVAL;
             break;
         }
     }
 
-    if (0 != status)
+    if (result)
     {
-        OsConfigLogError(log, "IsPamModulePresent: the PAM module '%s' is not present on this system", pamModule);
+        OsConfigLogInfo(log, "FindPamModule: the PAM module '%s' is present on this system as '%s'", pamModule, result);
+    }
+    else
+    {
+        OsConfigLogError(log, "FindPamModule: the PAM module '%s' is not present on this system", pamModule);
     }
 
-    return status;
+    return result;
 }
 
 static void EnsurePamModulePackagesAreInstalled(void* log)
@@ -108,35 +113,40 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
 
     const char* endsHereIfFailsTemplate = "password required %s sha512 shadow %s=%d retry=3\n";
     const char* pamUnixSo = "pam_unix.so";
+    char* pamModulePath = NULL;
     char* newline = NULL;
     int status = 0, _status = 0;
 
     EnsurePamModulePackagesAreInstalled(log);
 
-    if (0 != IsPamModulePresent(pamUnixSo, log))
+    if (NULL == (pamModulePath = FindPamModule(pamUnixSo, log)))
     {
         return ENOENT;
     }
-    else if (NULL == (newline = FormatAllocateString(endsHereIfFailsTemplate, pamUnixSo, g_remember, remember)))
+    
+    if (NULL != (newline = FormatAllocateString(endsHereIfFailsTemplate, pamModulePath, g_remember, remember)))
     {
-        OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
-        return ENOMEM;
-    }
-
-    if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
-    {
-        status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
-    }
-
-    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
-    {
-        if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log))) && (0 == status))
+        if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
         {
-            status = _status;
+            status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
+        }
+
+        if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
+        {
+            if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log))) && (0 == status))
+            {
+                status = _status;
+            }
         }
     }
-
+    else
+    {
+        OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
+        status = ENOMEM;
+    }
+    
     FREE_MEMORY(newline);
+    FREE_MEMORY(pamModulePath);
 
     OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited(%d) complete with %d", remember, status);
 
@@ -281,15 +291,16 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     // - 'deny=5': deny access if the tally (failed login attempts) for this user exceeds 5 times
     // - 'unlock_time=900': allow access after 900 seconds (15 minutes) following a failed attempt
 
-    const char* pamFailLockLine = "auth required [default=die] pam_faillock.so preauth silent audit deny=3 unlock_time=900 even_deny_root\n";
-    const char* pamTally2Line = "auth required pam_tally2.so file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root\n";
-    const char* pamTallyDenyLine = "auth required pam_tally.so onerr=fail deny=3 unlock_time=900\nauth required pam_deny.so\n";
+    const char* pamFailLockLineTemplate = "auth required [default=die] %s preauth silent audit deny=3 unlock_time=900 even_deny_root\n";
+    const char* pamTally2LineTemplate = "auth required %s file=/var/log/tallylog onerr=fail audit silent deny=5 unlock_time=900 even_deny_root\n";
+    const char* pamTallyDenyLineTemplate = "auth required %s onerr=fail deny=3 unlock_time=900\nauth required %s\n";
     const char* pamFaillockSo = "pam_faillock.so";
     const char* pamTally2So = "pam_tally2.so";
     const char* pamTallySo = "pam_tally.so";
     const char* pamDenySo = "pam_deny.so";
     const char* pamConfigurations[] = {"/etc/pam.d/login", "/etc/pam.d/system-auth", "/etc/pam.d/password-auth", "/etc/pam.d/common-auth"};
     int numPamConfigurations = ARRAY_SIZE(pamConfigurations);
+    char* pamModulePath = NULL, pamModulePath2 = NULL, line = NULL;
     int i = 0, status = 0, _status = 0;
 
     EnsurePamModulePackagesAreInstalled(log);
@@ -298,22 +309,60 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     {
         if (0 == CheckFileExists(pamConfigurations[i], NULL, log))
         {
-            if (0 == IsPamModulePresent(pamFaillockSo, log))
+            if (NULL != (pamModulePath = FindPamModule(pamFaillockSo, log)))
             {
-                _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamFaillockSo, pamFailLockLine, '#', true, log);
+                if (NULL != (line = FormatAllocateString(pamFailLockLineTemplate, pamModulePath)))
+                {
+                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamFaillockSo, line, '#', true, log);
+                    FREE_MEMORY(line);
+                }
+                else
+                {
+                    _status = ENOMEM;
+                }
+                
+                FREE_MEMORY(pamModulePath);
             }
-            else if (0 == IsPamModulePresent(pamTally2So, log))
+            else if (NULL != (pamModulePath = FindPamModule(pamTally2So, log)))
             {
-                _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTally2So, pamTally2Line, '#', true, log);
+                if (NULL != (line = FormatAllocateString(pamTally2LineTemplate, pamModulePath)))
+                {
+                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTally2So, line, '#', true, log);
+                    FREE_MEMORY(line);
+                }
+                else
+                {
+                    _status = ENOMEM;
+                }
+
+                FREE_MEMORY(pamModulePath);
             }
-            else if ((0 == IsPamModulePresent(pamTallySo, log)) && (0 == IsPamModulePresent(pamDenySo, log)))
+            else if ((NULL != (pamModulePath = FindPamModule(pamTallySo, log))) && 
+                (NULL != (pamModulePath2 = FindPamModule(pamDenySo, log))))
             {
-                _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTallySo, pamTallyDenyLine, '#', true, log);
+                if (NULL != (line = FormatAllocateString(pamTallyDenyLineTemplate, pamModulePath, pamModulePath2)))
+                {
+                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTallySo, line, '#', true, log);
+                    FREE_MEMORY(line);
+                }
+                else
+                {
+                    _status = ENOMEM;
+                }
+
+                FREE_MEMORY(pamModulePath);
+                FREE_MEMORY(pamModulePath2);
             }
 
-            if (_status && (0 == status))
+            if (_status && (_status != status))
             {
                 status = _status;
+            }
+
+            if (ENOMEM == status)
+            {
+                OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: out of memory");
+                break;
             }
         }
     }
@@ -708,8 +757,8 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     {
         EnsurePamModulePackagesAreInstalled(log);
 
-        pamPwQualitySoExists = (0 == IsPamModulePresent(pamPwQualitySo, log)) ? true : false;
-        pamCrackLibSoExists = (0 == IsPamModulePresent(pamCrackLibSo, log)) ? true : false;
+        pamPwQualitySoExists = (0 == FindPamModule(pamPwQualitySo, log)) ? true : false;
+        pamCrackLibSoExists = (0 == FindPamModule(pamCrackLibSo, log)) ? true : false;
 
         if (pamPwQualitySoExists || pamCrackLibSoExists)
         {
