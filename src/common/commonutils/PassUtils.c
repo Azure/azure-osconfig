@@ -761,8 +761,8 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     {
         EnsurePamModulePackagesAreInstalled(log);
 
-        pamPwQualitySoExists = (NULL != (pathModulePath = FindPamModule(pamPwQualitySo, log))) ? true : false;
-        pamCrackLibSoExists = (NULL != (pathModulePath2 = FindPamModule(pamCrackLibSo, log))) ? true : false;
+        pamPwQualitySoExists = (NULL != (pamModulePath = FindPamModule(pamPwQualitySo, log))) ? true : false;
+        pamCrackLibSoExists = (NULL != (pamModulePath2 = FindPamModule(pamCrackLibSo, log))) ? true : false;
 
         if (pamPwQualitySoExists || pamCrackLibSoExists)
         {
