@@ -3189,7 +3189,7 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
     {
         if (false == FileExists(g_sysCtlConf))
         {
-            status = SecureSaveToFile(g_sysCtlConf, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log);
+            status = SavePayloadToFile(g_sysCtlConf, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log) ? 0 : ENOENT;
         }
         else
         {
