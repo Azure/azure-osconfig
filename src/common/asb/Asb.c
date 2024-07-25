@@ -505,6 +505,7 @@ static const char* g_etcPostfixMainCf = "/etc/postfix/main.cf";
 static const char* g_etcCronDailyLogRotate = "/etc/cron.daily/logrotate";
 static const char* g_etcSecurityLimitsConf = "/etc/security/limits.conf";
 static const char* g_etcSecurityLimitsD = "/etc/security/limits.d";
+static const char* g_sysCtlConf = "/etc/sysctl.d/99-sysctl.conf";
 
 static const char* g_home = "/home";
 static const char* g_devShm = "/dev/shm";
@@ -1587,7 +1588,7 @@ static char* AuditEnsureCoreDumpsAreRestricted(void* log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcSecurityLimitsConf, '#', g_hardCoreZero, &reason, log));
-    CheckTextFoundInFolder(g_etcSecurityLimitsD, g_fsSuidDumpable, &reason, log);
+    CheckLineFoundNotCommentedOut(g_sysCtlConf, '#', g_fsSuidDumpable, &reason, log)
     return reason;
 }
 
@@ -3183,13 +3184,18 @@ static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, voi
 
 static int RemediateEnsureCoreDumpsAreRestricted(char* value, void* log)
 {
-    const char* fileName = "/etc/security/limits.d/disable-core-dump.conf";
-    const char* hardCore = "hard core";
     int status = 0;
     UNUSED(value);
-    if ((0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, hardCore, g_hardCoreZero, '#', true, log))) && DirectoryExists(g_etcSecurityLimitsD))
+    if (0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, "hard core", g_hardCoreZero, '#', true, log))
     {
-        status = SecureSaveToFile(fileName, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log) ? 0 : ENOENT;
+        if (false == FileExists(g_sysCtlConf))
+        {
+            status = SecureSaveToFile(g_sysCtlConf, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log);
+        }
+        else
+        {
+            status = ReplaceMarkedLinesInFile(g_sysCtlConf, "fs.suid_dumpable", g_fsSuidDumpable, '#', true, log);
+        }
     }
     return status;
 }
