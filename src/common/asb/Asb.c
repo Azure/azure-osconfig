@@ -1588,7 +1588,7 @@ static char* AuditEnsureCoreDumpsAreRestricted(void* log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcSecurityLimitsConf, '#', g_hardCoreZero, &reason, log));
-    CheckLineFoundNotCommentedOut(g_sysCtlConf, '#', g_fsSuidDumpable, &reason, log)
+    CheckLineFoundNotCommentedOut(g_sysCtlConf, '#', g_fsSuidDumpable, &reason, log);
     return reason;
 }
 
