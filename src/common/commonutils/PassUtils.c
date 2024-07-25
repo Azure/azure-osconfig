@@ -751,11 +751,11 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     int i = 0, status = 0, _status = 0;
     char* line = NULL;
 
-    if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, minclass, lcredit, dcredit, ucredit, ocredit, NULL, log)))
+    /*if (0 == (status = CheckPasswordCreationRequirements(retry, minlen, minclass, lcredit, dcredit, ucredit, ocredit, NULL, log)))
     {
         OsConfigLogInfo(log, "SetPasswordCreationRequirements: nothing to remediate");
         return 0;
-    }
+    }*/
 
     if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
