@@ -9,45 +9,14 @@ static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
 static const char* g_pamUnixSo = "pam_unix.so";
 static const char* g_remember = "remember";
 
-int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
-{
-    
-    int status = ENOENT;
-
-    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
-    {
-        // On Debian-based systems '/etc/pam.d/common-password' is expected to exist
-        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdCommonPassword, '#', g_remember, NULL, log)) &&
-            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
-    }
-    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
-    {
-        // On Red Hat-based systems '/etc/pam.d/system-auth' is expected to exist
-        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, NULL, log)) &&
-            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
-    }
-    else
-    {
-        OsConfigCaptureReason(reason, "Neither '%s' or '%s' found, unable to check for '%s' option being set",
-            g_etcPamdCommonPassword, g_etcPamdSystemAuth, g_remember);
-    }
-
-    if (status && (false == FindPamModule(g_pamUnixSo, log)))
-    {
-        OsConfigCaptureReason(reason, "The PAM module '%s' is not available. Automatic remediation is not possible", g_pamUnixSo);
-    }
-
-    return status;
-}
-
 static char* FindPamModule(const char* pamModule, void* log)
 {
     const char* paths[] = {
-        "/usr/lib/x86_64-linux-gnu/security/%s", 
+        "/usr/lib/x86_64-linux-gnu/security/%s",
         "/usr/lib/security/%s",
         "/lib/security/%s",
         "/lib64/security/%s",
-        "/lib/x86_64-linux-gnu/security/%s"};
+        "/lib/x86_64-linux-gnu/security/%s" };
     int numPaths = ARRAY_SIZE(paths);
     char* result = NULL;
     int status = 0, i = 0;
@@ -88,6 +57,36 @@ static char* FindPamModule(const char* pamModule, void* log)
     }
 
     return result;
+}
+
+int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
+{
+    int status = ENOENT;
+
+    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
+    {
+        // On Debian-based systems '/etc/pam.d/common-password' is expected to exist
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdCommonPassword, '#', g_remember, NULL, log)) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
+    }
+    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
+    {
+        // On Red Hat-based systems '/etc/pam.d/system-auth' is expected to exist
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, NULL, log)) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
+    }
+    else
+    {
+        OsConfigCaptureReason(reason, "Neither '%s' or '%s' found, unable to check for '%s' option being set",
+            g_etcPamdCommonPassword, g_etcPamdSystemAuth, g_remember);
+    }
+
+    if (status && (false == FindPamModule(g_pamUnixSo, log)))
+    {
+        OsConfigCaptureReason(reason, "The PAM module '%s' is not available. Automatic remediation is not possible", g_pamUnixSo);
+    }
+
+    return status;
 }
 
 static void EnsurePamModulePackagesAreInstalled(void* log)
