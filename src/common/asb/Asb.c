@@ -1787,7 +1787,7 @@ static char* AuditEnsureSyslogRotaterServiceIsEnabled(void* log)
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_logrotate, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, &reason, log));
-    if (false == IsRedHatBased(log))
+    if ((false == IsRedHatBased(log)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_16_04, log)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_18_04, log)))
     {
         CheckDaemonActive(g_logrotateTimer, &reason, log);
     }
@@ -3386,7 +3386,7 @@ static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, void* log)
     if ((0 == InstallPackage(g_logrotate, log)) && (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, log)))
     {
         status = 0;
-        if (false == IsRedHatBased(log))
+        if ((false == IsRedHatBased(log)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_16_04, log)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_18_04, log)))
         {
             status = EnableAndStartDaemon(g_logrotateTimer, log) ? 0 : ENOENT;
         }
