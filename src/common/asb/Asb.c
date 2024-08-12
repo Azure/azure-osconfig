@@ -1616,13 +1616,20 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(void* log)
 {
     const char* pamFailLockSo = "pam_faillock.so";
     const char* pamTally2So = "pam_tally2.so";
+    const char* pamTallySo = "pam_tally.so";
     char* reason = NULL;
     RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamFailLockSo, '#', &reason, log));
     RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamFailLockSo, '#', &reason, log));
     RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamFailLockSo, '#', &reason, log));
     RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamTally2So, '#', &reason, log));
     RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamTally2So, '#', &reason, log));
-    CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTally2So, '#', &reason, log);
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTally2So, '#', &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamTallySo, '#', &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamTallySo, '#', &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTallySo, '#', &reason, log));
+    FREE_MEMORY(reason);
+    reason = DuplicateString("Neither pam_faillock.so, pam_tally2.so or pam_tally.so PAM modules exist for this distribution. "
+        "Manually set lockout for failed password attempts following specific instructions for this distrubution. Automatic remediation is not possible");
     return reason;
 }
 
