@@ -439,7 +439,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                 continue;
             }
             else if ((NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) && 
-                ((NULL != strstr(line, pamPwQualitySo)) || (NULL != strstr(line, pamCrackLibSo) || (NULL != strstr(line, g_pamUnixSo))))
+                ((NULL != strstr(line, pamPwQualitySo)) || (NULL != strstr(line, pamCrackLibSo)) || (NULL != strstr(line, g_pamUnixSo))))
             {
                 found = true;
                 
