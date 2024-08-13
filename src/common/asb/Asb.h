@@ -20,6 +20,8 @@
 #define PRETTY_NAME_RHEL_9 "Red Hat Enterprise Linux 9"
 #define PRETTY_NAME_ROCKY_LINUX_9 "Rocky Linux 9"
 #define PRETTY_NAME_SLES_15 "SUSE Linux Enterprise Server 15"
+#define PRETTY_NAME_UBUNTU_16_04 "Ubuntu 16.04"
+#define PRETTY_NAME_UBUNTU_18_04 "Ubuntu 18.04"
 #define PRETTY_NAME_UBUNTU_20_04 "Ubuntu 20.04"
 #define PRETTY_NAME_UBUNTU_22_04 "Ubuntu 22.04"
 
