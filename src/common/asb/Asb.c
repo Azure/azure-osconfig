@@ -2669,9 +2669,7 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 {
     int status = 0, i = 0;
     UNUSED(value);
-    if ((0 != IsPackageInstalled(g_audit, log)) && (0 != IsPackageInstalled(g_auditd, log)) &&
-        (0 != IsPackageInstalled(g_auditLibs, log)) && (0 != IsPackageInstalled(g_auditLibsDevel, log)) &&
-        (0 != InstallPackage(g_audit, log)) && (0 != InstallPackage(g_auditd, log)) &&
+    if ((0 != InstallPackage(g_audit, log)) && (0 != InstallPackage(g_auditd, log)) &&
         (0 != InstallPackage(g_auditLibs, log)) && (0 != InstallPackage(g_auditLibsDevel, log)))
     {
         status = ENOENT;
@@ -2679,20 +2677,8 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
     else if ((false == CheckDaemonActive(g_auditd, NULL, log)) && (false == EnableAndStartDaemon(g_auditd, log)))
     {
         ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log);
-        if (false == StartDaemon(g_auditd, log))
-        {
-            status = ENOENT;
-            for (i = 0; i < 3; i++)
-            {
-                sleep(1);
-                StartDaemon(g_auditd, log);
-                if (CheckDaemonActive(g_auditd, NULL, log))
-                {
-                    status = 0;
-                    break;
-                }
-            }
-        }
+        EnableAndStartDaemon(g_auditd, log);
+        status = CheckDaemonActive(g_auditd, NULL, log) ? 0 : ENOENT;
     }
     return status;
 }
@@ -3291,8 +3277,8 @@ static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(char* valu
 static int RemediateEnsureLoggingIsConfigured(char* value, void* log)
 {
     UNUSED(value);
-    return (((0 == InstallPackage(g_systemd, log) && ((0 == InstallPackage(g_rsyslog, log)) ||
-        (0 == InstallPackage(g_syslog, log)))) || (0 == InstallPackage(g_syslogNg, log))) &&
+    return (((0 == InstallPackage(g_systemd, log) && 
+        ((0 == InstallPackage(g_rsyslog, log)) || (0 == InstallPackage(g_syslog, log)))) || (0 == InstallPackage(g_syslogNg, log))) &&
         (((0 == CheckPackageInstalled(g_systemd, NULL, log)) && EnableAndStartDaemon(g_systemdJournald, log))) &&
         ((((0 == CheckPackageInstalled(g_rsyslog, NULL, log)) && EnableAndStartDaemon(g_rsyslog, log))) || 
         (((0 == CheckPackageInstalled(g_syslog, NULL, log)) && EnableAndStartDaemon(g_syslog, log))) ||
