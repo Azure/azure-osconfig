@@ -3,6 +3,13 @@
 
 #include "Internal.h"
 
+static const char* g_aptGet = "apt-get";
+static const char* g_dpkg = "dpkg";
+static const char* g_tdnf = "tdnf";
+static const char* g_dnf = "dnf";
+static const char* g_yum = "yum";
+static const char* g_zypper = "zypper";
+
 static bool g_checkedPackageManagersPresence = false;
 static bool g_aptGetIsPresent = false;
 static bool g_dpkgIsPresent = false;
@@ -43,22 +50,15 @@ int IsPresent(const char* what, void* log)
 
 static void CheckPackageManagersPresence(void* log)
 {
-    const char* aptGet = "apt-get";
-    const char* dpkg = "dpkg";
-    const char* tdnf = "tdnf";
-    const char* dnf = "dnf";
-    const char* yum = "yum";
-    const char* zypper = "zypper";
-
     if (false == g_checkedPackageManagersPresence)
     {
         g_checkedPackageManagersPresence = true;
-        g_aptGetIsPresent = (0 = IsPresent(aptGet, log)) ? true : false;
-        g_dpkgIsPresent = (0 = IsPresent(dpkg, log)) ? true : false;
-        g_tdnfIsPresent = (0 = IsPresent(tdnf, log)) ? true : false;
-        g_dnfIsPresent = (0 = IsPresent(dnf, log)) ? true : false;
-        g_yumIsPresent = (0 = IsPresent(yum, log)) ? true : false;
-        g_zypperIsPresent = (0 = IsPresent(zypper, log)) ? true : false;
+        g_aptGetIsPresent = (0 == IsPresent(g_aptGet, log)) ? true : false;
+        g_dpkgIsPresent = (0 == IsPresent(g_dpkg, log)) ? true : false;
+        g_tdnfIsPresent = (0 == IsPresent(g_tdnf, log)) ? true : false;
+        g_dnfIsPresent = (0 == IsPresent(g_dnf, log)) ? true : false;
+        g_yumIsPresent = (0 == IsPresent(g_yum, log)) ? true : false;
+        g_zypperIsPresent = (0 == IsPresent(g_zypper, log)) ? true : false;
     }
 }
 
