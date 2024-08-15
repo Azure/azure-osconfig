@@ -111,9 +111,9 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     // - 'password required': specifies that the password module is required for authentication
     // - 'pam_unix.so': the PAM module responsible for traditional Unix authentication
     // - 'sha512': indicates that the SHA-512 hashing algorithm shall be used to hash passwords
-    //- 'shadow': specifies that the password information shall be stored in the /etc/shadow file
-    //- 'remember=n': sets the number of previous passwords to remember to prevent password reuse
-    //- 'retry=3': the number of times a user can retry entering their password before failing
+    // - 'shadow': specifies that the password information shall be stored in the /etc/shadow file
+    // - 'remember=n': sets the number of previous passwords to remember to prevent password reuse
+    // - 'retry=3': the number of times a user can retry entering their password before failing
     //
     // An alternative is:
     //
