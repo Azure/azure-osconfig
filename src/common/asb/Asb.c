@@ -631,6 +631,7 @@ static const int g_shadowGid = 42;
 void AsbInitialize(void* log)
 {
     char* prettyName = NULL;
+    char* kernelVersion = NULL;
     
     InitializeSshAudit(log);
 
@@ -680,15 +681,17 @@ void AsbInitialize(void* log)
         }
     }
     
+    kernelVersion = GetOsKernelVersion(log);
     if (NULL != (prettyName = GetOsPrettyName(log)))
     {
-        OsConfigLogInfo(log, "AsbInitialize: running on '%s'", prettyName);
-        FREE_MEMORY(prettyName);
+        OsConfigLogInfo(log, "AsbInitialize: running on '%s' ('%s')", prettyName, kernelVersion);
     }
     else
     {
-        OsConfigLogInfo(log, "AsbInitialize: running on an unknown distribution without a valid PRETTY_NAME in /etc/os-release");
+        OsConfigLogInfo(log, "AsbInitialize: running on an unknown Linux distribution with kernel version '%s' and without a valid PRETTY_NAME in /etc/os-release", kernelVersion);
     }
+    FREE_MEMORY(prettyName);
+    FREE_MEMORY(kernelVersion);
 
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
