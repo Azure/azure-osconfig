@@ -66,13 +66,13 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
     if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
         // On Debian-based systems '/etc/pam.d/common-password' is expected to exist
-        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdCommonPassword, '#', g_remember, NULL, log)) &&
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdCommonPassword, '#', g_remember, reason, log)) &&
             (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
     }
     else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
     {
         // On Red Hat-based systems '/etc/pam.d/system-auth' is expected to exist
-        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, NULL, log)) &&
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, reason, log)) &&
             (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
     }
     else
