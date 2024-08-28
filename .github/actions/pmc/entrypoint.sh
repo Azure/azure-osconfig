@@ -2,6 +2,7 @@
 
 output=$(pmc \
     --base-url $PMC_CLI_BASE_URL \
+    --auth-type msal \
     --msal-client-id $PMC_CLI_MSAL_CLIENT_ID \
     --msal-scope $PMC_CLI_MSAL_SCOPE \
     --msal-authority $PMC_CLI_MSAL_AUTHORITY \
