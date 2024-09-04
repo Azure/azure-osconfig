@@ -15,7 +15,7 @@
                 "version": "1.0.0",
                 "contentType": "Custom",
                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaseline.zip",
-                "contentHash": "602C8A966101CF220262D8A0109C41842297A8A5AF44CBA88086CA8761C9D1F2",
+                "contentHash": "15EDAA0E3DDAFBFF3574837A3E92F55E1633F60EDE0A0DB02150EFB9EF8016D0",
                 "configurationParameter": {
                     "accessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
                     "ignoreHosts": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
@@ -624,7 +624,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaseline.zip",
-                                                "contentHash": "602C8A966101CF220262D8A0109C41842297A8A5AF44CBA88086CA8761C9D1F2",
+                                                "contentHash": "15EDAA0E3DDAFBFF3574837A3E92F55E1633F60EDE0A0DB02150EFB9EF8016D0",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -715,7 +715,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaseline.zip",
-                                                "contentHash": "602C8A966101CF220262D8A0109C41842297A8A5AF44CBA88086CA8761C9D1F2",
+                                                "contentHash": "15EDAA0E3DDAFBFF3574837A3E92F55E1633F60EDE0A0DB02150EFB9EF8016D0",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -806,7 +806,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaseline.zip",
-                                                "contentHash": "602C8A966101CF220262D8A0109C41842297A8A5AF44CBA88086CA8761C9D1F2",
+                                                "contentHash": "15EDAA0E3DDAFBFF3574837A3E92F55E1633F60EDE0A0DB02150EFB9EF8016D0",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
