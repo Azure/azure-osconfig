@@ -80,6 +80,8 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     }
 
     status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
+    
+    OsConfigLogInfo(log, "Package manager '%s' command '%s' complete with %d (errno: %d)", packageManager, command, status, errno);
 
     FREE_MEMORY(command);
 
