@@ -108,11 +108,11 @@ int IsPackageInstalled(const char* packageName, void* log)
     }
     else if (g_dnfIsPresent)
     {
-        status = CheckOrInstallPackage(IsRedHatBased() ? commandTemplateRedHat : commandTemplateYumDnf, g_dnf, packageName, log);
+        status = CheckOrInstallPackage(IsRedHatBased(log) ? commandTemplateRedHat : commandTemplateYumDnf, g_dnf, packageName, log);
     }
     else if (g_yumIsPresent)
     {
-        status = CheckOrInstallPackage(IsRedHatBased() ? commandTemplateRedHat : commandTemplateYumDnf, g_yum, packageName, log);
+        status = CheckOrInstallPackage(IsRedHatBased(log) ? commandTemplateRedHat : commandTemplateYumDnf, g_yum, packageName, log);
     }
     else if (g_zypperIsPresent)
     {
