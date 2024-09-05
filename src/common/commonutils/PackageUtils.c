@@ -91,7 +91,8 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
 int IsPackageInstalled(const char* packageName, void* log)
 {
     const char* commandTemplateDpkg = "%s -l %s | grep ^ii";
-    const char* commandTemplateAllElse = "%s list installed %s";
+    const char* commandTemplateYumDnf = "%s list installed %s";
+    const char* commandTemplateRedHat = "%s list installed %s --disableplugin subscription-manager";
     const char* commandTemplateZypper = "%s se -x %s";
     int status = ENOENT;
 
@@ -103,15 +104,15 @@ int IsPackageInstalled(const char* packageName, void* log)
     }
     else if (g_tdnfIsPresent)
     {
-        status = CheckOrInstallPackage(commandTemplateAllElse, g_tdnf, packageName, log);
+        status = CheckOrInstallPackage(commandTemplateYumDnf, g_tdnf, packageName, log);
     }
     else if (g_dnfIsPresent)
     {
-        status = CheckOrInstallPackage(commandTemplateAllElse, g_dnf, packageName, log);
+        status = CheckOrInstallPackage(IsRedHatBased() ? commandTemplateRedHat : commandTemplateYumDnf, g_dnf, packageName, log);
     }
     else if (g_yumIsPresent)
     {
-        status = CheckOrInstallPackage(commandTemplateAllElse, g_yum, packageName, log);
+        status = CheckOrInstallPackage(IsRedHatBased() ? commandTemplateRedHat : commandTemplateYumDnf, g_yum, packageName, log);
     }
     else if (g_zypperIsPresent)
     {
