@@ -1,9 +1,9 @@
 {
     "properties": {
-        "displayName": "[Preview]: Azure security baseline for Linux (powered by OSConfig)",
+        "displayName": "[Preview]: SSH security posture control for Linux (powered by OSConfig)",
         "policyType": "Custom",
         "mode": "Indexed",
-        "description": "This policy is powered by Azure OSConfig and its purpose is to audit and deploy the Azure Security Baseline for Linux",
+        "description": "This policy is powered by Azure OSConfig and its purpose is to ensure that the SSH Server is securely configured on the Linux device",
         "metadata": {
             "category": "Guest Configuration",
             "version": "1.0.0.0",
@@ -11,11 +11,11 @@
                 "Microsoft.GuestConfiguration"
             ],
             "guestConfiguration": {
-                "name": "LinuxSecurityBaseline",
+                "name": "LinuxSshServerSecurityBaseline",
                 "version": "1.0.0",
                 "contentType": "Custom",
-                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaseline.zip",
-                "contentHash": "6B1EFABAFA53D495EF17EF8D637D400FA554427419712E9A91EF986EDED5A539",
+                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaseline.zip",
+                "contentHash": "AA5B7D60EB3CA84066493A4372E090C629F786AA1E2D7DAB2EA0EC33847E1F31",
                 "configurationParameter": {
                     "accessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
                     "ignoreHosts": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
@@ -30,6 +30,7 @@
                     "permitEmptyPasswords": "Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue",
                     "clientAliveCountMax": "Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue",
                     "clientAliveInterval": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
+                    "loginGraceTime": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
                     "messageAuthenticationCodeAlgorithms": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
                     "banner": "Ensure that the SSH warning banner is configured;DesiredObjectValue",
                     "permitUserEnvironment": "Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue",
@@ -39,7 +40,7 @@
             }
         },
         "parameters": {
-            "IncludeArcMachines": {
+            "includeArcMachines": {
                 "type": "string",
                 "metadata": {
                     "displayName": "Include Arc connected machines",
@@ -56,12 +57,11 @@
                 "type": "string",
                 "metadata": {
                     "displayName": "Effect",
-                    "description": "Configures between remediation (DeployIfNotExists), audit-only (AuditIfNotExists), or disabled (Disabled) policy execution mode. Default is AuditIfNotExists"
+                    "description": "Configures between remediation (DeployIfNotExists) or audit-only (AuditIfNotExists) policy execution mode. Default is AuditIfNotExists"
                 },
                 "allowedValues": [
                     "DeployIfNotExists",
-                    "AuditIfNotExists",
-                    "Disabled"
+                    "AuditIfNotExists"
                 ],
                 "defaultValue": "AuditIfNotExists"
             },
@@ -168,6 +168,14 @@
                     "description": "Timeout interval in seconds after which if no data has been received from the client, sshd will send a message to request a response. Default is  1 hour ('3600')"
                 },
                 "defaultValue": "3600"
+            },
+            "loginGraceTime": {
+                "type": "string",
+                "metadata": {
+                    "displayName": "The time in seconds after which the server disconnects if the user has not successfully logged in",
+                    "description": "The time in seconds after which the server disconnects if the user has not successfully logged in. Default is 1 minute ('60')"
+                },
+                "defaultValue": "60"
             },
             "messageAuthenticationCodeAlgorithms": {
                 "type": "string",
@@ -457,7 +465,7 @@
                         "/providers/Microsoft.Authorization/roleDefinitions/088ab73d-1256-47ae-bea9-9de8e7131f31"
                     ],
                     "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
-                    "name": "[concat('LinuxSecurityBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
+                    "name": "[concat('LinuxSshServerSecurityBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
                     "existenceCondition": {
                         "allOf": [
                             {
@@ -466,7 +474,7 @@
                             },
                             {
                                 "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/parameterHash",
-                                "equals": "[base64(concat('Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue', '=', parameters('accessPermissionsForSshdConfig'), ',', 'Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue', '=', parameters('ignoreHosts'), ',', 'Ensure that the SSH LogLevel is configured;DesiredObjectValue', '=', parameters('logLevel'), ',', 'Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue', '=', parameters('maxAuthTries'), ',', 'Ensure that the allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('allowUsers'), ',', 'Ensure that the denied users for SSH are configured;DesiredObjectValue', '=', parameters('denyUsers'), ',', 'Ensure that the allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('allowGroups'), ',', 'Ensure that the denied groups for SSH are configured;DesiredObjectValue', '=', parameters('denyGroups'), ',', 'Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue', '=', parameters('hostBasedAuthentication'), ',', 'Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue', '=', parameters('permitRootLogin'), ',', 'Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue', '=', parameters('permitEmptyPasswords'), ',', 'Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue', '=', parameters('clientAliveCountMax'), ',', 'Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue', '=', parameters('clientAliveInterval'), ',', 'Ensure that only approved MAC algorithms are used;DesiredObjectValue', '=', parameters('messageAuthenticationCodeAlgorithms'), ',', 'Ensure that the SSH warning banner is configured;DesiredObjectValue', '=', parameters('banner'), ',', 'Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue', '=', parameters('permitUserEnvironment'), ',', 'Ensure that appropriate ciphers are used for SSH;DesiredObjectValue', '=', parameters('ciphers'), ',', 'Ensure that the SSH port is configured;DesiredObjectValue', '=', parameters('port')))]"
+                                "equals": "[base64(concat('Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue', '=', parameters('accessPermissionsForSshdConfig'), ',', 'Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue', '=', parameters('ignoreHosts'), ',', 'Ensure that the SSH LogLevel is configured;DesiredObjectValue', '=', parameters('logLevel'), ',', 'Ensure that the SSH MaxAuthTries is configured;DesiredObjectValue', '=', parameters('maxAuthTries'), ',', 'Ensure that the allowed users for SSH access are configured;DesiredObjectValue', '=', parameters('allowUsers'), ',', 'Ensure that the denied users for SSH are configured;DesiredObjectValue', '=', parameters('denyUsers'), ',', 'Ensure that the allowed groups for SSH are configured;DesiredObjectValue', '=', parameters('allowGroups'), ',', 'Ensure that the denied groups for SSH are configured;DesiredObjectValue', '=', parameters('denyGroups'), ',', 'Ensure that the SSH HostBasedAuthentication is configured;DesiredObjectValue', '=', parameters('hostBasedAuthentication'), ',', 'Ensure that the SSH PermitRootLogin is configured;DesiredObjectValue', '=', parameters('permitRootLogin'), ',', 'Ensure that the SSH PermitEmptyPasswords is configured;DesiredObjectValue', '=', parameters('permitEmptyPasswords'), ',', 'Ensure that the SSH ClientAliveCountMax is configured;DesiredObjectValue', '=', parameters('clientAliveCountMax'), ',', 'Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue', '=', parameters('clientAliveInterval'), ',', 'Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue', '=', parameters('loginGraceTime'), ',', 'Ensure that only approved MAC algorithms are used;DesiredObjectValue', '=', parameters('messageAuthenticationCodeAlgorithms'), ',', 'Ensure that the SSH warning banner is configured;DesiredObjectValue', '=', parameters('banner'), ',', 'Ensure that the SSH PermitUserEnvironment is configured;DesiredObjectValue', '=', parameters('permitUserEnvironment'), ',', 'Ensure that appropriate ciphers are used for SSH;DesiredObjectValue', '=', parameters('ciphers'), ',', 'Ensure that the SSH port is configured;DesiredObjectValue', '=', parameters('port')))]"
                             }
                         ]
                     },
@@ -484,7 +492,7 @@
                                     "value": "[field('type')]"
                                 },
                                 "assignmentName": {
-                                    "value": "[concat('LinuxSecurityBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
+                                    "value": "[concat('LinuxSshServerSecurityBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
                                 },
                                 "accessPermissionsForSshdConfig": {
                                     "value": "[parameters('accessPermissionsForSshdConfig')]"
@@ -524,6 +532,9 @@
                                 },
                                 "clientAliveInterval": {
                                     "value": "[parameters('clientAliveInterval')]"
+                                },
+                                "loginGraceTime": {
+                                    "value": "[parameters('loginGraceTime')]"
                                 },
                                 "messageAuthenticationCodeAlgorithms": {
                                     "value": "[parameters('messageAuthenticationCodeAlgorithms')]"
@@ -596,6 +607,9 @@
                                     "clientAliveInterval": {
                                         "type": "string"
                                     },
+                                    "loginGraceTime": {
+                                        "type": "string"
+                                    },
                                     "messageAuthenticationCodeAlgorithms": {
                                         "type": "string"
                                     },
@@ -621,11 +635,11 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "LinuxSecurityBaseline",
+                                                "name": "LinuxSshServerSecurityBaseline",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
-                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaseline.zip",
-                                                "contentHash": "6B1EFABAFA53D495EF17EF8D637D400FA554427419712E9A91EF986EDED5A539",
+                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaseline.zip",
+                                                "contentHash": "AA5B7D60EB3CA84066493A4372E090C629F786AA1E2D7DAB2EA0EC33847E1F31",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -679,6 +693,10 @@
                                                     {
                                                         "name": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
                                                         "value": "[parameters('clientAliveInterval')]"
+                                                    },
+                                                    {
+                                                        "name": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
+                                                        "value": "[parameters('loginGraceTime')]"
                                                     },
                                                     {
                                                         "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
@@ -712,11 +730,11 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "LinuxSecurityBaseline",
+                                                "name": "LinuxSshServerSecurityBaseline",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
-                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaseline.zip",
-                                                "contentHash": "6B1EFABAFA53D495EF17EF8D637D400FA554427419712E9A91EF986EDED5A539",
+                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaseline.zip",
+                                                "contentHash": "AA5B7D60EB3CA84066493A4372E090C629F786AA1E2D7DAB2EA0EC33847E1F31",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -770,6 +788,10 @@
                                                     {
                                                         "name": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
                                                         "value": "[parameters('clientAliveInterval')]"
+                                                    },
+                                                    {
+                                                        "name": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
+                                                        "value": "[parameters('loginGraceTime')]"
                                                     },
                                                     {
                                                         "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
@@ -803,11 +825,11 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "LinuxSecurityBaseline",
+                                                "name": "LinuxSshServerSecurityBaseline",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
-                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaseline.zip",
-                                                "contentHash": "6B1EFABAFA53D495EF17EF8D637D400FA554427419712E9A91EF986EDED5A539",
+                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaseline.zip",
+                                                "contentHash": "AA5B7D60EB3CA84066493A4372E090C629F786AA1E2D7DAB2EA0EC33847E1F31",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -861,6 +883,10 @@
                                                     {
                                                         "name": "Ensure that the SSH ClientAliveInterval is configured;DesiredObjectValue",
                                                         "value": "[parameters('clientAliveInterval')]"
+                                                    },
+                                                    {
+                                                        "name": "Ensure that the SSH LoginGraceTime is configured;DesiredObjectValue",
+                                                        "value": "[parameters('loginGraceTime')]"
                                                     },
                                                     {
                                                         "name": "Ensure that only approved MAC algorithms are used;DesiredObjectValue",
