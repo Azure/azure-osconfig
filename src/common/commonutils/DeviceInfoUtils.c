@@ -904,7 +904,7 @@ int EnableVirtualMemoryRandomization(void* log)
     }
     else
     {
-        if (SecureSaveToFile(procSysKernelRandomizeVaSpace, fullRandomization, strlen(fullRandomization), log))
+        if (SavePayloadToFile(procSysKernelRandomizeVaSpace, fullRandomization, strlen(fullRandomization), log))
         {
             OsConfigLogInfo(log, "EnableVirtualMemoryRandomization: '%s' was written to '%s'", fullRandomization, procSysKernelRandomizeVaSpace);
         }
