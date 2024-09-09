@@ -1288,8 +1288,8 @@ int CheckFileContents(const char* fileName, const char* text, char** reason, voi
         }
         else
         {
-            OsConfigLogInfo(log, "CheckFileContents: '%s' does not match contents of '%s' ('%s')", text, fileName, contents);
-            OsConfigCaptureReason(reason, "'%s' does not match contents of '%s' ('%s')", text, fileName, contents);
+            OsConfigLogInfo(log, "CheckFileContents: '%s' does not match contents of '%s'", text, fileName);
+            OsConfigCaptureReason(reason, "'%s' does not match contents of '%s'", text, fileName);
             status = ENOENT;
         }
     }
