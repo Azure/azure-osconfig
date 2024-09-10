@@ -80,6 +80,16 @@ TEST_F(CommonUtilsTest, LoadStringWithEolFromFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
+TEST_F(CommonUtilsTest, LoadStringFromSingleByteFile)
+{
+    const char* data = "0";
+    char* contents = NULL;
+    EXPECT_TRUE(CreateTestFile(m_path, data));
+    EXPECT_STREQ(data, contents = LoadStringFromFile(m_path, true, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
 TEST_F(CommonUtilsTest, SavePayloadToFile)
 {
     char* contents = NULL;
