@@ -90,7 +90,7 @@ TEST_F(CommonUtilsTest, LoadStringFromSingleByteFile)
     EXPECT_EQ(data[0], contents[0]);
     EXPECT_EQ(0, contents[1]);
     FREE_MEMORY(contents);
-    EXPECT_EQ(0, CheckFileContents(m_path, data, nullptr, nullptr);
+    EXPECT_EQ(0, CheckFileContents(m_path, data, nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
