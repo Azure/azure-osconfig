@@ -1271,6 +1271,7 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
 int CheckFileContents(const char* fileName, const char* text, char** reason, void* log)
 {
     char* contents = NULL;
+    size_t textLength = 0, contentsLength = 0;
     int status = 0;
 
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(fileName)) || (0 == strlen(text)))
@@ -1281,7 +1282,10 @@ int CheckFileContents(const char* fileName, const char* text, char** reason, voi
 
     if (NULL != (contents = LoadStringFromFile(fileName, false, log)))
     {
-        if (0 == strncmp(contents, text, strlen(text)))
+        textLength = strlen(text);
+        contentsLength = strlen(text);
+        
+        if (0 == strncmp(contents, text, (textLength <= contentsLength) ? textLength : contentsLength))
         {
             OsConfigLogInfo(log, "CheckFileContents: '%s' matches contents of '%s'", text, fileName);
             OsConfigCaptureSuccessReason(reason, "'%s' matches contents of '%s'", text, fileName);
@@ -1289,7 +1293,7 @@ int CheckFileContents(const char* fileName, const char* text, char** reason, voi
         else
         {
             OsConfigLogInfo(log, "CheckFileContents: '%s' does not match contents of '%s' ('%s')", text, fileName, contents);
-            OsConfigCaptureReason(reason, "'%s' does not match contents of '%s' ('%s')", text, fileName, contents);
+            OsConfigCaptureReason(reason, "'%s' does not match contents of '%s'", text, fileName);
             status = ENOENT;
         }
     }

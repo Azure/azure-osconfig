@@ -4420,12 +4420,11 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
     if (0 == status)
     {
-        if (NULL == result)
+        if ((NULL == result) || (NULL == (jsonValue = json_value_init_string(result))))
         {
-            OsConfigLogError(log, "AsbMmiGet(%s, %s): audit failure without a reason", componentName, objectName);
-            result = DuplicateString(g_fail);
-
-            if (NULL == result)
+            OsConfigLogError(log, "AsbMmiGet(%s, %s): audit failure without a valid reason", componentName, objectName);
+            FREE_MEMORY(result);
+            if (NULL == (result = DuplicateString(g_fail)))
             {
                 OsConfigLogError(log, "AsbMmiGet: DuplicateString failed");
                 status = ENOMEM;
@@ -4434,7 +4433,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         
         if (NULL != result)
         {
-            if (NULL == (jsonValue = json_value_init_string(result)))
+            if ((NULL == jsonValue) && (NULL == (jsonValue = json_value_init_string(result))))
             {
                 OsConfigLogError(log, "AsbMmiGet(%s, %s): json_value_init_string(%s) failed", componentName, objectName, result);
                 status = ENOMEM;
