@@ -86,7 +86,11 @@ TEST_F(CommonUtilsTest, LoadStringFromSingleByteFile)
     char* contents = NULL;
     EXPECT_TRUE(CreateTestFile(m_path, data));
     EXPECT_STREQ(data, contents = LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_EQ(1, strlen(contents));
+    EXPECT_EQ(data[0], contents[0]);
+    EXPECT_EQ(0, contents[1]);
     FREE_MEMORY(contents);
+    EXPECT_EQ(0, CheckFileContents(m_path, data, nullptr, nullptr);
     EXPECT_TRUE(Cleanup(m_path));
 }
 
