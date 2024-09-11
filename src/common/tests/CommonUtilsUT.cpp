@@ -2290,6 +2290,16 @@ TEST_F(CommonUtilsTest, EnsureDotDoesNotAppearInPath)
         "fi";
     
 const char* test2 = "#\n"
+    "#\n"
+    "# You may use /etc/ initscript, /etc/profile.local or the\n"
+    "# ulimit package instead to set up ulimits and your PATH.\n"
+    "#\n"
+    "# if test \"$is\" != \"ash\" -a ! -r /etc/initscript; then\n"
+    "#     ulimit - Sc 0              # don't create core files\n"
+    "#     ulimit - Sd $(ulimit - Hd)\n"
+    "#     ulimit - Ss $(ulimit - Hs)\n"
+    "#     ulimit - Sm $(ulimit - Hm)\n"
+    "# fi\n"
     "# Make path more comfortable\n"
     "#\n"
     "# save current path setting, we might want to restore it\n"
@@ -2327,6 +2337,6 @@ const char* test2 = "#\n"
 
     EXPECT_TRUE(CreateTestFile(m_path, test2));
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ":", nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ":", nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
