@@ -2255,7 +2255,7 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
 
 TEST_F(CommonUtilsTest, EnsureDotDoesNotAppearInPath)
 {
-    const char* test = "#\n"
+    const char* test1 = "#\n"
         "# Make path more comfortable\n"
         "#\n"
         "# save current path setting, we might want to restore it\n"
@@ -2287,12 +2287,45 @@ TEST_F(CommonUtilsTest, EnsureDotDoesNotAppearInPath)
         "    done\n"
         "    unset dir\n"
         "    export PATH\n"
-        "fi\n";
-
-    EXPECT_TRUE(CreateTestFile(m_path, test));
-
+        "fi";
+    
+const char test2 = "#\n"
+    "# Make path more comfortable\n"
+    "#\n"
+    "# save current path setting, we might want to restore it\n"
+    "PATH if\n"
+    "#\n"
+    "if test -z \"$PROFILEREAD\" ; then\n"
+    "    if test \"$HOME\" != \"/\" ; then\n"
+    "        for dir in $HOME/bin/$CPU $HOME/bin $HOME/.local/bin/$CPU $HOME/.local/bin ; do\n"
+    "\n"
+    "        done\n"
+    "    fi\n"
+    "    if test \"$UID\" = 0 ; then\n"
+    "    fi\n"
+    "    for dir in  /usr/X11/bin \\n"
+    "                /usr/X11R6/bin \\n"
+    "                /var/lib/dosemu \\n"
+    "                /usr/games \\n"
+    "                /opt/bin \\n"
+    "                /opt/kde3/bin \\n"
+    "                /opt/kde2/bin \\n"
+    "                /opt/kde/bin \\n"
+    "                /usr/openwin/bin \\n"
+    "                /opt/cross/bin\n"
+    "    do\n"
+    "    done\n"
+    "    unset dir\n"
+    "fi";
+    
+    
+    EXPECT_TRUE(CreateTestFile(m_path, test1));
     EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ":", nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
 
+    EXPECT_TRUE(CreateTestFile(m_path, test2));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ":", nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
