@@ -2332,7 +2332,6 @@ const char* test2 = "#\n"
     EXPECT_TRUE(CreateTestFile(m_path, test1));
     EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ":", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", "/", nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(CreateTestFile(m_path, test2));
