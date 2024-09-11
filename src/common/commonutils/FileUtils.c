@@ -1153,6 +1153,8 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
             found = results;
             while (NULL != (found = strstr(found, marker)))
             {
+                OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: >>> '%s' <<<", found);
+
                 found += 1;
                 if (0 == found[0])
                 {
