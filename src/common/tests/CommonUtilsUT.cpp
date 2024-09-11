@@ -2252,3 +2252,47 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
     FREE_MEMORY(cleanedContents);
     EXPECT_TRUE(Cleanup(m_path));
 }
+
+TEST_F(CommonUtilsTest, EnsureDotDoesNotAppearInPath)
+{
+    const char* test = "#\n"
+        "# Make path more comfortable\n"
+        "#\n"
+        "# save current path setting, we might want to restore it\n"
+        "ORIG_PATH=$PATH\n"
+        "#\n"
+        "if test -z \"$PROFILEREAD\" ; then\n"
+        "    PATH=/usr/local/bin:/usr/bin:/bin\n"
+        "    if test \"$HOME\" != " / " ; then\n"
+        "        for dir in $HOME/bin/$CPU $HOME/bin $HOME/.local/bin/$CPU $HOME/.local/bin ; do\n"
+        "            test -d $dir && PATH=$dir:$PATH\n"
+        "        done\n"
+        "    fi\n"
+        "    if test \"$UID\" = 0 ; then\n"
+        "        test -d /opt/kde3/sbin  && PATH=/opt/kde3/sbin:$PATH\n"
+        "        PATH=/sbin:/usr/sbin:/usr/local/sbin:$PATH\n"
+        "    fi\n"
+        "    for dir in  /usr/X11/bin \\n"
+        "                /usr/X11R6/bin \\n"
+        "                /var/lib/dosemu \\n"
+        "                /usr/games \\n"
+        "                /opt/bin \\n"
+        "                /opt/kde3/bin \\n"
+        "                /opt/kde2/bin \\n"
+        "                /opt/kde/bin \\n"
+        "                /usr/openwin/bin \\n"
+        "                /opt/cross/bin\n"
+        "    do\n"
+        "        test -d $dir && PATH=$PATH:$dir\n"
+        "    done\n"
+        "    unset dir\n"
+        "    export PATH\n"
+        "fi\n";
+
+    EXPECT_TRUE(CreateTestFile(m_path, test));
+
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", "/opt/kde3", nullptr, nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
