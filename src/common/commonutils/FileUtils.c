@@ -1148,7 +1148,7 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, fileName, text);
 
-        if ((0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &results, NULL, log))) && results)
+        if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log))) && results)
         {
             found = results;
             while (NULL != (found = strstr(found, marker)))
