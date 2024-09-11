@@ -2289,7 +2289,7 @@ TEST_F(CommonUtilsTest, EnsureDotDoesNotAppearInPath)
         "    export PATH\n"
         "fi";
     
-const char test2 = "#\n"
+const char* test2 = "#\n"
     "# Make path more comfortable\n"
     "#\n"
     "# save current path setting, we might want to restore it\n"
