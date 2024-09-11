@@ -2263,7 +2263,7 @@ TEST_F(CommonUtilsTest, EnsureDotDoesNotAppearInPath)
         "#\n"
         "if test -z \"$PROFILEREAD\" ; then\n"
         "    PATH=/usr/local/bin:/usr/bin:/bin\n"
-        "    if test \"$HOME\" != " / " ; then\n"
+        "    if test \"$HOME\" != \" // \" ; then\n"
         "        for dir in $HOME/bin/$CPU $HOME/bin $HOME/.local/bin/$CPU $HOME/.local/bin ; do\n"
         "            test -d $dir && PATH=$dir:$PATH\n"
         "        done\n"
