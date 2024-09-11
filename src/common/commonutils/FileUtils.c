@@ -1123,7 +1123,8 @@ int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** rea
 
 int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log)
 {
-    const char* commandTemplate = "cat %s | grep %s";
+    //const char* commandTemplate = "cat %s | grep %s";
+    const char* commandTemplate = "grep -v '^#' %s | grep %s";
 
     char* command = NULL;
     char* results = NULL;
