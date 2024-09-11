@@ -1127,7 +1127,8 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
 
     char* command = NULL;
     char* results = NULL;
-    char* found = 0;
+    char* found = NULL;
+    char* previous = NULL;
     bool foundMarker = false;
     int status = 0;
 
@@ -1145,8 +1146,8 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
     {
         if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log))) && results)
         {
-            found = results;
-            while (NULL != (found = strstr(found, marker)))
+            found = previous = results;
+            while (NULL != (found = strstr(previous, marker)))
             {
                 found += 1;
                 if (0 == found[0])
@@ -1155,11 +1156,12 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
                 }
                 else if (0 == isalpha(found[0]))
                 {
-                    OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
-                    OsConfigCaptureReason(reason, "'%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
+                    OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, previous);
+                    OsConfigCaptureReason(reason, "'%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, previous);
                     foundMarker = true;
                     status = EEXIST;
-                } 
+                }
+                previous = found;
             } 
             
             if (false == foundMarker)
