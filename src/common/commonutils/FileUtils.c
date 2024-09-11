@@ -1123,12 +1123,11 @@ int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** rea
 
 int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log)
 {
-    const char* commandTemplate = "cat -v '^#' %s | grep %s";
+    const char* commandTemplate = "cat %s | grep %s";
 
     char* command = NULL;
     char* results = NULL;
     char* found = NULL;
-    char* previous = NULL;
     bool foundMarker = false;
     int status = 0;
 
@@ -1144,10 +1143,10 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
     }
     else
     {
-        if ((0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &results, NULL, log))) && results)
+        if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log))) && results)
         {
-            found = previous = results;
-            while (NULL != (found = strstr(previous, marker)))
+            found = results;
+            while (NULL != (found = strstr(found, marker)))
             {
                 found += 1;
                 if (0 == found[0])
@@ -1156,12 +1155,11 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
                 }
                 else if (0 == isalpha(found[0]))
                 {
-                    OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, previous);
-                    OsConfigCaptureReason(reason, "'%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, previous);
+                    OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' found in '%s'", text, marker, fileName);
+                    OsConfigCaptureReason(reason, "'%s' containing '%s' found in '%s'", text, marker, fileName);
                     foundMarker = true;
                     status = EEXIST;
-                }
-                previous = found;
+                } 
             } 
             
             if (false == foundMarker)
