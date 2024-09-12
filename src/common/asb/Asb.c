@@ -1318,12 +1318,13 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void* log)
 {
     const char* path = "PATH";
     const char* dot = ".";
+    const char comment = '#';
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckTextNotFoundInEnvironmentVariable(path, dot, false, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile("/etc/sudoers", "secure_path", dot, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile(g_etcEnvironment, path, dot, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile(g_etcProfile, path, dot, &reason, log));
-    CheckMarkedTextNotFoundInFile("/root/.profile", path, dot, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile("/etc/sudoers", "secure_path", dot, comment, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile(g_etcEnvironment, path, dot, comment, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile(g_etcProfile, path, dot, comment, &reason, log));
+    CheckMarkedTextNotFoundInFile("/root/.profile", path, dot, comment, &reason, log);
     return reason;
 }
 
