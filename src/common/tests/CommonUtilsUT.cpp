@@ -1526,7 +1526,11 @@ TEST_F(CommonUtilsTest, FindTextInFile)
 
 TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
 {
-    const char* test = "Test \n FOO=test:/123:!abcdef.123:/test.d TEST1; TEST2/..TEST3:Blah=0\n#FOO ~test1 \n#\n   ;TEST3 23$test";
+    const char* test = "Test \n"
+        " FOO=test:/123:!abcdef.123:/test.d TEST1; TEST2/..TEST3:Blah=0\n"
+        "#FOO: ~test! \n"
+        "#\n"
+        "  ;TEST3 23$test";
 
     EXPECT_TRUE(CreateTestFile(m_path, test));
 
