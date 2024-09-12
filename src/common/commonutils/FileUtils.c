@@ -1121,9 +1121,9 @@ int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** rea
     return result;
 }
 
-int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log)
+int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, void* log)
 {
-    const char* commandTemplate = "grep -v '^#' %s | grep %s";
+    const char* commandTemplate = "grep -v '^%c' %s | grep %s";
 
     char* command = NULL;
     char* results = NULL;
@@ -1136,7 +1136,7 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile called with invalid arguments");
         return EINVAL;
     }
-    else if (NULL == (command = FormatAllocateString(commandTemplate, fileName, text)))
+    else if (NULL == (command = FormatAllocateString(commandTemplate, commentCharacter, fileName, text)))
     {
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile: out of memory");
         return ENOMEM;

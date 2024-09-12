@@ -96,7 +96,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 int FindTextInFile(const char* fileName, const char* text, void* log);
 int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, void* log);
 int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, void* log);
-int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log);
+int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, void* log);
 int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, char** reason, void* log);
 int CheckFileContents(const char* fileName, const char* text, char** reason, void* log);
 int FindTextInFolder(const char* directory, const char* text, void* log);

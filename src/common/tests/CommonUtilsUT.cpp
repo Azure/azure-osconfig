@@ -1526,34 +1526,38 @@ TEST_F(CommonUtilsTest, FindTextInFile)
 
 TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
 {
-    const char* test = "Test \n FOO=test:/123:!abcdef.123:/test.d TEST1; TEST2/..TEST3:Blah=0";
+    const char* test = "Test \n FOO=test:/123:!abcdef.123:/test.d TEST1; TEST2/..TEST3:Blah=0\n#FOO ~test1 \n FOO=te^st \n   %FOO 23$test";
 
     EXPECT_TRUE(CreateTestFile(m_path, test));
 
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(nullptr, nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "FOO", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, nullptr, ";", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(nullptr, nullptr, nullptr, '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, nullptr, nullptr, '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "FOO", nullptr, '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, nullptr, ";", '#', nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "", "", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "FOO", "", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "", ";", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "", "", '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "FOO", "", '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "", ";", '#', nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile("~~DoesNotExist", "FOO", ";", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile("~~DoesNotExist", "FOO", ";", '#', nullptr, nullptr));
 
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ".", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ".", '#', nullptr, nullptr));
     
-    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "FOO", "!", nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "FOO", "!", '#', nullptr, nullptr));
     
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ";", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", "..", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ";", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", "..", '#', nullptr, nullptr));
 
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", ";", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", ".", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", "..", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", ";", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", ".", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", "..", '#', nullptr, nullptr));
 
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", ".", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", "..", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", ".", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", "..", '#', nullptr, nullptr));
+
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", "~", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", "$", '%', nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "FOO", "^", '#', nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
@@ -2253,7 +2257,7 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-TEST_F(CommonUtilsTest, CheckDotDoesNotAppearInPath)
+TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
 {
     const char* test1 = "#\n"
         "# Make path more comfortable\n"
@@ -2289,53 +2293,52 @@ TEST_F(CommonUtilsTest, CheckDotDoesNotAppearInPath)
         "    export PATH\n"
         "fi";
     
-const char* test2 = "#\n"
-    "#\n"
-    "# You may use /etc/ initscript, /etc/profile.local or the\n"
-    "# ulimit package instead to set up ulimits and your PATH.\n"
-    "#\n"
-    "# if test \"$is\" != \"ash\" -a ! -r /etc/initscript; then\n"
-    "#     ulimit - Sc 0              # don't create core files\n"
-    "#     ulimit - Sd $(ulimit - Hd)\n"
-    "#     ulimit - Ss $(ulimit - Hs)\n"
-    "#     ulimit - Sm $(ulimit - Hm)\n"
-    "# fi\n"
-    "# Make path more comfortable\n"
-    "#\n"
-    "# save current path setting, we might want to restore it\n"
-    "PATH if\n"
-    "#\n"
-    "if test -z \"$PROFILEREAD\" ; then\n"
-    "    if test \"$HOME\" != \"/\" ; then\n"
-    "        for dir in $HOME/bin/$CPU $HOME/bin $HOME/.local/bin/$CPU $HOME/.local/bin ; do\n"
-    "\n"
-    "        done\n"
-    "    fi\n"
-    "    if test \"$UID\" = 0 ; then\n"
-    "    fi\n"
-    "    for dir in  /usr/X11/bin \\n"
-    "                /usr/X11R6/bin \\n"
-    "                /var/lib/dosemu \\n"
-    "                /usr/games \\n"
-    "                /opt/bin \\n"
-    "                /opt/kde3/bin \\n"
-    "                /opt/kde2/bin \\n"
-    "                /opt/kde/bin \\n"
-    "                /usr/openwin/bin \\n"
-    "                /opt/cross/bin\n"
-    "    do\n"
-    "    done\n"
-    "    unset dir\n"
-    "fi";
-    
+    const char* test2 = "#\n"
+        "#\n"
+        "# You may use /etc/ initscript, /etc/profile.local or the\n"
+        "# ulimit package instead to set up ulimits and your PATH.\n"
+        "#\n"
+        "# if test \"$is\" != \"ash\" -a ! -r /etc/initscript; then\n"
+        "#     ulimit - Sc 0              # don't create core files\n"
+        "#     ulimit - Sd $(ulimit - Hd)\n"
+        "#     ulimit - Ss $(ulimit - Hs)\n"
+        "#     ulimit - Sm $(ulimit - Hm)\n"
+        "# fi\n"
+        "# Make path more comfortable\n"
+        "#\n"
+        "# save current path setting, we might want to restore it\n"
+        "PATH if\n"
+        "#\n"
+        "if test -z \"$PROFILEREAD\" ; then\n"
+        "    if test \"$HOME\" != \"/\" ; then\n"
+        "        for dir in $HOME/bin/$CPU $HOME/bin $HOME/.local/bin/$CPU $HOME/.local/bin ; do\n"
+        "\n"
+        "        done\n"
+        "    fi\n"
+        "    if test \"$UID\" = 0 ; then\n"
+        "    fi\n"
+        "    for dir in  /usr/X11/bin \\n"
+        "                /usr/X11R6/bin \\n"
+        "                /var/lib/dosemu \\n"
+        "                /usr/games \\n"
+        "                /opt/bin \\n"
+        "                /opt/kde3/bin \\n"
+        "                /opt/kde2/bin \\n"
+        "                /opt/kde/bin \\n"
+        "                /usr/openwin/bin \\n"
+        "                /opt/cross/bin\n"
+        "    do\n"
+        "    done\n"
+        "    unset dir\n"
+        "fi";
     
     EXPECT_TRUE(CreateTestFile(m_path, test1));
-    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ":", nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ":", '#', nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(CreateTestFile(m_path, test2));
-    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", nullptr, nullptr));
-    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ":", nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", '#', nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ":", '#', nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
