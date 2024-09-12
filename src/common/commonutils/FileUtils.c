@@ -1155,7 +1155,7 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
                 }
                 else if (0 == isalpha(found[0]))
                 {
-                    OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' found in '%s' uncommented with '%c'", text, marker, fileName, comment);
+                    OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' found in '%s' uncommented with '%c'", text, marker, fileName, commentCharacter);
                     OsConfigCaptureReason(reason, "'%s' containing '%s' found in '%s'", text, marker, fileName);
                     foundMarker = true;
                     status = EEXIST;
@@ -1164,13 +1164,13 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
             
             if (false == foundMarker)
             {
-                OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' not found in '%s' uncommented with '%c'", text, marker, fileName, comment);
+                OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' not found in '%s' uncommented with '%c'", text, marker, fileName, commentCharacter);
                 OsConfigCaptureSuccessReason(reason, "'%s' containing '%s' not found in '%s'", text, marker, fileName);
             }
         }
         else
         {
-            OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' not found in '%s'  uncommented with '%c' (%d)", text, fileName, comment, status);
+            OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' not found in '%s'  uncommented with '%c' (%d)", text, fileName, commentCharacter, status);
             OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s' (%d)", text, fileName, status);
         }
 
