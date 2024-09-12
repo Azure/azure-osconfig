@@ -1528,8 +1528,8 @@ TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
 {
     const char* test = "Test \n"
         " FOO=test:/123:!abcdef.123:/test.d TEST1; TEST2/..TEST3:Blah=0\n"
-        "# Test PATH.\n"
-        "#Another test .PATH\n"
+        "# Test PATH!\n"
+        "#Another test !PATH\n"
         "#\n"
         "Test PATH..";
 
@@ -1560,7 +1560,8 @@ TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", ".", '#', nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", "..", '#', nullptr, nullptr));
 
-    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", '#', nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", "!", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", '#', nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", "..", '#', nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
