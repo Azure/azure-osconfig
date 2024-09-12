@@ -1166,12 +1166,14 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
             {
                 OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' not found in '%s' uncommented with '%c'", text, marker, fileName, commentCharacter);
                 OsConfigCaptureSuccessReason(reason, "'%s' containing '%s' not found in '%s'", text, marker, fileName);
+                status = 0;
             }
         }
         else
         {
             OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' not found in '%s'  uncommented with '%c' (%d)", text, fileName, commentCharacter, status);
             OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s' (%d)", text, fileName, status);
+            status = 0;
         }
 
         FREE_MEMORY(results);
