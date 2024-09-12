@@ -2257,7 +2257,7 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
+TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile2)
 {
     const char* test1 = "#\n"
         "# Make path more comfortable\n"
