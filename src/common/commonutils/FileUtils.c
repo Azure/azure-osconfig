@@ -1121,13 +1121,13 @@ int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** rea
     return result;
 }
 
-int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log)
+int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, void* log)
 {
-    const char* commandTemplate = "cat %s | grep %s";
+    const char* commandTemplate = "grep -v '^%c' %s | grep %s";
+
     char* command = NULL;
     char* results = NULL;
-    char* found = 0;
-    size_t commandLength = 0;
+    char* found = NULL;
     bool foundMarker = false;
     int status = 0;
 
@@ -1136,18 +1136,13 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile called with invalid arguments");
         return EINVAL;
     }
-
-    commandLength = strlen(commandTemplate) + strlen(fileName) + strlen(text) + 1;
-    if (NULL == (command = malloc(commandLength)))
+    else if (NULL == (command = FormatAllocateString(commandTemplate, commentCharacter, fileName, text)))
     {
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile: out of memory");
-        status = ENOMEM;
+        return ENOMEM;
     }
     else
     {
-        memset(command, 0, commandLength);
-        snprintf(command, commandLength, commandTemplate, fileName, text);
-
         if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log))) && results)
         {
             found = results;
@@ -1160,8 +1155,8 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
                 }
                 else if (0 == isalpha(found[0]))
                 {
-                    OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
-                    OsConfigCaptureReason(reason, "'%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
+                    OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' found in '%s' uncommented with '%c'", text, marker, fileName, commentCharacter);
+                    OsConfigCaptureReason(reason, "'%s' containing '%s' found in '%s'", text, marker, fileName);
                     foundMarker = true;
                     status = EEXIST;
                 } 
@@ -1169,14 +1164,16 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
             
             if (false == foundMarker)
             {
-                OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' not found in '%s'", text, marker, fileName);
+                OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' not found in '%s' uncommented with '%c'", text, marker, fileName, commentCharacter);
                 OsConfigCaptureSuccessReason(reason, "'%s' containing '%s' not found in '%s'", text, marker, fileName);
+                status = 0;
             }
         }
         else
         {
-            OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' not found in '%s' (%d)", text, fileName, status);
+            OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' not found in '%s'  uncommented with '%c' (%d)", text, fileName, commentCharacter, status);
             OsConfigCaptureSuccessReason(reason, "'%s' not found in '%s' (%d)", text, fileName, status);
+            status = 0;
         }
 
         FREE_MEMORY(results);

@@ -1526,34 +1526,43 @@ TEST_F(CommonUtilsTest, FindTextInFile)
 
 TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
 {
-    const char* test = "Test \n FOO=test:/123:!abcdef.123:/test.d TEST1; TEST2/..TEST3:Blah=0";
+    const char* test = "Test \n"
+        " FOO=test:/123:!abcdef.123:/test.d TEST1; TEST2/..TEST3:Blah=0\n"
+        "# Test PATH!\n"
+        "#Another test !PATH\n"
+        "#\n"
+        "Test PATH..";
 
     EXPECT_TRUE(CreateTestFile(m_path, test));
 
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(nullptr, nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "FOO", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, nullptr, ";", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(nullptr, nullptr, nullptr, '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, nullptr, nullptr, '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "FOO", nullptr, '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, nullptr, ";", '#', nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "", "", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "FOO", "", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "", ";", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "", "", '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "FOO", "", '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile(m_path, "", ";", '#', nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile("~~DoesNotExist", "FOO", ";", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile("~~DoesNotExist", "FOO", ";", '#', nullptr, nullptr));
 
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ".", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ".", '#', nullptr, nullptr));
     
-    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "FOO", "!", nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "FOO", "!", '#', nullptr, nullptr));
     
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ";", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", "..", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ";", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", "..", '#', nullptr, nullptr));
 
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", ";", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", ".", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", "..", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", ";", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", ".", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST1", "..", '#', nullptr, nullptr));
 
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", ".", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", "..", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", ".", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "TEST2", "..", '#', nullptr, nullptr));
+
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", "!", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", "..", '#', nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
