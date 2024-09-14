@@ -867,7 +867,6 @@ static int UnblockSshPort(const char* sshPort, void* log)
                 sshPort, seManagePortCommand, status);
         }
     }
-
     
     FREE_MEMORY(checkPortCommand);
     FREE_MEMORY(seManagePortCommand);
