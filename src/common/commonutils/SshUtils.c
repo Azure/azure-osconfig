@@ -832,7 +832,7 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
 static int UnblockSshPort(const char* sshPort, void* log)
 {
     const char* seStatusCommand = "sestatus";
-    const char* checkPortTemplate = "semanage port -l | grep -w \"ssh_port_t\" | grep -w \"%s\";
+    const char* checkPortTemplate = "semanage port -l | grep -w \"ssh_port_t\" | grep -w \"%s\"";
     const char* seManagePortTemplate = "semanage port -a -t ssh_port_t -p tcp %s";
     char* checkPortCommand = NULL;
     char* seManagePortCommand = NULL;
