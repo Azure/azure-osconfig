@@ -1485,7 +1485,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
                 g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
         }
     }
-    else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject) ||
+    else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshBestPracticeIgnoreRhostsObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshLogLevelIsSetObject)) ||
