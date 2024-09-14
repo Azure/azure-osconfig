@@ -854,7 +854,7 @@ static int UnblockSshPort(const char* sshPort, void* log)
     {
         if (0 != (status = ExecuteCommand(NULL, seStatusCommand, true, false, 0, 0, NULL, NULL, NULL)))
         {
-            OsConfigLogError(log, "UnblockSshPort: '%s' returned %d, assuming SELinux is not present", status);
+            OsConfigLogError(log, "UnblockSshPort: '%s' returned %d, assuming SELinux is not present", seStatusCommand, status);
             status = 0;
         }
         else if (0 == (status = ExecuteCommand(NULL, checkPortCommand, true, false, 0, 0, NULL, NULL, NULL)))
