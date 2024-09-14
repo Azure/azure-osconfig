@@ -829,6 +829,52 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
     return status;
 }
 
+static int UnblockSshPort(const char* sshPort, void* log);
+{
+    const char* seStatusCommand = "sestatus";
+    const char* checkPortTemplate = "semanage port -l | grep -w \"ssh_port_t\" | grep -w \"%s\";
+    const char* seManagePortTemplate = "semanage port -a -t ssh_port_t -p tcp %s";
+    char* checkPortCommand = NULL;
+    char* seManagePortCommand = NULL;
+    int status = 0;
+
+    if (NULL == sshPort)
+    {
+        OsConfigLogError(log, "UnblockSshPort: invalid argument");
+        return EINVAL;
+    }
+    
+    if ((NULL == (checkPortCommand = FormatAllocateString(checkPortTemplate, sshPort))) ||
+        (NULL == (seManagePortCommand = FormatAllocateString(seManagePortTemplate, sshPort))))
+    {
+        OsConfigLogError(log, "UnblockSshPort: out of memory");
+        status = ENOMEM;
+    }
+    else
+    {
+        if (0 != (status = ExecuteCommand(NULL, seStatusCommand, true, false, 0, 0, NULL, NULL, NULL)))
+        {
+            OsConfigLogError(log, "UnblockSshPort: '%s' returned %d, assuming SELinux is not present", status);
+            status = 0;
+        }
+        else if (0 == (status = ExecuteCommand(NULL, checkPortCommand, true, false, 0, 0, NULL, NULL, NULL)))
+        {
+            OsConfigLogInfo(log, "UnblockSshPort: SSH port '%s' appears to be already set with SELinux", sshPort);
+        }
+        else if (0 != (status = ExecuteCommand(NULL, seManagePortCommand, true, false, 0, 0, NULL, NULL, NULL)))
+        {
+            OsConfigLogError(log, "UnblockSshPort: failed to unblock port '%s' with SELinux, '%s' failed with %d, SSH may not work", 
+                sshPort, seManagePortCommand, status);
+        }
+    }
+
+    
+    FREE_MEMORY(checkPortCommand);
+    FREE_MEMORY(seManagePortCommand);
+
+    return status;
+}
+
 static char* FormatRemediationValues(void* log)
 {
     const char* remediationTemplate = "%s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n";
@@ -1166,6 +1212,11 @@ void SshAuditCleanup(void* log)
 
         if (configurationChanged)
         {
+            if (g_desiredSshPort)
+            {
+                UnblockSshPort(g_desiredSshPort, log);
+            }
+            
             // Signal to the SSH Server service to reload configuration
             RestartDaemon(g_sshServerService, log);
         }
@@ -1434,7 +1485,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
                 g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
         }
     }
-    else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject)) ||
+    else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject) ||
         (0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshBestPracticeIgnoreRhostsObject)) ||
         (0 == strcmp(name, g_remediateEnsureSshLogLevelIsSetObject)) ||
