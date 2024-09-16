@@ -834,6 +834,8 @@ static int UnblockSshPort(const char* sshPort, void* log)
     const char* seStatusCommand = "sestatus";
     const char* checkPortTemplate = "semanage port -l | grep -w \"ssh_port_t\" | grep -w \"%s\"";
     const char* seManagePortTemplate = "semanage port -a -t ssh_port_t -p tcp %s";
+    const char* policyCoreUtilsPython = "policycoreutils-python";
+    const char* policyCorePythonUtils = "policycoreutils-python-utils";
     char* checkPortCommand = NULL;
     char* seManagePortCommand = NULL;
     int status = 0;
@@ -856,6 +858,11 @@ static int UnblockSshPort(const char* sshPort, void* log)
         {
             OsConfigLogInfo(log, "UnblockSshPort: '%s' returned %d, assuming SELinux is not present", seStatusCommand, status);
             status = 0;
+        }
+        else if ((0 != InstallPackage(policyCoreUtilsPython, log)) && (0 != InstallPackage(policyCorePythonUtils, log)))
+        {
+            OsConfigLogError(log, "UnblockSshPort: SELinux management tools package is not installed and "
+                "cannot be installed, SSH may not work with the new port '%s'", sshPort);
         }
         else if (0 == (status = ExecuteCommand(NULL, checkPortCommand, true, false, 0, 0, NULL, NULL, NULL)))
         {
