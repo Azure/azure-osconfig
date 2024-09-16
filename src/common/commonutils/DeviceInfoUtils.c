@@ -936,11 +936,6 @@ bool IsCommodore(void* log)
         FREE_MEMORY(textResult);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "'/etc/os-subrelease' PRODUCT_NAME: '%s'", textResult);
-    }
-
     if (0 == strcmp(textResult, PRODUCT_NAME_AZURE_COMMODORE))
     {
         status = true;
