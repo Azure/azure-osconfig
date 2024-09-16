@@ -27,14 +27,7 @@ static int ExecuteSystemctlCommand(const char* command, const char* daemonName, 
 
 bool IsDaemonActive(const char* daemonName, void* log)
 {
-    bool status = false;
-
-    if (0 == ExecuteSystemctlCommand("is-active", daemonName, log))
-    {
-        status = true;
-    }
-
-    return status;
+    return (0 == ExecuteSystemctlCommand("is-active", daemonName, log)) ? true : false;
 }
 
 bool CheckDaemonActive(const char* daemonName, char** reason, void* log)
