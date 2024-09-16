@@ -917,3 +917,36 @@ int EnableVirtualMemoryRandomization(void* log)
     
     return status;
 }
+
+bool IsCommodore(void* log)
+{
+    const char* productNameCommand = "cat /etc/os-subrelease | grep PRODUCT_NAME=";
+    char* textResult = NULL;
+    bool status = false;
+
+    if (0 == ExecuteCommand(NULL, productNameCommand, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemovePrefixBlanks(textResult);
+        RemoveTrailingBlanks(textResult);
+        RemovePrefixUpTo(textResult, '=');
+        RemovePrefixBlanks(textResult);
+    }
+    else
+    {
+        FREE_MEMORY(textResult);
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "'/etc/os-subrelease' PRODUCT_NAME: '%s'", textResult);
+    }
+
+    if (0 == strcmp(textResult, PRODUCT_NAME_AZURE_COMMODORE))
+    {
+        status = true;
+    }
+
+    FREE_MEMORY(textResult);
+
+    return status;
+}

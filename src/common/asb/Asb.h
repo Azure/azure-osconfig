@@ -5,6 +5,7 @@
 #define ASB_H
 
 #define PRETTY_NAME_AZURE_LINUX_2 "CBL-Mariner/Linux"
+#define PRODUCT_NAME_AZURE_COMMODORE "Azure Commodore"
 #define PRETTY_NAME_ALMA_LINUX_9 "AlmaLinux 9 (Beryllium)"
 #define PRETTY_NAME_ALMA_LINUX_9_3 "AlmaLinux 9.3 (Shamrock Pampas Cat)"
 #define PRETTY_NAME_AMAZON_LINUX_2 "Amazon Linux 2"
