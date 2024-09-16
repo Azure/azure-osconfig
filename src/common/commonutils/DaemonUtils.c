@@ -27,11 +27,11 @@ static int ExecuteSystemctlCommand(const char* command, const char* daemonName, 
 
 bool IsDaemonActive(const char* daemonName, void* log)
 {
-    bool status = true;
+    bool status = false;
 
-    if (ESRCH == ExecuteSystemctlCommand("is-active", daemonName, log))
+    if (0 == ExecuteSystemctlCommand("is-active", daemonName, log))
     {
-        status = false;
+        status = true;
     }
 
     return status;
