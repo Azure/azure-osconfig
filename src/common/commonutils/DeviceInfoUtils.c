@@ -930,15 +930,11 @@ bool IsCommodore(void* log)
         RemoveTrailingBlanks(textResult);
         RemovePrefixUpTo(textResult, '=');
         RemovePrefixBlanks(textResult);
-    }
-    else
-    {
-        FREE_MEMORY(textResult);
-    }
 
-    if (0 == strcmp(textResult, PRODUCT_NAME_AZURE_COMMODORE))
-    {
-        status = true;
+        if (0 == strcmp(textResult, PRODUCT_NAME_AZURE_COMMODORE))
+        {
+            status = true;
+        }
     }
 
     FREE_MEMORY(textResult);
