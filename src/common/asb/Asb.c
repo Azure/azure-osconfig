@@ -627,6 +627,7 @@ static char* g_desiredEnsureUnnecessaryAccountsAreRemoved = NULL;
 static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
 
 static const int g_shadowGid = 42;
+static const int g_varLogJournalMode = 2755;
 
 void AsbInitialize(void* log)
 {
@@ -692,6 +693,11 @@ void AsbInitialize(void* log)
     }
     FREE_MEMORY(prettyName);
     FREE_MEMORY(kernelVersion);
+
+    if (IsCommodore(log))
+    {
+        OsConfigLogInfo(log, "AsbInitialize: running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
+    }
 
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
@@ -1722,7 +1728,7 @@ static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(void* log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_systemd, &reason, log));
-    CheckDirectoryAccess(g_varLogJournal, 0, -1, 2775, false, &reason, log);
+    CheckDirectoryAccess(g_varLogJournal, 0, -1, g_varLogJournalMode, false, &reason, log);
     return reason;
 }
 
@@ -3301,7 +3307,7 @@ static int RemediateEnsureSystemdJournaldServicePersistsLogMessages(char* value,
 {
     UNUSED(value);
     return ((0 == InstallPackage(g_systemd, log)) &&
-        (0 == SetDirectoryAccess(g_varLogJournal, 0, -1, 2775, log))) ? 0 : ENOENT;
+        (0 == SetDirectoryAccess(g_varLogJournal, 0, -1, g_varLogJournalMode, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureALoggingServiceIsEnabled(char* value, void* log)
