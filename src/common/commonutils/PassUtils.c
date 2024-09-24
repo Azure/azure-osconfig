@@ -81,9 +81,14 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
             g_etcPamdCommonPassword, g_etcPamdSystemAuth, g_remember);
     }
 
-    if (status && (false == FindPamModule(g_pamUnixSo, log)))
+    if (status)
     {
-        OsConfigCaptureReason(reason, "The PAM module '%s' is not available. Automatic remediation is not possible", g_pamUnixSo);
+        char* pamModule = FindPamModule(g_pamUnixSo, log);
+        if(NULL == pamModule)
+        {
+            OsConfigCaptureReason(reason, "The PAM module '%s' is not available. Automatic remediation is not possible", g_pamUnixSo);
+        }
+        free(pamModule);
     }
 
     return status;
@@ -219,7 +224,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                 continue;
             }
             else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) && 
-                (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) && FreeAndReturnTrue(authValue) &&
+                (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) &&
                 (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny <= 5) &&
                 (0 < (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))))
             {
@@ -229,10 +234,12 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                     auth, required, pamSo, deny, unlockTime, fileName);
                 
                 status = 0;
+                FREE_MEMORY(authValue);
                 break;
             }
             else
             {
+                FREE_MEMORY(authValue);
                 status = ENOENT;
             }
 

@@ -127,6 +127,7 @@ namespace Tests
 
         EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+        delete[] reportedPayload;
     }
 
     TEST_F(CommandRunnerTests, RunCommandTimeout)
@@ -145,6 +146,7 @@ namespace Tests
 
         EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+        delete[] reportedPayload;
     }
 
     TEST_F(CommandRunnerTests, RunCommandSingleLineTextResult)
@@ -163,6 +165,7 @@ namespace Tests
 
         EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+        delete[] reportedPayload;
     }
 
     TEST_F(CommandRunnerTests, RunCommandLimitedPayloadSize)
@@ -190,6 +193,7 @@ namespace Tests
 
         EXPECT_EQ(MMI_OK, commandRunner.Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+        delete[] reportedPayload;
     }
 
     TEST_F(CommandRunnerTests, RunCommandMaximumCacheSize)
@@ -222,6 +226,7 @@ namespace Tests
             EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(refresh.c_str()), refresh.size()));
             EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
             EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(expectedResult.second), std::string(reportedPayload, payloadSizeBytes)));
+            delete[] reportedPayload;
         }
 
         // Add one more command to the cache
@@ -237,6 +242,7 @@ namespace Tests
         // Get the last command from the cache
         EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(lastStatus), std::string(reportedPayload, payloadSizeBytes)));
+        delete[] reportedPayload;
 
         // The first command should have been removed from the cache
         Command::Arguments refreshFirstCommand(expectedResults[0].first, "", Command::Action::RefreshCommandStatus, 0, false);
@@ -246,6 +252,7 @@ namespace Tests
         // The last command should still be reported (set as command to report) and in the cache
         EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(lastStatus), std::string(reportedPayload, payloadSizeBytes)));
+        delete[] reportedPayload;
     }
 
     TEST_F(CommandRunnerTests, RefreshCommand)
@@ -273,6 +280,7 @@ namespace Tests
         // The last run command should be reported
         EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status2), std::string(reportedPayload, payloadSizeBytes)));
+        delete[] reportedPayload;
 
         // Refresh the command
         Command::Arguments refresh(id1, "", Command::Action::RefreshCommandStatus, 0, false);
@@ -284,6 +292,7 @@ namespace Tests
         // The refreshed command should be reported
         EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status1), std::string(reportedPayload, payloadSizeBytes)));
+        delete[] reportedPayload;
     }
 
     TEST_F(CommandRunnerTests, CancelCommandInProgress)
@@ -306,6 +315,7 @@ namespace Tests
 
         EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+        delete[] reportedPayload;
     }
 
     TEST_F(CommandRunnerTests, RepeatCommandId)
@@ -327,6 +337,7 @@ namespace Tests
 
         EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+        delete[] reportedPayload;
     }
 
     TEST_F(CommandRunnerTests, RepeatCommand)
@@ -346,6 +357,7 @@ namespace Tests
 
         EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+        delete[] reportedPayload;
     }
 
     TEST_F(CommandRunnerTests, ExecuteCommand)

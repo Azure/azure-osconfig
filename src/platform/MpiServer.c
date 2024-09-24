@@ -199,7 +199,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
     const char* client = NULL;
     const char* component = NULL;
     const char* object = NULL;
-    const char* payload = NULL;
+    char* payload = NULL;
     int maxPayloadSizeBytes = 0;
     int estimatedSize = 0;
     const char* responseFormat = "\"%s\"";
@@ -424,6 +424,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
         }
     }
 
+    json_free_serialized_string(payload);
     json_value_free(rootValue);
 
     return status;

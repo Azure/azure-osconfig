@@ -275,7 +275,7 @@ static int IsSshConfigIncludeSupported(void* log)
 
 static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, void* log)
 {
-    char* sshMacs = DuplicateStringToLowercase(g_sshMacs);
+    char* sshMacs = NULL;
     char* macsValue = NULL;
     char* value = NULL;
     size_t macsValueLength = 0;
@@ -292,6 +292,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
         return status;
     }
 
+    sshMacs = DuplicateStringToLowercase(g_sshMacs);
     if (NULL == (macsValue = GetSshServerState(sshMacs, log)))
     {
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' not found in SSH Server response from 'sshd -T'", sshMacs);
@@ -343,7 +344,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
 
 static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, void* log)
 {
-    char* sshCiphers = DuplicateStringToLowercase(g_sshCiphers);
+    char* sshCiphers = NULL;
     char* ciphersValue = NULL;
     char* value = NULL;
     size_t ciphersValueLength = 0;
@@ -360,6 +361,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, voi
         return status;
     }
 
+    sshCiphers = DuplicateStringToLowercase(g_sshCiphers);
     if (NULL == (ciphersValue = GetSshServerState(sshCiphers, log)))
     {
         OsConfigLogError(log, "CheckAppropriateCiphersForSsh: '%s' not found in SSH Server response", sshCiphers);

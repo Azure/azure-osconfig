@@ -285,6 +285,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     // Read the text result from the output of the command, if any, whether command succeeded or failed
     if (NULL != textResult)
     {
+        *textResult = NULL;
         resultsFile = fopen(commandTextResultFile, "r");
         if (resultsFile)
         {
@@ -339,7 +340,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         OsConfigLogInfo(log, "Context: '%p'", context);
         OsConfigLogInfo(log, "Command: '%s'", command);
         OsConfigLogInfo(log, "Status: %d (errno: %d)", status, errno);
-        OsConfigLogInfo(log, "Text result: '%s'", (NULL != textResult) ? (*textResult) : "");
+        OsConfigLogInfo(log, "Text result: '%s'", (NULL != textResult && NULL != *textResult) ? (*textResult) : "");
     }
 
     return status;
@@ -377,5 +378,6 @@ char* HashCommand(const char* source, void* log)
         OsConfigLogError(log, "HashCommand: out of memory");
     }
 
+    FREE_MEMORY(command);
     return (0 == status) ? hash : NULL;
 }
