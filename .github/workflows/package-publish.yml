@@ -19,11 +19,11 @@ on:
 
 jobs:
   publish:
-    runs-on: [self-hosted, 1ES.Pool=release-pool, 1ES.ImageOverride=build-infra]
+    runs-on: [self-hosted, 1ES.Pool=osconfig-prod-release-pool, 1ES.ImageOverride=build-infra]
     environment: ${{ inputs.environment }}
     env:
       PMC_CLI_BASE_URL: https://pmc-ingest.trafficmanager.net/api/v4
-      PMC_CLI_MSAL_CLIENT_ID: 7497d560-834a-4326-9750-ead7c3894d19
+      PMC_CLI_MSAL_CLIENT_ID: be6b8300-c301-4115-9aa6-0c5808d6910f
       PMC_CLI_MSAL_SCOPE: api://d48bb382-20ec-41b9-a0ea-07758a21ccd0/.default
       PMC_CLI_MSAL_AUTHORITY: https://login.microsoftonline.com/MSAzureCloud.onmicrosoft.com
       PMC_CLI_MSAL_CERT_PATH: auth.pem
@@ -38,13 +38,13 @@ jobs:
       - uses: azure/login@v2
         with:
           auth-type: IDENTITY
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant-id: ${{ secrets.AZURE_AME_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_AME_SUBSCRIPTION_ID }}
 
       - name: Download certs
         env:
-          AZURE_VAULT: ${{ secrets.AZURE_VAULT }}
-          PMC_MSAL_CERT_NAME: pmc-onecert
+          AZURE_VAULT: ${{ secrets.AZURE_AME_VAULT }}
+          PMC_MSAL_CERT_NAME: pmc
         run: |
           az keyvault secret download --vault-name "$AZURE_VAULT" --name "$PMC_MSAL_CERT_NAME" --file "${{ github.workspace }}/auth.pem"
 
