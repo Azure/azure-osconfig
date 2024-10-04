@@ -6,7 +6,7 @@
         "description": "This policy audits and configures the Azure security baseline for Linux",
         "metadata": {
             "category": "Guest Configuration",
-            "version": "1.0.0.0",
+            "version": "2.2.1",
             "requiredProviders": [
                 "Microsoft.GuestConfiguration"
             ],
@@ -555,7 +555,7 @@
                             },
                             "template": {
                                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                                "contentVersion": "1.0.0.0",
+                                "contentVersion": "2.2.1",
                                 "parameters": {
                                     "vmName": {
                                         "type": "string"

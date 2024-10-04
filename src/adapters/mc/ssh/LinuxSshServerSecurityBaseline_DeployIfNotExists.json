@@ -6,7 +6,7 @@
         "description": "This policy audits and configures the SSH server security configuration on Linux machines (Azure VMs and Arc-enabled machines). For more information including pre-requisites, settings in scope, defaults, and customization, see https://aka.ms/SshPostureControlOverview",
         "metadata": {
             "category": "Guest Configuration",
-            "version": "1.0.0.0",
+            "version": "1.0.1",
             "requiredProviders": [
                 "Microsoft.GuestConfiguration"
             ],
@@ -542,7 +542,7 @@
                             },
                             "template": {
                                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                                "contentVersion": "1.0.0.0",
+                                "contentVersion": "1.0.1",
                                 "parameters": {
                                     "vmName": {
                                         "type": "string"
