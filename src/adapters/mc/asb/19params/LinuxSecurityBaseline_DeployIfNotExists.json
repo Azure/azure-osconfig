@@ -1,9 +1,9 @@
 {
     "properties": {
-        "displayName": "[Preview]: Azure security baseline for Linux (powered by OSConfig)",
+        "displayName": "Configure Azure security baseline for Linux (powered by OSConfig)",
         "policyType": "Custom",
         "mode": "Indexed",
-        "description": "This policy is powered by Azure OSConfig and its purpose is to audit and deploy the Azure Security Baseline for Linux",
+        "description": "This policy audits and configures the Azure security baseline for Linux",
         "metadata": {
             "category": "Guest Configuration",
             "version": "1.0.0.0",
@@ -11,10 +11,10 @@
                 "Microsoft.GuestConfiguration"
             ],
             "guestConfiguration": {
-                "name": "LinuxSecurityBaseline",
+                "name": "AzureLinuxBaseline",
                 "version": "1.0.0",
                 "contentType": "Custom",
-                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaseline.zip",
+                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
                 "contentHash": "C79CE86C44481316A94D3A69F75BC83C38165CE45B0C18B4B54EA7B812AB9070",
                 "configurationParameter": {
                     "accessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
@@ -466,7 +466,7 @@
                         "/providers/Microsoft.Authorization/roleDefinitions/088ab73d-1256-47ae-bea9-9de8e7131f31"
                     ],
                     "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
-                    "name": "[concat('LinuxSecurityBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
+                    "name": "[concat('AzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
                     "existenceCondition": {
                         "allOf": [
                             {
@@ -493,7 +493,7 @@
                                     "value": "[field('type')]"
                                 },
                                 "assignmentName": {
-                                    "value": "[concat('LinuxSecurityBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
+                                    "value": "[concat('AzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
                                 },
                                 "accessPermissionsForSshdConfig": {
                                     "value": "[parameters('accessPermissionsForSshdConfig')]"
@@ -636,10 +636,10 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "LinuxSecurityBaseline",
+                                                "name": "AzureLinuxBaseline",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
-                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaseline.zip",
+                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
                                                 "contentHash": "C79CE86C44481316A94D3A69F75BC83C38165CE45B0C18B4B54EA7B812AB9070",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
@@ -731,10 +731,10 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "LinuxSecurityBaseline",
+                                                "name": "AzureLinuxBaseline",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
-                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaseline.zip",
+                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
                                                 "contentHash": "C79CE86C44481316A94D3A69F75BC83C38165CE45B0C18B4B54EA7B812AB9070",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
@@ -826,10 +826,10 @@
                                         "location": "[parameters('location')]",
                                         "properties": {
                                             "guestConfiguration": {
-                                                "name": "LinuxSecurityBaseline",
+                                                "name": "AzureLinuxBaseline",
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
-                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSecurityBaseline.zip",
+                                                "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
                                                 "contentHash": "C79CE86C44481316A94D3A69F75BC83C38165CE45B0C18B4B54EA7B812AB9070",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [

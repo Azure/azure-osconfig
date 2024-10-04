@@ -10,7 +10,7 @@ instance of OsConfigResource as $OsConfigResource0ref
     DesiredObjectValue = "600";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -26,7 +26,7 @@ instance of OsConfigResource as $OsConfigResource1ref
     DesiredObjectValue = "2";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -42,7 +42,7 @@ instance of OsConfigResource as $OsConfigResource2ref
     DesiredObjectValue = "yes";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -58,7 +58,7 @@ instance of OsConfigResource as $OsConfigResource3ref
     DesiredObjectValue = "INFO";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -74,7 +74,7 @@ instance of OsConfigResource as $OsConfigResource4ref
     DesiredObjectValue = "6";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -90,7 +90,7 @@ instance of OsConfigResource as $OsConfigResource5ref
     DesiredObjectValue = "*@*";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -106,7 +106,7 @@ instance of OsConfigResource as $OsConfigResource6ref
     DesiredObjectValue = "root";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -122,7 +122,7 @@ instance of OsConfigResource as $OsConfigResource7ref
     DesiredObjectValue = "*";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -138,7 +138,7 @@ instance of OsConfigResource as $OsConfigResource8ref
     DesiredObjectValue = "root";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -154,7 +154,7 @@ instance of OsConfigResource as $OsConfigResource9ref
     DesiredObjectValue = "no";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -170,7 +170,7 @@ instance of OsConfigResource as $OsConfigResource10ref
     DesiredObjectValue = "no";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -186,7 +186,7 @@ instance of OsConfigResource as $OsConfigResource11ref
     DesiredObjectValue = "no";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -202,7 +202,7 @@ instance of OsConfigResource as $OsConfigResource12ref
     DesiredObjectValue = "0";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -218,7 +218,7 @@ instance of OsConfigResource as $OsConfigResource13ref
     DesiredObjectValue = "3600";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -234,7 +234,7 @@ instance of OsConfigResource as $OsConfigResource14ref
     DesiredObjectValue = "60";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -250,7 +250,7 @@ instance of OsConfigResource as $OsConfigResource15ref
     DesiredObjectValue = "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -266,7 +266,7 @@ instance of OsConfigResource as $OsConfigResource16ref
     DesiredObjectValue = "#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -282,7 +282,7 @@ instance of OsConfigResource as $OsConfigResource17ref
     DesiredObjectValue = "no";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -298,7 +298,7 @@ instance of OsConfigResource as $OsConfigResource18ref
     DesiredObjectValue = "aes128-ctr,aes192-ctr,aes256-ctr";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -314,7 +314,7 @@ instance of OsConfigResource as $OsConfigResource19ref
     DesiredObjectValue = "22";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -329,7 +329,7 @@ instance of OsConfigResource as $OsConfigResource20ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -344,7 +344,7 @@ instance of OsConfigResource as $OsConfigResource21ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -359,7 +359,7 @@ instance of OsConfigResource as $OsConfigResource22ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -374,7 +374,7 @@ instance of OsConfigResource as $OsConfigResource23ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -389,7 +389,7 @@ instance of OsConfigResource as $OsConfigResource24ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -404,7 +404,7 @@ instance of OsConfigResource as $OsConfigResource25ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -419,7 +419,7 @@ instance of OsConfigResource as $OsConfigResource26ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -434,7 +434,7 @@ instance of OsConfigResource as $OsConfigResource27ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -449,7 +449,7 @@ instance of OsConfigResource as $OsConfigResource28ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -464,7 +464,7 @@ instance of OsConfigResource as $OsConfigResource29ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -479,7 +479,7 @@ instance of OsConfigResource as $OsConfigResource30ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -495,7 +495,7 @@ instance of OsConfigResource as $OsConfigResource31ref
     DesiredObjectValue = "644";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -511,7 +511,7 @@ instance of OsConfigResource as $OsConfigResource32ref
     DesiredObjectValue = "644";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -527,7 +527,7 @@ instance of OsConfigResource as $OsConfigResource33ref
     DesiredObjectValue = "644";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -542,7 +542,7 @@ instance of OsConfigResource as $OsConfigResource34ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -557,7 +557,7 @@ instance of OsConfigResource as $OsConfigResource35ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -572,7 +572,7 @@ instance of OsConfigResource as $OsConfigResource36ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -587,7 +587,7 @@ instance of OsConfigResource as $OsConfigResource37ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -602,7 +602,7 @@ instance of OsConfigResource as $OsConfigResource38ref
     DesiredObjectValue = "644";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -617,7 +617,7 @@ instance of OsConfigResource as $OsConfigResource39ref
     DesiredObjectValue = "644";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -633,7 +633,7 @@ instance of OsConfigResource as $OsConfigResource40ref
     DesiredObjectValue = "0";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -648,7 +648,7 @@ instance of OsConfigResource as $OsConfigResource41ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -664,7 +664,7 @@ instance of OsConfigResource as $OsConfigResource42ref
     DesiredObjectValue = "3,14,4,-1,-1,-1,-1";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -679,7 +679,7 @@ instance of OsConfigResource as $OsConfigResource43ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -694,7 +694,7 @@ instance of OsConfigResource as $OsConfigResource44ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -709,7 +709,7 @@ instance of OsConfigResource as $OsConfigResource45ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -724,7 +724,7 @@ instance of OsConfigResource as $OsConfigResource46ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -739,7 +739,7 @@ instance of OsConfigResource as $OsConfigResource47ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -755,7 +755,7 @@ instance of OsConfigResource as $OsConfigResource48ref
     DesiredObjectValue = "600,644,664,700,744";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -770,7 +770,7 @@ instance of OsConfigResource as $OsConfigResource49ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -785,7 +785,7 @@ instance of OsConfigResource as $OsConfigResource50ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -800,7 +800,7 @@ instance of OsConfigResource as $OsConfigResource51ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -815,7 +815,7 @@ instance of OsConfigResource as $OsConfigResource52ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -830,7 +830,7 @@ instance of OsConfigResource as $OsConfigResource53ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -845,7 +845,7 @@ instance of OsConfigResource as $OsConfigResource54ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -860,7 +860,7 @@ instance of OsConfigResource as $OsConfigResource55ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -875,7 +875,7 @@ instance of OsConfigResource as $OsConfigResource56ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -890,7 +890,7 @@ instance of OsConfigResource as $OsConfigResource57ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -905,7 +905,7 @@ instance of OsConfigResource as $OsConfigResource58ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -920,7 +920,7 @@ instance of OsConfigResource as $OsConfigResource59ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -935,7 +935,7 @@ instance of OsConfigResource as $OsConfigResource60ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -950,7 +950,7 @@ instance of OsConfigResource as $OsConfigResource61ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -966,7 +966,7 @@ instance of OsConfigResource as $OsConfigResource62ref
     DesiredObjectValue = "400";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -982,7 +982,7 @@ instance of OsConfigResource as $OsConfigResource63ref
     DesiredObjectValue = "400";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -998,7 +998,7 @@ instance of OsConfigResource as $OsConfigResource64ref
     DesiredObjectValue = "400";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1014,7 +1014,7 @@ instance of OsConfigResource as $OsConfigResource65ref
     DesiredObjectValue = "400";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1030,7 +1030,7 @@ instance of OsConfigResource as $OsConfigResource66ref
     DesiredObjectValue = "644";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1046,7 +1046,7 @@ instance of OsConfigResource as $OsConfigResource67ref
     DesiredObjectValue = "644";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1062,7 +1062,7 @@ instance of OsConfigResource as $OsConfigResource68ref
     DesiredObjectValue = "644";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1078,7 +1078,7 @@ instance of OsConfigResource as $OsConfigResource69ref
     DesiredObjectValue = "644";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1093,7 +1093,7 @@ instance of OsConfigResource as $OsConfigResource70ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1108,7 +1108,7 @@ instance of OsConfigResource as $OsConfigResource71ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1123,7 +1123,7 @@ instance of OsConfigResource as $OsConfigResource72ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1138,7 +1138,7 @@ instance of OsConfigResource as $OsConfigResource73ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1153,7 +1153,7 @@ instance of OsConfigResource as $OsConfigResource74ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1168,7 +1168,7 @@ instance of OsConfigResource as $OsConfigResource75ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1183,7 +1183,7 @@ instance of OsConfigResource as $OsConfigResource76ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1199,7 +1199,7 @@ instance of OsConfigResource as $OsConfigResource77ref
     DesiredObjectValue = "700,750";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1215,7 +1215,7 @@ instance of OsConfigResource as $OsConfigResource78ref
     DesiredObjectValue = "077";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1230,7 +1230,7 @@ instance of OsConfigResource as $OsConfigResource79ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1246,7 +1246,7 @@ instance of OsConfigResource as $OsConfigResource80ref
     DesiredObjectValue = "400";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1261,7 +1261,7 @@ instance of OsConfigResource as $OsConfigResource81ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1276,7 +1276,7 @@ instance of OsConfigResource as $OsConfigResource82ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1291,7 +1291,7 @@ instance of OsConfigResource as $OsConfigResource83ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1306,7 +1306,7 @@ instance of OsConfigResource as $OsConfigResource84ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1321,7 +1321,7 @@ instance of OsConfigResource as $OsConfigResource85ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1336,7 +1336,7 @@ instance of OsConfigResource as $OsConfigResource86ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1351,7 +1351,7 @@ instance of OsConfigResource as $OsConfigResource87ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1366,7 +1366,7 @@ instance of OsConfigResource as $OsConfigResource88ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1381,7 +1381,7 @@ instance of OsConfigResource as $OsConfigResource89ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1396,7 +1396,7 @@ instance of OsConfigResource as $OsConfigResource90ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1411,7 +1411,7 @@ instance of OsConfigResource as $OsConfigResource91ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1426,7 +1426,7 @@ instance of OsConfigResource as $OsConfigResource92ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1441,7 +1441,7 @@ instance of OsConfigResource as $OsConfigResource93ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1456,7 +1456,7 @@ instance of OsConfigResource as $OsConfigResource94ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1471,7 +1471,7 @@ instance of OsConfigResource as $OsConfigResource95ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1486,7 +1486,7 @@ instance of OsConfigResource as $OsConfigResource96ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1501,7 +1501,7 @@ instance of OsConfigResource as $OsConfigResource97ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1516,7 +1516,7 @@ instance of OsConfigResource as $OsConfigResource98ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1531,7 +1531,7 @@ instance of OsConfigResource as $OsConfigResource99ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1546,7 +1546,7 @@ instance of OsConfigResource as $OsConfigResource100ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1561,7 +1561,7 @@ instance of OsConfigResource as $OsConfigResource101ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1577,7 +1577,7 @@ instance of OsConfigResource as $OsConfigResource102ref
     DesiredObjectValue = "600,640";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1592,7 +1592,7 @@ instance of OsConfigResource as $OsConfigResource103ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1607,7 +1607,7 @@ instance of OsConfigResource as $OsConfigResource104ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1622,7 +1622,7 @@ instance of OsConfigResource as $OsConfigResource105ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1637,7 +1637,7 @@ instance of OsConfigResource as $OsConfigResource106ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1652,7 +1652,7 @@ instance of OsConfigResource as $OsConfigResource107ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1667,7 +1667,7 @@ instance of OsConfigResource as $OsConfigResource108ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1682,7 +1682,7 @@ instance of OsConfigResource as $OsConfigResource109ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1697,7 +1697,7 @@ instance of OsConfigResource as $OsConfigResource110ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1712,7 +1712,7 @@ instance of OsConfigResource as $OsConfigResource111ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1727,7 +1727,7 @@ instance of OsConfigResource as $OsConfigResource112ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1742,7 +1742,7 @@ instance of OsConfigResource as $OsConfigResource113ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1757,7 +1757,7 @@ instance of OsConfigResource as $OsConfigResource114ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1772,7 +1772,7 @@ instance of OsConfigResource as $OsConfigResource115ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1787,7 +1787,7 @@ instance of OsConfigResource as $OsConfigResource116ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1802,7 +1802,7 @@ instance of OsConfigResource as $OsConfigResource117ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1817,7 +1817,7 @@ instance of OsConfigResource as $OsConfigResource118ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1832,7 +1832,7 @@ instance of OsConfigResource as $OsConfigResource119ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1847,7 +1847,7 @@ instance of OsConfigResource as $OsConfigResource120ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1862,7 +1862,7 @@ instance of OsConfigResource as $OsConfigResource121ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1877,7 +1877,7 @@ instance of OsConfigResource as $OsConfigResource122ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1892,7 +1892,7 @@ instance of OsConfigResource as $OsConfigResource123ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1908,7 +1908,7 @@ instance of OsConfigResource as $OsConfigResource124ref
     DesiredObjectValue = "600";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1924,7 +1924,7 @@ instance of OsConfigResource as $OsConfigResource125ref
     DesiredObjectValue = "700";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1940,7 +1940,7 @@ instance of OsConfigResource as $OsConfigResource126ref
     DesiredObjectValue = "700";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1956,7 +1956,7 @@ instance of OsConfigResource as $OsConfigResource127ref
     DesiredObjectValue = "700";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1972,7 +1972,7 @@ instance of OsConfigResource as $OsConfigResource128ref
     DesiredObjectValue = "700";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1988,7 +1988,7 @@ instance of OsConfigResource as $OsConfigResource129ref
     DesiredObjectValue = "700";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2003,7 +2003,7 @@ instance of OsConfigResource as $OsConfigResource130ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2018,7 +2018,7 @@ instance of OsConfigResource as $OsConfigResource131ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2033,7 +2033,7 @@ instance of OsConfigResource as $OsConfigResource132ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2048,7 +2048,7 @@ instance of OsConfigResource as $OsConfigResource133ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2063,7 +2063,7 @@ instance of OsConfigResource as $OsConfigResource134ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2078,7 +2078,7 @@ instance of OsConfigResource as $OsConfigResource135ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2093,7 +2093,7 @@ instance of OsConfigResource as $OsConfigResource136ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2108,7 +2108,7 @@ instance of OsConfigResource as $OsConfigResource137ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2123,7 +2123,7 @@ instance of OsConfigResource as $OsConfigResource138ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2138,7 +2138,7 @@ instance of OsConfigResource as $OsConfigResource139ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2153,7 +2153,7 @@ instance of OsConfigResource as $OsConfigResource140ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2168,7 +2168,7 @@ instance of OsConfigResource as $OsConfigResource141ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2183,7 +2183,7 @@ instance of OsConfigResource as $OsConfigResource142ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2198,7 +2198,7 @@ instance of OsConfigResource as $OsConfigResource143ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2213,7 +2213,7 @@ instance of OsConfigResource as $OsConfigResource144ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2228,7 +2228,7 @@ instance of OsConfigResource as $OsConfigResource145ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2243,7 +2243,7 @@ instance of OsConfigResource as $OsConfigResource146ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2258,7 +2258,7 @@ instance of OsConfigResource as $OsConfigResource147ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2273,7 +2273,7 @@ instance of OsConfigResource as $OsConfigResource148ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2288,7 +2288,7 @@ instance of OsConfigResource as $OsConfigResource149ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2304,7 +2304,7 @@ instance of OsConfigResource as $OsConfigResource150ref
     DesiredObjectValue = "365";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2320,7 +2320,7 @@ instance of OsConfigResource as $OsConfigResource151ref
     DesiredObjectValue = "7";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2336,7 +2336,7 @@ instance of OsConfigResource as $OsConfigResource152ref
     DesiredObjectValue = "5";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2352,7 +2352,7 @@ instance of OsConfigResource as $OsConfigResource153ref
     DesiredObjectValue = "6";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2368,7 +2368,7 @@ instance of OsConfigResource as $OsConfigResource154ref
     DesiredObjectValue = "7";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2384,7 +2384,7 @@ instance of OsConfigResource as $OsConfigResource155ref
     DesiredObjectValue = "365";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2400,7 +2400,7 @@ instance of OsConfigResource as $OsConfigResource156ref
     DesiredObjectValue = "30";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2415,7 +2415,7 @@ instance of OsConfigResource as $OsConfigResource157ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2430,7 +2430,7 @@ instance of OsConfigResource as $OsConfigResource158ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2445,7 +2445,7 @@ instance of OsConfigResource as $OsConfigResource159ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2461,7 +2461,7 @@ instance of OsConfigResource as $OsConfigResource160ref
     DesiredObjectValue = "games,test";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2476,7 +2476,7 @@ instance of OsConfigResource as $OsConfigResource161ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2491,7 +2491,7 @@ instance of OsConfigResource as $OsConfigResource162ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2506,7 +2506,7 @@ instance of OsConfigResource as $OsConfigResource163ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2521,7 +2521,7 @@ instance of OsConfigResource as $OsConfigResource164ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2536,7 +2536,7 @@ instance of OsConfigResource as $OsConfigResource165ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2551,7 +2551,7 @@ instance of OsConfigResource as $OsConfigResource166ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2566,7 +2566,7 @@ instance of OsConfigResource as $OsConfigResource167ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxSecurityBaseline";
+    ConfigurationName = "AzureLinuxBaseline";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2576,5 +2576,5 @@ instance of OMI_ConfigurationDocument
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
     GenerationDate="7/9/2024 16:07:00 PST";
-    Name="LinuxSecurityBaseline";
+    Name="AzureLinuxBaseline";
 };
