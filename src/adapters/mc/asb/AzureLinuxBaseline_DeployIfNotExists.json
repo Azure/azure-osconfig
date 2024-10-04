@@ -15,7 +15,7 @@
                 "version": "1.0.0",
                 "contentType": "Custom",
                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                "contentHash": "C79CE86C44481316A94D3A69F75BC83C38165CE45B0C18B4B54EA7B812AB9070",
+                "contentHash": "4459B61F30184BFBB8F294E428F7D8E530F78341BAB5703948614774BCE4CB65",
                 "configurationParameter": {
                     "setDefaultDenyFirewallPolicy": "Ensure default deny firewall policy is set;DesiredObjectValue"
                 }
@@ -370,7 +370,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                                                "contentHash": "C79CE86C44481316A94D3A69F75BC83C38165CE45B0C18B4B54EA7B812AB9070",
+                                                "contentHash": "4459B61F30184BFBB8F294E428F7D8E530F78341BAB5703948614774BCE4CB65",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -393,7 +393,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                                                "contentHash": "C79CE86C44481316A94D3A69F75BC83C38165CE45B0C18B4B54EA7B812AB9070",
+                                                "contentHash": "4459B61F30184BFBB8F294E428F7D8E530F78341BAB5703948614774BCE4CB65",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -416,7 +416,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                                                "contentHash": "C79CE86C44481316A94D3A69F75BC83C38165CE45B0C18B4B54EA7B812AB9070",
+                                                "contentHash": "4459B61F30184BFBB8F294E428F7D8E530F78341BAB5703948614774BCE4CB65",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
