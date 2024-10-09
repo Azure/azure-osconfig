@@ -1,0 +1,391 @@
+{
+  "properties": {
+    "displayName": "Audit Azure security baseline for Linux (powered by OSConfig)",
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "description": "This demo policy audits (and can also optionally configure) the Azure security baseline for Linux",
+    "metadata": {
+      "category": "Guest Configuration",
+      "version": "1.0.0",
+      "requiredProviders": [
+        "Microsoft.GuestConfiguration"
+      ],
+      "guestConfiguration": {
+        "name": "AzureLinuxBaseline",
+        "version": "1.0.0",
+        "contentType": "Custom",
+        "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
+        "contentHash": "4459B61F30184BFBB8F294E428F7D8E530F78341BAB5703948614774BCE4CB65"
+      }
+    },
+    "parameters": {
+      "IncludeArcMachines": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Include Arc connected servers",
+          "description": "By selecting this option, you agree to be charged monthly per Arc connected machine.",
+          "portalReview": "true"
+        },
+        "allowedValues": [
+          "true",
+          "false"
+        ],
+        "defaultValue": "false"
+      },
+      "effect": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of this policy"
+        },
+        "allowedValues": [
+          "DeployIfNotExists",
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "anyOf": [
+                  {
+                    "field": "type",
+                    "equals": "Microsoft.Compute/virtualMachines"
+                  },
+                  {
+                    "field": "type",
+                    "equals": "Microsoft.Compute/virtualMachineScaleSets"
+                  }
+                ]
+              },
+              {
+                "field": "tags['aks-managed-orchestrator']",
+                "exists": false
+              },
+              {
+                "field": "tags['aks-managed-poolName']",
+                "exists": false
+              },
+              {
+                "anyOf": [
+                  {
+                    "field": "Microsoft.Compute/imagePublisher",
+                    "in": [
+                      "microsoft-aks",
+                      "qubole-inc",
+                      "datastax",
+                      "couchbase",
+                      "scalegrid",
+                      "checkpoint",
+                      "paloaltonetworks",
+                      "debian",
+                      "credativ"
+                    ]
+                  },
+                  {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Compute/imagePublisher",
+                        "equals": "OpenLogic"
+                      },
+                      {
+                        "field": "Microsoft.Compute/imageSKU",
+                        "notLike": "6*"
+                      }
+                    ]
+                  },
+                  {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Compute/imagePublisher",
+                        "equals": "Oracle"
+                      },
+                      {
+                        "field": "Microsoft.Compute/imageSKU",
+                        "notLike": "6*"
+                      }
+                    ]
+                  },
+                  {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Compute/imagePublisher",
+                        "equals": "RedHat"
+                      },
+                      {
+                        "field": "Microsoft.Compute/imageSKU",
+                        "notLike": "6*"
+                      }
+                    ]
+                  },
+                  {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Compute/imagePublisher",
+                        "equals": "center-for-internet-security-inc"
+                      },
+                      {
+                        "field": "Microsoft.Compute/imageOffer",
+                        "notLike": "cis-win*"
+                      }
+                    ]
+                  },
+                  {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Compute/imagePublisher",
+                        "equals": "Suse"
+                      },
+                      {
+                        "field": "Microsoft.Compute/imageSKU",
+                        "notLike": "11*"
+                      }
+                    ]
+                  },
+                  {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Compute/imagePublisher",
+                        "equals": "Canonical"
+                      },
+                      {
+                        "field": "Microsoft.Compute/imageSKU",
+                        "notLike": "12*"
+                      }
+                    ]
+                  },
+                  {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Compute/imagePublisher",
+                        "equals": "microsoft-dsvm"
+                      },
+                      {
+                        "field": "Microsoft.Compute/imageOffer",
+                        "notLike": "dsvm-win*"
+                      }
+                    ]
+                  },
+                  {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Compute/imagePublisher",
+                        "equals": "cloudera"
+                      },
+                      {
+                        "field": "Microsoft.Compute/imageSKU",
+                        "notLike": "6*"
+                      }
+                    ]
+                  },
+                  {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Compute/imagePublisher",
+                        "equals": "microsoft-ads"
+                      },
+                      {
+                        "field": "Microsoft.Compute/imageOffer",
+                        "like": "linux*"
+                      }
+                    ]
+                  },
+                  {
+                    "allOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "field": "Microsoft.Compute/virtualMachines/osProfile.linuxConfiguration",
+                            "exists": true
+                          },
+                          {
+                            "field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.osType",
+                            "like": "Linux*"
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "field": "Microsoft.Compute/imagePublisher",
+                            "exists": false
+                          },
+                          {
+                            "field": "Microsoft.Compute/imagePublisher",
+                            "notIn": [
+                              "OpenLogic",
+                              "RedHat",
+                              "credativ",
+                              "Suse",
+                              "Canonical",
+                              "microsoft-dsvm",
+                              "cloudera",
+                              "microsoft-ads",
+                              "center-for-internet-security-inc",
+                              "Oracle",
+                              "AzureDatabricks",
+                              "azureopenshift"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "value": "[parameters('IncludeArcMachines')]",
+                "equals": true
+              },
+              {
+                "anyOf": [
+                  {
+                    "allOf": [
+                      {
+                        "field": "type",
+                        "equals": "Microsoft.HybridCompute/machines"
+                      },
+                      {
+                        "field": "Microsoft.HybridCompute/imageOffer",
+                        "like": "linux*"
+                      }
+                    ]
+                  },
+                  {
+                    "allOf": [
+                      {
+                        "field": "type",
+                        "equals": "Microsoft.ConnectedVMwarevSphere/virtualMachines"
+                      },
+                      {
+                        "field": "Microsoft.ConnectedVMwarevSphere/virtualMachines/osProfile.osType",
+                        "like": "linux*"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "roleDefinitionIds": [
+            "/providers/Microsoft.Authorization/roleDefinitions/088ab73d-1256-47ae-bea9-9de8e7131f31"
+          ],
+          "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
+          "name": "[concat('AzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
+          "existenceCondition": {
+            "allOf": [
+              {
+                "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/complianceStatus",
+                "equals": "Compliant"
+              }
+            ]
+          },
+          "deployment": {
+            "properties": {
+              "mode": "incremental",
+              "parameters": {
+                "vmName": {
+                  "value": "[field('name')]"
+                },
+                "location": {
+                  "value": "[field('location')]"
+                },
+                "type": {
+                  "value": "[field('type')]"
+                },
+                "assignmentName": {
+                  "value": "[concat('AzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
+                }
+              },
+              "template": {
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0",
+                "parameters": {
+                  "vmName": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "assignmentName": {
+                    "type": "string"
+                  }
+                },
+                "resources": [
+                  {
+                    "condition": "[equals(toLower(parameters('type')), toLower('Microsoft.Compute/virtualMachines'))]",
+                    "apiVersion": "2018-11-20",
+                    "type": "Microsoft.Compute/virtualMachines/providers/guestConfigurationAssignments",
+                    "name": "[concat(parameters('vmName'), '/Microsoft.GuestConfiguration/', parameters('assignmentName'))]",
+                    "location": "[parameters('location')]",
+                    "properties": {
+                      "guestConfiguration": {
+                        "name": "AzureLinuxBaseline",
+                        "version": "1.0.0",
+                        "contentType": "Custom",
+                        "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
+                        "contentHash": "4459B61F30184BFBB8F294E428F7D8E530F78341BAB5703948614774BCE4CB65",
+                        "assignmentType": "ApplyAndAutoCorrect"
+                      }
+                    }
+                  },
+                  {
+                    "condition": "[equals(toLower(parameters('type')), toLower('Microsoft.HybridCompute/machines'))]",
+                    "apiVersion": "2018-11-20",
+                    "type": "Microsoft.HybridCompute/machines/providers/guestConfigurationAssignments",
+                    "name": "[concat(parameters('vmName'), '/Microsoft.GuestConfiguration/', parameters('assignmentName'))]",
+                    "location": "[parameters('location')]",
+                    "properties": {
+                      "guestConfiguration": {
+                        "name": "AzureLinuxBaseline",
+                        "version": "1.0.0",
+                        "contentType": "Custom",
+                        "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
+                        "contentHash": "4459B61F30184BFBB8F294E428F7D8E530F78341BAB5703948614774BCE4CB65",
+                        "assignmentType": "ApplyAndAutoCorrect"
+                      }
+                    }
+                  },
+                  {
+                    "condition": "[equals(toLower(parameters('type')), toLower('Microsoft.Compute/virtualMachineScaleSets'))]",
+                    "apiVersion": "2018-11-20",
+                    "type": "Microsoft.Compute/virtualMachineScaleSets/providers/guestConfigurationAssignments",
+                    "name": "[concat(parameters('vmName'), '/Microsoft.GuestConfiguration/', parameters('assignmentName'))]",
+                    "location": "[parameters('location')]",
+                    "properties": {
+                      "guestConfiguration": {
+                        "name": "AzureLinuxBaseline",
+                        "version": "1.0.0",
+                        "contentType": "Custom",
+                        "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
+                        "contentHash": "4459B61F30184BFBB8F294E428F7D8E530F78341BAB5703948614774BCE4CB65",
+                        "assignmentType": "ApplyAndAutoCorrect"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

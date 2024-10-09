@@ -2572,9 +2572,9 @@ instance of OsConfigResource as $OsConfigResource167ref
 
 instance of OMI_ConfigurationDocument
 {
-    Version="1.0.0";
+    Version="0.0.3";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="10/04/2024 10:40:00 PST";
+    GenerationDate="7/9/2024 16:07:00 PST";
     Name="AzureLinuxBaseline";
 };

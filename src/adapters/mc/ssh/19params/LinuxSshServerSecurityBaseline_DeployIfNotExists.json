@@ -1,12 +1,12 @@
 {
     "properties": {
-        "displayName": "[Preview]: SSH security posture control for Linux (powered by OSConfig)",
+        "displayName": "Configure SSH security posture for Linux (powered by OSConfig)",
         "policyType": "Custom",
         "mode": "Indexed",
-        "description": "This policy is powered by Azure OSConfig and its purpose is to ensure that the SSH Server is securely configured on the Linux device",
+        "description": "This policy audits and configures SSH server security configuration on Linux machines (Azure VMs and Arc-enabled machines). For more information including pre-requisites, settings in scope, defaults, and customization, see https://aka.ms/SshPostureControlOverview",
         "metadata": {
             "category": "Guest Configuration",
-            "version": "1.0.0.0",
+            "version": "1.0.1",
             "requiredProviders": [
                 "Microsoft.GuestConfiguration"
             ],
@@ -15,7 +15,7 @@
                 "version": "1.0.0",
                 "contentType": "Custom",
                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaseline.zip",
-                "contentHash": "29D9C8A8660C7424D73E277D80B8225D2A107966C7FF4AA10D65503AAB20BA60",
+                "contentHash": "3DCE6AA0CC74A2AB39FC0744036D7BFEE8A07CC4865A2CE39EE051F642D88A53",
                 "configurationParameter": {
                     "accessPermissionsForSshdConfig": "Ensure that permissions on /etc/ssh/sshd_config are configured;DesiredObjectValue",
                     "ignoreHosts": "Ensure that the SSH IgnoreRhosts is configured;DesiredObjectValue",
@@ -639,7 +639,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaseline.zip",
-                                                "contentHash": "29D9C8A8660C7424D73E277D80B8225D2A107966C7FF4AA10D65503AAB20BA60",
+                                                "contentHash": "3DCE6AA0CC74A2AB39FC0744036D7BFEE8A07CC4865A2CE39EE051F642D88A53",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -734,7 +734,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaseline.zip",
-                                                "contentHash": "29D9C8A8660C7424D73E277D80B8225D2A107966C7FF4AA10D65503AAB20BA60",
+                                                "contentHash": "3DCE6AA0CC74A2AB39FC0744036D7BFEE8A07CC4865A2CE39EE051F642D88A53",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
@@ -829,7 +829,7 @@
                                                 "version": "1.0.0",
                                                 "contentType": "Custom",
                                                 "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/LinuxSshServerSecurityBaseline.zip",
-                                                "contentHash": "29D9C8A8660C7424D73E277D80B8225D2A107966C7FF4AA10D65503AAB20BA60",
+                                                "contentHash": "3DCE6AA0CC74A2AB39FC0744036D7BFEE8A07CC4865A2CE39EE051F642D88A53",
                                                 "assignmentType": "ApplyAndAutoCorrect",
                                                 "configurationParameter": [
                                                     {
