@@ -30,7 +30,7 @@ jobs:
         policy-package:
           [
             { path: LinuxSshServerSecurityBaseline.zip, short-name: SSH, resource-count: 20 },
-            { path: LinuxSecurityBaseline.zip, short-name: ASB, resource-count: 168 },
+            { path: AzureLinuxBaseline.zip, short-name: ASB, resource-count: 168 },
           ]
         arch: [amd64]
         install-osconfig: [false]
