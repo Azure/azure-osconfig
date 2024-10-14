@@ -90,6 +90,7 @@ static char* LoadConfigurationFromFile(const char* fileName)
         g_iotHubManagementEnabled = IsIotHubManagementEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
+
         FREE_MEMORY(g_gitBranch);
         g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
     }

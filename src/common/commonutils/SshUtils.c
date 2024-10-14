@@ -291,8 +291,12 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
     {
         return status;
     }
+    else if (NULL == (sshMacs = DuplicateStringToLowercase(g_sshMacs)))
+    {
+        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: failed to duplicate string to lowercase");
+        return ENOMEM;
+    }
 
-    sshMacs = DuplicateStringToLowercase(g_sshMacs);
     if (NULL == (macsValue = GetSshServerState(sshMacs, log)))
     {
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' not found in SSH Server response from 'sshd -T'", sshMacs);
@@ -359,9 +363,12 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, voi
     else if (0 != IsSshServerActive(log))
     {
         return status;
+    } else if(NULL == (sshCiphers = DuplicateStringToLowercase(g_sshCiphers)))
+    {
+        OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate string to lowercase");
+        return ENOMEM;
     }
 
-    sshCiphers = DuplicateStringToLowercase(g_sshCiphers);
     if (NULL == (ciphersValue = GetSshServerState(sshCiphers, log)))
     {
         OsConfigLogError(log, "CheckAppropriateCiphersForSsh: '%s' not found in SSH Server response", sshCiphers);

@@ -62,6 +62,7 @@ static char* FindPamModule(const char* pamModule, void* log)
 int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
 {
     int status = ENOENT;
+    char* pamModule = NULL;
 
     if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
@@ -83,12 +84,11 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
 
     if (status)
     {
-        char* pamModule = FindPamModule(g_pamUnixSo, log);
-        if(NULL == pamModule)
+        if (NULL == (pamModule = FindPamModule(g_pamUnixSo, log)))
         {
             OsConfigCaptureReason(reason, "The PAM module '%s' is not available. Automatic remediation is not possible", g_pamUnixSo);
         }
-        free(pamModule);
+        FREE_MEMORY(pamModule);
     }
 
     return status;
