@@ -5,11 +5,13 @@
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 {
-    const int initialSize = 5; //1024;
+    const int initialSize = 1024;
+    int currentSize = 0;
     FILE* file = NULL;
     int i = 0;
     int next = 0;
     char* string = NULL;
+    char* temp = NULL;
 
     if (false == FileExists(fileName))
     {
@@ -22,7 +24,8 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
         {
             if (NULL != (string = (char*)malloc(initialSize)))
             {
-                memset(&string[0], 0, initialSize);
+                currentSize = initialSize;
+                memset(&string[0], 0, currentSize);
                 while (1)
                 {
                     next = fgetc(file);
@@ -36,11 +39,13 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 
                     i += 1;
 
-                    if (i > initialSize)
+                    if (i >= currentSize)
                     {
-                        if (NULL != (string = realloc(string, initialSize + i)))
+                        currentSize += initialSize;
+                        if (NULL != (temp = realloc(string, currentSize)))
                         {
-                            memset(&string[i], 0, initialSize);
+                            string = temp;
+                            memset(&string[i], 0, currentSize - i);
                         }
                         else
                         {
