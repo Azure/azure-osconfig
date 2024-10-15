@@ -2280,9 +2280,8 @@ TEST_F(CommonUtilsTest, LoadStringFromFileProcfsIpv4)
 {
     const char *procfsFileName = "/proc/sys/net/ipv4/conf/all/accept_source_route";
     char *contents = NULL;
-    char a = 1;
     EXPECT_NE(nullptr, contents = LoadStringFromFile(procfsFileName, false, nullptr));
-    EXPECT_EQ(0, a = &(contents + strlen(contents) - 1)));
-    EXPECT_EQ(0, a = &(contents + strlen(contents)));
+    EXPECT_EQ(1, strlen(contents));
+    EXPECT_EQ(0, contents[strlen(contents)]));
     FREE_MEMORY(contents);
 }
