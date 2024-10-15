@@ -363,7 +363,8 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, voi
     else if (0 != IsSshServerActive(log))
     {
         return status;
-    } else if(NULL == (sshCiphers = DuplicateStringToLowercase(g_sshCiphers)))
+    }
+    else if (NULL == (sshCiphers = DuplicateStringToLowercase(g_sshCiphers)))
     {
         OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate string to lowercase");
         return ENOMEM;
