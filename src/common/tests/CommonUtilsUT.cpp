@@ -85,7 +85,7 @@ TEST_F(CommonUtilsTest, LoadStringFromSingleByteFile)
     const char* data = "0";
     char* contents = NULL;
     EXPECT_TRUE(CreateTestFile(m_path, data));
-    EXPECT_STREQ(data, contents = LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(data, contents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_EQ(1, strlen(contents));
     EXPECT_EQ(data[0], contents[0]);
     EXPECT_EQ(0, contents[1]);
@@ -2262,14 +2262,18 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-TEST_F(CommonUtilsTest, LoadStringFromSingleByteFile)
+TEST_F(CommonUtilsTest, LoadStringFromZeroLengthFile)
 {
-    const char* singleByteContents = "t";
+    const char* name = "~zeroSizeFile";
+    int fd = NULL;
     char* contents = NULL;
-    EXPECT_TRUE(CreateTestFile(m_path, singleByteContents));
-    EXPECT_STREQ(singleByteContents, contents = LoadStringFromFile(m_path, false, nullptr));
-    EXPECT_EQ(strlen(singleByteContents), strlen(contents));
-    EXPECT_EQ(0, (char)(contents + singleByteContents));
+
+    EXPECT_EQ(0, fd = open(m_path, O_CREAT | O_WRONLY, 0644));
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_EQ(0, strlen(contents));
+    EXPECT_EQ(0, contents[0]);
     FREE_MEMORY(contents);
+    close(fd);
+
     EXPECT_TRUE(Cleanup(m_path));
 }
