@@ -2264,8 +2264,7 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
 
 TEST_F(CommonUtilsTest, LoadStringFromZeroLengthFile)
 {
-    const char* name = "~zeroSizeFile";
-    int fd = NULL;
+    int fd = -1;
     char* contents = NULL;
 
     EXPECT_EQ(0, fd = open(m_path, O_CREAT | O_WRONLY, 0644));
