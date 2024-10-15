@@ -65,55 +65,6 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
     return string;
 }
 
-/*char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
-{
-    FILE* file = NULL;
-    int fileSize = 0;
-    int bufferSize = 0;
-    int i = 0;
-    int next = 0;
-    char* string = NULL;
-
-    if (false == FileExists(fileName))
-    {
-        return string;
-    }
-
-    if (NULL != (file = fopen(fileName, "r")))
-    {
-        if (LockFile(file, log))
-        {
-            fseek(file, 0, SEEK_END);
-            fileSize = ftell(file);
-            fseek(file, 0, SEEK_SET);
-
-            // Allocate 1 extra byte for files that have size 0 but can contain at least one 1 byte
-            bufferSize = fileSize + ((0 == fileSize) ? 2 : 1);
-            if (NULL != (string = (char*)malloc(bufferSize)))
-            {
-                memset(&string[0], 0, bufferSize);
-                for (i = 0; i <= fileSize; i++)
-                {
-                    next = fgetc(file);
-                    if ((EOF == next) || (stopAtEol && (EOL == next)))
-                    {
-                        string[i] = 0;
-                        break;
-                    }
-
-                    string[i] = (char)next;
-                }
-            }
-
-            UnlockFile(file, log);
-        }
-
-        fclose(file);
-    }
-
-    return string;
-}*/
-
 static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     FILE* file = NULL;
