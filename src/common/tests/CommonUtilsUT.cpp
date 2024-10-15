@@ -2262,18 +2262,14 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
-TEST_F(CommonUtilsTest, LoadStringFromFileProcfsIpv4)
+TEST_F(CommonUtilsTest, LoadStringFromSingleByteFile)
 {
-    // The proc fs have size of 0, but contents of those files are not restricted by this size
-    const char *procfsFileName = "/proc/sys/net/ipv4/conf/all/accept_source_route";
-    char *contents = NULL;
-    char c = 42;
-    size_t length = 0;
-
-    EXPECT_NE(nullptr, contents = LoadStringFromFile(procfsFileName, false, nullptr));
-    EXPECT_EQ(1, length = strlen(contents));
-    EXPECT_EQ('0', contents[0]);
-    EXPECT_EQ(0, contents[1]);
-
+    const char* singleByteContents = "t";
+    char* contents = NULL;
+    EXPECT_TRUE(CreateTestFile(m_path, singleByteContents));
+    EXPECT_STREQ(singleByteContents, contents = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_EQ(strlen(singleByteContents), strlen(contents));
+    EXPECT_EQ(0, (char)(contents + singleByteContents));
     FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
 }
