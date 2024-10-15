@@ -2282,6 +2282,6 @@ TEST_F(CommonUtilsTest, LoadStringFromFileProcfsIpv4)
     char *contents = NULL;
     EXPECT_NE(nullptr, contents = LoadStringFromFile(procfsFileName, false, nullptr));
     EXPECT_EQ(1, strlen(contents));
-    EXPECT_EQ(0, contents[strlen(contents)]));
+    EXPECT_EQ(0, contents[strlen(contents)]);
     FREE_MEMORY(contents);
 }
