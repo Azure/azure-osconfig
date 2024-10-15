@@ -22,10 +22,10 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
         {
             fseek(file, 0, SEEK_END);
             fileSize = ftell(file);
+            OsConfigLogError(log, "LoadStringFromFile: '%s' has length %d", fileName, (int)fileSize);///////////////
             fseek(file, 0, SEEK_SET);
 
-            string = (char*)malloc(fileSize + 1);
-            if (string)
+            if (NULL != (string = (char*)malloc(fileSize + 1)))
             {
                 memset(&string[0], 0, fileSize + 1);
                 for (i = 0; i <= fileSize; i++)
