@@ -2268,16 +2268,12 @@ TEST_F(CommonUtilsTest, LoadStringFromFileProcfsIpv4)
     const char *procfsFileName = "/proc/sys/net/ipv4/conf/all/accept_source_route";
     char *contents = NULL;
     char c = 42;
-    size_t len = 0;
+    size_t length = 0;
 
-    contents = LoadStringFromFile(procfsFileName, false, nullptr);
-    ASSERT_TRUE(contents != NULL);
-
-    len = strlen(contents);
-    //  we should be able to reference contents[len] as it will be '\0' in case of proper C string
-    c = contents[len];
-
-    ASSERT_TRUE(c == 0);
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(procfsFileName, false, nullptr));
+    EXPECT_EQ(1, length = strlen(contents));
+    EXPECT_EQ('0', contents[0]);
+    EXPECT_EQ(0, contents[1]);
 
     FREE_MEMORY(contents);
 }
