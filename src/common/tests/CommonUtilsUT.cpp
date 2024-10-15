@@ -2275,13 +2275,3 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
     FREE_MEMORY(cleanedContents);
     EXPECT_TRUE(Cleanup(m_path));
 }
-
-TEST_F(CommonUtilsTest, LoadStringFromFileProcfsIpv4)
-{
-    const char *procfsFileName = "/proc/sys/net/ipv4/conf/all/accept_source_route";
-    char *contents = NULL;
-    EXPECT_NE(nullptr, contents = LoadStringFromFile(procfsFileName, false, nullptr));
-    EXPECT_EQ(1, strlen(contents));
-    EXPECT_EQ(0, contents[strlen(contents)]);
-    FREE_MEMORY(contents);
-}

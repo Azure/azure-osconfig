@@ -24,9 +24,10 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
             fileSize = ftell(file);
             fseek(file, 0, SEEK_SET);
 
-            if (NULL != (string = (char*)malloc(fileSize + 1)))
+            // Allocate 1 extra byte for files (such as under /proc) that have size 0 but contain 1 byte
+            if (NULL != (string = (char*)malloc(fileSize + 2)))
             {
-                memset(&string[0], 0, fileSize + 1);
+                memset(&string[0], 0, fileSize + 2);
                 for (i = 0; i <= fileSize; i++)
                 {
                     next = fgetc(file);
