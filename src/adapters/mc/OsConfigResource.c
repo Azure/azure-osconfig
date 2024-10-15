@@ -16,6 +16,7 @@ static const char* g_passValue = SECURITY_AUDIT_PASS;
 static const char* g_failValue = SECURITY_AUDIT_FAIL;
 
 // Desired (write; also reported together with read group)
+static char* g_ruleId = NULL;
 static char* g_classKey = NULL;
 static char* g_componentName = NULL;
 static char* g_initObjectName = NULL;
@@ -47,6 +48,7 @@ OSCONFIG_LOG_HANDLE GetLog(void)
 
 void __attribute__((constructor)) Initialize()
 {
+    g_ruleId = DuplicateString(g_defaultValue);
     g_classKey = DuplicateString(g_defaultValue);
     g_componentName = DuplicateString(g_defaultValue);
     g_initObjectName = DuplicateString(g_defaultValue);
@@ -60,6 +62,7 @@ void __attribute__((constructor)) Initialize()
 
 void __attribute__((destructor)) Destroy()
 {
+    FREE_MEMORY(g_ruleId);
     FREE_MEMORY(g_classKey);
     FREE_MEMORY(g_componentName);
     FREE_MEMORY(g_initObjectName);
@@ -486,6 +489,9 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     const char* auditPassed = "Audit passed";
     const char* auditFailed = "Audit failed. See /var/log/osconfig*";
 
+    const char* auditPassedCodeTemplate = "BaselineSettingCompliant:%s";
+    const char* auditFailedCodeTemplate = "BaselineSettingNotCompliant:%s";
+
     char* reasonCode = NULL;
     char* reasonPhrase = NULL;
 
@@ -505,6 +511,25 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     {
         miResult = MI_RESULT_FAILED;
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] Invalid Get argument");
+        goto Exit;
+    }
+
+    // Read the rule id from the input resource values
+    if ((MI_TRUE == in->InputResource.value->RuleId.exists) && (NULL != in->InputResource.value->RuleId.value))
+    {
+        FREE_MEMORY(g_ruleId);
+        if (NULL == (g_ruleId = DuplicateString(in->InputResource.value->RuleId.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->RuleId.value);
+            g_ruleId = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No RuleId");
+        miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
@@ -655,6 +680,14 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     miValueResource.instance = resultResourceObject;
 
+    // Write the rule id to the output resource values
+    miValue.string = (MI_Char*)(g_ruleId);
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("RuleId"), &miValue, MI_STRING, 0)))
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(RuleId) to string value '%s' failed with miResult %d", miValue.string, miResult);
+        goto Exit;
+    }
+
     // Write the payload key to the output resource values
     miValue.string = (MI_Char*)(g_classKey);
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("PayloadKey"), &miValue, MI_STRING, 0)))
@@ -739,7 +772,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     if (MI_TRUE == isCompliant)
     {
-        reasonCode = DuplicateString(g_expectedObjectValue);
+        reasonCode = FormatAllocateString(auditPassedCodeTemplate, g_ruleId);
         if ((0 == strcmp(g_reportedObjectValue, g_expectedObjectValue)) ||
             ((strlen(g_reportedObjectValue) > strlen(g_expectedObjectValue)) && (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue + strlen(g_expectedObjectValue))))))
         {
@@ -748,7 +781,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
     else
     {
-        reasonCode = DuplicateString(g_failValue);
+        reasonCode = FormatAllocateString(auditFailedCodeTemplate, g_ruleId);
         if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue))))
         {
             reasonPhrase = DuplicateString(auditFailed);
@@ -874,6 +907,25 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     {
         miResult = MI_RESULT_FAILED;
         LogError(context, miResult, GetLog(), "[OsConfigResource.Test] Invalid Test argument");
+        goto Exit;
+    }
+
+    // Read the class key from the input resource values
+    if ((MI_TRUE == in->InputResource.value->RuleId.exists) && (NULL != in->InputResource.value->RuleId.value))
+    {
+        FREE_MEMORY(g_ruleId);
+        if (NULL == (g_ruleId = DuplicateString(in->InputResource.value->RuleId.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->RuleId.value);
+            g_ruleId = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No RuleId");
+        miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
@@ -1057,6 +1109,25 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     }
 
     MI_Context_PostInstance(context, &(set_result_object.__instance));
+
+    // Read the rule id from the input resource values
+    if ((MI_TRUE == in->InputResource.value->RuleId.exists) && (NULL != in->InputResource.value->RuleId.value))
+    {
+        FREE_MEMORY(g_ruleId);
+        if (NULL == (g_ruleId = DuplicateString(in->InputResource.value->RuleId.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->RuleId.value);
+            g_ruleId = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No RuleId");
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
 
     // Read the class key from the input resource values
     if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
