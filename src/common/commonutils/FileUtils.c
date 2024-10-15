@@ -5,7 +5,7 @@
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 {
-    const int initialSize = 1024;
+    const int initialSize = 5; //1024;
     FILE* file = NULL;
     int i = 0;
     int next = 0;
