@@ -26,12 +26,7 @@ namespace Tests
         }
         else
         {
-            char* handle = new (std::nothrow) char[strlen(g_mockHandle) + 1];
-            if (handle != nullptr)
-            {
-                strcpy(handle, g_mockHandle);
-            }
-            return (MPI_HANDLE)handle;
+            return (MPI_HANDLE)strdup(g_mockHandle);
         }
     }
 
@@ -59,12 +54,8 @@ namespace Tests
         }
         else
         {
-            *payload = new (std::nothrow) char[strlen(g_mockPayload) + 1];
-            if (*payload != nullptr)
-            {
-                strcpy(*payload, g_mockPayload);
-                *payloadSize = strlen(g_mockPayload);
-            }
+            *payload = strdup(g_mockPayload);
+            *payloadSize = strlen(g_mockPayload);
             return MPI_OK;
         }
     }
@@ -81,12 +72,8 @@ namespace Tests
     {
         UNUSED(handle);
 
-        *payload = new (std::nothrow) char[strlen(g_mockPayload) + 1];
-        if (*payload != nullptr)
-        {
-            strcpy(*payload, g_mockPayload);
-            *payloadSize = strlen(g_mockPayload);
-        }
+        *payload = strdup(g_mockPayload);
+        *payloadSize = strlen(g_mockPayload);
         return MPI_OK;
     }
 

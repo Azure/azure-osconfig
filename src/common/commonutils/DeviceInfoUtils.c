@@ -26,7 +26,7 @@ void RemovePrefixBlanks(char* target)
         i += 1;
     }
 
-    memcpy(target, target + i, targetLength - i);
+    memmove(target, target + i, targetLength - i);
     target[targetLength - i] = 0;
 }
 
@@ -43,7 +43,7 @@ void RemovePrefixUpTo(char* target, char marker)
     if (equalSign)
     {
         targetLength = strlen(equalSign + 1);
-        memcpy(target, equalSign + 1, targetLength);
+        memmove(target, equalSign + 1, targetLength);
         target[targetLength] = 0;
     }
 }
@@ -61,7 +61,7 @@ void RemovePrefixUpToString(char* target, const char* marker)
     if (equalSign)
     {
         targetLength = (int)strlen(equalSign);
-        memcpy(target, equalSign, targetLength);
+        memmove(target, equalSign, targetLength);
         target[targetLength] = 0;
     }
 }
@@ -354,6 +354,7 @@ long GetTotalMemory(void* log)
     if (NULL != textResult)
     {
         totalMemory = atol(textResult);
+        FREE_MEMORY(textResult);
     }
     
     if (IsFullLoggingEnabled())
@@ -373,6 +374,7 @@ long GetFreeMemory(void* log)
     if (NULL != textResult)
     {
         freeMemory = atol(textResult);
+        FREE_MEMORY(textResult);
     }
 
     if (IsFullLoggingEnabled())
@@ -391,6 +393,7 @@ char* GetProductName(void* log)
     
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
+        FREE_MEMORY(textResult);
         textResult = GetHardwareProperty(osProductNameAlternateCommand, false, log);
     }
     
@@ -410,6 +413,7 @@ char* GetProductVendor(void* log)
 
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
+        FREE_MEMORY(textResult);
         textResult = GetHardwareProperty(osProductVendorAlternateCommand, false, log);
     }
     
@@ -429,6 +433,7 @@ char* GetProductVersion(void* log)
 
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
+        FREE_MEMORY(textResult);
         textResult = GetHardwareProperty(osProductVersionAlternateCommand, false, log);
     }
 
@@ -697,6 +702,8 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
             OsConfigCaptureReason(reason, "Current login UMASK '%s' does not match desired '%s'", current, desired);
             status = ENOENT;
         }
+
+        FREE_MEMORY(current);
     }
 
     return status;

@@ -275,7 +275,7 @@ static int IsSshConfigIncludeSupported(void* log)
 
 static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, void* log)
 {
-    char* sshMacs = DuplicateStringToLowercase(g_sshMacs);
+    char* sshMacs = NULL;
     char* macsValue = NULL;
     char* value = NULL;
     size_t macsValueLength = 0;
@@ -290,6 +290,11 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
     else if (0 != IsSshServerActive(log))
     {
         return status;
+    }
+    else if (NULL == (sshMacs = DuplicateStringToLowercase(g_sshMacs)))
+    {
+        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: failed to duplicate string to lowercase");
+        return ENOMEM;
     }
 
     if (NULL == (macsValue = GetSshServerState(sshMacs, log)))
@@ -343,7 +348,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
 
 static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, void* log)
 {
-    char* sshCiphers = DuplicateStringToLowercase(g_sshCiphers);
+    char* sshCiphers = NULL;
     char* ciphersValue = NULL;
     char* value = NULL;
     size_t ciphersValueLength = 0;
@@ -358,6 +363,11 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, voi
     else if (0 != IsSshServerActive(log))
     {
         return status;
+    }
+    else if (NULL == (sshCiphers = DuplicateStringToLowercase(g_sshCiphers)))
+    {
+        OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate string to lowercase");
+        return ENOMEM;
     }
 
     if (NULL == (ciphersValue = GetSshServerState(sshCiphers, log)))

@@ -90,6 +90,8 @@ static char* LoadConfigurationFromFile(const char* fileName)
         g_iotHubManagementEnabled = IsIotHubManagementEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
+
+        FREE_MEMORY(g_gitBranch);
         g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
     }
     else
@@ -597,7 +599,7 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
                 }
                 else if (0 == strcmp(objectName, g_desiredGitBranchObject))
                 {
-                    if (NULL != (jsonString = (char*)json_value_get_string(jsonValue)))
+                    if (NULL != (jsonString = json_value_get_string(jsonValue)))
                     {
                         if (jsonString)
                         {

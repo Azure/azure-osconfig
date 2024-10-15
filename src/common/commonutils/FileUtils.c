@@ -309,6 +309,11 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, boo
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
 {
+    if (NULL == fileName)
+    {
+        return EINVAL;
+    }
+
     // S_ISUID (4000): Set user ID on execution
     // S_ISGID (2000): Set group ID on execution
     // S_IRUSR (0400): Read permission, owner
@@ -1547,14 +1552,13 @@ static int FindTextInCommandOutput(const char* command, const char* text, void* 
             status = ENOENT;
             OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' not found in '%s' output", text, command);
         }
-
-        FREE_MEMORY(results);
     }
     else
     {
         OsConfigLogInfo(log, "FindTextInCommandOutput: command '%s' failed with %d", command, status);
     }
 
+    FREE_MEMORY(results);
     return status;
 }
 
@@ -1630,10 +1634,9 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
         {
             OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate result string (%d)", errno);
         }
-
-        FREE_MEMORY(internal);
     }
 
+    FREE_MEMORY(internal);
     return result;
 }
 
