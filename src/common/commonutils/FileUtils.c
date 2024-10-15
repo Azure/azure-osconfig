@@ -11,7 +11,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
     int next = 0;
     char* string = NULL;
 
-    if ((NULL == fileName) || (-1 == access(fileName, F_OK)))
+    if (false == FileExists(fileName))
     {
         return string;
     }
@@ -22,7 +22,6 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
         {
             fseek(file, 0, SEEK_END);
             fileSize = ftell(file);
-            OsConfigLogError(log, "LoadStringFromFile: '%s' has length %d", fileName, (int)fileSize);///////////////
             fseek(file, 0, SEEK_SET);
 
             if (NULL != (string = (char*)malloc(fileSize + 1)))
@@ -410,7 +409,7 @@ bool IsADirectory(const char* fileName, void* log)
 {
     return IsATrueFileOrDirectory(true, fileName, log);
 }
-   
+
 bool FileExists(const char* fileName)
 {
     return ((NULL != fileName) && (-1 != access(fileName, F_OK))) ? true : false;

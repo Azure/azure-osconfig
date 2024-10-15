@@ -94,6 +94,20 @@ TEST_F(CommonUtilsTest, LoadStringFromSingleByteFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
+TEST_F(CommonUtilsTest, LoadStringFromZeroLengthFile)
+{
+    int fd = -1;
+    char* contents = NULL;
+    EXPECT_NE(-1, fd = open(m_path, O_CREAT | O_WRONLY, 0644));
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_EQ(0, strlen(contents));
+    EXPECT_EQ(0, contents[0]);
+    EXPECT_EQ(0, contents[1]);
+    FREE_MEMORY(contents);
+    close(fd);
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
 TEST_F(CommonUtilsTest, SavePayloadToFile)
 {
     char* contents = NULL;
@@ -2259,20 +2273,5 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
     EXPECT_STREQ(cleanedContents, targetContents);
     
     FREE_MEMORY(cleanedContents);
-    EXPECT_TRUE(Cleanup(m_path));
-}
-
-TEST_F(CommonUtilsTest, LoadStringFromZeroLengthFile)
-{
-    int fd = -1;
-    char* contents = NULL;
-
-    EXPECT_NE(-1, fd = open(m_path, O_CREAT | O_WRONLY, 0644));
-    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
-    EXPECT_EQ(0, strlen(contents));
-    EXPECT_EQ(0, contents[0]);
-    FREE_MEMORY(contents);
-    close(fd);
-
     EXPECT_TRUE(Cleanup(m_path));
 }
