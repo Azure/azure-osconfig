@@ -20,9 +20,9 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
     {
         if (LockFile(file, log))
         {
-            if (NULL != (string = (char*)malloc(initialSize + 1)))
+            if (NULL != (string = (char*)malloc(initialSize)))
             {
-                memset(&string[0], 0, initialSize + 1);
+                memset(&string[0], 0, initialSize);
                 while (1)
                 {
                     next = fgetc(file);
@@ -38,7 +38,11 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 
                     if (i > initialSize)
                     {
-                        if (NULL == (string = realloc(string, initialSize + 1 + i)))
+                        if (NULL != (string = realloc(string, initialSize + i)))
+                        {
+                            memset(&string[i], 0, initialSize);
+                        }
+                        else
                         {
                             FREE_MEMORY(string);
                             break;
