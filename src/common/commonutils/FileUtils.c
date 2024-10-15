@@ -7,8 +7,6 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 {
     const int initialSize = 1024;
     FILE* file = NULL;
-    int fileSize = 0;
-    int bufferSize = 0;
     int i = 0;
     int next = 0;
     char* string = NULL;
