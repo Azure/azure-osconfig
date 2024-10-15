@@ -5,6 +5,61 @@
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 {
+    const int initialSize = 1024;
+    FILE* file = NULL;
+    int fileSize = 0;
+    int bufferSize = 0;
+    int i = 0;
+    int next = 0;
+    char* string = NULL;
+
+    if (false == FileExists(fileName))
+    {
+        return string;
+    }
+
+    if (NULL != (file = fopen(fileName, "r")))
+    {
+        if (LockFile(file, log))
+        {
+            if (NULL != (string = (char*)malloc(initialSize + 1)))
+            {
+                memset(&string[0], 0, initialSize + 1);
+                while (1)
+                {
+                    next = fgetc(file);
+                    if ((EOF == next) || (stopAtEol && (EOL == next)))
+                    {
+                        string[i] = 0;
+                        break;
+                    }
+
+                    string[i] = (char)next;
+
+                    i += 1;
+
+                    if (i > initialSize)
+                    {
+                        if (NULL == (string = realloc(string, initialSize + 1 + i)))
+                        {
+                            FREE_MEMORY(string);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            UnlockFile(file, log);
+        }
+
+        fclose(file);
+    }
+
+    return string;
+}
+
+/*char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
+{
     FILE* file = NULL;
     int fileSize = 0;
     int bufferSize = 0;
@@ -50,7 +105,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
     }
 
     return string;
-}
+}*/
 
 static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
