@@ -489,8 +489,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     const char* auditPassed = "Audit passed";
     const char* auditFailed = "Audit failed. See /var/log/osconfig*";
 
-    const char* auditPassedCodeTemplate = "BaselineSettingCompliant:%s";
-    const char* auditFailedCodeTemplate = "BaselineSettingNotCompliant:%s";
+    const char* auditPassedCodeTemplate = "BaselineSettingCompliant:{%s}";
+    const char* auditFailedCodeTemplate = "BaselineSettingNotCompliant:{%s}";
 
     char* reasonCode = NULL;
     char* reasonPhrase = NULL;
