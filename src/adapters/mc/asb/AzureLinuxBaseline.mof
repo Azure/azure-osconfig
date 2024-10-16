@@ -171,6 +171,7 @@ instance of OsConfigResource as $OsConfigResource9ref
 instance of OsConfigResource as $OsConfigResource10ref
 {
     ResourceID = "Ensure that the SSH PermitRootLogin is configured";
+    RuleId = "16511f6b-f690-43df-9654-642260699eec";
     PayloadKey = "EnsureSshPermitRootLoginIsDisabled";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshPermitRootLoginIsDisabled";
@@ -2741,6 +2742,6 @@ instance of OMI_ConfigurationDocument
     Version="2.0.0";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="10/16/2024 13:20:00 PST";
+    GenerationDate="10/16/2024 15:56:00 PST";
     Name="AzureLinuxBaseline";
 };
