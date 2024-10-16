@@ -26,6 +26,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
             {
                 currentSize = initialSize;
                 memset(&string[0], 0, currentSize);
+                
                 while (1)
                 {
                     next = fgetc(file);
@@ -36,7 +37,6 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
                     }
 
                     string[i] = (char)next;
-
                     i += 1;
 
                     if (i >= currentSize)
