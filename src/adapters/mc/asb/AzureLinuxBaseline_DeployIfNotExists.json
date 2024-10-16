@@ -15,7 +15,7 @@
         "version": "1.0.0",
         "contentType": "Custom",
         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-        "contentHash": "4459B61F30184BFBB8F294E428F7D8E530F78341BAB5703948614774BCE4CB65"
+        "contentHash": "DCBB43AE96CEE27C18025A634C81109448806F158710C9E55B02E67946A5B432"
       }
     },
     "parameters": {
@@ -341,7 +341,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "4459B61F30184BFBB8F294E428F7D8E530F78341BAB5703948614774BCE4CB65",
+                        "contentHash": "DCBB43AE96CEE27C18025A634C81109448806F158710C9E55B02E67946A5B432",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -358,7 +358,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "4459B61F30184BFBB8F294E428F7D8E530F78341BAB5703948614774BCE4CB65",
+                        "contentHash": "DCBB43AE96CEE27C18025A634C81109448806F158710C9E55B02E67946A5B432",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -375,7 +375,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "4459B61F30184BFBB8F294E428F7D8E530F78341BAB5703948614774BCE4CB65",
+                        "contentHash": "DCBB43AE96CEE27C18025A634C81109448806F158710C9E55B02E67946A5B432",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
