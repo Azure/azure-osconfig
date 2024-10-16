@@ -533,7 +533,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    // Read the class key from the input resource values
+    // Read the payload key from the input resource values
     if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
     {
         FREE_MEMORY(g_classKey);
@@ -910,7 +910,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         goto Exit;
     }
 
-    // Read the class key from the input resource values
+    // Read the rule id from the input resource values
     if ((MI_TRUE == in->InputResource.value->RuleId.exists) && (NULL != in->InputResource.value->RuleId.value))
     {
         FREE_MEMORY(g_ruleId);
@@ -929,7 +929,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         goto Exit;
     }
 
-    // Read the class key from the input resource values
+    // Read the payload key from the input resource values
     if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
     {
         FREE_MEMORY(g_classKey);
@@ -1129,7 +1129,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         goto Exit;
     }
 
-    // Read the class key from the input resource values
+    // Read the payload key from the input resource values
     if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
     {
         FREE_MEMORY(g_classKey);
