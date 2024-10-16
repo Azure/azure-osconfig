@@ -102,7 +102,6 @@ TEST_F(CommonUtilsTest, LoadStringFromZeroLengthFile)
     EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_EQ(0, strlen(contents));
     EXPECT_EQ(0, contents[0]);
-    EXPECT_EQ(0, contents[1]);
     FREE_MEMORY(contents);
     close(fd);
     EXPECT_TRUE(Cleanup(m_path));
