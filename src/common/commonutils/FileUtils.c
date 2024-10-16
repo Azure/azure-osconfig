@@ -73,6 +73,8 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
 
     if (fileName && mode && payload && (0 < payloadSizeBytes))
     {
+        RestrictFileAccessToCurrentAccountOnly(fileName);
+
         if (NULL != (file = fopen(fileName, mode)))
         {
             if (true == (result = LockFile(file, log)))
@@ -947,6 +949,8 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         {
             if (NULL != (tempHandle = fopen(tempFileName, "w")))
             {
+                RestrictFileAccessToCurrentAccountOnly(tempFileName);
+
                 while (NULL != fgets(line, lineMax + 1, fileHandle))
                 {
                     if (NULL != strstr(line, marker))
