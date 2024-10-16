@@ -15,7 +15,7 @@
         "version": "1.0.0",
         "contentType": "Custom",
         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-        "contentHash": "DCBB43AE96CEE27C18025A634C81109448806F158710C9E55B02E67946A5B432"
+        "contentHash": "9D280A6FA4F8B1173699216B222D264D2056A5414753C65DF86679E7962F1880"
       }
     },
     "parameters": {
@@ -341,7 +341,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "DCBB43AE96CEE27C18025A634C81109448806F158710C9E55B02E67946A5B432",
+                        "contentHash": "9D280A6FA4F8B1173699216B222D264D2056A5414753C65DF86679E7962F1880",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -358,7 +358,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "DCBB43AE96CEE27C18025A634C81109448806F158710C9E55B02E67946A5B432",
+                        "contentHash": "9D280A6FA4F8B1173699216B222D264D2056A5414753C65DF86679E7962F1880",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -375,7 +375,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "DCBB43AE96CEE27C18025A634C81109448806F158710C9E55B02E67946A5B432",
+                        "contentHash": "9D280A6FA4F8B1173699216B222D264D2056A5414753C65DF86679E7962F1880",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
