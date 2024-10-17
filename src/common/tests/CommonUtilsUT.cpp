@@ -115,7 +115,7 @@ TEST_F(CommonUtilsTest, LoadStringFromBigLengthFile)
     char* read = NULL;
     EXPECT_NE(nullptr, contents = (char*)malloc(size + 1));
     memset(contents, 0, size + 1);
-    for (i = 0; i < size); i++)
+    for (i = 0; i < size; i++)
     {
         contents[i] = (char)((i % 94) + 33);
     }
