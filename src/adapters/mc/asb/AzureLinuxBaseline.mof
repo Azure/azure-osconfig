@@ -1398,7 +1398,7 @@ instance of OsConfigResource as $OsConfigResource84ref
 instance of OsConfigResource as $OsConfigResource85ref
 {
     ResourceID = "Ensure the default setting for accepting source routed packets is disabled for network interfaces";
-    RuleId = "4ecae4e6-a3e2-44f5-9985-ea2a21962450";
+    RuleId = "63613c25-8ae1-4792-9572-02bdc941febf";
     PayloadKey = "EnsureAcceptingSourceRoutedPacketsIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAcceptingSourceRoutedPacketsIsDisabled";
