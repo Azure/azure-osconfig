@@ -2315,8 +2315,8 @@ TEST_F(CommonUtilsTest, AsbIsValidResourceIdRuleId)
     EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(nullptr, goodRuleId, payloadKey, nullptr));
 
     EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(badResourceId, goodRuleId, payloadKey, nullptr));
-    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(goodResourceId, badResourceId, payloadKey, nullptr));
-    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(badResourceId, badResourceId, payloadKey, nullptr));
+    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(goodResourceId, badRuleId, payloadKey, nullptr));
+    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(badResourceId, badRuleId, payloadKey, nullptr));
 
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, goodRuleId, payloadKey, nullptr));
 }
