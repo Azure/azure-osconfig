@@ -490,7 +490,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_UNREFERENCED_PARAMETER(instanceName);
 
     const char* auditPassed = "Audit passed";
-    const char* auditFailed = "Audit failed. See See /var/log/osconfig_nrp.*";
+    const char* auditFailed = "Audit failed. See /var/log/osconfig_nrp.*";
 
     const char* auditPassedInvalidResourceOrRuleId = "Audit passed for an invalid resource and/or rule id. See /var/log/osconfig_nrp.*";
     const char* auditFailedInvalidResourceOrRuleId = "Audit failed for an invalid resource and/or rule id. See /var/log/osconfig_nrp.*";
