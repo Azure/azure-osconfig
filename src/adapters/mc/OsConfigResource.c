@@ -16,7 +16,7 @@ static const char* g_passValue = SECURITY_AUDIT_PASS;
 static const char* g_failValue = SECURITY_AUDIT_FAIL;
 
 // Desired (write; also reported together with read group)
-static char* g_resourceId;
+static char* g_resourceId = NULL;
 static char* g_ruleId = NULL;
 static char* g_payloadKey = NULL;
 static char* g_componentName = NULL;
@@ -49,7 +49,7 @@ OSCONFIG_LOG_HANDLE GetLog(void)
 
 void __attribute__((constructor)) Initialize()
 {
-    g_resourceId = DuplicateString(g_defaultValue);
+    g_resourceId = NULL;
     g_ruleId = DuplicateString(g_defaultValue);
     g_payloadKey = DuplicateString(g_defaultValue);
     g_componentName = DuplicateString(g_defaultValue);
@@ -520,23 +520,15 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    // Read the resource id from the input resource values
+    // Try to read the resource id from the input resource values, do not fail here if we cannot
     if ((MI_TRUE == in->InputResource.value->ResourceId.exists) && (NULL != in->InputResource.value->ResourceId.value))
     {
         FREE_MEMORY(g_resourceId);
-        if (NULL == (g_resourceId = DuplicateString(in->InputResource.value->ResourceId.value)))
-        {
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ResourceId.value);
-            g_resourceId = DuplicateString(g_defaultValue);
-            miResult = MI_RESULT_FAILED;
-            goto Exit;
-        }
+        g_resourceId = DuplicateString(in->InputResource.value->ResourceId.value);
     }
     else
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No ResourceId");
-        miResult = MI_RESULT_FAILED;
-        goto Exit;
+        g_resourceId = NULL;
     }
 
     // Read the rule id from the input resource values
