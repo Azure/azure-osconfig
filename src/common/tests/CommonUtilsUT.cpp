@@ -2298,3 +2298,24 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
     FREE_MEMORY(cleanedContents);
     EXPECT_TRUE(Cleanup(m_path));
 }
+
+TEST_F(CommonUtilsTest, AsbIsValidResourceIdRuleId)
+{
+    const char* goodResourceId = "Ensure SMB V1 with Samba is disabled";
+    const char* goodRuleId = "7624efb0-3026-4c72-8920-48d5be78a50e";
+    const char* badResourceId = "Ensure the rsh client is not installed";
+    const char* badRuleId = "6d441f31-f888-4f4f-b1da-7cfc26263e3f";
+    const char* payloadKey = "EnsureSmbWithSambaIsDisabled";
+    
+    EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(goodResourceId, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(goodResourceId, goodRuleId, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(goodResourceId, nullptr, payloadKey, nullptr));
+    EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(nullptr, goodRuleId, payloadKey, nullptr));
+
+    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(badResourceId, goodRuleId, payloadKey, nullptr));
+    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(goodResourceId, badResourceId, payloadKey, nullptr));
+    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(badResourceId, badResourceId, payloadKey, nullptr));
+
+    EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, goodRuleId, payloadKey, nullptr));
+}

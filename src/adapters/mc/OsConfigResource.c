@@ -16,8 +16,9 @@ static const char* g_passValue = SECURITY_AUDIT_PASS;
 static const char* g_failValue = SECURITY_AUDIT_FAIL;
 
 // Desired (write; also reported together with read group)
+static char* g_resourceId;
 static char* g_ruleId = NULL;
-static char* g_classKey = NULL;
+static char* g_payloadKey = NULL;
 static char* g_componentName = NULL;
 static char* g_initObjectName = NULL;
 static char* g_reportedObjectName = NULL;
@@ -48,8 +49,9 @@ OSCONFIG_LOG_HANDLE GetLog(void)
 
 void __attribute__((constructor)) Initialize()
 {
+    g_resourceId = DuplicateString(g_defaultValue);
     g_ruleId = DuplicateString(g_defaultValue);
-    g_classKey = DuplicateString(g_defaultValue);
+    g_payloadKey = DuplicateString(g_defaultValue);
     g_componentName = DuplicateString(g_defaultValue);
     g_initObjectName = DuplicateString(g_defaultValue);
     g_reportedObjectName = DuplicateString(g_defaultValue);
@@ -62,8 +64,9 @@ void __attribute__((constructor)) Initialize()
 
 void __attribute__((destructor)) Destroy()
 {
+    FREE_MEMORY(g_resourceId);
     FREE_MEMORY(g_ruleId);
-    FREE_MEMORY(g_classKey);
+    FREE_MEMORY(g_payloadKey);
     FREE_MEMORY(g_componentName);
     FREE_MEMORY(g_initObjectName);
     FREE_MEMORY(g_reportedObjectName);
@@ -487,7 +490,10 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_UNREFERENCED_PARAMETER(instanceName);
 
     const char* auditPassed = "Audit passed";
-    const char* auditFailed = "Audit failed. See /var/log/osconfig*";
+    const char* auditFailed = "Audit failed. See See /var/log/osconfig_nrp.*";
+
+    const char* auditPassedInvalidResourceOrRuleId = "Audit passed for an invalid resource and/or rule id. See /var/log/osconfig_nrp.*";
+    const char* auditFailedInvalidResourceOrRuleId = "Audit failed for an invalid resource and/or rule id. See /var/log/osconfig_nrp.*";
 
     const char* auditPassedCodeTemplate = "BaselineSettingCompliant:{%s}";
     const char* auditFailedCodeTemplate = "BaselineSettingNotCompliant:{%s}";
@@ -514,6 +520,25 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
+    // Read the resource id from the input resource values
+    if ((MI_TRUE == in->InputResource.value->ResourceId.exists) && (NULL != in->InputResource.value->ResourceId.value))
+    {
+        FREE_MEMORY(g_resourceId);
+        if (NULL == (g_resourceId = DuplicateString(in->InputResource.value->ResourceId.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ResourceId.value);
+            g_resourceId = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No ResourceId");
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
     // Read the rule id from the input resource values
     if ((MI_TRUE == in->InputResource.value->RuleId.exists) && (NULL != in->InputResource.value->RuleId.value))
     {
@@ -536,11 +561,11 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     // Read the payload key from the input resource values
     if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
     {
-        FREE_MEMORY(g_classKey);
-        if (NULL == (g_classKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
+        FREE_MEMORY(g_payloadKey);
+        if (NULL == (g_payloadKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
-            g_classKey = DuplicateString(g_defaultValue);
+            g_payloadKey = DuplicateString(g_defaultValue);
             miResult = MI_RESULT_FAILED;
             goto Exit;
         }
@@ -653,7 +678,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
     else
     {
-        LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no ExpectedObjectValue, assuming '%s' is expected", g_classKey, g_passValue);
+        LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no ExpectedObjectValue, assuming '%s' is expected", g_payloadKey, g_passValue);
     }
 
     isCompliant = (g_expectedObjectValue && (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue)))) ? MI_TRUE : MI_FALSE;
@@ -689,7 +714,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
 
     // Write the payload key to the output resource values
-    miValue.string = (MI_Char*)(g_classKey);
+    miValue.string = (MI_Char*)(g_payloadKey);
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("PayloadKey"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(PayloadKey) to string value '%s' failed with miResult %d", miValue.string, miResult);
@@ -772,7 +797,15 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     if (MI_TRUE == isCompliant)
     {
-        reasonCode = FormatAllocateString(auditPassedCodeTemplate, g_ruleId);
+        if (0 == AsbIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog())
+        {
+            reasonCode = FormatAllocateString(auditPassedCodeTemplate, g_ruleId);
+        }
+        else
+        {
+            reasonCode = DuplicateString(auditPassedInvalidResourceOrRuleId);
+        }
+
         if ((0 == strcmp(g_reportedObjectValue, g_expectedObjectValue)) ||
             ((strlen(g_reportedObjectValue) > strlen(g_expectedObjectValue)) && (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue + strlen(g_expectedObjectValue))))))
         {
@@ -781,7 +814,15 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
     else
     {
-        reasonCode = FormatAllocateString(auditFailedCodeTemplate, g_ruleId);
+        if (0 == AsbIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog())
+        {
+            reasonCode = FormatAllocateString(auditFailedCodeTemplate, g_ruleId);
+        }
+        else
+        {
+            reasonCode = DuplicateString(auditFailedInvalidResourceOrRuleId);
+        }
+        
         if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue))))
         {
             reasonPhrase = DuplicateString(auditFailed);
@@ -932,11 +973,11 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     // Read the payload key from the input resource values
     if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
     {
-        FREE_MEMORY(g_classKey);
-        if (NULL == (g_classKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
+        FREE_MEMORY(g_payloadKey);
+        if (NULL == (g_payloadKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
-            g_classKey = DuplicateString(g_defaultValue);
+            g_payloadKey = DuplicateString(g_defaultValue);
             miResult = MI_RESULT_FAILED;
             goto Exit;
         }
@@ -1029,11 +1070,11 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     }
     else
     {
-        LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: no ExpectedObjectValue, assuming '%s' is expected", g_classKey, g_expectedObjectValue);
+        LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: no ExpectedObjectValue, assuming '%s' is expected", g_payloadKey, g_expectedObjectValue);
         isCompliant = (g_reportedObjectValue && (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue)))) ? MI_TRUE : MI_FALSE;
     }
 
-    LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: %s", g_classKey, isCompliant ? "compliant" : "incompliant");
+    LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: %s", g_payloadKey, isCompliant ? "compliant" : "incompliant");
 
     if (MI_RESULT_OK != (miResult = OsConfigResource_TestTargetResource_Construct(&test_result_object, context)))
     {
@@ -1132,11 +1173,11 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     // Read the payload key from the input resource values
     if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
     {
-        FREE_MEMORY(g_classKey);
-        if (NULL == (g_classKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
+        FREE_MEMORY(g_payloadKey);
+        if (NULL == (g_payloadKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
-            g_classKey = DuplicateString(g_defaultValue);
+            g_payloadKey = DuplicateString(g_defaultValue);
             miResult = MI_RESULT_FAILED;
             goto Exit;
         }
