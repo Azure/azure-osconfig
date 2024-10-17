@@ -188,7 +188,7 @@ instance of OsConfigResource as $OsConfigResource10ref
 instance of OsConfigResource as $OsConfigResource11ref
 {
     ResourceID = "Ensure that the SSH PermitEmptyPasswords is configured";
-    RuleId = "16511f6b-f690-43df-9654-642260699eec";
+    RuleId = "d50c3f39-264c-4cdc-b0ba-89de8a0f6828";
     PayloadKey = "EnsureSshPermitEmptyPasswordsIsDisabled";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshPermitEmptyPasswordsIsDisabled";
