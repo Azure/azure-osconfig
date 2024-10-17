@@ -107,6 +107,30 @@ TEST_F(CommonUtilsTest, LoadStringFromZeroLengthFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
+TEST_F(CommonUtilsTest, LoadStringFromBigLengthFile)
+{
+    const size_t size = 3079; //(1024 * 3) + 7
+    size_t i = 0;
+    char* contents = NULL;
+    char* read = NULL;
+    EXPECT_NE(nullptr, contents = (char*)malloc(size + 1));
+    memset(contents, 0, size + 1);
+    for (i = 0; i < size); i++)
+    {
+        contents[i] = (char)((i % 94) + 33);
+    }
+    EXPECT_TRUE(SavePayloadToFile(m_path, contents, size, nullptr));
+    EXPECT_NE(nullptr, read = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_EQ(size, strlen(contents));
+    for (i = 0; i < size; i++)
+    {
+        EXPECT_EQ(contents[i], read[i]);
+    }
+    FREE_MEMORY(contents);
+    FREE_MEMORY(read);
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
 TEST_F(CommonUtilsTest, SavePayloadToFile)
 {
     char* contents = NULL;

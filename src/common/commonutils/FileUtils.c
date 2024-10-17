@@ -42,7 +42,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
                     if (i >= currentSize)
                     {
                         currentSize += initialSize;
-                        if (NULL != (temp = realloc(string, currentSize)))
+                        if (NULL != (temp = (char*)realloc(string, currentSize)))
                         {
                             string = temp;
                             memset(&string[i], 0, currentSize - i);
