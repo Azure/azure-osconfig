@@ -75,8 +75,9 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
     if (fileName && mode && payload && (0 < payloadSizeBytes))
     {
         // See RestrictFileAccessToCurrentAccountOnly
-        if (-1 != (fd = open(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP)))
+        if (-1 != (fd = open(fileName, (0 == strcmp(mode, "a")) ? O_APPEND : O_CREAT, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP)))
         {
+            append = (0 == strcmp(mode, "a")) ? true : false;
             if (NULL != (file = fdopen(fd, mode)))
             {
                 if (true == (result = LockFile(file, log)))
@@ -959,7 +960,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         if (NULL != (fileHandle = fopen(fileName, "r")))
         {
             // See RestrictFileAccessToCurrentAccountOnly
-            if (-1 != (fd = open(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP)))
+            if (-1 != (fd = open(fileName, O_CREAT, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP)))
             {
                 if (NULL != (tempHandle = fdopen(fd, "w")))
                 {
