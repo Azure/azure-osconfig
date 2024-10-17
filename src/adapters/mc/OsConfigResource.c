@@ -797,7 +797,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     if (MI_TRUE == isCompliant)
     {
-        if (0 == AsbIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog())
+        if (0 == AsbIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
         {
             reasonCode = FormatAllocateString(auditPassedCodeTemplate, g_ruleId);
         }
@@ -814,7 +814,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
     else
     {
-        if (0 == AsbIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog())
+        if (0 == AsbIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
         {
             reasonCode = FormatAllocateString(auditFailedCodeTemplate, g_ruleId);
         }
