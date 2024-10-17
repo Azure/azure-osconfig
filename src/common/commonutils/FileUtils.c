@@ -950,7 +950,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
             if (NULL != (tempHandle = fopen(tempFileName, "w")))
             {
                 RestrictFileAccessToCurrentAccountOnly(tempFileName);
-                if (NULL != (tempHandle = freopen(tempFileName, "w")))
+                if (NULL != (tempHandle = freopen(tempFileName, "w", tempHandle)))
                 {
                     while (NULL != fgets(line, lineMax + 1, fileHandle))
                     {
