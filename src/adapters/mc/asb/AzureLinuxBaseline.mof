@@ -1382,6 +1382,7 @@ instance of OsConfigResource as $OsConfigResource83ref
 instance of OsConfigResource as $OsConfigResource84ref
 {
     ResourceID = "Ensure accepting source routed packets is disabled for all interfaces";
+    RuleId = "4ecae4e6-a3e2-44f5-9985-ea2a21962450";
     PayloadKey = "EnsureSourceRoutedPacketsIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSourceRoutedPacketsIsDisabled";
@@ -1541,7 +1542,7 @@ instance of OsConfigResource as $OsConfigResource93ref
 instance of OsConfigResource as $OsConfigResource94ref
 {
     ResourceID = "Ensure DCCP is disabled";
-    ruleId = "93d2736e-7329-8806-3ef6-e71bb2203d11";
+    RuleId = "93d2736e-7329-8806-3ef6-e71bb2203d11";
     PayloadKey = "EnsureDccpIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDccpIsDisabled";
@@ -1974,7 +1975,7 @@ instance of OsConfigResource as $OsConfigResource120ref
 instance of OsConfigResource as $OsConfigResource121ref
 {
     ResourceID = "Ensure the kdump service is disabled and the kdump-tools package is not installed";
-    ruleId = "290d7102-c4e3-4e88-863d-6ddc7e952a5a";
+    RuleId = "290d7102-c4e3-4e88-863d-6ddc7e952a5a";
     PayloadKey = "EnsureIsdnUtilsKdumpToolsNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIsdnUtilsKdumpToolsNotInstalled";
@@ -2444,7 +2445,7 @@ instance of OsConfigResource as $OsConfigResource149ref
 instance of OsConfigResource as $OsConfigResource150ref
 {
     ResourceID = "Ensure password expiration is configured";
-    ruleId = "6ee7250d-142f-57db-25d0-c58207135059";
+    RuleId = "6ee7250d-142f-57db-25d0-c58207135059";
     PayloadKey = "EnsurePasswordExpiration";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsurePasswordExpiration";
@@ -2742,6 +2743,6 @@ instance of OMI_ConfigurationDocument
     Version="2.0.0";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="10/16/2024 15:56:00 PST";
+    GenerationDate="10/16/2024 17:56:00 PST";
     Name="AzureLinuxBaseline";
 };
