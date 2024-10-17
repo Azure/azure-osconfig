@@ -68,51 +68,41 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     FILE* file = NULL;
-    int fd = -1;
     int i = 0;
     bool result = true;
 
     if (fileName && mode && payload && (0 < payloadSizeBytes))
     {
-        // See RestrictFileAccessToCurrentAccountOnly
-        if (-1 != (fd = open(fileName, (0 == strcmp(mode, "a")) ? O_APPEND : O_CREAT, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP)))
+        RestrictFileAccessToCurrentAccountOnly(fileName);
+
+        if (NULL != (file = fopen(fileName, mode)))
         {
-            if (NULL != (file = fdopen(fd, mode)))
+            if (true == (result = LockFile(file, log)))
             {
-                if (true == (result = LockFile(file, log)))
+                for (i = 0; i < payloadSizeBytes; i++)
                 {
-                    for (i = 0; i < payloadSizeBytes; i++)
+                    if (payload[i] != fputc(payload[i], file))
                     {
-                        if (payload[i] != fputc(payload[i], file))
-                        {
-                            result = false;
-                            OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
-                        }
+                        result = false;
+                        OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
                     }
-
-                    UnlockFile(file, log);
-                }
-                else
-                {
-                    OsConfigLogError(log, "SaveToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
                 }
 
-                fflush(file);
-                fclose(file);
-                close(fd);
+                UnlockFile(file, log);
             }
             else
             {
-                close(fd);
-                result = false;
-                OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
+                OsConfigLogError(log, "SaveToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
             }
+
+            fflush(file);
+            fclose(file);
         }
         else
         {
-            OsConfigLogError(log, "SaveToFile: cannot open '%s', open failed with %d (%d)", fileName, fd, errno);
+            result = false;
+            OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
         }
-        
     }
     else
     {
@@ -925,7 +915,6 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     char* fileNameCopy = NULL;
     FILE* fileHandle = NULL;
     FILE* tempHandle = NULL;
-    int fd = -1;
     char* line = NULL;
     long lineMax = sysconf(_SC_LINE_MAX);
     long newlineLength = newline ? (long)strlen(newline) : 0;
@@ -958,13 +947,11 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     {
         if (NULL != (fileHandle = fopen(fileName, "r")))
         {
-            // See RestrictFileAccessToCurrentAccountOnly
-            if (-1 != (fd = open(fileName, O_CREAT, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP)))
+            if (NULL != (tempHandle = fopen(tempFileName, "w")))
             {
-                if (NULL != (tempHandle = fdopen(fd, "w")))
+                RestrictFileAccessToCurrentAccountOnly(tempFileName);
+                if (NULL != (tempHandle = freopen(tempFileName, "w")))
                 {
-                    RestrictFileAccessToCurrentAccountOnly(tempFileName);
-
                     while (NULL != fgets(line, lineMax + 1, fileHandle))
                     {
                         if (NULL != strstr(line, marker))
@@ -1011,15 +998,13 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                 }
                 else
                 {
-                    OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s', fdopen failed (%d)", tempFileName, errno);
+                    OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s', freopen() failed (%d)", tempFileName, errno);
                     status = EACCES;
                 }
-
-                close(fd);
             }
             else
             {
-                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s', open failed with %d (%d)", tempFileName, fd, errno);
+                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s', fopen() failed (%d)", tempFileName, errno);
                 status = EACCES;
             }
 
