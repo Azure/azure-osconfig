@@ -222,7 +222,7 @@ instance of OsConfigResource as $OsConfigResource12ref
 instance of OsConfigResource as $OsConfigResource13ref
 {
     ResourceID = "Ensure that the SSH ClientAliveInterval is configured";
-    RuleId = "fd9f1554-6b72-8610-826e-78578e6f7811";
+    RuleId = "C848BBA4-93B1-4756-B08A-FF94C2B4814C";
     PayloadKey = "EnsureSshClientAliveIntervalIsConfigured";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshClientAliveIntervalIsConfigured";
