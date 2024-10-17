@@ -822,16 +822,16 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
 
     for (i = 0; i < numRules; i++)
     {
-        if (0 == strcmp(payloadKey, g_rules[i].payloadKey))
+        if (0 == strcmp(payloadKey, (g_rules[i]).payloadKey))
         {
-            if (0 != strcmp(resourceId, g_rules[i].resourceId))
+            if (0 != strcmp(resourceId, (g_rules[i]).resourceId))
             {
-                OsConfigLogError(log, "AsbIsValidRuleIdAndName: resourceId for rule '%' of '%s' (instead of '%s') is invalid", payloadKey, resourceId, g_rules[i].resourceId);
+                OsConfigLogError(log, "AsbIsValidRuleIdAndName: resourceId for rule '%' of '%s' (instead of '%s') is invalid", payloadKey, resourceId, (g_rules[i]).resourceId);
                 result = ENOENT;
             }
-            else if (0 != strcmp(ruleId, g_rules[i].ruleId))
+            else if (0 != strcmp(ruleId, (g_rules[i]).ruleId))
             {
-                OsConfigLogError(log, "AsbIsValidRuleIdAndName: ruleId for rule '%' of '%s' (instead of '%s') is invalid", payloadKey, ruleId, g_rules[i].ruleId);
+                OsConfigLogError(log, "AsbIsValidRuleIdAndName: ruleId for rule '%' of '%s' (instead of '%s') is invalid", payloadKey, ruleId, (g_rules[i]).ruleId);
                 result = ENOENT;
             }
             else
