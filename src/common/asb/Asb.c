@@ -636,7 +636,7 @@ typedef struct BASELINE_RULE
     const char* payloadKey;
 } BASELINE_RULE;
 
-const BASELINE_RULE g_rules = 
+const BASELINE_RULE g_rules[] = 
 {
     { "Ensure that permissions on /etc/ssh/sshd_config are configured", "43119747-263c-2c92-4ce5-726e63259049", "EnsurePermissionsOnEtcSshSshdConfig" },
     { "Ensure that the SSH protocol is configured", "35868e8c-97eb-4981-ab79-99b25101cc86", "EnsureSshBestPracticeProtocol" },
