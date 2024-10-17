@@ -68,41 +68,51 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
 {
     FILE* file = NULL;
+    int fd = -1;
     int i = 0;
     bool result = true;
 
     if (fileName && mode && payload && (0 < payloadSizeBytes))
     {
-        RestrictFileAccessToCurrentAccountOnly(fileName);
-
-        if (NULL != (file = fopen(fileName, mode)))
+        // See RestrictFileAccessToCurrentAccountOnly
+        if (-1 != (fd = open(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP)))
         {
-            if (true == (result = LockFile(file, log)))
+            if (NULL != (file = fdopen(fd, mode)))
             {
-                for (i = 0; i < payloadSizeBytes; i++)
+                if (true == (result = LockFile(file, log)))
                 {
-                    if (payload[i] != fputc(payload[i], file))
+                    for (i = 0; i < payloadSizeBytes; i++)
                     {
-                        result = false;
-                        OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
+                        if (payload[i] != fputc(payload[i], file))
+                        {
+                            result = false;
+                            OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
+                        }
                     }
+
+                    UnlockFile(file, log);
+                }
+                else
+                {
+                    OsConfigLogError(log, "SaveToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
                 }
 
-                UnlockFile(file, log);
+                fflush(file);
+                fclose(file);
+                close(fd);
             }
             else
             {
-                OsConfigLogError(log, "SaveToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
+                close(fd);
+                result = false;
+                OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
             }
-
-            fflush(file);
-            fclose(file);
         }
         else
         {
-            result = false;
-            OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
+            OsConfigLogError(log, "SaveToFile: cannot open '%s', open failed with %d (%d)", fileName, fd, errno);
         }
+        
     }
     else
     {
@@ -915,6 +925,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     char* fileNameCopy = NULL;
     FILE* fileHandle = NULL;
     FILE* tempHandle = NULL;
+    int fd = -1;
     char* line = NULL;
     long lineMax = sysconf(_SC_LINE_MAX);
     long newlineLength = newline ? (long)strlen(newline) : 0;
@@ -947,57 +958,68 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     {
         if (NULL != (fileHandle = fopen(fileName, "r")))
         {
-            if (NULL != (tempHandle = fopen(tempFileName, "w")))
+            // See RestrictFileAccessToCurrentAccountOnly
+            if (-1 != (fd = open(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP)))
             {
-                RestrictFileAccessToCurrentAccountOnly(tempFileName);
-
-                while (NULL != fgets(line, lineMax + 1, fileHandle))
+                if (NULL != (tempHandle = fdopen(fd, "w")))
                 {
-                    if (NULL != strstr(line, marker))
+                    RestrictFileAccessToCurrentAccountOnly(tempFileName);
+
+                    while (NULL != fgets(line, lineMax + 1, fileHandle))
                     {
-                        if ((commentCharacter != line[0]) && (EOL != line[0]) && (NULL != newline) && (1 < newlineLength))
+                        if (NULL != strstr(line, marker))
                         {
-                            if (replacedLine)
+                            if ((commentCharacter != line[0]) && (EOL != line[0]) && (NULL != newline) && (1 < newlineLength))
                             {
-                                // Already replaced this line once
-                                skipLine = true;
+                                if (replacedLine)
+                                {
+                                    // Already replaced this line once
+                                    skipLine = true;
+                                }
+                                else
+                                {
+                                    memset(line, 0, lineMax + 1);
+                                    memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
+                                    skipLine = false;
+                                    replacedLine = true;
+                                }
+                            }
+                            else if (commentCharacter == line[0])
+                            {
+                                skipLine = false;
                             }
                             else
                             {
-                                memset(line, 0, lineMax + 1);
-                                memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
-                                skipLine = false;
-                                replacedLine = true;
+                                skipLine = true;
                             }
                         }
-                        else if (commentCharacter == line[0])
+
+                        if (false == skipLine)
                         {
-                            skipLine = false;
+                            if (EOF == fputs(line, tempHandle))
+                            {
+                                status = (0 == errno) ? EPERM : errno;
+                                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
+                            }
                         }
-                        else
-                        {
-                            skipLine = true;
-                        }
+
+                        memset(line, 0, lineMax + 1);
+                        skipLine = false;
                     }
 
-                    if (false == skipLine)
-                    {
-                        if (EOF == fputs(line, tempHandle))
-                        {
-                            status =  (0 == errno) ? EPERM : errno;
-                            OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
-                        }
-                    }
-
-                    memset(line, 0, lineMax + 1);
-                    skipLine = false;
+                    fclose(tempHandle);
+                }
+                else
+                {
+                    OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s', fdopen failed (%d)", tempFileName, errno);
+                    status = EACCES;
                 }
 
-                fclose(tempHandle);
+                close(fd);
             }
             else
             {
-                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s'", tempFileName);
+                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s', open failed with %d (%d)", tempFileName, fd, errno);
                 status = EACCES;
             }
 
