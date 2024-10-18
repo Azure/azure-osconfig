@@ -18,6 +18,7 @@ target_link_libraries(commontests
     gmock_main
     pthread
     logging
-    commonutils)
+    commonutils
+    asb)
 
 gtest_discover_tests(commontests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

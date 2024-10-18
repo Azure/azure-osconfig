@@ -32,13 +32,11 @@ Describe 'Validate Universal NRP' {
 
         It 'Ensure resons are properly populated' {
             foreach ($instance in $result.resources) {
-                if ($instance.properties.Reasons.Code -eq "PASS") {
+                if ($instance.properties.Reasons.Code.StartsWith("BaselineSettingCompliant:{")) {
                     $instance.complianceStatus | Should -BeTrue
-                }
-                elseif ($instance.properties.Reasons.Code -eq "FAIL") {
+                } elseif ($instance.properties.Reasons.Code.StartsWith("BaselineSettingNotCompliant:{")) {
                     $instance.complianceStatus | Should -BeFalse
-                }
-                else {
+                } else {
                     throw "Reasons are not properly populated"
                 }
             }

@@ -13,11 +13,14 @@ class ReasonClass
     string Code;
 };
 
-[ClassVersion("2.0.0")]
+[ClassVersion("3.0.0")]
 class OsConfigResource : OMI_BaseResource
 {
   [key] 
-  string  PayloadKey;
+  string RuleId;
+
+  [write]
+  string PayloadKey;
 
   [write, Description("MIM Component (for audit and remediation)")]
   string ComponentName;

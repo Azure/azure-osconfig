@@ -1,6 +1,7 @@
 instance of OsConfigResource as $OsConfigResource0ref
 {
     ResourceID = "Ensure that permissions on /etc/ssh/sshd_config are configured";
+    RuleId = "43119747-263c-2c92-4ce5-726e63259049";
     PayloadKey = "EnsurePermissionsOnEtcSshSshdConfig";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsurePermissionsOnEtcSshSshdConfig";
@@ -17,6 +18,7 @@ instance of OsConfigResource as $OsConfigResource0ref
 instance of OsConfigResource as $OsConfigResource1ref
 {
     ResourceID = "Ensure that the SSH protocol is configured";
+    RuleId = "35868e8c-97eb-4981-ab79-99b25101cc86";
     PayloadKey = "EnsureSshBestPracticeProtocol";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshBestPracticeProtocol";
@@ -33,6 +35,7 @@ instance of OsConfigResource as $OsConfigResource1ref
 instance of OsConfigResource as $OsConfigResource2ref
 {
     ResourceID = "Ensure that the SSH IgnoreRhosts is configured";
+    RuleId = "43945588-1bdc-495c-bac8-6a71a62d30aa";
     PayloadKey = "EnsureSshBestPracticeIgnoreRhosts";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshBestPracticeIgnoreRhosts";
@@ -49,6 +52,7 @@ instance of OsConfigResource as $OsConfigResource2ref
 instance of OsConfigResource as $OsConfigResource3ref
 {
     ResourceID = "Ensure that the SSH LogLevel is configured";
+    RuleId = "31f1a912-1b98-42fd-8381-1e8d1033bfd1";
     PayloadKey = "EnsureSshLogLevelIsSet";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshLogLevelIsSet";
@@ -65,6 +69,7 @@ instance of OsConfigResource as $OsConfigResource3ref
 instance of OsConfigResource as $OsConfigResource4ref
 {
     ResourceID = "Ensure that the SSH MaxAuthTries is configured";
+    RuleId = "e7708534-5d98-406f-83ae-1de835b2906e";
     PayloadKey = "EnsureSshMaxAuthTriesIsSet";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshMaxAuthTriesIsSet";
@@ -81,6 +86,7 @@ instance of OsConfigResource as $OsConfigResource4ref
 instance of OsConfigResource as $OsConfigResource5ref
 {
     ResourceID = "Ensure that the allowed users for SSH access are configured";
+    RuleId = "dc8da71d-aeba-4c03-8835-36fe158e372a";
     PayloadKey = "EnsureAllowUsersIsConfigured";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureAllowUsersIsConfigured";
@@ -97,6 +103,7 @@ instance of OsConfigResource as $OsConfigResource5ref
 instance of OsConfigResource as $OsConfigResource6ref
 {
     ResourceID = "Ensure that the denied users for SSH are configured";
+    RuleId = "1DB7D147-3A75-4637-8CDC-C119E22D0206";
     PayloadKey = "EnsureDenyUsersIsConfigured";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureDenyUsersIsConfigured";
@@ -113,6 +120,7 @@ instance of OsConfigResource as $OsConfigResource6ref
 instance of OsConfigResource as $OsConfigResource7ref
 {
     ResourceID = "Ensure that the allowed groups for SSH are configured";
+    RuleId = "D9868B1F-0C8E-4ADB-889E-14E374874ECE";
     PayloadKey = "EnsureAllowGroupsIsConfigured";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureAllowGroupsIsConfigured";
@@ -129,6 +137,7 @@ instance of OsConfigResource as $OsConfigResource7ref
 instance of OsConfigResource as $OsConfigResource8ref
 {
     ResourceID = "Ensure that the denied groups for SSH are configured";
+    RuleId = "F85C04A4-427B-4EE1-B988-C3FF7B4998CC";
     PayloadKey = "EnsureDenyGroupsConfigured";
     ComponentName = "SecurityBaseline";
     ExpectedObjectValue = "PASS";
@@ -145,6 +154,7 @@ instance of OsConfigResource as $OsConfigResource8ref
 instance of OsConfigResource as $OsConfigResource9ref
 {
     ResourceID = "Ensure that the SSH HostBasedAuthentication is configured";
+    RuleId = "66511f6b-f690-43df-9654-642260699eec";
     PayloadKey = "EnsureSshHostbasedAuthenticationIsDisabled";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshHostbasedAuthenticationIsDisabled";
@@ -161,6 +171,7 @@ instance of OsConfigResource as $OsConfigResource9ref
 instance of OsConfigResource as $OsConfigResource10ref
 {
     ResourceID = "Ensure that the SSH PermitRootLogin is configured";
+    RuleId = "16511f6b-f690-43df-9654-642260699eec";
     PayloadKey = "EnsureSshPermitRootLoginIsDisabled";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshPermitRootLoginIsDisabled";
@@ -177,6 +188,7 @@ instance of OsConfigResource as $OsConfigResource10ref
 instance of OsConfigResource as $OsConfigResource11ref
 {
     ResourceID = "Ensure that the SSH PermitEmptyPasswords is configured";
+    RuleId = "d50c3f39-264c-4cdc-b0ba-89de8a0f6828";
     PayloadKey = "EnsureSshPermitEmptyPasswordsIsDisabled";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshPermitEmptyPasswordsIsDisabled";
@@ -193,6 +205,7 @@ instance of OsConfigResource as $OsConfigResource11ref
 instance of OsConfigResource as $OsConfigResource12ref
 {
     ResourceID = "Ensure that the SSH ClientAliveCountMax is configured";
+    RuleId = "fd9f1554-6b72-8610-826e-78578e6f7811";
     PayloadKey = "EnsureSshClientIntervalCountMaxIsConfigured";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshClientIntervalCountMaxIsConfigured";
@@ -209,6 +222,7 @@ instance of OsConfigResource as $OsConfigResource12ref
 instance of OsConfigResource as $OsConfigResource13ref
 {
     ResourceID = "Ensure that the SSH ClientAliveInterval is configured";
+    RuleId = "C848BBA4-93B1-4756-B08A-FF94C2B4814C";
     PayloadKey = "EnsureSshClientAliveIntervalIsConfigured";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshClientAliveIntervalIsConfigured";
@@ -225,6 +239,7 @@ instance of OsConfigResource as $OsConfigResource13ref
 instance of OsConfigResource as $OsConfigResource14ref
 {
     ResourceID = "Ensure that the SSH LoginGraceTime is configured";
+    RuleId = "39aa5c2b-5b36-84a7-4022-570a53c86ff9";
     PayloadKey = "EnsureSshLoginGraceTimeIsSet";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshLoginGraceTimeIsSet";
@@ -241,6 +256,7 @@ instance of OsConfigResource as $OsConfigResource14ref
 instance of OsConfigResource as $OsConfigResource15ref
 {
     ResourceID = "Ensure that only approved MAC algorithms are used";
+    RuleId = "483e8b0c-7572-8467-7e0c-26e1e9ce6359";
     PayloadKey = "EnsureOnlyApprovedMacAlgorithmsAreUsed";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureOnlyApprovedMacAlgorithmsAreUsed";
@@ -257,6 +273,7 @@ instance of OsConfigResource as $OsConfigResource15ref
 instance of OsConfigResource as $OsConfigResource16ref
 {
     ResourceID = "Ensure that the SSH warning banner is configured";
+    RuleId = "9e240540-5e0a-4b60-beb2-57421c65a0b9";
     PayloadKey = "EnsureSshWarningBannerIsEnabled";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshWarningBannerIsEnabled";
@@ -273,6 +290,7 @@ instance of OsConfigResource as $OsConfigResource16ref
 instance of OsConfigResource as $OsConfigResource17ref
 {
     ResourceID = "Ensure that the SSH PermitUserEnvironment is configured";
+    RuleId = "0e665978-91f4-45af-bb7b-e4090b600c8d";
     PayloadKey = "EnsureUsersCannotSetSshEnvironmentOptions";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureUsersCannotSetSshEnvironmentOptions";
@@ -289,6 +307,7 @@ instance of OsConfigResource as $OsConfigResource17ref
 instance of OsConfigResource as $OsConfigResource18ref
 {
     ResourceID = "Ensure that appropriate ciphers are used for SSH";
+    RuleId = "b07d4c69-a1d9-4c22-a486-634ec3b8c380";
     PayloadKey = "EnsureAppropriateCiphersForSsh";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureAppropriateCiphersForSsh";
@@ -305,6 +324,7 @@ instance of OsConfigResource as $OsConfigResource18ref
 instance of OsConfigResource as $OsConfigResource19ref
 {
     ResourceID = "Ensure that the SSH port is configured";
+    RuleId = "1310042D-193F-414A-A7E3-B2C4E89AA537";
     PayloadKey = "EnsureSshPortIsConfigured";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshPortIsConfigured";
@@ -320,9 +340,9 @@ instance of OsConfigResource as $OsConfigResource19ref
 
 instance of OMI_ConfigurationDocument
 {
-    Version="1.0.5";
+    Version="2.0.0";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="3/18/2024 16:50:00 PST";
+    GenerationDate="10/16/2024 16:38:00 PST";
     Name="OsConfigSshServerSecurity";
 };
