@@ -915,6 +915,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     char* fileNameCopy = NULL;
     FILE* fileHandle = NULL;
     FILE* tempHandle = NULL;
+    int tempDescriptor = -1;
     char* line = NULL;
     long lineMax = sysconf(_SC_LINE_MAX);
     long newlineLength = newline ? (long)strlen(newline) : 0;
@@ -947,10 +948,11 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     {
         if (NULL != (fileHandle = fopen(fileName, "r")))
         {
-            if (NULL != (tempHandle = fopen(tempFileName, "w")))
+            // S_IRUSR (0400): Read permission, owner
+            // S_IWUSR (0200): Write permission, owner
+            if (-1 != (tempDescriptor = open(tempFileName, O_EXCL | O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR)))
             {
-                RestrictFileAccessToCurrentAccountOnly(tempFileName);
-                if (NULL != (tempHandle = freopen(tempFileName, "w", tempHandle)))
+                if (NULL != (tempHandle = fdopen(tempDescriptor, "w")))
                 {
                     while (NULL != fgets(line, lineMax + 1, fileHandle))
                     {
@@ -998,13 +1000,15 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                 }
                 else
                 {
-                    OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s', freopen() failed (%d)", tempFileName, errno);
+                    OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to open temporary file '%s', fdopen() failed (%d)", tempFileName, errno);
                     status = EACCES;
                 }
+
+                close(tempDescriptor);
             }
             else
             {
-                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s', fopen() failed (%d)", tempFileName, errno);
+                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to open temporary file '%s', open() failed (%d)", tempFileName, errno);
                 status = EACCES;
             }
 
