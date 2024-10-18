@@ -1003,6 +1003,8 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                     OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to open temporary file '%s', fdopen() failed (%d)", tempFileName, errno);
                     status = EACCES;
                 }
+
+                close(tempDescriptor);
             }
             else
             {
