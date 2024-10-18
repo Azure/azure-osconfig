@@ -521,9 +521,9 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
 
     // Try to read the resource id from the input resource values, do not fail here if we cannot
+    FREE_MEMORY(g_resourceId);
     if ((MI_TRUE == in->InputResource.value->ResourceId.exists) && (NULL != in->InputResource.value->ResourceId.value))
     {
-        FREE_MEMORY(g_resourceId);
         g_resourceId = DuplicateString(in->InputResource.value->ResourceId.value);
     }
     else
