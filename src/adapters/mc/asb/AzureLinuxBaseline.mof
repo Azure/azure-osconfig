@@ -1959,7 +1959,7 @@ instance of OsConfigResource as $OsConfigResource119ref
 instance of OsConfigResource as $OsConfigResource120ref
 {
     ResourceID = "Ensure the isdn service is disabled and the isdnutils-base package is not installed";
-    ruleId = "51ebf409-911a-4d92-9d3a-1e331e7e4b27";
+    RuleId = "51ebf409-911a-4d92-9d3a-1e331e7e4b27";
     PayloadKey = "EnsureIsdnUtilsBaseNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIsdnUtilsBaseNotInstalled";
