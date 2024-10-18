@@ -20,7 +20,7 @@
 ** OsConfigResource [OsConfigResource]
 **
 ** Keys:
-**    PayloadKey
+**    RuleId
 **
 **==============================================================================
 */
@@ -37,7 +37,8 @@ typedef struct _OsConfigResource /* extends OMI_BaseResource */
     MI_ConstStringField ConfigurationName;
     MSFT_Credential_ConstRef PsDscRunAsCredential;
     /* OsConfigResource properties */
-    /*KEY*/ MI_ConstStringField PayloadKey;
+    /*KEY*/ MI_ConstStringField RuleId;
+    MI_ConstStringField PayloadKey;
     MI_ConstStringField ComponentName;
     MI_ConstStringField InitObjectName;
     MI_ConstStringField ReportedObjectName;
@@ -370,13 +371,45 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_PsDscRunAsCredential(
         6);
 }
 
-MI_INLINE MI_Result MI_CALL OsConfigResource_Set_PayloadKey(
+MI_INLINE MI_Result MI_CALL OsConfigResource_Set_RuleId(
     OsConfigResource* self,
     const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
         7,
+        (MI_Value*)&str,
+        MI_STRING,
+        0);
+}
+
+MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_RuleId(
+    OsConfigResource* self,
+    const MI_Char* str)
+{
+    return self->__instance.ft->SetElementAt(
+        (MI_Instance*)&self->__instance,
+        7,
+        (MI_Value*)&str,
+        MI_STRING,
+        MI_FLAG_BORROW);
+}
+
+MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_RuleId(
+    OsConfigResource* self)
+{
+    return self->__instance.ft->ClearElementAt(
+        (MI_Instance*)&self->__instance,
+        7);
+}
+
+MI_INLINE MI_Result MI_CALL OsConfigResource_Set_PayloadKey(
+    OsConfigResource* self,
+    const MI_Char* str)
+{
+    return self->__instance.ft->SetElementAt(
+        (MI_Instance*)&self->__instance,
+        8,
         (MI_Value*)&str,
         MI_STRING,
         0);
@@ -388,7 +421,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_PayloadKey(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        7,
+        8,
         (MI_Value*)&str,
         MI_STRING,
         MI_FLAG_BORROW);
@@ -399,7 +432,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_PayloadKey(
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
-        7);
+        8);
 }
 
 MI_INLINE MI_Result MI_CALL OsConfigResource_Set_ComponentName(
@@ -408,7 +441,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Set_ComponentName(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        8,
+        9,
         (MI_Value*)&str,
         MI_STRING,
         0);
@@ -420,7 +453,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_ComponentName(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        8,
+        9,
         (MI_Value*)&str,
         MI_STRING,
         MI_FLAG_BORROW);
@@ -431,7 +464,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_ComponentName(
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
-        8);
+        9);
 }
 
 MI_INLINE MI_Result MI_CALL OsConfigResource_Set_InitObjectName(
@@ -440,7 +473,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Set_InitObjectName(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        9,
+        10,
         (MI_Value*)&str,
         MI_STRING,
         0);
@@ -452,7 +485,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_InitObjectName(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        9,
+        10,
         (MI_Value*)&str,
         MI_STRING,
         MI_FLAG_BORROW);
@@ -463,7 +496,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_InitObjectName(
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
-        9);
+        10);
 }
 
 MI_INLINE MI_Result MI_CALL OsConfigResource_Set_ReportedObjectName(
@@ -472,7 +505,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Set_ReportedObjectName(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        10,
+        11,
         (MI_Value*)&str,
         MI_STRING,
         0);
@@ -484,7 +517,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_ReportedObjectName(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        10,
+        11,
         (MI_Value*)&str,
         MI_STRING,
         MI_FLAG_BORROW);
@@ -495,7 +528,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_ReportedObjectName(
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
-        10);
+        11);
 }
 
 MI_INLINE MI_Result MI_CALL OsConfigResource_Set_ReportedObjectValue(
@@ -504,7 +537,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Set_ReportedObjectValue(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        11,
+        12,
         (MI_Value*)&str,
         MI_STRING,
         0);
@@ -516,7 +549,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_ReportedObjectValue(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        11,
+        12,
         (MI_Value*)&str,
         MI_STRING,
         MI_FLAG_BORROW);
@@ -527,7 +560,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_ReportedObjectValue(
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
-        11);
+        12);
 }
 
 MI_INLINE MI_Result MI_CALL OsConfigResource_Set_ExpectedObjectValue(
@@ -536,7 +569,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Set_ExpectedObjectValue(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        12,
+        13,
         (MI_Value*)&str,
         MI_STRING,
         0);
@@ -548,7 +581,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_ExpectedObjectValue(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        12,
+        13,
         (MI_Value*)&str,
         MI_STRING,
         MI_FLAG_BORROW);
@@ -559,7 +592,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_ExpectedObjectValue(
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
-        12);
+        13);
 }
 
 MI_INLINE MI_Result MI_CALL OsConfigResource_Set_DesiredObjectName(
@@ -568,7 +601,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Set_DesiredObjectName(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        13,
+        14,
         (MI_Value*)&str,
         MI_STRING,
         0);
@@ -580,7 +613,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_DesiredObjectName(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        13,
+        14,
         (MI_Value*)&str,
         MI_STRING,
         MI_FLAG_BORROW);
@@ -591,7 +624,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_DesiredObjectName(
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
-        13);
+        14);
 }
 
 MI_INLINE MI_Result MI_CALL OsConfigResource_Set_DesiredObjectValue(
@@ -600,7 +633,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Set_DesiredObjectValue(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        14,
+        15,
         (MI_Value*)&str,
         MI_STRING,
         0);
@@ -612,7 +645,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_DesiredObjectValue(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        14,
+        15,
         (MI_Value*)&str,
         MI_STRING,
         MI_FLAG_BORROW);
@@ -623,7 +656,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_DesiredObjectValue(
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
-        14);
+        15);
 }
 
 MI_INLINE MI_Result MI_CALL OsConfigResource_Set_ReportedMpiResult(
@@ -652,7 +685,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Set_Reasons(
     arr.size = size;
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        16,
+        17,
         (MI_Value*)&arr,
         MI_INSTANCEA,
         0);
@@ -668,7 +701,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_Reasons(
     arr.size = size;
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        16,
+        17,
         (MI_Value*)&arr,
         MI_INSTANCEA,
         MI_FLAG_BORROW);
@@ -679,7 +712,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_Reasons(
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
-        16);
+        17);
 }
 
 /*
@@ -1205,6 +1238,5 @@ MI_EXTERN_C void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     const MI_Char* methodName,
     const OsConfigResource* instanceName,
     const OsConfigResource_SetTargetResource* in);
-
 
 #endif /* _OsConfigResource_h */

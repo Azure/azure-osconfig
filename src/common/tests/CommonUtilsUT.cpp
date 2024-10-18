@@ -13,6 +13,7 @@
 #include <CommonUtils.h>
 #include <UserUtils.h>
 #include <SshUtils.h>
+#include <Asb.h>
 
 using namespace std;
 
@@ -85,12 +86,49 @@ TEST_F(CommonUtilsTest, LoadStringFromSingleByteFile)
     const char* data = "0";
     char* contents = NULL;
     EXPECT_TRUE(CreateTestFile(m_path, data));
-    EXPECT_STREQ(data, contents = LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(data, contents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_EQ(1, strlen(contents));
     EXPECT_EQ(data[0], contents[0]);
     EXPECT_EQ(0, contents[1]);
     FREE_MEMORY(contents);
     EXPECT_EQ(0, CheckFileContents(m_path, data, nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, LoadStringFromZeroLengthFile)
+{
+    int fd = -1;
+    char* contents = NULL;
+    EXPECT_NE(-1, fd = open(m_path, O_CREAT | O_WRONLY, 0644));
+    EXPECT_NE(nullptr, contents = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_EQ(0, strlen(contents));
+    EXPECT_EQ(0, contents[0]);
+    FREE_MEMORY(contents);
+    close(fd);
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, LoadStringFromBigLengthFile)
+{
+    const size_t size = 3079; //(1024 * 3) + 7
+    size_t i = 0;
+    char* contents = NULL;
+    char* read = NULL;
+    EXPECT_NE(nullptr, contents = (char*)malloc(size + 1));
+    memset(contents, 0, size + 1);
+    for (i = 0; i < size; i++)
+    {
+        contents[i] = (char)((i % 94) + 33);
+    }
+    EXPECT_TRUE(SavePayloadToFile(m_path, contents, size, nullptr));
+    EXPECT_NE(nullptr, read = LoadStringFromFile(m_path, false, nullptr));
+    EXPECT_EQ(size, strlen(contents));
+    for (i = 0; i < size; i++)
+    {
+        EXPECT_EQ(contents[i], read[i]);
+    }
+    FREE_MEMORY(contents);
+    FREE_MEMORY(read);
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -2260,4 +2298,25 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
     
     FREE_MEMORY(cleanedContents);
     EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, AsbIsValidResourceIdRuleId)
+{
+    const char* goodResourceId = "Ensure SMB V1 with Samba is disabled";
+    const char* goodRuleId = "7624efb0-3026-4c72-8920-48d5be78a50e";
+    const char* badResourceId = "Ensure the rsh client is not installed";
+    const char* badRuleId = "6d441f31-f888-4f4f-b1da-7cfc26263e3f";
+    const char* payloadKey = "EnsureSmbWithSambaIsDisabled";
+    
+    EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(goodResourceId, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(goodResourceId, goodRuleId, nullptr, nullptr));
+
+    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(badResourceId, goodRuleId, payloadKey, nullptr));
+    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(goodResourceId, badRuleId, payloadKey, nullptr));
+    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(badResourceId, badRuleId, payloadKey, nullptr));
+
+    EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, goodRuleId, payloadKey, nullptr));
+    EXPECT_EQ(0, AsbIsValidResourceIdRuleId(nullptr, goodRuleId, payloadKey, nullptr));
+    EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, nullptr, payloadKey, nullptr));
 }

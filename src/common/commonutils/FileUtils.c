@@ -5,13 +5,15 @@
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 {
+    const int initialSize = 1024;
+    int currentSize = 0;
     FILE* file = NULL;
-    int fileSize = 0;
     int i = 0;
     int next = 0;
     char* string = NULL;
+    char* temp = NULL;
 
-    if ((NULL == fileName) || (-1 == access(fileName, F_OK)))
+    if (false == FileExists(fileName))
     {
         return string;
     }
@@ -20,15 +22,12 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
     {
         if (LockFile(file, log))
         {
-            fseek(file, 0, SEEK_END);
-            fileSize = ftell(file);
-            fseek(file, 0, SEEK_SET);
-
-            string = (char*)malloc(fileSize + 1);
-            if (string)
+            if (NULL != (string = (char*)malloc(initialSize)))
             {
-                memset(&string[0], 0, fileSize + 1);
-                for (i = 0; i <= fileSize; i++)
+                currentSize = initialSize;
+                memset(&string[0], 0, currentSize);
+                
+                while (1)
                 {
                     next = fgetc(file);
                     if ((EOF == next) || (stopAtEol && (EOL == next)))
@@ -38,6 +37,22 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
                     }
 
                     string[i] = (char)next;
+                    i += 1;
+
+                    if (i >= currentSize)
+                    {
+                        currentSize += initialSize;
+                        if (NULL != (temp = (char*)realloc(string, currentSize)))
+                        {
+                            string = temp;
+                            memset(&string[i], 0, currentSize - i);
+                        }
+                        else
+                        {
+                            FREE_MEMORY(string);
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -58,6 +73,8 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
 
     if (fileName && mode && payload && (0 < payloadSizeBytes))
     {
+        RestrictFileAccessToCurrentAccountOnly(fileName);
+
         if (NULL != (file = fopen(fileName, mode)))
         {
             if (true == (result = LockFile(file, log)))
@@ -410,7 +427,7 @@ bool IsADirectory(const char* fileName, void* log)
 {
     return IsATrueFileOrDirectory(true, fileName, log);
 }
-   
+
 bool FileExists(const char* fileName)
 {
     return ((NULL != fileName) && (-1 != access(fileName, F_OK))) ? true : false;
@@ -932,53 +949,62 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         {
             if (NULL != (tempHandle = fopen(tempFileName, "w")))
             {
-                while (NULL != fgets(line, lineMax + 1, fileHandle))
+                RestrictFileAccessToCurrentAccountOnly(tempFileName);
+                if (NULL != (tempHandle = freopen(tempFileName, "w", tempHandle)))
                 {
-                    if (NULL != strstr(line, marker))
+                    while (NULL != fgets(line, lineMax + 1, fileHandle))
                     {
-                        if ((commentCharacter != line[0]) && (EOL != line[0]) && (NULL != newline) && (1 < newlineLength))
+                        if (NULL != strstr(line, marker))
                         {
-                            if (replacedLine)
+                            if ((commentCharacter != line[0]) && (EOL != line[0]) && (NULL != newline) && (1 < newlineLength))
                             {
-                                // Already replaced this line once
-                                skipLine = true;
+                                if (replacedLine)
+                                {
+                                    // Already replaced this line once
+                                    skipLine = true;
+                                }
+                                else
+                                {
+                                    memset(line, 0, lineMax + 1);
+                                    memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
+                                    skipLine = false;
+                                    replacedLine = true;
+                                }
+                            }
+                            else if (commentCharacter == line[0])
+                            {
+                                skipLine = false;
                             }
                             else
                             {
-                                memset(line, 0, lineMax + 1);
-                                memcpy(line, newline, (newlineLength > lineMax) ? lineMax : newlineLength);
-                                skipLine = false;
-                                replacedLine = true;
+                                skipLine = true;
                             }
                         }
-                        else if (commentCharacter == line[0])
+
+                        if (false == skipLine)
                         {
-                            skipLine = false;
+                            if (EOF == fputs(line, tempHandle))
+                            {
+                                status = (0 == errno) ? EPERM : errno;
+                                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
+                            }
                         }
-                        else
-                        {
-                            skipLine = true;
-                        }
+
+                        memset(line, 0, lineMax + 1);
+                        skipLine = false;
                     }
 
-                    if (false == skipLine)
-                    {
-                        if (EOF == fputs(line, tempHandle))
-                        {
-                            status =  (0 == errno) ? EPERM : errno;
-                            OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
-                        }
-                    }
-
-                    memset(line, 0, lineMax + 1);
-                    skipLine = false;
+                    fclose(tempHandle);
                 }
-
-                fclose(tempHandle);
+                else
+                {
+                    OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s', freopen() failed (%d)", tempFileName, errno);
+                    status = EACCES;
+                }
             }
             else
             {
-                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s'", tempFileName);
+                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to create temporary file '%s', fopen() failed (%d)", tempFileName, errno);
                 status = EACCES;
             }
 
