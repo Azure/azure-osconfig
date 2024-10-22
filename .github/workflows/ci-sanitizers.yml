@@ -1,10 +1,6 @@
 name: CI with sanitizers enabled
 
 on:
-  # TODO: Enable pull request and cron triggers later, when this workflow is tested and not failing
-  # pull_request:
-  # schedule:
-    # - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
   workflow_dispatch:
 
 env:
@@ -22,7 +18,6 @@ jobs:
     steps:
       - name: Get matrix
         id: get-matrix
-        # Skip centos-7, oraclelinux-7, rhel-7 as they don't currently build properly from Dockerfile
         run: |
           matrix="$(cat <<'EOL'
           [
@@ -55,10 +50,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ github.token }}
-
-      # - name: Setup QEMU
-      #   if: ${{ matrix.target.arch != 'amd64' }}
-      #   uses: docker/setup-qemu-action@v3
 
       - name: Run container
         id: container
@@ -120,7 +111,7 @@ jobs:
         with:
           path: ci-test
           pattern: 'unit-test-*-sanitizer'
-          merge-multiple: true  
+          merge-multiple: true
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
