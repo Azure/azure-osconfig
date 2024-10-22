@@ -15,13 +15,13 @@ To regenerate code, see [codegen.cmd](codegen.cmd).
 
 The OSConfig Universal NRP binary (libOsConfigResource.so) is built with rest of OSConfig.
 
-### 3.1. Buidling the universal NRP binary on Ubuntu 14
+### 3.1. Building the universal NRP binary on Ubuntu 14
 
 The OSConfig Universal NRP binary is built on Ubuntu 14 with gcc 4.8 in order for this same binary to run as-is on all newer Linux distros.
 
 Install Ubuntu 14.04 LTS from one of the archived locations such as at [Ubuntu](https://www.releases.ubuntu.com/14.04/), or [Ubuntu MATE](https://releases.ubuntu-mate.org/archived/14.04/amd64/)). 
 
-Install the miminal set of dependencies necessary:
+Install the minimal set of dependencies necessary:
 
 ```bash
 sudo apt-get install -y gcc git cmake build-essential
@@ -241,11 +241,11 @@ The last argument (`-Mode ApplyAndAutoCorrect`) is for remediation, without this
 Run this command on the Arc device in PowerShell. This will produce a JSON holding the policy definition, copy that JSON, it will be needed for creating the new policy in Azure Portal.
 
 > **Important** 
-> In the generated policy definition JSON, before creating a new policy with it, manually search and remove all instances of prefixes with the resource type wrapped in square brakets (for example: `[OsConfigResource]`).
+> In the generated policy definition JSON, before creating a new policy with it, manually search and remove all instances of prefixes with the resource type wrapped in square brackets (for example: `[OsConfigResource]`).
 
 Save a copy of the generated policy definition JSON in case the policy will need to be updated later (for example, because of an updated artifacts ZIP package).
 
-An example of a generated policy definition JSON (with the SAS token and file hash removed) for the above example is available here: [OsConfigPolicy_DeployIfNotExists.json](OsConfigPolicy_DeployIfNotExists.json)
+An example of a generated policy definition JSON (with the SAS token and file hash removed) for the above example is available here: [LinuxSshServerSecurityBaseline_DeployIfNotExists.json](ssh/LinuxSshServerSecurityBaseline_DeployIfNotExists.json)
 
 #### 7.1.2. Creating the new policy
 
@@ -259,9 +259,9 @@ Next, go to Azure Portal | Policy | Definitions, select the subscription, then c
 
 Then save.
 
-#### 7.1.3. Asigning the new policy
+#### 7.1.3. Assigning the new policy
 
-Next, the new policy needs to be asigned. Go to Azure Portal | Policy | Definitions and asign the policy: 
+Next, the new policy needs to be assigned. Go to Azure Portal | Policy | Definitions and assign the policy:
 1. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group). 
 1. Select `Include Arc connected machines` and uncheck the uncheck the `Only show parameters` box. 
 1. Enter the desired values for the policy parameters: `ComponentName`, `ReportedObjectName`, `DesiredObjectName`, `DesiredObjectValue`, etc. 
@@ -320,7 +320,7 @@ mkdir $HOME/GuestConfig
 sudo cp /var/lib/GuestConfig $HOME -r
 ```
 
-View the current status of the MC Agent via the the Azure Arc-enabled Servers Agent with:
+View the current status of the MC Agent via the Azure Arc-enabled Servers Agent with:
 
 ```bash
 sudo azcmagent show
