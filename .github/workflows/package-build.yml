@@ -58,7 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: ${{ inputs.buildForMachineConfiguration == 'false' && 'recursive' || '' }}
+          submodules: ${{ inputs.buildForMachineConfiguration == false && 'recursive' || '' }}
           clean: true
           ref: ${{ inputs.ref }}
 
