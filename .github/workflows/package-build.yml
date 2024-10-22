@@ -42,6 +42,10 @@ on:
         type: string
         required: false
         default: ${{ github.ref }}
+      buildForMachineConfiguration:
+        type: boolean
+        required: false
+        default: false
 
 env:
   BUILD_TYPE: Release
@@ -54,7 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: ${{ inputs.buildForMachineConfiguration == 'false' && 'recursive' || '' }}
           clean: true
           ref: ${{ inputs.ref }}
 
@@ -93,7 +97,11 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
           cmd: |
-            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON
+            if [ "${{ inputs.buildForMachineConfiguration }}" = "true" ]; then
+              cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+            else
+              cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON
+            fi
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
@@ -131,4 +139,6 @@ jobs:
         if: ${{ !inputs.test }}
         with:
           name: ${{ inputs.artifact }}
-          path: ./build/osconfig*
+          path: |
+            ./build/osconfig*
+            ./build/*.zip
