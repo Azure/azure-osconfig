@@ -1,4 +1,4 @@
-name: Publish
+name: Build 'OSConfig for MC' (NRP and policy packages)
 
 on:
   workflow_call:
@@ -43,12 +43,3 @@ jobs:
       container-tag: ${{ inputs.container-tag }}
       buildOsConfigForMc: ${{ inputs.buildOsConfigForMc }}
       release: true
-
-  sign:
-    uses: ./.github/workflows/package-sign.yml
-    needs: package
-    with:
-      artifact: ${{ inputs.target }}-${{ inputs.arch }}
-      key-code: ${{ inputs.dist == 'azurelinux' && 'CP-459159-Pgp' || 'CP-450779-Pgp' }}
-      package-type: ${{ inputs.package-type }}
-    secrets: inherit
