@@ -27,7 +27,7 @@ on:
         type: string
         required: false
         default: latest
-      buildForMachineConfiguration:
+      buildOsConfigForMc:
         type: boolean
         required: false
         default: false
@@ -41,7 +41,7 @@ jobs:
       artifact: ${{ inputs.target }}-${{ inputs.arch }}
       package-type: ${{ inputs.package-type }}
       container-tag: ${{ inputs.container-tag }}
-      buildForMachineConfiguration: ${{ inputs.buildForMachineConfiguration }}
+      buildOsConfigForMc: ${{ inputs.buildOsConfigForMc }}
       release: true
 
   sign:
