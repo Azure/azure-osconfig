@@ -7,7 +7,8 @@ RUN apt -y update && apt-get -y install \
     gcc \
     git \
     cmake \
-    build-essential
+    build-essential \
+    libcurl4-openssl-dev \
 
 WORKDIR /git
 
