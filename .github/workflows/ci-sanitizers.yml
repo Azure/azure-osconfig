@@ -1,7 +1,9 @@
 name: CI with sanitizers enabled
 
 on:
-  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
 
 env:
   BUILD_TYPE: Debug
@@ -68,7 +70,7 @@ jobs:
             mkdir build && cd build
             cmake ../src -DCMAKE_C_FLAGS="${{ env.SANITIZER_FLAGS }}" -DCMAKE_CXX_FLAGS="${{ env.SANITIZER_FLAGS }}" -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -Duse_default_uuid=ON
 
-      - name: Build azure-osconfig
+      - name: Build Azure OSConfig
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
