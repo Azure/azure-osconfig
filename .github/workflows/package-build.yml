@@ -108,7 +108,12 @@ jobs:
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
-          cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
+          cmd: |
+            if [ "${{ inputs.buildOsConfigForMc }}" = "true" ]; then
+              cmake --build . --config ${{ env.BUILD_TYPE }}
+            else
+              cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
+            fi
 
       - name: Run cpack
         uses: ./.github/actions/container-exec
