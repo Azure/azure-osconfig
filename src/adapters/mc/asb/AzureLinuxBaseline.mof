@@ -1,6 +1,6 @@
 instance of OsConfigResource as $OsConfigResource0ref
 {
-    ResourceID = "Ensure that permissions on /etc/ssh/sshd_config are configured";
+    ResourceID = "Ensure permissions on /etc/ssh/sshd_config are configured (CIS: L1 - Server - 5.2.1)";
     RuleId = "43119747-263c-2c92-4ce5-726e63259049";
     PayloadKey = "EnsurePermissionsOnEtcSshSshdConfig";
     ComponentName = "SecurityBaseline";
@@ -17,7 +17,7 @@ instance of OsConfigResource as $OsConfigResource0ref
 
 instance of OsConfigResource as $OsConfigResource1ref
 {
-    ResourceID = "Ensure that the SSH protocol is configured";
+    ResourceID = "Ensure that the SSH protocol is configured (CIS: L1 - Server - 5.2.4)";
     RuleId = "35868e8c-97eb-4981-ab79-99b25101cc86";
     PayloadKey = "EnsureSshBestPracticeProtocol";
     ComponentName = "SecurityBaseline";
@@ -34,7 +34,7 @@ instance of OsConfigResource as $OsConfigResource1ref
 
 instance of OsConfigResource as $OsConfigResource2ref
 {
-    ResourceID = "Ensure that the SSH IgnoreRhosts is configured";
+    ResourceID = "Ensure that the SSH IgnoreRhosts is configured (CIS: L1 - Server - 5.2.8)";
     RuleId = "43945588-1bdc-495c-bac8-6a71a62d30aa";
     PayloadKey = "EnsureSshBestPracticeIgnoreRhosts";
     ComponentName = "SecurityBaseline";
@@ -51,7 +51,7 @@ instance of OsConfigResource as $OsConfigResource2ref
 
 instance of OsConfigResource as $OsConfigResource3ref
 {
-    ResourceID = "Ensure that the SSH LogLevel is configured";
+    ResourceID = "Ensure that the SSH LogLevel is configured (CIS: L1 - Server - 5.2.5)";
     RuleId = "31f1a912-1b98-42fd-8381-1e8d1033bfd1";
     PayloadKey = "EnsureSshLogLevelIsSet";
     ComponentName = "SecurityBaseline";
@@ -68,7 +68,7 @@ instance of OsConfigResource as $OsConfigResource3ref
 
 instance of OsConfigResource as $OsConfigResource4ref
 {
-    ResourceID = "Ensure that the SSH MaxAuthTries is configured";
+    ResourceID = "Ensure that the SSH MaxAuthTries is configured (CIS: L1 - Server - 5.2.7)";
     RuleId = "e7708534-5d98-406f-83ae-1de835b2906e";
     PayloadKey = "EnsureSshMaxAuthTriesIsSet";
     ComponentName = "SecurityBaseline";
@@ -85,7 +85,7 @@ instance of OsConfigResource as $OsConfigResource4ref
 
 instance of OsConfigResource as $OsConfigResource5ref
 {
-    ResourceID = "Ensure that the allowed users for SSH access are configured";
+    ResourceID = "Ensure that the allowed users for SSH access are configured (CIS: L1 - Server - 5.2.18)";
     RuleId = "dc8da71d-aeba-4c03-8835-36fe158e372a";
     PayloadKey = "EnsureAllowUsersIsConfigured";
     ComponentName = "SecurityBaseline";
@@ -102,7 +102,7 @@ instance of OsConfigResource as $OsConfigResource5ref
 
 instance of OsConfigResource as $OsConfigResource6ref
 {
-    ResourceID = "Ensure that the denied users for SSH are configured";
+    ResourceID = "Ensure that the denied users for SSH are configured (CIS: L1 - Server - 5.2.18)";
     RuleId = "1DB7D147-3A75-4637-8CDC-C119E22D0206";
     PayloadKey = "EnsureDenyUsersIsConfigured";
     ComponentName = "SecurityBaseline";
@@ -119,7 +119,7 @@ instance of OsConfigResource as $OsConfigResource6ref
 
 instance of OsConfigResource as $OsConfigResource7ref
 {
-    ResourceID = "Ensure that the allowed groups for SSH are configured";
+    ResourceID = "Ensure that the allowed groups for SSH are configured (CIS: L1 - Server - 5.2.18)";
     RuleId = "D9868B1F-0C8E-4ADB-889E-14E374874ECE";
     PayloadKey = "EnsureAllowGroupsIsConfigured";
     ComponentName = "SecurityBaseline";
@@ -136,7 +136,7 @@ instance of OsConfigResource as $OsConfigResource7ref
 
 instance of OsConfigResource as $OsConfigResource8ref
 {
-    ResourceID = "Ensure that the denied groups for SSH are configured";
+    ResourceID = "Ensure that the denied groups for SSH are configured (CIS: L1 - Server - 5.2.18)";
     RuleId = "F85C04A4-427B-4EE1-B988-C3FF7B4998CC";
     PayloadKey = "EnsureDenyGroupsConfigured";
     ComponentName = "SecurityBaseline";
@@ -153,7 +153,7 @@ instance of OsConfigResource as $OsConfigResource8ref
 
 instance of OsConfigResource as $OsConfigResource9ref
 {
-    ResourceID = "Ensure that the SSH HostBasedAuthentication is configured";
+    ResourceID = "Ensure that the SSH HostBasedAuthentication is configured (CIS: L1 - Server - 5.2.9)";
     RuleId = "66511f6b-f690-43df-9654-642260699eec";
     PayloadKey = "EnsureSshHostbasedAuthenticationIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -170,7 +170,7 @@ instance of OsConfigResource as $OsConfigResource9ref
 
 instance of OsConfigResource as $OsConfigResource10ref
 {
-    ResourceID = "Ensure that the SSH PermitRootLogin is configured";
+    ResourceID = "Ensure that the SSH PermitRootLogin is configured (CIS: L1 - Server - 5.2.10)";
     RuleId = "16511f6b-f690-43df-9654-642260699eec";
     PayloadKey = "EnsureSshPermitRootLoginIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -187,7 +187,7 @@ instance of OsConfigResource as $OsConfigResource10ref
 
 instance of OsConfigResource as $OsConfigResource11ref
 {
-    ResourceID = "Ensure that the SSH PermitEmptyPasswords is configured";
+    ResourceID = "Ensure that the SSH PermitEmptyPasswords is configured (CIS: L1 - Server - 5.2.11)";
     RuleId = "d50c3f39-264c-4cdc-b0ba-89de8a0f6828";
     PayloadKey = "EnsureSshPermitEmptyPasswordsIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -238,7 +238,7 @@ instance of OsConfigResource as $OsConfigResource13ref
 
 instance of OsConfigResource as $OsConfigResource14ref
 {
-    ResourceID = "Ensure that the SSH LoginGraceTime is configured";
+    ResourceID = "Ensure that the SSH LoginGraceTime is configured (CIS: L1 - Server - 5.2.17)";
     RuleId = "39aa5c2b-5b36-84a7-4022-570a53c86ff9";
     PayloadKey = "EnsureSshLoginGraceTimeIsSet";
     ComponentName = "SecurityBaseline";
@@ -255,7 +255,7 @@ instance of OsConfigResource as $OsConfigResource14ref
 
 instance of OsConfigResource as $OsConfigResource15ref
 {
-    ResourceID = "Ensure that only approved MAC algorithms are used";
+    ResourceID = "Ensure that only approved MAC algorithms are used (CIS: L1 - Server - 5.2.14)";
     RuleId = "483e8b0c-7572-8467-7e0c-26e1e9ce6359";
     PayloadKey = "EnsureOnlyApprovedMacAlgorithmsAreUsed";
     ComponentName = "SecurityBaseline";
@@ -272,7 +272,7 @@ instance of OsConfigResource as $OsConfigResource15ref
 
 instance of OsConfigResource as $OsConfigResource16ref
 {
-    ResourceID = "Ensure that the SSH warning banner is configured";
+    ResourceID = "Ensure that the SSH warning banner is configured (CIS: L1 - Server - 5.2.19)";
     RuleId = "9e240540-5e0a-4b60-beb2-57421c65a0b9";
     PayloadKey = "EnsureSshWarningBannerIsEnabled";
     ComponentName = "SecurityBaseline";
@@ -289,7 +289,7 @@ instance of OsConfigResource as $OsConfigResource16ref
 
 instance of OsConfigResource as $OsConfigResource17ref
 {
-    ResourceID = "Ensure that the SSH PermitUserEnvironment is configured";
+    ResourceID = "Ensure that the SSH PermitUserEnvironment is configured (CIS: L1 - Server - 5.2.12)";
     RuleId = "0e665978-91f4-45af-bb7b-e4090b600c8d";
     PayloadKey = "EnsureUsersCannotSetSshEnvironmentOptions";
     ComponentName = "SecurityBaseline";
@@ -306,7 +306,7 @@ instance of OsConfigResource as $OsConfigResource17ref
 
 instance of OsConfigResource as $OsConfigResource18ref
 {
-    ResourceID = "Ensure that appropriate ciphers are used for SSH";
+    ResourceID = "Ensure that appropriate ciphers are used for SSH (CIS: L1 - Server - 5.2.13)";
     RuleId = "b07d4c69-a1d9-4c22-a486-634ec3b8c380";
     PayloadKey = "EnsureAppropriateCiphersForSsh";
     ComponentName = "SecurityBaseline";
@@ -340,7 +340,7 @@ instance of OsConfigResource as $OsConfigResource19ref
 
 instance of OsConfigResource as $OsConfigResource20ref
 {
-    ResourceID = "Ensure nodev option set on /home partition";
+    ResourceID = "Ensure nodev option set on /home partition (CIS: L1 - Server - 1.1.14)";
     RuleId = "a87f15ed-1115-a22d-6f43-17db97c91111";
     PayloadKey = "EnsureNodevOptionOnHomePartition";
     ComponentName = "SecurityBaseline";
@@ -356,7 +356,7 @@ instance of OsConfigResource as $OsConfigResource20ref
 
 instance of OsConfigResource as $OsConfigResource21ref
 {
-    ResourceID = "Ensure nodev option set on /tmp partition";
+    ResourceID = "Ensure nodev option set on /tmp partition (CIS: L1 - Server - 1.1.3)";
     RuleId = "a87f15ed-1115-a22d-6f43-17db97c91161";
     PayloadKey = "EnsureNodevOptionOnTmpPartition";
     ComponentName = "SecurityBaseline";
@@ -372,7 +372,7 @@ instance of OsConfigResource as $OsConfigResource21ref
 
 instance of OsConfigResource as $OsConfigResource22ref
 {
-    ResourceID = "Ensure nodev option set on /var/tmp partition";
+    ResourceID = "Ensure nodev option set on /var/tmp partition (CIS: L1 - Server - 1.1.8)";
     RuleId = "a87f15ed-1115-a22d-6f43-17db97c91181";
     PayloadKey = "EnsureNodevOptionOnVarTmpPartition";
     ComponentName = "SecurityBaseline";
@@ -388,7 +388,7 @@ instance of OsConfigResource as $OsConfigResource22ref
 
 instance of OsConfigResource as $OsConfigResource23ref
 {
-    ResourceID = "Ensure nosuid option set on /tmp partition";
+    ResourceID = "Ensure nosuid option set on /tmp partition (CIS: L1 - Server - 1.1.4)";
     RuleId = "a87f15ed-1115-a22d-6f43-17db97c91191";
     PayloadKey = "EnsureNosuidOptionOnTmpPartition";
     ComponentName = "SecurityBaseline";
@@ -404,7 +404,7 @@ instance of OsConfigResource as $OsConfigResource23ref
 
 instance of OsConfigResource as $OsConfigResource24ref
 {
-    ResourceID = "Ensure nosuid option set on /var/tmp partition";
+    ResourceID = "Ensure nosuid option set on /var/tmp partition (CIS: L1 - Server - 1.1.9)";
     RuleId = "a87f15ed-1115-a22d-6f43-17db97c91171";
     PayloadKey = "EnsureNosuidOptionOnVarTmpPartition";
     ComponentName = "SecurityBaseline";
@@ -420,7 +420,7 @@ instance of OsConfigResource as $OsConfigResource24ref
 
 instance of OsConfigResource as $OsConfigResource25ref
 {
-    ResourceID = "Ensure noexec option set on /var/tmp partition";
+    ResourceID = "Ensure noexec option set on /var/tmp partition (CIS: L1 - Server - 1.1.10)";
     RuleId = "b97f15dd-8185-a12d-6f43-17db97c98477";
     PayloadKey = "EnsureNoexecOptionOnVarTmpPartition";
     ComponentName = "SecurityBaseline";
@@ -436,7 +436,7 @@ instance of OsConfigResource as $OsConfigResource25ref
 
 instance of OsConfigResource as $OsConfigResource26ref
 {
-    ResourceID = "Ensure noexec option set on /dev/shm partition";
+    ResourceID = "Ensure noexec option set on /dev/shm partition (CIS: L1 - Server - 1.1.17)";
     RuleId = "11e6dc3b-0659-3dc8-7d12-8eb0bb6c0890";
     PayloadKey = "EnsureNoexecOptionOnDevShmPartition";
     ComponentName = "SecurityBaseline";
@@ -452,7 +452,7 @@ instance of OsConfigResource as $OsConfigResource26ref
 
 instance of OsConfigResource as $OsConfigResource27ref
 {
-    ResourceID = "Ensure automounting is disabled";
+    ResourceID = "Ensure automounting is disabled (CIS: L1 - Server - 1.1.22)";
     RuleId = "8cffbbca-3e5b-9af9-65fe-ff7b6316565d";
     PayloadKey = "EnsureAutomountingDisabled";
     ComponentName = "SecurityBaseline";
@@ -468,7 +468,7 @@ instance of OsConfigResource as $OsConfigResource27ref
 
 instance of OsConfigResource as $OsConfigResource28ref
 {
-    ResourceID = "Ensure mounting of USB storage devices is disabled";
+    ResourceID = "Ensure mounting of USB storage devices is disabled (CIS: L1 - Server - 1.1.23)";
     RuleId = "acffbbca-3e5b-9aa9-65ee-ff7b6116565f";
     PayloadKey = "EnsureMountingOfUsbStorageDevicesIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -484,7 +484,7 @@ instance of OsConfigResource as $OsConfigResource28ref
 
 instance of OsConfigResource as $OsConfigResource29ref
 {
-    ResourceID = "Ensure core dumps are restricted";
+    ResourceID = "Ensure core dumps are restricted (CIS: L1 - Server - 1.5.1)";
     RuleId = "429123d4-7e7d-2737-6542-2e86b82c16a1";
     PayloadKey = "EnsureCoreDumpsAreRestricted";
     ComponentName = "SecurityBaseline";
@@ -500,7 +500,7 @@ instance of OsConfigResource as $OsConfigResource29ref
 
 instance of OsConfigResource as $OsConfigResource30ref
 {
-    ResourceID = "Ensure prelink is disabled";
+    ResourceID = "Ensure prelink is disabled (CIS: L1 - Server - 1.5.4)";
     RuleId = "cdee3703-321a-69c4-107f-e7b350a95e5a";
     PayloadKey = "EnsurePrelinkIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -516,7 +516,7 @@ instance of OsConfigResource as $OsConfigResource30ref
 
 instance of OsConfigResource as $OsConfigResource31ref
 {
-    ResourceID = "Ensure permissions on /etc/motd are configured";
+    ResourceID = "Ensure permissions on /etc/motd are configured (CIS: L1 - Server - 1.7.1.4)";
     RuleId = "b08735e4-8565-0ab1-0fba-b15e31be98e4";
     PayloadKey = "EnsurePermissionsOnEtcMotd";
     ComponentName = "SecurityBaseline";
@@ -533,7 +533,7 @@ instance of OsConfigResource as $OsConfigResource31ref
 
 instance of OsConfigResource as $OsConfigResource32ref
 {
-    ResourceID = "Ensure permissions on /etc/issue are configured";
+    ResourceID = "Ensure permissions on /etc/issue are configured (CIS: L1 - Server - 1.7.1.5)";
     RuleId = "69032884-324a-3289-a171-b17a541f7adb";
     PayloadKey = "EnsurePermissionsOnEtcIssue";
     ComponentName = "SecurityBaseline";
@@ -550,7 +550,7 @@ instance of OsConfigResource as $OsConfigResource32ref
 
 instance of OsConfigResource as $OsConfigResource33ref
 {
-    ResourceID = "Ensure permissions on /etc/issue.net are configured";
+    ResourceID = "Ensure permissions on /etc/issue.net are configured (CIS: L1 - Server - 1.7.1.6)";
     RuleId = "9110c0c6-27f1-065e-140d-2672c1ad055b";
     PayloadKey = "EnsurePermissionsOnEtcIssueNet";
     ComponentName = "SecurityBaseline";
@@ -567,7 +567,7 @@ instance of OsConfigResource as $OsConfigResource33ref
 
 instance of OsConfigResource as $OsConfigResource34ref
 {
-    ResourceID = "Ensure the nodev option is enabled for all removable media";
+    ResourceID = "Ensure the nodev option is enabled for all removable media (CIS: L1 - Server - 1.1.18)";
     RuleId = "5c7537f2-b90b-44a4-89c9-4fca5fd79ef7";
     PayloadKey = "EnsureNodevOptionEnabledForAllRemovableMedia";
     ComponentName = "SecurityBaseline";
@@ -583,7 +583,7 @@ instance of OsConfigResource as $OsConfigResource34ref
 
 instance of OsConfigResource as $OsConfigResource35ref
 {
-    ResourceID = "Ensure the noexec option is enabled for all removable media";
+    ResourceID = "Ensure the noexec option is enabled for all removable media (CIS: L1 - Server - 1.1.20)";
     RuleId = "7976cc38-fddb-4913-9295-4fcac2e641c3";
     PayloadKey = "EnsureNoexecOptionEnabledForAllRemovableMedia";
     ComponentName = "SecurityBaseline";
@@ -599,7 +599,7 @@ instance of OsConfigResource as $OsConfigResource35ref
 
 instance of OsConfigResource as $OsConfigResource36ref
 {
-    ResourceID = "Ensure the nosuid option is enabled for all removable media";
+    ResourceID = "Ensure the nosuid option is enabled for all removable media (CIS: L1 - Server - 1.1.19)";
     RuleId = "cdc390c9-fb4a-47f6-90a7-4e1bd6d0e9e6";
     PayloadKey = "EnsureNosuidOptionEnabledForAllRemovableMedia";
     ComponentName = "SecurityBaseline";
@@ -615,7 +615,7 @@ instance of OsConfigResource as $OsConfigResource36ref
 
 instance of OsConfigResource as $OsConfigResource37ref
 {
-    ResourceID = "Ensure talk client is not installed";
+    ResourceID = "Ensure talk client is not installed (CIS: L1 - Server - 2.3.3)";
     RuleId = "5133422e-990f-971e-661d-ccfc913c1d2c";
     PayloadKey = "EnsureTalkClientIsNotInstalled";
     ComponentName = "SecurityBaseline";
@@ -631,7 +631,7 @@ instance of OsConfigResource as $OsConfigResource37ref
 
 instance of OsConfigResource as $OsConfigResource38ref
 {
-    ResourceID = "Ensure permissions on /etc/hosts.allow are configured";
+    ResourceID = "Ensure permissions on /etc/hosts.allow are configured (CIS: L1 - Server - 3.3.2 + 3.3.4)";
     RuleId = "1d498679-5780-6db3-14cc-6433011e0310";
     PayloadKey = "EnsurePermissionsOnEtcHostsAllow";
     ComponentName = "SecurityBaseline";
@@ -647,7 +647,7 @@ instance of OsConfigResource as $OsConfigResource38ref
 
 instance of OsConfigResource as $OsConfigResource39ref
 {
-    ResourceID = "Ensure permissions on /etc/hosts.deny are configured";
+    ResourceID = "Ensure permissions on /etc/hosts.deny are configured (CIS: L1 - Server - 3.3.3 + 3.3.5)";
     RuleId = "71d554b5-1436-9676-1966-939ded8d0a37";
     PayloadKey = "EnsurePermissionsOnEtcHostsDeny";
     ComponentName = "SecurityBaseline";
@@ -663,7 +663,7 @@ instance of OsConfigResource as $OsConfigResource39ref
 
 instance of OsConfigResource as $OsConfigResource40ref
 {
-    ResourceID = "Ensure default deny firewall policy is set";
+    ResourceID = "Ensure default deny firewall policy is set (CIS: L1 - Server - 3.5.2.1)";
     RuleId = "eb6c608a-2316-41bd-aa00-604249e31f27";
     PayloadKey = "EnsureDefaultDenyFirewallPolicyIsSet";
     ComponentName = "SecurityBaseline";
@@ -696,7 +696,7 @@ instance of OsConfigResource as $OsConfigResource41ref
 
 instance of OsConfigResource as $OsConfigResource42ref
 {
-    ResourceID = "Ensure password creation requirements are configured";
+    ResourceID = "Ensure password creation requirements are configured (CIS: L1 - Server - 5.3.1)";
     RuleId = "b042fda5-55f6-17ba-78d5-1ba33a4709f5";
     PayloadKey = "EnsurePasswordCreationRequirements";
     ComponentName = "SecurityBaseline";
@@ -713,7 +713,7 @@ instance of OsConfigResource as $OsConfigResource42ref
 
 instance of OsConfigResource as $OsConfigResource43ref
 {
-    ResourceID = "Ensure lockout for failed password attempts is configured";
+    ResourceID = "Ensure lockout for failed password attempts is configured (CIS: L1 - Server - 5.3.2)";
     RuleId = "1895704d-a326-90ca-3795-3a1289e7482d";
     PayloadKey = "EnsureLockoutForFailedPasswordAttempts";
     ComponentName = "SecurityBaseline";
@@ -729,7 +729,7 @@ instance of OsConfigResource as $OsConfigResource43ref
 
 instance of OsConfigResource as $OsConfigResource44ref
 {
-    ResourceID = "Ensure the cramfs file system is disabled";
+    ResourceID = "Ensure the cramfs file system is disabled (CIS: L1 - Server - 1.1.1.1)";
     RuleId = "9967cbaf-44be-0dd1-92ab-d4f4034b2d28";
     PayloadKey = "EnsureDisabledInstallationOfCramfsFileSystem";
     ComponentName = "SecurityBaseline";
@@ -745,7 +745,7 @@ instance of OsConfigResource as $OsConfigResource44ref
 
 instance of OsConfigResource as $OsConfigResource45ref
 {
-    ResourceID = "Ensure the freevxfs file system is disabled";
+    ResourceID = "Ensure the freevxfs file system is disabled (CIS: L1 - Server - 1.1.1.2)";
     RuleId = "4c066a3d-8eba-a210-3228-cff300039363";
     PayloadKey = "EnsureDisabledInstallationOfFreevxfsFileSystem";
     ComponentName = "SecurityBaseline";
@@ -761,7 +761,7 @@ instance of OsConfigResource as $OsConfigResource45ref
 
 instance of OsConfigResource as $OsConfigResource46ref
 {
-    ResourceID = "Ensure all users' home directories exist";
+    ResourceID = "Ensure all users' home directories exist (CIS: L1 - Server - 6.2.7)";
     RuleId = "c07e6adc-93ab-1d40-2c6d-f3f16ca9561d";
     PayloadKey = "EnsureAllUsersHomeDirectoriesExist";
     ComponentName = "SecurityBaseline";
@@ -777,7 +777,7 @@ instance of OsConfigResource as $OsConfigResource46ref
 
 instance of OsConfigResource as $OsConfigResource47ref
 {
-    ResourceID = "Ensure users own their home directories";
+    ResourceID = "Ensure users own their home directories (CIS: L1 - Server - 6.2.9)";
     RuleId = "54e255d1-038a-860b-48a2-3d1821e34661";
     PayloadKey = "EnsureUsersOwnTheirHomeDirectories";
     ComponentName = "SecurityBaseline";
@@ -793,7 +793,7 @@ instance of OsConfigResource as $OsConfigResource47ref
 
 instance of OsConfigResource as $OsConfigResource48ref
 {
-    ResourceID = "Ensure users' dot files aren't group or world writable";
+    ResourceID = "Ensure users' dot files aren't group or world writable (CIS: L1 - Server - 6.2.10)";
     RuleId = "086cb95b-5427-3ac0-9b98-c5c5b593579a";
     PayloadKey = "EnsureUsersDotFilesArentGroupOrWorldWritable";
     ComponentName = "SecurityBaseline";
@@ -810,7 +810,7 @@ instance of OsConfigResource as $OsConfigResource48ref
 
 instance of OsConfigResource as $OsConfigResource49ref
 {
-    ResourceID = "Ensure no users have .forward files";
+    ResourceID = "Ensure no users have .forward files (CIS: L1 - Server - 6.2.11)";
     RuleId = "d02297d2-9f49-5276-0a92-5ac1e42e243c";
     PayloadKey = "EnsureNoUsersHaveDotForwardFiles";
     ComponentName = "SecurityBaseline";
@@ -826,7 +826,7 @@ instance of OsConfigResource as $OsConfigResource49ref
 
 instance of OsConfigResource as $OsConfigResource50ref
 {
-    ResourceID = "Ensure no users have .netrc files";
+    ResourceID = "Ensure no users have .netrc files (CIS: L1 - Server - 6.2.12)";
     RuleId = "c1b7767e-6c84-6a54-10b8-b9797a8d707a";
     PayloadKey = "EnsureNoUsersHaveDotNetrcFiles";
     ComponentName = "SecurityBaseline";
@@ -842,7 +842,7 @@ instance of OsConfigResource as $OsConfigResource50ref
 
 instance of OsConfigResource as $OsConfigResource51ref
 {
-    ResourceID = "Ensure no users have .rhosts files";
+    ResourceID = "Ensure no users have .rhosts files (CIS: L1 - Server - 6.2.14)";
     RuleId = "28884fab-89e2-2250-a057-6f35637b4848";
     PayloadKey = "EnsureNoUsersHaveDotRhostsFiles";
     ComponentName = "SecurityBaseline";
@@ -858,7 +858,7 @@ instance of OsConfigResource as $OsConfigResource51ref
 
 instance of OsConfigResource as $OsConfigResource52ref
 {
-    ResourceID = "Ensure all groups in /etc/passwd exist in /etc/group";
+    ResourceID = "Ensure all groups in /etc/passwd exist in /etc/group (CIS: L1 - Server - 6.2.15)";
     RuleId = "835a98f5-46da-5332-6b45-38df223e9d9a";
     PayloadKey = "EnsureAllEtcPasswdGroupsExistInEtcGroup";
     ComponentName = "SecurityBaseline";
@@ -874,7 +874,7 @@ instance of OsConfigResource as $OsConfigResource52ref
 
 instance of OsConfigResource as $OsConfigResource53ref
 {
-    ResourceID = "Ensure no duplicate UIDs exist";
+    ResourceID = "Ensure no duplicate UIDs exist (CIS: L1 - Server - 6.2.16)";
     RuleId = "df7fd9e2-0cd0-47c1-92b0-f3cab6e06869";
     PayloadKey = "EnsureNoDuplicateUidsExist";
     ComponentName = "SecurityBaseline";
@@ -890,7 +890,7 @@ instance of OsConfigResource as $OsConfigResource53ref
 
 instance of OsConfigResource as $OsConfigResource54ref
 {
-    ResourceID = "Ensure no duplicate GIDs exist";
+    ResourceID = "Ensure no duplicate GIDs exist (CIS: L1 - Server - 6.2.17)";
     RuleId = "70f3d785-1410-440f-6f6d-79b051039d21";
     PayloadKey = "EnsureNoDuplicateGidsExist";
     ComponentName = "SecurityBaseline";
@@ -906,7 +906,7 @@ instance of OsConfigResource as $OsConfigResource54ref
 
 instance of OsConfigResource as $OsConfigResource55ref
 {
-    ResourceID = "Ensure no duplicate user names exist";
+    ResourceID = "Ensure no duplicate user names exist (CIS: L1 - Server - 6.2.18)";
     RuleId = "017e0242-25b9-2c72-7ac6-d601086f5c8b";
     PayloadKey = "EnsureNoDuplicateUserNamesExist";
     ComponentName = "SecurityBaseline";
@@ -922,7 +922,7 @@ instance of OsConfigResource as $OsConfigResource55ref
 
 instance of OsConfigResource as $OsConfigResource56ref
 {
-    ResourceID = "Ensure no duplicate groups exist";
+    ResourceID = "Ensure no duplicate groups exist (CIS: L1 - Server - 6.2.19)";
     RuleId = "bc5844b6-7e40-4f2f-7e81-1cbd18885dae";
     PayloadKey = "EnsureNoDuplicateGroupsExist";
     ComponentName = "SecurityBaseline";
@@ -938,7 +938,7 @@ instance of OsConfigResource as $OsConfigResource56ref
 
 instance of OsConfigResource as $OsConfigResource57ref
 {
-    ResourceID = "Ensure shadow group is empty";
+    ResourceID = "Ensure shadow group is empty (CIS: L1 - Server - 6.2.20)";
     RuleId = "cbdc33fa-0f1c-0a90-7fe9-8ef1cf6643c2";
     PayloadKey = "EnsureShadowGroupIsEmpty";
     ComponentName = "SecurityBaseline";
@@ -954,7 +954,7 @@ instance of OsConfigResource as $OsConfigResource57ref
 
 instance of OsConfigResource as $OsConfigResource58ref
 {
-    ResourceID = "Ensure the hfs file system is disabled";
+    ResourceID = "Ensure the hfs file system is disabled (CIS: L1 - Server - 1.1.1.4)";
     RuleId = "39595d95-88a4-78e2-6e0e-fbde7fd95eed";
     PayloadKey = "EnsureDisabledInstallationOfHfsFileSystem";
     ComponentName = "SecurityBaseline";
@@ -970,7 +970,7 @@ instance of OsConfigResource as $OsConfigResource58ref
 
 instance of OsConfigResource as $OsConfigResource59ref
 {
-    ResourceID = "Ensure the hfsplus file systems is disabled";
+    ResourceID = "Ensure the hfsplus file systems is disabled (CIS: L1 - Server - 1.1.1.5)";
     RuleId = "68fb9c92-1009-9e24-694e-3d996a5e09c5";
     PayloadKey = "EnsureDisabledInstallationOfHfsplusFileSystem";
     ComponentName = "SecurityBaseline";
@@ -986,7 +986,7 @@ instance of OsConfigResource as $OsConfigResource59ref
 
 instance of OsConfigResource as $OsConfigResource60ref
 {
-    ResourceID = "Ensure the jffs2 file systems is disabled";
+    ResourceID = "Ensure the jffs2 file systems is disabled (CIS: L1 - Server - 1.1.1.3)";
     RuleId = "859c7aa0-6eeb-6aac-6160-2fdead2537bf";
     PayloadKey = "EnsureDisabledInstallationOfJffs2FileSystem";
     ComponentName = "SecurityBaseline";
@@ -1018,7 +1018,7 @@ instance of OsConfigResource as $OsConfigResource61ref
 
 instance of OsConfigResource as $OsConfigResource62ref
 {
-    ResourceID = "Ensure file permissions on /etc/shadow are configured";
+    ResourceID = "Ensure file permissions on /etc/shadow are configured (CIS: L1 - Server - 6.1.3)";
     RuleId = "13dabe7c-02ea-09d2-1a97-42cc7ac94eaa";
     PayloadKey = "EnsurePermissionsOnEtcShadow";
     ComponentName = "SecurityBaseline";
@@ -1035,7 +1035,7 @@ instance of OsConfigResource as $OsConfigResource62ref
 
 instance of OsConfigResource as $OsConfigResource63ref
 {
-    ResourceID = "Ensure file permissions on /etc/shadow- are configured";
+    ResourceID = "Ensure file permissions on /etc/shadow- are configured (CIS: L1 - Server - 6.1.7)";
     RuleId = "1e941132-a3a7-5ccb-1817-50551b65202e";
     PayloadKey = "EnsurePermissionsOnEtcShadowDash";
     ComponentName = "SecurityBaseline";
@@ -1052,7 +1052,7 @@ instance of OsConfigResource as $OsConfigResource63ref
 
 instance of OsConfigResource as $OsConfigResource64ref
 {
-    ResourceID = "Ensure file permissions on /etc/gshadow are configured";
+    ResourceID = "Ensure file permissions on /etc/gshadow are configured (CIS: L1 - Server - 6.1.5)";
     RuleId = "0a7f2b28-8586-6cef-512e-a28f991d83cd";
     PayloadKey = "EnsurePermissionsOnEtcGShadow";
     ComponentName = "SecurityBaseline";
@@ -1069,7 +1069,7 @@ instance of OsConfigResource as $OsConfigResource64ref
 
 instance of OsConfigResource as $OsConfigResource65ref
 {
-    ResourceID = "Ensure file permissions on /etc/gshadow- are configured";
+    ResourceID = "Ensure file permissions on /etc/gshadow- are configured (CIS: L1 - Server - 6.1.9)";
     RuleId = "0fe59dec-472c-4b11-a221-36053a47afb6";
     PayloadKey = "EnsurePermissionsOnEtcGShadowDash";
     ComponentName = "SecurityBaseline";
@@ -1086,7 +1086,7 @@ instance of OsConfigResource as $OsConfigResource65ref
 
 instance of OsConfigResource as $OsConfigResource66ref
 {
-    ResourceID = "Ensure file permissions on /etc/passwd are configured";
+    ResourceID = "Ensure file permissions on /etc/passwd are configured (CIS: L1 - Server - 6.1.2)";
     RuleId = "ad534c97-1070-415c-9fc7-c92366d3fc30";
     PayloadKey = "EnsurePermissionsOnEtcPasswd";
     ComponentName = "SecurityBaseline";
@@ -1103,7 +1103,7 @@ instance of OsConfigResource as $OsConfigResource66ref
 
 instance of OsConfigResource as $OsConfigResource67ref
 {
-    ResourceID = "Ensure file permissions on /etc/group are configured";
+    ResourceID = "Ensure file permissions on /etc/group are configured (CIS: L1 - Server - 6.1.4)";
     RuleId = "c41a47e9-1ba0-4e72-9f43-4659a4bfed63";
     PayloadKey = "EnsurePermissionsOnEtcGroup";
     ComponentName = "SecurityBaseline";
@@ -1120,7 +1120,7 @@ instance of OsConfigResource as $OsConfigResource67ref
 
 instance of OsConfigResource as $OsConfigResource68ref
 {
-    ResourceID = "Ensure file permissions on /etc/passwd- are configured";
+    ResourceID = "Ensure file permissions on /etc/passwd- are configured (CIS: L1 - Server - 6.1.6)";
     RuleId = "0c67cac0-1e99-8a8f-32e1-841d18b01a9a";
     PayloadKey = "EnsurePermissionsOnEtcPasswdDash";
     ComponentName = "SecurityBaseline";
@@ -1137,7 +1137,7 @@ instance of OsConfigResource as $OsConfigResource68ref
 
 instance of OsConfigResource as $OsConfigResource69ref
 {
-    ResourceID = "Ensure file permissions on /etc/group- are configured";
+    ResourceID = "Ensure file permissions on /etc/group- are configured (CIS: L1 - Server - 6.1.8)";
     RuleId = "865ebb92-8e64-4e3a-aa9b-0290768aa8f1";
     PayloadKey = "EnsurePermissionsOnEtcGroupDash";
     ComponentName = "SecurityBaseline";
@@ -1154,7 +1154,7 @@ instance of OsConfigResource as $OsConfigResource69ref
 
 instance of OsConfigResource as $OsConfigResource70ref
 {
-    ResourceID = "Ensure that access to the root account via su is restricted to the 'root' group";
+    ResourceID = "Ensure that access to the root account via su is restricted to the 'root' group (CIS: L1 - Server - 5.5)";
     RuleId = "0c77cac0-1e99-8a8f-32e1-841d18b01a9a";
     PayloadKey = "EnsureSuRestrictedToRootGroup";
     ComponentName = "SecurityBaseline";
@@ -1170,7 +1170,7 @@ instance of OsConfigResource as $OsConfigResource70ref
 
 instance of OsConfigResource as $OsConfigResource71ref
 {
-    ResourceID = "Ensure the 'root' group exists, and contain all members who can su to root";
+    ResourceID = "Ensure the 'root' group exists, and contain all members who can su to root (CIS: L1 - Server - 5.6)";
     RuleId = "8cac0c32-1add-42b9-9300-5ccb9f91aab3";
     PayloadKey = "EnsureRootGroupExists";
     ComponentName = "SecurityBaseline";
@@ -1218,7 +1218,7 @@ instance of OsConfigResource as $OsConfigResource73ref
 
 instance of OsConfigResource as $OsConfigResource74ref
 {
-    ResourceID = "Ensure that randomized placement of virtual memory regions is enabled";
+    ResourceID = "Ensure that randomized placement (ASLR) of virtual memory regions is enabled (CIS: L1 - Server - 1.5.3)";
     RuleId = "d790e942-efd3-42e6-a3a5-9eb1d651a588";
     PayloadKey = "EnsureVirtualMemoryRandomizationIsEnabled";
     ComponentName = "SecurityBaseline";
@@ -1234,7 +1234,7 @@ instance of OsConfigResource as $OsConfigResource74ref
 
 instance of OsConfigResource as $OsConfigResource75ref
 {
-    ResourceID = "Ensure that kernel support for the XD/NX processor feature is enabled";
+    ResourceID = "Ensure that kernel support for the XD/NX processor feature is enabled (CIS: L1 - Server - 1.5.2)";
     RuleId = "49c89437-d116-4d84-a91d-0dd59daafa0d";
     PayloadKey = "EnsureKernelSupportForCpuNx";
     ComponentName = "SecurityBaseline";
@@ -1250,7 +1250,7 @@ instance of OsConfigResource as $OsConfigResource75ref
 
 instance of OsConfigResource as $OsConfigResource76ref
 {
-    ResourceID = "Ensure '.' does not appear in root's $PATH";
+    ResourceID = "Ensure '.' does not appear in root's $PATH (CIS: L1 - Server - 6.2.6)";
     RuleId = "d66f8908-7b9f-77fc-18d4-af85197e0aeb";
     PayloadKey = "EnsureDotDoesNotAppearInRootsPath";
     ComponentName = "SecurityBaseline";
@@ -1300,7 +1300,7 @@ instance of OsConfigResource as $OsConfigResource78ref
 
 instance of OsConfigResource as $OsConfigResource79ref
 {
-    ResourceID = "Ensure all bootloaders have password protection enabled";
+    ResourceID = "Ensure all bootloaders have password protection enabled (CIS: L1 - Server - 1.4.2)";
     RuleId = "8a4f5ce8-41c4-710c-631e-fbc36a2fa53e";
     PayloadKey = "EnsureAllBootloadersHavePasswordProtectionEnabled";
     ComponentName = "SecurityBaseline";
@@ -1316,7 +1316,7 @@ instance of OsConfigResource as $OsConfigResource79ref
 
 instance of OsConfigResource as $OsConfigResource80ref
 {
-    ResourceID = "Ensure permissions on bootloader config are configured";
+    ResourceID = "Ensure permissions on bootloader config are configured (CIS: L1 - Server - 1.4.1)";
     RuleId = "091f0150-80d1-0e2d-7353-8cdb77fc6aa1";
     PayloadKey = "EnsurePermissionsOnBootloaderConfig";
     ComponentName = "SecurityBaseline";
@@ -1333,7 +1333,7 @@ instance of OsConfigResource as $OsConfigResource80ref
 
 instance of OsConfigResource as $OsConfigResource81ref
 {
-    ResourceID = "Ensure authentication is required for single user mode";
+    ResourceID = "Ensure authentication is required for single user mode (CIS: L1 - Server - 1.4.3)";
     RuleId = "13a48ca1-92bc-63a1-a4de-b984375fa332";
     PayloadKey = "EnsureAuthenticationRequiredForSingleUserMode";
     ComponentName = "SecurityBaseline";
@@ -1349,7 +1349,7 @@ instance of OsConfigResource as $OsConfigResource81ref
 
 instance of OsConfigResource as $OsConfigResource82ref
 {
-    ResourceID = "Ensure packet redirect sending is disabled";
+    ResourceID = "Ensure packet redirect sending is disabled (CIS: L1 - Server - 3.1.2)";
     RuleId = "5ea9d618-1af4-4e59-65be-ffac234872e9";
     PayloadKey = "EnsurePacketRedirectSendingIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -1365,7 +1365,7 @@ instance of OsConfigResource as $OsConfigResource82ref
 
 instance of OsConfigResource as $OsConfigResource83ref
 {
-    ResourceID = "Ensure sending ICMP redirects is disabled for all interfaces";
+    ResourceID = "Ensure ICMP redirects are not accepted (CIS: L1 - Server - 3.2.2)";
     RuleId = "a492f72a-6b79-8a9d-3b4f-3fface972ab7";
     PayloadKey = "EnsureIcmpRedirectsIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -1381,7 +1381,7 @@ instance of OsConfigResource as $OsConfigResource83ref
 
 instance of OsConfigResource as $OsConfigResource84ref
 {
-    ResourceID = "Ensure accepting source routed packets is disabled for all interfaces";
+    ResourceID = "Ensure accepting source routed packets is disabled for all interfaces (CIS: L1 - Server - 3.2.1)";
     RuleId = "4ecae4e6-a3e2-44f5-9985-ea2a21962450";
     PayloadKey = "EnsureSourceRoutedPacketsIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -1397,7 +1397,7 @@ instance of OsConfigResource as $OsConfigResource84ref
 
 instance of OsConfigResource as $OsConfigResource85ref
 {
-    ResourceID = "Ensure the default setting for accepting source routed packets is disabled for network interfaces";
+    ResourceID = "Ensure the default setting for accepting source routed packets is disabled for network interfaces (CIS: L1 - Server - 3.2.1)";
     RuleId = "63613c25-8ae1-4792-9572-02bdc941febf";
     PayloadKey = "EnsureAcceptingSourceRoutedPacketsIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -1413,7 +1413,7 @@ instance of OsConfigResource as $OsConfigResource85ref
 
 instance of OsConfigResource as $OsConfigResource86ref
 {
-    ResourceID = "Ensure ignoring bogus ICMP responses to broadcasts is enabled";
+    ResourceID = "Ensure ignoring bogus ICMP responses to broadcasts is enabled (CIS: L1 - Server - 3.2.6)";
     RuleId = "88acc143-2f76-4418-9aa9-d0d5f244ab5f";
     PayloadKey = "EnsureIgnoringBogusIcmpBroadcastResponses";
     ComponentName = "SecurityBaseline";
@@ -1429,7 +1429,7 @@ instance of OsConfigResource as $OsConfigResource86ref
 
 instance of OsConfigResource as $OsConfigResource87ref
 {
-    ResourceID = "Ensure ignoring ICMP echo requests (pings) sent to broadcast/multicast addresses is enabled";
+    ResourceID = "Ensure ignoring ICMP echo requests (pings) sent to broadcast/multicast addresses is enabled (CIS: L1 - Server - 3.2.5)";
     RuleId = "f5a5926d-9c64-41fa-8220-5bc0f8213550";
     PayloadKey = "EnsureIgnoringIcmpEchoPingsToMulticast";
     ComponentName = "SecurityBaseline";
@@ -1461,7 +1461,7 @@ instance of OsConfigResource as $OsConfigResource88ref
 
 instance of OsConfigResource as $OsConfigResource89ref
 {
-    ResourceID = "Ensure performing source validation by reverse path is enabled for all interfaces";
+    ResourceID = "Ensure performing source validation by reverse path is enabled for all interfaces (CIS: L1 - Server - 3.2.7)";
     RuleId = "177e6190-1026-49fb-a1f9-fd5b10302280";
     PayloadKey = "EnsureReversePathSourceValidationIsEnabled";
     ComponentName = "SecurityBaseline";
@@ -1477,7 +1477,7 @@ instance of OsConfigResource as $OsConfigResource89ref
 
 instance of OsConfigResource as $OsConfigResource90ref
 {
-    ResourceID = "Ensure TCP SYN cookies are enabled";
+    ResourceID = "Ensure TCP SYN cookies are enabled (CIS: L1 - Server - 3.2.8)";
     RuleId = "db6ca14e-26c5-48cd-a6b7-fc953861043c";
     PayloadKey = "EnsureTcpSynCookiesAreEnabled";
     ComponentName = "SecurityBaseline";
@@ -1509,7 +1509,7 @@ instance of OsConfigResource as $OsConfigResource91ref
 
 instance of OsConfigResource as $OsConfigResource92ref
 {
-    ResourceID = "Ensure all wireless interfaces are disabled";
+    ResourceID = "Ensure all wireless interfaces are disabled (CIS: L1 - Server - 3.6)";
     RuleId = "8def2d0c-303a-4c0b-858c-319f80f7c814";
     PayloadKey = "EnsureAllWirelessInterfacesAreDisabled";
     ComponentName = "SecurityBaseline";
@@ -1605,7 +1605,7 @@ instance of OsConfigResource as $OsConfigResource97ref
 
 instance of OsConfigResource as $OsConfigResource98ref
 {
-    ResourceID = "Ensure logging is configured";
+    ResourceID = "Ensure logging is configured (CIS: L1 - Server - 4.2.1.2 + 4.2.1.3)";
     RuleId = "15ca11bf-034a-56d6-564f-2f857d1f96c6";
     PayloadKey = "EnsureLoggingIsConfigured";
     ComponentName = "SecurityBaseline";
@@ -1621,7 +1621,7 @@ instance of OsConfigResource as $OsConfigResource98ref
 
 instance of OsConfigResource as $OsConfigResource99ref
 {
-    ResourceID = "Ensure the syslog, rsyslog, or syslog-ng package is installed";
+    ResourceID = "Ensure the syslog, rsyslog, or syslog-ng package is installed (CIS: L1 - Server - 4.2.1.1)";
     RuleId = "8720959b-c356-4eaa-bb4f-720fb8006183";
     PayloadKey = "EnsureSyslogPackageIsInstalled";
     ComponentName = "SecurityBaseline";
@@ -1637,7 +1637,7 @@ instance of OsConfigResource as $OsConfigResource99ref
 
 instance of OsConfigResource as $OsConfigResource100ref
 {
-    ResourceID = "Ensure the systemd-journald service persists log messages";
+    ResourceID = "Ensure the systemd-journald service persists log messages (CIS: L1 - Server - 4.2.2.3)";
     RuleId = "7b3aa0e4-0464-4a0e-a265-9a585c4f266e";
     PayloadKey = "EnsureSystemdJournaldServicePersistsLogMessages";
     ComponentName = "SecurityBaseline";
@@ -1669,7 +1669,7 @@ instance of OsConfigResource as $OsConfigResource101ref
 
 instance of OsConfigResource as $OsConfigResource102ref
 {
-    ResourceID = "Ensure file permissions for all rsyslog log files are configured";
+    ResourceID = "Ensure file permissions for all rsyslog log files are configured (CIS: L1 - Server - 4.2.1.4)";
     RuleId = "fcc86485-487a-4644-87a0-f29f1b1cd28b";
     PayloadKey = "EnsureFilePermissionsForAllRsyslogLogFiles";
     ComponentName = "SecurityBaseline";
@@ -1686,7 +1686,7 @@ instance of OsConfigResource as $OsConfigResource102ref
 
 instance of OsConfigResource as $OsConfigResource103ref
 {
-    ResourceID = "Ensure logger configuration files are restricted";
+    ResourceID = "Ensure logger configuration files are restricted (CIS: L1 - Server - 4.2.1.4)";
     RuleId = "afd57de2-4365-9949-79f7-f8e92c198746";
     PayloadKey = "EnsureLoggerConfigurationFilesAreRestricted";
     ComponentName = "SecurityBaseline";
@@ -1718,7 +1718,7 @@ instance of OsConfigResource as $OsConfigResource104ref
 
 instance of OsConfigResource as $OsConfigResource105ref
 {
-    ResourceID = "Ensure all rsyslog log files are owned by the syslog user";
+    ResourceID = "Ensure all rsyslog log files are owned by the syslog user (CIS: L1 - Server - 4.2.1.4)";
     RuleId = "2830790c-5b3f-43cb-be6b-7572e441acc1";
     PayloadKey = "EnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
     ComponentName = "SecurityBaseline";
@@ -1750,7 +1750,7 @@ instance of OsConfigResource as $OsConfigResource106ref
 
 instance of OsConfigResource as $OsConfigResource107ref
 {
-    ResourceID = "Ensure the logrotate (syslog rotater) service is enabled";
+    ResourceID = "Ensure the logrotate (syslog rotater) service is enabled (CIS: L1 - Server - 4.3)";
     RuleId = "2d2355e7-7b07-4c0e-a395-16499c27ae94";
     PayloadKey = "EnsureSyslogRotaterServiceIsEnabled";
     ComponentName = "SecurityBaseline";
@@ -1782,7 +1782,7 @@ instance of OsConfigResource as $OsConfigResource108ref
 
 instance of OsConfigResource as $OsConfigResource109ref
 {
-    ResourceID = "Ensure inetd is not installed";
+    ResourceID = "Ensure inetd is not installed (CIS: L1 - Server - 2.1.10)";
     RuleId = "a8a37e7f-9aae-41cf-8313-42d1f69506b9";
     PayloadKey = "EnsureInetdNotInstalled";
     ComponentName = "SecurityBaseline";
@@ -1798,7 +1798,7 @@ instance of OsConfigResource as $OsConfigResource109ref
 
 instance of OsConfigResource as $OsConfigResource110ref
 {
-    ResourceID = "Ensure xinetd is not installed";
+    ResourceID = "Ensure xinetd is not installed (CIS: L1 - Server - 2.1.10)";
     RuleId = "1d9557b2-b58f-4f81-bde9-4f9b08a3b2f1";
     PayloadKey = "EnsureXinetdNotInstalled";
     ComponentName = "SecurityBaseline";
@@ -1814,7 +1814,7 @@ instance of OsConfigResource as $OsConfigResource110ref
 
 instance of OsConfigResource as $OsConfigResource111ref
 {
-    ResourceID = "Ensure the telnet service is disabled";
+    ResourceID = "Ensure the telnet service is disabled (CIS: L1 - Server - 2.1.8)";
     RuleId = "0617b91c-2a28-42bd-b5b3-7562555b41ed";
     PayloadKey = "EnsureTelnetServiceIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -1862,7 +1862,7 @@ instance of OsConfigResource as $OsConfigResource113ref
 
 instance of OsConfigResource as $OsConfigResource114ref
 {
-    ResourceID = "Ensure the rsh-server package is uninstalled";
+    ResourceID = "Ensure the rsh-server package is uninstalled (CIS: L1 - Server - 2.1.6)";
     RuleId = "b256491f-f804-4c44-bfa4-057dd2f44c30";
     PayloadKey = "EnsureRshServerNotInstalled";
     ComponentName = "SecurityBaseline";
@@ -1894,7 +1894,7 @@ instance of OsConfigResource as $OsConfigResource115ref
 
 instance of OsConfigResource as $OsConfigResource116ref
 {
-    ResourceID = "Ensure the tftp service is disabled";
+    ResourceID = "Ensure the tftp service is disabled (CIS: L1 - Server - 2.1.9)";
     RuleId = "cb086aef-fec2-467f-a03b-627c00020926";
     PayloadKey = "EnsureTftpServiceisDisabled";
     ComponentName = "SecurityBaseline";
@@ -1910,7 +1910,7 @@ instance of OsConfigResource as $OsConfigResource116ref
 
 instance of OsConfigResource as $OsConfigResource117ref
 {
-    ResourceID = "Ensure the tftpd package is not installed";
+    ResourceID = "Ensure the tftpd package is not installed (CIS: L1 - Server - 2.1.9)";
     RuleId = "ae9ce111-ef4d-4d34-8f76-fdc38263f153";
     PayloadKey = "EnsureTftpdNotInstalled";
     ComponentName = "SecurityBaseline";
@@ -2006,7 +2006,7 @@ instance of OsConfigResource as $OsConfigResource122ref
 
 instance of OsConfigResource as $OsConfigResource123ref
 {
-    ResourceID = "Ensure the cron service is enabled";
+    ResourceID = "Ensure the cron service is enabled (CIS: L1 - Server - 5.1.1)";
     RuleId = "80302f61-d760-4165-a92b-a789e579380f";
     PayloadKey = "EnsureCronServiceIsEnabled";
     ComponentName = "SecurityBaseline";
@@ -2039,7 +2039,7 @@ instance of OsConfigResource as $OsConfigResource124ref
 
 instance of OsConfigResource as $OsConfigResource125ref
 {
-    ResourceID = "Ensure permissions on /etc/cron.d are configured";
+    ResourceID = "Ensure permissions on /etc/cron.d are configured (CIS: L1 - Server - 5.1.7)";
     RuleId = "efa30987-4c67-73f5-979f-cb50f79466de";
     PayloadKey = "EnsurePermissionsOnEtcCronD";
     ComponentName = "SecurityBaseline";
@@ -2056,7 +2056,7 @@ instance of OsConfigResource as $OsConfigResource125ref
 
 instance of OsConfigResource as $OsConfigResource126ref
 {
-    ResourceID = "Ensure permissions on  /etc/cron.daily are configured";
+    ResourceID = "Ensure permissions on /etc/cron.daily are configured (CIS: L1 - Server - 5.1.4)";
     RuleId = "0cc35843-7687-60cf-5280-bb98cf9a87c2";
     PayloadKey = "EnsurePermissionsOnEtcCronDaily";
     ComponentName = "SecurityBaseline";
@@ -2073,7 +2073,7 @@ instance of OsConfigResource as $OsConfigResource126ref
 
 instance of OsConfigResource as $OsConfigResource127ref
 {
-    ResourceID = "Ensure permissions on  /etc/cron.hourly are configured";
+    ResourceID = "Ensure permissions on /etc/cron.hourly are configured (CIS: L1 - Server - 5.1.3)";
     RuleId = "ecdce8a2-9986-5833-8211-baf1938c1940";
     PayloadKey = "EnsurePermissionsOnEtcCronHourly";
     ComponentName = "SecurityBaseline";
@@ -2090,7 +2090,7 @@ instance of OsConfigResource as $OsConfigResource127ref
 
 instance of OsConfigResource as $OsConfigResource128ref
 {
-    ResourceID = "Ensure permissions on  /etc/cron.monthly are configured";
+    ResourceID = "Ensure permissions on /etc/cron.monthly are configured (CIS: L1 - Server - 5.1.6)";
     RuleId = "b5e94c1f-4d12-8bde-4c5e-98c651bd4430";
     PayloadKey = "EnsurePermissionsOnEtcCronMonthly";
     ComponentName = "SecurityBaseline";
@@ -2107,7 +2107,7 @@ instance of OsConfigResource as $OsConfigResource128ref
 
 instance of OsConfigResource as $OsConfigResource129ref
 {
-    ResourceID = "Ensure permissions on  /etc/cron.weekly are configured";
+    ResourceID = "Ensure permissions on /etc/cron.weekly are configured (CIS: L1 - Server - 5.1.5)";
     RuleId = "61417e01-8cc4-86ab-0e3b-867d42dea66d";
     PayloadKey = "EnsurePermissionsOnEtcCronWeekly";
     ComponentName = "SecurityBaseline";
@@ -2124,7 +2124,7 @@ instance of OsConfigResource as $OsConfigResource129ref
 
 instance of OsConfigResource as $OsConfigResource130ref
 {
-    ResourceID = "Ensure at/cron is restricted to authorized users";
+    ResourceID = "Ensure at/cron is restricted to authorized users (CIS: L1 - Server - 5.1.8)";
     RuleId = "7ac5f3c8-917b-548e-3138-c6e326a362fc";
     PayloadKey = "EnsureAtCronIsRestrictedToAuthorizedUsers";
     ComponentName = "SecurityBaseline";
@@ -2140,7 +2140,7 @@ instance of OsConfigResource as $OsConfigResource130ref
 
 instance of OsConfigResource as $OsConfigResource131ref
 {
-    ResourceID = "Ensure the remote login warning banner is properly configured";
+    ResourceID = "Ensure the remote login warning banner is properly configured (CIS: L1 - Server - 1.7.1.3)";
     RuleId = "d8bba1aa-69e9-2caf-1632-72938ff6759a";
     PayloadKey = "EnsureRemoteLoginWarningBannerIsConfigured";
     ComponentName = "SecurityBaseline";
@@ -2156,7 +2156,7 @@ instance of OsConfigResource as $OsConfigResource131ref
 
 instance of OsConfigResource as $OsConfigResource132ref
 {
-    ResourceID = "Ensure the local login warning banner is properly configured";
+    ResourceID = "Ensure the local login warning banner is properly configured (CIS: L1 - Server - 1.7.1.2)";
     RuleId = "14c168de-4508-a69d-0feb-2f1efe245a71";
     PayloadKey = "EnsureLocalLoginWarningBannerIsConfigured";
     ComponentName = "SecurityBaseline";
@@ -2172,7 +2172,7 @@ instance of OsConfigResource as $OsConfigResource132ref
 
 instance of OsConfigResource as $OsConfigResource133ref
 {
-    ResourceID = "Ensure the avahi-daemon service is disabled";
+    ResourceID = "Ensure the avahi-daemon service is disabled (CIS: L1 - Server - 2.2.3)";
     RuleId = "c3bf78d8-43a0-4768-b790-c940621057b6";
     PayloadKey = "EnsureAvahiDaemonServiceIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -2188,7 +2188,7 @@ instance of OsConfigResource as $OsConfigResource133ref
 
 instance of OsConfigResource as $OsConfigResource134ref
 {
-    ResourceID = "Ensure the cups service is disabled";
+    ResourceID = "Ensure the cups service is disabled (CIS: L1 - Server - 2.2.4)";
     RuleId = "4854666c-061b-4945-8a25-19133b8d5c7d";
     PayloadKey = "EnsureCupsServiceisDisabled";
     ComponentName = "SecurityBaseline";
@@ -2204,7 +2204,7 @@ instance of OsConfigResource as $OsConfigResource134ref
 
 instance of OsConfigResource as $OsConfigResource135ref
 {
-    ResourceID = "Ensure the isc-dhcp-server package is not installed";
+    ResourceID = "Ensure the isc-dhcp-server package is not installed (CIS: L1 - Server - 2.2.5)";
     RuleId = "660fa012-ca99-4314-a2a8-11728020bac7";
     PayloadKey = "EnsureIscDhcpdServerNotInstalled";
     ComponentName = "SecurityBaseline";
@@ -2268,7 +2268,7 @@ instance of OsConfigResource as $OsConfigResource138ref
 
 instance of OsConfigResource as $OsConfigResource139ref
 {
-    ResourceID = "Ensure the ldap service is disabled and the sldapd package is not installed";
+    ResourceID = "Ensure the ldap service is disabled and the sldapd package is not installed (CIS: L1 - Server - 2.2.6)";
     RuleId = "b577b358-6ec9-4ed7-b0df-259e44713b16";
     PayloadKey = "EnsureSldapdNotInstalled";
     ComponentName = "SecurityBaseline";
@@ -2332,7 +2332,7 @@ instance of OsConfigResource as $OsConfigResource142ref
 
 instance of OsConfigResource as $OsConfigResource143ref
 {
-    ResourceID = "Ensure the Network File System (NFS) service is disabled";
+    ResourceID = "Ensure the Network File System (NFS) service is disabled (CIS: L1 - Server - 2.2.7 - partial)";
     RuleId = "ee372ff3-9221-498b-b467-7406bf421168";
     PayloadKey = "EnsureNetworkFileSystemServiceIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -2364,7 +2364,7 @@ instance of OsConfigResource as $OsConfigResource144ref
 
 instance of OsConfigResource as $OsConfigResource145ref
 {
-    ResourceID = "Ensure the named service is disabled and the bind9 package is not installed";
+    ResourceID = "Ensure the named service is disabled and the bind9 package is not installed (CIS: L1 - Server - 2.2.8)";
     RuleId = "361a6cb4-f761-426f-a9d0-9e82ec0b3285";
     PayloadKey = "EnsureBind9NotInstalled";
     ComponentName = "SecurityBaseline";
@@ -2396,7 +2396,7 @@ instance of OsConfigResource as $OsConfigResource146ref
 
 instance of OsConfigResource as $OsConfigResource147ref
 {
-    ResourceID = "Ensure no legacy + entries exist in /etc/passwd";
+    ResourceID = "Ensure no legacy + entries exist in /etc/passwd (CIS: L1 - Server - 6.2.2)";
     RuleId = "cc627f0c-3b72-6cc9-36b0-d2a3957431f4";
     PayloadKey = "EnsureNoLegacyPlusEntriesInEtcPasswd";
     ComponentName = "SecurityBaseline";
@@ -2412,7 +2412,7 @@ instance of OsConfigResource as $OsConfigResource147ref
 
 instance of OsConfigResource as $OsConfigResource148ref
 {
-    ResourceID = "Ensure no legacy + entries exist in /etc/shadow";
+    ResourceID = "Ensure no legacy + entries exist in /etc/shadow (CIS: L1 - Server - 6.2.3)";
     RuleId = "1a102d2e-76db-5ccf-3580-ccda064e8df3";
     PayloadKey = "EnsureNoLegacyPlusEntriesInEtcShadow";
     ComponentName = "SecurityBaseline";
@@ -2428,7 +2428,7 @@ instance of OsConfigResource as $OsConfigResource148ref
 
 instance of OsConfigResource as $OsConfigResource149ref
 {
-    ResourceID = "Ensure no legacy + entries exist in /etc/group";
+    ResourceID = "Ensure no legacy + entries exist in /etc/group (CIS: L1 - Server - 6.2.4)";
     RuleId = "b487e075-15b4-0df1-550f-d8d5edd78eb4";
     PayloadKey = "EnsureNoLegacyPlusEntriesInEtcGroup";
     ComponentName = "SecurityBaseline";
@@ -2444,7 +2444,7 @@ instance of OsConfigResource as $OsConfigResource149ref
 
 instance of OsConfigResource as $OsConfigResource150ref
 {
-    ResourceID = "Ensure password expiration is configured";
+    ResourceID = "Ensure password expiration is configured (CIS: L1 - Server - 5.4.1.1)";
     RuleId = "6ee7250d-142f-57db-25d0-c58207135059";
     PayloadKey = "EnsurePasswordExpiration";
     ComponentName = "SecurityBaseline";
@@ -2461,7 +2461,7 @@ instance of OsConfigResource as $OsConfigResource150ref
 
 instance of OsConfigResource as $OsConfigResource151ref
 {
-    ResourceID = "Ensure password expiration warning days is configured";
+    ResourceID = "Ensure password expiration warning days is configured (CIS: L1 - Server - 5.4.1.3)";
     RuleId = "b7ac978f-0963-a61f-58ae-5cf84ab76b5d";
     PayloadKey = "EnsurePasswordExpirationWarning";
     ComponentName = "SecurityBaseline";
@@ -2478,7 +2478,7 @@ instance of OsConfigResource as $OsConfigResource151ref
 
 instance of OsConfigResource as $OsConfigResource152ref
 {
-    ResourceID = "Ensure password reuse is limited";
+    ResourceID = "Ensure password reuse is limited (CIS: L1 - Server - 5.3.3)";
     RuleId = "57bdeae2-863e-14fb-a463-d6ee64816b33";
     PayloadKey = "EnsurePasswordReuseIsLimited";
     ComponentName = "SecurityBaseline";
@@ -2495,7 +2495,7 @@ instance of OsConfigResource as $OsConfigResource152ref
 
 instance of OsConfigResource as $OsConfigResource153ref
 {
-    ResourceID = "Ensure the password hashing algorithm is SHA-512";
+    ResourceID = "Ensure the password hashing algorithm is SHA-512 (CIS: L1 - Server - 5.3.4)";
     RuleId = "01ec5346-882b-485d-8960-01dedd608792";
     PayloadKey = "EnsurePasswordHashingAlgorithm";
     ComponentName = "SecurityBaseline";
@@ -2512,7 +2512,7 @@ instance of OsConfigResource as $OsConfigResource153ref
 
 instance of OsConfigResource as $OsConfigResource154ref
 {
-    ResourceID = "Ensure the minimum days between password changes is configured";
+    ResourceID = "Ensure the minimum days between password changes is configured (CIS: L1 - Server - 5.4.1.2)";
     RuleId = "50272a84-672d-4c11-a67e-9d058adaf67a";
     PayloadKey = "EnsureMinDaysBetweenPasswordChanges";
     ComponentName = "SecurityBaseline";
@@ -2546,7 +2546,7 @@ instance of OsConfigResource as $OsConfigResource155ref
 
 instance of OsConfigResource as $OsConfigResource156ref
 {
-    ResourceID = "Ensure the inactive password lock period is configured";
+    ResourceID = "Ensure the inactive password lock period is configured (CIS: L1 - Server - 5.4.1.4)";
     RuleId = "91fbaeac-f5d0-4ac9-aa1b-52215aef1ed8";
     PayloadKey = "EnsureInactivePasswordLockPeriod";
     ComponentName = "SecurityBaseline";
@@ -2563,7 +2563,7 @@ instance of OsConfigResource as $OsConfigResource156ref
 
 instance of OsConfigResource as $OsConfigResource157ref
 {
-    ResourceID = "Ensure all system accounts are non-login";
+    ResourceID = "Ensure all system accounts are non-login (CIS: L1 - Server - 5.4.2)";
     RuleId = "448b668a-738c-420b-b332-51ea49922933";
     PayloadKey = "EnsureSystemAccountsAreNonLogin";
     ComponentName = "SecurityBaseline";
@@ -2579,7 +2579,7 @@ instance of OsConfigResource as $OsConfigResource157ref
 
 instance of OsConfigResource as $OsConfigResource158ref
 {
-    ResourceID = "Ensure default group for the root account is GID 0";
+    ResourceID = "Ensure default group for the root account is GID 0 (CIS: L1 - Server - 5.4.3)";
     RuleId = "732fa92f-647e-47b8-b5a4-fdf00b02d9e2";
     PayloadKey = "EnsureDefaultRootAccountGroupIsGidZero";
     ComponentName = "SecurityBaseline";
@@ -2595,7 +2595,7 @@ instance of OsConfigResource as $OsConfigResource158ref
 
 instance of OsConfigResource as $OsConfigResource159ref
 {
-    ResourceID = "Ensure root is the only UID 0 account";
+    ResourceID = "Ensure root is the only UID 0 account (CIS: L1 - Server - 6.2.5)";
     RuleId = "b5845ff3-42f4-4112-b2a2-5b827232a053";
     PayloadKey = "EnsureRootIsOnlyUidZeroAccount";
     ComponentName = "SecurityBaseline";
@@ -2660,7 +2660,7 @@ instance of OsConfigResource as $OsConfigResource162ref
 
 instance of OsConfigResource as $OsConfigResource163ref
 {
-    ResourceID = "Ensure the SNMP Server is not enabled";
+    ResourceID = "Ensure the SNMP Server is not enabled (CIS: L1 - Server - 2.2.14)";
     RuleId = "ca1aea32-3969-49ab-abfc-2c5796a9a8bb";
     PayloadKey = "EnsureSnmpServerIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -2676,7 +2676,7 @@ instance of OsConfigResource as $OsConfigResource163ref
 
 instance of OsConfigResource as $OsConfigResource164ref
 {
-    ResourceID = "Ensure the rsync service is not enabled";
+    ResourceID = "Ensure the rsync service is not enabled (CIS: L1 - Server - 2.2.16)";
     RuleId = "63aba603-b1f8-40df-82c5-38915452ce23";
     PayloadKey = "EnsureRsynServiceIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -2692,7 +2692,7 @@ instance of OsConfigResource as $OsConfigResource164ref
 
 instance of OsConfigResource as $OsConfigResource165ref
 {
-    ResourceID = "Ensure the NIS server is not enabled";
+    ResourceID = "Ensure the NIS server is not enabled (CIS: L1 - Server - 2.2.17)";
     RuleId = "b4ad3fdd-7b68-4b11-a3ed-84b37a68b995";
     PayloadKey = "EnsureNisServerIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -2708,7 +2708,7 @@ instance of OsConfigResource as $OsConfigResource165ref
 
 instance of OsConfigResource as $OsConfigResource166ref
 {
-    ResourceID = "Ensure the rsh client is not installed";
+    ResourceID = "Ensure the rsh client is not installed (CIS: L1 - Server - 2.3.2)";
     RuleId = "6d441f31-f888-4f4f-b1da-7cfc26263e3f";
     PayloadKey = "EnsureRshClientNotInstalled";
     ComponentName = "SecurityBaseline";
@@ -2724,7 +2724,7 @@ instance of OsConfigResource as $OsConfigResource166ref
 
 instance of OsConfigResource as $OsConfigResource167ref
 {
-    ResourceID = "Ensure SMB V1 with Samba is disabled";
+    ResourceID = "Ensure SMB V1 with Samba is disabled (CIS: L1 - Server - 2.2.12)";
     RuleId = "7624efb0-3026-4c72-8920-48d5be78a50e";
     PayloadKey = "EnsureSmbWithSambaIsDisabled";
     ComponentName = "SecurityBaseline";
@@ -2740,9 +2740,9 @@ instance of OsConfigResource as $OsConfigResource167ref
 
 instance of OMI_ConfigurationDocument
 {
-    Version="2.0.0";
+    Version="3.0.0";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="10/16/2024 17:56:00 PST";
+    GenerationDate="10/25/2024 14:54:00 PST";
     Name="AzureLinuxBaseline";
 };
