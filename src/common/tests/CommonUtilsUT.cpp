@@ -2302,9 +2302,9 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
 
 TEST_F(CommonUtilsTest, AsbIsValidResourceIdRuleId)
 {
-    const char* goodResourceId = "Ensure SMB V1 with Samba is disabled";
+    const char* goodResourceId = "Ensure SMB V1 with Samba is disabled (CIS: L1 - Server - 2.2.12)";
     const char* goodRuleId = "7624efb0-3026-4c72-8920-48d5be78a50e";
-    const char* badResourceId = "Ensure the rsh client is not installed";
+    const char* badResourceId = "Ensure the rsh client is not installed (CIS: L1 - Server - 2.3.2)";
     const char* badRuleId = "6d441f31-f888-4f4f-b1da-7cfc26263e3f";
     const char* payloadKey = "EnsureSmbWithSambaIsDisabled";
     
