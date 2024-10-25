@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-add_compile_options("-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-unused-result;-Wunused-const-variable=2")
+add_compile_options("-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-unused-result")
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    add_compile_options("-Wunused-const-variable=2")
+endif()
+if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    add_compile_options("-Wunused-variable")
+endif()
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 

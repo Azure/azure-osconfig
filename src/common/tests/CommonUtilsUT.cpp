@@ -367,7 +367,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithSpecialCharactersInTextResult)
     sprintf(command, "echo \"%s\"", &specialCharacters[0]);
 
     // All special characters must be replaced with spaces:
-    int expectedResultSize = sizeof(specialCharacters);
+    const int expectedResultSize = sizeof(specialCharacters);
     char expectedResult[expectedResultSize + 1] = {0};
     for (int i = 0; i < expectedResultSize; i++)
     {
@@ -774,7 +774,7 @@ TEST_F(CommonUtilsTest, InvalidHttpProxyData)
         "http://fooname:foo password@wwww.foo.org:6060",
         "http://foo|name:foopassword@wwww.foo.org:6060",
         "http://fooname:foopassword@@wwww.foo.org:7070",
-        "http://foo:name:foo:password@@wwww.foo.org:8080"
+        "http://foo:name:foo:password@@wwww.foo.org:8080",
         "http://fooname:foopassword@wwww.foo.org:***",
         "http://fooname:foo\"password@wwww.foo.org:9090"
     };
@@ -1855,7 +1855,7 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "This is a positive test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
         "This is a positive test\nAnother one with auth test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
         "This is a positive test\nauth required pam_faillock.so deny=3 unlock_time=543",
-        "This is a positive test\nAnother one with auth test\nauth required pam_faillock.so deny=5 unlock_time=647"
+        "This is a positive test\nAnother one with auth test\nauth required pam_faillock.so deny=5 unlock_time=647",
         "auth required pam_tally2.so file=/var/log/tallylog deny=0 unlock_time=888"
     };
 

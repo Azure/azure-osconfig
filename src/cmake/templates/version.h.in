@@ -5,6 +5,6 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define OSCONFIG_VERSION R""""(@OsConfigVersionString@)""""
+#define OSCONFIG_VERSION "@OsConfigVersionString@"
 
 #endif // VERSION_H
