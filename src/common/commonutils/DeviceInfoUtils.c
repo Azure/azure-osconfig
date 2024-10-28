@@ -496,7 +496,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
             memset(command, 0, commandLength);
             snprintf(command, commandLength, commandTemplate, name);
 
-            if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log))) && textResult)
+            if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log))) && result)
             {
                 RemovePrefixBlanks(result);
                 RemoveTrailingBlanks(result);
@@ -652,7 +652,7 @@ char* GetLoginUmask(char** reason, void* log)
     const char* command = "grep -v '^#' /etc/login.defs | grep UMASK";
     char* result = NULL;
 
-    if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &result, NULL, log)) && textResult)
+    if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &result, NULL, log)) && result)
     {
         RemovePrefixUpTo(result, ' ');
         RemovePrefixBlanks(result);
@@ -734,7 +734,7 @@ static long GetPasswordDays(const char* name, void* log)
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, name);
 
-        if ((0 == ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)) && textResult)
+        if ((0 == ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)) && result)
         {
             RemovePrefixBlanks(result);
             RemovePrefixUpTo(result, ' ');
