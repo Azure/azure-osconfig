@@ -102,7 +102,7 @@ char* GetOsPrettyName(void* log)
 {
     const char* osPrettyNameCommand = "cat /etc/os-release | grep PRETTY_NAME=";
     char* textResult = NULL;
-    
+
     if ((0 == ExecuteCommand(NULL, osPrettyNameCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixBlanks(textResult);
