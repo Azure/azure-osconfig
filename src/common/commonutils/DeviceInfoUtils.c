@@ -328,7 +328,7 @@ bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, void* log)
     bool result = false;
     char* cpuFlags = GetCpuFlags(log);
 
-    if ((NULL != cpuFlag) && (NULL != strstr(cpuFlags, cpuFlag)))
+    if ((NULL != cpuFlag) && (NULL != cpuFlags) && (NULL != strstr(cpuFlags, cpuFlag)))
     {
         OsConfigLogInfo(log, "CPU flag '%s' is supported", cpuFlag);
         OsConfigCaptureSuccessReason(reason, "The device's CPU supports '%s'", cpuFlag);
