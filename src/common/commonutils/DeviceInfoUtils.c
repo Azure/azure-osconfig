@@ -103,7 +103,7 @@ char* GetOsPrettyName(void* log)
     const char* osPrettyNameCommand = "cat /etc/os-release | grep PRETTY_NAME=";
     char* textResult = NULL;
 
-    if (0 == ExecuteCommand(NULL, osPrettyNameCommand, true, true, 0, 0, &textResult, NULL, log))
+    if ((0 == ExecuteCommand(NULL, osPrettyNameCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
@@ -136,7 +136,7 @@ char* GetOsName(void* log)
     else
     {
         // PRETTY_NAME did not work, try ID
-        if (0 == ExecuteCommand(NULL, osNameCommand, true, true, 0, 0, &textResult, NULL, log))
+        if ((0 == ExecuteCommand(NULL, osNameCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
         {
             RemovePrefixBlanks(textResult);
             RemoveTrailingBlanks(textResult);
@@ -163,7 +163,7 @@ char* GetOsVersion(void* log)
     const char* osVersionCommand = "cat /etc/os-release | grep VERSION=";
     char* textResult = NULL;
 
-    if (0 == ExecuteCommand(NULL, osVersionCommand, true, true, 0, 0, &textResult, NULL, log))
+    if ((0 == ExecuteCommand(NULL, osVersionCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
@@ -188,7 +188,7 @@ static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace,
 {
     char* textResult = NULL;
 
-    if (0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log))
+    if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixUpTo(textResult, ':');
         RemovePrefixBlanks(textResult);
@@ -219,7 +219,7 @@ static char* GetAnotherOsProperty(const char* command, void* log)
         return NULL;
     }
 
-    if (0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log))
+    if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
@@ -496,7 +496,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
             memset(command, 0, commandLength);
             snprintf(command, commandLength, commandTemplate, name);
 
-            if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)))
+            if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log))) && result)
             {
                 RemovePrefixBlanks(result);
                 RemoveTrailingBlanks(result);
@@ -652,7 +652,7 @@ char* GetLoginUmask(char** reason, void* log)
     const char* command = "grep -v '^#' /etc/login.defs | grep UMASK";
     char* result = NULL;
 
-    if (0 == ExecuteCommand(NULL, command, true, true, 0, 0, &result, NULL, log))
+    if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &result, NULL, log)) && result)
     {
         RemovePrefixUpTo(result, ' ');
         RemovePrefixBlanks(result);
@@ -734,7 +734,7 @@ static long GetPasswordDays(const char* name, void* log)
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, name);
 
-        if (0 == ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log))
+        if ((0 == ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)) && result)
         {
             RemovePrefixBlanks(result);
             RemovePrefixUpTo(result, ' ');
@@ -931,7 +931,7 @@ bool IsCommodore(void* log)
     char* textResult = NULL;
     bool status = false;
 
-    if (0 == ExecuteCommand(NULL, productNameCommand, true, true, 0, 0, &textResult, NULL, log))
+    if ((0 == ExecuteCommand(NULL, productNameCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
