@@ -8,14 +8,11 @@ on:
         required: true
         default: main
         type: string
-  push:
-    # tags:
-    #   - v*.*.*
 
 jobs:
   publish:
     name: Publish
-    uses: ./.github/workflows/nrp-build.yml
+    uses: ./.github/workflows/package-build.yml
     strategy:
       matrix:
         target:
@@ -23,11 +20,10 @@ jobs:
             { os: ubuntu, version: 14.04, arch: amd64, dist: trusty, package-type: DEB },
           ]
     with:
-      release-name: Test Azure Policy Packages
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.target.arch }}
-      dist: ${{ matrix.target.dist }}
-      environment: prod
+      artifact: ${{ matrix.target }}-${{ matrix.arch }}
       package-type: ${{ matrix.target.package-type }}
-      buildOsConfigForMc: true
-    secrets: inherit
+      machine-config: true
+      release: true
+    # secrets: inherit
