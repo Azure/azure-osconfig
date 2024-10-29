@@ -24,7 +24,6 @@ on:
       package-type:
         description: The type of package to build (deb | rpm).
         type: string
-        required: true
       test:
         description: Include test collateral in the artifact.
         type: boolean
@@ -111,6 +110,7 @@ jobs:
           cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Run cpack
+        if: ${{ inputs.package-type }}
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
@@ -118,11 +118,12 @@ jobs:
           cmd: cpack -G ${{ inputs.package-type }}
 
       - name: Binary footprint delta validation
+        if: ${{ inputs.package-type }}
         uses: ./.github/actions/footprint-check
         with:
           allowedDelta: 10
-          distroName: ${{ matrix.os }}
-          arch: ${{ matrix.variant.arch }}
+          distroName: ${{ inputs.target }}
+          arch: ${{ inputs.arch }}
           package-type: ${{ inputs.package-type }}
 
       - uses: actions/upload-artifact@v4

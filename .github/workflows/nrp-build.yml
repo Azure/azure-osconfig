@@ -1,0 +1,21 @@
+name: Build Azure Policy Packages
+
+on:
+  workflow_dispatch:
+
+jobs:
+  package:
+    name: Package
+    uses: ./.github/workflows/package-build.yml
+    strategy:
+      matrix:
+        target:
+          [
+            { os: ubuntu, version: 14.04, arch: amd64, dist: trusty, package-type: DEB },
+          ]
+    with:
+      target: ${{ matrix.target.os }}-${{ matrix.target.version }}
+      arch: ${{ matrix.target.arch }}
+      artifact: policy-packages
+      machine-config: true
+      release: true
