@@ -7,9 +7,27 @@ on:
     - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
 
 jobs:
+  package:
+    name: Package
+    uses: ./.github/workflows/package-build.yml
+    strategy:
+      matrix:
+        target:
+          [
+            { os: ubuntu, version: 14.04, arch: amd64, dist: trusty, package-type: DEB },
+          ]
+    with:
+      target: ${{ matrix.target.os }}-${{ matrix.target.version }}
+      arch: ${{ matrix.target.arch }}
+      artifact: nrp-test-package
+      package-type: ${{ matrix.target.package-type }}
+      machine-config: true
+      release: ${{ github.event_name == 'pull_request' && false || true }}
+
   test:
     name: Test
-    uses: ./.github/workflows/universalnrp-test-run.yml
+    needs: package
+    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
     strategy:
       fail-fast: false
       matrix:
@@ -29,22 +47,90 @@ jobs:
           ]
         policy-package:
           [
-            { path: LinuxSshServerSecurityBaseline.zip, short-name: SSH, resource-count: 20 },
-            { path: AzureLinuxBaseline.zip, short-name: ASB, resource-count: 168 },
+            { name: LinuxSshServerSecurityBaseline, short-name: SSH, resource-count: 20 },
+            { name: AzureLinuxBaseline, short-name: ASB, resource-count: 168 },
           ]
         arch: [amd64]
-        install-osconfig: [false]
-        skip-remediation: [true, false]
-    with:
-      target: ${{ matrix.target.os }}-${{ matrix.target.version }}
-      arch: ${{ matrix.arch }}
-      package-type: ${{ matrix.target.package-type }}
-      policy-package: ${{ matrix.policy-package.path }}
-      policy-package-short-name: ${{ matrix.policy-package.short-name }}
-      resource-count: ${{ matrix.policy-package.resource-count }}
-      skip-remediation: ${{ matrix.skip-remediation }}
-      install-osconfig: ${{ matrix.install-osconfig }}
-      tag: ${{ matrix.target.tag }}
+        mode: [Audit, Remediate]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Normalize variables
+        id: normalize
+        run: |
+          output=${{ matrix.target.os }}-${{ matrix.target.version }}_${{ matrix.policy-package.short-name }}-${{ matrix.mode }}
+          echo name=${output} >> $GITHUB_OUTPUT
+
+      - uses: actions/download-artifact@v4
+        id: download
+        with:
+          name: nrp-test-package
+
+      - name: Run Guest Configuration Test
+        working-directory: ${{ steps.download.outputs.download-path }}
+        run: |
+          script="./universalNRPTest.ps1"
+          cat >$script <<EOL
+          Install-Module -Name GuestConfiguration -Force
+          Install-Module Pester -Force -SkipPublisherCheck
+          Import-Module Pester -Passthru
+
+          \$params = @{
+              PolicyPackage = './${{ matrix.policy-package.name }}.zip'
+              SkipRemediation = if ('${{ matrix.mode }}' -eq 'Audit') { \$true } else { \$false }
+              ResourceCount = ${{ matrix.policy-package.resource-count }}
+          }
+          \$container = New-PesterContainer -Path ./src/tests/universal-nrp-e2e/UniversalNRP.Tests.ps1 -Data \$params
+          \$pesterConfig = [PesterConfiguration]@{
+              Run = @{
+                  Exit = \$true
+                  Container = \$container
+              }
+              Output = @{
+                  Verbosity = 'Detailed'
+              }
+              TestResult = @{
+                  Enabled      = \$true
+                  OutputFormat = 'JUnitXml'
+                  OutputPath   =  '${{ steps.normalize.outputs.name }}-testResults.xml'
+              }
+              Should = @{
+                  ErrorAction = 'Continue'
+              }
+              Filter = @{
+                  Tag = '${{ matrix.tag }}'
+              }
+          };
+          Invoke-Pester -Configuration \$pesterConfig
+          EOL
+
+          sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
+          ls -l
+          # if command -v lsb_release &>/dev/null; then
+          #     [[ $(lsb_release -is) == "Ubuntu" ]] && sudo chmod 644 *testResults.xml
+          # else
+          #     echo "lsb_release not found"
+          # fi
+          stat *testResults.xml
+
+      - name: Stage OSConfig Logs
+        if: success() || failure()
+        run: |
+          mkdir  osconfig-logs
+          stat /var/log/osconfig_nrp.log
+          cp -r /var/log/osconfig* osconfig-logs/
+
+      - uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: ${{ steps.normalize.outputs.name }}_report
+          path: '${{ steps.download.outputs.download-path }}/*testResults.xml'
+
+      - uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: ${{ steps.normalize.outputs.name }}_logs
+          path: osconfig-logs/osconfig*
 
   # See for more details: https://github.com/marketplace/actions/publish-test-results
   report:
@@ -60,8 +146,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: universal-nrp-test
-          pattern: '*-report'
-          merge-multiple: true  
+          pattern: '*_report'
+          merge-multiple: true
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2

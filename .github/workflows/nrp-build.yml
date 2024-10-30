@@ -1,45 +1,21 @@
-name: Build 'OSConfig for MC' (NRP and policy packages)
+name: Build Azure Policy Packages
 
 on:
-  workflow_call:
-    inputs:
-      target:
-        type: string
-        required: true
-      arch:
-        type: string
-        required: true
-      dist:
-        type: string
-        required: true
-      package-type:
-        type: string
-        required: true
-      environment:
-        type: string
-        description: The GitHub environment to use for the build.
-        required: true
-      release-name:
-        type: string
-        description: The GitHub release name to update.
-        required: true
-      container-tag:
-        type: string
-        required: false
-        default: latest
-      buildOsConfigForMc:
-        type: boolean
-        required: false
-        default: false
+  workflow_dispatch:
 
 jobs:
   package:
+    name: Package
     uses: ./.github/workflows/package-build.yml
+    strategy:
+      matrix:
+        target:
+          [
+            { os: ubuntu, version: 14.04, arch: amd64, dist: trusty, package-type: DEB },
+          ]
     with:
-      target: ${{ inputs.target }}
-      arch: ${{ inputs.arch }}
-      artifact: ${{ inputs.target }}-${{ inputs.arch }}
-      package-type: ${{ inputs.package-type }}
-      container-tag: ${{ inputs.container-tag }}
-      buildOsConfigForMc: ${{ inputs.buildOsConfigForMc }}
+      target: ${{ matrix.target.os }}-${{ matrix.target.version }}
+      arch: ${{ matrix.target.arch }}
+      artifact: policy-packages
+      machine-config: true
       release: true

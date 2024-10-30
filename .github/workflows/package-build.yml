@@ -24,7 +24,6 @@ on:
       package-type:
         description: The type of package to build (deb | rpm).
         type: string
-        required: true
       test:
         description: Include test collateral in the artifact.
         type: boolean
@@ -42,7 +41,7 @@ on:
         type: string
         required: false
         default: ${{ github.ref }}
-      buildOsConfigForMc:
+      machine-config:
         type: boolean
         required: false
         default: false
@@ -58,7 +57,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: ${{ inputs.buildOsConfigForMc == false && 'recursive' || '' }}
+          submodules: ${{ inputs.machine-config == false && 'recursive' || '' }}
           clean: true
           ref: ${{ inputs.ref }}
 
@@ -97,7 +96,7 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
           cmd: |
-            if [ "${{ inputs.buildOsConfigForMc }}" = "true" ]; then
+            if [ "${{ inputs.machine-config }}" = "true" ]; then
               cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
             else
               cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON
@@ -111,6 +110,7 @@ jobs:
           cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Run cpack
+        if: ${{ inputs.package-type }}
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
@@ -118,6 +118,7 @@ jobs:
           cmd: cpack -G ${{ inputs.package-type }}
 
       - name: Binary footprint delta validation
+        if: ${{ inputs.package-type }}
         uses: ./.github/actions/footprint-check
         with:
           allowedDelta: 10
