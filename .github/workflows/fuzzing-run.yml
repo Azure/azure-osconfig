@@ -1,0 +1,61 @@
+name: Fuzzer execution
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      arch:
+        required: true
+        type: string
+      package-type:
+        required: true
+        type: string
+      timeout-seconds:
+        description: The maximum time in seconds to run the fuzzer.
+        required: false
+        type: number
+        default: 600
+
+jobs:
+  package:
+    uses: ./.github/workflows/package-build.yml
+    with:
+      target: ${{ inputs.target }}
+      arch: ${{ inputs.arch }}
+      artifact: ${{ inputs.target }}-fuzzer
+      package-type: ${{ inputs.package-type }}
+      build-fuzzers: true
+
+  fuzzer-execution:
+    needs: package
+    runs-on: [self-hosted, 1ES.Pool=e2e-pool, '1ES.ImageOverride=${{ inputs.target }}']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        id: download
+        with:
+          name: ${{ inputs.target }}-fuzzer
+
+      - name: Install prerequisites
+        run: |
+          sudo apt update
+          sudo apt install -y clang
+          sudo chmod +x ${{ steps.download.outputs.download-path }}/fuzzer/osconfig-fuzzer
+          mkdir /tmp/corpus
+          mkdir /tmp/artifacts
+          cp -r ${{ steps.download.outputs.download-path }}/src/fuzzer/seed_corpus/* /tmp/corpus
+
+      - name: Run osconfig-fuzzer
+        working-directory: ${{ steps.download.outputs.download-path }}/fuzzer
+        run: ./osconfig-fuzzer -artifact_prefix=/tmp/artifacts/ -max_total_time=${{ inputs.timeout-seconds }} /tmp/corpus 2>&1 >/dev/null | tee /tmp/osconfig-fuzzer.log
+
+      - uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: ${{ inputs.target }}-logs
+          path: |
+            /tmp/osconfig-fuzzer.log
+            /tmp/artifacts
