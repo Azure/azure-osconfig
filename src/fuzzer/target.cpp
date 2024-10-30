@@ -18,23 +18,40 @@ static const int c_skip_input = -1;
  */
 static const int c_valid_input = 0;
 
-static int SecurityBaselineMmiGet_target(const char* data, std::size_t size) noexcept {
-    SecurityBaselineInitialize();
-    auto handle = SecurityBaselineMmiOpen("SecurityBaselineTest", 4096);
-    if (handle == nullptr)
+/**
+ * @brief A class to keep a single static initialization of the SecurityBaseline library
+ */
+struct Context
+{
+    MMI_HANDLE handle;
+public:
+    Context() noexcept(false)
     {
-        SecurityBaselineShutdown();
-        return c_skip_input;
+        SecurityBaselineInitialize();
+        handle = SecurityBaselineMmiOpen("SecurityBaselineTest", 4096);
+        if (handle == nullptr)
+        {
+            SecurityBaselineShutdown();
+            throw std::runtime_error("failed to initialized SecurityBaseline library");
+        }
     }
 
+    ~Context() noexcept
+    {
+        SecurityBaselineMmiClose(handle);
+        SecurityBaselineShutdown();
+    }
+};
+
+static Context g_context;
+
+static int SecurityBaselineMmiGet_target(const char* data, std::size_t size) noexcept {
     char* payload = nullptr;
     int payloadSizeBytes = 0;
 
     auto input = std::string(data, size);
-    SecurityBaselineMmiGet(handle, "SecurityBaseline", input.c_str(), &payload, &payloadSizeBytes);
+    SecurityBaselineMmiGet(g_context.handle, "SecurityBaseline", input.c_str(), &payload, &payloadSizeBytes);
     SecurityBaselineMmiFree(payload);
-    SecurityBaselineMmiClose(handle);
-    SecurityBaselineShutdown();
     return 0;
 }
 
@@ -51,28 +68,16 @@ static int SecurityBaselineMmiSet_target(const char* data, std::size_t size) noe
     const auto prefix_size = prefix - data;
     size -= prefix_size;
 
-    SecurityBaselineInitialize();
-    auto handle = SecurityBaselineMmiOpen("SecurityBaselineTest", 4096);
-    if (handle == nullptr)
-    {
-        SecurityBaselineShutdown();
-        return c_skip_input;
-    }
-
     char* payload = reinterpret_cast<char*>(malloc(size));
     if(!payload)
     {
-        SecurityBaselineMmiClose(handle);
-        SecurityBaselineShutdown();
         return c_skip_input;
     }
     memcpy(payload, prefix, size);
 
     auto input = std::string(data, prefix_size-1);
-    SecurityBaselineMmiSet(handle, "SecurityBaseline", input.c_str(), payload, size );
+    SecurityBaselineMmiSet(g_context.handle, "SecurityBaseline", input.c_str(), payload, size);
     SecurityBaselineMmiFree(payload);
-    SecurityBaselineMmiClose(handle);
-    SecurityBaselineShutdown();
     return 0;
 }
 
@@ -84,7 +89,7 @@ static int SecurityBaselineMmiSet_target(const char* data, std::size_t size) noe
  */
 static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets = {
     { "SecurityBaselineMmiGet.", SecurityBaselineMmiGet_target },
-    { "SecurityBaselineMmiSet.", SecurityBaselineMmiSet_target}
+    { "SecurityBaselineMmiSet.", SecurityBaselineMmiSet_target }
 };
 
 /**
