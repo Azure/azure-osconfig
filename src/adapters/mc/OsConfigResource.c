@@ -673,7 +673,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no ExpectedObjectValue, assuming '%s' is expected", g_payloadKey, g_passValue);
     }
 
-    isCompliant = (g_expectedObjectValue && (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue)))) ? MI_TRUE : MI_FALSE;
+    //isCompliant = (g_expectedObjectValue && (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue)))) ? MI_TRUE : MI_FALSE;
+    isCompliant = MI_FALSE; //HERE
 
     // Create the output resource
 
@@ -1056,7 +1057,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     }
 
     // Determine compliance
-    if ((in->InputResource.value->ExpectedObjectValue.exists == MI_TRUE) && (in->InputResource.value->ExpectedObjectValue.value != NULL))
+    /*if ((in->InputResource.value->ExpectedObjectValue.exists == MI_TRUE) && (in->InputResource.value->ExpectedObjectValue.value != NULL))
     {
         isCompliant = (g_reportedObjectValue && (0 == strncmp(in->InputResource.value->ExpectedObjectValue.value, g_reportedObjectValue, strlen(in->InputResource.value->ExpectedObjectValue.value)))) ? MI_TRUE : MI_FALSE;
     }
@@ -1064,7 +1065,8 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     {
         LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: no ExpectedObjectValue, assuming '%s' is expected", g_payloadKey, g_expectedObjectValue);
         isCompliant = (g_reportedObjectValue && (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue)))) ? MI_TRUE : MI_FALSE;
-    }
+    } */
+    isCompliant = MI_FALSE; //HERE
 
     LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: %s", g_payloadKey, isCompliant ? "compliant" : "incompliant");
 
