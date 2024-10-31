@@ -800,6 +800,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
         FREE_MEMORY(pamModulePath);
         FREE_MEMORY(pamModulePath2);
+        FREE_MEMORY(pamModulePath3);
     }
 
     if (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log))
