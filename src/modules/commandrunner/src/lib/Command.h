@@ -109,7 +109,7 @@ public:
     const bool m_replaceEol;
 
     Command(std::string id, std::string command, unsigned int timeout, bool replaceEol);
-    ~Command();
+    virtual ~Command();
 
     virtual int Execute(unsigned int maxPayloadSizeBytes);
     int Cancel();
