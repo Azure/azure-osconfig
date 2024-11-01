@@ -4,8 +4,7 @@
 add_compile_options("-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-unused-result")
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
     add_compile_options("-Wunused-const-variable=2")
-endif()
-if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+elseif (CMAKE_C_COMPILER_ID STREQUAL "Clang")
     add_compile_options("-Wunused-variable")
 endif()
 
