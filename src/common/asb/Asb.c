@@ -3773,12 +3773,19 @@ static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, void* l
     return DisablePostfixNetworkListening(log);
 }
 
+static int CheckAndFreeReason(char *reason)
+{
+    int ret = (0 == strncmp(g_pass, reason, strlen(g_pass))) ? 0 : ENOENT;
+    FREE_MEMORY(reason);
+    return ret;
+}
+
 static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_rpcgssd, log);
     StopAndDisableDaemon(g_rpcGssd, log);
-    return (0 == strncmp(g_pass, AuditEnsureRpcgssdServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
+    return CheckAndFreeReason(AuditEnsureRpcgssdServiceIsDisabled(log));
 }
 
 static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, void* log)
@@ -3786,7 +3793,7 @@ static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, void* log)
     UNUSED(value);
     StopAndDisableDaemon(g_rpcidmapd, log);
     StopAndDisableDaemon(g_nfsIdmapd, log);
-    return (0 == strncmp(g_pass, AuditEnsureRpcidmapdServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
+    return CheckAndFreeReason(AuditEnsureRpcidmapdServiceIsDisabled(log));
 }
 
 static int RemediateEnsurePortmapServiceIsDisabled(char* value, void* log)
@@ -3813,7 +3820,7 @@ static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value, void* 
 {
     UNUSED(value);
     StopAndDisableDaemon(g_nfsServer, log);
-    return (0 == strncmp(g_pass, AuditEnsureNetworkFileSystemServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
+    return CheckAndFreeReason(AuditEnsureNetworkFileSystemServiceIsDisabled(log));
 }
 
 static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value, void* log)
@@ -3832,21 +3839,21 @@ static int RemediateEnsureSnmpServerIsDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_snmpd, log);
-    return (0 == strncmp(g_pass, AuditEnsureSnmpServerIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
+    return CheckAndFreeReason(AuditEnsureSnmpServerIsDisabled(log));
 }
 
 static int RemediateEnsureRsynServiceIsDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_rsync, log);
-    return (0 == strncmp(g_pass, AuditEnsureRsynServiceIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
+    return CheckAndFreeReason(AuditEnsureRsynServiceIsDisabled(log));
 }
 
 static int RemediateEnsureNisServerIsDisabled(char* value, void* log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_ypserv, log);
-    return (0 == strncmp(g_pass, AuditEnsureNisServerIsDisabled(log), strlen(g_pass))) ? 0 : ENOENT;
+    return CheckAndFreeReason(AuditEnsureNisServerIsDisabled(log));
 }
 
 static int RemediateEnsureRshClientNotInstalled(char* value, void* log)
