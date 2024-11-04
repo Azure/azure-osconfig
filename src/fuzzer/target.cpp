@@ -1,5 +1,8 @@
 #include "Mmi.h"
 #include "SecurityBaseline.h"
+#include "CommonUtils.h"
+#include <unistd.h>
+#include <fcntl.h>
 #include <cstdint>
 #include <cstring>
 #include <cstdlib>
@@ -24,9 +27,17 @@ static const int c_valid_input = 0;
 struct Context
 {
     MMI_HANDLE handle;
+    std::string tempdir;
 public:
     Context() noexcept(false)
     {
+        char path[] = "/tmp/osconfig-fuzzer-XXXXXX";
+        if(::mkdtemp(path) == nullptr)
+        {
+            throw std::runtime_error(std::string{ "failed to create temporary directory: " } + std::strerror(errno));
+        }
+        tempdir = path;
+
         SecurityBaselineInitialize();
         handle = SecurityBaselineMmiOpen("SecurityBaselineTest", 4096);
         if (handle == nullptr)
@@ -38,14 +49,80 @@ public:
 
     ~Context() noexcept
     {
+        ::remove(tempdir.c_str());
         SecurityBaselineMmiClose(handle);
         SecurityBaselineShutdown();
+    }
+
+    std::string nextTempfileName() const noexcept
+    {
+        static int counter = 0;
+        return tempdir + "." + std::to_string(counter++);
+    }
+
+    std::string makeTempfile(const char* data, std::size_t size) const noexcept(false)
+    {
+        auto path = nextTempfileName();
+        auto fd = ::open(path.c_str(), O_EXCL | O_CREAT | O_WRONLY | O_TRUNC, 0600);
+        while (size)
+        {
+            auto written = ::write(fd, data, size);
+            if (written == -1)
+            {
+                ::close(fd);
+                throw std::runtime_error(std::string{ "failed to write to temporary file: " } + std::strerror(errno));
+            }
+
+            size -= written;
+            data += written;
+        }
+        ::close(fd);
+
+        return path;
+    }
+
+    void remove(const std::string& path) const noexcept
+    {
+        ::remove(path.c_str());
     }
 };
 
 static Context g_context;
 
-static int SecurityBaselineMmiGet_target(const char* data, std::size_t size) noexcept {
+static int LoadStringFromFile_target(const char* data, std::size_t size) noexcept
+{
+    auto filename = g_context.makeTempfile(data, size);
+    free(LoadStringFromFile(filename.c_str(), true, nullptr));
+    g_context.remove(filename);
+    return 0;
+}
+
+static int GetNumberOfLinesInFile_target(const char* data, std::size_t size) noexcept
+{
+    auto filename = g_context.makeTempfile(data, size);
+    GetNumberOfLinesInFile(filename.c_str());
+    g_context.remove(filename);
+    return 0;
+}
+
+static int SavePayloadToFile_target(const char* data, std::size_t size) noexcept
+{
+    auto filename = g_context.nextTempfileName();
+    SavePayloadToFile(filename.c_str(), data, size, nullptr);
+    g_context.remove(filename);
+    return 0;
+}
+
+static int AppendPayloadToFile_target(const char* data, std::size_t size) noexcept
+{
+    auto filename = g_context.makeTempfile(nullptr, 0);
+    AppendPayloadToFile(filename.c_str(), data, size, nullptr);
+    g_context.remove(filename);
+    return 0;
+}
+
+static int SecurityBaselineMmiGet_target(const char* data, std::size_t size) noexcept
+{
     char* payload = nullptr;
     int payloadSizeBytes = 0;
 
@@ -55,7 +132,8 @@ static int SecurityBaselineMmiGet_target(const char* data, std::size_t size) noe
     return 0;
 }
 
-static int SecurityBaselineMmiSet_target(const char* data, std::size_t size) noexcept {
+static int SecurityBaselineMmiSet_target(const char* data, std::size_t size) noexcept
+{
     const char* prefix = reinterpret_cast<const char*>(std::memchr(data, '.', size));
     if (prefix == nullptr)
     {
@@ -81,15 +159,18 @@ static int SecurityBaselineMmiSet_target(const char* data, std::size_t size) noe
     return 0;
 }
 
-
 /**
  * @brief List of supported fuzzing targets
  *
  * The key is taken from the input data and is used to determine which target to call.
  */
 static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets = {
-    { "SecurityBaselineMmiGet.", SecurityBaselineMmiGet_target },
-    { "SecurityBaselineMmiSet.", SecurityBaselineMmiSet_target }
+    // { "SecurityBaselineMmiGet.", SecurityBaselineMmiGet_target },
+    // { "SecurityBaselineMmiSet.", SecurityBaselineMmiSet_target },
+    { "GetNumberOfLinesInFile.", GetNumberOfLinesInFile_target },
+    { "LoadStringFromFile.", LoadStringFromFile_target },
+    { "SavePayloadToFile.", SavePayloadToFile_target },
+    { "AppendPayloadToFile.", AppendPayloadToFile_target },
 };
 
 /**
