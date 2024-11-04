@@ -8,6 +8,8 @@
 #include <cstdlib>
 #include <string>
 #include <map>
+#include <stdexcept>
+#include <limits>
 
 #include <iostream>
 
@@ -20,6 +22,15 @@ static const int c_skip_input = -1;
  * @brief Tells libfuzzer the input was valid and may be used to create a new corpus input
  */
 static const int c_valid_input = 0;
+
+struct size_range
+{
+    std::size_t min = 1;
+    std::size_t max = std::numeric_limits<std::size_t>::max();
+
+    size_range() = default;
+    size_range(std::size_t min, std::size_t max) : min(min), max(max) {}
+};
 
 /**
  * @brief A class to keep a single static initialization of the SecurityBaseline library
@@ -81,6 +92,20 @@ public:
         return path;
     }
 
+    std::string extractVariant(const char*& data, std::size_t& size, size_range range = size_range{}) const noexcept
+    {
+        auto variant = std::string(data, size);
+        auto pos = variant.find('.');
+        if (pos == std::string::npos || pos < range.min || pos > range.max)
+        {
+            return {};
+        }
+
+        data += pos + 1;
+        size -= pos + 1;
+        return variant.substr(0, pos);
+    }
+
     void remove(const std::string& path) const noexcept
     {
         ::remove(path.c_str());
@@ -120,6 +145,132 @@ static int AppendPayloadToFile_target(const char* data, std::size_t size) noexce
     g_context.remove(filename);
     return 0;
 }
+
+static int SecureSaveToFile_target(const char* data, std::size_t size) noexcept
+{
+    auto filename = g_context.nextTempfileName();
+    SecureSaveToFile(filename.c_str(), data, size, nullptr);
+    g_context.remove(filename);
+    return 0;
+}
+
+static int AppendToFile_target(const char* data, std::size_t size) noexcept
+{
+    auto filename = g_context.makeTempfile(nullptr, 0);
+    AppendToFile(filename.c_str(), data, size, nullptr);
+    g_context.remove(filename);
+    return 0;
+}
+
+static int ReplaceMarkedLinesInFile_target(const char* data, std::size_t size) noexcept
+{
+    auto marker = g_context.extractVariant(data, size);
+    if (marker.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto newline = g_context.extractVariant(data, size);
+    if (newline.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto comment = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto filename = g_context.makeTempfile(data, size);
+    ReplaceMarkedLinesInFile(filename.c_str(), marker.c_str(), newline.c_str(), comment.at(0), true, nullptr);
+    g_context.remove(filename);
+    return 0;
+}
+
+static int CheckFileSystemMountingOption_target(const char* data, std::size_t size) noexcept
+{
+    auto mountDirectory = g_context.extractVariant(data, size);
+    if (mountDirectory.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto mountType = g_context.extractVariant(data, size);
+    if (mountType.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto desiredOption = g_context.extractVariant(data, size);
+    if (desiredOption.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto filename = g_context.makeTempfile(data, size);
+    char* reason = nullptr;
+    CheckFileSystemMountingOption(filename.c_str(), mountDirectory.c_str(), mountType.c_str(), desiredOption.c_str(), &reason, nullptr);
+    g_context.remove(filename);
+    free(reason);
+    return 0;
+}
+
+static int CharacterFoundInFile_target(const char* data, std::size_t size) noexcept
+{
+    auto what = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    if (what.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto filename = g_context.makeTempfile(data, size);
+    CharacterFoundInFile(filename.c_str(), what.at(0));
+    g_context.remove(filename);
+    return 0;
+}
+
+static int CheckNoLegacyPlusEntriesInFile_target(const char* data, std::size_t size) noexcept
+{
+    auto filename = g_context.makeTempfile(data, size);
+    char* reason = nullptr;
+    CheckNoLegacyPlusEntriesInFile(filename.c_str(), &reason, nullptr);
+    g_context.remove(filename);
+    free(reason);
+    return 0;
+}
+
+static int FindTextInFile_target(const char* data, std::size_t size) noexcept
+{
+    auto text = g_context.extractVariant(data, size);
+    if (text.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto filename = g_context.makeTempfile(data, size);
+    FindTextInFile(filename.c_str(), text.c_str(), nullptr);
+    g_context.remove(filename);
+    return 0;
+}
+
+static int CheckTextIsFoundInFile_target(const char* data, std::size_t size) noexcept
+{
+    auto text = g_context.extractVariant(data, size);
+    if (text.empty())
+    {
+        return c_skip_input;
+    }
+
+    auto filename = g_context.makeTempfile(data, size);
+    char* reason = nullptr;
+    CheckTextIsFoundInFile(filename.c_str(), text.c_str(), &reason, nullptr);
+    g_context.remove(filename);
+    free(reason);
+    return 0;
+}
+
+/* Skipping CheckTextIsNotFoundInFile due to similarity */
 
 static int SecurityBaselineMmiGet_target(const char* data, std::size_t size) noexcept
 {
@@ -171,6 +322,14 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "LoadStringFromFile.", LoadStringFromFile_target },
     { "SavePayloadToFile.", SavePayloadToFile_target },
     { "AppendPayloadToFile.", AppendPayloadToFile_target },
+    { "SecureSaveToFile.", SecureSaveToFile_target },
+    { "AppendToFile.", AppendToFile_target },
+    { "ReplaceMarkedLinesInFile.", ReplaceMarkedLinesInFile_target },
+    { "CheckFileSystemMountingOption.", CheckFileSystemMountingOption_target },
+    { "CharacterFoundInFile.", CharacterFoundInFile_target },
+    { "CheckNoLegacyPlusEntriesInFile.", CheckNoLegacyPlusEntriesInFile_target },
+    { "FindTextInFile.", FindTextInFile_target },
+    { "CheckTextIsFoundInFile.", CheckTextIsFoundInFile_target },
 };
 
 /**
