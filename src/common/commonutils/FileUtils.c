@@ -81,7 +81,7 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
             {
                 for (i = 0; i < payloadSizeBytes; i++)
                 {
-                    if (payload[i] != fputc(payload[i], file))
+                    if (payload[i] != (char)fputc(payload[i], file))
                     {
                         result = false;
                         OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
@@ -107,7 +107,7 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
     else
     {
         result = false;
-        OsConfigLogError(log, "SaveToFile: invalid arguments ('%s', '%s', '%s', %d)", fileName, mode, payload, payloadSizeBytes);
+        OsConfigLogError(log, "SaveToFile: invalid arguments ('%s', '%s', '%.*s', %d)", fileName, mode, payloadSizeBytes, payload, payloadSizeBytes);
     }
 
     return result;
@@ -118,23 +118,66 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
     return SaveToFile(fileName, "w", payload, payloadSizeBytes, log);
 }
 
-bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+bool FileEndsInEol(const char* fileName, void* log)
 {
-    char* fileContents = NULL;
+    struct stat statStruct = {0};
+    FILE* file = NULL;
+    char last = 0;
+    int status = 0;
     bool result = false;
 
+    if (NULL != (file = fopen(fileName, "r")))
+    {
+        if (0 == (status = stat(fileName, &statStruct)))
+        {
+            if (statStruct.st_size > 0)
+            {
+                if (0 == (status = fseek(file, -1, SEEK_END)))
+                {
+                    if (EOL == (last = fgetc(file)))
+                    {
+                        result = true;
+                    }
+                }
+                else
+                {
+                    OsConfigLogError(log, "FileEndsInEol: failed to seek to the end of '%s'", fileName);
+                }
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "FileEndsInEol: stat('%s') failed with %d (errno: %d)", fileName, status, errno);
+        }
+
+        fclose(file);
+    }
+    else
+    {
+        OsConfigLogError(log, "FileEndsInEol: failed to open '%s' for reading", fileName);
+    }
+
+    return result;
+}
+
+bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+{
+    bool result = false;
+
+    if ((NULL == fileName) || (NULL == payload) || (0 >= payloadSizeBytes))
+    {
+        OsConfigLogError(log, "AppendPayloadToFile: invalid arguments");
+        return result;
+    }
+
     // If the file exists and there is no EOL at the end of file, add one before the append
-    if ((NULL != payload) && (payloadSizeBytes > 0) && FileExists(fileName) && 
-        (NULL != (fileContents = LoadStringFromFile(fileName, false, log))) && 
-        (EOL != fileContents[strlen(fileContents) - 1]))
+    if (FileExists(fileName) && (false == FileEndsInEol(fileName, log)))
     {
         if (false == SaveToFile(fileName, "a", "\n", 1, log))
         {
             OsConfigLogError(log, "AppendPayloadToFile: failed to append EOL to '%s'", fileName);
         }
     }
-
-    FREE_MEMORY(fileContents);
 
     if (false == (result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log)))
     {
