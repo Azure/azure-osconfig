@@ -157,7 +157,7 @@ bool FileEndsInEol(const char* fileName, void* log)
         OsConfigLogError(log, "FileEndsInEol: failed to open '%s' for reading", fileName);
     }
 
-    return status;
+    return result;
 }
 
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
