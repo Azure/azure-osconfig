@@ -167,8 +167,6 @@ bool FileEndsInEol(const char* fileName, void* log)
 
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
-    char* fileContents = NULL;
-    int status = 0;
     bool result = false;
 
     if ((NULL == fileName) || (NULL == payload) || (0 >= payloadSizeBytes))
