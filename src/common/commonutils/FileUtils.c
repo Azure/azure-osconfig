@@ -81,7 +81,7 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
             {
                 for (i = 0; i < payloadSizeBytes; i++)
                 {
-                    if (payload[i] != fputc(payload[i], file))
+                    if (payload[i] != (char)fputc(payload[i], file))
                     {
                         result = false;
                         OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
@@ -107,7 +107,7 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
     else
     {
         result = false;
-        OsConfigLogError(log, "SaveToFile: invalid arguments ('%s', '%s', '%s', %d)", fileName, mode, payload, payloadSizeBytes);
+        OsConfigLogError(log, "SaveToFile: invalid arguments ('%s', '%s', '%.*s', %d)", fileName, mode, payloadSizeBytes, payload, payloadSizeBytes);
     }
 
     return result;
