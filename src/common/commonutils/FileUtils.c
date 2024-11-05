@@ -142,6 +142,7 @@ bool FileEndsInEol(const char* fileName, void* log)
                     if (EOL == (last = fgetc(file)))
                     {
                         result = true;
+                        OsConfigLogInfo(log, "FileEndsInEol: file '%s' ends in EOL", fileName);
                     }
                 }
                 else
@@ -161,6 +162,8 @@ bool FileEndsInEol(const char* fileName, void* log)
     {
         OsConfigLogError(log, "FileEndsInEol: failed to open '%s' for reading", fileName);
     }
+
+    OsConfigLogInfo(log, "FileEndsInEol: file '%s' %s in EOL", fileName, result ? "ends" : "does not end");
 
     return result;
 }
