@@ -118,18 +118,13 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
     return SaveToFile(fileName, "w", payload, payloadSizeBytes, log);
 }
 
-bool FileEndsInEol(const char* fileName, void* log)
+int FileEndsInEol(const char* fileName, void* log)
 {
     struct stat statStruct = {0};
     FILE* file = NULL;
     char last = 0;
     int status = 0;
     bool result = false;
-
-    if (false == FileExists(fileName))
-    {
-        return result;
-    }
 
     if (NULL != (file = fopen(fileName, "r")))
     {
@@ -162,7 +157,7 @@ bool FileEndsInEol(const char* fileName, void* log)
         OsConfigLogError(log, "FileEndsInEol: failed to open '%s' for reading", fileName);
     }
 
-    return result;
+    return status;
 }
 
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
@@ -176,7 +171,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
     }
 
     // If the file exists and there is no EOL at the end of file, add one before the append
-    if (false == FileEndsInEol(fileName, log))
+    if (FileExists(fileName) && (false == FileEndsInEol(fileName, log)))
     {
         if (false == SaveToFile(fileName, "a", "\n", 1, log))
         {
