@@ -137,9 +137,9 @@ bool FileEndsInEol(const char* fileName, void* log)
         {
             if (statStruct.st_size > 0)
             {
-                if (0 == (status = fseek(existingFile, -1, SEEK_END)))
+                if (0 == (status = fseek(file, -1, SEEK_END)))
                 {
-                    if (EOL == (last = fgetc(existingFile)))
+                    if (EOL == (last = fgetc(file)))
                     {
                         result = true;
                     }
