@@ -142,7 +142,6 @@ bool FileEndsInEol(const char* fileName, void* log)
                     if (EOL == (last = fgetc(file)))
                     {
                         result = true;
-                        OsConfigLogInfo(log, "FileEndsInEol: file '%s' ends in EOL", fileName);
                     }
                 }
                 else
@@ -163,8 +162,6 @@ bool FileEndsInEol(const char* fileName, void* log)
         OsConfigLogError(log, "FileEndsInEol: failed to open '%s' for reading", fileName);
     }
 
-    OsConfigLogInfo(log, "FileEndsInEol: file '%s' %s in EOL", fileName, result ? "ends" : "does not end");
-
     return result;
 }
 
@@ -179,7 +176,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
     }
 
     // If the file exists and there is no EOL at the end of file, add one before the append
-    if (true == FileEndsInEol(fileName, log))
+    if (false == FileEndsInEol(fileName, log))
     {
         if (false == SaveToFile(fileName, "a", "\n", 1, log))
         {
