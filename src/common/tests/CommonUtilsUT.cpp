@@ -183,6 +183,28 @@ TEST_F(CommonUtilsTest, SecureSaveToFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
+TEST_F(CommonUtilsTest, FileEndsInEol)
+{
+    const char* eol = "A line of text\nAnother line of text\n";
+    const char* doubleEol = "A line of text\nAnother line of text\n\n";
+    const char* noEol = "A line of text\nAnother line of text";
+
+    EXPECT_EQ(false, FileEndsInEol(nullptr, nullptr));
+    EXPECT_EQ(false, FileEndsInEol("does_not_exist", nullptr));
+
+    EXPECT_TRUE(SavePayloadToFile(m_path, eol, strlen(eol), nullptr));
+    EXPECT_EQ(true, FileEndsInEol(m_path, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+
+    EXPECT_TRUE(SavePayloadToFile(m_path, doubleEol, strlen(doubleEol), nullptr));
+    EXPECT_EQ(true, FileEndsInEol(m_path, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+
+    EXPECT_TRUE(SavePayloadToFile(m_path, noEol, strlen(noEol), nullptr));
+    EXPECT_EQ(false, FileEndsInEol(m_path, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
 TEST_F(CommonUtilsTest, AppendToFile)
 {
     const char* original = "First line of text\n";
