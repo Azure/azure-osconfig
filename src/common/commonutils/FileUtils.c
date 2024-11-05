@@ -81,7 +81,7 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
             {
                 for (i = 0; i < payloadSizeBytes; i++)
                 {
-                    if ((unsigned char)payload[i] != fputc(payload[i], file))
+                    if (payload[i] != fputc(payload[i], file))
                     {
                         result = false;
                         OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
@@ -107,7 +107,7 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
     else
     {
         result = false;
-        OsConfigLogError(log, "SaveToFile: invalid arguments ('%s', '%s', '%.*s', %d)", fileName, mode, payloadSizeBytes, payload, payloadSizeBytes);
+        OsConfigLogError(log, "SaveToFile: invalid arguments ('%s', '%s', '%s', %d)", fileName, mode, payload, payloadSizeBytes);
     }
 
     return result;
@@ -120,52 +120,25 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
 bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
 {
-    FILE* existingFile = NULL;
-    struct stat st;
+    char* fileContents = NULL;
     bool result = false;
-    char lastCharacter = EOF;
 
-    if(NULL == fileName || NULL == payload || 0 == payloadSizeBytes)
+    // If the file exists and there is no EOL at the end of file, add one before the append
+    if ((NULL != payload) && (payloadSizeBytes > 0) && FileExists(fileName) && 
+        (NULL != (fileContents = LoadStringFromFile(fileName, false, log))) && 
+        (EOL != fileContents[strlen(fileContents) - 1]))
     {
-        OsConfigLogError(log, "AppendPayloadToFile: invalid arguments");
-        return false;
+        if (false == SaveToFile(fileName, "a", "\n", 1, log))
+        {
+            OsConfigLogError(log, "AppendPayloadToFile: failed to append EOL to '%s'", fileName);
+        }
     }
 
-    /* If the file exists and there is no EOL at the end of file, add one before the append. */
-    if (stat(fileName, &st) == 0 && st.st_size > 0)
-    {
-        if (NULL == (existingFile = fopen(fileName, "r")))
-        {
-            OsConfigLogError(log, "AppendPayloadToFile: failed to open '%s' for reading", fileName);
-            return false;
-        }
-
-        if (fseek(existingFile, -1, SEEK_END) != 0)
-        {
-            OsConfigLogError(log, "AppendPayloadToFile: failed to seek to the end of '%s'", fileName);
-            fclose(existingFile);
-            return false;
-        }
-
-        lastCharacter = fgetc(existingFile);
-        fclose(existingFile);
-        if (EOL != lastCharacter)
-        {
-            /*
-             * Potentially we could just write this byte here using existingFile handle, but the function does some other magic.
-             * Leaving to reduce logic changes.
-             */
-            if (false == SaveToFile(fileName, "a", "\n", 1, log))
-            {
-                OsConfigLogError(log, "AppendPayloadToFile: failed to append EOL to '%s'", fileName);
-                return false;
-            }
-        }
-    }
+    FREE_MEMORY(fileContents);
 
     if (false == (result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log)))
     {
-        OsConfigLogError(log, "AppendPayloadToFile: failed to append '%.*s' to '%s'", payloadSizeBytes, payload, fileName);
+        OsConfigLogError(log, "AppendPayloadToFile: failed to append '%s' to '%s'", payload, fileName);
     }
 
     return result;
