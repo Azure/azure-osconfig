@@ -118,7 +118,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
     return SaveToFile(fileName, "w", payload, payloadSizeBytes, log);
 }
 
-int FileEndsInEol(const char* fileName, void* log)
+bool FileEndsInEol(const char* fileName, void* log)
 {
     struct stat statStruct = {0};
     FILE* file = NULL;
