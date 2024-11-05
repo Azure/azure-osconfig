@@ -133,7 +133,7 @@ bool FileEndsInEol(const char* fileName, void* log)
 
     if (NULL != (file = fopen(fileName, "r")))
     {
-        if (0 == (status = stat(fileName, &statStruct))
+        if (0 == (status = stat(fileName, &statStruct)))
         {
             if (statStruct.st_size > 0)
             {
