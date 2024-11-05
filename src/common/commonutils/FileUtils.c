@@ -120,6 +120,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
 bool FileEndsInEol(const char* fileName, void* log)
 {
+    struct stat statStruct = {0};
     FILE* file = NULL;
     char last = 0;
     int status = 0;
@@ -130,11 +131,11 @@ bool FileEndsInEol(const char* fileName, void* log)
         return result;
     }
 
-    if (NULL != file = fopen(fileName, "r"))
+    if (NULL != (file = fopen(fileName, "r")))
     {
-        if (0 == (status = stat(fileName, &st))
+        if (0 == (status = stat(fileName, &statStruct))
         {
-            if (st.st_size > 0)
+            if (statStruct.st_size > 0)
             {
                 if (0 == (status = fseek(existingFile, -1, SEEK_END)))
                 {
