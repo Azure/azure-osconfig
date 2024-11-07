@@ -89,10 +89,13 @@ jobs:
           EOL
           )"
           else
-          policyPackages=$(echo '${{ inputs.policyPackageList }}' | jq -R)
+          policyPackages="$(cat <<'EOL'
+          ${{ inputs.policyPackageList }}
+          EOL
+          )"
           fi
 
-          matrix="$(echo $matrix | jq --argjson policyPackages "$(echo '$policyPackages' | jq -r 'fromjson')" '.["policy-package"] += $policyPackages')"
+          matrix="$(echo $matrix | jq --argjson policyPackages "$policyPackages" '.["policy-package"] += $policyPackages')"
           echo matrix=$matrix >> $GITHUB_OUTPUT
 
   test:
@@ -107,7 +110,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v4
-        if: ${{ inputs.policy-package-url == '' }}
+        if: ${{ inputs.policyPackageList == '[]' }}
         id: download
         with:
           name: nrp-test-package
@@ -119,10 +122,10 @@ jobs:
           output=${{ matrix.target.os }}-${{ matrix.target.version }}_${{ matrix.policy-package.short-name }}-${{ matrix.mode }}
           echo name=${output} >> $GITHUB_OUTPUT
           # Get the Policy Package URL
-          if ["${{ inputs.policy-package-url }}" == ""]; then
+          if ["${{ inputs.policyPackageList }}" == "[]"]; then
               echo PolicyPackagePath=${{ steps.package.outputs.artifact-url }} >> $GITHUB_OUTPUT
           else
-              wget -O PolicyPackage.zip ${{ inputs.policy-package-url }}
+              wget -O PolicyPackage.zip ${{ matrix.policy-package.policy-package-url }}
               echo PolicyPackagePath=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
           fi
 
