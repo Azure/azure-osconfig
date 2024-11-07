@@ -89,8 +89,7 @@ jobs:
           EOL
           )"
           else
-          escapedJSON=$(echo '${{ inputs.policyPackageList }}' | jq -R)
-          policyPackages=$escapedJSON
+          policyPackages=$(echo '${{ inputs.policyPackageList }}' | jq -r 'fromjson')
           fi
 
           matrix="$(echo $matrix | jq --argjson policyPackages "$policyPackages" '.["policy-package"] += $policyPackages')"
