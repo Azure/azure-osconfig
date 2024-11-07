@@ -92,7 +92,7 @@ jobs:
           policyPackages="${{ inputs.policyPackageList }}"
           fi
 
-          # matrix="$(echo $matrix | jq --argjson policyPackages "$policyPackages" '.["policy-package"] += $policyPackages')"
+          matrix="$(echo $matrix | jq --argjson policyPackages "$policyPackages" '.["policy-package"] += $policyPackages')"
           echo matrix=$matrix >> $GITHUB_OUTPUT
 
   test:
