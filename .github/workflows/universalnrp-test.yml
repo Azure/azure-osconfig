@@ -89,7 +89,7 @@ jobs:
           EOL
           )"
           else
-          escapedJSON=$(echo "${{ inputs.policyPackageList }}" | jq -R)
+          escapedJSON=$(echo '${{ inputs.policyPackageList }}' | jq -R)
           policyPackages=$escapedJSON
           fi
 
