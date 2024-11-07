@@ -178,8 +178,8 @@ void RemovePrefixUpToString(char* target, const char* marker);
 void RemoveTrailingBlanks(char* target);
 void TruncateAtFirst(char* target, char marker);
 
-char* UrlEncode(char* target);
-char* UrlDecode(char* target);
+char* UrlEncode(const char* target);
+char* UrlDecode(const char* target);
 
 bool LockFile(FILE* file, void* log);
 bool UnlockFile(FILE* file, void* log);

@@ -3,7 +3,7 @@
 
 #include "Internal.h"
 
-char* UrlEncode(char* target)
+char* UrlEncode(const char* target)
 {
     if (NULL == target)
     {
@@ -41,7 +41,7 @@ char* UrlEncode(char* target)
     return encodedTarget;
 }
 
-char* UrlDecode(char* target)
+char* UrlDecode(const char* target)
 {
     int i = 0, j = 0;
     char buffer[3] = {0};
