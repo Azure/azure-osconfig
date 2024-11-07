@@ -3,19 +3,23 @@ name: Universal NRP Test
 on:
   workflow_dispatch:
     inputs:
-      policy-package-url:
-        description: 'Policy Package URL to test'
+      # policy-package-url:
+      #   description: 'Policy Package URL to test'
+      #   required: false
+      #   default: ''
+      # policy-package-short-name:
+      #   description: 'Policy Package short name'
+      #   required: false
+      #   default: 'PolicyPackage'
+      # resource-count:
+      #   description: 'Number of policies to test'
+      #   required: true
+      #   type: number
+      #   default: 0
+      policyPackageList:
+        description: 'List of policy packages to test'
         required: false
-        default: ''
-      policy-package-short-name:
-        description: 'Policy Package short name'
-        required: false
-        default: 'PolicyPackage'
-      resource-count:
-        description: 'Number of policies to test'
-        required: true
-        type: number
-        default: 0
+        default: '[]'
   pull_request:
   schedule:
     - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
@@ -23,7 +27,7 @@ on:
 jobs:
   package:
     name: Package
-    if: ${{ inputs.policy-package-url == '' }}
+    if: ${{ inputs.policyPackageList == '[]' }}
     uses: ./.github/workflows/package-build.yml
     strategy:
       matrix:
@@ -76,7 +80,7 @@ jobs:
           EOL
           )"
 
-          if [[ '${{ inputs.policy-package-url }}' == "" ]]; then
+          if [[ '${{ inputs.policyPackageList }}' == "[]" ]]; then
           policyPackages="$(cat <<'EOL'
           [
             { "name": "LinuxSshServerSecurityBaseline", "short-name": "SSH", "resource-count": 20 },
@@ -85,15 +89,10 @@ jobs:
           EOL
           )"
           else
-          policyPackages="$(cat <<'EOL'
-          [
-            { "name": "PolicyPackage", "short-name": "PolicyPackage", "resource-count": ${{ inputs.resource-count }} }
-          ]
-          EOL
-          )"
+          policyPackages="${{ inputs.policyPackageList }}"
           fi
 
-          matrix="$(echo $matrix | jq --argjson policyPackages "$policyPackages" '.["policy-package"] += $policyPackages')"
+          # matrix="$(echo $matrix | jq --argjson policyPackages "$policyPackages" '.["policy-package"] += $policyPackages')"
           echo matrix=$matrix >> $GITHUB_OUTPUT
 
   test:
