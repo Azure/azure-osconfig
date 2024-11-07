@@ -122,39 +122,38 @@ bool FileEndsInEol(const char* fileName, void* log)
 {
     struct stat statStruct = {0};
     FILE* file = NULL;
-    char last = 0;
     int status = 0;
     bool result = false;
 
-    if (NULL != (file = fopen(fileName, "r")))
+    if (0 == (status = stat(fileName, &statStruct)))
     {
-        if (0 == (status = stat(fileName, &statStruct)))
+        if (statStruct.st_size > 0)
         {
-            if (statStruct.st_size > 0)
+            if (NULL != (file = fopen(fileName, "r")))
             {
                 if (0 == (status = fseek(file, -1, SEEK_END)))
                 {
-                    if (EOL == (last = fgetc(file)))
+                    if (EOL == fgetc(file))
                     {
                         result = true;
                     }
                 }
                 else
                 {
-                    OsConfigLogError(log, "FileEndsInEol: failed to seek to the end of '%s'", fileName);
+                    OsConfigLogError(log, "FileEndsInEol: fseek failed with %d (errno: %d)", fileName, status, errno);
                 }
+
+                fclose(file);
+            }
+            else
+            {
+                OsConfigLogError(log, "FileEndsInEol: failed to open '%s' for reading", fileName);
             }
         }
-        else
-        {
-            OsConfigLogError(log, "FileEndsInEol: stat('%s') failed with %d (errno: %d)", fileName, status, errno);
-        }
-
-        fclose(file);
     }
     else
     {
-        OsConfigLogError(log, "FileEndsInEol: failed to open '%s' for reading", fileName);
+        OsConfigLogError(log, "FileEndsInEol: stat('%s') failed with %d (errno: %d)", fileName, status, errno);
     }
 
     return result;
@@ -170,7 +169,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
         return result;
     }
 
-    // If the file exists and there is no EOL at the end of file, add one before the append
+    // If the file exists and there is no EOL at the end of file, try to add one before the append
     if (FileExists(fileName) && (false == FileEndsInEol(fileName, log)))
     {
         if (false == SaveToFile(fileName, "a", "\n", 1, log))
@@ -181,7 +180,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
 
     if (false == (result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log)))
     {
-        OsConfigLogError(log, "AppendPayloadToFile: failed to append '%s' to '%s'", payload, fileName);
+        OsConfigLogError(log, "AppendPayloadToFile: failed to append '%.*s' to '%s'", payloadSizeBytes, payload, fileName);
     }
 
     return result;
@@ -1680,7 +1679,7 @@ int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char
 char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
 {
     char* found = NULL;
-    char* internal = NULL;
+    char* temp = NULL;
     char* result = NULL;
     
     if ((NULL == buffer) || (NULL == option))
@@ -1689,11 +1688,11 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
         return result;
     }
 
-    if (NULL == (internal = DuplicateString(buffer)))
+    if (NULL == (temp = DuplicateString(buffer)))
     {
         OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate buffer string failed (%d)", errno);
     }
-    else if (NULL != (found = strstr(internal, option)))
+    else if (NULL != (found = strstr(temp, option)))
     {
         RemovePrefixUpTo(found, separator);
         RemovePrefixBlanks(found);
@@ -1709,7 +1708,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
         }
     }
 
-    FREE_MEMORY(internal);
+    FREE_MEMORY(temp);
     return result;
 }
 

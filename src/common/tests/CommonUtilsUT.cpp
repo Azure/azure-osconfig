@@ -205,6 +205,29 @@ TEST_F(CommonUtilsTest, FileEndsInEol)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
+TEST_F(CommonUtilsTest, SingleByteFileEndsInEol)
+{
+    const char* eol = "\n";
+    const char* noEol = "0";
+    char* contents = NULL;
+    
+    EXPECT_TRUE(CreateTestFile(m_path, eol));
+    EXPECT_EQ(true, FileEndsInEol(m_path, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+
+    EXPECT_TRUE(CreateTestFile(m_path, noEol));
+    EXPECT_EQ(false, FileEndsInEol(m_path, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, ZeroLengthFileEndsInEol)
+{
+    int fd = -1;
+    EXPECT_NE(-1, fd = open(m_path, O_CREAT | O_WRONLY, 0644));
+    EXPECT_EQ(false, FileEndsInEol(m_path, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
 TEST_F(CommonUtilsTest, AppendToFile)
 {
     const char* original = "First line of text\n";
