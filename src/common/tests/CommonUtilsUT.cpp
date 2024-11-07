@@ -209,7 +209,6 @@ TEST_F(CommonUtilsTest, SingleByteFileEndsInEol)
 {
     const char* eol = "\n";
     const char* noEol = "0";
-    char* contents = NULL;
     
     EXPECT_TRUE(CreateTestFile(m_path, eol));
     EXPECT_EQ(true, FileEndsInEol(m_path, nullptr));
