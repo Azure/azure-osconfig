@@ -140,7 +140,7 @@ bool FileEndsInEol(const char* fileName, void* log)
                 }
                 else
                 {
-                    OsConfigLogError(log, "FileEndsInEol: fseek failed with %d (errno: %d)", fileName, status, errno);
+                    OsConfigLogError(log, "FileEndsInEol: fseek to end of '%s' failed with %d (errno: %d)", fileName, status, errno);
                 }
 
                 fclose(file);
