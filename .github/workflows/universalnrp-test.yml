@@ -89,10 +89,10 @@ jobs:
           EOL
           )"
           else
-          policyPackages=$(echo '${{ inputs.policyPackageList }}' | jq -r 'fromjson')
+          policyPackages=$(echo '${{ inputs.policyPackageList }}' | jq -R)
           fi
 
-          matrix="$(echo $matrix | jq --argjson policyPackages "$policyPackages" '.["policy-package"] += $policyPackages')"
+          matrix="$(echo $matrix | jq --argjson policyPackages "$(echo '$policyPackages' | jq -r 'fromjson')" '.["policy-package"] += $policyPackages')"
           echo matrix=$matrix >> $GITHUB_OUTPUT
 
   test:
