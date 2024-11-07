@@ -5,16 +5,20 @@
 
 char* UrlEncode(const char* target)
 {
+    int i = 0, j = 0;
+    int targetLength = 0;
+    int encodedLength = 0;
+    char* encodedTarget = NULL;
+
     if (NULL == target)
     {
         return NULL;
     }
 
-    int i = 0, j = 0;
-    int targetLength = (int)strlen(target);
-    int encodedLength = (3 * targetLength) + 1;
-    char* encodedTarget = (char*)malloc(encodedLength);
-    if (NULL != encodedTarget)
+    targetLength = (int)strlen(target);
+    encodedLength = (3 * targetLength) + 1;
+
+    if (NULL != (encodedTarget = (char*)malloc(encodedLength)))
     {
         memset(encodedTarget, 0, encodedLength);
 
@@ -32,7 +36,7 @@ char* UrlEncode(const char* target)
             }
             else
             {
-                sprintf(&encodedTarget[j], "%%%02X", target[i]);
+                snprintf(&encodedTarget[j], encodedLength - j, "%%%02X", target[i]);
                 j += strlen(&encodedTarget[j]);
             }
         }
@@ -81,7 +85,7 @@ char* UrlDecode(const char* target)
                     buffer[2] = 0;
                     
                     sscanf(buffer, "%x", &value);
-                    sprintf(&decodedTarget[i], "%c", value);
+                    snprintf(&decodedTarget[i], targetLength - i, "%c", value);
                 }
                 
                 j += sizeof(buffer);
