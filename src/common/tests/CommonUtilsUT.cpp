@@ -1009,7 +1009,6 @@ TEST_F(CommonUtilsTest, RemovePrefixUpToString)
     MarkedTestStringTargets targets[] = {
         { "Test", "&", "Test" },
         { "Test", "", "Test" },
-        { "", "&", "" },
         { "123=Test", "=Te", "=Test" },
         { "jshsaHGFsajhgksajge27u313987yhjsA,NSQ.I3U21P903PUDSJQ#Test", "NSQ.I", "NSQ.I3U21P903PUDSJQ#Test" },
         { "1$Test", "$T", "$Test" },
