@@ -3,6 +3,34 @@
 
 #include "Internal.h"
 
+#define MAX_URL_LENGTH 2048
+
+static bool IsValidUrlCharacter(char c)
+{
+    return (isalnum(c) || ('-' == c) || ('_' == c) || ('.' == c) || ('~' == c) || ('%' == c)) ? true : false;
+}
+
+bool IsValidUrl(const char *url)
+{
+    size_t length = 0, i = 0;
+    bool result = true;
+
+    if ((NULL == url) || (0 >= (length = strnlen(url, MAX_URL_LENGTH))))
+    {
+        return false;
+    }
+
+    for (i = 0; i < length; i++)
+    {
+        if (false == IsValidUrlCharacter(url[i]))
+        {
+            result = false;
+        }
+    }
+    
+    return result;
+}
+
 char* UrlEncode(const char* target)
 {
     size_t targetLength = 0, i = 0, j = 0;

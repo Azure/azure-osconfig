@@ -1092,6 +1092,7 @@ TEST_F(CommonUtilsTest, UrlEncodeDecode)
     {
         EXPECT_NE(nullptr, url = UrlEncode((char*)testUrls[i].decoded));
         EXPECT_STREQ(url, testUrls[i].encoded);
+        EXPECT_TRUE(IsValidUrl(url));
         FREE_MEMORY(url);
 
         EXPECT_NE(nullptr, url = UrlDecode((char*)testUrls[i].encoded));
@@ -1101,6 +1102,10 @@ TEST_F(CommonUtilsTest, UrlEncodeDecode)
 
     EXPECT_EQ(nullptr, url = UrlEncode(nullptr));
     EXPECT_EQ(nullptr, url = UrlDecode(nullptr));
+    
+    EXPECT_FALSE(IsValidUrl(nullptr));
+    EXPECT_FALSE(IsValidUrl(""));
+    EXPECT_FALSE(IsValidUrl("Test = 123"));
 }
 
 TEST_F(CommonUtilsTest, LockUnlockFile)
