@@ -35,14 +35,14 @@ void RemovePrefixUpTo(char* target, char marker)
     size_t targetLength = 0;
     char* equalSign = NULL;
     
-    if ((NULL == target) || (0 == (length = strnlen(target, MAX_STRING_LENGTH))))
+    if ((NULL == target) || (0 == (targetLength = strnlen(target, MAX_STRING_LENGTH))))
     {
         return;
     }
     
-    if (NULL != (equalSign = strchr(target, marker)))
+    if ((NULL != (equalSign = strchr(target, marker))) && 
+        (0 < (targetLength = strnlen(equalSign + 1, MAX_STRING_LENGTH))))
     {
-        targetLength = strnlen(equalSign + 1, MAX_STRING_LENGTH);
         memmove(target, equalSign + 1, targetLength);
         target[targetLength] = 0;
     }
