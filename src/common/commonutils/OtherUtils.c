@@ -8,7 +8,7 @@ char* DuplicateString(const char* source)
     size_t length = 0;
     char* duplicate = NULL;
 
-    if ((NULL == source) || (0 == (length = strnlen(source, MAX_STRING_LENGTH))))
+    if ((NULL == source) || (0 >= (length = strnlen(source, MAX_STRING_LENGTH))))
     {
         return duplicate;
     }

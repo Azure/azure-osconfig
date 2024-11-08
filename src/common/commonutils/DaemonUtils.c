@@ -14,7 +14,7 @@ bool IsValidDaemonName(const char *name)
     {
         for (i = 0; i < length; i++) 
         {
-            if ((0 == isalnum(name[i])) && ('_' != name[i]) && ('-' != name[i]))
+            if ((0 == isalnum(name[i])) && ('_' != name[i]) && ('-' != name[i]) && ('.' != name[i]))
             {
                 result = false;
                 break;
