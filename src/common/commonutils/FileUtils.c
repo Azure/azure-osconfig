@@ -1200,7 +1200,7 @@ int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** rea
 
 static bool IsValidGrepCharacter(char text)
 {
-    return ((0 == isalnum(text)) && ('_' != text) && ('-' != text) && ('.' != text)) ? false : true;
+    return ((0 == isalnum(text)) && ('_' != text) && ('-' != text) && ('.' != text) && ('~' != text) && ('#' != text) && ('!' != text)) ? false : true;
 }
 
 static bool IsValidGrepArgument(const char* text)
