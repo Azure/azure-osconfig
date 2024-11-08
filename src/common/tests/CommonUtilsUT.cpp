@@ -995,9 +995,6 @@ TEST_F(CommonUtilsTest, RemovePrefixUpTo)
         EXPECT_STREQ(testString, expected);
         FREE_MEMORY(testString);
     }
-
-    RemovePrefixUpTo("", '!');
-    EXPECT_STREQ("", "");
 }
 
 struct MarkedTestStringTargets
@@ -1011,6 +1008,8 @@ TEST_F(CommonUtilsTest, RemovePrefixUpToString)
 {
     MarkedTestStringTargets targets[] = {
         { "Test", "&", "Test" },
+        { "Test", "", "Test" },
+        { "", "&", "" },
         { "123=Test", "=Te", "=Test" },
         { "jshsaHGFsajhgksajge27u313987yhjsA,NSQ.I3U21P903PUDSJQ#Test", "NSQ.I", "NSQ.I3U21P903PUDSJQ#Test" },
         { "1$Test", "$T", "$Test" },
@@ -1030,9 +1029,6 @@ TEST_F(CommonUtilsTest, RemovePrefixUpToString)
         EXPECT_STREQ(testString, targets[i].expected);
         FREE_MEMORY(testString);
     }
-
-    RemovePrefixUpToString("", "!");
-    EXPECT_STREQ("", "");
 }
 
 TEST_F(CommonUtilsTest, TruncateAtFirst)
