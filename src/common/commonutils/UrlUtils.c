@@ -5,18 +5,16 @@
 
 char* UrlEncode(const char* target)
 {
-    int i = 0, j = 0;
-    int targetLength = 0;
+    size_t targetLength = 0, i = 0, j = 0;
     int encodedLength = 0;
     char* encodedTarget = NULL;
 
-    if (NULL == target)
+    if ((NULL == target) || (0 >= (targetLength = strnlen(target, MAX_STRING_LENGTH))))
     {
         return NULL;
     }
 
-    targetLength = (int)strlen(target);
-    encodedLength = (3 * targetLength) + 1;
+    encodedLength = (3 * targetLength) + 3;
 
     if (NULL != (encodedTarget = (char*)malloc(encodedLength)))
     {
@@ -24,7 +22,7 @@ char* UrlEncode(const char* target)
 
         for (i = 0; i < targetLength; i++)
         {
-            if ((isalnum(target[i])) || ('-' == target[i]) || ('_' == target[i]) || ('.' == target[i]) || ('~' == target[i]))
+            if (isalnum(target[i]) || ('-' == target[i]) || ('_' == target[i]) || ('.' == target[i]) || ('~' == target[i]))
             {
                 encodedTarget[j] = target[i];
                 j += 1;
@@ -47,24 +45,21 @@ char* UrlEncode(const char* target)
 
 char* UrlDecode(const char* target)
 {
-    int i = 0, j = 0;
+    size_t targetLength = 0, i = 0, j = 0;
     char buffer[3] = {0};
     unsigned int value = 0;
-    int targetLength = 0;
     char* decodedTarget = NULL;
 
-    if (NULL == target)
+    if ((NULL == target) || (0 >= (targetLength = strnlen(target, MAX_STRING_LENGTH))))
     {
         return NULL;
     }
 
-    targetLength = (int)strlen(target);
-    
     // The length of the decoded string is the same as the length of the encoded string or smaller
-    decodedTarget = (char*)malloc(targetLength + 1);
+    decodedTarget = (char*)malloc(targetLength + 3);
     if (NULL != decodedTarget)
     {
-        memset(decodedTarget, 0, targetLength + 1);
+        memset(decodedTarget, 0, targetLength + 3);
 
         for (i = 0, j = 0; (i < targetLength) && (j < targetLength); i++)
         {
