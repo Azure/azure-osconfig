@@ -2389,12 +2389,12 @@ TEST_F(CommonUtilsTest, IsValidDaemonName)
 
     int i = 0;
 
-    for (i = 0; i < goodNames; i++)
+    for (i = 0; i < goodNamesSize; i++)
     {
         EXPECT_TRUE(IsValidDaemonName(goodNames[i]));
     }
 
-    for (i = 0; i < badNames; i++)
+    for (i = 0; i < badNamesSize; i++)
     {
         EXPECT_FALSE(IsValidDaemonName(badNames[i]));
     }
