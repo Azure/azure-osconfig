@@ -1297,7 +1297,7 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
     bool foundText = false;
     int status = 0;
 
-    if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text)))
+    if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text) || (false == IsValidDaemonName(variableName))))
     {
         OsConfigLogError(log, "CheckTextNotFoundInEnvironmentVariable called with invalid arguments");
         return EINVAL;
