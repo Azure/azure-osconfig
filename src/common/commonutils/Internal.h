@@ -40,4 +40,6 @@
 
 #define INT_ENOENT -999
 
+#define MAX_STRING_LENGTH 512
+
 #endif // INTERNAL_H
