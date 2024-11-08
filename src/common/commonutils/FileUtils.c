@@ -1198,14 +1198,9 @@ int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** rea
     return result;
 }
 
-static bool IsValidFileNameCharacter(char text)
-{
-    return ((0 == isalnum(text)) && ('_' != text) && ('-' != text) && ('.' != text) && ('~' != text) && ('/' != text)) ? false : true;
-}
-
 static bool IsValidGrepCharacter(char text)
 {
-    return ((0 == isalnum(text)) && ('_' != text) && ('-' != text) && ('.' != text) && ('~' != text) && ('#' != text) && ('!' != text)) ? false : true;
+    return ((0 == isalnum(text)) && ('_' != text) && ('-' != text) && ('.' != text)) ? false : true;
 }
 
 static bool IsValidGrepArgument(const char* text)
@@ -1229,27 +1224,6 @@ static bool IsValidGrepArgument(const char* text)
     return result;
 }
 
-static bool IsValidFileName(const char* text)
-{
-    size_t length = 0, i = 0;
-    bool result = true;
-
-    if ((NULL == text) || (0 >= (length = strnlen(text, MAX_STRING_LENGTH))))
-    {
-        return false;
-    }
-
-    for (i = 0; i < length; i++)
-    {
-        if (false == (result = IsValidFileNameCharacter(text[i])))
-        {
-            break;
-        }
-    }
-
-    return result;
-}
-
 int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, void* log)
 {
     const char* commandTemplate = "grep -v '^%c' %s | grep %s";
@@ -1261,8 +1235,7 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
     int status = 0;
 
     if ((!FileExists(fileName)) || (NULL == text) || (NULL == marker) || (0 == strlen(text)) || (0 == strlen(marker)) || 
-        (false == IsValidGrepArgument(text)) || (false == IsValidFileName(fileName)) || 
-        (false == IsValidGrepArgument(marker)) || (false == IsValidGrepCharacter(commentCharacter)))
+        (false == IsValidGrepArgument(text)) || (false == IsValidGrepCharacter(commentCharacter)))
     {
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile called with invalid arguments");
         return EINVAL;
