@@ -1235,7 +1235,7 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
     int status = 0;
 
     if ((!FileExists(fileName)) || (NULL == text) || (NULL == marker) || (0 == strlen(text)) || (0 == strlen(marker)) || 
-        (false == IsValidGrepArgument(text)) || (false == IsValidGrepCharacter(commentCharacter)))
+        (false == IsValidGrepArgument(text)) || ('#' != commentCharacter)))
     {
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile called with invalid arguments");
         return EINVAL;
