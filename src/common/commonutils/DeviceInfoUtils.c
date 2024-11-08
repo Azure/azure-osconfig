@@ -32,17 +32,17 @@ void RemovePrefixBlanks(char* target)
 
 void RemovePrefixUpTo(char* target, char marker)
 {
-    if (NULL == target)
+    size_t targetLength = 0;
+    char* equalSign = NULL;
+    
+    if ((NULL == target) || (0 == (length = strnlen(target, MAX_STRING_LENGTH))))
     {
         return;
     }
-
-    int targetLength =(int)strlen(target);
-    char* equalSign = strchr(target, marker);
-
-    if (equalSign)
+    
+    if (NULL != (equalSign = strchr(target, marker)))
     {
-        targetLength = strlen(equalSign + 1);
+        targetLength = strnlen(equalSign + 1, MAX_STRING_LENGTH);
         memmove(target, equalSign + 1, targetLength);
         target[targetLength] = 0;
     }
@@ -50,17 +50,17 @@ void RemovePrefixUpTo(char* target, char marker)
 
 void RemovePrefixUpToString(char* target, const char* marker)
 {
+    size_t targetLength = 0;
+    char* equalSign = NULL;
+    
     if ((NULL == target) || (NULL == marker))
     {
         return;
     }
 
-    int targetLength = 0;
-    char* equalSign = strstr(target, marker);
-
-    if (equalSign)
+    if ((NULL != (equalSign = strstr(target, marker))) && 
+        (0 < (targetLength = strnlen(equalSign, MAX_STRING_LENGTH))))
     {
-        targetLength = (int)strlen(equalSign);
         memmove(target, equalSign, targetLength);
         target[targetLength] = 0;
     }
@@ -68,13 +68,14 @@ void RemovePrefixUpToString(char* target, const char* marker)
 
 void RemoveTrailingBlanks(char* target)
 {
+    int i = 0;
+
     if (NULL == target)
     {
         return;
     }
 
-    int targetLength = (int)strlen(target);
-    int i = targetLength;
+    i = (int)strnlen(target, MAX_STRING_LENGTH);
 
     while ((i > 0) && (' ' == target[i - 1]))
     {

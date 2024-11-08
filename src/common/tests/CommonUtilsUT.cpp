@@ -995,6 +995,9 @@ TEST_F(CommonUtilsTest, RemovePrefixUpTo)
         EXPECT_STREQ(testString, expected);
         FREE_MEMORY(testString);
     }
+
+    RemovePrefixUpTo("", '!');
+    EXPECT_STREQ("", "");
 }
 
 struct MarkedTestStringTargets
@@ -1027,6 +1030,9 @@ TEST_F(CommonUtilsTest, RemovePrefixUpToString)
         EXPECT_STREQ(testString, targets[i].expected);
         FREE_MEMORY(testString);
     }
+
+    RemovePrefixUpToString("", "!");
+    EXPECT_STREQ("", "");
 }
 
 TEST_F(CommonUtilsTest, TruncateAtFirst)
