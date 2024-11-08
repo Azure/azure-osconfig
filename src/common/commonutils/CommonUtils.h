@@ -192,6 +192,7 @@ int SleepMilliseconds(long milliseconds);
 
 bool FreeAndReturnTrue(void* value);
 
+bool IsValidDaemonName(const char *name);
 bool IsDaemonActive(const char* daemonName, void* log);
 bool CheckDaemonActive(const char* daemonName, char** reason, void* log);
 bool CheckDaemonNotActive(const char* daemonName, char** reason, void* log);

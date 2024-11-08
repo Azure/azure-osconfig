@@ -2366,3 +2366,36 @@ TEST_F(CommonUtilsTest, AsbIsValidResourceIdRuleId)
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(nullptr, goodRuleId, payloadKey, nullptr));
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, nullptr, payloadKey, nullptr));
 }
+
+TEST_F(CommonUtilsTest, IsValidDaemonName)
+{
+    const char* goodNames[] = {
+        "test",
+        "osconfigtest",
+        "osconfig-test",
+        "123_test",
+        "test-123_osconfig"
+    };
+    int goodNamesSize = ARRAY_SIZE(goodNames);
+
+    const char* badNames[] = {
+        "(test",
+        "echo test",
+        "[123]",
+        "!foo@test",
+        "#$%^"
+    };
+    int badNamesSize = ARRAY_SIZE(badNames);
+
+    int i = 0;
+
+    for (i = 0; i < goodNames; i++)
+    {
+        EXPECT_TRUE(IsValidDaemonName(goodNames[i]));
+    }
+
+    for (i = 0; i < badNames; i++)
+    {
+        EXPECT_FALSE(IsValidDaemonName(badNames[i]));
+    }
+}
