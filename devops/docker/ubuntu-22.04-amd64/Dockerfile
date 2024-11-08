@@ -23,7 +23,8 @@ RUN apt -y update && apt-get -y install \
     bc \
     file \
     libasan8 \
-    libubsan1
+    libubsan1 \
+    clang
 
 WORKDIR /git
 
