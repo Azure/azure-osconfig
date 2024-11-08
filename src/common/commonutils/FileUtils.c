@@ -1208,7 +1208,7 @@ static bool IsValidGrepArgument(const char* text)
     size_t length = 0, i = 0;
     bool result = true;
 
-    if ((NULL == test) || (0 >= (length = strnlen(text, MAX_STRING_LENGTH))))
+    if ((NULL == text) || (0 >= (length = strnlen(text, MAX_STRING_LENGTH))))
     {
         return false;
     }
