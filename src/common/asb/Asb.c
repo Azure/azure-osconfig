@@ -787,7 +787,7 @@ const BASELINE_RULE g_rules[] =
     { "Ensure the dovecot service is disabled and the dovecot-core package is not installed", "b0b6cf96-bd8a-40c5-b051-4615078a0bf0", "EnsureDovecotCoreNotInstalled" },
     { "Ensure no legacy + entries exist in /etc/passwd (CIS: L1 - Server - 6.2.2)", "cc627f0c-3b72-6cc9-36b0-d2a3957431f4", "EnsureNoLegacyPlusEntriesInEtcPasswd" },
     { "Ensure no legacy + entries exist in /etc/shadow (CIS: L1 - Server - 6.2.3)", "1a102d2e-76db-5ccf-3580-ccda064e8df3", "EnsureNoLegacyPlusEntriesInEtcShadow" },
-    { "EEnsure no legacy + entries exist in /etc/group (CIS: L1 - Server - 6.2.4)", "b487e075-15b4-0df1-550f-d8d5edd78eb4", "EnsureNoLegacyPlusEntriesInEtcGroup" },
+    { "Ensure no legacy + entries exist in /etc/group (CIS: L1 - Server - 6.2.4)", "b487e075-15b4-0df1-550f-d8d5edd78eb4", "EnsureNoLegacyPlusEntriesInEtcGroup" },
     { "Ensure password expiration is configured (CIS: L1 - Server - 5.4.1.1)", "6ee7250d-142f-57db-25d0-c58207135059", "EnsurePasswordExpiration" },
     { "Ensure password expiration warning days is configured (CIS: L1 - Server - 5.4.1.3)", "b7ac978f-0963-a61f-58ae-5cf84ab76b5d", "EnsurePasswordExpirationWarning" },
     { "Ensure password reuse is limited (CIS: L1 - Server - 5.3.3)", "57bdeae2-863e-14fb-a463-d6ee64816b33", "EnsurePasswordReuseIsLimited" },
