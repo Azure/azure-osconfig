@@ -50,7 +50,7 @@ void RemovePrefixUpTo(char* target, char marker)
 
 void RemovePrefixUpToString(char* target, const char* marker)
 {
-    size_t targetLength = 0, markerLength = 0, remainingLength = 0;
+    size_t targetLength = 0, markerLength = 0;
     char* equalSign = NULL;
     
     if ((NULL == target) || (0 >= (targetLength = strnlen(target, MAX_STRING_LENGTH))) || 
@@ -62,8 +62,8 @@ void RemovePrefixUpToString(char* target, const char* marker)
 
     if (NULL != (equalSign = strstr(target, marker)))
     {
-        remainingLength = targetLength - (equalSign - target);
-        memmove(target, equalSign, remainingLength);
+        targetLength = strnlen(equalSign, targetLength + 1);
+        memmove(target, equalSign, targetLength);
         target[targetLength] = 0;
     }
 }
