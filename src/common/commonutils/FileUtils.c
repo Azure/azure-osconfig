@@ -1198,30 +1198,9 @@ int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** rea
     return result;
 }
 
-static bool IsValidGrepCharacter(char text)
-{
-    return ((0 == isalnum(text)) && ('_' != text) && ('-' != text) && ('.' != text)) ? false : true;
-}
-
 static bool IsValidGrepArgument(const char* text)
 {
-    size_t length = 0, i = 0;
-    bool result = true;
-
-    if ((NULL == text) || (0 >= (length = strnlen(text, MAX_STRING_LENGTH))))
-    {
-        return false;
-    }
-    
-    for (i = 0; i < length; i++)
-    {
-        if (false == (result = IsValidGrepCharacter(text[i])))
-        {
-            break;
-        }
-    }
-    
-    return result;
+    return IsValidDaemonName(text);
 }
 
 int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, void* log)
