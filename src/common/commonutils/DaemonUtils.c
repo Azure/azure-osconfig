@@ -6,9 +6,9 @@
 #define MAX_DAEMON_NAME_LENGTH 256
 
 // Valid systemd deamon name characters for us, not universal, add more here if necessary in the future
-static bool IsValidDaemonNameCharacter(const char *name)
+static bool IsValidDaemonNameCharacter(char c)
 {
-    return ((0 == isalnum(text)) && ('_' != text) && ('-' != text) && ('.' != text)) ? false : true;
+    return ((0 == isalnum(c)) && ('_' != c) && ('-' != c) && ('.' != c)) ? false : true;
 }
 
 bool IsValidDaemonName(const char *name) 
