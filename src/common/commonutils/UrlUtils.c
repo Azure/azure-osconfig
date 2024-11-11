@@ -15,7 +15,7 @@ bool IsValidUrl(const char *target)
     size_t length = 0, i = 0;
     bool result = true;
 
-    if ((NULL == target) || (0 >= (length = strnlen(target, MAX_URL_LENGTH))))
+    if ((NULL == target) || (0 == (length = strnlen(target, MAX_URL_LENGTH))))
     {
         return false;
     }
@@ -78,14 +78,12 @@ char* UrlDecode(const char* target)
     unsigned int value = 0;
     char* decodedTarget = NULL;
 
-    if ((NULL == target) || (0 == (targetLength = strnlen(target, MAX_URL_LENGTH))))
+    if (false == IsValidUrl(target))
     {
         return NULL;
     }
 
-    // The length of the decoded string is the same as the length of the encoded string or smaller
-    decodedTarget = (char*)malloc(targetLength + 3);
-    if (NULL != decodedTarget)
+    if (NULL != (decodedTarget = (char*)malloc(targetLength + 3)))
     {
         memset(decodedTarget, 0, targetLength + 3);
 
