@@ -1702,7 +1702,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     else if (NULL != (found = strstr(temp, option)))
     {
         RemovePrefixUpTo(found, separator);
-        TruncateAtFirst(found, separator);
+        RemovePrefix(found, separator);
         RemovePrefixBlanks(found);
         RemoveTrailingBlanks(found);
         TruncateAtFirst(found, EOL);

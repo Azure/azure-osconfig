@@ -172,6 +172,7 @@ bool IsCurrentOs(const char* name, void* log);
 bool IsRedHatBased(void* log);
 bool IsCommodore(void* log);
 
+void RemovePrefix(char* target, char marker);
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);
 void RemovePrefixUpToString(char* target, const char* marker);

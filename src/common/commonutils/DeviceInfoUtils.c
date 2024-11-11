@@ -11,7 +11,7 @@ typedef struct OS_DISTRO_INFO
     char* description;
 } OS_DISTRO_INFO;
 
-void RemovePrefixBlanks(char* target)
+void RemovePrefix(char* target, char marker)
 {
     size_t targetLength = 0, i = 0;
 
@@ -19,14 +19,19 @@ void RemovePrefixBlanks(char* target)
     {
         return;
     }
-    
-    while ((i < targetLength) && (' ' == target[i]))
+
+    while ((i < targetLength) && (marker == target[i]))
     {
         i += 1;
     }
 
     memmove(target, target + i, targetLength - i);
     target[targetLength - i] = 0;
+}
+
+void RemovePrefixBlanks(char* target)
+{
+    RemovePrefix(target, ' ');
 }
 
 void RemovePrefixUpTo(char* target, char marker)
@@ -97,7 +102,7 @@ char* GetOsPrettyName(void* log)
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
         RemovePrefixUpTo(textResult, '=');
-        TruncateAtFirst(textResult, '=');
+        RemovePrefix(textResult, '=');
         RemovePrefixBlanks(textResult);
     }
     else
@@ -131,7 +136,7 @@ char* GetOsName(void* log)
             RemovePrefixBlanks(textResult);
             RemoveTrailingBlanks(textResult);
             RemovePrefixUpTo(textResult, '=');
-            TruncateAtFirst(textResult, '=');
+            RemovePrefix(textResult, '=');
             RemovePrefixBlanks(textResult);
             TruncateAtFirst(textResult, ' ');
         }
@@ -183,7 +188,7 @@ static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace,
     if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixUpTo(textResult, ':');
-        TruncateAtFirst(textResult, ':');
+        RemovePrefix(textResult, ':');
         RemovePrefixBlanks(textResult);
         
         if (truncateAtFirstSpace)
@@ -494,12 +499,13 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
                 RemovePrefixBlanks(result);
                 RemoveTrailingBlanks(result);
                 RemovePrefixUpTo(result, separator);
-                TruncateAtFirst(result, separator);
+                RemovePrefix(result, separator);
                 RemovePrefixBlanks(result);
 
                 if ('"' == result[0])
                 {
                     RemovePrefixUpTo(result, '"');
+                    RemovePrefix(result, '"');
                     TruncateAtFirst(result, '"');
                 }
             }
@@ -732,6 +738,7 @@ static long GetPasswordDays(const char* name, void* log)
         {
             RemovePrefixBlanks(result);
             RemovePrefixUpTo(result, ' ');
+            RemovePrefixBlanks(result);
             RemoveTrailingBlanks(result);
 
             days = atol(result);
@@ -930,7 +937,7 @@ bool IsCommodore(void* log)
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
         RemovePrefixUpTo(textResult, '=');
-        TruncateAtFirst(textResult, '=');
+        RemovePrefix(textResult, '=');
         RemovePrefixBlanks(textResult);
 
         if (0 == strcmp(textResult, PRODUCT_NAME_AZURE_COMMODORE))
