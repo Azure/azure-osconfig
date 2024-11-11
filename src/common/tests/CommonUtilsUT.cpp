@@ -1136,6 +1136,7 @@ TEST_F(CommonUtilsTest, DuplicateString)
     EXPECT_EQ(nullptr, duplicate = DuplicateString(nullptr));
     EXPECT_NE(nullptr, duplicate = DuplicateString(""));
     EXPECT_STREQ("", duplicate);
+    FREE_MEMORY(duplicate);
     EXPECT_NE(nullptr, duplicate = DuplicateString(m_data));
     EXPECT_STREQ(m_data, duplicate);
     FREE_MEMORY(duplicate);
