@@ -13,13 +13,13 @@ typedef struct OS_DISTRO_INFO
 
 void RemovePrefixBlanks(char* target)
 {
-    if (NULL == target)
+    size_t targetLength = 0;
+    int i = 0;
+
+    if ((NULL == target) || (0 == (targetLength = strlen(target))))
     {
         return;
     }
-
-    int targetLength =(int)strlen(target);
-    int i = 0;
     
     while ((i < targetLength) && (' ' == target[i]))
     {
@@ -35,15 +35,14 @@ void RemovePrefixUpTo(char* target, char marker)
     size_t targetLength = 0;
     char* equalSign = NULL;
     
-    if ((NULL == target) || (0 == (targetLength = strnlen(target, MAX_STRING_LENGTH))))
+    if ((NULL == target) || (0 == (targetLength = strlen(target))))
     {
         return;
     }
     
-    if ((NULL != (equalSign = strchr(target, marker))) && 
-        (0 < (targetLength = strnlen(equalSign + 1, MAX_STRING_LENGTH))))
+    if ((NULL != (equalSign = strchr(target, marker))) && (0 < (targetLength = strlen(equalSign))))
     {
-        memmove(target, equalSign + 1, targetLength);
+        memmove(target, equalSign, targetLength);
         target[targetLength] = 0;
     }
 }
@@ -53,16 +52,15 @@ void RemovePrefixUpToString(char* target, const char* marker)
     size_t targetLength = 0, markerLength = 0;
     char* equalSign = NULL;
     
-    if ((NULL == target) || (0 >= (targetLength = strnlen(target, MAX_STRING_LENGTH))) || 
-        (NULL == marker) || (0 >= (markerLength = strnlen(marker, MAX_STRING_LENGTH))) ||
+    if ((NULL == target) || (0 == (targetLength = strlen(target))) || 
+        (NULL == marker) || (0 == (markerLength = strlen(marker))) ||
         (markerLength >= targetLength))
     {
         return;
     }
 
-    if (NULL != (equalSign = strstr(target, marker)))
+    if ((NULL != (equalSign = strstr(target, marker))) && (0 < (targetLength = strlen(equalSign))))
     {
-        targetLength = strnlen(equalSign, targetLength + 1);
         memmove(target, equalSign, targetLength);
         target[targetLength] = 0;
     }
@@ -77,7 +75,7 @@ void RemoveTrailingBlanks(char* target)
         return;
     }
 
-    i = (int)strnlen(target, MAX_STRING_LENGTH);
+    i = (int)strlen(target);
 
     while ((i > 0) && (' ' == target[i - 1]))
     {
@@ -88,14 +86,14 @@ void RemoveTrailingBlanks(char* target)
 
 void TruncateAtFirst(char* target, char marker)
 {
+    char* found = NULL;
+
     if (NULL == target)
     {
         return;
     }
 
-    char* found = strchr(target, marker);
-
-    if (found)
+    if (NULL != (found = strchr(target, marker)))
     {
         found[0] = 0;
     }

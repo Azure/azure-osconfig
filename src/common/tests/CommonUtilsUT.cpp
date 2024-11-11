@@ -981,7 +981,9 @@ TEST_F(CommonUtilsTest, RemovePrefixUpTo)
         { "Test$Test=Test", '=' },
         { "@Test", '@' },
         { "123456789Test", '9' },
-        { "!@!#@$#$^%^^%&^*&()(_)(+-Test", '-' }
+        { "!@!#@$#$^%^^%&^*&()(_)(+-Test", '-' },
+        { "option=Test", '=' },
+
     };
 
     int numTargets = ARRAY_SIZE(targets);
@@ -1015,7 +1017,8 @@ TEST_F(CommonUtilsTest, RemovePrefixUpToString)
         { "Test$Test=Test", "$Test", "$Test=Test" },
         { "@Test", "@", "@Test" },
         { "123456789Test", "89", "89Test" },
-        { "!@!#@$#$^%^^%&^*&()(_)(+-Test", "+-", "+-Test" }
+        { "!@!#@$#$^%^^%&^*&()(_)(+-Test", "+-", "+-Test" },
+        { "option=Test", "=", "=Test" },
     };
 
     int numTargets = ARRAY_SIZE(targets);
