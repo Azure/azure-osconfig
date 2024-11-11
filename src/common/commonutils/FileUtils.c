@@ -1203,7 +1203,7 @@ static bool IsValidGrepArgument(const char* text)
     return IsValidDaemonName(text);
 }
 
-static bool IsValidCommentCharacter(const char* text)
+static bool IsValidCommentCharacter(char c)
 {
     return ((0 == isalnum(c)) && ('#' != c)) ? false : true;
 }
