@@ -1659,6 +1659,7 @@ TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
     EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", "!", '#', nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", '#', nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", "..", '#', nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", 'T', nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
