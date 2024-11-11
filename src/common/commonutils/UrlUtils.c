@@ -37,7 +37,7 @@ char* UrlEncode(const char* target)
     int encodedLength = 0;
     char* encodedTarget = NULL;
 
-    if ((NULL == target) || (0 >= (targetLength = strnlen(target, MAX_STRING_LENGTH))))
+    if ((NULL == target) || (0 == (targetLength = strlen(target))))
     {
         return NULL;
     }
@@ -78,7 +78,7 @@ char* UrlDecode(const char* target)
     unsigned int value = 0;
     char* decodedTarget = NULL;
 
-    if ((NULL == target) || (0 >= (targetLength = strnlen(target, MAX_STRING_LENGTH))))
+    if ((NULL == target) || (0 == (targetLength = strnlen(target, MAX_URL_LENGTH))))
     {
         return NULL;
     }

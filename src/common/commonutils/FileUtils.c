@@ -1618,7 +1618,7 @@ static int FindTextInCommandOutput(const char* command, const char* text, void* 
     char* results = NULL;
     int status = 0;
 
-    if ((NULL == command) || (NULL == text) || (0 >= strnlen(command, MAX_STRING_LENGTH)) || (0 >= strnlen(text, MAX_STRING_LENGTH)))
+    if ((NULL == command) || (NULL == text) || (0 == strlen(command)) || (0 == strlen(text)))
     {
         OsConfigLogError(log, "FindTextInCommandOutput called with invalid argument");
         return EINVAL;
@@ -1627,7 +1627,7 @@ static int FindTextInCommandOutput(const char* command, const char* text, void* 
     // Execute this command with a 60 seconds timeout
     if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 60, &results, NULL, log)))
     {
-        if ((NULL != results) && (0 < strnlen(results, MAX_STRING_LENGTH)) && (NULL != strstr(results, text)))
+        if ((NULL != results) && (0 < strlen(results)) && (NULL != strstr(results, text)))
         {
             OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' found in '%s' output", text, command);
         }
