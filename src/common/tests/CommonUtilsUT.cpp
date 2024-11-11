@@ -1019,7 +1019,7 @@ TEST_F(CommonUtilsTest, RemovePrefixUpToString)
         { "@Test", "@", "@Test" },
         { "123456789Test", "89", "89Test" },
         { "!@!#@$#$^%^^%&^*&()(_)(+-Test", "+-", "+-Test" },
-        { "option=Test", "=", "=Test" },
+        { "option=Test", "=", "=Test" }
     };
 
     int numTargets = ARRAY_SIZE(targets);
@@ -2387,8 +2387,9 @@ TEST_F(CommonUtilsTest, IsValidDaemonName)
         "test",
         "osconfigtest",
         "osconfig-test",
+        "osconfig.test",
         "123_test",
-        "test-123_osconfig"
+        "test-123_os.config"
     };
     int goodNamesSize = ARRAY_SIZE(goodNames);
 
