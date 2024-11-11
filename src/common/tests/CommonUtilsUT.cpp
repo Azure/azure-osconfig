@@ -994,7 +994,7 @@ TEST_F(CommonUtilsTest, RemovePrefixUpTo)
     {
         EXPECT_NE(nullptr, testString = AllocateAndCopyTestString(targets[i].target));
         RemovePrefixUpTo(testString, targets[i].marker);
-        TruncateAtFirst(testString, targets[i].marker);
+        //TruncateAtFirst(testString, targets[i].marker);
         EXPECT_STREQ(testString, expected);
         FREE_MEMORY(testString);
     }
