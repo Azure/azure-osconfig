@@ -13,8 +13,7 @@ typedef struct OS_DISTRO_INFO
 
 void RemovePrefixBlanks(char* target)
 {
-    size_t targetLength = 0;
-    int i = 0;
+    size_t targetLength = 0, i = 0;
 
     if ((NULL == target) || (0 == (targetLength = strlen(target))))
     {
