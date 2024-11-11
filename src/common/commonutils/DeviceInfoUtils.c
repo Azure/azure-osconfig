@@ -31,19 +31,8 @@ void RemovePrefixBlanks(char* target)
 
 void RemovePrefixUpTo(char* target, char marker)
 {
-    size_t targetLength = 0;
-    char* equalSign = NULL;
-    
-    if ((NULL == target) || (0 == (targetLength = strlen(target))))
-    {
-        return;
-    }
-    
-    if ((NULL != (equalSign = strchr(target, marker))) && (0 < (targetLength = strlen(equalSign))))
-    {
-        memmove(target, equalSign, targetLength);
-        target[targetLength] = 0;
-    }
+    char markerString[2] = {marker, 0};
+    RemovePrefixUpToString(target, markerString);
 }
 
 void RemovePrefixUpToString(char* target, const char* marker)
@@ -108,6 +97,7 @@ char* GetOsPrettyName(void* log)
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
         RemovePrefixUpTo(textResult, '=');
+        TruncateAtFirst(textResult, '=');
         RemovePrefixBlanks(textResult);
     }
     else
@@ -141,6 +131,7 @@ char* GetOsName(void* log)
             RemovePrefixBlanks(textResult);
             RemoveTrailingBlanks(textResult);
             RemovePrefixUpTo(textResult, '=');
+            TruncateAtFirst(textResult, '=');
             RemovePrefixBlanks(textResult);
             TruncateAtFirst(textResult, ' ');
         }
@@ -168,6 +159,7 @@ char* GetOsVersion(void* log)
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
         RemovePrefixUpTo(textResult, '=');
+        TruncateAtFirst(textResult, '=');
         RemovePrefixBlanks(textResult);
         TruncateAtFirst(textResult, ' ');
     }
@@ -191,6 +183,7 @@ static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace,
     if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixUpTo(textResult, ':');
+        TruncateAtFirst(textResult, ':');
         RemovePrefixBlanks(textResult);
         
         if (truncateAtFirstSpace)
@@ -501,6 +494,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
                 RemovePrefixBlanks(result);
                 RemoveTrailingBlanks(result);
                 RemovePrefixUpTo(result, separator);
+                TruncateAtFirst(result, separator);
                 RemovePrefixBlanks(result);
 
                 if ('"' == result[0])
@@ -936,6 +930,7 @@ bool IsCommodore(void* log)
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
         RemovePrefixUpTo(textResult, '=');
+        TruncateAtFirst(textResult, '=');
         RemovePrefixBlanks(textResult);
 
         if (0 == strcmp(textResult, PRODUCT_NAME_AZURE_COMMODORE))
