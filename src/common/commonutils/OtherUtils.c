@@ -5,21 +5,12 @@
 
 char* DuplicateString(const char* source)
 {
-    size_t length = 0;
-    char* duplicate = NULL;
-
-    if ((NULL == source) || (0 == (length = strlen(source))))
+    if (NULL == source)
     {
-        return duplicate;
+        return NULL;
     }
 
-    if (NULL != (duplicate = (char*)malloc(length + 1)))
-    {
-        memcpy(duplicate, source, length);
-        duplicate[length] = 0;
-    }
-
-    return duplicate;
+    return strdup(source);
 }
 
 char* DuplicateStringToLowercase(const char* source)

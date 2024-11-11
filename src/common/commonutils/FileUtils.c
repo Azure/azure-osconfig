@@ -1203,6 +1203,11 @@ static bool IsValidGrepArgument(const char* text)
     return IsValidDaemonName(text);
 }
 
+static bool IsValidCommentCharacter(const char* text)
+{
+    return ((0 == isalnum(c)) && ('#' != c)) ? false : true;
+}
+
 int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, void* log)
 {
     const char* commandTemplate = "grep -v '^%c' %s | grep %s";
@@ -1214,7 +1219,7 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
     int status = 0;
 
     if ((false == FileExists(fileName)) || (NULL == text) || (NULL == marker) || (0 == strlen(text)) || (0 == strlen(marker)) || 
-        (false == IsValidGrepArgument(text)) || ('#' != commentCharacter))
+        (false == IsValidGrepArgument(text)) || (false == IsValidCommentCharacter(commentCharacter)))
     {
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile called with invalid arguments");
         return EINVAL;
