@@ -7,7 +7,7 @@
 
 static bool IsValidUrlCharacter(char c)
 {
-    return (isalnum(c) || ('-' == c) || ('_' == c) || ('.' == c) || ('~' == c) || ('%' == c)) ? true : false;
+    return (isalnum(c) || ('-' == c) || ('_' == c) || ('.' == c) || ('~' == c) || ('%' == c) || ('\n' == c)) ? true : false;
 }
 
 bool IsValidUrl(const char *target)
