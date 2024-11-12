@@ -1366,7 +1366,7 @@ int CheckSmallFileContainsText(const char* fileName, const char* text, char** re
     }
     else if (textLength > MAX_STRING_LENGTH)
     {
-        OsConfigLogError(log, "CheckSmallFileContainsText: text is too large (%lu bytes, maximum supported: %d bytes)", (int)textLength, MAX_STRING_LENGTH);
+        OsConfigLogError(log, "CheckSmallFileContainsText: text is too large (%lu bytes, maximum supported: %d bytes)", textLength, MAX_STRING_LENGTH);
         return EINVAL;
     }
 
