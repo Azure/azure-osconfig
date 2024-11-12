@@ -100,11 +100,10 @@ char* GetOsPrettyName(void* log)
 
     if ((0 == ExecuteCommand(NULL, osPrettyNameCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
-        RemovePrefixBlanks(textResult);
-        RemoveTrailingBlanks(textResult);
         RemovePrefixUpTo(textResult, '=');
         RemovePrefix(textResult, '=');
         RemovePrefixBlanks(textResult);
+        RemoveTrailingBlanks(textResult);
     }
     else
     {
