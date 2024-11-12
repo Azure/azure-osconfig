@@ -1679,8 +1679,6 @@ TEST_F(CommonUtilsTest, CheckTextNotFoundInEnvironmentVariable)
 
 TEST_F(CommonUtilsTest, CheckSmallFileContainsText)
 {
-    char bigBuffer[1024] = {0};
-
     EXPECT_EQ(EINVAL, CheckSmallFileContainsText(nullptr, "2", nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckSmallFileContainsText(nullptr, nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckSmallFileContainsText(m_path, nullptr, nullptr, nullptr));
@@ -1697,9 +1695,11 @@ TEST_F(CommonUtilsTest, CheckSmallFileContainsText)
         EXPECT_TRUE(Cleanup(m_path));
     }
 
+    char bigBuffer[1024] = {0};
+    memset(bigBuffer, 1, sizeof(bigBuffer) - 1);
     EXPECT_TRUE(CreateTestFile(m_path, bigBuffer));
     EXPECT_EQ(EINVAL, CheckSmallFileContainsText(m_path, bigBuffer, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(m_path, "0", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(m_path, "11", nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
