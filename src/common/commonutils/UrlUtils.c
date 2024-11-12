@@ -5,8 +5,7 @@
 
 char* UrlEncode(const char* target)
 {
-    size_t targetSize = 0, i = 0, j = 0;
-    int encodedLength = 0;
+    size_t targetSize = 0, encodedLength = 0, i = 0, j = 0;
     char* encodedTarget = NULL;
 
     if ((NULL == target) || (0 == (targetSize = strlen(target))))
