@@ -45,6 +45,11 @@ on:
         type: boolean
         required: false
         default: false
+      build-fuzzers:
+        description: Build fuzzers. This implies building with clang compiler and code instrumentation enabled.
+        type: boolean
+        required: false
+        default: false
 
 env:
   BUILD_TYPE: Release
@@ -98,6 +103,8 @@ jobs:
           cmd: |
             if [ "${{ inputs.machine-config }}" = "true" ]; then
               cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+            elif [ "${{ inputs.build-fuzzers }}" = "true" ]; then
+              cmake ../src -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER="/usr/bin/clang" -DCMAKE_CXX_COMPILER="/usr/bin/clang++" -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=OFF -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON -DBUILD_FUZZER=ON
             else
               cmake ../src -DCMAKE_C_COMPILER="/usr/bin/gcc" -DCMAKE_CXX_COMPILER="/usr/bin/g++" -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -Duse_default_uuid=ON -DBUILD_ADAPTERS=ON
             fi
@@ -127,7 +134,7 @@ jobs:
           package-type: ${{ inputs.package-type }}
 
       - uses: actions/upload-artifact@v4
-        if: ${{ inputs.test }}
+        if: ${{ inputs.test && !inputs.build-fuzzers }}
         with:
           name: ${{ inputs.artifact }}
           path: |
@@ -137,7 +144,16 @@ jobs:
             ./build/modules/bin/*.so
 
       - uses: actions/upload-artifact@v4
-        if: ${{ !inputs.test }}
+        if: ${{ !inputs.test && inputs.build-fuzzers }}
+        with:
+          name: ${{ inputs.artifact }}
+          path: |
+            ./build/osconfig*
+            ./build/*.zip
+            ./build/fuzzer/osconfig-fuzzer
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !inputs.test && !inputs.build-fuzzers }}
         with:
           name: ${{ inputs.artifact }}
           path: |
