@@ -133,12 +133,11 @@ char* GetOsName(void* log)
         // PRETTY_NAME did not work, try ID
         if ((0 == ExecuteCommand(NULL, osNameCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
         {
-            RemovePrefixBlanks(textResult);
-            RemoveTrailingBlanks(textResult);
             RemovePrefixUpTo(textResult, '=');
             RemovePrefix(textResult, '=');
-            RemovePrefixBlanks(textResult);
             TruncateAtFirst(textResult, ' ');
+            RemovePrefixBlanks(textResult);
+            RemoveTrailingBlanks(textResult);
         }
         else
         {
@@ -161,12 +160,11 @@ char* GetOsVersion(void* log)
 
     if ((0 == ExecuteCommand(NULL, osVersionCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
-        RemovePrefixBlanks(textResult);
-        RemoveTrailingBlanks(textResult);
         RemovePrefixUpTo(textResult, '=');
         TruncateAtFirst(textResult, '=');
-        RemovePrefixBlanks(textResult);
         TruncateAtFirst(textResult, ' ');
+        RemovePrefixBlanks(textResult);
+        RemoveTrailingBlanks(textResult);
     }
     else
     {

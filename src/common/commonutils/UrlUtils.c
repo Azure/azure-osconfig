@@ -14,28 +14,31 @@ char* UrlEncode(const char* target)
         return NULL;
     }
 
-    encodedLength = (3 * targetSize) + 3;
+    encodedLength = (3 * targetSize) + 1;
 
     if (NULL != (encodedTarget = (char*)malloc(encodedLength)))
     {
         memset(encodedTarget, 0, encodedLength);
 
-        for (i = 0; i < targetSize; i++)
+        for (i = 0, j = 0; (i < targetSize) && (j < targetSize); i++)
         {
             if (isalnum(target[i]) || ('-' == target[i]) || ('_' == target[i]) || ('.' == target[i]) || ('~' == target[i]))
             {
                 encodedTarget[j] = target[i];
                 j += 1;
             }
-            else if ('\n' == target[i])
+            else if ((j + 3) < targetSize)
             {
-                memcpy(&encodedTarget[j], "%0A", sizeof("%0A"));
-                j += strlen(&encodedTarget[j]);
-            }
-            else
-            {
-                sprintf(&encodedTarget[j], "%%%02X", target[i]);
-                j += strlen(&encodedTarget[j]);
+                if ('\n' == target[i])
+                {
+                    memcpy(&encodedTarget[j], "%0A", sizeof("%0A"));
+                    j += strlen(&encodedTarget[j]);
+                }
+                else
+                {
+                    sprintf(&encodedTarget[j], "%%%02X", target[i]);
+                    j += strlen(&encodedTarget[j]);
+                }
             }
         }
     }
@@ -55,9 +58,9 @@ char* UrlDecode(const char* target)
         return NULL;
     }
 
-    if (NULL != (decodedTarget = (char*)malloc(targetSize + 3)))
+    if (NULL != (decodedTarget = (char*)malloc(targetSize + 1)))
     {
-        memset(decodedTarget, 0, targetSize + 3);
+        memset(decodedTarget, 0, targetSize + 1);
 
         for (i = 0, j = 0; (i < targetSize) && (j < targetSize); i++)
         {
