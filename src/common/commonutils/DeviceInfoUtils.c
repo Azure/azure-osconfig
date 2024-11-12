@@ -46,7 +46,8 @@ void RemovePrefixUpToString(char* target, const char* marker)
     char* found = NULL;
     
     if ((NULL == target) || (0 == (targetLength = strlen(target))) || 
-        (NULL == marker) || (0 == (markerLength = strlen(marker))))
+        (NULL == marker) || (0 == (markerLength = strlen(marker))) ||
+        (markerLength >= targetLength))
     {
         return;
     }
