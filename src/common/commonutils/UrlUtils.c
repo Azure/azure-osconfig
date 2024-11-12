@@ -24,9 +24,9 @@ bool IsValidUrl(const char *target)
 
     for (i = 0; i < length; i++)
     {
-        if (false == IsValidUrlCharacter(target[i]))
+        if (false == (result = IsValidUrlCharacter(target[i])))
         {
-            result = false;
+            break;
         }
     }
     
