@@ -393,7 +393,7 @@ static int GetStringOptionFromBuffer_target(const char* data, std::size_t size) 
     }
 
     auto buffer = std::string(data, size);
-    GetStringOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), nullptr);
+    free(GetStringOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), nullptr));
     return 0;
 }
 
@@ -708,6 +708,7 @@ static int ParseHttpProxyData_target(const char* data, std::size_t size) noexcep
     ParseHttpProxyData(source.c_str(), &hostAddress, &port, &username, &password, nullptr);
     free(hostAddress);
     free(username);
+    free(password);
     return 0;
 }
 
