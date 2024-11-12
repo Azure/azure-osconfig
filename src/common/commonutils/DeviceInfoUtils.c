@@ -906,7 +906,7 @@ int EnableVirtualMemoryRandomization(void* log)
     const char* fullRandomization = "2";
     int status = 0;
 
-    if (0 == CheckFileContents(procSysKernelRandomizeVaSpace, fullRandomization, NULL, log))
+    if (0 == CheckSmallFileContainsText(procSysKernelRandomizeVaSpace, fullRandomization, NULL, log))
     {
         OsConfigLogInfo(log, "EnableVirtualMemoryRandomization: full virtual memory randomization '%s' is already enabled in '%s'", fullRandomization, procSysKernelRandomizeVaSpace);
     }
