@@ -33,8 +33,9 @@ char* UrlEncode(const char* target)
             }
             else
             {
-                sprintf(&encodedTarget[j], "%%%02X", target[i]);
-                j += 3;
+                // Ask snprintf to write at most 3 bytes plus 1 null terminator
+                snprintf(&encodedTarget[j], 4, "%%%02X", target[i]);
+                j += strlen(&encodedTarget[j]);
             }
         }
     }
