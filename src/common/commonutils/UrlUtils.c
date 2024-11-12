@@ -7,7 +7,9 @@
 
 static bool IsValidUrlCharacter(char c)
 {
-    return (isalnum(c) || ('-' == c) || ('_' == c) || ('.' == c) || ('~' == c) || ('%' == c) || ('\n' == c)) ? true : false;
+    return (isalnum(c) || ('-' == c) || ('_' == c) || ('.' == c) || ('~' == c) || ('%' == c) || ('\n' == c) ||
+        ('!' == c) || ('$' == c) || ('&' == c) || ('\'' == c) || ('(' == c) || (')' == c) || ('*' == c) ||
+        ('+' == c) || (',' == c) || (';' == c) || ('=' == c)) ? true : false;
 }
 
 bool IsValidUrl(const char *target)
@@ -15,7 +17,7 @@ bool IsValidUrl(const char *target)
     size_t length = 0, i = 0;
     bool result = true;
 
-    if ((NULL == target) || (0 == (length = strnlen(target, MAX_URL_LENGTH))))
+    if ((NULL == target) || (0 == (length = strnlen(target, MAX_URL_LENGTH + 1))))
     {
         return false;
     }
