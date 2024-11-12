@@ -9,7 +9,7 @@ char* UrlEncode(const char* target, size_t targetLength)
     int encodedLength = 0;
     char* encodedTarget = NULL;
 
-    if ((NULL == target) || (0 == size))
+    if ((NULL == target) || (0 == targetLength))
     {
         return NULL;
     }
