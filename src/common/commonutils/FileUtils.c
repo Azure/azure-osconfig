@@ -1365,7 +1365,7 @@ int CheckSmallFileContainsText(const char* fileName, const char* text, char** re
         OsConfigLogError(log, "CheckSmallFileContainsText called with invalid arguments");
         return EINVAL;
     }
-    else if ((0 == stat(fileName, &statStruct) && ((statStruct.st_size > MAX_STRING_LENGTH)))
+    else if ((0 == stat(fileName, &statStruct)) && ((statStruct.st_size > MAX_STRING_LENGTH)))
     {
         OsConfigLogError(log, "CheckSmallFileContainsText: file is too large (%lu bytes, maximum supported: %d bytes)", statStruct.st_size, MAX_STRING_LENGTH);
         return EINVAL;
