@@ -179,8 +179,8 @@ void RemovePrefixUpToString(char* target, const char* marker);
 void RemoveTrailingBlanks(char* target);
 void TruncateAtFirst(char* target, char marker);
 
-char* UrlEncode(const char* target, size_t targetLength);
-char* UrlDecode(const char* target, size_t targetLength);
+char* UrlEncode(const char* target, size_t targetSize);
+char* UrlDecode(const char* target, size_t targetSize);
 
 bool LockFile(FILE* file, void* log);
 bool UnlockFile(FILE* file, void* log);
