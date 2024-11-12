@@ -1106,12 +1106,6 @@ TEST_F(CommonUtilsTest, UrlEncodeDecode)
 
     EXPECT_EQ(nullptr, url = UrlEncode(nullptr));
     EXPECT_EQ(nullptr, url = UrlDecode(nullptr));
-    
-    EXPECT_FALSE(IsValidUrl(nullptr));
-    EXPECT_FALSE(IsValidUrl(""));
-    EXPECT_FALSE(IsValidUrl("Test = 123"));
-    EXPECT_FALSE(IsValidUrl("!Test$^&*()1@~2  3"));
-    EXPECT_FALSE(IsValidUrl("/test/123"));
 }
 
 TEST_F(CommonUtilsTest, LockUnlockFile)

@@ -3,36 +3,6 @@
 
 #include "Internal.h"
 
-#define MAX_URL_LENGTH 2048
-
-static bool IsValidUrlCharacter(char c)
-{
-    return (isalnum(c) || ('-' == c) || ('_' == c) || ('.' == c) || ('~' == c) || ('%' == c) || ('\n' == c) ||
-        ('!' == c) || ('$' == c) || ('&' == c) || ('\'' == c) || ('(' == c) || (')' == c) || ('*' == c) ||
-        ('+' == c) || (',' == c) || (';' == c) || ('=' == c) || (' ' == c) || ('^' == c) || ('/' == c) || ('@' == c)) ? true : false;
-}
-
-bool IsValidUrl(const char *target)
-{
-    size_t length = 0, i = 0;
-    bool result = true;
-
-    if ((NULL == target) || (0 == (length = strnlen(target, MAX_URL_LENGTH + 1))))
-    {
-        return false;
-    }
-
-    for (i = 0; i < length; i++)
-    {
-        if (false == (result = IsValidUrlCharacter(target[i])))
-        {
-            break;
-        }
-    }
-    
-    return result;
-}
-
 char* UrlEncode(const char* target)
 {
     size_t targetLength = 0, i = 0, j = 0;
@@ -80,11 +50,7 @@ char* UrlDecode(const char* target)
     unsigned int value = 0;
     char* decodedTarget = NULL;
 
-    /*if (false == IsValidUrl(target))
-    {
-        return NULL;
-    }*/
-    if ((NULL == target) || (0 == (targetLength = strnlen(target, MAX_URL_LENGTH))))
+    if ((NULL == target) || (0 == (targetLength = strlen(target))))
     {
         return NULL;
     }

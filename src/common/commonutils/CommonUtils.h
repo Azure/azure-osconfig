@@ -179,7 +179,6 @@ void RemovePrefixUpToString(char* target, const char* marker);
 void RemoveTrailingBlanks(char* target);
 void TruncateAtFirst(char* target, char marker);
 
-bool IsValidUrl(const char *target);
 char* UrlEncode(const char* target);
 char* UrlDecode(const char* target);
 
