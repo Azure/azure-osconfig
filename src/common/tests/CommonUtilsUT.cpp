@@ -1621,7 +1621,8 @@ TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
         "# Test PATH!\n"
         "#Another test !PATH\n"
         "#\n"
-        "Test PATH..";
+        "Test PATH..\n"
+        ";Test PATH..";
 
     EXPECT_TRUE(CreateTestFile(m_path, test));
 
@@ -1653,7 +1654,7 @@ TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
     EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", "!", '#', nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", '#', nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", "..", '#', nullptr, nullptr));
-    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", 'T', nullptr, nullptr));
+    EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", ';', nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
@@ -2398,7 +2399,12 @@ TEST_F(CommonUtilsTest, IsValidDaemonName)
         "echo test",
         "[123]",
         "!foo@test",
-        "#$%^"
+        "#$%^",
+        "1234567890123456789012345678901234567890123456789012345678901234567890"
+        "1234567890123456789012345678901234567890123456789012345678901234567890"
+        "1234567890123456789012345678901234567890123456789012345678901234567890"
+        "1234567890123456789012345678901234567890123456789012345678901234567890"
+        "12345678901234567890"
     };
     int badNamesSize = ARRAY_SIZE(badNames);
 
