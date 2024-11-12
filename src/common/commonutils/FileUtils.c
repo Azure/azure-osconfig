@@ -1355,6 +1355,7 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
 
 int CheckSmallFileContainsText(const char* fileName, const char* text, char** reason, void* log)
 {
+    struct stat statStruct = {0};
     char* contents = NULL;
     size_t textLength = 0, contentsLength = 0;
     int status = 0;
@@ -1364,15 +1365,14 @@ int CheckSmallFileContainsText(const char* fileName, const char* text, char** re
         OsConfigLogError(log, "CheckSmallFileContainsText called with invalid arguments");
         return EINVAL;
     }
-    else if (textLength > MAX_STRING_LENGTH)
+    else if ((0 == stat(fileName, &statStruct) && ((statStruct.st_size > MAX_STRING_LENGTH)))
     {
-        OsConfigLogError(log, "CheckSmallFileContainsText: text is too large (%lu bytes, maximum supported: %d bytes)", textLength, MAX_STRING_LENGTH);
+        OsConfigLogError(log, "CheckSmallFileContainsText: file is too large (%lu bytes, maximum supported: %d bytes)", statStruct.st_size, MAX_STRING_LENGTH);
         return EINVAL;
     }
 
     if (NULL != (contents = LoadStringFromFile(fileName, false, log)))
     {
-        textLength = strlen(text);
         contentsLength = strlen(text);
         
         if (0 == strncmp(contents, text, (textLength <= contentsLength) ? textLength : contentsLength))
