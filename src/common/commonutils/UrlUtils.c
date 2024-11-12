@@ -53,7 +53,10 @@ char* UrlEncode(const char* target)
             }
         }
         
-        encodedTarget[j] = 0;
+        if (NULL != encodedTarget)
+        {
+            encodedTarget[j] = 0;
+        }
     }
 
     return encodedTarget;
@@ -106,7 +109,10 @@ char* UrlDecode(const char* target)
             }
         }
         
-        decodedTarget[i] = 0;
+        if (NULL != decodedTarget)
+        {
+            decodedTarget[i] = 0;
+        }
     }
 
     return decodedTarget;
