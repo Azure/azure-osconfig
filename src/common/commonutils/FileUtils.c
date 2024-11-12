@@ -1353,15 +1353,20 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
     return status;
 }
 
-int CheckFileContents(const char* fileName, const char* text, char** reason, void* log)
+int CheckSmallFileContainsText(const char* fileName, const char* text, char** reason, void* log)
 {
     char* contents = NULL;
     size_t textLength = 0, contentsLength = 0;
     int status = 0;
 
-    if ((NULL == fileName) || (NULL == text) || (0 == strlen(fileName)) || (0 == strlen(text)))
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(fileName)) || (0 == (textLength = strlen(text))))
     {
-        OsConfigLogError(log, "CheckFileContents called with invalid arguments");
+        OsConfigLogError(log, "CheckSmallFileContainsText called with invalid arguments");
+        return EINVAL;
+    }
+    else if (textLength > MAX_STRING_LENGTH)
+    {
+        OsConfigLogError(log, "CheckSmallFileContainsText: text is too large (%lu bytes, maximum supported: %lu bytes)", textLength, MAX_STRING_LENGTH);
         return EINVAL;
     }
 
@@ -1372,12 +1377,12 @@ int CheckFileContents(const char* fileName, const char* text, char** reason, voi
         
         if (0 == strncmp(contents, text, (textLength <= contentsLength) ? textLength : contentsLength))
         {
-            OsConfigLogInfo(log, "CheckFileContents: '%s' matches contents of '%s'", text, fileName);
+            OsConfigLogInfo(log, "CheckSmallFileContainsText: '%s' matches contents of '%s'", text, fileName);
             OsConfigCaptureSuccessReason(reason, "'%s' matches contents of '%s'", text, fileName);
         }
         else
         {
-            OsConfigLogInfo(log, "CheckFileContents: '%s' does not match contents of '%s' ('%s')", text, fileName, contents);
+            OsConfigLogInfo(log, "CheckSmallFileContainsText: '%s' does not match contents of '%s' ('%s')", text, fileName, contents);
             OsConfigCaptureReason(reason, "'%s' does not match contents of '%s'", text, fileName);
             status = ENOENT;
         }

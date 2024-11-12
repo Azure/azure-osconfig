@@ -91,7 +91,7 @@ TEST_F(CommonUtilsTest, LoadStringFromSingleByteFile)
     EXPECT_EQ(data[0], contents[0]);
     EXPECT_EQ(0, contents[1]);
     FREE_MEMORY(contents);
-    EXPECT_EQ(0, CheckFileContents(m_path, data, nullptr, nullptr));
+    EXPECT_EQ(0, CheckSmallFileContainsText(m_path, data, nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -1677,13 +1677,16 @@ TEST_F(CommonUtilsTest, CheckTextNotFoundInEnvironmentVariable)
     EXPECT_EQ(0, unsetenv("TESTVAR"));
 }
 
-TEST_F(CommonUtilsTest, CheckFileContents)
+TEST_F(CommonUtilsTest, CheckSmallFileContainsText)
 {
-    EXPECT_EQ(EINVAL, CheckFileContents(nullptr, "2", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileContents(nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileContents(m_path, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileContents(m_path, "", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileContents("", "2", nullptr, nullptr));
+    char* bigBuffer[1024] = {0};
+
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(nullptr, "2", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(m_path, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(m_path, "", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText("", "2", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(m_path, bigBuffer, nullptr, nullptr));
 
     const char* test[] = {"2", "ABC", "~1", "This is a test", "One line\nAnd another\n"};
     size_t sizeOfTest = ARRAY_SIZE(test);
@@ -1691,7 +1694,7 @@ TEST_F(CommonUtilsTest, CheckFileContents)
     for (size_t i = 0; i < sizeOfTest; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, test[i]));
-        EXPECT_EQ(0, CheckFileContents(m_path, test[i], nullptr, nullptr));
+        EXPECT_EQ(0, CheckSmallFileContainsText(m_path, test[i], nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
 }
