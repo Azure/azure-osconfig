@@ -1094,19 +1094,17 @@ TEST_F(CommonUtilsTest, UrlEncodeDecode)
 
     for (int i = 0; i < testUrlsSize; i++)
     {
-        EXPECT_NE(nullptr, url = UrlEncode((char*)testUrls[i].decoded, strlen(testUrls[i].decoded)));
+        EXPECT_NE(nullptr, url = UrlEncode((char*)testUrls[i].decoded));
         EXPECT_STREQ(url, testUrls[i].encoded);
         FREE_MEMORY(url);
 
-        EXPECT_NE(nullptr, url = UrlDecode((char*)testUrls[i].encoded, strlen(testUrls[i].encoded)));
+        EXPECT_NE(nullptr, url = UrlDecode((char*)testUrls[i].encoded));
         EXPECT_STREQ(url, testUrls[i].decoded);
         FREE_MEMORY(url);
     }
 
-    EXPECT_EQ(nullptr, url = UrlEncode(nullptr, 1));
-    EXPECT_EQ(nullptr, url = UrlDecode(nullptr, 1));
-    EXPECT_EQ(nullptr, url = UrlEncode(nullptr, 0));
-    EXPECT_EQ(nullptr, url = UrlDecode(nullptr, 0));
+    EXPECT_EQ(nullptr, url = UrlEncode(nullptr));
+    EXPECT_EQ(nullptr, url = UrlDecode(nullptr));
 }
 
 TEST_F(CommonUtilsTest, LockUnlockFile)

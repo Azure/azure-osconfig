@@ -1374,7 +1374,7 @@ int CheckSmallFileContainsText(const char* fileName, const char* text, char** re
 
     if (NULL != (contents = LoadStringFromFile(fileName, false, log)))
     {
-        contentsLength = strlen(text);
+        contentsLength = strlen(contents);
         
         if (0 == strncmp(contents, text, (textLength <= contentsLength) ? textLength : contentsLength))
         {

@@ -3,13 +3,13 @@
 
 #include "Internal.h"
 
-char* UrlEncode(const char* target, size_t targetSize)
+char* UrlEncode(const char* target)
 {
-    size_t i = 0, j = 0;
+    size_t targetSize = 0, i = 0, j = 0;
     int encodedLength = 0;
     char* encodedTarget = NULL;
 
-    if ((NULL == target) || (0 == targetSize))
+    if ((NULL == target) || (0 == (targetSize = strlen(target))))
     {
         return NULL;
     }
@@ -43,14 +43,14 @@ char* UrlEncode(const char* target, size_t targetSize)
     return encodedTarget;
 }
 
-char* UrlDecode(const char* target, size_t targetSize)
+char* UrlDecode(const char* target)
 {
-    size_t i = 0, j = 0;
+    size_t targetSize = 0, i = 0, j = 0;
     char buffer[3] = {0};
     unsigned int value = 0;
     char* decodedTarget = NULL;
 
-    if ((NULL == target) || (0 == targetSize))
+    if ((NULL == target) || (0 == (targetSize = strlen(target))))
     {
         return NULL;
     }
@@ -78,7 +78,7 @@ char* UrlDecode(const char* target, size_t targetSize)
                     buffer[2] = 0;
                     
                     sscanf(buffer, "%x", &value);
-                    snprintf(&decodedTarget[i], targetSize - i, "%c", value);
+                    sprintf(&decodedTarget[i], "%c", value);
                 }
                 
                 j += sizeof(buffer);

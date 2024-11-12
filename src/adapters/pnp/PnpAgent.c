@@ -577,7 +577,7 @@ int main(int argc, char *argv[])
     snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion, 
         cpuType, cpuVendor, cpuModel, totalMemory, freeMemory, kernelName, kernelRelease, kernelVersion, productVendor, productName);
         
-    if (NULL != (encodedProductInfo = UrlEncode(g_productInfo, sizeof(g_productInfo))))
+    if (NULL != (encodedProductInfo = UrlEncode(g_productInfo)))
     {
         if (strlen(encodedProductInfo) >= sizeof(g_productInfo))
         {
