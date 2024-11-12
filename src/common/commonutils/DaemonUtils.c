@@ -16,7 +16,7 @@ bool IsValidDaemonName(const char *name)
     size_t length = 0, i = 0;
     bool result = true;
     
-    if ((NULL != name) && (0 < (length = strnlen(name, MAX_DAEMON_NAME_LENGTH))))
+    if ((NULL != name) && (0 < (length = strlen(name))) && (MAX_DAEMON_NAME_LENGTH > length))
     {
         for (i = 0; i < length; i++) 
         {

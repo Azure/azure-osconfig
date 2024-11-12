@@ -34,7 +34,7 @@ char* UrlEncode(const char* target)
             }
             else
             {
-                snprintf(&encodedTarget[j], encodedLength - j, "%%%02X", target[i]);
+                sprintf(&encodedTarget[j], "%%%02X", target[i]);
                 j += strlen(&encodedTarget[j]);
             }
         }

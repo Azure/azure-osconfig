@@ -1203,9 +1203,10 @@ static bool IsValidGrepArgument(const char* text)
     return IsValidDaemonName(text);
 }
 
+// Some of the common comment characters that can be encountered, add more if necessary
 static bool IsValidCommentCharacter(char c)
 {
-    return ((0 == isalnum(c)) && ('#' != c)) ? false : true;
+    return (('#' == c) || ('/' == c) || ('*' == c) || (';' == c) || ('!' == c)) ? true : false;
 }
 
 int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, void* log)

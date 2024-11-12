@@ -43,18 +43,17 @@ void RemovePrefixUpTo(char* target, char marker)
 void RemovePrefixUpToString(char* target, const char* marker)
 {
     size_t targetLength = 0, markerLength = 0;
-    char* equalSign = NULL;
+    char* found = NULL;
     
     if ((NULL == target) || (0 == (targetLength = strlen(target))) || 
-        (NULL == marker) || (0 == (markerLength = strlen(marker))) ||
-        (markerLength >= targetLength))
+        (NULL == marker) || (0 == (markerLength = strlen(marker))))
     {
         return;
     }
 
-    if ((NULL != (equalSign = strstr(target, marker))) && (0 < (targetLength = strlen(equalSign))))
+    if (NULL != (found = strstr(target, marker)))
     {
-        memmove(target, equalSign, targetLength);
+        memmove(target, found, targetLength);
         target[targetLength] = 0;
     }
 }
