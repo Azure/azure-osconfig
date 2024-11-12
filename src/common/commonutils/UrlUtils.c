@@ -27,18 +27,15 @@ char* UrlEncode(const char* target)
                 encodedTarget[j] = target[i];
                 j += 1;
             }
-            else if ((j + 3) < targetSize)
+            else if ('\n' == target[i])
             {
-                if ('\n' == target[i])
-                {
-                    memcpy(&encodedTarget[j], "%0A", sizeof("%0A"));
-                    j += strlen(&encodedTarget[j]);
-                }
-                else
-                {
-                    sprintf(&encodedTarget[j], "%%%02X", target[i]);
-                    j += strlen(&encodedTarget[j]);
-                }
+                memcpy(&encodedTarget[j], "%0A", 3);
+                j += 3;
+            }
+            else
+            {
+                sprintf(&encodedTarget[j], "%%%02X", target[i]);
+                j += 3;
             }
         }
     }
