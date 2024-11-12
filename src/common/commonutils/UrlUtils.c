@@ -9,7 +9,7 @@ static bool IsValidUrlCharacter(char c)
 {
     return (isalnum(c) || ('-' == c) || ('_' == c) || ('.' == c) || ('~' == c) || ('%' == c) || ('\n' == c) ||
         ('!' == c) || ('$' == c) || ('&' == c) || ('\'' == c) || ('(' == c) || (')' == c) || ('*' == c) ||
-        ('+' == c) || (',' == c) || (';' == c) || ('=' == c) || (' ' == c) || ('^' == c) || ('/' == c)) ? true : false;
+        ('+' == c) || (',' == c) || (';' == c) || ('=' == c) || (' ' == c) || ('^' == c) || ('/' == c) || ('@' == c)) ? true : false;
 }
 
 bool IsValidUrl(const char *target)
@@ -80,7 +80,11 @@ char* UrlDecode(const char* target)
     unsigned int value = 0;
     char* decodedTarget = NULL;
 
-    if (false == IsValidUrl(target))
+    /*if (false == IsValidUrl(target))
+    {
+        return NULL;
+    }*/
+    if ((NULL == target) || (0 == (targetLength = strnlen(target, MAX_URL_LENGTH))))
     {
         return NULL;
     }
