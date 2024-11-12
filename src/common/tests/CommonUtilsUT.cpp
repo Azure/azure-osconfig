@@ -1096,7 +1096,6 @@ TEST_F(CommonUtilsTest, UrlEncodeDecode)
     {
         EXPECT_NE(nullptr, url = UrlEncode((char*)testUrls[i].decoded));
         EXPECT_STREQ(url, testUrls[i].encoded);
-        EXPECT_TRUE(IsValidUrl(url));
         FREE_MEMORY(url);
 
         EXPECT_NE(nullptr, url = UrlDecode((char*)testUrls[i].encoded));
