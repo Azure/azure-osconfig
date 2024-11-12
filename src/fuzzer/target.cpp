@@ -322,7 +322,7 @@ static int CheckTextIsFoundInFile_target(const char* data, std::size_t size) noe
 //     return 0;
 // }
 
-static int CheckFileContents_target(const char* data, std::size_t size) noexcept
+static int CheckSmallFileContainsText_target(const char* data, std::size_t size) noexcept
 {
     auto text = g_context.extractVariant(data, size);
     if (text.empty())
@@ -332,7 +332,7 @@ static int CheckFileContents_target(const char* data, std::size_t size) noexcept
 
     auto filename = g_context.makeTempfile(data, size);
     char* reason = nullptr;
-    CheckFileContents(filename.c_str(), text.c_str(), &reason, nullptr);
+    CheckSmallFileContainsText(filename.c_str(), text.c_str(), &reason, nullptr);
     g_context.remove(filename);
     free(reason);
     return 0;
@@ -992,7 +992,7 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "CheckTextIsFoundInFile.", CheckTextIsFoundInFile_target },
     // { "CheckMarkedTextNotFoundInFile.", CheckMarkedTextNotFoundInFile_target },
     // { "CheckTextNotFoundInEnvironmentVariable.", CheckTextNotFoundInEnvironmentVariable_target },
-    { "CheckFileContents.", CheckFileContents_target },
+    { "CheckSmallFileContainsText.", CheckSmallFileContainsText_target },
     { "CheckLineNotFoundOrCommentedOut.", CheckLineNotFoundOrCommentedOut_target },
     // { "CheckTextFoundInCommandOutput.", CheckTextFoundInCommandOutput_target },
     { "GetStringOptionFromBuffer.", GetStringOptionFromBuffer_target },
