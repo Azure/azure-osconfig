@@ -20,7 +20,7 @@ char* UrlEncode(const char* target)
     {
         memset(encodedTarget, 0, encodedLength);
 
-        for (i = 0, j = 0; (i < targetSize) && (j < targetSize); i++)
+        for (i = 0, j = 0; (i < targetSize) && (j < encodedLength); i++)
         {
             if (isalnum(target[i]) || ('-' == target[i]) || ('_' == target[i]) || ('.' == target[i]) || ('~' == target[i]))
             {
