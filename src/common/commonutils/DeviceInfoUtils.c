@@ -45,7 +45,7 @@ void RemovePrefixUpToString(char* target, const char* marker)
     size_t targetLength = 0, markerLength = 0;
     char* found = NULL;
     
-    if ((NULL == target) || (0 == (targetLength = strlen(target))) || 
+    if ((NULL == target) || (0 == (targetLength = strlen(target))) ||
         (NULL == marker) || (0 == (markerLength = strlen(marker))) ||
         (markerLength >= targetLength))
     {
@@ -54,6 +54,7 @@ void RemovePrefixUpToString(char* target, const char* marker)
 
     if (NULL != (found = strstr(target, marker)))
     {
+        targetLength = strlen(found);
         memmove(target, found, targetLength);
         target[targetLength] = 0;
     }
