@@ -2,13 +2,50 @@ name: Universal NRP Test
 
 on:
   workflow_dispatch:
+    inputs:
+      policyPackageList:
+        description: 'List of policy packages to test'
+        required: false
+        default: '[]'
   pull_request:
   schedule:
     - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
 
+
+
+env:
+  # Default build matrix - this is where additional distros are added, policy-package are defined either through the workflow_dispatch input or the DEFAULT_PACKAGE_LIST
+  BUILD_MATRIX: |
+    {
+        "target": [
+          { "os": "centos", "version": 8, "package-type": "RPM", "tag": "" },
+          { "os": "debian", "version": 10, "package-type": "DEB", "tag": "" },
+          { "os": "debian", "version": 11, "package-type": "DEB", "tag": "" },
+          { "os": "mariner", "version": 2, "package-type": "RPM", "tag": "" },
+          { "os": "oraclelinux", "version": 8, "package-type": "RPM", "tag": "" },
+          { "os": "rhel", "version": 8, "package-type": "RPM", "tag": "" },
+          { "os": "rhel", "version": 9, "package-type": "RPM", "tag": "" },
+          { "os": "rockylinux", "version": 9, "package-type": "RPM", "tag": "" },
+          { "os": "sles", "version": 15, "package-type": "RPM", "tag": "" },
+          { "os": "ubuntu", "version": "20.04", "package-type": "DEB", "tag": "" },
+          { "os": "ubuntu", "version": "22.04", "package-type": "DEB", "tag": "" }
+        ],
+        "policy-package": [],
+        "arch": ["amd64"],
+        "mode": ["Audit", "Remediate"]
+      }
+  
+  # Default package list to use if no explicit packages are defined in the workflow_dispatch.policyPackageList input
+  DEFAULT_PACKAGE_LIST: |
+    [
+      { "name": "LinuxSshServerSecurityBaseline", "short-name": "SSH", "resource-count": 20 },
+      { "name": "AzureLinuxBaseline", "short-name": "ASB", "resource-count": 168 }
+    ]
+
 jobs:
   package:
     name: Package
+    if: ${{ inputs.policyPackageList == '[]' }}
     uses: ./.github/workflows/package-build.yml
     strategy:
       matrix:
@@ -24,50 +61,72 @@ jobs:
       machine-config: true
       release: ${{ github.event_name == 'pull_request' && false || true }}
 
+  generate-matrix:
+    name: Generate Matrix
+    needs: package
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    if: ${{ always() }}
+    steps:
+      - name: Generate Matrix
+        id: matrix
+        run: |
+          # OSConfig Test Matrix
+          matrix="$(cat <<'EOL'
+          ${{ env.BUILD_MATRIX }}
+          EOL
+          )"
+
+          # If no explicit packages defined, use the default packages
+          if [[ '${{ inputs.policyPackageList }}' == '[]' ]]; then
+          policyPackages="$(cat <<'EOL'
+          ${{ env.DEFAULT_PACKAGE_LIST }}
+          EOL
+          )"
+          else
+          policyPackages="$(cat <<'EOL'
+          ${{ inputs.policyPackageList }}
+          EOL
+          )"
+          fi
+
+          matrix="$(echo $matrix | jq --argjson policyPackages "$policyPackages" '.["policy-package"] += $policyPackages')"
+          echo matrix=$matrix >> $GITHUB_OUTPUT
+
   test:
     name: Test
-    needs: package
+    needs: [package, generate-matrix]
+    if: ${{ always() }}
     runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
     strategy:
       fail-fast: false
-      matrix:
-        target:
-          [
-            { os: centos, version: 8, package-type: RPM, tag: ''},
-            { os: debian, version: 10, package-type: DEB, tag: ''},
-            { os: debian, version: 11, package-type: DEB, tag: ''},
-            { os: mariner, version: 2, package-type: RPM, tag: ''},
-            { os: oraclelinux, version: 8, package-type: RPM, tag: ''},
-            { os: rhel, version: 8, package-type: RPM, tag: ''},
-            { os: rhel, version: 9, package-type: RPM, tag: ''},
-            { os: rockylinux, version: 9, package-type: RPM, tag: ''},
-            { os: sles, version: 15, package-type: RPM, tag: ''},
-            { os: ubuntu, version: 20.04, package-type: DEB, tag: ''},
-            { os: ubuntu, version: 22.04, package-type: DEB, tag: ''},
-          ]
-        policy-package:
-          [
-            { name: LinuxSshServerSecurityBaseline, short-name: SSH, resource-count: 20 },
-            { name: AzureLinuxBaseline, short-name: ASB, resource-count: 168 },
-          ]
-        arch: [amd64]
-        mode: [Audit, Remediate]
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Normalize variables
-        id: normalize
-        run: |
-          output=${{ matrix.target.os }}-${{ matrix.target.version }}_${{ matrix.policy-package.short-name }}-${{ matrix.mode }}
-          echo name=${output} >> $GITHUB_OUTPUT
-
       - uses: actions/download-artifact@v4
+        if: ${{ inputs.policyPackageList == '[]' }}
         id: download
         with:
           name: nrp-test-package
 
+      - name: Normalize variables
+        id: normalize
+        run: |
+          # Normalize the distro names + architectures to match the published packages
+          output=${{ matrix.target.os }}-${{ matrix.target.version }}_${{ matrix.policy-package.short-name }}-${{ matrix.mode }}
+          echo name=${output} >> $GITHUB_OUTPUT
+
+          # Get the Policy Package URL
+          if [[ '${{ inputs.policyPackageList }}' == '[]' ]]; then
+              echo PolicyPackagePath=${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip >> $GITHUB_OUTPUT
+          else
+              wget -O PolicyPackage.zip ${{ matrix.policy-package.policy-package-url }}
+              echo PolicyPackagePath=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
+          fi
+
       - name: Run Guest Configuration Test
-        working-directory: ${{ steps.download.outputs.download-path }}
         run: |
           script="./universalNRPTest.ps1"
           cat >$script <<EOL
@@ -76,7 +135,7 @@ jobs:
           Import-Module Pester -Passthru
 
           \$params = @{
-              PolicyPackage = './${{ matrix.policy-package.name }}.zip'
+              PolicyPackage = '${{ steps.normalize.outputs.PolicyPackagePath }}'
               SkipRemediation = if ('${{ matrix.mode }}' -eq 'Audit') { \$true } else { \$false }
               ResourceCount = ${{ matrix.policy-package.resource-count }}
           }
