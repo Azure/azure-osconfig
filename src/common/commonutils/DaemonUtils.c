@@ -3,6 +3,37 @@
 
 #include "Internal.h"
 
+#define MAX_DAEMON_NAME_LENGTH 256
+
+// Valid systemd deamon name characters for us, not universal, add more here if necessary in the future
+static bool IsValidDaemonNameCharacter(char c)
+{
+    return ((0 == isalnum(c)) && ('_' != c) && ('-' != c) && ('.' != c)) ? false : true;
+}
+
+bool IsValidDaemonName(const char *name) 
+{
+    size_t length = 0, i = 0;
+    bool result = true;
+    
+    if ((NULL != name) && (0 < (length = strlen(name))) && (MAX_DAEMON_NAME_LENGTH > length))
+    {
+        for (i = 0; i < length; i++) 
+        {
+            if (false == (result = IsValidDaemonNameCharacter(name[i])))
+            {
+                break;
+            }
+        }
+    }
+    else
+    {
+        result = false;
+    }
+
+    return result;
+}
+
 static int ExecuteSystemctlCommand(const char* command, const char* daemonName, void* log)
 {
     const char* commandTemplate = "systemctl %s %s";
@@ -12,6 +43,11 @@ static int ExecuteSystemctlCommand(const char* command, const char* daemonName, 
     if ((NULL == command) || (NULL == daemonName))
     {
         OsConfigLogError(log, "ExecuteSystemctlCommand: invalid arguments");
+        return EINVAL;
+    }
+    else if (false == IsValidDaemonName(daemonName))
+    {
+        OsConfigLogError(log, "ExecuteSystemctlCommand: invalid daemon name '%s'", daemonName);
         return EINVAL;
     }
     else if (NULL == (formattedCommand = FormatAllocateString(commandTemplate, command, daemonName)))
@@ -27,7 +63,7 @@ static int ExecuteSystemctlCommand(const char* command, const char* daemonName, 
 
 bool IsDaemonActive(const char* daemonName, void* log)
 {
-    return (0 == ExecuteSystemctlCommand("is-active", daemonName, log)) ? true : false;
+    return (IsValidDaemonName(daemonName) && (0 == ExecuteSystemctlCommand("is-active", daemonName, log))) ? true : false;
 }
 
 bool CheckDaemonActive(const char* daemonName, char** reason, void* log)
@@ -73,6 +109,12 @@ static bool CommandDaemon(const char* command, const char* daemonName, void* log
     int result = 0;
     bool status = true;
 
+    if (false == IsValidDaemonName(daemonName))
+    {
+        OsConfigLogError(log, "CommandDaemon: invalid daemon name '%s'", daemonName);
+        return false;
+    }
+
     if (0 == (result = ExecuteSystemctlCommand(command, daemonName, log)))
     {
         OsConfigLogInfo(log, "Succeeded to %s service '%s'", command, daemonName);
@@ -99,6 +141,12 @@ bool StartDaemon(const char* daemonName, void* log)
 bool EnableAndStartDaemon(const char* daemonName, void* log)
 {
     bool status = true;
+
+    if (false == IsValidDaemonName(daemonName))
+    {
+        OsConfigLogError(log, "EnableAndStartDaemon: invalid daemon name '%s'", daemonName);
+        return false;
+    }
 
     if (false == IsDaemonActive(daemonName, log))
     {

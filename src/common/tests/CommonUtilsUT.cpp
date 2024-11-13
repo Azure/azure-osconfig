@@ -91,7 +91,7 @@ TEST_F(CommonUtilsTest, LoadStringFromSingleByteFile)
     EXPECT_EQ(data[0], contents[0]);
     EXPECT_EQ(0, contents[1]);
     FREE_MEMORY(contents);
-    EXPECT_EQ(0, CheckFileContents(m_path, data, nullptr, nullptr));
+    EXPECT_EQ(0, CheckSmallFileContainsText(m_path, data, nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -202,6 +202,29 @@ TEST_F(CommonUtilsTest, FileEndsInEol)
 
     EXPECT_TRUE(SavePayloadToFile(m_path, noEol, strlen(noEol), nullptr));
     EXPECT_EQ(false, FileEndsInEol(m_path, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, SingleByteFileEndsInEol)
+{
+    const char* eol = "\n";
+    const char* noEol = "0";
+    
+    EXPECT_TRUE(CreateTestFile(m_path, eol));
+    EXPECT_EQ(true, FileEndsInEol(m_path, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+
+    EXPECT_TRUE(CreateTestFile(m_path, noEol));
+    EXPECT_EQ(false, FileEndsInEol(m_path, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, ZeroLengthFileEndsInEol)
+{
+    int fileDescriptor = -1;
+    EXPECT_NE(-1, fileDescriptor = open(m_path, O_CREAT | O_WRONLY, 0644));
+    EXPECT_EQ(false, FileEndsInEol(m_path, nullptr));
+    EXPECT_EQ(0, close(fileDescriptor));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
@@ -959,7 +982,9 @@ TEST_F(CommonUtilsTest, RemovePrefixUpTo)
         { "Test$Test=Test", '=' },
         { "@Test", '@' },
         { "123456789Test", '9' },
-        { "!@!#@$#$^%^^%&^*&()(_)(+-Test", '-' }
+        { "!@!#@$#$^%^^%&^*&()(_)(+-Test", '-' },
+        { "option=Test", '=' },
+
     };
 
     int numTargets = ARRAY_SIZE(targets);
@@ -970,6 +995,7 @@ TEST_F(CommonUtilsTest, RemovePrefixUpTo)
     {
         EXPECT_NE(nullptr, testString = AllocateAndCopyTestString(targets[i].target));
         RemovePrefixUpTo(testString, targets[i].marker);
+        RemovePrefix(testString, targets[i].marker);
         EXPECT_STREQ(testString, expected);
         FREE_MEMORY(testString);
     }
@@ -986,13 +1012,15 @@ TEST_F(CommonUtilsTest, RemovePrefixUpToString)
 {
     MarkedTestStringTargets targets[] = {
         { "Test", "&", "Test" },
+        { "Test", "", "Test" },
         { "123=Test", "=Te", "=Test" },
         { "jshsaHGFsajhgksajge27u313987yhjsA,NSQ.I3U21P903PUDSJQ#Test", "NSQ.I", "NSQ.I3U21P903PUDSJQ#Test" },
         { "1$Test", "$T", "$Test" },
         { "Test$Test=Test", "$Test", "$Test=Test" },
         { "@Test", "@", "@Test" },
         { "123456789Test", "89", "89Test" },
-        { "!@!#@$#$^%^^%&^*&()(_)(+-Test", "+-", "+-Test" }
+        { "!@!#@$#$^%^^%&^*&()(_)(+-Test", "+-", "+-Test" },
+        { "option=Test", "=", "=Test" }
     };
 
     int numTargets = ARRAY_SIZE(targets);
@@ -1100,6 +1128,9 @@ TEST_F(CommonUtilsTest, DuplicateString)
 {
     char* duplicate = nullptr;
     EXPECT_EQ(nullptr, duplicate = DuplicateString(nullptr));
+    EXPECT_NE(nullptr, duplicate = DuplicateString(""));
+    EXPECT_STREQ("", duplicate);
+    FREE_MEMORY(duplicate);
     EXPECT_NE(nullptr, duplicate = DuplicateString(m_data));
     EXPECT_STREQ(m_data, duplicate);
     FREE_MEMORY(duplicate);
@@ -1591,7 +1622,8 @@ TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
         "# Test PATH!\n"
         "#Another test !PATH\n"
         "#\n"
-        "Test PATH..";
+        "Test PATH..\n"
+        ";Test PATH..";
 
     EXPECT_TRUE(CreateTestFile(m_path, test));
 
@@ -1623,6 +1655,8 @@ TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
     EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "PATH", "!", '#', nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", '#', nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", "..", '#', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", ".", ';', nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "PATH", "..", ';', nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
@@ -1644,13 +1678,13 @@ TEST_F(CommonUtilsTest, CheckTextNotFoundInEnvironmentVariable)
     EXPECT_EQ(0, unsetenv("TESTVAR"));
 }
 
-TEST_F(CommonUtilsTest, CheckFileContents)
+TEST_F(CommonUtilsTest, CheckSmallFileContainsText)
 {
-    EXPECT_EQ(EINVAL, CheckFileContents(nullptr, "2", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileContents(nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileContents(m_path, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileContents(m_path, "", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileContents("", "2", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(nullptr, "2", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(m_path, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(m_path, "", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText("", "2", nullptr, nullptr));
 
     const char* test[] = {"2", "ABC", "~1", "This is a test", "One line\nAnd another\n"};
     size_t sizeOfTest = ARRAY_SIZE(test);
@@ -1658,9 +1692,16 @@ TEST_F(CommonUtilsTest, CheckFileContents)
     for (size_t i = 0; i < sizeOfTest; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, test[i]));
-        EXPECT_EQ(0, CheckFileContents(m_path, test[i], nullptr, nullptr));
+        EXPECT_EQ(0, CheckSmallFileContainsText(m_path, test[i], nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
+
+    char bigBuffer[1024] = {0};
+    memset(bigBuffer, 1, sizeof(bigBuffer) - 1);
+    EXPECT_TRUE(CreateTestFile(m_path, bigBuffer));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(m_path, bigBuffer, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckSmallFileContainsText(m_path, "11", nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, OtherOptionalTests)
@@ -2341,4 +2382,43 @@ TEST_F(CommonUtilsTest, AsbIsValidResourceIdRuleId)
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, goodRuleId, payloadKey, nullptr));
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(nullptr, goodRuleId, payloadKey, nullptr));
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, nullptr, payloadKey, nullptr));
+}
+
+TEST_F(CommonUtilsTest, IsValidDaemonName)
+{
+    const char* goodNames[] = {
+        "test",
+        "osconfigtest",
+        "osconfig-test",
+        "osconfig.test",
+        "123_test",
+        "test-123_os.config"
+    };
+    int goodNamesSize = ARRAY_SIZE(goodNames);
+
+    const char* badNames[] = {
+        "(test",
+        "echo test",
+        "[123]",
+        "!foo@test",
+        "#$%^",
+        "1234567890123456789012345678901234567890123456789012345678901234567890"
+        "1234567890123456789012345678901234567890123456789012345678901234567890"
+        "1234567890123456789012345678901234567890123456789012345678901234567890"
+        "1234567890123456789012345678901234567890123456789012345678901234567890"
+        "12345678901234567890"
+    };
+    int badNamesSize = ARRAY_SIZE(badNames);
+
+    int i = 0;
+
+    for (i = 0; i < goodNamesSize; i++)
+    {
+        EXPECT_TRUE(IsValidDaemonName(goodNames[i]));
+    }
+
+    for (i = 0; i < badNamesSize; i++)
+    {
+        EXPECT_FALSE(IsValidDaemonName(badNames[i]));
+    }
 }

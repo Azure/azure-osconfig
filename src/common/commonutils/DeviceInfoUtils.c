@@ -11,17 +11,16 @@ typedef struct OS_DISTRO_INFO
     char* description;
 } OS_DISTRO_INFO;
 
-void RemovePrefixBlanks(char* target)
+void RemovePrefix(char* target, char marker)
 {
-    if (NULL == target)
+    size_t targetLength = 0, i = 0;
+
+    if ((NULL == target) || (0 == (targetLength = strlen(target))))
     {
         return;
     }
 
-    int targetLength =(int)strlen(target);
-    int i = 0;
-    
-    while ((i < targetLength) && (' ' == target[i]))
+    while ((i < targetLength) && (marker == target[i]))
     {
         i += 1;
     }
@@ -30,51 +29,47 @@ void RemovePrefixBlanks(char* target)
     target[targetLength - i] = 0;
 }
 
+void RemovePrefixBlanks(char* target)
+{
+    RemovePrefix(target, ' ');
+}
+
 void RemovePrefixUpTo(char* target, char marker)
 {
-    if (NULL == target)
-    {
-        return;
-    }
-
-    int targetLength =(int)strlen(target);
-    char* equalSign = strchr(target, marker);
-
-    if (equalSign)
-    {
-        targetLength = strlen(equalSign + 1);
-        memmove(target, equalSign + 1, targetLength);
-        target[targetLength] = 0;
-    }
+    char markerString[2] = {marker, 0};
+    RemovePrefixUpToString(target, markerString);
 }
 
 void RemovePrefixUpToString(char* target, const char* marker)
 {
-    if ((NULL == target) || (NULL == marker))
+    size_t targetLength = 0, markerLength = 0;
+    char* found = NULL;
+    
+    if ((NULL == target) || (0 == (targetLength = strlen(target))) ||
+        (NULL == marker) || (0 == (markerLength = strlen(marker))) ||
+        (markerLength >= targetLength))
     {
         return;
     }
 
-    int targetLength = 0;
-    char* equalSign = strstr(target, marker);
-
-    if (equalSign)
+    if (NULL != (found = strstr(target, marker)))
     {
-        targetLength = (int)strlen(equalSign);
-        memmove(target, equalSign, targetLength);
+        targetLength = strlen(found);
+        memmove(target, found, targetLength);
         target[targetLength] = 0;
     }
 }
 
 void RemoveTrailingBlanks(char* target)
 {
+    int i = 0;
+
     if (NULL == target)
     {
         return;
     }
 
-    int targetLength = (int)strlen(target);
-    int i = targetLength;
+    i = (int)strlen(target);
 
     while ((i > 0) && (' ' == target[i - 1]))
     {
@@ -85,14 +80,14 @@ void RemoveTrailingBlanks(char* target)
 
 void TruncateAtFirst(char* target, char marker)
 {
+    char* found = NULL;
+
     if (NULL == target)
     {
         return;
     }
 
-    char* found = strchr(target, marker);
-
-    if (found)
+    if (NULL != (found = strchr(target, marker)))
     {
         found[0] = 0;
     }
@@ -105,10 +100,10 @@ char* GetOsPrettyName(void* log)
 
     if ((0 == ExecuteCommand(NULL, osPrettyNameCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
+        RemovePrefixUpTo(textResult, '=');
+        RemovePrefix(textResult, '=');
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
-        RemovePrefixUpTo(textResult, '=');
-        RemovePrefixBlanks(textResult);
     }
     else
     {
@@ -138,11 +133,11 @@ char* GetOsName(void* log)
         // PRETTY_NAME did not work, try ID
         if ((0 == ExecuteCommand(NULL, osNameCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
         {
+            RemovePrefixUpTo(textResult, '=');
+            RemovePrefix(textResult, '=');
+            TruncateAtFirst(textResult, ' ');
             RemovePrefixBlanks(textResult);
             RemoveTrailingBlanks(textResult);
-            RemovePrefixUpTo(textResult, '=');
-            RemovePrefixBlanks(textResult);
-            TruncateAtFirst(textResult, ' ');
         }
         else
         {
@@ -165,11 +160,11 @@ char* GetOsVersion(void* log)
 
     if ((0 == ExecuteCommand(NULL, osVersionCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
+        RemovePrefixUpTo(textResult, '=');
+        TruncateAtFirst(textResult, '=');
+        TruncateAtFirst(textResult, ' ');
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
-        RemovePrefixUpTo(textResult, '=');
-        RemovePrefixBlanks(textResult);
-        TruncateAtFirst(textResult, ' ');
     }
     else
     {
@@ -191,6 +186,7 @@ static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace,
     if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixUpTo(textResult, ':');
+        RemovePrefix(textResult, ':');
         RemovePrefixBlanks(textResult);
         
         if (truncateAtFirstSpace)
@@ -501,11 +497,13 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
                 RemovePrefixBlanks(result);
                 RemoveTrailingBlanks(result);
                 RemovePrefixUpTo(result, separator);
+                RemovePrefix(result, separator);
                 RemovePrefixBlanks(result);
 
                 if ('"' == result[0])
                 {
                     RemovePrefixUpTo(result, '"');
+                    RemovePrefix(result, '"');
                     TruncateAtFirst(result, '"');
                 }
             }
@@ -738,6 +736,7 @@ static long GetPasswordDays(const char* name, void* log)
         {
             RemovePrefixBlanks(result);
             RemovePrefixUpTo(result, ' ');
+            RemovePrefixBlanks(result);
             RemoveTrailingBlanks(result);
 
             days = atol(result);
@@ -905,7 +904,7 @@ int EnableVirtualMemoryRandomization(void* log)
     const char* fullRandomization = "2";
     int status = 0;
 
-    if (0 == CheckFileContents(procSysKernelRandomizeVaSpace, fullRandomization, NULL, log))
+    if (0 == CheckSmallFileContainsText(procSysKernelRandomizeVaSpace, fullRandomization, NULL, log))
     {
         OsConfigLogInfo(log, "EnableVirtualMemoryRandomization: full virtual memory randomization '%s' is already enabled in '%s'", fullRandomization, procSysKernelRandomizeVaSpace);
     }
@@ -936,6 +935,7 @@ bool IsCommodore(void* log)
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
         RemovePrefixUpTo(textResult, '=');
+        RemovePrefix(textResult, '=');
         RemovePrefixBlanks(textResult);
 
         if (0 == strcmp(textResult, PRODUCT_NAME_AZURE_COMMODORE))

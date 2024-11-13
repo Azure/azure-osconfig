@@ -99,7 +99,7 @@ int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason
 int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, void* log);
 int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, void* log);
 int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, char** reason, void* log);
-int CheckFileContents(const char* fileName, const char* text, char** reason, void* log);
+int CheckSmallFileContainsText(const char* fileName, const char* text, char** reason, void* log);
 int FindTextInFolder(const char* directory, const char* text, void* log);
 int CheckTextNotFoundInFolder(const char* directory, const char* text, char** reason, void* log);
 int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, void* log);
@@ -172,14 +172,15 @@ bool IsCurrentOs(const char* name, void* log);
 bool IsRedHatBased(void* log);
 bool IsCommodore(void* log);
 
+void RemovePrefix(char* target, char marker);
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);
 void RemovePrefixUpToString(char* target, const char* marker);
 void RemoveTrailingBlanks(char* target);
 void TruncateAtFirst(char* target, char marker);
 
-char* UrlEncode(char* target);
-char* UrlDecode(char* target);
+char* UrlEncode(const char* target);
+char* UrlDecode(const char* target);
 
 bool LockFile(FILE* file, void* log);
 bool UnlockFile(FILE* file, void* log);
@@ -192,6 +193,7 @@ int SleepMilliseconds(long milliseconds);
 
 bool FreeAndReturnTrue(void* value);
 
+bool IsValidDaemonName(const char *name);
 bool IsDaemonActive(const char* daemonName, void* log);
 bool CheckDaemonActive(const char* daemonName, char** reason, void* log);
 bool CheckDaemonNotActive(const char* daemonName, char** reason, void* log);

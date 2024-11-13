@@ -122,39 +122,38 @@ bool FileEndsInEol(const char* fileName, void* log)
 {
     struct stat statStruct = {0};
     FILE* file = NULL;
-    char last = 0;
     int status = 0;
     bool result = false;
 
-    if (NULL != (file = fopen(fileName, "r")))
+    if (0 == (status = stat(fileName, &statStruct)))
     {
-        if (0 == (status = stat(fileName, &statStruct)))
+        if (statStruct.st_size > 0)
         {
-            if (statStruct.st_size > 0)
+            if (NULL != (file = fopen(fileName, "r")))
             {
                 if (0 == (status = fseek(file, -1, SEEK_END)))
                 {
-                    if (EOL == (last = fgetc(file)))
+                    if (EOL == fgetc(file))
                     {
                         result = true;
                     }
                 }
                 else
                 {
-                    OsConfigLogError(log, "FileEndsInEol: failed to seek to the end of '%s'", fileName);
+                    OsConfigLogError(log, "FileEndsInEol: fseek to end of '%s' failed with %d (errno: %d)", fileName, status, errno);
                 }
+
+                fclose(file);
+            }
+            else
+            {
+                OsConfigLogError(log, "FileEndsInEol: failed to open '%s' for reading", fileName);
             }
         }
-        else
-        {
-            OsConfigLogError(log, "FileEndsInEol: stat('%s') failed with %d (errno: %d)", fileName, status, errno);
-        }
-
-        fclose(file);
     }
     else
     {
-        OsConfigLogError(log, "FileEndsInEol: failed to open '%s' for reading", fileName);
+        OsConfigLogError(log, "FileEndsInEol: stat('%s') failed with %d (errno: %d)", fileName, status, errno);
     }
 
     return result;
@@ -170,7 +169,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
         return result;
     }
 
-    // If the file exists and there is no EOL at the end of file, add one before the append
+    // If the file exists and there is no EOL at the end of file, try to add one before the append
     if (FileExists(fileName) && (false == FileEndsInEol(fileName, log)))
     {
         if (false == SaveToFile(fileName, "a", "\n", 1, log))
@@ -181,7 +180,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
 
     if (false == (result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log)))
     {
-        OsConfigLogError(log, "AppendPayloadToFile: failed to append '%s' to '%s'", payload, fileName);
+        OsConfigLogError(log, "AppendPayloadToFile: failed to append '%.*s' to '%s'", payloadSizeBytes, payload, fileName);
     }
 
     return result;
@@ -1199,6 +1198,17 @@ int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** rea
     return result;
 }
 
+static bool IsValidGrepArgument(const char* text)
+{
+    return IsValidDaemonName(text);
+}
+
+// Some of the common comment characters that can be encountered, add more if necessary
+static bool IsValidCommentCharacter(char c)
+{
+    return (('#' == c) || ('/' == c) || ('*' == c) || (';' == c) || ('!' == c)) ? true : false;
+}
+
 int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, void* log)
 {
     const char* commandTemplate = "grep -v '^%c' %s | grep %s";
@@ -1209,7 +1219,8 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
     bool foundMarker = false;
     int status = 0;
 
-    if ((!FileExists(fileName)) || (NULL == text) || (NULL == marker) || (0 == strlen(text)) || (0 == strlen(marker)))
+    if ((false == FileExists(fileName)) || (NULL == text) || (NULL == marker) || (0 == strlen(text)) || (0 == strlen(marker)) || 
+        (false == IsValidGrepArgument(text)) || (false == IsValidCommentCharacter(commentCharacter)))
     {
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile called with invalid arguments");
         return EINVAL;
@@ -1271,7 +1282,7 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
     bool foundText = false;
     int status = 0;
 
-    if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text)))
+    if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text) || (false == IsValidDaemonName(variableName))))
     {
         OsConfigLogError(log, "CheckTextNotFoundInEnvironmentVariable called with invalid arguments");
         return EINVAL;
@@ -1343,31 +1354,36 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
     return status;
 }
 
-int CheckFileContents(const char* fileName, const char* text, char** reason, void* log)
+int CheckSmallFileContainsText(const char* fileName, const char* text, char** reason, void* log)
 {
+    struct stat statStruct = {0};
     char* contents = NULL;
     size_t textLength = 0, contentsLength = 0;
     int status = 0;
 
-    if ((NULL == fileName) || (NULL == text) || (0 == strlen(fileName)) || (0 == strlen(text)))
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(fileName)) || (0 == (textLength = strlen(text))))
     {
-        OsConfigLogError(log, "CheckFileContents called with invalid arguments");
+        OsConfigLogError(log, "CheckSmallFileContainsText called with invalid arguments");
+        return EINVAL;
+    }
+    else if ((0 == stat(fileName, &statStruct)) && ((statStruct.st_size > MAX_STRING_LENGTH)))
+    {
+        OsConfigLogError(log, "CheckSmallFileContainsText: file is too large (%lu bytes, maximum supported: %d bytes)", statStruct.st_size, MAX_STRING_LENGTH);
         return EINVAL;
     }
 
     if (NULL != (contents = LoadStringFromFile(fileName, false, log)))
     {
-        textLength = strlen(text);
-        contentsLength = strlen(text);
+        contentsLength = strlen(contents);
         
         if (0 == strncmp(contents, text, (textLength <= contentsLength) ? textLength : contentsLength))
         {
-            OsConfigLogInfo(log, "CheckFileContents: '%s' matches contents of '%s'", text, fileName);
+            OsConfigLogInfo(log, "CheckSmallFileContainsText: '%s' matches contents of '%s'", text, fileName);
             OsConfigCaptureSuccessReason(reason, "'%s' matches contents of '%s'", text, fileName);
         }
         else
         {
-            OsConfigLogInfo(log, "CheckFileContents: '%s' does not match contents of '%s' ('%s')", text, fileName, contents);
+            OsConfigLogInfo(log, "CheckSmallFileContainsText: '%s' does not match contents of '%s' ('%s')", text, fileName, contents);
             OsConfigCaptureReason(reason, "'%s' does not match contents of '%s'", text, fileName);
             status = ENOENT;
         }
@@ -1608,15 +1624,16 @@ static int FindTextInCommandOutput(const char* command, const char* text, void* 
     char* results = NULL;
     int status = 0;
 
-    if ((NULL == command) || (NULL == text))
+    if ((NULL == command) || (NULL == text) || (0 == strlen(command)) || (0 == strlen(text)))
     {
         OsConfigLogError(log, "FindTextInCommandOutput called with invalid argument");
         return EINVAL;
     }
 
-    if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log)))
+    // Execute this command with a 60 seconds timeout
+    if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 60, &results, NULL, log)))
     {
-        if (NULL != strstr(results, text))
+        if ((NULL != results) && (0 < strlen(results)) && (NULL != strstr(results, text)))
         {
             OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' found in '%s' output", text, command);
         }
@@ -1680,7 +1697,7 @@ int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char
 char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
 {
     char* found = NULL;
-    char* internal = NULL;
+    char* temp = NULL;
     char* result = NULL;
     
     if ((NULL == buffer) || (NULL == option))
@@ -1689,13 +1706,14 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
         return result;
     }
 
-    if (NULL == (internal = DuplicateString(buffer)))
+    if (NULL == (temp = DuplicateString(buffer)))
     {
         OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate buffer string failed (%d)", errno);
     }
-    else if (NULL != (found = strstr(internal, option)))
+    else if (NULL != (found = strstr(temp, option)))
     {
         RemovePrefixUpTo(found, separator);
+        RemovePrefix(found, separator);
         RemovePrefixBlanks(found);
         RemoveTrailingBlanks(found);
         TruncateAtFirst(found, EOL);
@@ -1709,7 +1727,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
         }
     }
 
-    FREE_MEMORY(internal);
+    FREE_MEMORY(temp);
     return result;
 }
 

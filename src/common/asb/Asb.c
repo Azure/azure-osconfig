@@ -1897,11 +1897,11 @@ static char* AuditEnsureDisabledInstallationOfJffs2FileSystem(void* log)
 static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(void* log)
 {
     char* reason = NULL;
-    if (0 == CheckFileContents("/proc/sys/kernel/randomize_va_space", "2", &reason, log))
+    if (0 == CheckSmallFileContainsText("/proc/sys/kernel/randomize_va_space", "2", &reason, log))
     {
         return reason;
     }
-    CheckFileContents("/proc/sys/kernel/randomize_va_space", "1", &reason, log);
+    CheckSmallFileContainsText("/proc/sys/kernel/randomize_va_space", "1", &reason, log);
     return reason;
 }
 

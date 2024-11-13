@@ -5,23 +5,12 @@
 
 char* DuplicateString(const char* source)
 {
-    int length = 0;
-    char* duplicate = NULL;
-
     if (NULL == source)
     {
-        return duplicate;
+        return NULL;
     }
 
-    length = (int)strlen(source);
-    duplicate = (char*)malloc(length + 1);
-    if (NULL != duplicate)
-    {
-        memcpy(duplicate, source, length);
-        duplicate[length] = 0;
-    }
-
-    return duplicate;
+    return strdup(source);
 }
 
 char* DuplicateStringToLowercase(const char* source)
@@ -41,13 +30,12 @@ char* DuplicateStringToLowercase(const char* source)
     return duplicate;
 }
 
-#define DEFAULT_FORMAT_ALLOCATE_STRING_LENGTH 512
 char* FormatAllocateString(const char* format, ...)
 {
     char* buffer = NULL;
     char* stringToReturn = NULL;
     int formatResult = 0;
-    int sizeOfBuffer = DEFAULT_FORMAT_ALLOCATE_STRING_LENGTH;
+    int sizeOfBuffer = MAX_STRING_LENGTH;
 
     if (NULL == format) 
     {

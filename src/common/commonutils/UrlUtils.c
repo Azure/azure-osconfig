@@ -3,89 +3,115 @@
 
 #include "Internal.h"
 
-char* UrlEncode(char* target)
+char* UrlEncode(const char* target)
 {
-    if (NULL == target)
+    size_t targetSize = 0, encodedLength = 0, i = 0, j = 0;
+    char* encodedTarget = NULL;
+
+    if ((NULL == target) || (0 == (targetSize = strlen(target))))
     {
         return NULL;
     }
 
-    int i = 0, j = 0;
-    int targetLength = (int)strlen(target);
-    int encodedLength = (3 * targetLength) + 1;
-    char* encodedTarget = (char*)malloc(encodedLength);
-    if (NULL != encodedTarget)
+    encodedLength = (3 * targetSize) + 1;
+
+    if (NULL != (encodedTarget = (char*)malloc(encodedLength)))
     {
         memset(encodedTarget, 0, encodedLength);
 
-        for (i = 0; i < targetLength; i++)
+        for (i = 0, j = 0; (i < targetSize) && (j < encodedLength - 1); i++)
         {
-            if ((isalnum(target[i])) || ('-' == target[i]) || ('_' == target[i]) || ('.' == target[i]) || ('~' == target[i]))
+            if (isalnum(target[i]) || ('-' == target[i]) || ('_' == target[i]) || ('.' == target[i]) || ('~' == target[i]))
             {
-                encodedTarget[j] = target[i];
-                j += 1;
+                encodedTarget[j++] = target[i];
             }
-            else if ('\n' == target[i])
+            else if ('\n' == target[i]) 
             {
-                memcpy(&encodedTarget[j], "%0A", sizeof("%0A"));
-                j += strlen(&encodedTarget[j]);
+                if ((j + 3) < encodedLength) 
+                {
+                    memcpy(&encodedTarget[j], "%0A", 3);
+                    j += 3;
+                }
+                else 
+                {
+                    FREE_MEMORY(encodedTarget);
+                    break;
+                }
             }
-            else
+            else 
             {
-                sprintf(&encodedTarget[j], "%%%02X", target[i]);
-                j += strlen(&encodedTarget[j]);
+                if ((j + 3) < encodedLength) 
+                {
+                    snprintf(&encodedTarget[j], 4, "%%%02X", (unsigned char)target[i]);
+                    j += 3;
+                }
+                else 
+                {
+                    FREE_MEMORY(encodedTarget);
+                    break;
+                }
             }
+        }
+        
+        if (NULL != encodedTarget)
+        {
+            encodedTarget[j] = 0;
         }
     }
 
     return encodedTarget;
 }
 
-char* UrlDecode(char* target)
+char* UrlDecode(const char* target)
 {
-    int i = 0, j = 0;
+    size_t targetSize = 0, i = 0, j = 0;
     char buffer[3] = {0};
     unsigned int value = 0;
-    int targetLength = 0;
     char* decodedTarget = NULL;
 
-    if (NULL == target)
+    if ((NULL == target) || (0 == (targetSize = strlen(target))))
     {
         return NULL;
     }
 
-    targetLength = (int)strlen(target);
-    
-    // The length of the decoded string is the same as the length of the encoded string or smaller
-    decodedTarget = (char*)malloc(targetLength + 1);
-    if (NULL != decodedTarget)
+    if (NULL != (decodedTarget = (char*)malloc(targetSize + 1)))
     {
-        memset(decodedTarget, 0, targetLength + 1);
+        memset(decodedTarget, 0, targetSize + 1);
 
-        for (i = 0, j = 0; (i < targetLength) && (j < targetLength); i++)
+        for (i = 0, j = 0; (i < targetSize) && (j < targetSize); i++)
         {
-            if ((isalnum(target[j])) || ('-' == target[j]) || ('_' == target[j]) || ('.' == target[j]) || ('~' == target[j]))
+            if (isalnum(target[j]) || ('-' == target[j]) || ('_' == target[j]) || ('.' == target[j]) || ('~' == target[j]))
             {
                 decodedTarget[i] = target[j];
                 j += 1;
             }
             else if ('%' == target[j])
             {
-                if (((j + 2) < targetLength) && ('0' == target[j + 1]) && ('A' == toupper(target[j + 2])))
+                if (((j + 2) < targetSize) && isxdigit(target[j + 1]) && isxdigit(target[j + 2]))
                 {
-                    decodedTarget[i] = '\n';
-                }
-                else
-                {
-                    memcpy(buffer, &target[j + 1], 2);
+                    buffer[0] = target[j + 1];
+                    buffer[1] = target[j + 2];
                     buffer[2] = 0;
-                    
                     sscanf(buffer, "%x", &value);
-                    sprintf(&decodedTarget[i], "%c", value);
+                    decodedTarget[i] = (char)value;
+                    j += 3;
                 }
-                
-                j += sizeof(buffer);
+                else 
+                {
+                    FREE_MEMORY(decodedTarget);
+                    break;
+                }
             }
+            else 
+            {
+                FREE_MEMORY(decodedTarget);
+                break;
+            }
+        }
+        
+        if (NULL != decodedTarget)
+        {
+            decodedTarget[i] = 0;
         }
     }
 
