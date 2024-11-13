@@ -221,9 +221,10 @@ TEST_F(CommonUtilsTest, SingleByteFileEndsInEol)
 
 TEST_F(CommonUtilsTest, ZeroLengthFileEndsInEol)
 {
-    int fd = -1;
-    EXPECT_NE(-1, fd = open(m_path, O_CREAT | O_WRONLY, 0644));
+    int fileDescriptor = -1;
+    EXPECT_NE(-1, fileDescriptor = open(m_path, O_CREAT | O_WRONLY, 0644));
     EXPECT_EQ(false, FileEndsInEol(m_path, nullptr));
+    EXPECT_EQ(0, close(fileDescriptor));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
