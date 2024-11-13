@@ -38,11 +38,6 @@ jobs:
         with:
           name: ${{ inputs.target }}
 
-      - name: Create osconfig.json
-        run: |
-          sudo mkdir -p /etc/osconfig
-          sudo cp -r ./src/adapters/pnp/daemon/osconfig.json /etc/osconfig/osconfig.json
-
       - name: Run moduletest
         working-directory: ${{ steps.download.outputs.download-path }}/modules/test
         run: |
@@ -56,7 +51,7 @@ jobs:
 
             echo -n "testing $name ... "
 
-            if output=$(sudo ./moduletest $recipe --bin ../bin); then
+            if output=$(sudo ./moduletest $recipe --bin ../bin --config ../../src/adapters/pnp/daemon/osconfig.json ); then
               echo passed
             else
               echo failed

@@ -6,7 +6,7 @@
 #include <math.h>
 
 #define DEFAULT_BIN_PATH "/usr/lib/osconfig"
-#define OSCONFIG_CONFIG_FILE "/etc/osconfig/osconfig.json"
+#define DEFAULT_OSCONFIG_CONFIG_FILE "/etc/osconfig/osconfig.json"
 
 #define AZURE_OSCONFIG "Azure OSConfig"
 
@@ -92,6 +92,7 @@ typedef struct FAILURE
 } FAILURE;
 
 static bool g_verbose = false;
+static const char* g_osconfig_config_file = DEFAULT_OSCONFIG_CONFIG_FILE;
 
 void FreeStep(STEP* step)
 {
@@ -739,9 +740,9 @@ int GetClientName(char** client)
     JSON_Value* config = NULL;
     JSON_Object* configObject = NULL;
 
-    if (NULL == (config = json_parse_file(OSCONFIG_CONFIG_FILE)))
+    if (NULL == (config = json_parse_file(g_osconfig_config_file)))
     {
-        LOG_ERROR("Failed to parse %s\n", OSCONFIG_CONFIG_FILE);
+        LOG_ERROR("Failed to parse %s\n", g_osconfig_config_file);
         status = EINVAL;
     }
     else if (NULL == (configObject = json_value_get_object(config)))
@@ -782,6 +783,7 @@ void Usage(const char* executable)
     printf("\n");
     printf("options:\n");
     printf("  --bin <path>  path to load modules from (default: %s)\n", DEFAULT_BIN_PATH);
+    printf("  --config <path>  path of osconfig.json from (default: %s)\n", DEFAULT_OSCONFIG_CONFIG_FILE);
     printf("  --verbose     enable verbose logging\n");
     printf("  --help        display this help and exit\n");
 }
@@ -834,6 +836,19 @@ int main(int argc, char const* argv[])
             else
             {
                 printf("missing argument for --bin\n");
+                result = EXIT_FAILURE;
+                break;
+            }
+        }
+        else if (strcmp(argv[i], "--config") == 0)
+        {
+            if (i + 1 < argc)
+            {
+                g_osconfig_config_file = argv[++i];
+            }
+            else
+            {
+                printf("missing argument for --config\n");
                 result = EXIT_FAILURE;
                 break;
             }
