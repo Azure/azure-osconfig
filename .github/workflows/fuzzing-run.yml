@@ -50,7 +50,9 @@ jobs:
 
       - name: Run osconfig-fuzzer
         working-directory: ${{ steps.download.outputs.download-path }}/tests/fuzzer
-        run: ./osconfig-fuzzer -artifact_prefix=/tmp/artifacts/ -max_total_time=${{ inputs.timeout-seconds }} /tmp/corpus 2>&1 >/dev/null | tee /tmp/osconfig-fuzzer.log
+        run: |
+          set -o pipefail
+          ./osconfig-fuzzer -artifact_prefix=/tmp/artifacts/ -max_total_time=${{ inputs.timeout-seconds }} /tmp/corpus 2>&1 >/dev/null | tee /tmp/osconfig-fuzzer.log
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
