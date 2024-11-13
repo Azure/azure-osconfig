@@ -150,7 +150,7 @@ jobs:
           path: |
             ./build/osconfig*
             ./build/*.zip
-            ./build/fuzzer/osconfig-fuzzer
+            ./build/tests/fuzzer/osconfig-fuzzer
 
       - uses: actions/upload-artifact@v4
         if: ${{ !inputs.test && !inputs.build-fuzzers }}

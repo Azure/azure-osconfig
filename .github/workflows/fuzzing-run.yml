@@ -43,14 +43,16 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y clang
-          sudo chmod +x ${{ steps.download.outputs.download-path }}/fuzzer/osconfig-fuzzer
+          sudo chmod +x ${{ steps.download.outputs.download-path }}/tests/fuzzer/osconfig-fuzzer
           mkdir /tmp/corpus
           mkdir /tmp/artifacts
-          cp -r ${{ steps.download.outputs.download-path }}/src/fuzzer/seed_corpus/* /tmp/corpus
+          cp -r ${{ steps.download.outputs.download-path }}/src/tests/fuzzer/seed_corpus/* /tmp/corpus
 
       - name: Run osconfig-fuzzer
-        working-directory: ${{ steps.download.outputs.download-path }}/fuzzer
-        run: ./osconfig-fuzzer -artifact_prefix=/tmp/artifacts/ -max_total_time=${{ inputs.timeout-seconds }} /tmp/corpus 2>&1 >/dev/null | tee /tmp/osconfig-fuzzer.log
+        working-directory: ${{ steps.download.outputs.download-path }}/tests/fuzzer
+        run: |
+          set -o pipefail
+          ./osconfig-fuzzer -artifact_prefix=/tmp/artifacts/ -max_total_time=${{ inputs.timeout-seconds }} /tmp/corpus 2>&1 >/dev/null | tee /tmp/osconfig-fuzzer.log
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
