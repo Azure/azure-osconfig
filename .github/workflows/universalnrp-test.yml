@@ -117,7 +117,7 @@ jobs:
           echo name=${output} >> $GITHUB_OUTPUT
 
           # Get the Policy Package URL
-          if [[ '${{ inputs.policyPackageList }}' == '[]' ]]; then
+          if [[ '${{ inputs.policyPackageList }}' == '[]' || '${{ inputs.policyPackageList }}' == '' ]]; then
               echo PolicyPackagePath=${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip >> $GITHUB_OUTPUT
           else
               wget -O PolicyPackage.zip ${{ matrix.policy-package.policy-package-url }}
