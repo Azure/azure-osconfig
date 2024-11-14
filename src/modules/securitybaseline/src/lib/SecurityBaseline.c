@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include <version.h>
 #include <ctype.h>
-// Not supporrted with gcc 4.8
+// Not supported with gcc 4.8
 // #include <stdatomic.h>
 #include <errno.h>
 #include <CommonUtils.h>
@@ -32,7 +32,7 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-// atomic_int not supporrted with gcc 4.8, using plain int
+// atomic_int not supported with gcc 4.8, using plain int
 static int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
 
