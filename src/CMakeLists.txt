@@ -26,10 +26,8 @@ if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
    
     # Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Universal NRP adapter
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.7" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4.9")
-        set(BUILD_MODULES OFF)
         set(BUILD_PLATFORM OFF)
         set(BUILD_TESTS OFF)
-        set(BUILD_MODULETEST OFF)
     endif()
 endif()
 

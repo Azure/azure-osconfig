@@ -3,7 +3,11 @@
 
 add_compile_options("-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-unused-result")
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    add_compile_options("-Wunused-const-variable=2")
+    if (CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.9")
+        add_compile_options("-Wunused-const-variable=2")
+    else()
+        add_compile_options("-Wunused-variable")
+    endif()
 elseif (CMAKE_C_COMPILER_ID STREQUAL "Clang")
     add_compile_options("-Wunused-variable")
 endif()
@@ -50,9 +54,12 @@ function(add_module directory)
     )
 endfunction()
 
-add_module(commandrunner)
-add_module(configuration)
-add_module(deviceinfo)
+# Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Security Baseline module
+if (CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.9")
+    add_module(commandrunner)
+    add_module(configuration)
+    add_module(deviceinfo)
+endif()
 add_module(securitybaseline)
 
 if (BUILD_MODULETEST)
