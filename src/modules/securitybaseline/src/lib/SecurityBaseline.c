@@ -31,7 +31,7 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-static atomic_int g_referenceCount = 0;
+static volatile int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
 
 static OSCONFIG_LOG_HANDLE SecurityBaselineGetLog(void)
@@ -57,7 +57,7 @@ MMI_HANDLE SecurityBaselineMmiOpen(const char* clientName, const unsigned int ma
 {
     MMI_HANDLE handle = (MMI_HANDLE)g_securityBaselineModuleName;
     g_maxPayloadSizeBytes = maxPayloadSizeBytes;
-    ++g_referenceCount;
+    __sync_fetch_and_add(&g_referenceCount, 1);
     OsConfigLogInfo(SecurityBaselineGetLog(), "MmiOpen(%s, %d) returning %p", clientName, maxPayloadSizeBytes, handle);
     return handle;
 }
@@ -71,7 +71,7 @@ void SecurityBaselineMmiClose(MMI_HANDLE clientSession)
 {
     if (IsValidSession(clientSession))
     {
-        --g_referenceCount;
+        __sync_fetch_and_sub(&g_referenceCount, 1)
         OsConfigLogInfo(SecurityBaselineGetLog(), "MmiClose(%p)", clientSession);
     }
     else
