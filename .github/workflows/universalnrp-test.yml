@@ -77,7 +77,7 @@ jobs:
           )"
 
           # If no explicit packages defined, use the default packages
-          if [[ '${{ inputs.policyPackageList }}' == '[]' ]]; then
+          if [[ '${{ inputs.policyPackageList }}' == '[]' || '${{ inputs.policyPackageList }}' == '' ]]; then
           policyPackages="$(cat <<'EOL'
           ${{ env.DEFAULT_PACKAGE_LIST }}
           EOL
