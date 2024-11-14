@@ -5,12 +5,15 @@
 #include <stdarg.h>
 #include <version.h>
 #include <ctype.h>
-// Not supported with gcc 4.8
-// #include <stdatomic.h>
 #include <errno.h>
+
+#if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
+#include <stdatomic.h>
+#endif
+
 #include <CommonUtils.h>
-#include <Asb.h>
 #include <Logging.h>
+#include <Asb.h>
 #include <Mmi.h>
 
 #include "SecurityBaseline.h"
@@ -32,8 +35,12 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-// atomic_int not supported with gcc 4.8, using plain int
+#if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
+static atomic_int g_referenceCount = 0;
+#else
 static int g_referenceCount = 0;
+#endif
+
 static unsigned int g_maxPayloadSizeBytes = 0;
 
 static OSCONFIG_LOG_HANDLE SecurityBaselineGetLog(void)
