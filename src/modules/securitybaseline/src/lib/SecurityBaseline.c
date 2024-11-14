@@ -5,7 +5,8 @@
 #include <stdarg.h>
 #include <version.h>
 #include <ctype.h>
-#include <stdatomic.h>
+// Not supporrted with gcc 4.8
+// #include <stdatomic.h>
 #include <errno.h>
 #include <CommonUtils.h>
 #include <Asb.h>
