@@ -1,19 +1,1 @@
-# Set the default behavior when core.autocrlf is not set
 * text=auto
-
-# Explicitly declare text files to be always be normalized and converted to native line endings on checkout
-*.c text
-*.h text
-*.cpp text
-
-# Files that will always have CRLF line endings on checkout
-*.sln text eol=crlf
-
-# Files that are truly binary and should not be modified
-*.png binary
-*.jpg binary
-
-# Ensure JSON, Markdown, and text files use LF line endings
-*.json text eol=lf
-*.md text eol=lf
-*.txt text eol=lf
