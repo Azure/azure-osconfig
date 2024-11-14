@@ -32,7 +32,7 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-// gcc 4.8 does not support atomic_int, thus using plain int for now here
+// atomic_int not supporrted with gcc 4.8, using plain int
 static int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
 
