@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <errno.h>
 
-#if (defined(__GNUC__) && !defined(__clang__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9))))
+#if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
 #include <stdatomic.h>
 #endif
 
@@ -35,7 +35,7 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-#if (defined(__GNUC__) && !defined(__clang__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9))))
+#if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
 static atomic_int g_referenceCount = 0;
 #else
 static int g_referenceCount = 0;
