@@ -31,7 +31,8 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-static volatile int g_referenceCount = 0;
+// gcc 4.8 does not support atomic_int, thus using plain int for now here
+static int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
 
 static OSCONFIG_LOG_HANDLE SecurityBaselineGetLog(void)
@@ -57,7 +58,7 @@ MMI_HANDLE SecurityBaselineMmiOpen(const char* clientName, const unsigned int ma
 {
     MMI_HANDLE handle = (MMI_HANDLE)g_securityBaselineModuleName;
     g_maxPayloadSizeBytes = maxPayloadSizeBytes;
-    __sync_fetch_and_add(&g_referenceCount, 1);
+    ++g_referenceCount;
     OsConfigLogInfo(SecurityBaselineGetLog(), "MmiOpen(%s, %d) returning %p", clientName, maxPayloadSizeBytes, handle);
     return handle;
 }
@@ -71,7 +72,7 @@ void SecurityBaselineMmiClose(MMI_HANDLE clientSession)
 {
     if (IsValidSession(clientSession))
     {
-        __sync_fetch_and_sub(&g_referenceCount, 1)
+        --g_referenceCount;
         OsConfigLogInfo(SecurityBaselineGetLog(), "MmiClose(%p)", clientSession);
     }
     else
