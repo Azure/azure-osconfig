@@ -104,7 +104,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v4
-        if: ${{ inputs.policyPackageList == '[]' }}
+        if: ${{ inputs.policyPackageList == '[]' || inputs.policyPackageList == '' }}
         id: download
         with:
           name: nrp-test-package
