@@ -64,21 +64,12 @@ jobs:
           working-directory: ${{ env.MOUNT }}/tests/fuzzer
           cmd: mkdir -p ${{ env.MOUNT }}/output/artifacts && mkdir /tmp/corpus && cp -r ${{ env.MOUNT }}/src/tests/fuzzer/seed_corpus/* /tmp/corpus && chmod u+x ./osconfig-fuzzer
 
-      - if: ${{ inputs.trigger == 'workflow_dispatch' }}
-        name: Run osconfig-fuzzer
+      - name: Run osconfig-fuzzer
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/tests/fuzzer
-          cmd: set -o pipefail && ./osconfig-fuzzer -artifact_prefix=${{ env.MOUNT }}/output/artifacts/ -max_total_time=${{ env.WF_DISPATCH_TIMEOUT }} /tmp/corpus 2>&1 >/dev/null | tee ${{ env.MOUNT }}/output/osconfig-fuzzer.log
-
-      - if: ${{ inputs.trigger == 'pull_request' }}
-        name: Run osconfig-fuzzer
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.MOUNT }}/tests/fuzzer
-          cmd: set -o pipefail && ./osconfig-fuzzer -artifact_prefix=${{ env.MOUNT }}/output/artifacts/ -max_total_time=${{ env.PR_DISPATCH_TIMEOUT }} /tmp/corpus 2>&1 >/dev/null | tee ${{ env.MOUNT }}/output/osconfig-fuzzer.log
+          cmd: set -o pipefail && ./osconfig-fuzzer -artifact_prefix=${{ env.MOUNT }}/output/artifacts/ -max_total_time=${{ inputs.trigger == 'pull_request' && env.PR_DISPATCH_TIMEOUT || env.WF_DISPATCH_TIMEOUT}} /tmp/corpus 2>&1 >/dev/null | tee ${{ env.MOUNT }}/output/osconfig-fuzzer.log
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
