@@ -1,0 +1,55 @@
+#FROM localhost/ubuntu-22.04-amd64:latest
+FROM mcr.microsoft.com/mirror/docker/library/ubuntu:22.04
+
+# .NET / ASA / sarif-tools setup
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends  \
+        wget=1.21.2-2ubuntu1.1 \
+        software-properties-common=0.99.22.9 \
+        apt-transport-https=2.4.13 \
+    && wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    && echo "b8713c36d3e6f6b2520830180cf6b5779e48410ad5d5e1b192635b0c7359fcc6 ./packages-microsoft-prod.deb" | sha256sum -c \
+    && dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libc6=2.35-0ubuntu3.8 \
+        libgcc1=1:12.3.0-1ubuntu1~22.04 \
+        libgssapi-krb5-2=1.19.2-2ubuntu0.4 \
+        libicu70=70.1-2 \
+        libssl3=3.0.2-0ubuntu1.18 \
+        libstdc++6=12.3.0-1ubuntu1~22.04 \
+        zlib1g=1:1.2.11.dfsg-2ubuntu9.2 \
+        tzdata=2024a-0ubuntu0.22.04.1 \
+        unzip=6.0-26ubuntu3.2 \
+        dotnet-sdk-8.0=8.0.403-1 \
+        python3=3.10.6-1~22.04.1 \
+        python3-pip=22.0.2+dfsg-1ubuntu0.5 \
+   && dotnet tool install -g Microsoft.CST.AttackSurfaceAnalyzer.CLI --version 2.3.313+f3ddb94bf9 \
+   && pip3 install sarif-tools==2.0.0 \
+   && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="$PATH:/root/.dotnet/tools/" \
+    # Enable detection of running in a container
+    DOTNET_RUNNING_IN_CONTAINER=true
+
+# Setup MC
+RUN apt-get update \
+    && apt-get -y install --no-install-recommends powershell=7.4.6-1.deb \
+    && wget https://github.com/microsoft/omi/releases/download/v1.9.1-0/omi-1.9.1-0.ssl_300.ulinux.s.x64.deb \
+    && echo "e9aa619f50386b105c23de91f2f835cb ./omi-1.9.1-0.ssl_300.ulinux.s.x64.deb" | md5sum -c \
+    && dpkg -i ./omi-1.9.1-0.ssl_300.ulinux.s.x64.deb \
+    && rm -f ./omi-1.9.1-0.ssl_300.ulinux.s.x64.deb \
+    && pwsh --command "Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted" \
+    && pwsh --command "Install-Module -Name GuestConfiguration -RequiredVersion 4.6.0" \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/omi/lib/"
+
+# Working dir represents full github path to this place
+RUN mkdir -p /azure/azure-osconfig/devops/scripts/asa/
+WORKDIR /azure/azure-osconfig/devops/scripts/asa/
+# Copy setup script as a last step to do not require rebuilding the previous layers when the script is updated
+COPY ./scan.sh /azure/azure-osconfig/devops/scripts/asa/scan.sh
+
+ENTRYPOINT [ "/azure/azure-osconfig/devops/scripts/asa/scan.sh" ]
