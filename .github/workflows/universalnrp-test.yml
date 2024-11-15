@@ -123,8 +123,10 @@ jobs:
               wget -O PolicyPackage.zip ${{ matrix.policy-package.policy-package-url }}
               echo PolicyPackagePath=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
           fi
+          echo PolicyPackageDir=$(dirname "$PolicyPackagePath") >> $GITHUB_OUTPUT
 
       - name: Run Guest Configuration Test
+        working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
         run: |
           script="./universalNRPTest.ps1"
           cat >$script <<EOL
@@ -181,7 +183,7 @@ jobs:
         if: success() || failure()
         with:
           name: ${{ steps.normalize.outputs.name }}_report
-          path: '${{ steps.download.outputs.download-path }}/*testResults.xml'
+          path: '${{ steps.normalize.outputs.PolicyPackageDir }}/*testResults.xml'
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
