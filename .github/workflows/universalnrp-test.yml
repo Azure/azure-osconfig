@@ -43,7 +43,7 @@ env:
 jobs:
   package:
     name: Package
-    if: ${{ inputs.policyPackageList == '[]' }}
+    if: ${{ inputs.policyPackageList == '[]' || inputs.policyPackageList == '' }}
     uses: ./.github/workflows/package-build.yml
     strategy:
       matrix:
