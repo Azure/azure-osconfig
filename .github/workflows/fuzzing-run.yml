@@ -17,6 +17,14 @@ on:
         required: false
         type: number
         default: 600
+      container-tag:
+        type: string
+        required: false
+        default: latest
+
+env:
+  MOUNT: /azure-osconfig
+  REGISTRY: ghcr.io
 
 jobs:
   package:
@@ -30,7 +38,7 @@ jobs:
 
   fuzzer-execution:
     needs: package
-    runs-on: [self-hosted, 1ES.Pool=e2e-pool, '1ES.ImageOverride=${{ inputs.target }}']
+    runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v4
 
@@ -39,25 +47,31 @@ jobs:
         with:
           name: ${{ inputs.target }}-fuzzer
 
+      - name: Run container
+        id: container
+        uses: ./.github/actions/container-run
+        with:
+          registry: ${{ env.REGISTRY }}
+          container: azure/azure-osconfig/${{ inputs.target }}-${{ inputs.arch }}
+          mount: ${{ github.workspace }}:${{ env.MOUNT }}
+          tag: ${{ inputs.container-tag }}
+
       - name: Install prerequisites
-        run: |
-          sudo apt update
-          sudo apt install -y clang
-          sudo chmod +x ${{ steps.download.outputs.download-path }}/tests/fuzzer/osconfig-fuzzer
-          mkdir /tmp/corpus
-          mkdir /tmp/artifacts
-          cp -r ${{ steps.download.outputs.download-path }}/src/tests/fuzzer/seed_corpus/* /tmp/corpus
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/tests/fuzzer
+          cmd: mkdir -p ${{ env.MOUNT }}/output/artifacts && mkdir /tmp/corpus && cp -r ${{ env.MOUNT }}/src/tests/fuzzer/seed_corpus/* /tmp/corpus && chmod u+x ./osconfig-fuzzer
 
       - name: Run osconfig-fuzzer
-        working-directory: ${{ steps.download.outputs.download-path }}/tests/fuzzer
-        run: |
-          set -o pipefail
-          ./osconfig-fuzzer -artifact_prefix=/tmp/artifacts/ -max_total_time=${{ inputs.timeout-seconds }} /tmp/corpus 2>&1 >/dev/null | tee /tmp/osconfig-fuzzer.log
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/tests/fuzzer
+          cmd: set -o pipefail && ./osconfig-fuzzer -artifact_prefix=${{ env.MOUNT }}/output/artifacts/ -max_total_time=${{ inputs.timeout-seconds }} /tmp/corpus 2>&1 >/dev/null | tee ${{ env.MOUNT }}/output/osconfig-fuzzer.log
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: ${{ inputs.target }}-logs
-          path: |
-            /tmp/osconfig-fuzzer.log
-            /tmp/artifacts
+          path: ${{ github.workspace }}/output
