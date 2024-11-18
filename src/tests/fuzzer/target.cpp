@@ -515,6 +515,7 @@ static int GetStringOptionFromFile_target(const char* data, std::size_t size) no
 
     auto filename = g_context.makeTempfile(data, size);
     free(GetStringOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), nullptr));
+    g_context.remove(filename);
     return 0;
 }
 
@@ -534,6 +535,7 @@ static int GetIntegerOptionFromFile_target(const char* data, std::size_t size) n
 
     auto filename = g_context.makeTempfile(data, size);
     GetIntegerOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), nullptr);
+    g_context.remove(filename);
     return 0;
 }
 
