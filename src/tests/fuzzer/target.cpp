@@ -269,61 +269,59 @@ static int CheckTextIsFoundInFile_target(const char* data, std::size_t size) noe
 
 // Skipping CheckTextIsNotFoundInFile due to similarity
 
-// Skipping CheckMarkedTextNotFoundInFile due to potential of arbitrary command execution
-// static int CheckMarkedTextNotFoundInFile_target(const char* data, std::size_t size) noexcept
-// {
-//     auto text = g_context.extractVariant(data, size);
-//     if (text.empty())
-//     {
-//         return c_skip_input;
-//     }
+static int CheckMarkedTextNotFoundInFile_target(const char* data, std::size_t size) noexcept
+{
+    auto text = g_context.ExtractVariant(data, size);
+    if (text.empty())
+    {
+        return c_skip_input;
+    }
 
-//     auto marker = g_context.extractVariant(data, size);
-//     if (marker.empty())
-//     {
-//         return c_skip_input;
-//     }
+    auto marker = g_context.ExtractVariant(data, size);
+    if (marker.empty())
+    {
+        return c_skip_input;
+    }
 
-//     auto comment = g_context.extractVariant(data, size, size_range{ 1, 1 });
-//     if (comment.empty())
-//     {
-//         return c_skip_input;
-//     }
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (comment.empty())
+    {
+        return c_skip_input;
+    }
 
-//     auto filename = g_context.makeTempfile(data, size);
-//     char* reason = nullptr;
-//     CheckMarkedTextNotFoundInFile(filename.c_str(), text.c_str(), marker.c_str(), comment.at(0), &reason, nullptr);
-//     g_context.remove(filename);
-//     free(reason);
-//     return 0;
-// }
+    auto filename = g_context.MakeTemporaryFile(data, size);
+    char* reason = nullptr;
+    CheckMarkedTextNotFoundInFile(filename.c_str(), text.c_str(), marker.c_str(), comment.at(0), &reason, nullptr);
+    g_context.Remove(filename);
+    free(reason);
+    return 0;
+}
 
-// Skipping CheckTextNotFoundInEnvironmentVariable due to potential of arbitrary command execution
-// static int CheckTextNotFoundInEnvironmentVariable_target(const char* data, std::size_t size) noexcept
-// {
-//     auto variable = g_context.extractVariant(data, size);
-//     if (variable.empty())
-//     {
-//         return c_skip_input;
-//     }
+static int CheckTextNotFoundInEnvironmentVariable_target(const char* data, std::size_t size) noexcept
+{
+    auto variable = g_context.ExtractVariant(data, size);
+    if (variable.empty())
+    {
+        return c_skip_input;
+    }
 
-//     auto text = g_context.extractVariant(data, size);
-//     if (text.empty())
-//     {
-//         return c_skip_input;
-//     }
+    auto text = g_context.ExtractVariant(data, size);
+    if (text.empty())
+    {
+        return c_skip_input;
+    }
 
-//     auto strict = g_context.extractVariant(data, size, size_range{ 1, 1 });
-//     if (strict.empty())
-//     {
-//         return c_skip_input;
-//     }
+    auto strict = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
+    if (strict.empty())
+    {
+        return c_skip_input;
+    }
 
-//     char* reason = nullptr;
-//     CheckTextNotFoundInEnvironmentVariable(variable.c_str(), text.c_str(), strict.at(0) == '1' ? true : false, &reason, nullptr);
-//     free(reason);
-//     return 0;
-// }
+    char* reason = nullptr;
+    CheckTextNotFoundInEnvironmentVariable(variable.c_str(), text.c_str(), strict.at(0) == '1' ? true : false, &reason, nullptr);
+    free(reason);
+    return 0;
+}
 
 static int CheckSmallFileContainsText_target(const char* data, std::size_t size) noexcept
 {
@@ -362,24 +360,6 @@ static int CheckLineNotFoundOrCommentedOut_target(const char* data, std::size_t 
     free(reason);
     return 0;
 }
-
-// Skipping CheckTextFoundInCommandOutput due to arbitrary command execution
-// static int CheckTextFoundInCommandOutput_target(const char* data, std::size_t size) noexcept
-// {
-//     auto command = g_context.extractVariant(data, size);
-//     if (command.empty())
-//     {
-//         return c_skip_input;
-//     }
-
-//     auto text = std::string(data, size);
-//     char* reason = nullptr;
-//     CheckTextFoundInCommandOutput(command.c_str(), text.c_str(), &reason, nullptr);
-//     free(reason);
-//     return 0;
-// }
-
-// Skipping CheckTextNotFoundInCommandOutput due to similarity to CheckTextFoundInCommandOutput
 
 static int GetStringOptionFromBuffer_target(const char* data, std::size_t size) noexcept
 {
@@ -809,13 +789,12 @@ static int UrlDecode_target(const char* data, std::size_t size) noexcept
     return 0;
 }
 
-// Skipping IsDaemonActive due to potential of arbitrary command execution
-// static int IsDaemonActive_target(const char* data, std::size_t size) noexcept
-// {
-//     auto name = std::string(data, size);
-//     IsDaemonActive(name.c_str(), nullptr);
-//     return 0;
-// }
+static int IsDaemonActive_target(const char* data, std::size_t size) noexcept
+{
+    auto name = std::string(data, size);
+    IsDaemonActive(name.c_str(), nullptr);
+    return 0;
+}
 
 static int RepairBrokenEolCharactersIfAny_target(const char* data, std::size_t size) noexcept
 {
@@ -956,11 +935,10 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "CheckNoLegacyPlusEntriesInFile.", CheckNoLegacyPlusEntriesInFile_target },
     { "FindTextInFile.", FindTextInFile_target },
     { "CheckTextIsFoundInFile.", CheckTextIsFoundInFile_target },
-    // { "CheckMarkedTextNotFoundInFile.", CheckMarkedTextNotFoundInFile_target },
-    // { "CheckTextNotFoundInEnvironmentVariable.", CheckTextNotFoundInEnvironmentVariable_target },
+    { "CheckMarkedTextNotFoundInFile.", CheckMarkedTextNotFoundInFile_target },
+    { "CheckTextNotFoundInEnvironmentVariable.", CheckTextNotFoundInEnvironmentVariable_target },
     { "CheckSmallFileContainsText.", CheckSmallFileContainsText_target },
     { "CheckLineNotFoundOrCommentedOut.", CheckLineNotFoundOrCommentedOut_target },
-    // { "CheckTextFoundInCommandOutput.", CheckTextFoundInCommandOutput_target },
     { "GetStringOptionFromBuffer.", GetStringOptionFromBuffer_target },
     { "GetIntegerOptionFromBuffer.", GetIntegerOptionFromBuffer_target },
     { "CheckLockoutForFailedPasswordAttempts.", CheckLockoutForFailedPasswordAttempts_target },
@@ -987,7 +965,7 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "TruncateAtFirst.", TruncateAtFirst_target },
     { "UrlEncode.", UrlEncode_target },
     { "UrlDecode.", UrlDecode_target },
-    // { "IsDaemonActive.", IsDaemonActive_target },
+    { "IsDaemonActive.", IsDaemonActive_target },
     { "RepairBrokenEolCharactersIfAny.", RepairBrokenEolCharactersIfAny_target },
     { "RemoveEscapeSequencesFromFile.", RemoveEscapeSequencesFromFile_target },
     { "IsCommandLoggingEnabledInJsonConfig.", IsCommandLoggingEnabledInJsonConfig_target },
