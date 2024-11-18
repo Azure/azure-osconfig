@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 #include "Mmi.h"
 #include "SecurityBaseline.h"
 #include "CommonUtils.h"
@@ -28,12 +31,12 @@ struct size_range
     size_range(std::size_t min, std::size_t max) : min(min), max(max) {}
 };
 
-// A class to keep a single static initialization of the SecurityBaseline library
+// A struct to keep a single static initialization of the SecurityBaseline library
 struct Context
 {
     MMI_HANDLE handle;
     std::string tempdir;
-public:
+
     Context() noexcept(false)
     {
         char path[] = "/tmp/osconfig-fuzzer-XXXXXX";
@@ -62,7 +65,7 @@ public:
     std::string nextTempfileName() const noexcept
     {
         static int counter = 0;
-        return tempdir + "." + std::to_string(counter++);
+        return tempdir + "/" + std::to_string(counter++);
     }
 
     std::string makeTempfile(const char* data, std::size_t size) const noexcept(false)
@@ -936,49 +939,9 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
     return 0;
 }
 
-static int SecurityBaselineMmiGet_target(const char* data, std::size_t size) noexcept
-{
-    char* payload = nullptr;
-    int payloadSizeBytes = 0;
-
-    auto input = std::string(data, size);
-    SecurityBaselineMmiGet(g_context.handle, "SecurityBaseline", input.c_str(), &payload, &payloadSizeBytes);
-    SecurityBaselineMmiFree(payload);
-    return 0;
-}
-
-// static int SecurityBaselineMmiSet_target(const char* data, std::size_t size) noexcept
-// {
-//     const char* prefix = reinterpret_cast<const char*>(std::memchr(data, '.', size));
-//     if (prefix == nullptr)
-//     {
-//         // Separator not found, skip the input
-//         return c_skip_input;
-//     }
-
-//     // Include the delimiter
-//     prefix++;
-//     const auto prefix_size = prefix - data;
-//     size -= prefix_size;
-
-//     char* payload = reinterpret_cast<char*>(malloc(size));
-//     if(!payload)
-//     {
-//         return c_skip_input;
-//     }
-//     memcpy(payload, prefix, size);
-
-//     auto input = std::string(data, prefix_size-1);
-//     SecurityBaselineMmiSet(g_context.handle, "SecurityBaseline", input.c_str(), payload, size);
-//     SecurityBaselineMmiFree(payload);
-//     return 0;
-// }
-
 // List of supported fuzzing targets.
 // The key is taken from the input data and is used to determine which target to call.
 static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets = {
-    // { "SecurityBaselineMmiGet.", SecurityBaselineMmiGet_target },
-    // { "SecurityBaselineMmiSet.", SecurityBaselineMmiSet_target },
     { "GetNumberOfLinesInFile.", GetNumberOfLinesInFile_target },
     { "LoadStringFromFile.", LoadStringFromFile_target },
     { "SavePayloadToFile.", SavePayloadToFile_target },
