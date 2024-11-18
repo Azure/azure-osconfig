@@ -36,4 +36,4 @@ When running in the CI system `sha256` of policy package should be checked using
 
 ## Planned TODO:
 * Support for running ASA scans in the container with RPM based distro
-* Run as a part of the GHA pipeline
+* Run as a part of the GitHub Actions workflow
