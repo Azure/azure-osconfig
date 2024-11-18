@@ -62,15 +62,15 @@ struct Context
         SecurityBaselineShutdown();
     }
 
-    std::string nextTempfileName() const noexcept
+    std::string GenerateNextTemporaryFileName() const noexcept
     {
         static int counter = 0;
         return tempdir + "/" + std::to_string(counter++);
     }
 
-    std::string makeTempfile(const char* data, std::size_t size) const noexcept(false)
+    std::string MakeTemporaryFile(const char* data, std::size_t size) const noexcept(false)
     {
-        auto path = nextTempfileName();
+        auto path = GenerateNextTemporaryFileName();
         auto fd = ::open(path.c_str(), O_EXCL | O_CREAT | O_WRONLY | O_TRUNC, 0600);
         while (size)
         {
@@ -89,7 +89,7 @@ struct Context
         return path;
     }
 
-    std::string extractVariant(const char*& data, std::size_t& size, size_range range = size_range{}) const noexcept
+    std::string ExtractVariant(const char*& data, std::size_t& size, size_range range = size_range{}) const noexcept
     {
         auto variant = std::string(data, size);
         auto pos = variant.find('.');
@@ -103,7 +103,7 @@ struct Context
         return variant.substr(0, pos);
     }
 
-    void remove(const std::string& path) const noexcept
+    void Remove(const std::string& path) const noexcept
     {
         ::remove(path.c_str());
     }
@@ -113,156 +113,156 @@ static Context g_context;
 
 static int LoadStringFromFile_target(const char* data, std::size_t size) noexcept
 {
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     free(LoadStringFromFile(filename.c_str(), true, nullptr));
-    g_context.remove(filename);
+    g_context.Remove(filename);
     return 0;
 }
 
 static int GetNumberOfLinesInFile_target(const char* data, std::size_t size) noexcept
 {
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     GetNumberOfLinesInFile(filename.c_str());
-    g_context.remove(filename);
+    g_context.Remove(filename);
     return 0;
 }
 
 static int SavePayloadToFile_target(const char* data, std::size_t size) noexcept
 {
-    auto filename = g_context.nextTempfileName();
+    auto filename = g_context.GenerateNextTemporaryFileName();
     SavePayloadToFile(filename.c_str(), data, size, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     return 0;
 }
 
 static int AppendPayloadToFile_target(const char* data, std::size_t size) noexcept
 {
-    auto filename = g_context.makeTempfile(nullptr, 0);
+    auto filename = g_context.MakeTemporaryFile(nullptr, 0);
     AppendPayloadToFile(filename.c_str(), data, size, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     return 0;
 }
 
 static int SecureSaveToFile_target(const char* data, std::size_t size) noexcept
 {
-    auto filename = g_context.nextTempfileName();
+    auto filename = g_context.GenerateNextTemporaryFileName();
     SecureSaveToFile(filename.c_str(), data, size, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     return 0;
 }
 
 static int AppendToFile_target(const char* data, std::size_t size) noexcept
 {
-    auto filename = g_context.makeTempfile(nullptr, 0);
+    auto filename = g_context.MakeTemporaryFile(nullptr, 0);
     AppendToFile(filename.c_str(), data, size, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     return 0;
 }
 
 static int ReplaceMarkedLinesInFile_target(const char* data, std::size_t size) noexcept
 {
-    auto marker = g_context.extractVariant(data, size);
+    auto marker = g_context.ExtractVariant(data, size);
     if (marker.empty())
     {
         return c_skip_input;
     }
 
-    auto newline = g_context.extractVariant(data, size);
+    auto newline = g_context.ExtractVariant(data, size);
     if (newline.empty())
     {
         return c_skip_input;
     }
 
-    auto comment = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (comment.empty())
     {
         return c_skip_input;
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     ReplaceMarkedLinesInFile(filename.c_str(), marker.c_str(), newline.c_str(), comment.at(0), true, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     return 0;
 }
 
 static int CheckFileSystemMountingOption_target(const char* data, std::size_t size) noexcept
 {
-    auto mountDirectory = g_context.extractVariant(data, size);
+    auto mountDirectory = g_context.ExtractVariant(data, size);
     if (mountDirectory.empty())
     {
         return c_skip_input;
     }
 
-    auto mountType = g_context.extractVariant(data, size);
+    auto mountType = g_context.ExtractVariant(data, size);
     if (mountType.empty())
     {
         return c_skip_input;
     }
 
-    auto desiredOption = g_context.extractVariant(data, size);
+    auto desiredOption = g_context.ExtractVariant(data, size);
     if (desiredOption.empty())
     {
         return c_skip_input;
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
     CheckFileSystemMountingOption(filename.c_str(), mountDirectory.c_str(), mountType.c_str(), desiredOption.c_str(), &reason, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     free(reason);
     return 0;
 }
 
 static int CharacterFoundInFile_target(const char* data, std::size_t size) noexcept
 {
-    auto what = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto what = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (what.empty())
     {
         return c_skip_input;
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     CharacterFoundInFile(filename.c_str(), what.at(0));
-    g_context.remove(filename);
+    g_context.Remove(filename);
     return 0;
 }
 
 static int CheckNoLegacyPlusEntriesInFile_target(const char* data, std::size_t size) noexcept
 {
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
     CheckNoLegacyPlusEntriesInFile(filename.c_str(), &reason, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     free(reason);
     return 0;
 }
 
 static int FindTextInFile_target(const char* data, std::size_t size) noexcept
 {
-    auto text = g_context.extractVariant(data, size);
+    auto text = g_context.ExtractVariant(data, size);
     if (text.empty())
     {
         return c_skip_input;
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     FindTextInFile(filename.c_str(), text.c_str(), nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     return 0;
 }
 
 static int CheckTextIsFoundInFile_target(const char* data, std::size_t size) noexcept
 {
-    auto text = g_context.extractVariant(data, size);
+    auto text = g_context.ExtractVariant(data, size);
     if (text.empty())
     {
         return c_skip_input;
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
     CheckTextIsFoundInFile(filename.c_str(), text.c_str(), &reason, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     free(reason);
     return 0;
 }
@@ -327,38 +327,38 @@ static int CheckTextIsFoundInFile_target(const char* data, std::size_t size) noe
 
 static int CheckSmallFileContainsText_target(const char* data, std::size_t size) noexcept
 {
-    auto text = g_context.extractVariant(data, size);
+    auto text = g_context.ExtractVariant(data, size);
     if (text.empty())
     {
         return c_skip_input;
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
     CheckSmallFileContainsText(filename.c_str(), text.c_str(), &reason, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     free(reason);
     return 0;
 }
 
 static int CheckLineNotFoundOrCommentedOut_target(const char* data, std::size_t size) noexcept
 {
-    auto text = g_context.extractVariant(data, size);
+    auto text = g_context.ExtractVariant(data, size);
     if (text.empty())
     {
         return c_skip_input;
     }
 
-    auto comment = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (comment.empty())
     {
         return c_skip_input;
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
     CheckLineNotFoundOrCommentedOut(filename.c_str(), comment.at(0), text.c_str(), &reason, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     free(reason);
     return 0;
 }
@@ -383,13 +383,13 @@ static int CheckLineNotFoundOrCommentedOut_target(const char* data, std::size_t 
 
 static int GetStringOptionFromBuffer_target(const char* data, std::size_t size) noexcept
 {
-    auto option = g_context.extractVariant(data, size);
+    auto option = g_context.ExtractVariant(data, size);
     if (option.empty())
     {
         return c_skip_input;
     }
 
-    auto separator = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto separator = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (separator.empty())
     {
         return c_skip_input;
@@ -402,13 +402,13 @@ static int GetStringOptionFromBuffer_target(const char* data, std::size_t size) 
 
 static int GetIntegerOptionFromBuffer_target(const char* data, std::size_t size) noexcept
 {
-    auto option = g_context.extractVariant(data, size);
+    auto option = g_context.ExtractVariant(data, size);
     if (option.empty())
     {
         return c_skip_input;
     }
 
-    auto separator = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto separator = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (separator.empty())
     {
         return c_skip_input;
@@ -421,22 +421,22 @@ static int GetIntegerOptionFromBuffer_target(const char* data, std::size_t size)
 
 static int CheckLockoutForFailedPasswordAttempts_target(const char* data, std::size_t size) noexcept
 {
-    auto pamSo = g_context.extractVariant(data, size);
+    auto pamSo = g_context.ExtractVariant(data, size);
     if (pamSo.empty())
     {
         return c_skip_input;
     }
 
-    auto comment = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto comment = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (comment.empty())
     {
         return c_skip_input;
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
     CheckLockoutForFailedPasswordAttempts(filename.c_str(), pamSo.c_str(), comment.at(0), &reason, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     free(reason);
     return 0;
 }
@@ -445,42 +445,42 @@ static int CheckPasswordCreationRequirements_target(const char* data, std::size_
 {
     try
     {
-        auto integer = g_context.extractVariant(data, size);
+        auto integer = g_context.ExtractVariant(data, size);
         if (integer.empty())
         {
             return c_skip_input;
         }
         auto retry = std::stoi(integer);
 
-        integer = g_context.extractVariant(data, size);
+        integer = g_context.ExtractVariant(data, size);
         if (integer.empty())
         {
             return c_skip_input;
         }
         auto minlen = std::stoi(integer);
 
-        integer = g_context.extractVariant(data, size);
+        integer = g_context.ExtractVariant(data, size);
         if (integer.empty())
         {
             return c_skip_input;
         }
         auto minclass = std::stoi(integer);
 
-        integer = g_context.extractVariant(data, size);
+        integer = g_context.ExtractVariant(data, size);
         if (integer.empty())
         {
             return c_skip_input;
         }
         auto dcredit = std::stoi(integer);
 
-        integer = g_context.extractVariant(data, size);
+        integer = g_context.ExtractVariant(data, size);
         if (integer.empty())
         {
             return c_skip_input;
         }
         auto ucredit = std::stoi(integer);
 
-        integer = g_context.extractVariant(data, size);
+        integer = g_context.ExtractVariant(data, size);
         if (integer.empty())
         {
             return c_skip_input;
@@ -501,53 +501,53 @@ static int CheckPasswordCreationRequirements_target(const char* data, std::size_
 
 static int GetStringOptionFromFile_target(const char* data, std::size_t size) noexcept
 {
-    auto option = g_context.extractVariant(data, size);
+    auto option = g_context.ExtractVariant(data, size);
     if (option.empty())
     {
         return c_skip_input;
     }
 
-    auto separator = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto separator = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (separator.empty())
     {
         return c_skip_input;
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     free(GetStringOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), nullptr));
-    g_context.remove(filename);
+    g_context.Remove(filename);
     return 0;
 }
 
 static int GetIntegerOptionFromFile_target(const char* data, std::size_t size) noexcept
 {
-    auto option = g_context.extractVariant(data, size);
+    auto option = g_context.ExtractVariant(data, size);
     if (option.empty())
     {
         return c_skip_input;
     }
 
-    auto separator = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto separator = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (separator.empty())
     {
         return c_skip_input;
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     GetIntegerOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     return 0;
 }
 
 static int CheckIntegerOptionFromFileEqualWithAny_target(const char* data, std::size_t size) noexcept
 {
-    auto option = g_context.extractVariant(data, size);
+    auto option = g_context.ExtractVariant(data, size);
     if (option.empty())
     {
         return c_skip_input;
     }
 
-    auto separator = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto separator = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (separator.empty())
     {
         return c_skip_input;
@@ -558,7 +558,7 @@ static int CheckIntegerOptionFromFileEqualWithAny_target(const char* data, std::
     std::size_t count = 0;
     while (count < max_values)
     {
-        auto value = g_context.extractVariant(data, size);
+        auto value = g_context.ExtractVariant(data, size);
         if (value.empty())
         {
             break;
@@ -574,10 +574,10 @@ static int CheckIntegerOptionFromFileEqualWithAny_target(const char* data, std::
         }
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
     CheckIntegerOptionFromFileEqualWithAny(filename.c_str(), option.c_str(), separator.at(0), values, count, &reason, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     free(reason);
     delete[] values;
     return 0;
@@ -585,19 +585,19 @@ static int CheckIntegerOptionFromFileEqualWithAny_target(const char* data, std::
 
 static int CheckIntegerOptionFromFileLessOrEqualWith_target(const char* data, std::size_t size) noexcept
 {
-    auto option = g_context.extractVariant(data, size);
+    auto option = g_context.ExtractVariant(data, size);
     if (option.empty())
     {
         return c_skip_input;
     }
 
-    auto separator = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto separator = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (separator.empty())
     {
         return c_skip_input;
     }
 
-    auto integer = g_context.extractVariant(data, size);
+    auto integer = g_context.ExtractVariant(data, size);
     if (integer.empty())
     {
         return c_skip_input;
@@ -613,10 +613,10 @@ static int CheckIntegerOptionFromFileLessOrEqualWith_target(const char* data, st
         return c_skip_input;
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
     CheckIntegerOptionFromFileLessOrEqualWith(filename.c_str(), option.c_str(), separator.at(0), value, &reason, nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     free(reason);
     return 0;
 }
@@ -630,7 +630,7 @@ static int DuplicateString_target(const char* data, std::size_t size) noexcept
 
 static int ConcatenateStrings_target(const char* data, std::size_t size) noexcept
 {
-    auto a = g_context.extractVariant(data, size);
+    auto a = g_context.ExtractVariant(data, size);
     if (a.empty())
     {
         return c_skip_input;
@@ -650,7 +650,7 @@ static int DuplicateStringToLowercase_target(const char* data, std::size_t size)
 
 static int ConvertStringToIntegers_target(const char* data, std::size_t size) noexcept
 {
-    auto separator = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto separator = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (separator.empty())
     {
         return c_skip_input;
@@ -666,7 +666,7 @@ static int ConvertStringToIntegers_target(const char* data, std::size_t size) no
 
 static int RemoveCharacterFromString_target(const char* data, std::size_t size) noexcept
 {
-    auto what = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto what = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (what.empty())
     {
         return c_skip_input;
@@ -679,13 +679,13 @@ static int RemoveCharacterFromString_target(const char* data, std::size_t size) 
 
 static int ReplaceEscapeSequencesInString_target(const char* data, std::size_t size) noexcept
 {
-    auto escapes = g_context.extractVariant(data, size);
+    auto escapes = g_context.ExtractVariant(data, size);
     if (escapes.empty())
     {
         return c_skip_input;
     }
 
-    auto replacement = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto replacement = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (replacement.empty())
     {
         return c_skip_input;
@@ -751,7 +751,7 @@ static int RemovePrefixBlanks_target(const char* data, std::size_t size) noexcep
 
 static int RemovePrefixUpTo_target(const char* data, std::size_t size) noexcept
 {
-    auto marker = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto marker = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (marker.empty())
     {
         return c_skip_input;
@@ -764,7 +764,7 @@ static int RemovePrefixUpTo_target(const char* data, std::size_t size) noexcept
 
 static int RemovePrefixUpToString_target(const char* data, std::size_t size) noexcept
 {
-    auto marker = g_context.extractVariant(data, size);
+    auto marker = g_context.ExtractVariant(data, size);
     if (marker.empty())
     {
         return c_skip_input;
@@ -784,7 +784,7 @@ static int RemoveTrailingBlanks_target(const char* data, std::size_t size) noexc
 
 static int TruncateAtFirst_target(const char* data, std::size_t size) noexcept
 {
-    auto marker = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto marker = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (marker.empty())
     {
         return c_skip_input;
@@ -826,21 +826,21 @@ static int RepairBrokenEolCharactersIfAny_target(const char* data, std::size_t s
 
 static int RemoveEscapeSequencesFromFile_target(const char* data, std::size_t size) noexcept
 {
-    auto escapes = g_context.extractVariant(data, size);
+    auto escapes = g_context.ExtractVariant(data, size);
     if (escapes.empty())
     {
         return c_skip_input;
     }
 
-    auto replacement = g_context.extractVariant(data, size, size_range{ 1, 1 });
+    auto replacement = g_context.ExtractVariant(data, size, size_range{ 1, 1 });
     if (replacement.empty())
     {
         return c_skip_input;
     }
 
-    auto filename = g_context.makeTempfile(data, size);
+    auto filename = g_context.MakeTemporaryFile(data, size);
     RemoveEscapeSequencesFromFile(filename.c_str(), escapes.c_str(), escapes.size(), replacement.at(0), nullptr);
-    g_context.remove(filename);
+    g_context.Remove(filename);
     return 0;
 }
 
