@@ -1331,6 +1331,7 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
                         OsConfigCaptureReason(reason, "'%s' found in '%s' ('%s')", text, variableName, found);
                         foundText = true;
                         status = EEXIST;
+                        break;
                     }
                 } 
             
