@@ -1,0 +1,49 @@
+CheckFileSystemMountingOption./mnt/.ext4.discard.
+# <file system>                                          <mount point>                <type>  <options>                               <dump>  <pass>
+PARTUUID=12345678-1234-1234-1234-123456789abc        /mnt/data1                  ext4    defaults,noatime                          0       2
+PARTUUID=23456789-2345-2345-2345-23456789abcd        /mnt/data2                  ext4    defaults,nosuid                          0       2
+PARTUUID=34567890-3456-3456-3456-34567890abce        /mnt/data3                  ext4    defaults,nodev                           0       2
+PARTUUID=45678901-4567-4567-4567-45678901abcf        /mnt/data4                  ext4    defaults,noexec                          0       2
+PARTUUID=56789012-5678-5678-5678-56789012abc0        /mnt/data5                  ext4    defaults,relatime                       0       2
+PARTUUID=67890123-6789-6789-6789-67890123abc1        /mnt/data6                  ext4    defaults,errors=remount-ro              0       2
+PARTUUID=78901234-7890-7890-7890-78901234abc2        /mnt/data7                  ext4    defaults,barrier=1                      0       2
+PARTUUID=89012345-8901-8901-8901-89012345abc3        /mnt/data8                  ext4    defaults,discard                        0       2
+PARTUUID=90123456-9012-9012-9012-90123456abc4        /mnt/data9                  ext4    defaults,noatime,nosuid                 0       2
+PARTUUID=01234567-0123-0123-0123-01234567abc5        /mnt/data10                 ext4    defaults,noexec,nosuid                  0       2
+PARTUUID=12345678-1234-1234-1234-123456789def        /mnt/data11                 ext4    defaults,relatime                       0       2
+PARTUUID=23456789-2345-2345-2345-23456789def0        /mnt/data12                 ext4    defaults,nodev                          0       2
+PARTUUID=34567890-3456-3456-3456-34567890def1        /mnt/data13                 ext4    defaults,noatime                         0       2
+PARTUUID=45678901-4567-4567-4567-45678901def2        /mnt/data14                 ext4    defaults,errors=remount-ro              0       2
+PARTUUID=56789012-5678-5678-5678-56789012def3        /mnt/data15                 ext4    defaults,barrier=1                      0       2
+PARTUUID=67890123-6789-6789-6789-67890123def4        /mnt/data16                 ext4    defaults,discard                        0       2
+PARTUUID=78901234-7890-7890-7890-78901234def5        /mnt/data17                 ext4    defaults,noexec,nosuid                  0       2
+PARTUUID=89012345-8901-8901-8901-89012345def6        /mnt/data18                 ext4    defaults,noatime,nosuid                 0       2
+PARTUUID=90123456-9012-9012-9012-90123456def7        /mnt/data19                 ext4    defaults,relatime                       0       2
+PARTUUID=01234567-0123-0123-0123-01234567def8        /mnt/data20                 ext4    defaults,nodev                          0       2
+
+//very-long-hostname-1.example.com/very-long-share-name-1  /mnt/network1  cifs  username=user1,password=pass1,uid=1000,gid=1000,vers=3.0  0  0
+//very-long-hostname-2.example.com/very-long-share-name-2  /mnt/network2  cifs  username=user2,password=pass2,uid=1000,gid=1000,iocharset=utf8  0  0
+//very-long-hostname-3.example.com/very-long-share-name-3  /mnt/network3  cifs  username=user3,password=pass3,uid=1000,gid=1000,sec=ntlm  0  0
+//very-long-hostname-4.example.com/very-long-share-name-4  /mnt/network4  cifs  username=user4,password=pass4,uid=1000,gid=1000,vers=2.1  0  0
+//very-long-hostname-5.example.com/very-long-share-name-5  /mnt/network5  cifs  username=user5,password=pass5,uid=1000,gid=1000,dir_mode=0777,file_mode=0777  0  0
+//very-long-hostname-6.example.com/very-long-share-name-6  /mnt/network6  cifs  username=user6,password=pass6,uid=1000,gid=1000,noperm  0  0
+//very-long-hostname-7.example.com/very-long-share-name-7  /mnt/network7  cifs  username=user7,password=pass7,uid=1000,gid=1000,soft  0  0
+//very-long-hostname-8.example.com/very-long-share-name-8  /mnt/network8  cifs  username=user8,password=pass8,uid=1000,gid=1000,hard  0  0
+//very-long-hostname-9.example.com/very-long-share-name-9  /mnt/network9  cifs  username=user9,password=pass9,uid=1000,gid=1000,sec=ntlmssp  0  0
+//very-long-hostname-10.example.com/very-long-share-name-10 /mnt/network10 cifs  username=user10,password=pass10,uid=1000,gid=1000,vers=1.0  0  0
+//very-long-hostname-11.example.com/very-long-share-name-11 /mnt/network11 cifs  username=user11,password=pass11,uid=1000,gid=1000,dir_mode=0755,file_mode=0644  0  0
+//very-long-hostname-12.example.com/very-long-share-name-12 /mnt/network12 cifs  username=user12,password=pass12,uid=1000,gid=1000,soft  0  0
+//very-long-hostname-13.example.com/very-long-share-name-13 /mnt/network13 cifs  username=user13,password=pass13,uid=1000,gid=1000,hard  0  0
+//very-long-hostname-14.example.com/very-long-share-name-14 /mnt/network14 cifs  username=user14,password=pass14,uid=1000,gid=1000,noperm  0  0
+//very-long-hostname-15.example.com/very-long-share-name-15 /mnt/network15 cifs  username=user15,password=pass15,uid=1000,gid=1000,vers=3.0  0  0
+//very-long-hostname-16.example.com/very-long-share-name-16 /mnt/network16 cifs  username=user16,password=pass16,uid=1000,gid=1000,dir_mode=0777,file_mode=0777  0  0
+//very-long-hostname-17.example.com/very-long-share-name-17 /mnt/network17 cifs  username=user17,password=pass17,uid=1000,gid=1000,sec=ntlm  0  0
+//very-long-hostname-18.example.com/very-long-share-name-18 /mnt/network18 cifs  username=user18,password=pass18,uid=1000,gid=1000,vers=2.1  0  0
+//very-long-hostname-19.example.com/very-long-share-name-19 /mnt/network19 cifs  username=user19,password=pass19,uid=1000,gid=1000,soft  0  0
+//very-long-hostname-20.example.com/very-long-share-name-20 /mnt/network20 cifs  username=user20,password=pass20,uid=1000,gid=1000,hard  0  0
+
+# Standard Mount Points
+tmpfs                                                  /tmp                        tmpfs   defaults,noatime,mode=1777               0       0
+tmpfs                                                  /run                        tmpfs   defaults,noatime,mode=755                0       0
+/dev/shm                                              /dev/shm                    tmpfs   defaults,noatime,mode=1777               0       0
+PARTUUID=abcdef01-2345-678

@@ -1147,12 +1147,24 @@ TEST_F(CommonUtilsTest, DuplicateStringToLowercase)
 
 TEST_F(CommonUtilsTest, FormatAllocateString)
 {
-    char* formattted = nullptr;
-    EXPECT_EQ(nullptr, formattted = FormatAllocateString(nullptr));
-    EXPECT_STREQ(m_data, formattted = FormatAllocateString(m_data));
-    FREE_MEMORY(formattted);
-    EXPECT_STREQ("Test ABC 123", formattted = FormatAllocateString("Test %s %d", "ABC", 123));
-    FREE_MEMORY(formattted);
+    const int longStringLength = 4095;
+    char* longString = nullptr;
+    char* formatted = nullptr;
+    EXPECT_EQ(nullptr, formatted = FormatAllocateString(nullptr));
+    EXPECT_STREQ(m_data, formatted = FormatAllocateString(m_data));
+    FREE_MEMORY(formatted);
+    EXPECT_STREQ("Test ABC 123", formatted = FormatAllocateString("Test %s %d", "ABC", 123));
+    FREE_MEMORY(formatted);
+    ASSERT_NE(nullptr, longString = (char*)malloc(longStringLength + 1));
+    memset(longString, 'a', longStringLength);
+    longString[4095] = 0;
+    EXPECT_STREQ(longString, formatted = FormatAllocateString("%s", longString));
+    FREE_MEMORY(longString);
+    FREE_MEMORY(formatted);
+    EXPECT_STREQ("", formatted = FormatAllocateString("%s", ""));
+    FREE_MEMORY(formatted);
+    EXPECT_STREQ("", formatted = FormatAllocateString(""));
+    FREE_MEMORY(formatted);
 }
 
 TEST_F(CommonUtilsTest, DuplicateAndFormatAllocateString)

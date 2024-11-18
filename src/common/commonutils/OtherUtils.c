@@ -32,42 +32,35 @@ char* DuplicateStringToLowercase(const char* source)
 
 char* FormatAllocateString(const char* format, ...)
 {
-    char* buffer = NULL;
     char* stringToReturn = NULL;
     int formatResult = 0;
-    int sizeOfBuffer = MAX_STRING_LENGTH;
+    int sizeOfBuffer = 0;
 
-    if (NULL == format) 
+    if (NULL == format)
     {
         return stringToReturn;
     }
 
-    while (NULL == stringToReturn)
+    va_list arguments;
+    va_start(arguments, format);
+    // snprintf returns the required buffer size, excluding the null terminator
+    sizeOfBuffer = vsnprintf(NULL, 0, format, arguments);
+    va_end(arguments);
+
+    if (sizeOfBuffer >= 0)
     {
-        if (NULL == (buffer = malloc(sizeOfBuffer)))
+        if (NULL != (stringToReturn = malloc((size_t)sizeOfBuffer + 1)))
         {
-            break;
+            va_start(arguments, format);
+            formatResult = vsnprintf(stringToReturn, sizeOfBuffer + 1, format, arguments);
+            va_end(arguments);
+
+            if ((formatResult < 0) || (formatResult > sizeOfBuffer))
+            {
+                FREE_MEMORY(stringToReturn);
+            }
         }
-
-        memset(buffer, 0, sizeOfBuffer);
-
-        va_list arguments;
-        va_start(arguments, format);
-        formatResult = vsnprintf(buffer, sizeOfBuffer, format, arguments);
-        va_end(arguments);
-
-        if ((formatResult > 0) && (formatResult < (int)sizeOfBuffer))
-        {
-            stringToReturn = DuplicateString(buffer);
-            break;
-        }
-
-        FREE_MEMORY(buffer);
-        sizeOfBuffer += 1;
     }
-
-    FREE_MEMORY(buffer);
-
     return stringToReturn;
 }
 
