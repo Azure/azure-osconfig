@@ -16,6 +16,7 @@ jobs:
     name: Package
     if: ${{ inputs.policy_packages == '[]' || inputs.policy_packages == '' }}
     uses: ./.github/workflows/package-build.yml
+    needs: [setup-matrix]
     with:
       target: ubuntu-14.04
       arch: amd64
@@ -29,22 +30,46 @@ jobs:
     name: Setup Matrix
     runs-on: ubuntu-latest
     outputs:
+      targets: ${{ steps.matrix.outputs.targets }}
       custom_download: ${{ steps.matrix.outputs.custom_download }}
       policy_packages: ${{ steps.matrix.outputs.policy_packages }}
     steps:
       - name: Generate Matrix
         id: matrix
         env:
-          DEFAULT_PACKAGE_LIST: |
+          DEFAULT_POLICYPACKAGES: |
             [
               { "name": "LinuxSshServerSecurityBaseline", "short-name": "SSH", "resource-count": 20 },
               { "name": "AzureLinuxBaseline", "short-name": "ASB", "resource-count": 168 }
             ]
+          TARGETS: |
+            [
+              { "os": "centos", "version": "8" },
+              { "os": "debian", "version": "10" },
+              { "os": "debian", "version": "11" },
+              { "os": "debian", "version": "12" },
+              { "os": "mariner", "version": "2" },
+              { "os": "oraclelinux", "version": "8" },
+              { "os": "rhel", "version": "8" },
+              { "os": "rhel", "version": "9" },
+              { "os": "rockylinux", "version": "9" },
+              { "os": "sles", "version": "15" },
+              { "os": "ubuntu", "version": "20.04" },
+              { "os": "ubuntu", "version": "22.04" }
+            ]
+          # { "os": "almalinux", "version": "9" },
+          # { "os": "amazonlinux", "version": "2" },
+          # { "os": "centos", "version": "7" },
+          # { "os": "oraclelinux", "version": "7" },
+          # { "os": "rhel", "version": "7" },
+          # { "os": "sles", "version": "12" },
+          # { "os": "ubuntu", "version": "16.04" },
+          # { "os": "ubuntu", "version": "18.04" },
         run: |
           # If no explicit packages defined, use the default packages
           if [[ '${{ inputs.policy_packages }}' == '[]' || '${{ inputs.policy_packages }}' == '' ]]; then
             custom_download="false"
-            policy_packages="$DEFAULT_PACKAGE_LIST"
+            policy_packages="$DEFAULT_POLICYPACKAGES"
           else
             custom_download="true"
             policy_packages="${{ inputs.policy_packages }}"
@@ -53,6 +78,7 @@ jobs:
           echo $custom_download
           echo $policy_packages
 
+          echo targets=$(echo $TARGETS | jq -r 'tostring') >> $GITHUB_OUTPUT
           echo custom_download=$custom_download >> $GITHUB_OUTPUT
           echo policy_packages=$(echo $policy_packages | jq -r 'tostring') >> $GITHUB_OUTPUT
 
@@ -63,28 +89,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [
-          # { os: almalinux, version: 9 },
-          # { os: amazonlinux, version: 2 },
-          # { os: centos, version: 7 },
-          { os: centos, version: 8 },
-          { os: debian, version: 10 },
-          { os: debian, version: 11 },
-          { os: debian, version: 12 },
-          { os: mariner, version: 2 },
-          # { os: oraclelinux, version: 7 },
-          { os: oraclelinux, version: 8 },
-          # { os: rhel, version: 7 },
-          { os: rhel, version: 8 },
-          { os: rhel, version: 9 },
-          { os: rockylinux, version: 9 },
-          # { os: sles, version: 12 },
-          { os: sles, version: 15 },
-          # { os: ubuntu, version: '16.04' },
-          # { os: ubuntu, version: '18.04' },
-          { os: ubuntu, version: '20.04' },
-          { os: ubuntu, version: '22.04' }
-        ]
+        target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
         arch: [amd64]
         mode: [Audit, Remediate]
         policy-package: ${{ fromJSON(needs.setup-matrix.outputs.policy_packages) }}
@@ -183,33 +188,12 @@ jobs:
 
   module-test:
     name: Module Test
-    needs: package
+    needs: [setup-matrix, package]
     runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
     strategy:
       fail-fast: false
       matrix:
-        target: [
-          { os: almalinux, version: 9 },
-          # { os: amazonlinux, version: 2 },
-          # { os: centos, version: 7 },
-          { os: centos, version: 8 },
-          { os: debian, version: 10 },
-          { os: debian, version: 11 },
-          { os: debian, version: 12 },
-          { os: mariner, version: 2 },
-          # { os: oraclelinux, version: 7 },
-          { os: oraclelinux, version: 8 },
-          # { os: rhel, version: 7 },
-          { os: rhel, version: 8 },
-          { os: rhel, version: 9 },
-          { os: rockylinux, version: 9 },
-          # { os: sles, version: 12 },
-          { os: sles, version: 15 },
-          # { os: ubuntu, version: '16.04' },
-          # { os: ubuntu, version: '18.04' },
-          { os: ubuntu, version: '20.04' },
-          { os: ubuntu, version: '22.04' }
-        ]
+        target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
         arch: [amd64]
     steps:
       - uses: actions/checkout@v4

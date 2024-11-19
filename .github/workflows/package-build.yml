@@ -134,11 +134,15 @@ jobs:
           package-type: ${{ inputs.package-type }}
 
       - name: Copy test collateral
-        run: |
-          mkdir -p build/modules/test/recipes
-          cp -r src/tests/e2e-test-recipes/*.json build/modules/test/recipes/
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}
+          cmd: |
+            mkdir -p build/modules/test/recipes
+            cp -r src/tests/e2e-test-recipes/*.json build/modules/test/recipes/
 
-          cp src/adapters/pnp/daemon/osconfig.json build/modules/test/osconfig.json
+            cp src/adapters/pnp/daemon/osconfig.json build/modules/test/osconfig.json
 
       - uses: actions/upload-artifact@v4
         with:
