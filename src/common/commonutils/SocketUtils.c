@@ -80,7 +80,7 @@ char* ReadUriFromSocket(int socketHandle, void* log)
     }
 
     FREE_MEMORY(buffer);
-    
+
     for (i = 0; i < sizeof(bufferUri); i++)
     {
         if (1 == read(socketHandle, &(bufferUri[i]), 1))
@@ -103,7 +103,7 @@ char* ReadUriFromSocket(int socketHandle, void* log)
     {
         memset(returnUri, 0, uriLength + 1);
         strncpy(returnUri, bufferUri, uriLength);
-        
+
         if (IsFullLoggingEnabled())
         {
             OsConfigLogInfo(log, "ReadUriFromSocket: %s", returnUri);
@@ -125,7 +125,7 @@ int ReadHttpStatusFromSocket(int socketHandle, void* log)
     char* buffer = NULL;
     char status[4] = {0};
     char expectedSpace = 'x';
-        
+
     if (socketHandle < 0)
     {
         OsConfigLogError(log, "ReadHttpStatusFromSocket: invalid socket (%d)", socketHandle);
@@ -139,11 +139,11 @@ int ReadHttpStatusFromSocket(int socketHandle, void* log)
         return httpStatus;
     }
 
-    if ((1 == read(socketHandle, &expectedSpace, 1)) && (' ' == expectedSpace) && 
+    if ((1 == read(socketHandle, &expectedSpace, 1)) && (' ' == expectedSpace) &&
         (3 == read(socketHandle, status, 3)) && (isdigit(status[0]) && (status[0] >= '1') && (status[0] <= '5') && isdigit(status[1]) && isdigit(status[2])))
     {
         httpStatus = atoi(status);
-        
+
         if (IsFullLoggingEnabled())
         {
             OsConfigLogInfo(log, "ReadHttpStatusFromSocket: %d ('%s')", httpStatus, status);
@@ -179,7 +179,7 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log)
         if (NULL != contentLength)
         {
             contentLength += strlen(contentLengthLabel);
-            
+
             for (i = 0; i < sizeof(isolatedContentLength) - 1; i++)
             {
                 if (isdigit(contentLength[i]))
@@ -195,14 +195,14 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log)
             if (isdigit(isolatedContentLength[0]))
             {
                 httpContentLength = atoi(isolatedContentLength);
-                
+
                 if (IsFullLoggingEnabled())
                 {
                     OsConfigLogInfo(log, "ReadHttpContentLengthFromSocket: %d ('%s')", httpContentLength, isolatedContentLength);
                 }
             }
         }
-        
+
         FREE_MEMORY(buffer);
     }
 

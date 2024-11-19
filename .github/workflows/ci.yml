@@ -54,7 +54,7 @@ jobs:
           # ]
           # EOL
           # )"
-          # 
+          #
           # Add arm64 distros only on scheduled runs to prevent long CI times for PRs
           # if [ "${{ github.event_name }}" == "schedule" ]; then
           #   matrix=$(jq --argjson arm64Targets "$arm64Targets" '. += $arm64Targets' <<< "$matrix")
@@ -71,7 +71,7 @@ jobs:
       fail-fast: false
       matrix:
         target: ${{ fromJson(needs.create-ci-matrix.outputs.matrix) }}
-          
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -149,7 +149,7 @@ jobs:
         with:
           path: ci-test
           pattern: 'unit-test-*'
-          merge-multiple: true  
+          merge-multiple: true
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2

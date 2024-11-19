@@ -52,7 +52,7 @@ void AdhsInitialize(const char* configFile)
 {
     g_adhsConfigFile = configFile;
     g_log = OpenLog(g_adhsLogFile, g_adhsRolledLogFile);
-        
+
     OsConfigLogInfo(AdhsGetLog(), "%s initialized", g_adhsModuleName);
 }
 
@@ -102,7 +102,7 @@ void AdhsMmiClose(MMI_HANDLE clientSession)
         --g_referenceCount;
         OsConfigLogInfo(AdhsGetLog(), "MmiClose(%p)", clientSession);
     }
-    else 
+    else
     {
         OsConfigLogError(AdhsGetLog(), "MmiClose() called outside of a valid session");
     }
@@ -117,7 +117,7 @@ int AdhsMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloa
         OsConfigLogError(AdhsGetLog(), "MmiGetInfo(%s, %p, %p) called with invalid arguments", clientName, payload, payloadSizeBytes);
         return status;
     }
-    
+
     *payloadSizeBytes = (int)strlen(g_adhsModuleInfo);
     *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
     if (*payload)
@@ -132,7 +132,7 @@ int AdhsMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloa
         *payloadSizeBytes = 0;
         status = ENOMEM;
     }
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(AdhsGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
@@ -188,16 +188,16 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
                 if (0 == regexec(&permissionRegex, fileContent, ARRAY_SIZE(matchGroups), matchGroups, 0))
                 {
                     // Property value is located in the third match group.
-                    if ((IsValidMatchOffsets(matchGroups[0], fileContentSizeBytes)) && 
-                        (IsValidMatchOffsets(matchGroups[0], fileContentSizeBytes)) && 
+                    if ((IsValidMatchOffsets(matchGroups[0], fileContentSizeBytes)) &&
+                        (IsValidMatchOffsets(matchGroups[0], fileContentSizeBytes)) &&
                         (IsValidMatchOffsets(matchGroups[0], fileContentSizeBytes)))
                     {
                         currentMatch = fileContent + matchGroups[2].rm_so;
                         currentMatchSizeBytes = matchGroups[2].rm_eo - matchGroups[2].rm_so;
-                        
+
                         for (unsigned int i = 0; i < g_permissionConfigMapCount; i++)
                         {
-                            if ((currentMatchSizeBytes == strlen(g_permissionConfigMapKeys[i])) && 
+                            if ((currentMatchSizeBytes == strlen(g_permissionConfigMapKeys[i])) &&
                                 (0 == strncmp(currentMatch, g_permissionConfigMapKeys[i], currentMatchSizeBytes)))
                             {
                                 value = g_permissionConfigMapValues[i];
@@ -206,7 +206,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
                         }
                     }
 
-                    if (NULL == value) 
+                    if (NULL == value)
                     {
                         if (IsFullLoggingEnabled())
                         {
@@ -215,7 +215,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
                         status = EINVAL;
                     }
                 }
-                else 
+                else
                 {
                     if (IsFullLoggingEnabled())
                     {
@@ -225,14 +225,14 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
                 }
 
                 regfree(&permissionRegex);
-            } 
-            else 
+            }
+            else
             {
                 OsConfigLogError(AdhsGetLog(), "MmiGet failed to compile regular expression '%s'", g_permissionConfigPattern);
                 status = EINVAL;
             }
         }
-        else 
+        else
         {
             if (IsFullLoggingEnabled())
             {
@@ -283,7 +283,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
 int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int status = MMI_OK;
-    const char* value = NULL; 
+    const char* value = NULL;
     char* fileContent = NULL;
     unsigned int fileContentSizeBytes = 0;
 
@@ -339,7 +339,7 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
 
                 FREE_MEMORY(fileContent);
             }
-            else 
+            else
             {
                 OsConfigLogError(AdhsGetLog(), "MmiSet: failed to allocate %d bytes", fileContentSizeBytes + 1);
                 status = ENOMEM;
@@ -348,7 +348,7 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
     }
 
     OsConfigLogInfo(AdhsGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
-    
+
     return status;
 }
 

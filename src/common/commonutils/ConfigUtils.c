@@ -183,7 +183,7 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
         OsConfigLogError(log, "LoadReportedFromJsonConfig: called with an invalid argument, no properties to report");
         return 0;
     }
-    
+
     FREE_MEMORY(*reportedProperties);
 
     if (NULL != jsonString)
@@ -299,7 +299,7 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                         OsConfigLogInfo(log, "GetStringFromJsonConfig: %s value not found or empty", valueName);
                     }
                 }
-                else 
+                else
                 {
                     valueLength = strlen(value);
                     buffer = (char*)malloc(valueLength + 1);

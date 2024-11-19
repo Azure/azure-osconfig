@@ -28,7 +28,7 @@ typedef struct SIMPLIFIED_USER
     gid_t groupId;
     char* home;
     char* shell;
-    
+
     bool isRoot;
     bool isLocked;
     bool noLogin;
@@ -37,24 +37,24 @@ typedef struct SIMPLIFIED_USER
 
     // Encryption algorithm (cypher) used for password
     PasswordEncryption passwordEncryption;
-    
-    // Date of last change (measured in days since 1970-01-01 00:00:00 +0000 UTC) 
+
+    // Date of last change (measured in days since 1970-01-01 00:00:00 +0000 UTC)
     long lastPasswordChange;
-    
-    // Minimum number of days between password changes 
+
+    // Minimum number of days between password changes
     long minimumPasswordAge;
-    
+
     // Maximum number of days between password changes
     long maximumPasswordAge;
-    
-    // Number of days before password expires to warn user to change it 
+
+    // Number of days before password expires to warn user to change it
     long warningPeriod;
-    
-    // Number of days after password expires until account is disabled 
+
+    // Number of days after password expires until account is disabled
     long inactivityPeriod;
-    
-    // Date when user account expires (measured in days since 1970-01-01 00:00:00 +0000 UTC) 
-    long expirationDate;                 
+
+    // Date when user account expires (measured in days since 1970-01-01 00:00:00 +0000 UTC)
+    long expirationDate;
 } SIMPLIFIED_USER;
 
 typedef struct SIMPLIFIED_GROUP

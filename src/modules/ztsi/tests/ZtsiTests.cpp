@@ -264,7 +264,7 @@ namespace OSConfig::Platform::Tests
 
         std::string expected = ZtsiTests::BuildFileContents(true, g_defaultMaxScheduledAttestationsPerDay, maxManualAttestationsPerDay);
         std::string actual = ZtsiTests::ReadFileContents();
-        
+
         ASSERT_EQ(maxManualAttestationsPerDay, ZtsiTests::ztsi->GetMaxManualAttestationsPerDay());
         ASSERT_STREQ(expected.c_str(), actual.c_str());
         ASSERT_EQ(Ztsi::EnabledState::Enabled, ZtsiTests::ztsi->GetEnabledState());

@@ -44,7 +44,7 @@ void RemovePrefixUpToString(char* target, const char* marker)
 {
     size_t targetLength = 0, markerLength = 0;
     char* found = NULL;
-    
+
     if ((NULL == target) || (0 == (targetLength = strlen(target))) ||
         (NULL == marker) || (0 == (markerLength = strlen(marker))) ||
         (markerLength >= targetLength))
@@ -149,7 +149,7 @@ char* GetOsName(void* log)
     {
         OsConfigLogInfo(log, "OS name: '%s'", textResult);
     }
-    
+
     return textResult;
 }
 
@@ -188,7 +188,7 @@ static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace,
         RemovePrefixUpTo(textResult, ':');
         RemovePrefix(textResult, ':');
         RemovePrefixBlanks(textResult);
-        
+
         if (truncateAtFirstSpace)
         {
             TruncateAtFirst(textResult, ' ');
@@ -209,7 +209,7 @@ static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace,
 static char* GetAnotherOsProperty(const char* command, void* log)
 {
     char* textResult = NULL;
-    
+
     if (NULL == command)
     {
         return NULL;
@@ -232,12 +232,12 @@ char* GetOsKernelName(void* log)
 {
     static char* osKernelNameCommand = "uname -s";
     char* textResult = GetAnotherOsProperty(osKernelNameCommand, log);
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Kernel name: '%s'", textResult);
     }
-    
+
     return textResult;
 }
 
@@ -245,12 +245,12 @@ char* GetOsKernelRelease(void* log)
 {
     static char* osKernelReleaseCommand = "uname -r";
     char* textResult = GetAnotherOsProperty(osKernelReleaseCommand, log);
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Kernel release: '%s'", textResult);
     }
-    
+
     return textResult;
 }
 
@@ -258,12 +258,12 @@ char* GetOsKernelVersion(void* log)
 {
     static char* osKernelVersionCommand = "uname -v";
     char* textResult = GetAnotherOsProperty(osKernelVersionCommand, log);
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Kernel version: '%s'", textResult);
     }
-    
+
     return textResult;
 }
 
@@ -271,12 +271,12 @@ char* GetCpuType(void* log)
 {
     const char* osCpuTypeCommand = "lscpu | grep Architecture:";
     char* textResult = GetHardwareProperty(osCpuTypeCommand, false, log);
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "CPU type: '%s'", textResult);
     }
-    
+
     return textResult;
 }
 
@@ -284,12 +284,12 @@ char* GetCpuVendor(void* log)
 {
     const char* osCpuVendorCommand = "lscpu | grep \"Vendor ID:\"";
     char* textResult = GetHardwareProperty(osCpuVendorCommand, false, log);
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "CPU vendor id: '%s'", textResult);
     }
-    
+
     return textResult;
 }
 
@@ -297,12 +297,12 @@ char* GetCpuModel(void* log)
 {
     const char* osCpuModelCommand = "lscpu | grep \"Model name:\"";
     char* textResult = GetHardwareProperty(osCpuModelCommand, false, log);
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "CPU model: '%s'", textResult);
     }
-    
+
     return textResult;
 }
 
@@ -346,18 +346,18 @@ long GetTotalMemory(void* log)
     const char* osTotalMemoryCommand = "grep MemTotal /proc/meminfo";
     char* textResult = GetHardwareProperty(osTotalMemoryCommand, true, log);
     long totalMemory = 0;
-    
+
     if (NULL != textResult)
     {
         totalMemory = atol(textResult);
         FREE_MEMORY(textResult);
     }
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Total memory: %lu kB", totalMemory);
     }
-    
+
     return totalMemory;
 }
 
@@ -366,7 +366,7 @@ long GetFreeMemory(void* log)
     const char* osFreeMemoryCommand = "grep MemFree /proc/meminfo";
     char* textResult = GetHardwareProperty(osFreeMemoryCommand, true, log);
     long freeMemory = 0;
-    
+
     if (NULL != textResult)
     {
         freeMemory = atol(textResult);
@@ -386,13 +386,13 @@ char* GetProductName(void* log)
     const char* osProductNameCommand = "cat /sys/devices/virtual/dmi/id/product_name";
     const char* osProductNameAlternateCommand = "lshw -c system | grep -m 1 \"product:\"";
     char* textResult = GetAnotherOsProperty(osProductNameCommand, log);
-    
+
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
         FREE_MEMORY(textResult);
         textResult = GetHardwareProperty(osProductNameAlternateCommand, false, log);
     }
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Product name: '%s'", textResult);
@@ -412,7 +412,7 @@ char* GetProductVendor(void* log)
         FREE_MEMORY(textResult);
         textResult = GetHardwareProperty(osProductVendorAlternateCommand, false, log);
     }
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Product vendor: '%s'", textResult);
@@ -635,7 +635,7 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
             OsConfigCaptureReason(reason, "Distro ('%s') and installed image ('%s', '%s') do not match, automatic remediation is not possible", linuxName, kernelName, kernelVersion);
         }
     }
-    
+
     FREE_MEMORY(kernelName);
     FREE_MEMORY(kernelVersion);
 
@@ -675,7 +675,7 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
     char* current = NULL;
     size_t length = 0;
     int status = 0;
-        
+
     if ((NULL == desired) || (0 == (length = strlen(desired))))
     {
         OsConfigLogError(log, "CheckLoginUmask: invalid argument");
@@ -920,7 +920,7 @@ int EnableVirtualMemoryRandomization(void* log)
             status = ENOENT;
         }
     }
-    
+
     return status;
 }
 

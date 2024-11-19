@@ -43,7 +43,7 @@ OSCONFIG_LOG_HANDLE GetLog(void)
     {
         g_log = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
     }
-    
+
     return g_log;
 }
 
@@ -168,7 +168,7 @@ void MI_CALL OsConfigResource_Load(
         CallMpiClose(g_mpiHandle, GetLog());
         g_mpiHandle = NULL;
     }
-    
+
     AsbInitialize(GetLog());
 
     LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d)", getpid());
@@ -191,7 +191,7 @@ void MI_CALL OsConfigResource_Unload(
     else
     {
         LogInfo(context, GetLog(), "[OsConfigResource] Unload (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
-        
+
         CallMpiClose(g_mpiHandle, GetLog());
         g_mpiHandle = NULL;
 
@@ -332,16 +332,16 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName
             memcpy(payloadString, serializedValue, payloadSize);
 
             mpiResult = AsbMmiSet(g_componentName, objectName, payloadString, payloadSize, GetLog());
-            LogInfo(context, GetLog(), "[%s] AsbMmiSet(%s, %s, '%.*s', %d) returned %d", 
+            LogInfo(context, GetLog(), "[%s] AsbMmiSet(%s, %s, '%.*s', %d) returned %d",
                 who, g_componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult);
 
-            if (MPI_OK != mpiResult) 
+            if (MPI_OK != mpiResult)
             {
                 if (NULL == g_mpiHandle)
                 {
                     g_mpiHandle = RefreshMpiClientSession(g_mpiHandle, context);
                 }
-                
+
                 if (NULL != g_mpiHandle)
                 {
                     mpiResult = CallMpiSet(g_componentName, objectName, payloadString, payloadSize, GetLog());
@@ -393,7 +393,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     {
         SetDesiredObjectValueToDevice(who, g_initObjectName, context);
     }
-    
+
     mpiResult = AsbMmiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, MAX_PAYLOAD_LENGTH, GetLog());
     LogInfo(context, GetLog(), "[%s] AsbMmiGet(%s, %s): '%s' (%d)", who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
 
@@ -417,7 +417,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
         {
             mpiResult = ENODATA;
             miResult = MI_RESULT_FAILED;
-            LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s): no payload (%s, %d) (%d)", 
+            LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s): no payload (%s, %d) (%d)",
                 who, g_componentName, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
         }
         else
@@ -814,13 +814,13 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         {
             reasonCode = DuplicateString(auditFailedInvalidResourceOrRuleId);
         }
-        
+
         if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue))))
         {
             reasonPhrase = DuplicateString(auditFailed);
         }
     }
-    
+
     LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: '%s', '%s'", g_reportedObjectName, reasonCode, reasonPhrase);
 
     if (reasonCode && reasonPhrase)
@@ -859,7 +859,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
-    
+
     // Set the created output resource instance as the output resource in the GetTargetResource instance
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(&get_result_object.__instance, MI_T("OutputResource"), &miValueResource, MI_INSTANCE, 0)))
     {
@@ -877,7 +877,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 Exit:
     FREE_MEMORY(reasonCode);
     FREE_MEMORY(reasonPhrase);
-    
+
     // Clean up the reasons class instance
     if ((NULL != reasonObject) && (MI_RESULT_OK != (miCleanup = MI_Instance_Delete(reasonObject))))
     {
@@ -903,12 +903,12 @@ Exit:
     }
 
     // Post MI result back to MI to finish
-    
+
     if (MI_RESULT_OK != miResult)
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] Get complete with miResult %d", miResult);
     }
-    
+
     MI_Context_PostResult(context, miResult);
 }
 
@@ -1239,7 +1239,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     }
 
     SetDesiredObjectValueToDevice("OsConfigResource.Set", g_desiredObjectName, context);
-    
+
     miResult = MI_RESULT_OK;
 
 Exit:

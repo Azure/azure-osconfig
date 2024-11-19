@@ -16,7 +16,7 @@ class ReasonClass
 [ClassVersion("3.0.0")]
 class OsConfigResource : OMI_BaseResource
 {
-  [key] 
+  [key]
   string RuleId;
 
   [write]
@@ -46,19 +46,19 @@ class OsConfigResource : OMI_BaseResource
   [read, Description("Reported MPI result (for audit and remediation)")]
   uint32 ReportedMpiResult;
 
-  [read, EmbeddedInstance("ReasonClass")] 
+  [read, EmbeddedInstance("ReasonClass")]
   string Reasons[];
 
   [static, Description("Get resource state based on input configuration.")]
   uint32 GetTargetResource(
     [in, EmbeddedInstance("OsConfigResource"), Description("Desired configuration to be applied.")]
     string InputResource,
-    [in, Description("Flags passed to the providers. Reserved for future use.")] 
+    [in, Description("Flags passed to the providers. Reserved for future use.")]
     uint32 Flags,
     [out, EmbeddedInstance("OsConfigResource"), Description("The current configuration state.")]
     string OutputResource
   );
-    
+
   [static, Description("Test resource state based on input configuration.")]
   uint32 TestTargetResource(
     [in, EmbeddedInstance("OsConfigResource"), Description("Desired configuration to be applied.")]
@@ -81,4 +81,3 @@ class OsConfigResource : OMI_BaseResource
     uint32 Flags
   );
 };
- 

@@ -54,7 +54,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     int intermediateStatus = -1;
     int totalWaitSeconds = 0;
     int timeout = (timeoutSeconds > 0) ? timeoutSeconds : defaultCommandTimeout;
-    
+
     bool mainProcessThread = (bool)(getpid() == gettid());
 
     fflush(NULL);
@@ -63,7 +63,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     {
         if (IsCommandLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation on %s thread", 
+            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation on %s thread",
                 command, timeout, (NULL == callback) ? " no " : " ", mainProcessThread ? "main process" : "worker");
         }
 
@@ -186,7 +186,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     {
         if (IsCommandLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' without timeout or cancelation on %s thread", 
+            OsConfigLogInfo(log, "SystemCommand: executing command '%s' without timeout or cancelation on %s thread",
                 command, mainProcessThread ? "main process" : "worker");
         }
         if (0 == (workerProcess = fork()))
@@ -226,7 +226,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     const char commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
     const char commandSeparator[] = " > ";
     const char commandTerminator[] = " 2>&1";
-    
+
     int status = -1;
     FILE* resultsFile = NULL;
     int fileSize = 0;
@@ -276,7 +276,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     }
 
     snprintf(commandLine, commandLineLength, wrappedCommand ? "%s%s%s%s" : "(%s)%s%s%s", command, commandSeparator, commandTextResultFile, commandTerminator);
- 
+
     // Execute the command with the requested timeout: error ETIME (62) means the command timed out
     status = SystemCommand(context, commandLine, timeoutSeconds, callback, log);
 
@@ -349,7 +349,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 char* HashCommand(const char* source, void* log)
 {
     static const char hashCommandTemplate[] = "%s | sha256sum | head -c 64";
-    
+
     char* command = NULL;
     char* hash = NULL;
     int length = 0;
@@ -366,7 +366,7 @@ char* HashCommand(const char* source, void* log)
     {
         memset(command, 0, length);
         snprintf(command, length, hashCommandTemplate, source);
-        
+
         status = ExecuteCommand(NULL, command, false, false, 0, 0, &hash, NULL, log);
         if (0 != status)
         {

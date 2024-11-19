@@ -26,7 +26,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
             {
                 currentSize = initialSize;
                 memset(&string[0], 0, currentSize);
-                
+
                 while (1)
                 {
                     next = fgetc(file);
@@ -214,14 +214,14 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     {
         OsConfigLogInfo(log, "InternalSecureSaveToFile: no directory name for '%s' (%d)", fileNameCopy, errno);
     }
-    
+
     if (DirectoryExists(fileDirectory))
     {
         if (0 == GetDirectoryAccess(fileDirectory, &ownerId, &groupId, &access, log))
         {
-            OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists, is owned by user (%u, %u) and has access mode %u", 
+            OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists, is owned by user (%u, %u) and has access mode %u",
                 fileDirectory, ownerId, groupId, access);
-        }    
+        }
     }
 
     if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
@@ -342,7 +342,7 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, boo
 {
     char* contents = NULL;
     bool result = false;
-    
+
     if ((NULL == firstFileName) || (NULL == secondFileName))
     {
         OsConfigLogError(log, "ConcatenateFiles: invalid arguments");
@@ -359,7 +359,7 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, boo
         {
             result = AppendPayloadToFile(firstFileName, contents, strlen(contents), log);
         }
-        
+
         FREE_MEMORY(contents);
     }
 
@@ -401,7 +401,7 @@ static bool IsATrueFileOrDirectory(bool directory, const char* name, void* log)
     if (-1 != (status = lstat(name, &statStruct)))
     {
         format = S_IFMT & statStruct.st_mode;
-        
+
         switch (format)
         {
             case S_IFBLK:
@@ -572,8 +572,8 @@ static int OctalToDecimal(int octal)
     int internalOctal = octal;
     int decimal = 0;
     int i = 0;
-  
-    while (internalOctal) 
+
+    while (internalOctal)
     {
         decimal += (internalOctal % 10) * pow(8, i++);
         internalOctal = internalOctal / 10;
@@ -613,7 +613,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 // Special case for the MPI Client
                 if (NULL != log)
                 {
-                    OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) matches expected (%d, %d)", 
+                    OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) matches expected (%d, %d)",
                         name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                 }
 
@@ -632,7 +632,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 // S_ISVTX (01000): On directories, restricted deletion flag
                 // S_ISGID (02000): Set-group-ID on execution
                 // S_ISUID (04000): Set-user-ID on execution
-                
+
                 currentMode = DecimalToOctal(statStruct.st_mode & 07777);
                 desiredMode = desiredAccess;
 
@@ -664,7 +664,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     {
                         OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d) matches expected (%d)", name, currentMode, desiredMode);
                     }
-                    
+
                     OsConfigCaptureSuccessReason(reason, "'%s' has required access (%d) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
                     result = 0;
                 }
@@ -913,14 +913,14 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
         OsConfigLogError(log, "RenameFileWithOwnerAndAccess: original file '%s' does not exist", original);
         return EINVAL;
     }
-    
+
     if (0 != GetFileAccess(target, &ownerId, &groupId, &mode, log))
     {
         OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: cannot read owner and access mode for original target file '%s', using defaults", target);
 
         ownerId = 0;
         groupId = 0;
-        
+
         // S_IRUSR (00400): Read permission, owner
         // S_IWUSR (00200): Write permission, owner
         // S_IRGRP (00040): Read permission, group
@@ -936,7 +936,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
         }
         else if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode %u", 
+            OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode %u",
                 original, target, ownerId, groupId, mode);
         }
     }
@@ -1072,9 +1072,9 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 
     if ((0 == status) && (false == replacedLine) && (NULL != newline))
     {
-        OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: line '%s' did not replace any '%s' line, to be appended at end of '%s'", 
+        OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: line '%s' did not replace any '%s' line, to be appended at end of '%s'",
             newline, marker, fileName);
-        
+
         if (false == AppendPayloadToFile(tempFileName, newline, strlen(newline), log))
         {
             OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to append line '%s' at end of '%s'", newline, fileName);
@@ -1097,7 +1097,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                 OsConfigLogError(log, "ReplaceMarkedLinesInFile: RenameFile('%s' to '%s') failed with %d", tempFileName, fileName, status);
             }
         }
-        
+
         remove(tempFileName);
     }
 
@@ -1219,7 +1219,7 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
     bool foundMarker = false;
     int status = 0;
 
-    if ((false == FileExists(fileName)) || (NULL == text) || (NULL == marker) || (0 == strlen(text)) || (0 == strlen(marker)) || 
+    if ((false == FileExists(fileName)) || (NULL == text) || (NULL == marker) || (0 == strlen(text)) || (0 == strlen(marker)) ||
         (false == IsValidGrepArgument(text)) || (false == IsValidCommentCharacter(commentCharacter)))
     {
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile called with invalid arguments");
@@ -1248,9 +1248,9 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
                     OsConfigCaptureReason(reason, "'%s' containing '%s' found in '%s'", text, marker, fileName);
                     foundMarker = true;
                     status = EEXIST;
-                } 
-            } 
-            
+                }
+            }
+
             if (false == foundMarker)
             {
                 OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' not found in '%s' uncommented with '%c'", text, marker, fileName, commentCharacter);
@@ -1324,7 +1324,7 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
                     if (0 == found[0])
                     {
                         break;
-                    } 
+                    }
                     else if (0 == isalpha(found[0]))
                     {
                         OsConfigLogError(log, "CheckTextNotFoundInEnvironmentVariable: '%s' found in '%s' ('%s')", text, variableName, found);
@@ -1332,8 +1332,8 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
                         foundText = true;
                         status = EEXIST;
                     }
-                } 
-            
+                }
+
                 if (false == foundText)
                 {
                     OsConfigLogInfo(log, "CheckTextNotFoundInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
@@ -1350,7 +1350,7 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
         FREE_MEMORY(command);
         FREE_MEMORY(variableValue);
     }
-    
+
     return status;
 }
 
@@ -1375,7 +1375,7 @@ int CheckSmallFileContainsText(const char* fileName, const char* text, char** re
     if (NULL != (contents = LoadStringFromFile(fileName, false, log)))
     {
         contentsLength = strlen(contents);
-        
+
         if (0 == strncmp(contents, text, (textLength <= contentsLength) ? textLength : contentsLength))
         {
             OsConfigLogInfo(log, "CheckSmallFileContainsText: '%s' matches contents of '%s'", text, fileName);
@@ -1409,7 +1409,7 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
         OsConfigLogError(log, "FindTextInFolder called with invalid arguments");
         return EINVAL;
     }
-    
+
     if (NULL != (home = opendir(directory)))
     {
         while (NULL != (entry = readdir(home)))
@@ -1565,7 +1565,7 @@ static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, 
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log)
 {
     int result = 0;
-    
+
     if ((NULL != fileName) && (false == FileExists(fileName)))
     {
         if (OsConfigIsSuccessReason(reason))
@@ -1699,7 +1699,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     char* found = NULL;
     char* temp = NULL;
     char* result = NULL;
-    
+
     if ((NULL == buffer) || (NULL == option))
     {
         OsConfigLogError(log, "GetStringOptionFromBuffer called with invalid arguments");

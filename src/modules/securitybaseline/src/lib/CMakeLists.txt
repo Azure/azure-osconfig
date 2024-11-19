@@ -3,13 +3,13 @@
 
 project(securitybaselinelib)
 
-add_library(securitybaselinelib STATIC 
+add_library(securitybaselinelib STATIC
     SecurityBaseline.c)
 
 set_property(TARGET securitybaselinelib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-target_link_libraries(securitybaselinelib PRIVATE 
-    logging 
+target_link_libraries(securitybaselinelib PRIVATE
+    logging
     commonutils
     parsonlib
     asb)

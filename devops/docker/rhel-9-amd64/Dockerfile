@@ -13,7 +13,7 @@ RUN yum install -y --disableplugin=subscription-manager \
     ninja-build \
     openssl-devel \
     openssl-devel \
-    rpm-build 
+    rpm-build
 
 WORKDIR /git
 

@@ -80,7 +80,7 @@ extern "C"
 #endif
 
 int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, void* log);
-    
+
 void AsbInitialize(void* log);
 void AsbShutdown(void* log);
 

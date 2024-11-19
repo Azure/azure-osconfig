@@ -16,7 +16,7 @@ void __attribute__((destructor)) DestroyModule(void)
     ConfigurationShutdown();
 }
 
-// This module implements one global static session for all clients. This allows the MMI implementation 
+// This module implements one global static session for all clients. This allows the MMI implementation
 // to be placed in the static module library and the module to get increased unit-test coverage.
 // The module SO library remains a simple wrapper for the MMI calls without any additional implementation.
 

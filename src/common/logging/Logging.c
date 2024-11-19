@@ -123,7 +123,7 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
     {
         // In append mode the file pointer will always be at end of file:
         fileSize = ftell(whatLog->log);
-        
+
         if ((fileSize >= MAX_LOG_SIZE) || (-1 == fileSize))
         {
             fclose(whatLog->log);
@@ -138,7 +138,7 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
 
             // Reopen the log in append mode:
             whatLog->log = fopen(whatLog->logFileName, "a");
-            
+
             // Reapply restrictions once the file is recreated (also for backup, if any):
             RestrictAccessToRootOnly(whatLog->logFileName);
             RestrictAccessToRootOnly(whatLog->backLogFileName);

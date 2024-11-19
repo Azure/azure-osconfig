@@ -439,11 +439,11 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                     LOG_ERROR("Failed to parse JSON payload: %s", payloadString);
                     result = EINVAL;
                 }
-                else if ((0 == strcmp(test->component, SECURITY_BASELINE)) && 
+                else if ((0 == strcmp(test->component, SECURITY_BASELINE)) &&
                     (0 == strncmp(test->object, audit, strlen(audit))))
                 {
                     asbAudit = true;
-                    
+
                     for (i = 0; i < numSkippedAudits; i++)
                     {
                         if (0 == strcmp(test->object, skippedAudits[i]))
@@ -484,7 +484,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                 }
                 else if (0 == json_value_equals(expectedJsonValue, actualJsonValue))
                 {
-                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", 
+                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'",
                         json_serialize_to_string(expectedJsonValue), json_serialize_to_string(actualJsonValue));
                     result = EFAULT;
                 }
@@ -501,7 +501,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
             LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
             result = EFAULT;
         }
-        
+
         json_value_free(expectedJsonValue);
         json_value_free(actualJsonValue);
         FREE_MEMORY(payloadString);

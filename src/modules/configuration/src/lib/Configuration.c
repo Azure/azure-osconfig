@@ -114,7 +114,7 @@ void ConfigurationInitialize(const char* configurationFile)
 
     configuration = LoadConfigurationFromFile(g_configurationFile);
     FREE_MEMORY(configuration);
-        
+
     OsConfigLogInfo(ConfigurationGetLog(), "%s initialized for target configuration file: %s", g_configurationModuleName, g_configurationFile);
 }
 
@@ -123,7 +123,7 @@ void ConfigurationShutdown(void)
     OsConfigLogInfo(ConfigurationGetLog(), "%s shutting down", g_configurationModuleName);
 
     FREE_MEMORY(g_gitBranch);
-    
+
     CloseLog(&g_log);
 }
 
@@ -138,7 +138,7 @@ static int UpdateConfigurationFile(void)
     const char* refreshIntervalName = "ReportingIntervalSeconds";
     const char* gitManagementEnabledName = "GitManagement";
     const char* gitBranchName = "GitBranch";
-    
+
     int status = MMI_OK;
 
     JSON_Value* jsonValue = NULL;
@@ -163,9 +163,9 @@ static int UpdateConfigurationFile(void)
         return ENOENT;
     }
 
-    if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) || 
-        (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || 
-        (iotHubManagementEnabled != g_iotHubManagementEnabled) || (iotHubProtocol != g_iotHubProtocol) || 
+    if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) ||
+        (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) ||
+        (iotHubManagementEnabled != g_iotHubManagementEnabled) || (iotHubProtocol != g_iotHubProtocol) ||
         (gitManagementEnabled != g_gitManagementEnabled) || strcmp(gitBranch, g_gitBranch))
     {
         if (NULL == (jsonValue = json_parse_string(existingConfiguration)))
@@ -189,7 +189,7 @@ static int UpdateConfigurationFile(void)
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_modelVersionObject, modelVersion);
             }
-            
+
             if (JSONSuccess == json_object_set_number(jsonObject, refreshIntervalName, (double)refreshInterval))
             {
                 g_refreshInterval = refreshInterval;
@@ -198,7 +198,7 @@ static int UpdateConfigurationFile(void)
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_refreshIntervalObject, refreshInterval);
             }
-            
+
             if (JSONSuccess == json_object_set_number(jsonObject, localManagementEnabledName, (double)(localManagementEnabled ? 1 : 0)))
             {
                 g_localManagementEnabled = localManagementEnabled;
@@ -207,7 +207,7 @@ static int UpdateConfigurationFile(void)
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_localManagementEnabledObject, localManagementEnabled ? "true" : "false");
             }
-            
+
             if (JSONSuccess == json_object_set_number(jsonObject, fullLoggingEnabledName, (double)(fullLoggingEnabled ? 1: 0)))
             {
                 g_fullLoggingEnabled = fullLoggingEnabled;
@@ -290,7 +290,7 @@ static int UpdateConfigurationFile(void)
     {
         OsConfigLogError(ConfigurationGetLog(), "Failed to apply new configuration: %s", IsFullLoggingEnabled() ? newConfiguration : "-");
     }
-    
+
     if (jsonValue)
     {
         json_value_free(jsonValue);
@@ -343,10 +343,10 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
         OsConfigLogError(ConfigurationGetLog(), "MmiGetInfo(%s, %p, %p) called with invalid arguments", clientName, payload, payloadSizeBytes);
         return status;
     }
-    
+
     *payload = NULL;
     *payloadSizeBytes = (int)strlen(g_configurationModuleInfo);
-    
+
     *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
     if (*payload)
     {
@@ -359,7 +359,7 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
         *payloadSizeBytes = 0;
         status = ENOMEM;
     }
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(ConfigurationGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
@@ -490,7 +490,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
                 status = ENOMEM;
             }
         }
-    }    
+    }
 
     if (IsFullLoggingEnabled())
     {
@@ -529,7 +529,7 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
     {
         OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
-    } 
+    }
     else if (0 != strcmp(componentName, g_configurationComponentName))
     {
         OsConfigLogError(ConfigurationGetLog(), "MmiSet called for an unsupported component name (%s)", componentName);
@@ -636,7 +636,7 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
             status = ENOMEM;
         }
     }
-    
+
     if (MMI_OK == status)
     {
         status = UpdateConfigurationFile();

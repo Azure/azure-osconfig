@@ -333,7 +333,7 @@ namespace OSConfig::Platform::Tests
             "\"dhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
             "\"enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
             "\"connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
-        
+
         const char* payloadExpectedMultipleDnsServersPerLine =
             "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
             "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
@@ -349,11 +349,11 @@ namespace OSConfig::Platform::Tests
 
         std::string testCommandOutputDnsServers =
             "Global\n"
-            "LLMNR setting: no\n"                  
-            "MulticastDNS setting: no\n"                  
-            "DNSOverTLS setting: no\n"                  
-            "DNSSEC setting: no\n"                  
-            "DNSSEC supported: no\n"           
+            "LLMNR setting: no\n"
+            "MulticastDNS setting: no\n"
+            "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
             "DNSSEC NTA: 10.in-addr.arpa\n"
             "\n"
             "Link 1 (br-1234)\n"
@@ -399,14 +399,14 @@ namespace OSConfig::Platform::Tests
 
         std::string testCommandOutputGlobalDnsServers =
             "Global\n"
-            "LLMNR setting: no\n"                  
-            "MulticastDNS setting: no\n"                  
-            "DNSOverTLS setting: no\n"                  
-            "DNSSEC setting: no\n"                  
-            "DNSSEC supported: no\n"                  
-            "Current DNS Server: 1.1.1.1\n"         
+            "LLMNR setting: no\n"
+            "MulticastDNS setting: no\n"
+            "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+            "Current DNS Server: 1.1.1.1\n"
             "DNS Servers: 1.1.1.1\n"
-            "8.8.8.8\n"           
+            "8.8.8.8\n"
             "DNSSEC NTA: 10.in-addr.arpa\n"
             "\n"
             "Link 1 (br-1234)\n"
@@ -449,17 +449,17 @@ namespace OSConfig::Platform::Tests
             "Current DNS Server: 172.29.64.1\n"
             "DNS Servers: 172.29.64.1\n"
             "DNS Domain: mshome.net\n";
-        
+
         std::string testCommandOutputOnlyGlobalDnsServers =
             "Global\n"
-            "LLMNR setting: no\n"                  
-            "MulticastDNS setting: no\n"                  
-            "DNSOverTLS setting: no\n"                  
-            "DNSSEC setting: no\n"                  
-            "DNSSEC supported: no\n"                  
-            "Current DNS Server: 1.1.1.1\n"         
+            "LLMNR setting: no\n"
+            "MulticastDNS setting: no\n"
+            "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+            "Current DNS Server: 1.1.1.1\n"
             "DNS Servers: 1.1.1.1\n"
-            "8.8.8.8\n"          
+            "8.8.8.8\n"
             "DNSSEC NTA: 10.in-addr.arpa\n"
             "Link 1 (br-1234)\n"
             "Current Scopes: none\n"
@@ -740,7 +740,7 @@ namespace OSConfig::Platform::Tests
 
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
         testModule.returnValues = g_returnValues;
-        testModule.returnValues[1] = testInterfaceTypesDataEth0Empty; 
+        testModule.returnValues[1] = testInterfaceTypesDataEth0Empty;
         testModule.returnValues[2] = testIpDataEth0Empty;
         testModule.returnValues[3] = testCommandOutputDefaultGatewaysEth0Empty;
         testModule.returnValues[4] = testCommandOutputDnsServersEth0Empty;
@@ -834,7 +834,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_NE(payload, nullptr);
         delete payload;
     }
-    
+
     TEST(NetworkingTests, MmiGetInfo)
     {
         MMI_JSON_STRING payload = nullptr;
