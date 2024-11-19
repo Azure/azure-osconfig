@@ -219,4 +219,3 @@ void MmiFree(MMI_JSON_STRING payload)
         delete[] payload;
     }
 }
-

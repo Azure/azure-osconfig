@@ -1260,4 +1260,3 @@ Exit:
 
     MI_Context_PostResult(context, miResult);
 }
-
