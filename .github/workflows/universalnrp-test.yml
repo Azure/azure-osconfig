@@ -3,7 +3,7 @@ name: Universal NRP Test
 on:
   workflow_dispatch:
     inputs:
-      policyPackageList:
+      policy_packages:
         description: 'List of policy packages to test'
         required: true
         default: '[]'
@@ -11,119 +11,117 @@ on:
   schedule:
     - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
 
-env:
-  # Default build matrix - this is where additional distros are added, policy-package are defined either through the workflow_dispatch input or the DEFAULT_PACKAGE_LIST
-  BUILD_MATRIX: |
-    {
-        "target": [
-          { "os": "centos", "version": 8, "package-type": "RPM", "tag": "" },
-          { "os": "debian", "version": 10, "package-type": "DEB", "tag": "" },
-          { "os": "debian", "version": 11, "package-type": "DEB", "tag": "" },
-          { "os": "mariner", "version": 2, "package-type": "RPM", "tag": "" },
-          { "os": "oraclelinux", "version": 8, "package-type": "RPM", "tag": "" },
-          { "os": "rhel", "version": 8, "package-type": "RPM", "tag": "" },
-          { "os": "rhel", "version": 9, "package-type": "RPM", "tag": "" },
-          { "os": "rockylinux", "version": 9, "package-type": "RPM", "tag": "" },
-          { "os": "sles", "version": 15, "package-type": "RPM", "tag": "" },
-          { "os": "ubuntu", "version": "20.04", "package-type": "DEB", "tag": "" },
-          { "os": "ubuntu", "version": "22.04", "package-type": "DEB", "tag": "" }
-        ],
-        "policy-package": [],
-        "arch": ["amd64"],
-        "mode": ["Audit", "Remediate"]
-      }
-  
-  # Default package list to use if no explicit packages are defined in the workflow_dispatch.policyPackageList input
-  DEFAULT_PACKAGE_LIST: |
-    [
-      { "name": "LinuxSshServerSecurityBaseline", "short-name": "SSH", "resource-count": 20 },
-      { "name": "AzureLinuxBaseline", "short-name": "ASB", "resource-count": 168 }
-    ]
-
 jobs:
   package:
     name: Package
-    if: ${{ inputs.policyPackageList == '[]' || inputs.policyPackageList == '' }}
+    if: ${{ inputs.policy_packages == '[]' || inputs.policy_packages == '' }}
     uses: ./.github/workflows/package-build.yml
-    strategy:
-      matrix:
-        target:
-          [
-            { os: ubuntu, version: 14.04, arch: amd64, dist: trusty, package-type: DEB },
-          ]
+    needs: [setup-matrix]
     with:
-      target: ${{ matrix.target.os }}-${{ matrix.target.version }}
-      arch: ${{ matrix.target.arch }}
-      artifact: nrp-test-package
-      package-type: ${{ matrix.target.package-type }}
+      target: ubuntu-14.04
+      arch: amd64
+      artifact: nrp-test
+      package-type: DEB
+      test: true
       machine-config: true
       release: ${{ github.event_name == 'pull_request' && false || true }}
 
-  generate-matrix:
-    name: Generate Matrix
-    needs: package
+  setup-matrix:
+    name: Setup Matrix
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.matrix.outputs.matrix }}
-    if: ${{ always() }}
+      targets: ${{ steps.matrix.outputs.targets }}
+      custom_download: ${{ steps.matrix.outputs.custom_download }}
+      policy_packages: ${{ steps.matrix.outputs.policy_packages }}
     steps:
       - name: Generate Matrix
         id: matrix
+        env:
+          DEFAULT_POLICYPACKAGES: |
+            [
+              { "name": "LinuxSshServerSecurityBaseline", "short-name": "SSH", "resource-count": 20 },
+              { "name": "AzureLinuxBaseline", "short-name": "ASB", "resource-count": 168 }
+            ]
+          TARGETS: |
+            [
+              { "os": "centos", "version": "8" },
+              { "os": "debian", "version": "10" },
+              { "os": "debian", "version": "11" },
+              { "os": "debian", "version": "12" },
+              { "os": "mariner", "version": "2" },
+              { "os": "oraclelinux", "version": "8" },
+              { "os": "rhel", "version": "8" },
+              { "os": "rhel", "version": "9" },
+              { "os": "rockylinux", "version": "9" },
+              { "os": "sles", "version": "15" },
+              { "os": "ubuntu", "version": "20.04" },
+              { "os": "ubuntu", "version": "22.04" }
+            ]
+          # { "os": "almalinux", "version": "9" },
+          # { "os": "amazonlinux", "version": "2" },
+          # { "os": "centos", "version": "7" },
+          # { "os": "oraclelinux", "version": "7" },
+          # { "os": "rhel", "version": "7" },
+          # { "os": "sles", "version": "12" },
+          # { "os": "ubuntu", "version": "16.04" },
+          # { "os": "ubuntu", "version": "18.04" },
         run: |
-          # OSConfig Test Matrix
-          matrix="$(cat <<'EOL'
-          ${{ env.BUILD_MATRIX }}
-          EOL
-          )"
-
           # If no explicit packages defined, use the default packages
-          if [[ '${{ inputs.policyPackageList }}' == '[]' || '${{ inputs.policyPackageList }}' == '' ]]; then
-          policyPackages="$(cat <<'EOL'
-          ${{ env.DEFAULT_PACKAGE_LIST }}
-          EOL
-          )"
+          if [[ '${{ inputs.policy_packages }}' == '[]' || '${{ inputs.policy_packages }}' == '' ]]; then
+            custom_download="false"
+            policy_packages="$DEFAULT_POLICYPACKAGES"
           else
-          policyPackages="$(cat <<'EOL'
-          ${{ inputs.policyPackageList }}
-          EOL
-          )"
+            custom_download="true"
+            policy_packages="${{ inputs.policy_packages }}"
           fi
 
-          matrix="$(echo $matrix | jq --argjson policyPackages "$policyPackages" '.["policy-package"] += $policyPackages')"
-          echo matrix=$matrix >> $GITHUB_OUTPUT
+          echo $custom_download
+          echo $policy_packages
 
-  test:
-    name: Test
-    needs: [package, generate-matrix]
-    if: ${{ always() }}
+          echo targets=$(echo $TARGETS | jq -r 'tostring') >> $GITHUB_OUTPUT
+          echo custom_download=$custom_download >> $GITHUB_OUTPUT
+          echo policy_packages=$(echo $policy_packages | jq -r 'tostring') >> $GITHUB_OUTPUT
+
+  mc-test:
+    name: MC Test
+    needs: [setup-matrix, package]
     runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+      matrix:
+        target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
+        arch: [amd64]
+        mode: [Audit, Remediate]
+        policy-package: ${{ fromJSON(needs.setup-matrix.outputs.policy_packages) }}
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v4
-        if: ${{ inputs.policyPackageList == '[]' || inputs.policyPackageList == '' }}
+        if: ${{ needs.setup-matrix.outputs.custom_download == 'false' }}
         id: download
         with:
-          name: nrp-test-package
+          name: nrp-test
+
+      - name: Custom Download
+        if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
+        id: custom-download
+        run: |
+          wget -O PolicyPackage.zip ${{ matrix.policy-package.policy-package-url }}
+          echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
 
       - name: Normalize variables
         id: normalize
         run: |
-          # Normalize the distro names + architectures to match the published packages
-          output=${{ matrix.target.os }}-${{ matrix.target.version }}_${{ matrix.policy-package.short-name }}-${{ matrix.mode }}
-          echo name=${output} >> $GITHUB_OUTPUT
+          echo name="${{ matrix.target.os }}-${{ matrix.target.version }}_${{ matrix.policy-package.short-name }}-${{ matrix.mode }}" >> $GITHUB_OUTPUT
 
-          # Get the Policy Package URL
-          if [[ '${{ inputs.policyPackageList }}' == '[]' || '${{ inputs.policyPackageList }}' == '' ]]; then
-              echo PolicyPackagePath=${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip >> $GITHUB_OUTPUT
+          if [[ ${{ needs.setup-matrix.outputs.custom_download }} == 'true' ]]; then
+            echo dir=$(pwd) >> $GITHUB_OUTPUT
+            echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
           else
-              wget -O PolicyPackage.zip ${{ matrix.policy-package.policy-package-url }}
-              echo PolicyPackagePath=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
+            echo dir="${{ steps.download.outputs.download-path }}" >> $GITHUB_OUTPUT
+            echo path="${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip" >> $GITHUB_OUTPUT
           fi
-          echo PolicyPackageDir=$(dirname "$PolicyPackagePath") >> $GITHUB_OUTPUT
 
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
@@ -135,7 +133,7 @@ jobs:
           Import-Module Pester -Passthru
 
           \$params = @{
-              PolicyPackage = '${{ steps.normalize.outputs.PolicyPackagePath }}'
+              PolicyPackage = '${{ steps.normalize.outputs.path }}'
               SkipRemediation = if ('${{ matrix.mode }}' -eq 'Audit') { \$true } else { \$false }
               ResourceCount = ${{ matrix.policy-package.resource-count }}
           }
@@ -155,9 +153,6 @@ jobs:
               }
               Should = @{
                   ErrorAction = 'Continue'
-              }
-              Filter = @{
-                  Tag = '${{ matrix.tag }}'
               }
           };
           Invoke-Pester -Configuration \$pesterConfig
@@ -183,7 +178,7 @@ jobs:
         if: success() || failure()
         with:
           name: ${{ steps.normalize.outputs.name }}_report
-          path: '${{ steps.normalize.outputs.PolicyPackageDir }}/*testResults.xml'
+          path: '${{ steps.normalize.outputs.dir }}/*testResults.xml'
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
@@ -191,10 +186,65 @@ jobs:
           name: ${{ steps.normalize.outputs.name }}_logs
           path: osconfig-logs/osconfig*
 
+  module-test:
+    name: Module Test
+    needs: [setup-matrix, package]
+    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
+        arch: [amd64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: ldd --version
+
+      - uses: actions/download-artifact@v4
+        id: download
+        with:
+          name: nrp-test
+
+      - name: Create osconfig.json
+        run: |
+          sudo mkdir -p /etc/osconfig
+          sudo cp -r ${{ steps.download.outputs.download-path }}/modules/test/osconfig.json /etc/osconfig/osconfig.json
+
+      - name: Run moduletest
+        working-directory: ${{ steps.download.outputs.download-path }}/modules/test
+        run: |
+          sudo chmod +x ./moduletest
+
+          result=0
+          recipe="./recipes/SecurityBaselineTests.json"
+
+          name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
+
+          echo -n "testing $name ... "
+
+          if output=$(sudo ./moduletest $recipe --bin ../bin); then
+            echo passed
+          else
+            echo failed
+            result=1
+            echo "::warning file=$name.log::Error(s) in module-test for '$name'"
+          fi
+
+          echo "$output"
+          echo "$output" > ../../$name.log
+
+          exit $result
+
+      - uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: ${{ matrix.target.os }}-${{ matrix.target.version }}_logs
+          path: '*.log'
+
   # See for more details: https://github.com/marketplace/actions/publish-test-results
   report:
     name: Report
-    needs: test
+    needs: mc-test
     runs-on: ubuntu-latest
     permissions:
       checks: write

@@ -133,29 +133,25 @@ jobs:
           arch: ${{ matrix.variant.arch }}
           package-type: ${{ inputs.package-type }}
 
+      - name: Copy test collateral
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}
+          cmd: |
+            mkdir -p build/modules/test/recipes
+            cp -r src/tests/e2e-test-recipes/*.json build/modules/test/recipes/
+
+            cp src/adapters/pnp/daemon/osconfig.json build/modules/test/osconfig.json
+
       - uses: actions/upload-artifact@v4
-        if: ${{ inputs.test && !inputs.build-fuzzers }}
         with:
           name: ${{ inputs.artifact }}
           path: |
             ./build/osconfig*
             ./build/*.zip
             ./build/modules/test/moduletest
+            ./build/modules/test/osconfig.json
+            ./build/modules/test/recipes/*.json
             ./build/modules/bin/*.so
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ !inputs.test && inputs.build-fuzzers }}
-        with:
-          name: ${{ inputs.artifact }}
-          path: |
-            ./build/osconfig*
-            ./build/*.zip
             ./build/tests/fuzzer/osconfig-fuzzer
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ !inputs.test && !inputs.build-fuzzers }}
-        with:
-          name: ${{ inputs.artifact }}
-          path: |
-            ./build/osconfig*
-            ./build/*.zip
