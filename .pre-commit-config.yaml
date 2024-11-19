@@ -1,17 +1,29 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-    - id: check-added-large-files
     - id: mixed-line-ending
-      args: ['--fix', 'no']
-      exclude: |
+      args: ['--fix', 'lf']
+      files: |
          (?x)(
-            .*\.cmd
-         )$
+          .*\.c|
+          .*\.h|
+          .*\.cpp|
+          .*\.hpp|
+          .*\.cs|
+          .*\.md|
+          .*\.cmake|
+          .*\.toml|
+          .*\.json|
+          .*\.txt
+            )$
     - id: mixed-line-ending
       args: ['--fix', 'crlf']
-      files: '\.cmd$'
+      files: |
+         (?x)(
+         .*\.cmd|
+         .*\.csrpoj
+         )$
 
