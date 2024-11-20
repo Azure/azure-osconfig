@@ -49,6 +49,10 @@ jobs:
           for recipe in $recipes; do
             name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
 
+            ls -al ../../src/adapters/pnp/daemon/osconfig.json
+            find ../.. -name osconfig.json
+            echo Second find
+            find ../../.. -name osconfig.json
             echo -n "testing $name ... "
 
             if output=$(sudo ./moduletest $recipe --bin ../bin --config ../../src/adapters/pnp/daemon/osconfig.json ); then
