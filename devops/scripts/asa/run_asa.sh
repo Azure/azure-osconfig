@@ -6,14 +6,14 @@
 set -e
 
 # Tested and supported runtimes: podman, docker
-CONTAINER_RUNTIME="podman"
+CONTAINER_RUNTIME="docker"
 
 DISTROS=("ubuntu22" "centos8")
 
 function echo_header {
   echo ""
   echo "============================================================="
-  echo ${1}
+  echo "${1}"
   echo "============================================================="
 }
 
@@ -22,7 +22,7 @@ if ! dpkg --list ${CONTAINER_RUNTIME} > /dev/null && ! rpm -q ${CONTAINER_RUNTIM
     exit 1
 fi
 
-for DISTRO in ${DISTROS[@]}; do
+for DISTRO in "${DISTROS[@]}"; do
     echo_header "RUNNING ${DISTRO} CONTAINER IMAGE BUILD"
 
     ${CONTAINER_RUNTIME} build -f ./Dockerfile-${DISTRO} -t osconfig-asa-${DISTRO} .
@@ -37,4 +37,4 @@ for DISTRO in ${DISTROS[@]}; do
     echo_header "Finished for ${DISTRO}"
 done
 
-echo_header "No ASA problems detected. Scanned distros: ${DISTROS[@]}"
+echo_header "No ASA problems detected. Scanned distros: " "${DISTROS[@]}"
