@@ -17,6 +17,7 @@ static bool g_tdnfIsPresent = false;
 static bool g_dnfIsPresent = false;
 static bool g_yumIsPresent = false;
 static bool g_zypperIsPresent = false;
+static bool g_aptGetUpdateExecuted = false;
 
 int IsPresent(const char* what, void* log)
 {
@@ -178,6 +179,26 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
     return result;
 }
 
+void AptGetUpdateOnce(void* log)
+{
+    const char* command = "apt-get update";
+    int status = 0;
+    if (g_aptGetUpdateExecuted)
+    {
+        return;
+    }
+
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "AptGetUpdateOnce: '%s' was successful", command);
+        g_aptGetUpdateExecuted = true;
+    }
+    else
+    {
+        OsConfigLogError(log, "AptGetUpdateOnce: '%s' failed with %d", command, status);
+    }
+}
+
 int InstallOrUpdatePackage(const char* packageName, void* log)
 {
     const char* commandTemplate = "%s install -y %s";
@@ -187,6 +208,7 @@ int InstallOrUpdatePackage(const char* packageName, void* log)
     
     if (g_aptGetIsPresent)
     {
+        AptGetUpdateOnce(log);
         status = CheckOrInstallPackage(commandTemplate, g_aptGet, packageName, log);
     }
     else if (g_tdnfIsPresent)
