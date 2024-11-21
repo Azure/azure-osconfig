@@ -5,10 +5,18 @@
 
 set -e
 
+DISTROS=("ubuntu22" "centos8")
 SUPPORTED_RUNTIMES=("docker" "podman")
 
-command_exists() {
+function command_exists() {
     command -v "$1" >/dev/null 2>&1
+}
+
+function echo_header {
+  echo ""
+  echo "============================================================="
+  echo "${1}"
+  echo "============================================================="
 }
 
 # Loop through the supported runtimes and select the first one that is present
@@ -32,11 +40,19 @@ if ! dpkg --list ${CONTAINER_RUNTIME} > /dev/null && ! rpm -q ${CONTAINER_RUNTIM
     exit 1
 fi
 
-${CONTAINER_RUNTIME} build -f ./Dockerfile-ubuntu22 -t osconfig-asa-ubuntu22 .
+for DISTRO in "${DISTROS[@]}"; do
+    echo_header "RUNNING ${DISTRO} CONTAINER IMAGE BUILD"
 
-mkdir -p ./report
+    ${CONTAINER_RUNTIME} build -f ./Dockerfile-${DISTRO} -t osconfig-asa-${DISTRO} .
 
-${CONTAINER_RUNTIME} run -it \
-    -v ./scan.sh:/azure/azure-osconfig/devops/scripts/asa/scan.sh \
-    -v ./report:/azure/azure-osconfig/devops/scripts/asa/report \
-    osconfig-asa-ubuntu22 "$@"
+    echo_header "RUNNING ASA SCAN IN ${DISTRO} CONTAINER"
+    mkdir -p ./report/${DISTRO}
+
+    ${CONTAINER_RUNTIME} run -it \
+        -v ./scan.sh:/azure/azure-osconfig/devops/scripts/asa/scan.sh \
+        -v ./report/${DISTRO}:/azure/azure-osconfig/devops/scripts/asa/report \
+        osconfig-asa-${DISTRO} "$@"
+    echo_header "Finished for ${DISTRO}"
+done
+
+echo_header "No ASA problems detected. Scanned distros: " "${DISTROS[@]}"
