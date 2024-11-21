@@ -28,14 +28,14 @@ for RUNTIME in "${SUPPORTED_RUNTIMES[@]}"; do
 done
 
 # Check if a container runtime was found
-if [ -z "$CONTAINER_RUNTIME" ]; then
+if [ -z "${CONTAINER_RUNTIME}" ]; then
     echo "No supported container runtime found. One of the following is required: " "${SUPPORTED_RUNTIMES[@]}"
     exit 1
 else
-    echo "Using container runtime: $CONTAINER_RUNTIME"
+    echo "Using container runtime: ${CONTAINER_RUNTIME}"
 fi
 
-if ! dpkg --list ${CONTAINER_RUNTIME} > /dev/null && ! rpm -q ${CONTAINER_RUNTIME} > /dev/null; then
+if ! dpkg --list "${CONTAINER_RUNTIME}" > /dev/null && ! rpm -q "${CONTAINER_RUNTIME}" > /dev/null; then
     echo "Install prerequisites first: ${CONTAINER_RUNTIME}"
     exit 1
 fi
