@@ -341,7 +341,8 @@ MANAGEMENT_MODULE* LoadModule(const char* client, const char* path)
         UnloadModule(module);
         module = NULL;
     }
-
+    json_value_free(value);
+    FREE_MEMORY(payload);
     return module;
 }
 
