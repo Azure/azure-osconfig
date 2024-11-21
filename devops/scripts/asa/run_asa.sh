@@ -5,10 +5,12 @@
 
 set -e
 
-# Tested and supported runtimes: podman, docker
-CONTAINER_RUNTIME="docker"
-
 DISTROS=("ubuntu22" "centos8")
+SUPPORTED_RUNTIMES=("docker" "podman")
+
+function command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
 
 function echo_header {
   echo ""
@@ -17,7 +19,23 @@ function echo_header {
   echo "============================================================="
 }
 
-if ! dpkg --list ${CONTAINER_RUNTIME} > /dev/null && ! rpm -q ${CONTAINER_RUNTIME} > /dev/null; then
+# Loop through the supported runtimes and select the first one that is present
+for RUNTIME in "${SUPPORTED_RUNTIMES[@]}"; do
+    if command_exists "${RUNTIME}"; then
+        CONTAINER_RUNTIME="${RUNTIME}"
+        break
+    fi
+done
+
+# Check if a container runtime was found
+if [ -z "${CONTAINER_RUNTIME}" ]; then
+    echo "No supported container runtime found. One of the following is required: " "${SUPPORTED_RUNTIMES[@]}"
+    exit 1
+else
+    echo "Using container runtime: ${CONTAINER_RUNTIME}"
+fi
+
+if ! dpkg --list "${CONTAINER_RUNTIME}" > /dev/null && ! rpm -q "${CONTAINER_RUNTIME}" > /dev/null; then
     echo "Install prerequisites first: ${CONTAINER_RUNTIME}"
     exit 1
 fi
