@@ -2,6 +2,8 @@ name: Fuzzer execution
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *' # Every day at 7pm PST/4am CET
 
 jobs:
   fuzzer-execution:
