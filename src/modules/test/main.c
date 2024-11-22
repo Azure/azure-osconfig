@@ -95,7 +95,7 @@ static bool g_verbose = false;
 
 void FreeStep(STEP* step)
 {
-    if (step)
+    if (NULL == step)
     {
         return;
     }
@@ -505,6 +505,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
         json_value_free(expectedJsonValue);
         json_value_free(actualJsonValue);
         FREE_MEMORY(payloadString);
+        FREE_MEMORY(payload);
     }
     else if (test->type == DESIRED)
     {
@@ -669,7 +670,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                             if (step->data.module.action == UNLOAD)
                             {
                                 UnloadModule(module);
-                                module = NULL;
+                                FREE_MEMORY(module);
                             }
                             else
                             {
@@ -697,6 +698,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
             {
                 LOG_INFO("Warning: module is still loaded, unloading...");
                 UnloadModule(module);
+                FREE_MEMORY(module);
                 module = NULL;
             }
 
@@ -709,6 +711,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
             for (int i = 0; i < failed; i++)
             {
                 LOG_TRACE("  %*d %s", (int)log10(total) + 1, failures[i].index + 1, failures[i].name);
+                FREE_MEMORY(failures[i].name);
             }
 
             LOG_TRACE(LINE_SEPARATOR_THICK);
@@ -726,6 +729,10 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
         status = 1;
     }
 
+    for (int i = 0; i < total; i++)
+    {
+        FreeStep(&steps[i]);
+    }
     FREE_MEMORY(failures);
     FREE_MEMORY(steps);
 
