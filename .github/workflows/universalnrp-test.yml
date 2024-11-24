@@ -145,6 +145,7 @@ jobs:
             $policyPackagUrl="${{ matrix.policy-package.policy-package-url }}"
             $storageURIPrefix="storage://"
             if ($policyPackagUrl.StartsWith($storageURIPrefix)) {
+              $storagePath=$policyPackagUrl.Substring($storageURIPrefix.Length)
               Write-Host "Downloading \"$storagePath\" from Azure Storage"
               $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -UseConnectedAccount
               Get-AzStorageBlobContent -Container $storageContainerName -Blob $storagePath -Context \$storageContext -Destination PolicyPackage.zip
