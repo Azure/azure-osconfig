@@ -110,6 +110,20 @@ jobs:
         with:
           name: nrp-test
 
+      - name: Check and Install Az.Accounts module
+        # if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'Checking the Az.Accounts module...'
+          try {
+            Get-InstalledModule Az.Accounts -AllVersions -ErrorAction Stop
+            Write-Host 'Az.Accounts module is already installed.'
+          } catch {
+            Write-Host 'Az.Accounts module is not installed. Trying to install...'
+            Install-Module -Name Az.Accounts -Repository PSGallery -Force
+          }
+          Write-Host 'Done'
+
       - name: Azure login
         if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
         uses: azure/login@v2
