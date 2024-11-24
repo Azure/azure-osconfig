@@ -146,44 +146,14 @@ jobs:
             $storageURIPrefix="storage://"
             if ($policyPackagUrl.StartsWith($storageURIPrefix)) {
               $storagePath=$policyPackagUrl.Substring($storageURIPrefix.Length)
-              Write-Host "Downloading \"$storagePath\" from Azure Storage"
-              $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -UseConnectedAccount
-              Get-AzStorageBlobContent -Container $storageContainerName -Blob $storagePath -Context \$storageContext -Destination PolicyPackage.zip
+              Write-Host "Downloading $storagePath from Azure Storage"
+              $storageContext = New-AzStorageContext -StorageAccountName $env:storageAccountName -UseConnectedAccount
+              Get-AzStorageBlobContent -Container $env:storageContainerName -Blob $storagePath -Context \$storageContext -Destination PolicyPackage.zip
             } else {
                 Write-Host "Downloading from url \"${{ matrix.policy-package.policy-package-url }}\""
                 Invoke-WebRequest -Uri $policyPackagUrl -OutFile PolicyPackage.zip
             }
             echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
-
-      # - name: Custom Download
-      #   if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
-      #   id: custom-download
-      #   run: |
-      #     # Download the policy package from Azure Storage or from a URL
-      #     policyPackagUrl="${{ matrix.policy-package.policy-package-url }}"
-      #     storageURIPrefix="storage://"
-      #     if [[ $policyPackagUrl == $storageURIPrefix* ]]; then
-      #       storagePath="${policyPackagUrl#$storageURIPrefix}"
-      #       script="./downloadFromAzStorage.ps1"
-      #       #HEREDOC formatting requires no leading whitespace
-      #     cat >$script <<EOL
-      #     Install-Module -Name Az.Storage -Force -AllowClobber -Confirm:\$false
-      #     \$storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -UseConnectedAccount
-      #     Get-AzStorageBlobContent -Container $storageContainerName -Blob $storagePath -Context \$storageContext -Destination PolicyPackage.zip
-      #     EOL
-
-      #       echo "Downloading \"$storagePath\" from Azure Storage"
-      #       sudo apt update
-      #       sudo apt install -y powershell
-      #       pwsh --version
-
-      #       sudo pwsh -Command $script
-      #     else
-      #       echo "Downloading from url \"${{ matrix.policy-package.policy-package-url }}\""
-      #       wget -O PolicyPackage.zip ${{ matrix.policy-package.policy-package-url }}
-      #     fi
-            
-      #     echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
 
       - name: Normalize variables
         id: normalize
