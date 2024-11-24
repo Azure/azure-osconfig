@@ -11,6 +11,10 @@ on:
   schedule:
     - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
 
+env:
+  storageAccountName: 'osconfigstorage'
+  storageContainerName: 'policypackages'
+
 jobs:
   package:
     name: Package
@@ -44,20 +48,22 @@ jobs:
             ]
           TARGETS: |
             [
-              { "os": "centos", "version": "8" },
-              { "os": "debian", "version": "10" },
-              { "os": "debian", "version": "11" },
-              { "os": "debian", "version": "12" },
-              { "os": "mariner", "version": "2" },
-              { "os": "oraclelinux", "version": "8" },
-              { "os": "rhel", "version": "7" },
-              { "os": "rhel", "version": "8" },
-              { "os": "rhel", "version": "9" },
-              { "os": "rockylinux", "version": "9" },
-              { "os": "sles", "version": "15" },
-              { "os": "ubuntu", "version": "20.04" },
               { "os": "ubuntu", "version": "22.04" }
             ]
+
+          # { "os": "centos", "version": "8" },
+          # { "os": "debian", "version": "10" },
+          # { "os": "debian", "version": "11" },
+          # { "os": "debian", "version": "12" },
+          # { "os": "mariner", "version": "2" },
+          # { "os": "oraclelinux", "version": "8" },
+          # { "os": "rhel", "version": "7" },
+          # { "os": "rhel", "version": "8" },
+          # { "os": "rhel", "version": "9" },
+          # { "os": "rockylinux", "version": "9" },
+          # { "os": "sles", "version": "15" },
+          # { "os": "ubuntu", "version": "20.04" },
+
           # { "os": "almalinux", "version": "9" },
           # { "os": "amazonlinux", "version": "2" },
           # { "os": "centos", "version": "7" },
@@ -84,6 +90,7 @@ jobs:
 
   mc-test:
     name: MC Test
+    if: ${{ always() }}
     needs: [setup-matrix, package]
     runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
     strategy:
@@ -103,12 +110,65 @@ jobs:
         with:
           name: nrp-test
 
-      - name: Custom Download
+      - name: Azure login
+        if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
+        uses: azure/login@v2
+        with:
+          auth-type: IDENTITY
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      - name: Azure PowerShell script
         if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
         id: custom-download
-        run: |
-          wget -O PolicyPackage.zip ${{ matrix.policy-package.policy-package-url }}
-          echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
+        uses: azure/powershell@v2
+        with:
+          azPSVersion: latest
+          inlineScript: |
+            # Download the policy package from Azure Storage or from a URL
+            $policyPackagUrl="${{ matrix.policy-package.policy-package-url }}"
+            $storageURIPrefix="storage://"
+            if ($policyPackagUrl.StartsWith($storageURIPrefix)) {
+              Write-Host "Downloading \"$storagePath\" from Azure Storage"
+              $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -UseConnectedAccount
+              Get-AzStorageBlobContent -Container $storageContainerName -Blob $storagePath -Context \$storageContext -Destination PolicyPackage.zip
+            } else {
+                Write-Host "Downloading from url \"${{ matrix.policy-package.policy-package-url }}\""
+                Invoke-WebRequest -Uri $policyPackagUrl -OutFile PolicyPackage.zip
+            }
+            echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
+
+      # - name: Custom Download
+      #   if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
+      #   id: custom-download
+      #   run: |
+      #     # Download the policy package from Azure Storage or from a URL
+      #     policyPackagUrl="${{ matrix.policy-package.policy-package-url }}"
+      #     storageURIPrefix="storage://"
+      #     if [[ $policyPackagUrl == $storageURIPrefix* ]]; then
+      #       storagePath="${policyPackagUrl#$storageURIPrefix}"
+      #       script="./downloadFromAzStorage.ps1"
+      #       #HEREDOC formatting requires no leading whitespace
+      #     cat >$script <<EOL
+      #     Install-Module -Name Az.Storage -Force -AllowClobber -Confirm:\$false
+      #     \$storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -UseConnectedAccount
+      #     Get-AzStorageBlobContent -Container $storageContainerName -Blob $storagePath -Context \$storageContext -Destination PolicyPackage.zip
+      #     EOL
+
+      #       echo "Downloading \"$storagePath\" from Azure Storage"
+      #       sudo apt update
+      #       sudo apt install -y powershell
+      #       pwsh --version
+
+      #       sudo pwsh -Command $script
+      #     else
+      #       echo "Downloading from url \"${{ matrix.policy-package.policy-package-url }}\""
+      #       wget -O PolicyPackage.zip ${{ matrix.policy-package.policy-package-url }}
+      #     fi
+            
+      #     echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
 
       - name: Normalize variables
         id: normalize
@@ -188,6 +248,8 @@ jobs:
 
   module-test:
     name: Module Test
+    # Module test requires the package artifact as it also includes the modules to be tested in the artifact
+    if: ${{ needs.setup-matrix.outputs.custom_download == 'false' }}
     needs: [setup-matrix, package]
     runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
     strategy:
