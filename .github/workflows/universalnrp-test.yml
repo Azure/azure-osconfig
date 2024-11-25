@@ -37,7 +37,7 @@ jobs:
     outputs:
       targets: ${{ steps.matrix.outputs.targets }}
       custom_download: ${{ steps.matrix.outputs.custom_download }}
-      policy_packages: ${{ steps.matrix.outputs.policy_packages }}
+      policyPackagesJSON: ${{ steps.matrix.outputs.policyPackagesJSON }}
       default_self_hosted_image: ${{ steps.matrix.outputs.default_self_hosted_image }}
     steps:
       - name: Generate Matrix
@@ -85,11 +85,11 @@ jobs:
 
           echo targets=$(echo $TARGETS | jq -r 'tostring') >> $GITHUB_OUTPUT
           echo custom_download=$custom_download >> $GITHUB_OUTPUT
-          echo policy_packages=$(echo $policy_packages | jq -R 'tostring') >> $GITHUB_OUTPUT
+          echo policyPackagesJSON=$(echo $policy_packages | jq -R 'tostring') >> $GITHUB_OUTPUT
           echo default_self_hosted_image="${{ env.defaultSelfHostedImage }}" >> $GITHUB_OUTPUT
           
           echo $custom_download
-          echo $policy_packages
+          echo $policyPackagesJSON
 
   custom-download:
     name: Custom Download
@@ -131,7 +131,7 @@ jobs:
           azPSVersion: latest
           inlineScript: |
             # Download the policy packages from Azure Storage or from a URL
-            $jsonPolicyPackages = "${{ toJSON(needs.setup-matrix.outputs.policy_packages) }}"
+            $jsonPolicyPackages = '${{ needs.setup-matrix.outputs.policyPackagesJSON }}'
             $policyPackages = ConvertFrom-Json $jsonPolicyPackages
             foreach ($package in $policyPackages) {
               $policyPackagUrl=$package.policy-package-url
@@ -165,7 +165,7 @@ jobs:
         target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
         arch: [amd64]
         mode: [Audit, Remediate]
-        policy-package: ${{ fromJSON(needs.setup-matrix.outputs.policy_packages) }}
+        policy-package: ${{ fromJSON(needs.setup-matrix.outputs.policyPackagesJSON) }}
 
     steps:
       - uses: actions/checkout@v4
