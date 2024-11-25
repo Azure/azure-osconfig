@@ -85,7 +85,7 @@ jobs:
 
           echo targets=$(echo $TARGETS | jq -r 'tostring') >> $GITHUB_OUTPUT
           echo custom_download=$custom_download >> $GITHUB_OUTPUT
-          echo policy_packages=$(echo $policy_packages | jq -R -s '@sh') >> $GITHUB_OUTPUT
+          echo policy_packages=$(echo $policy_packages | jq -R 'tostring') >> $GITHUB_OUTPUT
           echo default_self_hosted_image="${{ env.defaultSelfHostedImage }}" >> $GITHUB_OUTPUT
           
           echo $custom_download
@@ -131,7 +131,7 @@ jobs:
           azPSVersion: latest
           inlineScript: |
             # Download the policy packages from Azure Storage or from a URL
-            $jsonPolicyPackages = "${{ needs.setup-matrix.outputs.policy_packages }}"
+            $jsonPolicyPackages = '${{ needs.setup-matrix.outputs.policy_packages }}'
             $policyPackages = ConvertFrom-Json $jsonPolicyPackages
             foreach ($package in $policyPackages) {
               $policyPackagUrl=$package.policy-package-url
