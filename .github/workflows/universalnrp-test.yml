@@ -141,18 +141,17 @@ jobs:
                 Write-Host "Downloading $storagePath from Azure Storage"
                 $storageContext = New-AzStorageContext -StorageAccountName $env:storageAccountName -UseConnectedAccount
                 Get-AzStorageBlobContent -Container $env:storageContainerName -Blob $storagePath -Context $storageContext -Destination $storagePath
-                echo path=$(pwd)/$storagePath >> $GITHUB_OUTPUT
               } else {
-                  Write-Host "Downloading from url \"$policyPackagUrl\""
-                  Invoke-WebRequest -Uri $policyPackagUrl -OutFile PolicyPackage.zip
-                  echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
+                Write-Host "Downloading from url \"$policyPackagUrl\""
+                Invoke-WebRequest -Uri $policyPackagUrl -OutFile PolicyPackage.zip
               }
             }
+            echo path="$(pwd)" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
         with:
           name: nrp-test
-          path: ${{ steps.custom-download.outputs.path }}
+          path: ${{ steps.custom-download.outputs.path }}/*.zip
 
   mc-test:
     name: MC Test
@@ -182,7 +181,7 @@ jobs:
 
           if [[ ${{ needs.setup-matrix.outputs.custom_download }} == 'true' ]]; then
             echo dir="$(pwd)" >> $GITHUB_OUTPUT
-            echo path="${{ steps.custom-download.outputs.path }}" >> $GITHUB_OUTPUT
+            echo path="${{ steps.custom-download.outputs.path }}/${{ matrix.policy-package.name }}" >> $GITHUB_OUTPUT
           else
             echo dir="${{ steps.download.outputs.download-path }}" >> $GITHUB_OUTPUT
             echo path="${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip" >> $GITHUB_OUTPUT
