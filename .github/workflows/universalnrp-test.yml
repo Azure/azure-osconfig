@@ -37,7 +37,7 @@ jobs:
     outputs:
       targets: ${{ steps.matrix.outputs.targets }}
       custom_download: ${{ steps.matrix.outputs.custom_download }}
-      policyPackagesJSON: ${{ steps.matrix.outputs.policyPackagesJSON }}
+      policy_packages: ${{ steps.matrix.outputs.policy_packages }}
       default_self_hosted_image: ${{ steps.matrix.outputs.default_self_hosted_image }}
     steps:
       - name: Generate Matrix
@@ -85,11 +85,11 @@ jobs:
 
           echo targets=$(echo $TARGETS | jq -r 'tostring') >> $GITHUB_OUTPUT
           echo custom_download=$custom_download >> $GITHUB_OUTPUT
-          echo policyPackagesJSON=$(echo $policy_packages | jq -R 'tostring') >> $GITHUB_OUTPUT
+          echo policy_packages=$(echo $policy_packages | jq -R 'tostring') >> $GITHUB_OUTPUT
           echo default_self_hosted_image="${{ env.defaultSelfHostedImage }}" >> $GITHUB_OUTPUT
           
           echo $custom_download
-          echo $policyPackagesJSON
+          echo $policy_packages
 
   custom-download:
     name: Custom Download
@@ -131,7 +131,10 @@ jobs:
           azPSVersion: latest
           inlineScript: |
             # Download the policy packages from Azure Storage or from a URL
-            $jsonPolicyPackages = '${{ needs.setup-matrix.outputs.policyPackagesJSON }}'
+            $jsonPolicyPackages = '${{ needs.setup-matrix.outputs.policy_packages }}'
+            # policy_packages has escaped JSON remove the first and last character and backslashes
+            $jsonPolicyPackages = $jsonPolicyPackages.Substring(1, $originalString.Length - 2)
+            $jsonPolicyPackages = $jsonPolicyPackages -replace '\\', ''
             $policyPackages = ConvertFrom-Json $jsonPolicyPackages
             foreach ($package in $policyPackages) {
               $policyPackagUrl=$package.policy-package-url
@@ -165,7 +168,7 @@ jobs:
         target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
         arch: [amd64]
         mode: [Audit, Remediate]
-        policy-package: ${{ fromJSON(needs.setup-matrix.outputs.policyPackagesJSON) }}
+        policy-package: ${{ fromJSON(needs.setup-matrix.outputs.policy_packages) }}
 
     steps:
       - uses: actions/checkout@v4
