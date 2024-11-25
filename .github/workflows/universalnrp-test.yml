@@ -181,7 +181,7 @@ jobs:
 
           if [[ ${{ needs.setup-matrix.outputs.custom_download }} == 'true' ]]; then
             echo dir="$(pwd)" >> $GITHUB_OUTPUT
-            echo path="${{ steps.custom-download.outputs.path }}/${{ matrix.policy-package.name }}" >> $GITHUB_OUTPUT
+            echo path="${{ needs.custom-download.outputs.path }}/${{ matrix.policy-package.name }}" >> $GITHUB_OUTPUT
           else
             echo dir="${{ steps.download.outputs.download-path }}" >> $GITHUB_OUTPUT
             echo path="${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip" >> $GITHUB_OUTPUT
