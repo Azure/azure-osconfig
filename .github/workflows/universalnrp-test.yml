@@ -100,8 +100,6 @@ jobs:
       path: ${{ steps.custom-download.outputs.path }}
 
     steps:
-      # TODO: Move these steps to another job so we can download the policy package once, then retreive them from the github workflow artifacts and not round-tripping to azure storage every time
-      # TODO: Add the packages being tested as artifacts
       - name: Check and Install Az module
         shell: pwsh
         run: |
@@ -133,8 +131,7 @@ jobs:
             # Download the policy packages from Azure Storage or from a URL
             $jsonPolicyPackages = '${{ needs.setup-matrix.outputs.policy_packages }}'
             # ConvertFrom-Json operates on unescaped JSON strings, so we need to remove the leading/trailing quotes and backslashes
-            $jsonPolicyPackages = $jsonPolicyPackages.Substring(1, $originalString.Length - 2)
-            $jsonPolicyPackages = $jsonPolicyPackages -replace '\\', ''
+            $jsonPolicyPackages = $jsonPolicyPackages.Substring(1, $jsonPolicyPackages.Length - 2) -replace '\\', ''
             $policyPackages = ConvertFrom-Json $jsonPolicyPackages
             foreach ($package in $policyPackages) {
               $policyPackagUrl=$package.'policy-package-url'
