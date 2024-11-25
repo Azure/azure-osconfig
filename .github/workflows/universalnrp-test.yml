@@ -131,7 +131,7 @@ jobs:
           azPSVersion: latest
           inlineScript: |
             # Download the policy packages from Azure Storage or from a URL
-            $jsonPolicyPackages = '${{ needs.setup-matrix.outputs.policy_packages }}'
+            $jsonPolicyPackages = @"${{ needs.setup-matrix.outputs.policy_packages }}"@
             $policyPackages = ConvertFrom-Json $jsonPolicyPackages
             foreach ($package in $policyPackages) {
               $policyPackagUrl=$package.policy-package-url
