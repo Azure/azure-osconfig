@@ -38,6 +38,7 @@ jobs:
       targets: ${{ steps.matrix.outputs.targets }}
       custom_download: ${{ steps.matrix.outputs.custom_download }}
       policy_packages: ${{ steps.matrix.outputs.policy_packages }}
+      default_self_hosted_image: ${{ steps.matrix.outputs.default_self_hosted_image }}
     steps:
       - name: Generate Matrix
         id: matrix
@@ -88,12 +89,13 @@ jobs:
           echo targets=$(echo $TARGETS | jq -r 'tostring') >> $GITHUB_OUTPUT
           echo custom_download=$custom_download >> $GITHUB_OUTPUT
           echo policy_packages=$(echo $policy_packages | jq -r 'tostring') >> $GITHUB_OUTPUT
+          echo default_self_hosted_image="${{ env.defaultSelfHostedImage }}" >> $GITHUB_OUTPUT
 
   custom-download:
     name: Custom Download
     if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
     needs: [setup-matrix]
-    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ env.defaultSelfHostedImage }}']
+    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ needs.setup-matrix.outputs.default_self_hosted_image }}']
     outputs:
       path: ${{ steps.custom-download.outputs.path }}
 
