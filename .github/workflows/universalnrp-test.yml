@@ -14,6 +14,7 @@ on:
 env:
   storageAccountName: 'osconfigstorage'
   storageContainerName: 'policypackages'
+  defaultSelfHostedImage: 'ubuntu-22.04'
 
 jobs:
   package:
@@ -88,30 +89,18 @@ jobs:
           echo custom_download=$custom_download >> $GITHUB_OUTPUT
           echo policy_packages=$(echo $policy_packages | jq -r 'tostring') >> $GITHUB_OUTPUT
 
-  mc-test:
-    name: MC Test
-    if: ${{ always() }}
-    needs: [setup-matrix, package]
-    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
-    strategy:
-      fail-fast: false
-      matrix:
-        target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
-        arch: [amd64]
-        mode: [Audit, Remediate]
-        policy-package: ${{ fromJSON(needs.setup-matrix.outputs.policy_packages) }}
+  custom-download:
+    name: Custom Download
+    if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
+    needs: [setup-matrix]
+    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ env.defaultSelfHostedImage }}']
+    outputs:
+      path: ${{ steps.custom-download.outputs.path }}
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/download-artifact@v4
-        if: ${{ needs.setup-matrix.outputs.custom_download == 'false' }}
-        id: download
-        with:
-          name: nrp-test
-
+      # TODO: Move these steps to another job so we can download the policy package once, then retreive them from the github workflow artifacts and not round-tripping to azure storage every time
+      # TODO: Add the packages being tested as artifacts
       - name: Check and Install Az module
-        # if: always()
         shell: pwsh
         run: |
           Write-Host 'Checking the Az module...'
@@ -125,7 +114,6 @@ jobs:
           Write-Host 'Done'
 
       - name: Azure login
-        if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
         uses: azure/login@v2
         with:
           auth-type: IDENTITY
@@ -135,25 +123,55 @@ jobs:
           enable-AzPSSession: true
 
       - name: Azure PowerShell script
-        if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
         id: custom-download
         uses: azure/powershell@v2
         with:
           azPSVersion: latest
           inlineScript: |
-            # Download the policy package from Azure Storage or from a URL
-            $policyPackagUrl="${{ matrix.policy-package.policy-package-url }}"
-            $storageURIPrefix="storage://"
-            if ($policyPackagUrl.StartsWith($storageURIPrefix)) {
-              $storagePath=$policyPackagUrl.Substring($storageURIPrefix.Length)
-              Write-Host "Downloading $storagePath from Azure Storage"
-              $storageContext = New-AzStorageContext -StorageAccountName $env:storageAccountName -UseConnectedAccount
-              Get-AzStorageBlobContent -Container $env:storageContainerName -Blob $storagePath -Context $storageContext -Destination PolicyPackage.zip
-            } else {
-                Write-Host "Downloading from url \"${{ matrix.policy-package.policy-package-url }}\""
-                Invoke-WebRequest -Uri $policyPackagUrl -OutFile PolicyPackage.zip
+            # Download the policy packages from Azure Storage or from a URL
+            $jsonPolicyPackages = "${{ needs.setup-matrix.outputs.policy_packages }}"
+            $policyPackages = ConvertFrom-Json $jsonPolicyPackages
+            foreach ($package in $policyPackages) {
+              $policyPackagUrl=$package.policy-package-url
+              $storageURIPrefix="storage://"
+              if ($policyPackagUrl.StartsWith($storageURIPrefix)) {
+                $storagePath=$policyPackagUrl.Substring($storageURIPrefix.Length)
+                Write-Host "Downloading $storagePath from Azure Storage"
+                $storageContext = New-AzStorageContext -StorageAccountName $env:storageAccountName -UseConnectedAccount
+                Get-AzStorageBlobContent -Container $env:storageContainerName -Blob $storagePath -Context $storageContext -Destination $storagePath
+                echo path=$(pwd)/$storagePath >> $GITHUB_OUTPUT
+              } else {
+                  Write-Host "Downloading from url \"$policyPackagUrl\""
+                  Invoke-WebRequest -Uri $policyPackagUrl -OutFile PolicyPackage.zip
+                  echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
+              }
             }
-            echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nrp-test
+          path: ${{ steps.custom-download.outputs.path }}
+
+  mc-test:
+    name: MC Test
+    if: ${{ always() }}
+    needs: [setup-matrix, package, custom-download]
+    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.setup-matrix.outputs.targets) }}
+        arch: [amd64]
+        mode: [Audit, Remediate]
+        policy-package: ${{ fromJSON(needs.setup-matrix.outputs.policy_packages) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        id: download
+        with:
+          name: nrp-test
 
       - name: Normalize variables
         id: normalize
@@ -161,8 +179,8 @@ jobs:
           echo name="${{ matrix.target.os }}-${{ matrix.target.version }}_${{ matrix.policy-package.short-name }}-${{ matrix.mode }}" >> $GITHUB_OUTPUT
 
           if [[ ${{ needs.setup-matrix.outputs.custom_download }} == 'true' ]]; then
-            echo dir=$(pwd) >> $GITHUB_OUTPUT
-            echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
+            echo dir="$(pwd)" >> $GITHUB_OUTPUT
+            echo path="${{ steps.custom-download.outputs.path }}" >> $GITHUB_OUTPUT
           else
             echo dir="${{ steps.download.outputs.download-path }}" >> $GITHUB_OUTPUT
             echo path="${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip" >> $GITHUB_OUTPUT
