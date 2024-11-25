@@ -1,0 +1,35 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "securitybaseline.so"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "DoesNotExist",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "DoesNotExist",
+    "ObjectName": "auditEnsurePermissionsOnEtcCronWeekly",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsurePermissionsOnEtcCronWeekly",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsurePermissionsOnEtcHostsAllow",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "DoesNotExist",
+    "ObjectName": "remediateEnsurePermissionsOnEtcCronWeekly",
+    "ExpectedResult": 22
+  },
