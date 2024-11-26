@@ -171,6 +171,8 @@ int SetPassWarnAge(long days, void* log);
 bool IsCurrentOs(const char* name, void* log);
 bool IsRedHatBased(void* log);
 bool IsCommodore(void* log);
+bool IsSelinuxPresent(void);
+bool DetectSelinux(void* log);
 
 void RemovePrefix(char* target, char marker);
 void RemovePrefixBlanks(char* target);
