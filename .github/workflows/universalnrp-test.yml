@@ -86,7 +86,12 @@ jobs:
           echo $custom_download
           echo $policy_packages
 
-          formated_policy_packages=$(echo $policy_packages | jq -r 'tostring' || echo 'Failed to process JSON, attempting to process as raw JSON' && echo $policy_packages | jq -R 'tostring')
+          if formated_policy_packages=$(echo $policy_packages | jq -r 'tostring'); then
+            echo "Successfully processed JSON"
+          else
+            echo "Failed to process JSON, attempting to process as raw JSON"
+            formated_policy_packages=$(echo $policy_packages | jq -R 'tostring')
+          fi
 
           echo targets=$(echo $TARGETS | jq -r 'tostring') >> $GITHUB_OUTPUT
           echo custom_download=$custom_download >> $GITHUB_OUTPUT
@@ -226,12 +231,6 @@ jobs:
           EOL
 
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
-          ls -l
-          # if command -v lsb_release &>/dev/null; then
-          #     [[ $(lsb_release -is) == "Ubuntu" ]] && sudo chmod 644 *testResults.xml
-          # else
-          #     echo "lsb_release not found"
-          # fi
           stat *testResults.xml
 
       - name: Stage OSConfig Logs
