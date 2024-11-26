@@ -151,7 +151,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: nrp-test
-          path: ${{ steps.custom-download.outputs.path }}/*.zip
+          path: '*.zip'
 
   mc-test:
     name: MC Test
