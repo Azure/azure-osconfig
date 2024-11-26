@@ -86,9 +86,11 @@ jobs:
           echo $custom_download
           echo $policy_packages
 
+          formated_policy_packages=$(echo $policy_packages | jq -r 'tostring' || echo 'Failed to process JSON, attempting to process as raw JSON' && echo $policy_packages | jq -R 'tostring')
+
           echo targets=$(echo $TARGETS | jq -r 'tostring') >> $GITHUB_OUTPUT
           echo custom_download=$custom_download >> $GITHUB_OUTPUT
-          echo policy_packages=$(echo $policy_packages | jq -r 'tostring') >> $GITHUB_OUTPUT
+          echo policy_packages=$formated_policy_packages >> $GITHUB_OUTPUT
           echo default_self_hosted_image="${{ env.defaultSelfHostedImage }}" >> $GITHUB_OUTPUT
 
   custom-download:
