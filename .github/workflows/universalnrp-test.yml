@@ -87,7 +87,7 @@ jobs:
             echo "Successfully processed JSON"
           else
             echo "Failed to process JSON, attempting to process as raw JSON"
-            formated_policy_packages=$(echo $policy_packages | jq -R -r 'tostring')
+            formated_policy_packages=$(echo $policy_packages | jq -R -r 'tostring' | tr -d '\\')
           fi
 
           echo $custom_download
@@ -135,7 +135,7 @@ jobs:
             # Download the policy packages from Azure Storage or from a URL
             $jsonPolicyPackages = '${{ needs.setup-matrix.outputs.policy_packages }}'
             # ConvertFrom-Json operates on unescaped JSON strings, so we need to remove the backslashes
-            $policyPackages = $jsonPolicyPackages -replace '\\', '' | ConvertFrom-Json
+            $policyPackages = $jsonPolicyPackages | ConvertFrom-Json
             foreach ($package in $policyPackages) {
               $policyPackagUrl=$package.'policy-package-url'
               $storageURIPrefix="storage://"
