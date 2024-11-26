@@ -177,6 +177,17 @@ jobs:
           echo dir="${{ steps.download.outputs.download-path }}" >> $GITHUB_OUTPUT
           echo path="${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip" >> $GITHUB_OUTPUT
 
+      - name: Fix policy package names
+        if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
+        working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
+        shell: pwsh
+        run: |
+          $name="${{ matrix.policy-package.name }}"
+          Get-ChildItem -Path $name*.zip -File | Select-Object -First 1 {
+              Write-Host "Renaming $($_.Name) to $name.zip"
+              Rename-Item -Path $_.Name -NewName "$name.zip"
+          }
+      
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
         run: |
