@@ -83,15 +83,15 @@ jobs:
             policy_packages="${{ inputs.policy_packages }}"
           fi
 
-          echo $custom_download
-          echo $policy_packages
-
           if formated_policy_packages=$(echo $policy_packages | jq -r 'tostring'); then
             echo "Successfully processed JSON"
           else
             echo "Failed to process JSON, attempting to process as raw JSON"
             formated_policy_packages=$(echo $policy_packages | jq -R 'tostring')
           fi
+
+          echo $custom_download
+          echo $formated_policy_packages
 
           echo targets=$(echo $TARGETS | jq -r 'tostring') >> $GITHUB_OUTPUT
           echo custom_download=$custom_download >> $GITHUB_OUTPUT
