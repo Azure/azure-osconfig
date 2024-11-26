@@ -49,9 +49,12 @@ jobs:
           sudo chmod +x ./moduletest
 
           result=0
-          recipes=$(ls -d ../../src/tests/e2e-test-recipes/*.json)
+          recipes=$(ls -d ../../src/modules/test/recipes/*.json)
 
           for recipe in $recipes; do
+            if [ ! -f ../../src/tests/e2e-test-recipes/$(basename $recipe) ]; then
+              continue
+            fi
             name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
 
             echo -n "testing $name ... "
