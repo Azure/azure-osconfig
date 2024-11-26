@@ -87,7 +87,7 @@ jobs:
             echo "Successfully processed JSON"
           else
             echo "Failed to process JSON, attempting to process as raw JSON"
-            formated_policy_packages=$(echo $policy_packages | jq -R 'tostring')
+            formated_policy_packages=$(echo $policy_packages | jq -R -r 'tostring')
           fi
 
           echo $custom_download
