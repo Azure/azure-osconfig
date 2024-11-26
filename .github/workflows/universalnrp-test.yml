@@ -178,14 +178,8 @@ jobs:
         id: normalize
         run: |
           echo name="${{ matrix.target.os }}-${{ matrix.target.version }}_${{ matrix.policy-package.short-name }}-${{ matrix.mode }}" >> $GITHUB_OUTPUT
-
-          if [[ ${{ needs.setup-matrix.outputs.custom_download }} == 'true' ]]; then
-            echo dir="$(pwd)" >> $GITHUB_OUTPUT
-            echo path="${{ needs.custom-download.outputs.path }}/${{ matrix.policy-package.name }}.zip" >> $GITHUB_OUTPUT
-          else
-            echo dir="${{ steps.download.outputs.download-path }}" >> $GITHUB_OUTPUT
-            echo path="${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip" >> $GITHUB_OUTPUT
-          fi
+          echo dir="${{ steps.download.outputs.download-path }}" >> $GITHUB_OUTPUT
+          echo path="${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip" >> $GITHUB_OUTPUT
 
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
