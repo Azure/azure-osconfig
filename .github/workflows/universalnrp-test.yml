@@ -134,9 +134,8 @@ jobs:
           inlineScript: |
             # Download the policy packages from Azure Storage or from a URL
             $jsonPolicyPackages = '${{ needs.setup-matrix.outputs.policy_packages }}'
-            # ConvertFrom-Json operates on unescaped JSON strings, so we need to remove the leading/trailing quotes and backslashes
-            $jsonPolicyPackages = $jsonPolicyPackages.Substring(1, $jsonPolicyPackages.Length - 2) -replace '\\', ''
-            $policyPackages = ConvertFrom-Json $jsonPolicyPackages
+            # ConvertFrom-Json operates on unescaped JSON strings, so we need to remove the backslashes
+            $policyPackages = $jsonPolicyPackages -replace '\\', '' | ConvertFrom-Json
             foreach ($package in $policyPackages) {
               $policyPackagUrl=$package.'policy-package-url'
               $storageURIPrefix="storage://"
