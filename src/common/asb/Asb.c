@@ -915,6 +915,11 @@ void AsbInitialize(void* log)
         OsConfigLogInfo(log, "AsbInitialize: running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
     }
 
+    if (DetectSelinux(log))
+    {
+        OsConfigLogInfo(log, "AsbInitialize: SELinux present");
+    }
+
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
 
