@@ -11,6 +11,11 @@ on:
   schedule:
     - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
 
+env:
+  storageAccountName: 'osconfigstorage'
+  storageContainerName: 'policypackages'
+  defaultSelfHostedImage: 'ubuntu-22.04'
+
 jobs:
   package:
     name: Package
@@ -33,6 +38,7 @@ jobs:
       targets: ${{ steps.matrix.outputs.targets }}
       custom_download: ${{ steps.matrix.outputs.custom_download }}
       policy_packages: ${{ steps.matrix.outputs.policy_packages }}
+      default_self_hosted_image: ${{ steps.matrix.outputs.default_self_hosted_image }}
     steps:
       - name: Generate Matrix
         id: matrix
@@ -58,6 +64,7 @@ jobs:
               { "os": "ubuntu", "version": "20.04" },
               { "os": "ubuntu", "version": "22.04" }
             ]
+
           # { "os": "almalinux", "version": "9" },
           # { "os": "amazonlinux", "version": "2" },
           # { "os": "centos", "version": "7" },
@@ -75,16 +82,81 @@ jobs:
             policy_packages="${{ inputs.policy_packages }}"
           fi
 
+          if policy_packages=$(echo $policy_packages | jq -r 'tostring'); then
+            echo "Successfully processed JSON"
+          else
+            echo "Failed to process JSON, attempting to process as raw JSON"
+            policy_packages=$(echo $policy_packages | jq -R -r 'tostring' | tr -d '\\')
+          fi
+
           echo $custom_download
           echo $policy_packages
 
           echo targets=$(echo $TARGETS | jq -r 'tostring') >> $GITHUB_OUTPUT
           echo custom_download=$custom_download >> $GITHUB_OUTPUT
-          echo policy_packages=$(echo $policy_packages | jq -r 'tostring') >> $GITHUB_OUTPUT
+          echo policy_packages=$policy_packages >> $GITHUB_OUTPUT
+          echo default_self_hosted_image="${{ env.defaultSelfHostedImage }}" >> $GITHUB_OUTPUT
+
+  custom-download:
+    name: Custom Download
+    if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
+    needs: [setup-matrix]
+    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ needs.setup-matrix.outputs.default_self_hosted_image }}']
+
+    steps:
+      - name: Check and Install Az module
+        shell: pwsh
+        run: |
+          Write-Host 'Checking the Az module...'
+          try {
+            Get-InstalledModule Az -AllVersions -ErrorAction Stop
+            Write-Host 'Az module is already installed.'
+          } catch {
+            Write-Host 'Az module is not installed. Trying to install...'
+            Install-Module -Name Az -Repository PSGallery -Force
+          }
+          Write-Host 'Done'
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          auth-type: IDENTITY
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      - name: Azure PowerShell script
+        uses: azure/powershell@v2
+        with:
+          azPSVersion: latest
+          inlineScript: |
+            # Download the policy packages from Azure Storage or from a URL
+            $jsonPolicyPackages = '${{ needs.setup-matrix.outputs.policy_packages }}'
+            $policyPackages = $jsonPolicyPackages | ConvertFrom-Json
+            foreach ($package in $policyPackages) {
+              $policyPackagUrl=$package.'policy-package-url'
+              $storageURIPrefix="storage://"
+              if ($policyPackagUrl.StartsWith($storageURIPrefix)) {
+                $storagePath=$policyPackagUrl.Substring($storageURIPrefix.Length)
+                Write-Host "Downloading $storagePath from Azure Storage"
+                $storageContext = New-AzStorageContext -StorageAccountName $env:storageAccountName -UseConnectedAccount
+                Get-AzStorageBlobContent -Container $env:storageContainerName -Blob $storagePath -Context $storageContext -Destination $storagePath
+              } else {
+                Write-Host "Downloading from url \"$policyPackagUrl\""
+                Invoke-WebRequest -Uri $policyPackagUrl -OutFile PolicyPackage.zip
+              }
+            }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nrp-test
+          path: '*.zip'
 
   mc-test:
     name: MC Test
-    needs: [setup-matrix, package]
+    if: ${{ always() }}
+    needs: [setup-matrix, package, custom-download]
     runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
     strategy:
       fail-fast: false
@@ -98,31 +170,28 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v4
-        if: ${{ needs.setup-matrix.outputs.custom_download == 'false' }}
         id: download
         with:
           name: nrp-test
-
-      - name: Custom Download
-        if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
-        id: custom-download
-        run: |
-          wget -O PolicyPackage.zip ${{ matrix.policy-package.policy-package-url }}
-          echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
 
       - name: Normalize variables
         id: normalize
         run: |
           echo name="${{ matrix.target.os }}-${{ matrix.target.version }}_${{ matrix.policy-package.short-name }}-${{ matrix.mode }}" >> $GITHUB_OUTPUT
+          echo dir="${{ steps.download.outputs.download-path }}" >> $GITHUB_OUTPUT
+          echo path="${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip" >> $GITHUB_OUTPUT
 
-          if [[ ${{ needs.setup-matrix.outputs.custom_download }} == 'true' ]]; then
-            echo dir=$(pwd) >> $GITHUB_OUTPUT
-            echo path=$(pwd)/PolicyPackage.zip >> $GITHUB_OUTPUT
-          else
-            echo dir="${{ steps.download.outputs.download-path }}" >> $GITHUB_OUTPUT
-            echo path="${{ steps.download.outputs.download-path }}/${{ matrix.policy-package.name }}.zip" >> $GITHUB_OUTPUT
-          fi
-
+      - name: Fix policy package names
+        if: ${{ needs.setup-matrix.outputs.custom_download == 'true' }}
+        working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
+        shell: pwsh
+        run: |
+          $name="${{ matrix.policy-package.name }}"
+          Get-ChildItem -Path $name*.zip -File | Select-Object -First 1 {
+              Write-Host "Renaming $($_.Name) to $name.zip"
+              Rename-Item -Path $_.Name -NewName "$name.zip"
+          }
+      
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
         run: |
@@ -159,12 +228,6 @@ jobs:
           EOL
 
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
-          ls -l
-          # if command -v lsb_release &>/dev/null; then
-          #     [[ $(lsb_release -is) == "Ubuntu" ]] && sudo chmod 644 *testResults.xml
-          # else
-          #     echo "lsb_release not found"
-          # fi
           stat *testResults.xml
 
       - name: Stage OSConfig Logs
@@ -188,6 +251,8 @@ jobs:
 
   module-test:
     name: Module Test
+    # Module test requires the package artifact as it also includes the modules to be tested in the artifact
+    if: ${{ needs.setup-matrix.outputs.custom_download == 'false' }}
     needs: [setup-matrix, package]
     runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
     strategy:
