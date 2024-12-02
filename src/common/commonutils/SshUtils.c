@@ -203,6 +203,57 @@ static int IsSshServerActive(OSCONFIG_LOG_HANDLE log)
 
 // SSH servers that implement OpenSSH version 8.2 or newer support Include
 // See https://www.openssh.com/txt/release-8.2, quote: "add an Include sshd_config keyword that allows including additional configuration files"
+static int GetSshdVersion(int *versionMajor, int *versionMinor, OSCONFIG_LOG_HANDLE log)
+{
+    const char* expectedPrefix = "unknown option -- V OpenSSH_";
+    const char* command = "sshd -V";
+    char* textResult = NULL;
+    size_t textResultLength = 0;
+    size_t textPrefixLength = 0;
+    char* textCursor = NULL;
+    char versionMajorString[2] = {0};
+    char versionMinorString[2] = {0};
+    int result = 0;
+
+    ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
+
+    if (NULL != textResult)
+    {
+        if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult)))
+        {
+            textCursor = textResult + strlen(expectedPrefix) + 1;
+            if (isdigit(textCursor[0]) && ('.' == textCursor[1]) && isdigit(textCursor[2]))
+            {
+                versionMajorString[0] = textCursor[0];
+                versionMinorString[0] = textCursor[2];
+                *versionMajor = atoi(versionMajorString);
+                *versionMinor = atoi(versionMinorString);
+                OsConfigLogInfo(log, "GetSshdVersion: %s reports OpenSSH version %d.%d", g_sshServerService, *versionMajor, *versionMinor);
+                result = 0;
+            }
+            else
+            {
+                OsConfigLogError(log, "GetSshdVersion: unexpected response to '%s' ('%s')", command, textResult);
+                result = ENOENT;
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "GetSshdVersion: unexpected response to '%s' ('%s')", command, textResult);
+            result = ENOENT;
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "GetSshdVersion: unexpected response to '%s'", command);
+        result = ENOENT;
+    }
+
+    FREE_MEMORY(textResult);
+
+    return result;
+}
+
 static int IsSshConfigIncludeSupported(OSCONFIG_LOG_HANDLE log)
 {
     const char* expectedPrefix = "unknown option -- V OpenSSH_";
