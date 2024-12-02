@@ -256,16 +256,8 @@ static int GetSshdVersion(int *versionMajor, int *versionMinor, OSCONFIG_LOG_HAN
 
 static int IsSshConfigIncludeSupported(OSCONFIG_LOG_HANDLE log)
 {
-    const char* expectedPrefix = "unknown option -- V OpenSSH_";
-    const char* command = "sshd -V";
     const int minVersionMajor = 8;
     const int minVersionMinor = 2;
-    char* textResult = NULL;
-    size_t textResultLength = 0;
-    size_t textPrefixLength = 0;
-    char* textCursor = NULL;
-    char versionMajorString[2] = {0};
-    char versionMinorString[2] = {0};
     int versionMajor = 0;
     int versionMinor = 0;
     int result = 0;
@@ -276,50 +268,24 @@ static int IsSshConfigIncludeSupported(OSCONFIG_LOG_HANDLE log)
         return EEXIST;
     }
 
-    // Extract the two version digits from the SSH server response to unsupported command -V (the OpenSSH way)
-    // For example, version 8.9 from response "unknown option -- V OpenSSH_8.9p1..."
-
-    ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
-
-    if (NULL != textResult)
+    if (0 != GetSshdVersion(&versionMajor, &versionMinor, log))
     {
-        if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult)))
-        {
-            textCursor = textResult + strlen(expectedPrefix) + 1;
-            if (isdigit(textCursor[0]) && ('.' == textCursor[1]) && isdigit(textCursor[2]))
-            {
-                versionMajorString[0] = textCursor[0];
-                versionMinorString[0] = textCursor[2];
-                versionMajor = atoi(versionMajorString);
-                versionMinor = atoi(versionMinorString);
-            }
+        OsConfigLogInfo(log, "IsSshConfigIncludeSupported: failed to get OpenSSH version, assuming Include is not supported");
+        return ENOENT;
+    }
 
-            if ((versionMajor >= minVersionMajor) && (versionMinor >= minVersionMinor))
-            {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (%d.%d or newer) and appears to support Include",
-                    g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
-                result = 0;
-            }
-            else
-            {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (older than %d.%d) and appears to not support Include",
-                    g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
-                result = ENOENT;
-            }
-        }
-        else
-        {
-            OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' ('%s'), assuming Include is not supported", command, textResult);
-            result = ENOENT;
-        }
+    if ((versionMajor >= minVersionMajor) && (versionMinor >= minVersionMinor))
+    {
+        OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (%d.%d or newer) and appears to support Include",
+            g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
+        result = 0;
     }
     else
     {
-        OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s', assuming Include is not supported", command);
+        OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (older than %d.%d) and appears to not support Include",
+            g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
         result = ENOENT;
     }
-
-    FREE_MEMORY(textResult);
 
     return result;
 }
