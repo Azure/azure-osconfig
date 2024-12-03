@@ -17,3 +17,18 @@ void SwapGlobalSshServerConfigs(const char** config, const char** backup, const 
     g_osconfigRemediationConf = *remediation;
     *remediation = temp;
 }
+
+int GetSshdVersionTest(int *major, int *minor)
+{
+    return GetSshdVersion(major, minor, NULL);
+}
+
+int IsSshConfigIncludeSupportedTest(void)
+{
+    return IsSshConfigIncludeSupported(NULL);
+}
+
+int SaveRemediationToSshdConfigTest(void)
+{
+    return SaveRemediationToSshdConfig(NULL);
+}
