@@ -9,7 +9,10 @@ include(CTest)
 find_package(GTest REQUIRED)
 
 add_executable(commontests
-    CommonUtilsUT.cpp)
+    CommonUtilsUT.cpp
+    SshUtilsUT.cpp
+    Helper.c
+)
 
 target_link_libraries(commontests
     gtest
@@ -19,6 +22,8 @@ target_link_libraries(commontests
     pthread
     logging
     commonutils
-    asb)
+    asb
+    parsonlib
+)
 
 gtest_discover_tests(commontests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

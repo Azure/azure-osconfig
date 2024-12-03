@@ -1022,7 +1022,7 @@ static int SaveRemediationToConfFile(void* log)
     return status;
 }
 
-static int BackupSshdConfig(const char* configuration)
+static int BackupSshdConfig(const char* configuration, void* log)
 {
     size_t configurationSize = 0;
     int status = 0;
@@ -1064,7 +1064,7 @@ static int SaveRemediationToSshdConfig(void* log)
         OsConfigLogError(log, "SaveRemediationToSshdConfig: failed to read from '%s'", g_sshServerConfiguration);
         status = EEXIST;
     }
-    else if (0 != (status = BackupSshdConfig(originalConfiguration)))
+    else if (0 != (status = BackupSshdConfig(originalConfiguration, log)))
     {
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: failed to make a backup copy of '%s'", g_sshServerConfiguration);
     }
