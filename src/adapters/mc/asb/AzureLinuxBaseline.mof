@@ -635,6 +635,7 @@ instance of OsConfigResource as $OsConfigResource38ref
     RuleId = "1d498679-5780-6db3-14cc-6433011e0310";
     PayloadKey = "EnsurePermissionsOnEtcHostsAllow";
     ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsurePermissionsOnEtcHostsAllow";
     ReportedObjectName = "auditEnsurePermissionsOnEtcHostsAllow";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcHostsAllow";
@@ -651,6 +652,7 @@ instance of OsConfigResource as $OsConfigResource39ref
     RuleId = "71d554b5-1436-9676-1966-939ded8d0a37";
     PayloadKey = "EnsurePermissionsOnEtcHostsDeny";
     ComponentName = "SecurityBaseline";
+    InitObjectName = "initEnsurePermissionsOnEtcHostsDeny";
     ReportedObjectName = "auditEnsurePermissionsOnEtcHostsDeny";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcHostsDeny";

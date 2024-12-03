@@ -140,7 +140,7 @@ jobs:
           working-directory: ${{ env.MOUNT }}
           cmd: |
             mkdir -p build/modules/test/recipes
-            cp -r src/tests/e2e-test-recipes/*.json build/modules/test/recipes/
+            cp -r src/modules/test/recipes/*.json build/modules/test/recipes/
 
             cp src/adapters/pnp/daemon/osconfig.json build/modules/test/osconfig.json
 
