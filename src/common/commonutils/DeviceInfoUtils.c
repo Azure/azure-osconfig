@@ -11,6 +11,8 @@ typedef struct OS_DISTRO_INFO
     char* description;
 } OS_DISTRO_INFO;
 
+static bool g_selinuxPresent = false;
+
 void RemovePrefix(char* target, char marker)
 {
     size_t targetLength = 0, i = 0;
@@ -947,4 +949,15 @@ bool IsCommodore(void* log)
     FREE_MEMORY(textResult);
 
     return status;
+}
+
+bool IsSelinuxPresent(void)
+{
+    return g_selinuxPresent;
+}
+
+bool DetectSelinux(void* log)
+{
+    g_selinuxPresent = (0 == CheckTextIsFoundInFile("/sys/kernel/security/lsm", "selinux", NULL, log));
+    return IsSelinuxPresent();
 }

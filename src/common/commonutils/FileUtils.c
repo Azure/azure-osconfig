@@ -872,6 +872,29 @@ int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* gr
     return GetAccess(true, name, ownerId, groupId, mode, log);
 }
 
+static int RestoreSelinuxContext(const char* target, void* log)
+{
+    char* restoreCommand = NULL;
+    char* textResult = NULL;
+    int status = 0;
+
+    if (NULL == (restoreCommand = FormatAllocateString("restorecon -F '%s'", target)))
+    {
+        OsConfigLogError(log, "RestoreSelinuxContext: out of memory");
+        return ENOMEM;
+    }
+
+    if (0 != (status = ExecuteCommand(NULL, restoreCommand, false, false, 0, 0, &textResult, NULL, log)))
+    {
+        OsConfigLogError(log, "RestoreSelinuxContext: restorecon failed %d: %s", status, textResult);
+    }
+
+    FREE_MEMORY(textResult);
+    FREE_MEMORY(restoreCommand);
+
+    return status;
+}
+
 int RenameFile(const char* original, const char* target, void* log)
 {
     int status = 0;
@@ -887,7 +910,14 @@ int RenameFile(const char* original, const char* target, void* log)
         return EINVAL;
     }
 
-    if (0 != (status = rename(original, target)))
+    if (0 == (status = rename(original, target)))
+    {
+        if (IsSelinuxPresent())
+        {
+            RestoreSelinuxContext(target, log);
+        }
+    }
+    else
     {
         OsConfigLogError(log, "RenameFile: rename('%s' to '%s') failed with %d", original, target, errno);
         status = (0 == errno) ? ENOENT : errno;
@@ -938,6 +968,11 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
         {
             OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode %u", 
                 original, target, ownerId, groupId, mode);
+        }
+
+        if (IsSelinuxPresent())
+        {
+            RestoreSelinuxContext(target, log);
         }
     }
     else
