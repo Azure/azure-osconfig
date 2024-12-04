@@ -2,7 +2,11 @@
 // Licensed under the MIT License.
 
 #include <errno.h>
+
+#if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
 #include <stdatomic.h>
+#endif
+
 #include <version.h>
 #include <parson.h>
 #include <CommonUtils.h>
@@ -67,7 +71,11 @@ static int g_iotHubProtocol = 0;
 static bool g_gitManagementEnabled = false;
 static char* g_gitBranch = NULL;
 
+#if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
 static atomic_int g_referenceCount = 0;
+#else
+static int g_referenceCount = 0;
+#endif
 static unsigned int g_maxPayloadSizeBytes = 0;
 
 static OSCONFIG_LOG_HANDLE ConfigurationGetLog(void)
