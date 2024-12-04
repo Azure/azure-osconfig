@@ -55,8 +55,9 @@ function(add_module directory)
 endfunction()
 
 # Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Security Baseline module
-if (CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.8.4")
+if (CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.9")
     add_module(commandrunner)
+elseif (CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.8.4")
     add_module(configuration)
     add_module(deviceinfo)
 endif()
