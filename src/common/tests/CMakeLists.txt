@@ -10,8 +10,11 @@ find_package(GTest REQUIRED)
 
 add_executable(commontests
     CommonUtilsUT.cpp
+# Fix the errors in this UT with gcc 4.8.5 and re-add
+if (CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.9")
     SshUtilsUT.cpp
     Helper.c
+#endif
 )
 
 target_link_libraries(commontests

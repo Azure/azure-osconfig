@@ -72,4 +72,3 @@ add_module(securitybaseline)
 if (BUILD_MODULETEST)
     add_subdirectory(test)
 endif()
-
