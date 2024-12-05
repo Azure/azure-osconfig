@@ -53,8 +53,19 @@ int RenameFile(const char* original, const char* target, void* log);
 
 void SetCommandLogging(bool commandLogging);
 bool IsCommandLoggingEnabled(void);
+#define command_log_enable_save(state)                                                                                                                 \
+    do                                                                                                                                                 \
+    {                                                                                                                                                  \
+        state = IsCommandLoggingEnabled();                                                                                                             \
+        SetCommandLogging(true);                                                                                                                       \
+    } while (0)
+#define command_log_disable_restore(state)                                                                                                             \
+    do                                                                                                                                                 \
+    {                                                                                                                                                  \
+        SetCommandLogging(state);                                                                                                                      \
+    } while (0)
 
-typedef int(*CommandCallback)(void* context);
+typedef int (*CommandCallback)(void* context);
 
 // If called from the main process thread the timeoutSeconds and callback arguments are ignored
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, void* log);

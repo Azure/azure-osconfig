@@ -68,6 +68,7 @@ static void CheckPackageManagersPresence(void* log)
 static int CheckOrInstallPackage(const char* commandTemplate, const char* packageManager, const char* packageName, void* log)
 {
     char* command = NULL;
+    char* textResult = NULL;
     int status = ENOENT;
 
     if ((NULL == commandTemplate) || (NULL == packageManager) || (NULL == packageName) || ((0 == strlen(packageName))))
@@ -82,10 +83,11 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
         return ENOMEM;
     }
 
-    status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
-    
+    status = ExecuteCommand(NULL, command, false, false, 0, 0, &textResult, NULL, log);
+
     OsConfigLogInfo(log, "Package manager '%s' command '%s' complete with %d (errno: %d)", packageManager, command, status, errno);
 
+    FREE_MEMORY(textResult);
     FREE_MEMORY(command);
 
     return status;
@@ -183,7 +185,9 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
 
 static int ExecuteSimplePackageCommand(const char* command, bool* executed, void* log)
 {
+    char *textResult = NULL;
     int status = 0;
+    bool state;
 
     if ((NULL == command) || (NULL == executed))
     {
@@ -195,8 +199,8 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, void
     {
         return status;
     }
-
-    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    command_log_enable_save(state);
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &textResult, NULL, log)))
     {
         OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' was successful", command);
         *executed = true;
@@ -206,6 +210,8 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, void
         OsConfigLogError(log, "ExecuteSimplePackageCommand: '%s' failed with %d (errno: %d)", command, status, errno);
         *executed = false;
     }
+    FREE_MEMORY(textResult);
+    command_log_disable_restore(state);
 
     return status;
 }

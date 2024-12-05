@@ -2872,8 +2872,15 @@ static int RemediateEnsureDovecotCoreNotInstalled(char* value, void* log)
 static int RemediateEnsureAuditdInstalled(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) ||
-        (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))) ? 0 : ENOENT;
+    int ret = 0;
+    bool state;
+    command_log_enable_save(state);
+    ret = ((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) || (0 == InstallPackage(g_auditLibs, log)) ||
+              (0 == InstallPackage(g_auditLibsDevel, log))) ?
+              0 :
+              ENOENT;
+    command_log_disable_restore(state);
+    return ret;
 }
 
 static int RemediateEnsurePrelinkIsDisabled(char* value, void* log)
@@ -2891,15 +2898,23 @@ static int RemediateEnsureTalkClientIsNotInstalled(char* value, void* log)
 static int RemediateEnsureCronServiceIsEnabled(char* value, void* log)
 {
     UNUSED(value);
-
-    return (((0 == InstallPackage(g_cron, log)) && EnableAndStartDaemon(g_cron, log)) || 
-        (((0 == InstallPackage(g_cronie, log)) && EnableAndStartDaemon(g_crond, log)))) ? 0 : ENOENT;
+    int ret = 0;
+    bool state;
+    command_log_enable_save(state);
+    ret = (((0 == InstallPackage(g_cron, log)) && EnableAndStartDaemon(g_cron, log)) ||
+              (((0 == InstallPackage(g_cronie, log)) && EnableAndStartDaemon(g_crond, log)))) ?
+              0 :
+              ENOENT;
+    command_log_disable_restore(state);
+    return ret;
 }
 
 static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 {
     int status = 0;
+    bool state;
     UNUSED(value);
+    command_log_enable_save(state);
     if ((0 != InstallPackage(g_audit, log)) && (0 != InstallPackage(g_auditd, log)) &&
         (0 != InstallPackage(g_auditLibs, log)) && (0 != InstallPackage(g_auditLibsDevel, log)))
     {
@@ -2911,6 +2926,7 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
         EnableAndStartDaemon(g_auditd, log);
         status = CheckDaemonActive(g_auditd, NULL, log) ? 0 : ENOENT;
     }
+    command_log_disable_restore(state);
     return status;
 }
 
