@@ -12,7 +12,7 @@ add_executable(commontests
     CommonUtilsUT.cpp
 )
 
-if (CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.9")
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.9")
     target_sources(commontests PRIVATE
         SshUtilsUT.cpp
         Helper.c
