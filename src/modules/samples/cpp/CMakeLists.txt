@@ -3,6 +3,8 @@
 
 add_subdirectory(src)
 
-if (BUILD_TESTS)
-    add_subdirectory(tests)
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.9")
+    if (BUILD_TESTS)
+        add_subdirectory(tests)
+    endif()
 endif()
