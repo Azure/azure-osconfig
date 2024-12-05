@@ -1,6 +1,13 @@
 # ubi7 images are missing RPM devtools, copy from centos7
 FROM centos:centos7 as centos
-RUN yum update -y && yumdownloader rpm-build && yumdownloader elfutils
+RUN rm /etc/yum.repos.d/*.repo
+COPY centos.repo /etc/yum.repos.d/centos.repo
+
+RUN yum update -y
+RUN rm /etc/yum.repos.d/*.repo
+COPY centos.repo /etc/yum.repos.d/centos.repo
+
+RUN yumdownloader rpm-build && yumdownloader elfutils
 
 # TODO: Add mcr.io retagged images
 FROM registry.access.redhat.com/ubi7/ubi
@@ -27,13 +34,13 @@ RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm 
 RUN git clone https://github.com/stedolan/jq.git --recursive
 RUN cd jq && autoreconf -i && ./configure && make -j$(nproc) && make install && rm -rf /git/jq
 
+# rapidjson
+RUN git clone https://github.com/Tencent/rapidjson --recursive -b v1.1.0
+RUN cd rapidjson && cmake -DRAPIDJSON_BUILD_TESTS=0 . && cmake --build . --parallel --target install && rm -rf /git/rapidjson
+
 # GTest
 RUN git clone https://github.com/google/googletest --recursive -b release-1.10.0
 RUN cd googletest && cmake . && cmake --build . --parallel --target install && rm -rf /git/googletest
-
-# rapidjson
-RUN git clone https://github.com/Tencent/rapidjson --recursive -b v1.1.0
-RUN cd rapidjson && cmake . && cmake --build . --parallel --target install && rm -rf /git/rapidjson
 
 # elfutils
 RUN yum install -y /elfutils.rpm && rm -f /elfutils.rpm
