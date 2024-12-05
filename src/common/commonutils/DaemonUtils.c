@@ -152,6 +152,7 @@ bool EnableAndStartDaemon(const char* daemonName, void* log)
 
     if (false == IsDaemonActive(daemonName, log))
     {
+        status = false;
         if (EnableDaemon(daemonName, log) && StartDaemon(daemonName, log))
         {
             status = true;
