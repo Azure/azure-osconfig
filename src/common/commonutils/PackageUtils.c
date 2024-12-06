@@ -66,6 +66,7 @@ static void CheckPackageManagersPresence(void* log)
 static int CheckOrInstallPackage(const char* commandTemplate, const char* packageManager, const char* packageName, void* log)
 {
     char* command = NULL;
+    char* textResult = NULL;
     int status = ENOENT;
 
     if ((NULL == commandTemplate) || (NULL == packageManager) || (NULL == packageName) || ((0 == strlen(packageName))))
@@ -80,10 +81,18 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
         return ENOMEM;
     }
 
-    status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
-    
+    status = ExecuteCommand(NULL, command, false, false, 0, 0, &textResult, NULL, log);
+
     OsConfigLogInfo(log, "Package manager '%s' command '%s' complete with %d (errno: %d)", packageManager, command, status, errno);
 
+    const char *pattern = "Could not get lock /var/lib/dpkg/lock-frontend";
+    if (textResult && strstr(textResult, pattern))
+    {
+        char *tmp = NULL;
+        ExecuteCommand(NULL, "ps faux", false, false, 0, 0, &tmp, NULL, log);
+        FREE_MEMORY(tmp);
+    }
+    FREE_MEMORY(textResult);
     FREE_MEMORY(command);
 
     return status;
@@ -182,13 +191,15 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
 void AptGetUpdateOnce(void* log)
 {
     const char* command = "apt-get update";
+    char* textResult = NULL;
     int status = 0;
+    bool state;
     if (g_aptGetUpdateExecuted)
     {
         return;
     }
-
-    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    command_log_enable_save(state);
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &textResult, NULL, log)))
     {
         OsConfigLogInfo(log, "AptGetUpdateOnce: '%s' was successful", command);
         g_aptGetUpdateExecuted = true;
@@ -197,6 +208,8 @@ void AptGetUpdateOnce(void* log)
     {
         OsConfigLogError(log, "AptGetUpdateOnce: '%s' failed with %d", command, status);
     }
+    command_log_disable_restore(state);
+    FREE_MEMORY(textResult);
 }
 
 int InstallOrUpdatePackage(const char* packageName, void* log)
