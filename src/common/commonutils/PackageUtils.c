@@ -87,6 +87,13 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
 
     OsConfigLogInfo(log, "Package manager '%s' command '%s' complete with %d (errno: %d)", packageManager, command, status, errno);
 
+    const char *pattern = "Could not get lock /var/lib/dpkg/lock-frontend";
+    if (textResult && strstr(textResult, pattern))
+    {
+        char *tmp = NULL;
+        ExecuteCommand(NULL, "ps faux", false, false, 0, 0, &tmp, NULL, log);
+        FREE_MEMORY(tmp);
+    }
     FREE_MEMORY(textResult);
     FREE_MEMORY(command);
 
