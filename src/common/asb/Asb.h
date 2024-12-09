@@ -4,6 +4,7 @@
 #ifndef ASB_H
 #define ASB_H
 
+#define PRETTY_NAME_AZURE_LINUX_1 "CBL-Mariner/Linux"
 #define PRETTY_NAME_AZURE_LINUX_2 "CBL-Mariner/Linux"
 #define PRODUCT_NAME_AZURE_COMMODORE "Azure Commodore"
 #define PRETTY_NAME_ALMA_LINUX_9 "AlmaLinux 9 (Beryllium)"
@@ -20,6 +21,7 @@
 #define PRETTY_NAME_RHEL_8 "Red Hat Enterprise Linux 8"
 #define PRETTY_NAME_RHEL_9 "Red Hat Enterprise Linux 9"
 #define PRETTY_NAME_ROCKY_LINUX_9 "Rocky Linux 9"
+#define PRETTY_NAME_SLES_12 "SUSE Linux Enterprise Server 12"
 #define PRETTY_NAME_SLES_15 "SUSE Linux Enterprise Server 15"
 #define PRETTY_NAME_UBUNTU_16_04 "Ubuntu 16.04"
 #define PRETTY_NAME_UBUNTU_18_04 "Ubuntu 18.04"
