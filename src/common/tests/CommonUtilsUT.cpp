@@ -2249,6 +2249,8 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
     EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, nullptr, nullptr, '#', false, nullptr));
     EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, nullptr, nullptr, '#', false, nullptr));
 
+    EXPECT_EQ(EEXIST, ReplaceMarkedLinesInFile("does_not_exist", marker1, newline1, '#', true, nullptr));
+    
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker1, newline1, '#', true, nullptr));
     EXPECT_STREQ(outFile1, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
