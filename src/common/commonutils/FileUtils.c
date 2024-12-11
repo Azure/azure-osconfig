@@ -502,7 +502,7 @@ int CheckFileExists(const char* fileName, char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckFileExists: file '%s' is not found", fileName);
         OsConfigCaptureReason(reason, "File  '%s' is not found", fileName);
-        status = EEXIST;
+        status = ENOENT;
     }
 
     return status;
@@ -521,7 +521,7 @@ int CheckFileNotFound(const char* fileName, char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckFileNotFound: file '%s' exists", fileName);
         OsConfigCaptureReason(reason, "File  '%s' exists", fileName);
-        status = EEXIST;
+        status = ENOENT;
     }
 
     return status;
@@ -1008,7 +1008,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     else if (false == FileExists(fileName))
     {
         OsConfigLogInfo(log, "ReplaceMarkedLinesInFile called for a file that does not exist: '%s'", fileName);
-        return EEXIST;
+        return ENOENT;
     }
     else if (NULL == (line = malloc(lineMax + 1)))
     {

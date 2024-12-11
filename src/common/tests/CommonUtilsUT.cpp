@@ -707,11 +707,11 @@ TEST_F(CommonUtilsTest, CheckFileExists)
 {
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
     EXPECT_EQ(0, CheckFileExists(m_path, nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckFileNotFound(m_path, nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileNotFound(m_path, nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
-    EXPECT_EQ(EEXIST, CheckFileExists(m_path, nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileExists(m_path, nullptr, nullptr));
     EXPECT_EQ(0, CheckFileNotFound(m_path, nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckFileExists("This file does not exist", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileExists("This file does not exist", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileNotFound("This file does not exist", nullptr, nullptr));
 }
 
@@ -2249,7 +2249,7 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
     EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(nullptr, nullptr, nullptr, '#', false, nullptr));
     EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, nullptr, nullptr, '#', false, nullptr));
 
-    EXPECT_EQ(EEXIST, ReplaceMarkedLinesInFile("does_not_exist", marker1, newline1, '#', true, nullptr));
+    EXPECT_EQ(ENOENT, ReplaceMarkedLinesInFile("does_not_exist", marker1, newline1, '#', true, nullptr));
     
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker1, newline1, '#', true, nullptr));
     EXPECT_STREQ(outFile1, contents = LoadStringFromFile(m_path, false, nullptr));
