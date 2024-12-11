@@ -1008,7 +1008,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     else if (false == FileExists(fileName))
     {
         OsConfigLogInfo(log, "ReplaceMarkedLinesInFile called for a file that does not exist: '%s'", fileName);
-        return ENOENT;
+        return 0;
     }
     else if (NULL == (line = malloc(lineMax + 1)))
     {
@@ -1910,6 +1910,11 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, void*
     {
         OsConfigLogError(log, "SetEtcConfValue: invalid argument");
         return EINVAL;
+    }
+    else if (false == FileExists(file))
+    {
+        OsConfigLogError(log, "SetEtcConfValue: file '%s' does not exist");
+        return ENOENT;
     }
     else if (NULL == (newline = FormatAllocateString(newlineTemplate, name, value)))
     {
