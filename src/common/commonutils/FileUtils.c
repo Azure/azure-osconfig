@@ -1913,7 +1913,7 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, void*
     }
     else if (false == FileExists(file))
     {
-        OsConfigLogError(log, "SetEtcConfValue: file '%s' does not exist");
+        OsConfigLogError(log, "SetEtcConfValue: file '%s' does not exist", file);
         return ENOENT;
     }
     else if (NULL == (newline = FormatAllocateString(newlineTemplate, name, value)))
