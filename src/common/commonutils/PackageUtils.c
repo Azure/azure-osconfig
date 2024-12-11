@@ -180,50 +180,43 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
     return result;
 }
 
-static int ExecuteAptGetUpdate(void* log)
+static int ExecuteSimplePackageCommand(const char* command, bool* executed, void* log)
 {
-    const char* command = "apt-get update";
     int status = 0;
+
+    if ((NULL == command) || (NULL == executed))
+    {
+        OsConfigLogError(log, "ExecuteSimplePackageCommand called with invalid arguments");
+        return EINVAL;
+    }
     
-    if (g_aptGetUpdateExecuted)
+    if (true == *executed)
     {
         return status;
     }
 
     if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
     {
-        OsConfigLogInfo(log, "ExecuteAptGetUpdate: '%s' was successful", command);
-        g_aptGetUpdateExecuted = true;
+        OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' was successful", command);
+        *executed = true;
     }
     else
     {
-        OsConfigLogError(log, "ExecuteAptGetUpdate: '%s' failed with %d (errno: %d)", command, status, errno);
+        OsConfigLogError(log, "ExecuteSimplePackageCommand: '%s' failed with %d (errno: %d)", command, status, errno);
+        *executed = false;
     }
 
     return status;
 }
 
+static int ExecuteAptGetUpdate(void* log)
+{
+    return ExecuteSimplePackageCommand("apt-get update", &g_aptGetUpdateExecuted, log);
+}
+
 static int ExecuteZypperRefresh(void* log)
 {
-    const char* command = "zypper --refresh";
-    int status = 0;
-
-    if (g_zypperRefreshExecuted)
-    {
-        return status;
-    }
-
-    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-    {
-        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' was successful", command);
-        g_aptGetUpdateExecuted = true;
-    }
-    else
-    {
-        OsConfigLogError(log, "ExecuteZypperRefresh: '%s' failed with %d (errno: %d)", command, status, errno);
-    }
-
-    return status;
+    return ExecuteSimplePackageCommand("zypper --refresh", &g_zypperRefreshExecuted, log);
 }
 
 int InstallOrUpdatePackage(const char* packageName, void* log)
