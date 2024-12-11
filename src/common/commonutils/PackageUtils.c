@@ -179,10 +179,11 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
     return result;
 }
 
-void AptGetUpdateOnce(void* log)
+static int ExecuteAptGetUpdate(void* log)
 {
     const char* command = "apt-get update";
     int status = 0;
+    
     if (g_aptGetUpdateExecuted)
     {
         return;
@@ -190,13 +191,15 @@ void AptGetUpdateOnce(void* log)
 
     if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
     {
-        OsConfigLogInfo(log, "AptGetUpdateOnce: '%s' was successful", command);
+        OsConfigLogInfo(log, "ExecuteAptGetUpdate: '%s' was successful", command);
         g_aptGetUpdateExecuted = true;
     }
     else
     {
-        OsConfigLogError(log, "AptGetUpdateOnce: '%s' failed with %d", command, status);
+        OsConfigLogError(log, "ExecuteAptGetUpdate: '%s' failed with %d (errno: %d)", command, status, errno);
     }
+
+    return status;
 }
 
 int InstallOrUpdatePackage(const char* packageName, void* log)
@@ -208,7 +211,7 @@ int InstallOrUpdatePackage(const char* packageName, void* log)
     
     if (g_aptGetIsPresent)
     {
-        AptGetUpdateOnce(log);
+        ExecuteAptGetUpdate(log);
         status = CheckOrInstallPackage(commandTemplate, g_aptGet, packageName, log);
     }
     else if (g_tdnfIsPresent)
@@ -266,6 +269,7 @@ int UninstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
     const char* commandTemplateAllElse = "%s remove -y %s";
+
     int status = ENOENT;
 
     CheckPackageManagersPresence(log);

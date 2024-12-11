@@ -932,7 +932,7 @@ bool IsCommodore(void* log)
     char* textResult = NULL;
     bool status = false;
 
-    if ((0 == ExecuteCommand(NULL, productNameCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
+    if ((0 == ExecuteCommand(NULL, productNameCommand, true, false, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
@@ -958,6 +958,15 @@ bool IsSelinuxPresent(void)
 
 bool DetectSelinux(void* log)
 {
-    g_selinuxPresent = (0 == CheckTextIsFoundInFile("/sys/kernel/security/lsm", "selinux", NULL, log));
-    return IsSelinuxPresent();
+    const char* command = "cat /sys/kernel/security/lsm | grep selinux";
+    bool status = false;
+
+    if (0 == ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log))
+    {
+        status = true;
+    }
+
+    g_selinuxPresent = status;
+
+    return status;
 }
