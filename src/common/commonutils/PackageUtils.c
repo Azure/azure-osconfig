@@ -19,6 +19,7 @@ static bool g_yumIsPresent = false;
 static bool g_zypperIsPresent = false;
 static bool g_aptGetUpdateExecuted = false;
 static bool g_zypperRefreshExecuted = false;
+static bool g_zypperRefreshServicesExecuted = false;
 
 int IsPresent(const char* what, void* log)
 {
@@ -216,7 +217,12 @@ static int ExecuteAptGetUpdate(void* log)
 
 static int ExecuteZypperRefresh(void* log)
 {
-    return ExecuteSimplePackageCommand("zypper --refresh", &g_zypperRefreshExecuted, log);
+    return ExecuteSimplePackageCommand("zypper refresh", &g_zypperRefreshExecuted, log);
+}
+
+static int ExecuteZypperRefreshServices(void* log)
+{
+    return ExecuteSimplePackageCommand("zypper refresh --services", &g_zypperRefreshServicesExecuted, log);
 }
 
 int InstallOrUpdatePackage(const char* packageName, void* log)
@@ -246,6 +252,7 @@ int InstallOrUpdatePackage(const char* packageName, void* log)
     else if (g_zypperIsPresent)
     {
         ExecuteZypperRefresh(log);
+        ExecuteZypperRefreshServices(log);
         status = CheckOrInstallPackage(commandTemplate, g_zypper, packageName, log);
     }
 
@@ -314,6 +321,7 @@ int UninstallPackage(const char* packageName, void* log)
         else if (g_zypperIsPresent)
         {
             ExecuteZypperRefresh(log);
+            ExecuteZypperRefreshServices(log);
             status = CheckOrInstallPackage(commandTemplateAllElse, g_zypper, packageName, log);
         }
 
