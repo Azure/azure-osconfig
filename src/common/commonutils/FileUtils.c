@@ -502,7 +502,7 @@ int CheckFileExists(const char* fileName, char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckFileExists: file '%s' is not found", fileName);
         OsConfigCaptureReason(reason, "File  '%s' is not found", fileName);
-        status = EEXIST;
+        status = ENOENT;
     }
 
     return status;
@@ -521,7 +521,7 @@ int CheckFileNotFound(const char* fileName, char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckFileNotFound: file '%s' exists", fileName);
         OsConfigCaptureReason(reason, "File  '%s' exists", fileName);
-        status = EEXIST;
+        status = ENOENT;
     }
 
     return status;
@@ -1910,6 +1910,11 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, void*
     {
         OsConfigLogError(log, "SetEtcConfValue: invalid argument");
         return EINVAL;
+    }
+    else if (false == FileExists(file))
+    {
+        OsConfigLogError(log, "SetEtcConfValue: file '%s' does not exist", file);
+        return ENOENT;
     }
     else if (NULL == (newline = FormatAllocateString(newlineTemplate, name, value)))
     {
