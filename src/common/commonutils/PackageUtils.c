@@ -18,6 +18,7 @@ static bool g_dnfIsPresent = false;
 static bool g_yumIsPresent = false;
 static bool g_zypperIsPresent = false;
 static bool g_aptGetUpdateExecuted = false;
+static bool g_zypperRefreshExecuted = false;
 
 int IsPresent(const char* what, void* log)
 {
@@ -202,6 +203,29 @@ static int ExecuteAptGetUpdate(void* log)
     return status;
 }
 
+static int ExecuteZypperRefresh(void* log)
+{
+    const char* command = "zypper --refresh";
+    int status = 0;
+
+    if (g_zypperRefreshExecuted)
+    {
+        return;
+    }
+
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' was successful", command);
+        g_aptGetUpdateExecuted = true;
+    }
+    else
+    {
+        OsConfigLogError(log, "ExecuteZypperRefresh: '%s' failed with %d (errno: %d)", command, status, errno);
+    }
+
+    return status;
+}
+
 int InstallOrUpdatePackage(const char* packageName, void* log)
 {
     const char* commandTemplate = "%s install -y %s";
@@ -228,6 +252,7 @@ int InstallOrUpdatePackage(const char* packageName, void* log)
     }
     else if (g_zypperIsPresent)
     {
+        ExecuteZypperRefresh(log);
         status = CheckOrInstallPackage(commandTemplate, g_zypper, packageName, log);
     }
 
@@ -278,6 +303,7 @@ int UninstallPackage(const char* packageName, void* log)
     {
         if (g_aptGetIsPresent)
         {
+            ExecuteAptGetUpdate(log);
             status = CheckOrInstallPackage(commandTemplateAptGet, g_aptGet, packageName, log);
         }
         else if (g_tdnfIsPresent)
@@ -294,6 +320,7 @@ int UninstallPackage(const char* packageName, void* log)
         }
         else if (g_zypperIsPresent)
         {
+            ExecuteZypperRefresh(log);
             status = CheckOrInstallPackage(commandTemplateAllElse, g_zypper, packageName, log);
         }
 
