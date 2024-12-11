@@ -187,7 +187,7 @@ static int ExecuteAptGetUpdate(void* log)
     
     if (g_aptGetUpdateExecuted)
     {
-        return;
+        return status;
     }
 
     if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
@@ -210,7 +210,7 @@ static int ExecuteZypperRefresh(void* log)
 
     if (g_zypperRefreshExecuted)
     {
-        return;
+        return status;
     }
 
     if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
