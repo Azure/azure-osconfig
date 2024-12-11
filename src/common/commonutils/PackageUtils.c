@@ -293,6 +293,7 @@ int InstallPackage(const char* packageName, void* log)
 int UninstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
+    const char* commandTemplateZypper = "%s remove -y --force %s";
     const char* commandTemplateAllElse = "%s remove -y %s";
 
     int status = ENOENT;
@@ -322,7 +323,7 @@ int UninstallPackage(const char* packageName, void* log)
         {
             ExecuteZypperRefresh(log);
             ExecuteZypperRefreshServices(log);
-            status = CheckOrInstallPackage(commandTemplateAllElse, g_zypper, packageName, log);
+            status = CheckOrInstallPackage(commandTemplateZypper, g_zypper, packageName, log);
         }
 
         if ((0 == status) && (0 == IsPackageInstalled(packageName, log)))
