@@ -54,16 +54,15 @@ function(add_module directory)
     )
 endfunction()
 
-# Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Security Baseline module
-if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.9")
-    # CommandRunner cannot be built with gcc 4.8.5 default on RHEL 7, CentOS 7
-    # and Oracle Linux 7, because of rapidjson (we need to switch to parson)
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.8.4")
+    # these require rapidjson which we don't include in ubuntu 14.04 build container
     add_module(commandrunner)
     # Same for the C++ sample module
     if (BUILD_SAMPLES)
-        add_subdirectory(samples/cpp)
+       add_subdirectory(samples/cpp)
     endif()
 endif()
+
 add_module(securitybaseline)
 add_module(configuration)
 add_module(deviceinfo)

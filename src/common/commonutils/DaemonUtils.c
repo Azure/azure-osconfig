@@ -37,6 +37,7 @@ bool IsValidDaemonName(const char *name)
 static int ExecuteSystemctlCommand(const char* command, const char* daemonName, void* log)
 {
     const char* commandTemplate = "systemctl %s %s";
+    char* textResult = NULL;
     char* formattedCommand = NULL;
     int result = 0;
 
@@ -56,7 +57,8 @@ static int ExecuteSystemctlCommand(const char* command, const char* daemonName, 
         return ENOMEM;
     }
 
-    result = ExecuteCommand(NULL, formattedCommand, false, false, 0, 0, NULL, NULL, log);
+    result = ExecuteCommand(NULL, formattedCommand, false, false, 0, 0, &textResult, NULL, log);
+    FREE_MEMORY(textResult);
     FREE_MEMORY(formattedCommand);
     return result;
 }
@@ -150,6 +152,7 @@ bool EnableAndStartDaemon(const char* daemonName, void* log)
 
     if (false == IsDaemonActive(daemonName, log))
     {
+        status = false;
         if (EnableDaemon(daemonName, log) && StartDaemon(daemonName, log))
         {
             status = true;
