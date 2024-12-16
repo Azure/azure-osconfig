@@ -2384,7 +2384,8 @@ TEST_F(CommonUtilsTest, AsbIsValidResourceIdRuleId)
     const char* badResourceId = "Ensure the rsh client is not installed (CIS: L1 - Server - 2.3.2)";
     const char* badRuleId = "6d441f31-f888-4f4f-b1da-7cfc26263e3f";
     const char* miscasedResourceId = "ensure the rsh client is not installed (CIS: L1 - Server - 2.3.2)";
-    const char* miscasedRuleId = "6D441F31-F888-4F4F-B1DA-7CFC26263E3F";
+    const char* miscasedBadRuleId = "6D441F31-F888-4F4F-B1DA-7CFC26263E3F";
+    const char* miscasedGoodRuleId = "7624EFB0-3026-4C72-8920-48D5BE78A50A"; 
     const char* payloadKey = "EnsureSmbWithSambaIsDisabled";
     
     EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(nullptr, nullptr, nullptr, nullptr));
@@ -2395,13 +2396,15 @@ TEST_F(CommonUtilsTest, AsbIsValidResourceIdRuleId)
     EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(goodResourceId, badRuleId, payloadKey, nullptr));
     EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(badResourceId, badRuleId, payloadKey, nullptr));
     EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(miscasedResourceId, goodRuleId, payloadKey, nullptr));
-    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(miscasedResourceId, miscasedRuleId, payloadKey, nullptr));
+    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(miscasedResourceId, miscasedGoodRuleId, payloadKey, nullptr));
+    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(miscasedResourceId, miscasedBadRuleId, payloadKey, nullptr));
+    EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(nullptr, miscasedBadRuleId, payloadKey, nullptr));
     EXPECT_EQ(ENOENT, AsbIsValidResourceIdRuleId(miscasedResourceId, nullptr, payloadKey, nullptr));
 
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, goodRuleId, payloadKey, nullptr));
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(nullptr, goodRuleId, payloadKey, nullptr));
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, nullptr, payloadKey, nullptr));
-    EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, miscasedRuleId, payloadKey, nullptr));
+    EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, miscasedGoodRuleId, payloadKey, nullptr));
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(nullptr, miscasedRuleId, payloadKey, nullptr));
 }
 
