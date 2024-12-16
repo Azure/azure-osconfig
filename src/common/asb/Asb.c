@@ -814,9 +814,9 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
     int i = 0;
     int result = 0;
 
-    if (NULL == payloadKey)
+    if ((NULL == payloadKey) || ((NULL == resourceId) && (NULL == ruleId)))
     {
-        OsConfigLogError(log, "AsbIsValidRuleIdAndName: invalid payloadKey argument");
+        OsConfigLogError(log, "AsbIsValidRuleIdAndName called with invalid arguments");
         return EINVAL;
     }
 
