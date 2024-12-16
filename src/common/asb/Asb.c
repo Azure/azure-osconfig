@@ -1678,7 +1678,7 @@ static char* AuditEnsureSourceRoutedPacketsIsDisabled(void* log)
 static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void* log)
 {
     char* reason = 0;
-    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/accept_source_route", '#', "0", &reason, log));
     CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", &reason, log);
     return reason;
 }
@@ -3270,7 +3270,7 @@ static int RemediateEnsureSourceRoutedPacketsIsDisabled(char* value, void* log)
 static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log) &&
+    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/default/accept_source_route", "0", 1, log) &&
         SavePayloadToFile("/proc/sys/net/ipv6/conf/default/accept_source_route", "0", 1, log)) ? 0 : ENOENT;
 }
 
