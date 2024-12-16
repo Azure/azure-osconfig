@@ -2405,7 +2405,7 @@ TEST_F(CommonUtilsTest, AsbIsValidResourceIdRuleId)
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(nullptr, goodRuleId, payloadKey, nullptr));
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, nullptr, payloadKey, nullptr));
     EXPECT_EQ(0, AsbIsValidResourceIdRuleId(goodResourceId, miscasedGoodRuleId, payloadKey, nullptr));
-    EXPECT_EQ(0, AsbIsValidResourceIdRuleId(nullptr, miscasedRuleId, payloadKey, nullptr));
+    EXPECT_EQ(0, AsbIsValidResourceIdRuleId(nullptr, miscasedGoodRuleId, payloadKey, nullptr));
 }
 
 TEST_F(CommonUtilsTest, IsValidDaemonName)
