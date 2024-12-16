@@ -829,7 +829,7 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
                 OsConfigLogError(log, "AsbIsValidRuleIdAndName: resourceId for rule '%s' of '%s' (instead of '%s') is invalid", payloadKey, resourceId, g_rules[i].resourceId);
                 result = ENOENT;
             }
-            else if ((NULL != ruleId) && (0 != strncmp(ruleId, g_rules[i].ruleId, strlen(g_rules[i].ruleId))))
+            else if ((NULL != ruleId) && (0 != strncasecmp(ruleId, g_rules[i].ruleId, strlen(g_rules[i].ruleId))))
             {
                 OsConfigLogError(log, "AsbIsValidRuleIdAndName: ruleId for rule '%s' of '%s' (instead of '%s') is invalid", payloadKey, ruleId, g_rules[i].ruleId);
                 result = ENOENT;
