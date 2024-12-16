@@ -644,20 +644,20 @@ const BASELINE_RULE g_rules[] =
     { "Ensure that the SSH LogLevel is configured (CIS: L1 - Server - 5.2.5)", "31f1a912-1b98-42fd-8381-1e8d1033bfd1", "EnsureSshLogLevelIsSet" },
     { "Ensure that the SSH MaxAuthTries is configured (CIS: L1 - Server - 5.2.7)", "e7708534-5d98-406f-83ae-1de835b2906e", "EnsureSshMaxAuthTriesIsSet" },
     { "Ensure that the allowed users for SSH access are configured (CIS: L1 - Server - 5.2.18)", "dc8da71d-aeba-4c03-8835-36fe158e372a", "EnsureAllowUsersIsConfigured" },
-    { "Ensure that the denied users for SSH are configured (CIS: L1 - Server - 5.2.18)", "1DB7D147-3A75-4637-8CDC-C119E22D0206", "EnsureDenyUsersIsConfigured" },
-    { "Ensure that the allowed groups for SSH are configured (CIS: L1 - Server - 5.2.18)", "D9868B1F-0C8E-4ADB-889E-14E374874ECE", "EnsureAllowGroupsIsConfigured" },
-    { "Ensure that the denied groups for SSH are configured (CIS: L1 - Server - 5.2.18)", "F85C04A4-427B-4EE1-B988-C3FF7B4998CC", "EnsureDenyGroupsConfigured" },
+    { "Ensure that the denied users for SSH are configured (CIS: L1 - Server - 5.2.18)", "1db7d147-3a75-4637-8cdc-c119e22d0206", "EnsureDenyUsersIsConfigured" },
+    { "Ensure that the allowed groups for SSH are configured (CIS: L1 - Server - 5.2.18)", "d9868b1f-0c8e-4adb-889e-14e374874ece", "EnsureAllowGroupsIsConfigured" },
+    { "Ensure that the denied groups for SSH are configured (CIS: L1 - Server - 5.2.18)", "f85c04a4-427b-4ee1-b988-c3ff7b4998cc", "EnsureDenyGroupsConfigured" },
     { "Ensure that the SSH HostBasedAuthentication is configured (CIS: L1 - Server - 5.2.9)", "66511f6b-f690-43df-9654-642260699eec", "EnsureSshHostbasedAuthenticationIsDisabled" },
     { "Ensure that the SSH PermitRootLogin is configured (CIS: L1 - Server - 5.2.10)", "16511f6b-f690-43df-9654-642260699eec", "EnsureSshPermitRootLoginIsDisabled" },
     { "Ensure that the SSH PermitEmptyPasswords is configured (CIS: L1 - Server - 5.2.11)", "d50c3f39-264c-4cdc-b0ba-89de8a0f6828", "EnsureSshPermitEmptyPasswordsIsDisabled" },
     { "Ensure that the SSH ClientAliveCountMax is configured", "fd9f1554-6b72-8610-826e-78578e6f7811", "EnsureSshClientIntervalCountMaxIsConfigured" },
-    { "Ensure that the SSH ClientAliveInterval is configured", "C848BBA4-93B1-4756-B08A-FF94C2B4814C", "EnsureSshClientAliveIntervalIsConfigured" },
+    { "Ensure that the SSH ClientAliveInterval is configured", "c848bba4-93b1-4756-b08a-ff94c2b4814c", "EnsureSshClientAliveIntervalIsConfigured" },
     { "Ensure that the SSH LoginGraceTime is configured (CIS: L1 - Server - 5.2.17)", "39aa5c2b-5b36-84a7-4022-570a53c86ff9", "EnsureSshLoginGraceTimeIsSet" },
     { "Ensure that only approved MAC algorithms are used (CIS: L1 - Server - 5.2.14)", "483e8b0c-7572-8467-7e0c-26e1e9ce6359", "EnsureOnlyApprovedMacAlgorithmsAreUsed" },
     { "Ensure that the SSH warning banner is configured (CIS: L1 - Server - 5.2.19)", "9e240540-5e0a-4b60-beb2-57421c65a0b9", "EnsureSshWarningBannerIsEnabled" },
     { "Ensure that the SSH PermitUserEnvironment is configured (CIS: L1 - Server - 5.2.12)", "0e665978-91f4-45af-bb7b-e4090b600c8d", "EnsureUsersCannotSetSshEnvironmentOptions" },
     { "Ensure that appropriate ciphers are used for SSH (CIS: L1 - Server - 5.2.13)", "b07d4c69-a1d9-4c22-a486-634ec3b8c380", "EnsureAppropriateCiphersForSsh" },
-    { "Ensure that the SSH port is configured", "1310042D-193F-414A-A7E3-B2C4E89AA537", "EnsureSshPortIsConfigured" },
+    { "Ensure that the SSH port is configured", "1310042d-193f-414a-a7e3-b2c4e89aa537", "EnsureSshPortIsConfigured" },
     { "Ensure nodev option set on /home partition (CIS: L1 - Server - 1.1.14)", "a87f15ed-1115-a22d-6f43-17db97c91111", "EnsureNodevOptionOnHomePartition" },
     { "Ensure nodev option set on /tmp partition (CIS: L1 - Server - 1.1.3)", "a87f15ed-1115-a22d-6f43-17db97c91161", "EnsureNodevOptionOnTmpPartition" },
     { "Ensure nodev option set on /var/tmp partition (CIS: L1 - Server - 1.1.8)", "a87f15ed-1115-a22d-6f43-17db97c91181", "EnsureNodevOptionOnVarTmpPartition" },
@@ -793,7 +793,7 @@ const BASELINE_RULE g_rules[] =
     { "Ensure password reuse is limited (CIS: L1 - Server - 5.3.3)", "57bdeae2-863e-14fb-a463-d6ee64816b33", "EnsurePasswordReuseIsLimited" },
     { "Ensure the password hashing algorithm is SHA-512 (CIS: L1 - Server - 5.3.4)", "01ec5346-882b-485d-8960-01dedd608792", "EnsurePasswordHashingAlgorithm" },
     { "Ensure the minimum days between password changes is configured (CIS: L1 - Server - 5.4.1.2)", "50272a84-672d-4c11-a67e-9d058adaf67a", "EnsureMinDaysBetweenPasswordChanges" },
-    { "Ensure the maximum days between password changes is configured", "7F84F3A4-360D-494C-AA1E-1E15AE9FC9AC", "EnsureMaxDaysBetweenPasswordChanges" },
+    { "Ensure the maximum days between password changes is configured", "7f84f3a4-360d-494c-aa1e-1e15ae9fc9ac", "EnsureMaxDaysBetweenPasswordChanges" },
     { "Ensure the inactive password lock period is configured (CIS: L1 - Server - 5.4.1.4)", "91fbaeac-f5d0-4ac9-aa1b-52215aef1ed8", "EnsureInactivePasswordLockPeriod" },
     { "Ensure all system accounts are non-login (CIS: L1 - Server - 5.4.2)", "448b668a-738c-420b-b332-51ea49922933", "EnsureSystemAccountsAreNonLogin" },
     { "Ensure default group for the root account is GID 0 (CIS: L1 - Server - 5.4.3)", "732fa92f-647e-47b8-b5a4-fdf00b02d9e2", "EnsureDefaultRootAccountGroupIsGidZero" },
@@ -1678,7 +1678,7 @@ static char* AuditEnsureSourceRoutedPacketsIsDisabled(void* log)
 static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void* log)
 {
     char* reason = 0;
-    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/accept_source_route", '#', "0", &reason, log));
     CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", &reason, log);
     return reason;
 }
@@ -3270,7 +3270,7 @@ static int RemediateEnsureSourceRoutedPacketsIsDisabled(char* value, void* log)
 static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value, void* log)
 {
     UNUSED(value);
-    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log) &&
+    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/default/accept_source_route", "0", 1, log) &&
         SavePayloadToFile("/proc/sys/net/ipv6/conf/default/accept_source_route", "0", 1, log)) ? 0 : ENOENT;
 }
 
