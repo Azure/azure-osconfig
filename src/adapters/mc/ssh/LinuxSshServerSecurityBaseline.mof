@@ -103,7 +103,7 @@ instance of OsConfigResource as $OsConfigResource5ref
 instance of OsConfigResource as $OsConfigResource6ref
 {
     ResourceID = "Ensure that the denied users for SSH are configured";
-    RuleId = "1DB7D147-3A75-4637-8CDC-C119E22D0206";
+    RuleId = "1db7d147-3a75-4637-8cdc-c119e22d0206";
     PayloadKey = "EnsureDenyUsersIsConfigured";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureDenyUsersIsConfigured";
@@ -120,7 +120,7 @@ instance of OsConfigResource as $OsConfigResource6ref
 instance of OsConfigResource as $OsConfigResource7ref
 {
     ResourceID = "Ensure that the allowed groups for SSH are configured";
-    RuleId = "D9868B1F-0C8E-4ADB-889E-14E374874ECE";
+    RuleId = "d9868b1f-0c8e-4adb-889e-14e374874ece";
     PayloadKey = "EnsureAllowGroupsIsConfigured";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureAllowGroupsIsConfigured";
@@ -137,7 +137,7 @@ instance of OsConfigResource as $OsConfigResource7ref
 instance of OsConfigResource as $OsConfigResource8ref
 {
     ResourceID = "Ensure that the denied groups for SSH are configured";
-    RuleId = "F85C04A4-427B-4EE1-B988-C3FF7B4998CC";
+    RuleId = "f85c04a4-427b-4ee1-b988-c3ff7b4998cc";
     PayloadKey = "EnsureDenyGroupsConfigured";
     ComponentName = "SecurityBaseline";
     ExpectedObjectValue = "PASS";
@@ -222,7 +222,7 @@ instance of OsConfigResource as $OsConfigResource12ref
 instance of OsConfigResource as $OsConfigResource13ref
 {
     ResourceID = "Ensure that the SSH ClientAliveInterval is configured";
-    RuleId = "C848BBA4-93B1-4756-B08A-FF94C2B4814C";
+    RuleId = "c848bba4-93b1-4756-b08a-ff94c2b4814c";
     PayloadKey = "EnsureSshClientAliveIntervalIsConfigured";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshClientAliveIntervalIsConfigured";
@@ -324,7 +324,7 @@ instance of OsConfigResource as $OsConfigResource18ref
 instance of OsConfigResource as $OsConfigResource19ref
 {
     ResourceID = "Ensure that the SSH port is configured";
-    RuleId = "1310042D-193F-414A-A7E3-B2C4E89AA537";
+    RuleId = "1310042d-193f-414a-a7e3-b2c4e89aa537";
     PayloadKey = "EnsureSshPortIsConfigured";
     ComponentName = "SecurityBaseline";
     InitObjectName = "initEnsureSshPortIsConfigured";
