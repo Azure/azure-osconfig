@@ -15,7 +15,7 @@
         "version": "1.0.0",
         "contentType": "Custom",
         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-        "contentHash": "84E75D967A8C674EA140BC842EB44001BA86A12D721112634DBA77F17B25F1D0"
+        "contentHash": "2EE557B1F9843F2FDD4ACF29563B51A9D1D7EF7721C73D920AEF2C412A1E2499"
       }
     },
     "parameters": {
@@ -341,7 +341,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "84E75D967A8C674EA140BC842EB44001BA86A12D721112634DBA77F17B25F1D0",
+                        "contentHash": "2EE557B1F9843F2FDD4ACF29563B51A9D1D7EF7721C73D920AEF2C412A1E2499",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -358,7 +358,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "84E75D967A8C674EA140BC842EB44001BA86A12D721112634DBA77F17B25F1D0",
+                        "contentHash": "2EE557B1F9843F2FDD4ACF29563B51A9D1D7EF7721C73D920AEF2C412A1E2499",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -375,7 +375,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "84E75D967A8C674EA140BC842EB44001BA86A12D721112634DBA77F17B25F1D0",
+                        "contentHash": "2EE557B1F9843F2FDD4ACF29563B51A9D1D7EF7721C73D920AEF2C412A1E2499",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
