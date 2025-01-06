@@ -21,7 +21,7 @@ int StartPerfClock(struct timespec* clock, void* log)
     return status;
 }
 
-long StopPerfClock(struct timespec* clock, bool microseconds, void* log)
+long StopPerfClock(struct timespec* clock, void* log)
 {
     struct timespec end = {0};
     int status = 0;
