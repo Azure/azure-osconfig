@@ -3,7 +3,7 @@
 
 #include "Internal.h"
 
-int StartPerfClock(const timespec* clock, void* log)
+int StartPerfClock(const struct timespec* clock, void* log)
 {
     int status = EINVAL;
 
@@ -23,7 +23,7 @@ int StartPerfClock(const timespec* clock, void* log)
 
 long StopPerfClock(const timespec* clock, void* log)
 {
-    timespec end = {0};
+    struct timespec end = {0};
     int status = 0;
     long microSeconds = -1;
 

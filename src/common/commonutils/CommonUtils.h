@@ -236,8 +236,8 @@ int GetGitManagementFromJsonConfig(const char* jsonString, void* log);
 char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, void* log);
 char* GetGitBranchFromJsonConfig(const char* jsonString, void* log);
 
-int StartPerfClock(const timespec* clock, void* log);
-long StopPerfClock(const timespec* clock, void* log);
+int StartPerfClock(const struct timespec* clock, void* log);
+long StopPerfClock(const struct timespec* clock, void* log);
 
 #ifdef __cplusplus
 }
