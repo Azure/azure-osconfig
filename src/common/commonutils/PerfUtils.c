@@ -49,5 +49,7 @@ long StopPerfClock(struct timespec* clock, void* log)
         OsConfigLogError(log, "StopPerfClock: clock_gettime failed with %d (%d)", status, errno);
     }
 
+    OsConfigLogInfo(log, "StopPerfClock: ### %ld milliseconds", milliSeconds);
+
     return milliSeconds;
 }
