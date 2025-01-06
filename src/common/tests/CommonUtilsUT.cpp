@@ -2460,15 +2460,15 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     EXPECT_EQ(0, StartPerfClock(&another, nullptr));
 
     EXPECT_EQ(0, StartPerfClock(&start, nullptr));
-    SleepMilliseconds(10);
-    EXPECT_GE(microSeconds = StopPerfClock(&start, nullptr), 10 * 1000);
-    EXPECT_LE(microSeconds, 11 * 1000);
+    SleepMilliseconds(1);
+    EXPECT_GE(microSeconds = StopPerfClock(&start, nullptr), 1000);
+    EXPECT_LE(microSeconds, 1100);
     
     EXPECT_EQ(0, StartPerfClock(&start, nullptr));
-    SleepMilliseconds(100);
-    EXPECT_GE(microSeconds = StopPerfClock(&start, nullptr), 100 * 1000);
-    EXPECT_LE(microSeconds, 101 * 1000);
+    SleepMilliseconds(2);
+    EXPECT_GE(microSeconds = StopPerfClock(&start, nullptr), 2000);
+    EXPECT_LE(microSeconds, 2100);
 
-    EXPECT_GE(microSeconds = StopPerfClock(&another, nullptr), 110 * 1000);
-    EXPECT_LE(microSeconds, 111 * 1000);
+    EXPECT_GE(microSeconds = StopPerfClock(&another, nullptr), 3000);
+    EXPECT_LE(microSeconds, 3100);
 }
