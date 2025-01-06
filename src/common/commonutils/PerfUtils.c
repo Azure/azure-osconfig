@@ -37,11 +37,11 @@ long StopPerfClock(struct timespec* clock, void* log)
     {
         if (end.tv_sec < clock->tv_sec)
         {
-            OsConfigLogError(log, "StopPerfClock: clock_gettime returned an earlier time than expected (%d seconds earlier)", clock->tv_sec - end.tv_sec);
+            OsConfigLogError(log, "StopPerfClock: clock_gettime returned an earlier time than expected (%ld seconds earlier)", clock->tv_sec - end.tv_sec);
         }
         else
         {
-            microSeconds = (((end.tv_sec - clock->tv_sec) * 1000000) + (((end.tv_nsec > clock->tv_nsec) ? (end.tv_nsec - clock->tv_nsec) : 0) / 1000);
+            microSeconds = ((end.tv_sec - clock->tv_sec) * 1000000) + (((end.tv_nsec > clock->tv_nsec) ? (end.tv_nsec - clock->tv_nsec) : 0) / 1000);
         }
     }
     else
