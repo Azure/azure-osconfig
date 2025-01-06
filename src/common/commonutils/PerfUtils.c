@@ -13,7 +13,7 @@ int StartPerfClock(const struct timespec* clock, void* log)
         return status;
     }
 
-    if (0 != (status = clock_gettime(CLOCK_MONOTONIC, &clock)))
+    if (0 != (status = clock_gettime(CLOCK_MONOTONIC, clock)))
     {
         OsConfigLogError(log, "StartPerfClock: clock_gettime failed with %d (%d)", status, errno);
     }
@@ -33,15 +33,15 @@ long StopPerfClock(const timespec* clock, void* log)
         return microSeconds;
     }
 
-    if (0 == (status = clock_gettime(CLOCK_MONOTONIC, &clock)))
+    if (0 == (status = clock_gettime(CLOCK_MONOTONIC, &end)))
     {
-        if (end.tv_sec =< clock.tv_sec)
+        if (end.tv_sec =< clock->tv_sec)
         {
-            OsConfigLogError(log, "StopPerfClock: clock_gettime returned an earlier time than expected (%d seconds earlier)", clock.tv_sec - end.tv_sec);
+            OsConfigLogError(log, "StopPerfClock: clock_gettime returned an earlier time than expected (%d seconds earlier)", clock->tv_sec - end.tv_sec);
         }
         else
         {
-            microSeconds = (((end.tv_sec - clock.tv_sec) * 1000000) + (((end.tv_nsec > clock.tv_nsec) ? (end.tv_nsec - clock.tv_nsec) : 0) / 1000);
+            microSeconds = (((end.tv_sec - clock->tv_sec) * 1000000) + (((end.tv_nsec > clock->tv_nsec) ? (end.tv_nsec - clock->tv_nsec) : 0) / 1000);
         }
     }
     else
