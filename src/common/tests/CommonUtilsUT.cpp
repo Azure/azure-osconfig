@@ -2448,3 +2448,19 @@ TEST_F(CommonUtilsTest, IsValidDaemonName)
         EXPECT_FALSE(IsValidDaemonName(badNames[i]));
     }
 }
+
+TEST_F(CommonUtilsTest, StartStopPerfClock)
+{
+    timespec start = {0};
+
+    EXPECT_EQ(EINVAL, StartPerfClock(nullptr, nullptr));
+    EXPECT_EQ(-1, StopPerfClock(nullptr, nullptr));
+
+    EXPECT_EQ(0, StartPerfClock(&start, nullptr));
+    Sleep(10);
+    EXPECT_GT(StopPerfClock(&start, nullptr), 10);
+    
+    EXPECT_EQ(0, StartPerfClock(&start, nullptr));
+    Sleep(100);
+    EXPECT_GT(StopPerfClock(&start, nullptr), 100);
+}
