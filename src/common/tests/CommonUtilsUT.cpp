@@ -2457,10 +2457,10 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     EXPECT_EQ(-1, StopPerfClock(nullptr, nullptr));
 
     EXPECT_EQ(0, StartPerfClock(&start, nullptr));
-    sleep(10);
+    SleepMilliseconds(10);
     EXPECT_GT(StopPerfClock(&start, nullptr), 9);
     
     EXPECT_EQ(0, StartPerfClock(&start, nullptr));
-    sleep(100);
+    SleepMilliseconds(100);
     EXPECT_GT(StopPerfClock(&start, nullptr), 99);
 }
