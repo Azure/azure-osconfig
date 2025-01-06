@@ -17,7 +17,7 @@ add_library(commonutils STATIC
     SocketUtils.c
     SshUtils.c
     UrlUtils.c
-    UserUtils.c,
+    UserUtils.c
     PerfUtils.c)
 
 target_include_directories(commonutils
