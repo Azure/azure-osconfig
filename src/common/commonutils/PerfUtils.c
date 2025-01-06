@@ -25,12 +25,12 @@ long StopPerfClock(struct timespec* clock, void* log)
 {
     struct timespec end = {0};
     int status = 0;
-    long milliSeconds = -1;
+    long microSeconds = -1;
 
     if (NULL == clock)
     {
         OsConfigLogError(log, "StopPerfClock called with an invalid argument");
-        return milliSeconds;
+        return microSeconds;
     }
 
     if (0 == (status = clock_gettime(CLOCK_MONOTONIC, &end)))
@@ -41,7 +41,7 @@ long StopPerfClock(struct timespec* clock, void* log)
         }
         else
         {
-            milliSeconds = ((end.tv_sec - clock->tv_sec) * 1000) + (((end.tv_nsec > clock->tv_nsec) ? (end.tv_nsec - clock->tv_nsec) : 0) / 1000);
+            microSeconds = ((end.tv_sec - clock->tv_sec) * 1000000) + (((end.tv_nsec > clock->tv_nsec) ? (end.tv_nsec - clock->tv_nsec) : 0) / 1000);
         }
     }
     else
@@ -49,7 +49,7 @@ long StopPerfClock(struct timespec* clock, void* log)
         OsConfigLogError(log, "StopPerfClock: clock_gettime failed with %d (%d)", status, errno);
     }
 
-    OsConfigLogInfo(log, "StopPerfClock: ### %ld milliseconds", milliSeconds);
+    OsConfigLogInfo(log, "StopPerfClock: ### %ld microSeconds", microSeconds);
 
-    return milliSeconds;
+    return microSeconds;
 }
