@@ -13,13 +13,19 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "apt list --installed"
+                "command": "sudo apt update && sudo apt upgrade -y"
+            }
+        },
+        {
+            "name": "linux-install-packages",
+            "parameters": {
+                "packages": "bc"
             }
         },
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo apt update && sudo apt upgrade -y"
+                "command": "apt list --installed"
             }
         }
     ]
