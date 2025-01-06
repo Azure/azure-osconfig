@@ -2452,6 +2452,7 @@ TEST_F(CommonUtilsTest, IsValidDaemonName)
 TEST_F(CommonUtilsTest, StartStopPerfClock)
 {
     struct timespec start, another;
+    long milliSeconds = 0;
 
     EXPECT_EQ(EINVAL, StartPerfClock(nullptr, nullptr));
     EXPECT_EQ(-1, StopPerfClock(nullptr, nullptr));
@@ -2460,11 +2461,14 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
 
     EXPECT_EQ(0, StartPerfClock(&start, nullptr));
     SleepMilliseconds(10);
-    EXPECT_GT(StopPerfClock(&start, nullptr), 9);
+    EXPECT_GE(milliSeconds = StopPerfClock(&start, nullptr), 10);
+    EXPECT_LE(milliSeconds, 11);
     
     EXPECT_EQ(0, StartPerfClock(&start, nullptr));
     SleepMilliseconds(100);
-    EXPECT_GT(StopPerfClock(&start, nullptr), 99);
+    EXPECT_GE(milliSeconds = StopPerfClock(&start, nullptr), 100);
+    EXPECT_LE(milliSeconds, 101);
 
-    EXPECT_GT(StopPerfClock(&another, nullptr), 109);
+    EXPECT_GE(milliSeconds = StopPerfClock(&another, nullptr), 110);
+    EXPECT_LE(milliSeconds, 111);
 }
