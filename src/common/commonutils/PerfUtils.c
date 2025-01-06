@@ -3,7 +3,7 @@
 
 #include "Internal.h"
 
-int StartPerfClock(const struct timespec* clock, void* log)
+int StartPerfClock(struct timespec* clock, void* log)
 {
     int status = EINVAL;
 
@@ -21,7 +21,7 @@ int StartPerfClock(const struct timespec* clock, void* log)
     return status;
 }
 
-long StopPerfClock(const timespec* clock, void* log)
+long StopPerfClock(struct timespec* clock, void* log)
 {
     struct timespec end = {0};
     int status = 0;
@@ -35,7 +35,7 @@ long StopPerfClock(const timespec* clock, void* log)
 
     if (0 == (status = clock_gettime(CLOCK_MONOTONIC, &end)))
     {
-        if (end.tv_sec =< clock->tv_sec)
+        if (end.tv_sec < clock->tv_sec)
         {
             OsConfigLogError(log, "StopPerfClock: clock_gettime returned an earlier time than expected (%d seconds earlier)", clock->tv_sec - end.tv_sec);
         }
