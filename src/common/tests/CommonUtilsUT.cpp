@@ -2466,5 +2466,5 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     SleepMilliseconds(100);
     EXPECT_GT(StopPerfClock(&start, nullptr), 99);
 
-    EXPECT_GT(StopPerfClock(&another, nullptr), 100);
+    EXPECT_GT(StopPerfClock(&another, nullptr), 109);
 }
