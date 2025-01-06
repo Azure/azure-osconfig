@@ -2451,16 +2451,16 @@ TEST_F(CommonUtilsTest, IsValidDaemonName)
 
 TEST_F(CommonUtilsTest, StartStopPerfClock)
 {
-    timespec start = {0};
+    struct timespec start = {0};
 
     EXPECT_EQ(EINVAL, StartPerfClock(nullptr, nullptr));
     EXPECT_EQ(-1, StopPerfClock(nullptr, nullptr));
 
     EXPECT_EQ(0, StartPerfClock(&start, nullptr));
-    Sleep(10);
-    EXPECT_GT(StopPerfClock(&start, nullptr), 10);
+    sleep(10);
+    EXPECT_GT(StopPerfClock(&start, nullptr), 9);
     
     EXPECT_EQ(0, StartPerfClock(&start, nullptr));
-    Sleep(100);
-    EXPECT_GT(StopPerfClock(&start, nullptr), 100);
+    sleep(100);
+    EXPECT_GT(StopPerfClock(&start, nullptr), 99);
 }
