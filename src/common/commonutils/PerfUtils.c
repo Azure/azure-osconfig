@@ -41,7 +41,7 @@ long StopPerfClock(struct timespec* clock, void* log)
         }
         else
         {
-            milliSeconds = ((end.tv_sec - clock->tv_sec) * 1000000) + (((end.tv_nsec > clock->tv_nsec) ? (end.tv_nsec - clock->tv_nsec) : 0) / 1000);
+            milliSeconds = ((end.tv_sec - clock->tv_sec) * 1000) + (((end.tv_nsec > clock->tv_nsec) ? (end.tv_nsec - clock->tv_nsec) : 0) / 1000);
         }
     }
     else

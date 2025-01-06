@@ -2461,8 +2461,10 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
 
     EXPECT_EQ(0, StartPerfClock(&start, nullptr));
     SleepMilliseconds(10);
-    EXPECT_GE(milliSeconds = StopPerfClock(&start, nullptr), 10);
-    EXPECT_LE(milliSeconds, 11);
+    EXPECT_LE(milliSeconds = StopPerfClock(&start, nullptr), 11);
+    EXPECT_GE(milliSeconds, 10);
+    //EXPECT_GE(milliSeconds = StopPerfClock(&start, nullptr), 10);
+    //EXPECT_LE(milliSeconds, 11);
     
     EXPECT_EQ(0, StartPerfClock(&start, nullptr));
     SleepMilliseconds(100);
