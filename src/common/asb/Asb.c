@@ -976,12 +976,12 @@ void AsbShutdown(void* log)
 
     if ((endFreeMemory = GetFreeMemory(log)) < g_freeMemory)
     {
-        OsConfigLogInfo(log, "Free memory decreased from %ld kB at start to %ld kB at the end (%ld kB decrease)",
+        OsConfigLogInfo(log, "Free memory decreased from %ld kB at start to %ld kB at the end (%ld kB decrease), check for possible leaks",
             g_freeMemory, endFreeMemory, g_freeMemory - endFreeMemory);
     }
     else if (endFreeMemory > g_freeMemory)
     {
-        OsConfigLogError(log, "Free memory increased from %ld kB at start to %ld kB at the end (%ld kB increase), check for possible leaks",
+        OsConfigLogInfo(log, "Free memory increased from %ld kB at start to %ld kB at the end (%ld kB increase)",
             g_freeMemory, endFreeMemory, endFreeMemory - g_freeMemory);
     }
     else
