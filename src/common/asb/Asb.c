@@ -935,7 +935,7 @@ void AsbShutdown(void* log)
     long endFreeMemory = GetFreeMemory(log);
     long endTime = StopPerfClock(&g_startClock, log);
     
-    OsConfigLogInfo(log, "%s shutting down after %ld seconds (%ld microseconds)", g_asbName, (endTime - g_startTime) / 1000, endTime - startTime);
+    OsConfigLogInfo(log, "%s shutting down after %ld seconds (%ld microseconds)", g_asbName, endTime / 1000, endTime);
     OsConfigLogInfo(log, "Free memory went from %ld to %ld kB", g_freeMemory, endFreeMemory);
         
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
