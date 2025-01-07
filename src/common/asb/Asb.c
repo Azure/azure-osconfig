@@ -932,11 +932,26 @@ void AsbInitialize(void* log)
 
 void AsbShutdown(void* log)
 {
-    long endFreeMemory = GetFreeMemory(log);
     long endTime = StopPerfClock(&g_startClock, log);
+    long endFreeMemory = GetFreeMemory(log);
     
-    OsConfigLogInfo(log, "%s shutting down after %ld seconds (%ld microseconds)", g_asbName, endTime / 1000, endTime);
-    OsConfigLogInfo(log, "Free memory went from %ld to %ld kB", g_freeMemory, endFreeMemory);
+    OsConfigLogInfo(log, "%s shutting down", g_asbName);
+
+    OsConfigLogInfo(log, "Total time spent for this instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
+    
+    if (endFreeMemory < g_freeMemory)
+    {
+        OsConfigLogInfo(log, "Free memory decreased from %ld kB at start to %ld kB at the end", g_freeMemory, endFreeMemory);
+    }
+    else if (endFreeMemory == g_freeMemory)
+    {
+        OsConfigLogInfo(log, "Free memory remained the same at %ld kB at start and end", g_freeMemory);
+    }
+    else
+    {
+        OsConfigLogError(log, "Free memory increased from %ld kB at start to %ld kB at the end (%ld kB increase), check for possible leaks",
+            g_freeMemory, endFreeMemory, endFreeMemory - g_freeMemory);
+    }
         
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
