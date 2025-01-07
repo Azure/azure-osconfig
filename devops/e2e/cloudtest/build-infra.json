@@ -11,12 +11,6 @@
             }
         },
         {
-            "name": "linux-bash-command",
-            "parameters": {
-                "command": "sudo apt update && sudo apt upgrade -y"
-            }
-        },
-        {
             "name": "linux-install-packages",
             "parameters": {
                 "packages": "bc"
