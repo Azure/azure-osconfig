@@ -629,6 +629,9 @@ static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
 static const int g_shadowGid = 42;
 static const int g_varLogJournalMode = 2755;
 
+static struct timespec g_startClock = {0};
+static long g_freeMemory = 0;
+
 typedef struct BASELINE_RULE
 {
     const char* resourceId;
@@ -920,12 +923,20 @@ void AsbInitialize(void* log)
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
     }
 
+    g_freeMemory = GetFreeMemory(log);
+
+    StartPerfClock(&g_startClock, log);
+
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
 
 void AsbShutdown(void* log)
 {
-    OsConfigLogInfo(log, "%s shutting down", g_asbName);
+    long endFreeMemory = GetFreeMemory(log);
+    long endTime = StopPerfClock(&g_startClock, log);
+    
+    OsConfigLogInfo(log, "%s shutting down after %.2f seconds", g_asbName, endTime / 1000);
+    OsConfigLogInfo(log, "Free memory went from %lu to %lu kB", g_freeMemory, endFreeMemory);
         
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
