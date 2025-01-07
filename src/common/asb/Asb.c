@@ -974,7 +974,7 @@ void AsbShutdown(void* log)
 
     SshAuditCleanup(log);
 
-    if ((endFreeMemory = = GetFreeMemory(log)) < g_freeMemory)
+    if ((endFreeMemory = GetFreeMemory(log)) < g_freeMemory)
     {
         OsConfigLogInfo(log, "Free memory decreased from %ld kB at start to %ld kB at the end (%ld kB decrease)",
             g_freeMemory, endFreeMemory, g_freeMemory - endFreeMemory);
