@@ -852,6 +852,10 @@ void AsbInitialize(void* log)
 {
     char* prettyName = NULL;
     char* kernelVersion = NULL;
+
+    g_freeMemory = GetFreeMemory(log);
+    
+    StartPerfClock(&g_startClock, log);
     
     InitializeSshAudit(log);
 
@@ -923,36 +927,16 @@ void AsbInitialize(void* log)
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
     }
 
-    g_freeMemory = GetFreeMemory(log);
-
-    StartPerfClock(&g_startClock, log);
-
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
 
 void AsbShutdown(void* log)
 {
-    long endTime = StopPerfClock(&g_startClock, log);
-    long endFreeMemory = GetFreeMemory(log);
+    long endTime = 0; 
+    long endFreeMemory = 0;
     
     OsConfigLogInfo(log, "%s shutting down", g_asbName);
 
-    OsConfigLogInfo(log, "Total time spent for this instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
-    
-    if (endFreeMemory < g_freeMemory)
-    {
-        OsConfigLogInfo(log, "Free memory decreased from %ld kB at start to %ld kB at the end", g_freeMemory, endFreeMemory);
-    }
-    else if (endFreeMemory == g_freeMemory)
-    {
-        OsConfigLogInfo(log, "Free memory remained the same at %ld kB at start and end", g_freeMemory);
-    }
-    else
-    {
-        OsConfigLogError(log, "Free memory increased from %ld kB at start to %ld kB at the end (%ld kB increase), check for possible leaks",
-            g_freeMemory, endFreeMemory, endFreeMemory - g_freeMemory);
-    }
-        
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcHostsAllow);
@@ -989,6 +973,27 @@ void AsbShutdown(void* log)
     FREE_MEMORY(g_desiredEnsureDefaultDenyFirewallPolicyIsSet);
 
     SshAuditCleanup(log);
+
+    endFreeMemory = GetFreeMemory(log);
+
+    if (endFreeMemory < g_freeMemory)
+    {
+        OsConfigLogInfo(log, "Free memory decreased from %ld kB at start to %ld kB at the end", g_freeMemory, endFreeMemory);
+    }
+    else if (endFreeMemory == g_freeMemory)
+    {
+        OsConfigLogInfo(log, "Free memory remained the same at %ld kB at start and end", g_freeMemory);
+    }
+    else
+    {
+        OsConfigLogError(log, "Free memory increased from %ld kB at start to %ld kB at the end (%ld kB increase), check for possible leaks",
+            g_freeMemory, endFreeMemory, endFreeMemory - g_freeMemory);
+    }
+
+    if (0 < (endTime = StopPerfClock(&g_startClock, log)))
+    {
+        OsConfigLogInfo(log, "Total time spent for this instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
+    }
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(void* log)
