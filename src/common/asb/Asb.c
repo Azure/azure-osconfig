@@ -868,9 +868,12 @@ void AsbInitialize(void* log)
     char* prettyName = NULL;
     char* kernelVersion = NULL;
 
-    g_freeMemory = GetFreeMemory(log);
+    g_freeMemory = GetFreeMemory(GetPerfLog());
     
-    StartPerfClock(&g_startClock, log);
+    StartPerfClock(&g_startClock, GetPerfLog());
+
+    OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", GetTotalMemory(GetPerfLog()));
+    OsConfigLogInfo(GetPerfLog(), "Free memory at start: %lu kB", g_freeMemory);
     
     InitializeSshAudit(log);
 
@@ -995,22 +998,23 @@ void AsbShutdown(void* log)
 
     SshAuditCleanup(log);
 
-    if ((endFreeMemory = GetFreeMemory(log)) < g_freeMemory)
+    endFreeMemory = GetFreeMemory(GetPerfLog());
+    OsConfigLogInfo(GetPerfLog(), "Free memory at end: %lu kB", endFreeMemory);
+
+    if (endFreeMemory < g_freeMemory)
     {
-        OsConfigLogInfo(GetPerfLog(), "Free memory decreased from %ld kB at start to %ld kB at the end (%ld kB decrease), check for possible leaks",
-            g_freeMemory, endFreeMemory, g_freeMemory - endFreeMemory);
+        OsConfigLogInfo(GetPerfLog(), "Free memory decreased with %ld kB decrease from start to end, check for possible leaks", g_freeMemory - endFreeMemory);
     }
     else if (endFreeMemory > g_freeMemory)
     {
-        OsConfigLogInfo(GetPerfLog(), "Free memory increased from %ld kB at start to %ld kB at the end (%ld kB increase)",
-            g_freeMemory, endFreeMemory, endFreeMemory - g_freeMemory);
+        OsConfigLogInfo(GetPerfLog(), "Free memory increased with %ld kB from start to end", endFreeMemory - g_freeMemory);
     }
     else
     {
-        OsConfigLogInfo(GetPerfLog(), "Free memory remained the same at %ld kB at start and end", g_freeMemory);
+        OsConfigLogInfo(GetPerfLog(), "Free memory remained the same at start and end");
     }
 
-    if (0 < (endTime = StopPerfClock(&g_startClock, log)))
+    if (0 < (endTime = StopPerfClock(&g_startClock, GetPerfLog())))
     {
         OsConfigLogInfo(GetPerfLog(), "Total time spent for this ASB instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
     }
@@ -4005,6 +4009,8 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 {
     JSON_Value* jsonValue = NULL;
     char* serializedValue = NULL;
+    struct timespec* clock = {0};
+    long time = 0;
     int status = 0;
     char* result = NULL;
 
@@ -4017,6 +4023,8 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
     *payload = NULL;
     *payloadSizeBytes = 0;
+
+    StartPerfClock(&clock, GetPerfLog());
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
@@ -4769,6 +4777,18 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     }
 
     FREE_MEMORY(result);
+
+    if (0 < (time = StopPerfClock(&clock, GetPerfLog())))
+    {
+        if (0 == status)
+        {
+            OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld microseconds", componentName, objectName, time);
+        }
+        else
+        {
+            OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, time, status);
+        }
+    }
 
     return status;
 }
