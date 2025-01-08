@@ -635,7 +635,7 @@ static const int g_varLogJournalMode = 2755;
 static struct timespec g_startClock = {0};
 static long g_freeMemory = 0;
 
-static PERF_LOG_HANDLE g_perfLog = NULL;
+static OSCONFIG_LOG_HANDLE g_perfLog = NULL;
 
 OSCONFIG_LOG_HANDLE GetPerfLog(void)
 {
