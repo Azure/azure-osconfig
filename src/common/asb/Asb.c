@@ -869,6 +869,7 @@ void AsbInitialize(void* log)
     char* kernelVersion = NULL;
 
     RenameFileWithOwnerAndAccess(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, GetPerfLog());
+    CloseLog(&g_perfLog);
 
     StartPerfClock(&g_startClock, GetPerfLog());
 
@@ -1020,6 +1021,8 @@ void AsbShutdown(void* log)
     {
         OsConfigLogInfo(GetPerfLog(), "Total time spent for this ASB instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
     }
+
+    CloseLog(&g_perfLog);
 
     SetFileAccess(PERF_LOG_FILE, 0, 0, 6774, NULL);
     SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 6774, NULL);
