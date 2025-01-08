@@ -4805,7 +4805,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
 int AsbMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, void* log)
 {
-    const char init = "init";
+    const char* init = "init";
     JSON_Value* jsonValue = NULL;
     char* jsonString = NULL;
     char* payloadString = NULL;
