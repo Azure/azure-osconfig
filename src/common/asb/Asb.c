@@ -4782,11 +4782,11 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     {
         if (0 == status)
         {
-            OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld microseconds", componentName, objectName, time);
+            OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld milliseconds (%ld microseconds)", componentName, objectName, time / 1000, time);
         }
         else
         {
-            OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, time, status);
+            OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld milliseconds (%ld microseconds)", componentName, objectName, time / 1000, time, status);
         }
     }
 
@@ -5760,11 +5760,11 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     {
         if (0 == status)
         {
-            OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld microseconds", componentName, objectName, time);
+            OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld milliseconds (%ld microseconds)", componentName, objectName, time / 1000, time);
         }
         else
         {
-            OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, time, status);
+            OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld milliseconds (%ld microseconds)", componentName, objectName, time / 1000, time, status);
         }
     }
 
