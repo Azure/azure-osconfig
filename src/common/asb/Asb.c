@@ -868,8 +868,10 @@ void AsbInitialize(void* log)
     char* prettyName = NULL;
     char* kernelVersion = NULL;
 
-    RenameFileWithOwnerAndAccess(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, GetPerfLog());
+    RenameFile(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, GetPerfLog());
+    
     CloseLog(&g_perfLog);
+    g_perfLog = NULL;
 
     StartPerfClock(&g_startClock, GetPerfLog());
 
