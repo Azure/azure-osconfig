@@ -4009,7 +4009,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 {
     JSON_Value* jsonValue = NULL;
     char* serializedValue = NULL;
-    struct timespec* clock = {0};
+    struct timespec clock = {0};
     long time = 0;
     int status = 0;
     char* result = NULL;
@@ -4798,6 +4798,8 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     JSON_Value* jsonValue = NULL;
     char* jsonString = NULL;
     char* payloadString = NULL;
+    struct timespec clock = {0};
+    long time = 0;
     int status = 0;
 
     // No payload is accepted for now, this may change once the complete Azure Security Baseline is implemented
@@ -4806,6 +4808,8 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         OsConfigLogError(log, "AsbMmiSet(%s, %s, %s, %d) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         return EINVAL;
     }
+
+    StartPerfClock(&clock, GetPerfLog());
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
@@ -5751,6 +5755,18 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     }
     
     FREE_MEMORY(payloadString);
+
+    if (0 < (time = StopPerfClock(&clock, GetPerfLog())))
+    {
+        if (0 == status)
+        {
+            OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld microseconds", componentName, objectName, time);
+        }
+        else
+        {
+            OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, time, status);
+        }
+    }
 
     return status;
 }
