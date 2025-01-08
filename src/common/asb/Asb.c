@@ -14,6 +14,9 @@
 #include <Logging.h>
 #include <Asb.h>
 
+#define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
+#define ROLLED_PERF_LOG_FILE "/var/log/osconfig_asb_perf.bak"
+
 #define RETURN_REASON_IF_ZERO(call) {\
     if (0 == (call)) {\
         return reason;\
@@ -632,6 +635,18 @@ static const int g_varLogJournalMode = 2755;
 static struct timespec g_startClock = {0};
 static long g_freeMemory = 0;
 
+static PERF_LOG_HANDLE g_perfLog = NULL;
+
+OSCONFIG_LOG_HANDLE GetPerfLog(void)
+{
+    if (NULL == g_perfLog)
+    {
+        g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
+    }
+
+    return g_perfLog;
+}
+
 typedef struct BASELINE_RULE
 {
     const char* resourceId;
@@ -906,6 +921,7 @@ void AsbInitialize(void* log)
     }
     
     kernelVersion = GetOsKernelVersion(log);
+    
     if (NULL != (prettyName = GetOsPrettyName(log)))
     {
         OsConfigLogInfo(log, "AsbInitialize: running on '%s' ('%s')", prettyName, kernelVersion);
@@ -914,17 +930,22 @@ void AsbInitialize(void* log)
     {
         OsConfigLogInfo(log, "AsbInitialize: running on an unknown Linux distribution with kernel version '%s' and without a valid PRETTY_NAME in /etc/os-release", kernelVersion);
     }
+    
+    OsConfigLogInfo(GetPerfLog(), "Running on '%s'", prettyName ? prettyName : "-");
+
     FREE_MEMORY(prettyName);
     FREE_MEMORY(kernelVersion);
 
     if (IsCommodore(log))
     {
         OsConfigLogInfo(log, "AsbInitialize: running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
+        OsConfigLogInfo(GetPerfLog(), "Running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
     }
 
     if (DetectSelinux(log))
     {
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
+        OsConfigLogInfo(GetPerfLog(), "SELinux present");
     }
 
     OsConfigLogInfo(log, "%s initialized", g_asbName);
@@ -976,22 +997,22 @@ void AsbShutdown(void* log)
 
     if ((endFreeMemory = GetFreeMemory(log)) < g_freeMemory)
     {
-        OsConfigLogInfo(log, "Free memory decreased from %ld kB at start to %ld kB at the end (%ld kB decrease), check for possible leaks",
+        OsConfigLogInfo(GetPerfLog(), "Free memory decreased from %ld kB at start to %ld kB at the end (%ld kB decrease), check for possible leaks",
             g_freeMemory, endFreeMemory, g_freeMemory - endFreeMemory);
     }
     else if (endFreeMemory > g_freeMemory)
     {
-        OsConfigLogInfo(log, "Free memory increased from %ld kB at start to %ld kB at the end (%ld kB increase)",
+        OsConfigLogInfo(GetPerfLog(), "Free memory increased from %ld kB at start to %ld kB at the end (%ld kB increase)",
             g_freeMemory, endFreeMemory, endFreeMemory - g_freeMemory);
     }
     else
     {
-        OsConfigLogInfo(log, "Free memory remained the same at %ld kB at start and end", g_freeMemory);
+        OsConfigLogInfo(GetPerfLog(), "Free memory remained the same at %ld kB at start and end", g_freeMemory);
     }
 
     if (0 < (endTime = StopPerfClock(&g_startClock, log)))
     {
-        OsConfigLogInfo(log, "Total time spent for this instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
+        OsConfigLogInfo(GetPerfLog(), "Total time spent for this ASB instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
     }
 }
 
