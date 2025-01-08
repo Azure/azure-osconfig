@@ -4805,6 +4805,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
 int AsbMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, void* log)
 {
+    const char init = "init";
     JSON_Value* jsonValue = NULL;
     char* jsonString = NULL;
     char* payloadString = NULL;
@@ -5768,13 +5769,17 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
 
     if (0 < (time = StopPerfClock(&clock, GetPerfLog())))
     {
-        if (0 == status)
+        // Ignore the init* objects and focus on remediate* ones
+        if (0 != strncmp(objectName, init, strlen(init)))
         {
-            OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld microseconds", componentName, objectName, time);
-        }
-        else
-        {
-            OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, time, status);
+            if (0 == status)
+            {
+                OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld microseconds", componentName, objectName, time);
+            }
+            else
+            {
+                OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, time, status);
+            }
         }
     }
 
