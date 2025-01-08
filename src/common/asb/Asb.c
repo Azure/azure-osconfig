@@ -868,7 +868,7 @@ void AsbInitialize(void* log)
     char* prettyName = NULL;
     char* kernelVersion = NULL;
 
-    OsConfigLogInfo(GetPerfLog(), "*** Start performance log *****************************************************");
+    RenameFileWithOwnerAndAccess(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, GetPerfLog());
 
     StartPerfClock(&g_startClock, GetPerfLog());
 
@@ -1021,7 +1021,8 @@ void AsbShutdown(void* log)
         OsConfigLogInfo(GetPerfLog(), "Total time spent for this ASB instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
     }
 
-    OsConfigLogInfo(GetPerfLog(), "*** Stop performance log ******************************************************");
+    SetFileAccess(PERF_LOG_FILE, 0, 0, 6774, NULL);
+    SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 6774, NULL);
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(void* log)
