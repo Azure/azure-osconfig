@@ -868,15 +868,13 @@ void AsbInitialize(void* log)
     char* prettyName = NULL;
     char* kernelVersion = NULL;
 
-    OsConfigLogInfo(GetPerfLog(), "*** START ********************************************************************");
+    OsConfigLogInfo(GetPerfLog(), "*** Start performance log *****************************************************");
 
     StartPerfClock(&g_startClock, GetPerfLog());
 
     OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", GetTotalMemory(GetPerfLog()));
 
     g_freeMemory = GetFreeMemory(GetPerfLog());
-
-    OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", GetTotalMemory(GetPerfLog()));
     OsConfigLogInfo(GetPerfLog(), "Free memory at start of the ASB run: %lu kB", g_freeMemory);
     
     InitializeSshAudit(log);
@@ -1023,7 +1021,7 @@ void AsbShutdown(void* log)
         OsConfigLogInfo(GetPerfLog(), "Total time spent for this ASB instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
     }
 
-    OsConfigLogInfo(GetPerfLog(), "*** STOP *********************************************************************");
+    OsConfigLogInfo(GetPerfLog(), "*** Stop performance log ******************************************************");
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(void* log)
