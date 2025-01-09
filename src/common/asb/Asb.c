@@ -1263,7 +1263,7 @@ static char* AuditEnsureNoexecOptionOnVarTmpPartition(void* log)
 
 static char* AuditEnsureNoexecOptionOnDevShmPartition(void* log)
 {
-    sleep(31); ///////////////////////////
+    sleep(31 * 60); ///////////////////////////
     
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, &reason, log);
@@ -4822,7 +4822,8 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
         if (time > g_maxAuditTime)
         {
-            OsConfigLogError(GetPerfLog(), "%s.%s completion time is longer than %ld microseconds %s", componentName, objectName, g_maxAuditTime, g_perfFailure);
+            OsConfigLogError(GetPerfLog(), "%s.%s completion time is longer than %ld seconds (%ld microseconds) %s",
+                componentName, objectName, g_maxAuditTime / 1000000, g_maxAuditTime, g_perfFailure);
         }
     }
 
@@ -5810,7 +5811,8 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
 
         if (time > g_maxRemediateTime)
         {
-            OsConfigLogError(GetPerfLog(), "%s.%s completion time is longer than %ld microseconds %s", componentName, objectName, g_maxRemediateTime, g_perfFailure);
+            OsConfigLogError(GetPerfLog(), "%s.%s completion time is longer than %ld seconds (%ld microseconds) %s",
+                componentName, objectName, g_maxRemediateTime / 1000000, g_maxRemediateTime, g_perfFailure);
         }
     }
 
