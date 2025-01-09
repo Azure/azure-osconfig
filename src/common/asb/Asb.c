@@ -636,6 +636,17 @@ static struct timespec g_startClock = {0};
 static long g_totalMemory = 0;
 static long g_freeMemory = 0;
 
+// 5 seconds
+static const long g_maxAuditTime = 5000000;
+
+// 10 seconds
+static const long g_maxRemediateTime = 10000000;
+
+//30 minutes
+static const long g_maxTotalTime = 1800000000;
+
+static const char* g_perfFailure = "*** Performance Failure ***";
+
 static OSCONFIG_LOG_HANDLE g_perfLog = NULL;
 
 OSCONFIG_LOG_HANDLE GetPerfLog(void)
@@ -1024,6 +1035,12 @@ void AsbShutdown(void* log)
     if (0 < (endTime = StopPerfClock(&g_startClock, GetPerfLog())))
     {
         OsConfigLogInfo(GetPerfLog(), "Total time spent for this run instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
+
+        if (endTime > g_maxTotalTime)
+        {
+            OsConfigLogError(GetPerfLog(), "Total time spent for this run instance is longer than %ld minutes (%ld microseconds) %s",
+                g_maxTotalTime / 60000000, g_maxTotalTime, g_perfFailure);
+        }
     }
 
     CloseLog(&g_perfLog);
@@ -4800,6 +4817,11 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         {
             OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, time, status);
         }
+
+        if (time > g_maxAuditTime)
+        {
+            OsConfigLogError(GetPerfLog(), "%s.%s completion time is longer than %ld microseconds %s", componentName, objectName, g_maxAuditTime, g_perfFailure);
+        }
     }
 
     return status;
@@ -5782,6 +5804,11 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         else
         {
             OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, time, status);
+        }
+
+        if (time > g_maxRemediateTime)
+        {
+            OsConfigLogError(GetPerfLog(), "%s.%s completion time is longer than %ld microseconds %s", componentName, objectName, g_maxRemediateTime, g_perfFailure);
         }
     }
 
