@@ -63,13 +63,15 @@ jobs:
               { "os": "ubuntu", "version": "20.04" },
               { "os": "ubuntu", "version": "22.04" }
             ]
-          # { "os": "amazonlinux", "version": "2" },
+          # { "os": "amazonlinux", "version": "2" }, [TODO: Onboard]
+          # { "os": "azurelinux", "version": "3" }, [TODO: Onboard]
           # { "os": "centos", "version": "7" }, [EOL June 30, 2024]
           # { "os": "debian", "version": "10" }, [EOL June 30, 2024]
+          # { "os": "mariner", "version": "1" }, [EOL July 31, 2023]
           # { "os": "oraclelinux", "version": "7" }, [EOL December 31, 2024]
           # { "os": "rhel", "version": "7" }, [EOL June 30, 2024]
           # { "os": "sles", "version": "12" }, [EOL October 31, 2024]
-          # { "os": "ubuntu", "version": "16.04" }, [EOL April 21, 2021]
+          # { "os": "ubuntu", "version": "16.04" }, [TODO: Onboard EOL April 21, 2021]
           # { "os": "ubuntu", "version": "18.04" }, [EOL May 31, 2023]
         run: |
           # If no explicit packages defined, use the default packages
