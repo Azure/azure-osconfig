@@ -1263,6 +1263,8 @@ static char* AuditEnsureNoexecOptionOnVarTmpPartition(void* log)
 
 static char* AuditEnsureNoexecOptionOnDevShmPartition(void* log)
 {
+    sleep(31); ///////////////////////////
+    
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, &reason, log);
     return reason;
