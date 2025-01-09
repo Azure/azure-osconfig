@@ -868,7 +868,6 @@ void AsbInitialize(void* log)
 {
     char* prettyName = NULL;
     char* kernelVersion = NULL;
-    int percentFreeMemory = 0;
 
     RenameFile(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, GetPerfLog());
     
@@ -881,7 +880,7 @@ void AsbInitialize(void* log)
     OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", g_totalMemory);
 
     g_freeMemory = GetFreeMemory(GetPerfLog());
-    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the ASB run: %%d (%lu kB)", (g_freeMemory * 100) / g_totalMemory, g_freeMemory);
+    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the ASB run: %%%lu (%lu kB)", (g_freeMemory * 100) / g_totalMemory, g_freeMemory);
     
     InitializeSshAudit(log);
 
@@ -1007,7 +1006,7 @@ void AsbShutdown(void* log)
     SshAuditCleanup(log);
 
     endFreeMemory = GetFreeMemory(GetPerfLog());
-    OsConfigLogInfo(GetPerfLog(), "Free memory at the end of the run: %%d (%lu kB)", (endFreeMemory * 100) / g_totalMemory, endFreeMemory);
+    OsConfigLogInfo(GetPerfLog(), "Free memory at the end of the run: %%%lu (%lu kB)", (endFreeMemory * 100) / g_totalMemory, endFreeMemory);
 
     if (endFreeMemory < g_freeMemory)
     {
