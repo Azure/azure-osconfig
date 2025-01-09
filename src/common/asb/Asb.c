@@ -633,6 +633,7 @@ static const int g_shadowGid = 42;
 static const int g_varLogJournalMode = 2755;
 
 static struct timespec g_startClock = {0};
+static long g_totalMemory = 0;
 static long g_freeMemory = 0;
 
 static OSCONFIG_LOG_HANDLE g_perfLog = NULL;
@@ -867,6 +868,7 @@ void AsbInitialize(void* log)
 {
     char* prettyName = NULL;
     char* kernelVersion = NULL;
+    int percentFreeMemory = 0;
 
     RenameFile(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, GetPerfLog());
     
@@ -875,10 +877,11 @@ void AsbInitialize(void* log)
 
     StartPerfClock(&g_startClock, GetPerfLog());
 
-    OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", GetTotalMemory(GetPerfLog()));
+    g_totalMemory = GetTotalMemory(GetPerfLog());
+    OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", g_totalMemory);
 
     g_freeMemory = GetFreeMemory(GetPerfLog());
-    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the ASB run: %lu kB", g_freeMemory);
+    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the ASB run: %%d (%lu kB)", (g_freeMemory * 100) / g_totalMemory, g_freeMemory);
     
     InitializeSshAudit(log);
 
@@ -1004,7 +1007,7 @@ void AsbShutdown(void* log)
     SshAuditCleanup(log);
 
     endFreeMemory = GetFreeMemory(GetPerfLog());
-    OsConfigLogInfo(GetPerfLog(), "Free memory at the end of the ASB run: %lu kB", endFreeMemory);
+    OsConfigLogInfo(GetPerfLog(), "Free memory at the end of the run: %%d (%lu kB)", (endFreeMemory * 100) / g_totalMemory, endFreeMemory);
 
     if (endFreeMemory < g_freeMemory)
     {
@@ -1021,7 +1024,7 @@ void AsbShutdown(void* log)
 
     if (0 < (endTime = StopPerfClock(&g_startClock, GetPerfLog())))
     {
-        OsConfigLogInfo(GetPerfLog(), "Total time spent for this ASB instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
+        OsConfigLogInfo(GetPerfLog(), "Total time spent for this run instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
     }
 
     CloseLog(&g_perfLog);
