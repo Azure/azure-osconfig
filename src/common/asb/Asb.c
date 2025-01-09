@@ -5769,21 +5769,17 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
 
     if (0 < (time = StopPerfClock(&clock, GetPerfLog())))
     {
-        
-        if 
+        if (0 == status)
         {
-            if (0 == status)
+            // Ignore the successful init* objects and focus on remediate* ones
+            if (0 != strncmp(objectName, init, strlen(init)))
             {
-                // Ignore the successful init* objects and focus on remediate* ones
-                if (0 != strncmp(objectName, init, strlen(init)))
-                {
-                    OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld microseconds", componentName, objectName, time);
-                }
+                OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld microseconds", componentName, objectName, time);
             }
-            else
-            {
-                OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, time, status);
-            }
+        }
+        else
+        {
+            OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, time, status);
         }
     }
 
