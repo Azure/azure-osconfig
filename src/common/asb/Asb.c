@@ -636,9 +636,6 @@ static struct timespec g_startClock = {0};
 static long g_totalMemory = 0;
 static long g_freeMemory = 0;
 
-// Start with 10% minimum free memory
-static unsigned short g_minFreeMemoryPercentage = 10;
-
 // Maximum rule audit time: 5 seconds
 static const long g_maxAuditTime = 5000000;
 
@@ -647,6 +644,9 @@ static const long g_maxRemediateTime = 10000000;
 
 // Maximum baseline run time: 30 minutes
 static const long g_maxTotalTime = 1800000000;
+
+// Start with 10% minimum free memory
+static unsigned short g_minFreeMemoryPercentage = 30; //10;
 
 static const char* g_perfFailure = "*** Performance Failure ***";
 
