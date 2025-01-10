@@ -28,7 +28,7 @@ set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME OsConfigResourc
 # Add a custom command to check the size of the binary
 add_custom_target(stage_check_asb_binary_size
     COMMAND ${CMAKE_COMMAND} -E echo "Checking size of libOsConfigResource.so"
-    COMMAND ${CMAKE_COMMAND} -E (sh -c "FILE=libOsConfigResource.so; MAX_SIZE=${MAX_SIZE}; SIZE=\$(stat -c%s \"\$FILE\"); if [ \"\$SIZE\" -gt \"\$MAX_SIZE\" ]; then echo \"Error: \$FILE exceeds \$MAX_SIZE bytes\"; exit 1; fi"))
+    COMMAND ${CMAKE_COMMAND} -E sh -c "FILE=libOsConfigResource.so; MAX_SIZE=${MAX_SIZE}; SIZE=\$(stat -c%s \"\$FILE\"); if [ \"\$SIZE\" -gt \"\$MAX_SIZE\" ]; then echo \"Error: \$FILE exceeds \$MAX_SIZE bytes\"; exit 1; fi")
 
 # Create the policy artifacts ZIP package for the Azure Security Baseline for Linux
 add_custom_target(stage_create_asb_zip
