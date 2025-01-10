@@ -891,6 +891,11 @@ void AsbInitialize(void* log)
 
     StartPerfClock(&g_startClock, GetPerfLog());
 
+    OsConfigLogInfo(GetPerfLog(), "Maximum audit time: %lu microseconds", g_maxAuditTime);
+    OsConfigLogInfo(GetPerfLog(), "Maximum remediate time: %lu microseconds", g_maxRemediateTime);
+    OsConfigLogInfo(GetPerfLog(), "Maximum baseline run time: %lu minutes (%lu microseconds)", g_maxTotalTime / 60000000, g_maxTotalTime);
+    OsConfigLogInfo(GetPerfLog(), "Minimum free memory percentage at start: %u%%", g_minFreeMemoryPercentage);
+    
     g_totalMemory = GetTotalMemory(GetPerfLog());
     OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", g_totalMemory);
 
