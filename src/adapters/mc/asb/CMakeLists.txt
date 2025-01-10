@@ -18,8 +18,17 @@ target_link_libraries(OsConfigResourceAsb
         parsonlib
         asb)
 
+# Set the maximum allowed size in bytes (300 kB = 307200 bytes)
+set(MAX_SIZE 307200)
+
 # SO binary name must match the universal class name in MOF with a "lib" prefix added
 set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME libOsConfigResource)
+
+# Add a custom command to check the size of the binary
+add_custom_command(TARGET OsConfigResourceAsb POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "Checking size of libOsConfigResourceAsb.so"
+    COMMAND ${CMAKE_COMMAND} -E size OsConfigResourceAsb.so
+    COMMAND ${CMAKE_COMMAND} -E sh -c "if [ $(stat -c%s libOsConfigResource.so) -gt ${MAX_SIZE} ]; then echo 'Error: libOsConfigResourceAsb.so exceeds ${MAX_SIZE} bytes'; exit 1; fi")
 
 # Create the policy artifacts ZIP package for the Azure Security Baseline for Linux
 
