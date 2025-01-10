@@ -636,6 +636,9 @@ static struct timespec g_startClock = {0};
 static long g_totalMemory = 0;
 static long g_freeMemory = 0;
 
+// Start with 10% minimum free memory
+static int g_minFreeMemoryPercentage = 10;
+
 // 5 seconds
 static const long g_maxAuditTime = 5000000;
 
@@ -879,6 +882,7 @@ void AsbInitialize(void* log)
 {
     char* prettyName = NULL;
     char* kernelVersion = NULL;
+    int freeMemoryPercentage = 0;
 
     RenameFile(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, GetPerfLog());
     
@@ -891,7 +895,14 @@ void AsbInitialize(void* log)
     OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", g_totalMemory);
 
     g_freeMemory = GetFreeMemory(GetPerfLog());
-    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the ASB run: %lu%% (%lu kB)", (g_freeMemory * 100) / g_totalMemory, g_freeMemory);
+    freeMemoryPercentage = (g_freeMemory * 100) / g_totalMemory;
+    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the run instance: %lu%% (%lu kB)", freeMemoryPercentage, g_freeMemory);
+
+    if (freeMemoryPercentage < g_minFreeMemoryPercentage)
+    {
+        OsConfigLogInfo(GetPerfLog(), "Minimum free memory set at %lu%%", freeMemoryPercentage);
+        g_minFreeMemoryPercentage = freeMemoryPercentage;
+    }
     
     InitializeSshAudit(log);
 
@@ -976,6 +987,9 @@ void AsbShutdown(void* log)
 {
     long endTime = 0; 
     long endFreeMemory = 0;
+    int endFreeMemory = 0;
+    int endFreeMemoryPercentage = 0;
+    int startFreeMemoryPercentage = (g_freeMemory * 100) / g_totalMemory;
     
     OsConfigLogInfo(log, "%s shutting down", g_asbName);
 
@@ -1017,11 +1031,18 @@ void AsbShutdown(void* log)
     SshAuditCleanup(log);
 
     endFreeMemory = GetFreeMemory(GetPerfLog());
-    OsConfigLogInfo(GetPerfLog(), "Free memory at the end of the run: %lu%% (%lu kB)", (endFreeMemory * 100) / g_totalMemory, endFreeMemory);
+    endFreeMemoryPercentage = (endFreeMemory * 100) / g_totalMemory;
+
+    OsConfigLogInfo(GetPerfLog(), "Free memory at the end of the run: %lu%% (%lu kB)", endFreeMemoryPercentage, endFreeMemory);
 
     if (endFreeMemory < g_freeMemory)
     {
-        OsConfigLogError(GetPerfLog(), "Free memory decreased with %ld kB from start to end, check for possible leaks", g_freeMemory - endFreeMemory);
+        OsConfigLogInfo(GetPerfLog(), "Free memory decreased with %ld kB from start to end", g_freeMemory - endFreeMemory);
+
+        if (endFreeMemoryPercentage > g_minFreeMemoryPercentage)
+        {
+            OsConfigLogError(GetPerfLog(), "Free memory decreased at %lu%% which is under minimum %lu%% %s", endFreeMemoryPercentage, g_minFreeMemoryPercentage, g_perfFailure);
+        }
     }
     else if (endFreeMemory > g_freeMemory)
     {
