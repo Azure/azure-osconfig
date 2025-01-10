@@ -19,7 +19,8 @@ target_link_libraries(OsConfigResourceAsb
         asb)
 
 # Set the maximum allowed size in bytes (300 kB is 307200 bytes)
-set(MAX_SIZE 307200)
+#set(MAX_SIZE 307200)
+set(MAX_SIZE 100000)
 
 # SO binary name must match the universal class name in MOF with a "lib" prefix added
 set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME OsConfigResource)
