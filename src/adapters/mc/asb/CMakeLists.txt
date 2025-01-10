@@ -28,14 +28,8 @@ set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME OsConfigResourc
 # Add a custom command to check the size of the binary
 add_custom_command(TARGET OsConfigResourceAsb POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo "Checking size of libOsConfigResource.so"
-    COMMAND ${CMAKE_COMMAND} -E sh -c "FILE=libOsConfigResource.so; MAX_SIZE=${MAX_SIZE}; SIZE=\$(stat -c%s \"\$FILE\"); if [ \"\$SIZE\" -gt \"\$MAX_SIZE\" ]; then echo \"Error: \$FILE exceeds \$MAX_SIZE bytes\"; exit 1; fi")
-
-# command for generating stub and xml serializer code
-ADD_CUSTOM_COMMAND(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${WSDL2H_OUT}
-    COMMAND ${WSDL2H_EXEC} -c -ttypemap.dat -o ${WSDL2H_OUT} ${WSDL2H_IN}
-    COMMENT "=================== Generating ${WSDL2H_OUT} gSOAP Header file ..."
-)
+    #COMMAND ${CMAKE_COMMAND} -E sh -c "FILE=libOsConfigResource.so; MAX_SIZE=${MAX_SIZE}; SIZE=\$(stat -c%s \"\$FILE\"); if [ \"\$SIZE\" -gt \"\$MAX_SIZE\" ]; then echo \"Error: \$FILE exceeds \$MAX_SIZE bytes\"; exit 1; fi")
+    COMMAND ${CMAKE_COMMAND} -E sh -c "FILE=libOsConfigResource.so"
 
 # Create the policy artifacts ZIP package for the Azure Security Baseline for Linux
 add_custom_target(stage_create_asb_zip
