@@ -1042,7 +1042,7 @@ void AsbShutdown(void* log)
     {
         OsConfigLogInfo(GetPerfLog(), "Free memory decreased with %ld kB from start to end", g_freeMemory - endFreeMemory);
 
-        if (endFreeMemoryPercentage > g_minFreeMemoryPercentage)
+        if (endFreeMemoryPercentage < g_minFreeMemoryPercentage)
         {
             OsConfigLogError(GetPerfLog(), "Free memory decreased at %u%% which is under minimum %u%% %s", endFreeMemoryPercentage, g_minFreeMemoryPercentage, g_perfFailure);
         }
