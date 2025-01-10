@@ -18,7 +18,7 @@ target_link_libraries(OsConfigResourceAsb
         parsonlib
         asb)
 
-# Set the maximum allowed size in bytes (300 kB = 307200 bytes)
+ Set the maximum allowed size in bytes (300 kB = 307200 bytes)
 set(MAX_SIZE 307200)
 
 # SO binary name must match the universal class name in MOF with a "lib" prefix added
