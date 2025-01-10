@@ -22,16 +22,15 @@ target_link_libraries(OsConfigResourceAsb
 set(MAX_SIZE 307200)
 
 # SO binary name must match the universal class name in MOF with a "lib" prefix added
-set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME libOsConfigResource)
+set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME OsConfigResource)
 
 # Add a custom command to check the size of the binary
 add_custom_command(TARGET OsConfigResourceAsb POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "Checking size of libOsConfigResourceAsb.so"
-    COMMAND ${CMAKE_COMMAND} -E size OsConfigResourceAsb.so
-    COMMAND ${CMAKE_COMMAND} -E sh -c "if [ $(stat -c%s libOsConfigResource.so) -gt ${MAX_SIZE} ]; then echo 'Error: libOsConfigResourceAsb.so exceeds ${MAX_SIZE} bytes'; exit 1; fi")
+    COMMAND ${CMAKE_COMMAND} -E echo "Checking size of libOsConfigResource.so"
+    COMMAND ${CMAKE_COMMAND} -E size libOsConfigResource.so
+    COMMAND ${CMAKE_COMMAND} -E sh -c "if [ $(stat -c%s libOsConfigResource.so) -gt ${MAX_SIZE} ]; then echo 'Error: libOsConfigResource.so exceeds ${MAX_SIZE} bytes'; exit 1; fi")
 
 # Create the policy artifacts ZIP package for the Azure Security Baseline for Linux
-
 add_custom_target(stage_create_asb_zip
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/AzureLinuxBaseline.metaconfig.json" ${PROJECT_BINARY_DIR}/Staging/
