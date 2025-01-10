@@ -637,15 +637,15 @@ static long g_totalMemory = 0;
 static long g_freeMemory = 0;
 
 // Start with 10% minimum free memory
-static int g_minFreeMemoryPercentage = 10;
+static unsigned short g_minFreeMemoryPercentage = 10;
 
-// 5 seconds
+// Maximum rule audit time: 5 seconds
 static const long g_maxAuditTime = 5000000;
 
-// 10 seconds
+// Maximum rule remediation time: 10 seconds
 static const long g_maxRemediateTime = 10000000;
 
-//30 minutes
+// Maximum baseline run time: 30 minutes
 static const long g_maxTotalTime = 1800000000;
 
 static const char* g_perfFailure = "*** Performance Failure ***";
@@ -882,7 +882,7 @@ void AsbInitialize(void* log)
 {
     char* prettyName = NULL;
     char* kernelVersion = NULL;
-    int freeMemoryPercentage = 0;
+    unsigned short freeMemoryPercentage = 0;
 
     RenameFile(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, GetPerfLog());
     
@@ -896,11 +896,11 @@ void AsbInitialize(void* log)
 
     g_freeMemory = GetFreeMemory(GetPerfLog());
     freeMemoryPercentage = (g_freeMemory * 100) / g_totalMemory;
-    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the run instance: %lu%% (%lu kB)", freeMemoryPercentage, g_freeMemory);
+    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the run instance: %u%% (%lu kB)", freeMemoryPercentage, g_freeMemory);
 
     if (freeMemoryPercentage < g_minFreeMemoryPercentage)
     {
-        OsConfigLogInfo(GetPerfLog(), "Minimum free memory set at %lu%%", freeMemoryPercentage);
+        OsConfigLogInfo(GetPerfLog(), "Minimum free memory set at %u%%", freeMemoryPercentage);
         g_minFreeMemoryPercentage = freeMemoryPercentage;
     }
     
@@ -987,9 +987,7 @@ void AsbShutdown(void* log)
 {
     long endTime = 0; 
     long endFreeMemory = 0;
-    int endFreeMemory = 0;
-    int endFreeMemoryPercentage = 0;
-    int startFreeMemoryPercentage = (g_freeMemory * 100) / g_totalMemory;
+    unsigned short endFreeMemoryPercentage = 0;
     
     OsConfigLogInfo(log, "%s shutting down", g_asbName);
 
@@ -1033,7 +1031,7 @@ void AsbShutdown(void* log)
     endFreeMemory = GetFreeMemory(GetPerfLog());
     endFreeMemoryPercentage = (endFreeMemory * 100) / g_totalMemory;
 
-    OsConfigLogInfo(GetPerfLog(), "Free memory at the end of the run: %lu%% (%lu kB)", endFreeMemoryPercentage, endFreeMemory);
+    OsConfigLogInfo(GetPerfLog(), "Free memory at the end of the run: %u%% (%lu kB)", endFreeMemoryPercentage, endFreeMemory);
 
     if (endFreeMemory < g_freeMemory)
     {
@@ -1041,7 +1039,7 @@ void AsbShutdown(void* log)
 
         if (endFreeMemoryPercentage > g_minFreeMemoryPercentage)
         {
-            OsConfigLogError(GetPerfLog(), "Free memory decreased at %lu%% which is under minimum %lu%% %s", endFreeMemoryPercentage, g_minFreeMemoryPercentage, g_perfFailure);
+            OsConfigLogError(GetPerfLog(), "Free memory decreased at %u%% which is under minimum %u%% %s", endFreeMemoryPercentage, g_minFreeMemoryPercentage, g_perfFailure);
         }
     }
     else if (endFreeMemory > g_freeMemory)
