@@ -898,17 +898,18 @@ void AsbInitialize(void* log)
     }
 
     OsConfigLogInfo(GetPerfLog(), "Number of CPU cores: %u", GetNumberOfCpuCores(GetPerfLog()));
+
+    g_totalMemory = GetTotalMemory(GetPerfLog());
+    OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", g_totalMemory);
+    
+    g_freeMemory = GetFreeMemory(GetPerfLog());
+    freeMemoryPercentage = (g_freeMemory * 100) / g_totalMemory;
+    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the run instance: %u%% (%lu kB)", freeMemoryPercentage, g_freeMemory);
+
     OsConfigLogInfo(GetPerfLog(), "Maximum audit time: %lu microseconds", g_maxAuditTime);
     OsConfigLogInfo(GetPerfLog(), "Maximum remediate time: %lu microseconds", g_maxRemediateTime);
     OsConfigLogInfo(GetPerfLog(), "Maximum baseline run time: %lu minutes (%lu microseconds)", g_maxTotalTime / 60000000, g_maxTotalTime);
     OsConfigLogInfo(GetPerfLog(), "Minimum free memory percentage at start: %u%%", g_minFreeMemoryPercentage);
-    
-    g_totalMemory = GetTotalMemory(GetPerfLog());
-    OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", g_totalMemory);
-
-    g_freeMemory = GetFreeMemory(GetPerfLog());
-    freeMemoryPercentage = (g_freeMemory * 100) / g_totalMemory;
-    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the run instance: %u%% (%lu kB)", freeMemoryPercentage, g_freeMemory);
 
     if (freeMemoryPercentage < g_minFreeMemoryPercentage)
     {
