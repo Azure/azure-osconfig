@@ -894,7 +894,7 @@ void AsbInitialize(void* log)
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
-        OsConfigLogInfo(GetPerfLog(), "CPU model: '%s'", cpuModel);
+        OsConfigLogInfo(GetPerfLog(), "CPU model: %s", cpuModel);
     }
 
     OsConfigLogInfo(GetPerfLog(), "Number of CPU cores: %u", GetNumberOfCpuCores(GetPerfLog()));
