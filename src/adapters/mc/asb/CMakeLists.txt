@@ -21,8 +21,8 @@ target_link_libraries(OsConfigResourceAsb
 # SO binary name must match the universal class name in MOF with a "lib" prefix added
 set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME OsConfigResource)
 
-# Define 300 kB limit for the SO binary
-set(MAX_FILE_SIZE 3072000)
+# The binary size limit for the SO binary, in bytes
+set(MAX_FILE_SIZE 266,240)
 file(WRITE "${PROJECT_BINARY_DIR}/check_filesize.cmake"
     "file(READ filesize.txt actual_file_size)\n"
     "if(actual_file_size GREATER ${MAX_FILE_SIZE})\n"
