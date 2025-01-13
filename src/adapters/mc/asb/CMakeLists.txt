@@ -21,15 +21,13 @@ target_link_libraries(OsConfigResourceAsb
 # SO binary name must match the universal class name in MOF with a "lib" prefix added
 set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME OsConfigResource)
 
-# Define 300KB limit for the binary
-# set(MAX_FILE_SIZE 3072000)
-set(MAX_FILE_SIZE 100)
+# Define 300 kB limit for the SO binary
+set(MAX_FILE_SIZE 3072000)
 file(WRITE "${PROJECT_BINARY_DIR}/check_filesize.cmake"
     "file(READ filesize.txt actual_file_size)\n"
     "if(actual_file_size GREATER ${MAX_FILE_SIZE})\n"
         "message(FATAL_ERROR \"SO binary size exceeds the maximum allowed size of ${MAX_FILE_SIZE} bytes\")\n"
-    "endif()\n"
-)
+    "endif()\n")
 
 # Create the policy artifacts ZIP package for the Azure Security Baseline for Linux
 add_custom_target(stage_create_asb_zip
