@@ -326,7 +326,7 @@ unsigned int GetNumberOfCpuCores(void* log)
 
     FREE_MEMORY(textResult);
 
-    return textResult;
+    return numberOfCores;
 }
 
 char* GetCpuFlags(void* log)
