@@ -308,6 +308,27 @@ char* GetCpuModel(void* log)
     return textResult;
 }
 
+unsigned int GetNumberOfCpuCores(void* log)
+{
+    const char* osCpuCoresCommand = "lscpu | grep \"CPU(s):\"";
+    unsigned int numberOfCores = 1;
+    char* textResult = NULL;
+
+    if (NULL != (textResult = GetHardwareProperty(osCpuCoresCommand, false, log)))
+    {
+        numberOfCores = atoi(textResult);
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Number of CPU cores: %u ('%s')", numberOfCores, textResult);
+    }
+
+    FREE_MEMORY(textResult);
+
+    return textResult;
+}
+
 char* GetCpuFlags(void* log)
 {
     const char* osCpuFlagsCommand = "lscpu | grep \"Flags:\"";

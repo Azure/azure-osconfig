@@ -150,6 +150,7 @@ char* GetOsKernelVersion(void* log);
 char* GetCpuType(void* log);
 char* GetCpuVendor(void* log);
 char* GetCpuModel(void* log);
+unsigned int GetNumberOfCpuCores(void* log);
 char* GetCpuFlags(void* log);
 bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, void* log);
 long GetTotalMemory(void* log);

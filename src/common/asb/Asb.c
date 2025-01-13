@@ -882,6 +882,7 @@ void AsbInitialize(void* log)
 {
     char* prettyName = NULL;
     char* kernelVersion = NULL;
+    char* cpuModel = NULL;
     unsigned short freeMemoryPercentage = 0;
 
     RenameFile(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, GetPerfLog());
@@ -891,6 +892,12 @@ void AsbInitialize(void* log)
 
     StartPerfClock(&g_startClock, GetPerfLog());
 
+    if (NULL != cpuModel = GetCpuModel(GetPerfLog()))
+    {
+        OsConfigLogInfo(GetPerfLog(), "CPU model: '%s'", cpuModel);
+    }
+
+    OsConfigLogInfo(GetPerfLog(), "Number of CPU cores: %u", GetNumberOfCpuCores(GetPerfLog()));
     OsConfigLogInfo(GetPerfLog(), "Maximum audit time: %lu microseconds", g_maxAuditTime);
     OsConfigLogInfo(GetPerfLog(), "Maximum remediate time: %lu microseconds", g_maxRemediateTime);
     OsConfigLogInfo(GetPerfLog(), "Maximum baseline run time: %lu minutes (%lu microseconds)", g_maxTotalTime / 60000000, g_maxTotalTime);
@@ -905,7 +912,7 @@ void AsbInitialize(void* log)
 
     if (freeMemoryPercentage < g_minFreeMemoryPercentage)
     {
-        OsConfigLogInfo(GetPerfLog(), "Minimum free memory set at %u%%", freeMemoryPercentage);
+        OsConfigLogInfo(GetPerfLog(), "Minimum free memory adjusted to: %u%%", freeMemoryPercentage);
         g_minFreeMemoryPercentage = freeMemoryPercentage;
     }
     
@@ -970,9 +977,6 @@ void AsbInitialize(void* log)
     
     OsConfigLogInfo(GetPerfLog(), "Running on '%s'", prettyName ? prettyName : "-");
 
-    FREE_MEMORY(prettyName);
-    FREE_MEMORY(kernelVersion);
-
     if (IsCommodore(log))
     {
         OsConfigLogInfo(log, "AsbInitialize: running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
@@ -984,6 +988,10 @@ void AsbInitialize(void* log)
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
         OsConfigLogInfo(GetPerfLog(), "SELinux present");
     }
+
+    FREE_MEMORY(prettyName);
+    FREE_MEMORY(kernelVersion);
+    FREE_MEMORY(cpuModel);
 
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
