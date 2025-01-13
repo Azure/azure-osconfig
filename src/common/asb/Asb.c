@@ -912,7 +912,7 @@ void AsbInitialize(void* log)
 
     if (freeMemoryPercentage < g_minFreeMemoryPercentage)
     {
-        OsConfigLogInfo(GetPerfLog(), "Minimum free memory adjusted to: %u%%", freeMemoryPercentage);
+        OsConfigLogInfo(GetPerfLog(), "Minimum free memory adjusted to %u%%", freeMemoryPercentage);
         g_minFreeMemoryPercentage = freeMemoryPercentage;
     }
     
