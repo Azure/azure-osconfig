@@ -15,7 +15,6 @@ jobs:
       matrix:
         target:
           [
-            { os: centos, version: 8, package-type: RPM },
             { os: debian, version: 11, package-type: DEB },
             { os: debian, version: 12, package-type: DEB },
             { os: mariner, version: 2, package-type: RPM },
