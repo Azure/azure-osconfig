@@ -25,7 +25,7 @@ set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME OsConfigResourc
 set(MAX_FILE_SIZE 762,880)
 file(WRITE "${PROJECT_BINARY_DIR}/check_filesize.cmake"
     "file(READ filesize.txt actual_file_size)\n"
-    "message(\"SO binary size is actual_file_size bytes\")\n"
+    "message(\"SO binary size is $actual_file_size bytes\")\n"
     "if(actual_file_size GREATER ${MAX_FILE_SIZE})\n"
         "message(FATAL_ERROR \"SO binary size exceeds the maximum allowed size of ${MAX_FILE_SIZE} bytes\")\n"
     "endif()\n")
