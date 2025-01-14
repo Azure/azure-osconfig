@@ -5838,6 +5838,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             if (0 != strncmp(objectName, init, strlen(init)))
             {
                 OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld microseconds", componentName, objectName, time);
+                CheckFreeMemory();
             }
         }
         else
@@ -5851,8 +5852,6 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
                 componentName, objectName, g_maxRemediateTime / 1000000, g_maxRemediateTime, g_perfFailure);
         }
     }
-
-    CheckFreeMemory();
 
     return status;
 }
