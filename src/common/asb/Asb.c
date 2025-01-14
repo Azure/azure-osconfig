@@ -913,8 +913,8 @@ void AsbInitialize(void* log)
 
     if (freeMemoryPercentage < g_minFreeMemoryPercentage)
     {
-        OsConfigLogInfo(GetPerfLog(), "Minimum free memory adjusted to %u%%", freeMemoryPercentage);
-        g_minFreeMemoryPercentage = freeMemoryPercentage;
+        g_minFreeMemoryPercentage = (freeMemoryPercentage > 1) ? (freeMemoryPercentage - 1) : 1;
+        OsConfigLogInfo(GetPerfLog(), "Minimum free memory adjusted to %u%%", g_minFreeMemoryPercentage);
     }
     
     InitializeSshAudit(log);
