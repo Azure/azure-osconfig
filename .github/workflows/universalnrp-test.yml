@@ -51,7 +51,6 @@ jobs:
           TARGETS: |
             [
               { "os": "almalinux", "version": "9" },
-              { "os": "centos", "version": "8" },
               { "os": "debian", "version": "11" },
               { "os": "debian", "version": "12" },
               { "os": "mariner", "version": "2" },

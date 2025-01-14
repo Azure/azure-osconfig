@@ -15,7 +15,6 @@ jobs:
       matrix:
         target:
           [
-            { os: centos, version: 8, package-type: RPM },
             { os: debian, version: 11, package-type: DEB },
             { os: debian, version: 12, package-type: DEB },
             { os: mariner, version: 2, package-type: RPM },
@@ -27,6 +26,8 @@ jobs:
             { os: ubuntu, version: 20.04, package-type: DEB },
             { os: ubuntu, version: 22.04, package-type: DEB },
           ]
+          # { os: amazonlinux, version: 2, package-type: RPM }, [TODO: Onboard]
+          # { os: azurelinux, version: 3, package-type: RPM }, [TODO: Onboard]
         arch: [amd64]
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
