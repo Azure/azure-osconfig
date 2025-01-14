@@ -1019,18 +1019,7 @@ static void CheckFreeMemory(void)
     }
     else
     {
-        OsConfigLogInfo(GetPerfLog(), "Free memory remained the same as at start: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
-    }
-
-    if (0 < (time = StopPerfClock(&g_startClock, GetPerfLog())))
-    {
-        OsConfigLogInfo(GetPerfLog(), "Total time spent for this run instance: %ld seconds (%ld microseconds)", time / 1000000, time);
-
-        if (time > g_maxTotalTime)
-        {
-            OsConfigLogError(GetPerfLog(), "Total time spent for this run instance is longer than %ld minutes (%ld microseconds) %s",
-                g_maxTotalTime / 60000000, g_maxTotalTime, g_perfFailure);
-        }
+        OsConfigLogInfo(GetPerfLog(), "Free memory remains the same as at start: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
     }
 }
 
