@@ -997,11 +997,46 @@ void AsbInitialize(void* log)
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
 
+static void CheckFreeMemory(void)
+{
+    long freeMemory = GetFreeMemory(GetPerfLog());
+    unsigned short freeMemoryPercentage = (freeMemory * 100) / g_totalMemory;
+
+    OsConfigLogInfo(GetPerfLog(), "Free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
+
+    if (freeMemory < g_freeMemory)
+    {
+        OsConfigLogInfo(GetPerfLog(), "Free memory decreased with %ld kB from start", g_freeMemory - freeMemory);
+
+        if (freeMemoryPercentage < g_minFreeMemoryPercentage)
+        {
+            OsConfigLogError(GetPerfLog(), "Free memory decreased at %u%% which is under minimum %u%% %s", freeMemoryPercentage, g_minFreeMemoryPercentage, g_perfFailure);
+        }
+    }
+    else if (freeMemory > g_freeMemory)
+    {
+        OsConfigLogInfo(GetPerfLog(), "Free memory increased with %ld kB from start", freeMemory - g_freeMemory);
+    }
+    else
+    {
+        OsConfigLogInfo(GetPerfLog(), "Free memory remained the same as at start: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
+    }
+
+    if (0 < (time = StopPerfClock(&g_startClock, GetPerfLog())))
+    {
+        OsConfigLogInfo(GetPerfLog(), "Total time spent for this run instance: %ld seconds (%ld microseconds)", time / 1000000, time);
+
+        if (time > g_maxTotalTime)
+        {
+            OsConfigLogError(GetPerfLog(), "Total time spent for this run instance is longer than %ld minutes (%ld microseconds) %s",
+                g_maxTotalTime / 60000000, g_maxTotalTime, g_perfFailure);
+        }
+    }
+}
+
 void AsbShutdown(void* log)
 {
-    long endTime = 0; 
-    long endFreeMemory = 0;
-    unsigned short endFreeMemoryPercentage = 0;
+    long time = 0; 
     
     OsConfigLogInfo(log, "%s shutting down", g_asbName);
 
@@ -1042,34 +1077,13 @@ void AsbShutdown(void* log)
 
     SshAuditCleanup(log);
 
-    endFreeMemory = GetFreeMemory(GetPerfLog());
-    endFreeMemoryPercentage = (endFreeMemory * 100) / g_totalMemory;
+    CheckFreeMemory();
 
-    OsConfigLogInfo(GetPerfLog(), "Free memory at the end of the run: %u%% (%lu kB)", endFreeMemoryPercentage, endFreeMemory);
-
-    if (endFreeMemory < g_freeMemory)
+    if (0 < (time = StopPerfClock(&g_startClock, GetPerfLog())))
     {
-        OsConfigLogInfo(GetPerfLog(), "Free memory decreased with %ld kB from start to end", g_freeMemory - endFreeMemory);
+        OsConfigLogInfo(GetPerfLog(), "Total time spent for this run instance: %ld seconds (%ld microseconds)", time / 1000000, time);
 
-        if (endFreeMemoryPercentage < g_minFreeMemoryPercentage)
-        {
-            OsConfigLogError(GetPerfLog(), "Free memory decreased at %u%% which is under minimum %u%% %s", endFreeMemoryPercentage, g_minFreeMemoryPercentage, g_perfFailure);
-        }
-    }
-    else if (endFreeMemory > g_freeMemory)
-    {
-        OsConfigLogInfo(GetPerfLog(), "Free memory increased with %ld kB from start to end", endFreeMemory - g_freeMemory);
-    }
-    else
-    {
-        OsConfigLogInfo(GetPerfLog(), "Free memory remained the same at start and end");
-    }
-
-    if (0 < (endTime = StopPerfClock(&g_startClock, GetPerfLog())))
-    {
-        OsConfigLogInfo(GetPerfLog(), "Total time spent for this run instance: %ld seconds (%ld microseconds)", endTime / 1000000, endTime);
-
-        if (endTime > g_maxTotalTime)
+        if (time > g_maxTotalTime)
         {
             OsConfigLogError(GetPerfLog(), "Total time spent for this run instance is longer than %ld minutes (%ld microseconds) %s",
                 g_maxTotalTime / 60000000, g_maxTotalTime, g_perfFailure);
@@ -4858,6 +4872,8 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         }
     }
 
+    CheckFreeMemory();
+
     return status;
 }
 
@@ -5846,6 +5862,8 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
                 componentName, objectName, g_maxRemediateTime / 1000000, g_maxRemediateTime, g_perfFailure);
         }
     }
+
+    CheckFreeMemory();
 
     return status;
 }
