@@ -1,19 +1,33 @@
 name: Check performance
 description: Checks the perf log for perf failures
 
+inputs:
+  perf-log:
+    description: the perf log path
+    required: true
+  failure-mark:
+    description: the perf failure marker
+    required: true
+
 runs:
   using: composite
   steps:
     - name: Check for perf failures
+      env:
+        perf-log: ${{ inputs.perf-log }}
+        failure-mark: ${{ inputs.failure-mark }}
       run: |
         perf_failure_found=false
 
-        echo "Checking /var/log/osconfig_asb_perf.log"
-        errors=$(grep -q '"*** Performance Failure ***"' /var/log/osconfig_asb_perf.log)
+        echo $perf-log
+        echo $failure-mark
+
+        echo "Checking $perf-log"
+        perf_failures=$(grep -q '"$failure-mark"' $perf-log)
 
         if [ "perf_failures" != "" ]
         then
-            echo "Found performance failures in /var/log/osconfig_asb_perf.log"
+            echo "Found performance failures in $perf-log"
             echo "perf_failures"
             perf_failure_found=true
         fi
