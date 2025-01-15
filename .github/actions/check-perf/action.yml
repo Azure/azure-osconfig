@@ -2,10 +2,10 @@ name: Check performance
 description: Checks the performance log for failures
 
 inputs:
-  performance-log:
+  perflog:
     description: the performance log path
     required: true
-  failure-mark:
+  failmark:
     description: the performance failure marker
     required: true
 
@@ -14,20 +14,20 @@ runs:
   steps:
     - name: Check for performance failures
       env:
-        performance-log: ${{ inputs.performance-log }}
-        failure-mark: ${{ inputs.failure-mark }}
+        perflog: ${{ inputs.perflog }}
+        failmark: ${{ inputs.failmark }}
       run: |
         perf_failure_found=false
 
-        echo $performance-log
-        echo $failure-mark
+        echo $perflog
+        echo $failmark
 
-        echo Checking $performance-log
-        perf_failures=$(grep -q "$failure-mark" $performance-log)
+        echo Checking $perflog
+        perf_failures=$(grep -q "$failmark" $perflog)
 
         if [ "perf_failures" != "" ]
         then
-            echo "Found performance failures in $performance-log"
+            echo "Found performance failures in $perflog"
             echo "perf_failures"
             perf_failure_found=true
         fi
