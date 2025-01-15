@@ -1010,7 +1010,7 @@ static void CheckRemainingFreeMemory(void)
 
         if (freeMemoryPercentage < g_minFreeMemoryPercentage)
         {
-            OsConfigLogError(GetPerfLog(), "Free memory decreased at %u%% which is under minimum %u%% %s", freeMemoryPercentage, g_minFreeMemoryPercentage);
+            OsConfigLogError(GetPerfLog(), "Free memory decreased at %u%% which is under minimum %u%%", freeMemoryPercentage, g_minFreeMemoryPercentage);
         }
     }
     else if (freeMemory > g_freeMemory)
