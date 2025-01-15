@@ -17,22 +17,19 @@ runs:
         perflog: ${{ inputs.perflog }}
         failmark: ${{ inputs.failmark }}
       run: |
-        perf_failure_found=false
-
-        echo $perflog
-        echo $failmark
+        failed=false
 
         echo Checking $perflog
-        perf_failures=$(grep -q "$failmark" $perflog)
+        failures=$(grep -q "$failmark" $perflog)
 
-        if [ "perf_failures" != "" ]
+        if [ "failures" != "" ]
         then
             echo "Found performance failures in $perflog"
-            echo "perf_failures"
-            perf_failure_found=true
+            echo "$failures"
+            failed=true
         fi
 
-        if [ "$perf_failure_found" == true ]
+        if [ "$failed" == true ]
         then
             echo "Found failures in performance log"
             exit 1
