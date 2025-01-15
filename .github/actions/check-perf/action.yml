@@ -1,40 +1,40 @@
 name: Check performance
-description: Checks the perf log for perf failures
+description: Checks the performance log for failures
 
 inputs:
-  perf-log:
-    description: the perf log path
+  performance-log:
+    description: the performance log path
     required: true
   failure-mark:
-    description: the perf failure marker
+    description: the performance failure marker
     required: true
 
 runs:
   using: composite
   steps:
-    - name: Check for perf failures
+    - name: Check for performance failures
       env:
-        perf-log: ${{ inputs.perf-log }}
+        performance-log: ${{ inputs.performance-log }}
         failure-mark: ${{ inputs.failure-mark }}
       run: |
         perf_failure_found=false
 
-        echo $perf-log
+        echo $performance-log
         echo $failure-mark
 
-        echo Checking $perf-log
-        perf_failures=$(grep -q "$failure-mark" $perf-log)
+        echo Checking $performance-log
+        perf_failures=$(grep -q "$failure-mark" $performance-log)
 
         if [ "perf_failures" != "" ]
         then
-            echo "Found performance failures in $perf-log"
+            echo "Found performance failures in $performance-log"
             echo "perf_failures"
             perf_failure_found=true
         fi
 
         if [ "$perf_failure_found" == true ]
         then
-            echo "Found failures in perf log"
+            echo "Found failures in performance log"
             exit 1
         fi
       shell: bash

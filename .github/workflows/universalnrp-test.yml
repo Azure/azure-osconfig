@@ -224,9 +224,9 @@ jobs:
 
       - name: Check performance
         if: success() || failure()
-        uses: ./.github/actions/check-perf
+        uses: ./.github/actions/check-performance
         with:
-          perf-log: /var/log/osconfig_asb_perf.log
+          performance-log: /var/log/osconfig_asb_perf.log
           failure-mark: "*** Performance Failure ***"
         
       - name: Stage OSConfig Logs
@@ -301,9 +301,9 @@ jobs:
 
       - name: Check performance
         if: success() || failure()
-        uses: ./.github/actions/check-perf
+        uses: ./.github/actions/check-performance
         with:
-          perf-log: /var/log/osconfig_asb_perf.log
+          performance-log: /var/log/osconfig_asb_perf.log
           failure-mark: "*** Performance Failure ***"
 
       - uses: actions/upload-artifact@v4
