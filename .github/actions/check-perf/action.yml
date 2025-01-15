@@ -1,0 +1,26 @@
+name: Check performance
+description: Checks the perf log for perf failures
+
+runs:
+  using: composite
+  steps:
+    - name: Check for perf failures
+      run: |
+        perf_failure_found=false
+
+        echo "Checking /var/log/osconfig_asb_perf.log"
+        errors=$(grep -q '"*** Performance Failure ***"' /var/log/osconfig_asb_perf.log)
+
+        if [ "perf_failures" != "" ]
+        then
+            echo "Found performance failures in /var/log/osconfig_asb_perf.log"
+            echo "perf_failures"
+            perf_failure_found=true
+        fi
+
+        if [ "$perf_failure_found" == true ]
+        then
+            echo "Found failures in perf log"
+            exit 1
+        fi
+      shell: bash

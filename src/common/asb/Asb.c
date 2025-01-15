@@ -997,7 +997,7 @@ void AsbInitialize(void* log)
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
 
-static void CheckFreeMemory(void)
+static void CheckRemainingFreeMemory(void)
 {
     long freeMemory = GetFreeMemory(GetPerfLog());
     unsigned short freeMemoryPercentage = (freeMemory * 100) / g_totalMemory;
@@ -1010,7 +1010,7 @@ static void CheckFreeMemory(void)
 
         if (freeMemoryPercentage < g_minFreeMemoryPercentage)
         {
-            OsConfigLogError(GetPerfLog(), "Free memory decreased at %u%% which is under minimum %u%% %s", freeMemoryPercentage, g_minFreeMemoryPercentage, g_perfFailure);
+            OsConfigLogError(GetPerfLog(), "Free memory decreased at %u%% which is under minimum %u%% %s", freeMemoryPercentage, g_minFreeMemoryPercentage);
         }
     }
     else if (freeMemory > g_freeMemory)
@@ -1066,7 +1066,7 @@ void AsbShutdown(void* log)
 
     SshAuditCleanup(log);
 
-    CheckFreeMemory();
+    CheckRemainingFreeMemory();
 
     if (0 < (time = StopPerfClock(&g_startClock, GetPerfLog())))
     {
