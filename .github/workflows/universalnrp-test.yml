@@ -51,13 +51,10 @@ jobs:
           TARGETS: |
             [
               { "os": "almalinux", "version": "9" },
-              { "os": "centos", "version": "8" },
-              { "os": "debian", "version": "10" },
               { "os": "debian", "version": "11" },
               { "os": "debian", "version": "12" },
               { "os": "mariner", "version": "2" },
               { "os": "oraclelinux", "version": "8" },
-              { "os": "rhel", "version": "7" },
               { "os": "rhel", "version": "8" },
               { "os": "rhel", "version": "9" },
               { "os": "rockylinux", "version": "9" },
@@ -65,12 +62,8 @@ jobs:
               { "os": "ubuntu", "version": "20.04" },
               { "os": "ubuntu", "version": "22.04" }
             ]
-          # { "os": "amazonlinux", "version": "2" },
-          # { "os": "centos", "version": "7" },
-          # { "os": "oraclelinux", "version": "7" },
-          # { "os": "sles", "version": "12" },
-          # { "os": "ubuntu", "version": "16.04" },
-          # { "os": "ubuntu", "version": "18.04" },
+          # { "os": "amazonlinux", "version": "2" }, [TODO: Onboard]
+          # { "os": "azurelinux", "version": "3" }, [TODO: Onboard]
         run: |
           # If no explicit packages defined, use the default packages
           if [[ '${{ inputs.policy_packages }}' == '[]' || '${{ inputs.policy_packages }}' == '' ]]; then

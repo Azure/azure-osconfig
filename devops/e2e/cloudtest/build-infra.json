@@ -11,15 +11,15 @@
             }
         },
         {
-            "name": "linux-bash-command",
+            "name": "linux-install-packages",
             "parameters": {
-                "command": "apt list --installed"
+                "packages": "bc"
             }
         },
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo apt update && sudo apt upgrade -y"
+                "command": "apt list --installed"
             }
         }
     ]
