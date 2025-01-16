@@ -21,8 +21,12 @@ runs:
 
         echo "Checking $perflog for any $failmark instances"
         ls -l "$perflog"
-        stat "$perflog"        
-        
+        stat "$perflog"
+        echo "Contents of $perflog:"
+        echo "----------\n"
+        cat "$perflog"        
+        echo "----------\n"
+
         failures=$(grep "$failmark" $perflog)
         echo "Failures: $failures"
 
