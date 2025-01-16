@@ -1,4 +1,4 @@
-name: 'OSConfig for MC' & SecurityBaseline Module Combo Test
+name: Universal NRP and Modules Combo Test
 
 on:
   workflow_dispatch:
