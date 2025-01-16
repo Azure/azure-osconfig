@@ -639,8 +639,7 @@ static long g_freeMemory = 0;
 // Maximum rule audit time: 5 seconds
 static const long g_maxAuditTime = 5000000;
 // Maximum rule remediation time: 15 seconds
-//static const long g_maxRemediateTime = 15000000;
-static const long g_maxRemediateTime = 10000000;
+static const long g_maxRemediateTime = 15000000;
 // Maximum baseline run time: 30 minutes
 static const long g_maxTotalTime = 1800000000;
 // Start with 30% minimum free memory

@@ -27,17 +27,17 @@ runs:
         failures=$(grep -i "$failmark" $perflog || true)
 
         if [ -n "$failures" ]; then
-            echo "Found performance failures in $perflog"
+            echo "Found performance failures in '$perflog'"
             echo "Failures:"
             echo "$failures"
             failed=true
         else
-            echo "Found no performance failures in $perflog"
+            echo "Found no performance failures in '$perflog'"
         fi
 
         if [ "$failed" == true ]
         then
-            echo "Found failures in performance log"
+            echo "Check performance test failed"
             exit 1
         fi
       shell: bash
