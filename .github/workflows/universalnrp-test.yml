@@ -1,4 +1,4 @@
-name: Universal NRP Test
+name: 'OSConfig for MC' & SecurityBaseline Module Combo Test
 
 on:
   workflow_dispatch:
@@ -224,7 +224,7 @@ jobs:
 
       - name: Check performance
         if: success() || failure()
-        uses: ./.github/actions/check-perf
+        uses: ./.github/actions/check-performance
         with:
           perflog: /var/log/osconfig_asb_perf.log
           failmark: "*** Performance Failure ***"
@@ -301,7 +301,7 @@ jobs:
 
       - name: Check performance
         if: success() || failure()
-        uses: ./.github/actions/check-perf
+        uses: ./.github/actions/check-performance
         with:
           perflog: /var/log/osconfig_asb_perf.log
           failmark: "*** Performance Failure ***"
