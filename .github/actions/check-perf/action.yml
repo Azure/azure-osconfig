@@ -22,8 +22,7 @@ runs:
         echo Checking $perflog
         failures=$(grep -q "$failmark" $perflog)
 
-        if [ "failures" != "" ]
-        then
+        if [ "$failures" != "" ]; then
             echo "Found performance failures in $perflog"
             echo "$failures"
             failed=true
