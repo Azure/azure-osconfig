@@ -224,7 +224,7 @@ jobs:
 
       - name: Check performance
         if: success() || failure()
-        uses: ./.github/actions/check-performance
+        uses: ./.github/actions/check-perf
         with:
           perflog: /var/log/osconfig_asb_perf.log
           failmark: "*** Performance Failure ***"
@@ -301,7 +301,7 @@ jobs:
 
       - name: Check performance
         if: success() || failure()
-        uses: ./.github/actions/check-performance
+        uses: ./.github/actions/check-perf
         with:
           perflog: /var/log/osconfig_asb_perf.log
           failmark: "*** Performance Failure ***"
