@@ -20,8 +20,6 @@ runs:
         failed=false
 
         echo "Checking '$perflog' for any '$failmark' instances"
-        ls -l "$perflog"
-        echo "Contents of '$perflog':"
         cat "$perflog"        
 
         failures=$(grep -i "$failmark" $perflog || true)

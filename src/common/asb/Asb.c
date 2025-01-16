@@ -638,16 +638,14 @@ static long g_freeMemory = 0;
 
 // Maximum rule audit time: 5 seconds
 static const long g_maxAuditTime = 5000000;
-
-// Maximum rule remediation time: 10 seconds
+// Maximum rule remediation time: 15 seconds
+//static const long g_maxRemediateTime = 15000000;
 static const long g_maxRemediateTime = 10000000;
-
 // Maximum baseline run time: 30 minutes
 static const long g_maxTotalTime = 1800000000;
-
 // Start with 30% minimum free memory
 static unsigned short g_minFreeMemoryPercentage = 30;
-
+// Performance failure marker
 static const char* g_perfFailure = "*** Performance Failure ***";
 
 static OSCONFIG_LOG_HANDLE g_perfLog = NULL;
@@ -1074,8 +1072,8 @@ void AsbShutdown(void* log)
 
         if (time > g_maxTotalTime)
         {
-            OsConfigLogError(GetPerfLog(), "Total time spent for this run instance is longer than %ld minutes (%ld microseconds) %s",
-                g_maxTotalTime / 60000000, g_maxTotalTime, g_perfFailure);
+            OsConfigLogError(GetPerfLog(), "Total time spent for this run instance (%ld microseconds) is longer than %ld minutes (%ld microseconds) %s",
+                time, g_maxTotalTime / 60000000, g_maxTotalTime, g_perfFailure);
         }
     }
 
@@ -4856,8 +4854,8 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
         if (time > g_maxAuditTime)
         {
-            OsConfigLogError(GetPerfLog(), "%s.%s completion time is longer than %ld seconds (%ld microseconds) %s",
-                componentName, objectName, g_maxAuditTime / 1000000, g_maxAuditTime, g_perfFailure);
+            OsConfigLogError(GetPerfLog(), "%s.%s completion time of %ld microseconds is longer than %ld seconds (%ld microseconds) %s",
+                componentName, objectName, time, g_maxAuditTime / 1000000, g_maxAuditTime, g_perfFailure);
         }
     }
 
@@ -5845,8 +5843,8 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
 
         if (time > g_maxRemediateTime)
         {
-            OsConfigLogError(GetPerfLog(), "%s.%s completion time is longer than %ld seconds (%ld microseconds) %s",
-                componentName, objectName, g_maxRemediateTime / 1000000, g_maxRemediateTime, g_perfFailure);
+            OsConfigLogError(GetPerfLog(), "%s.%s completion time of %ld microseconds is longer than %ld seconds (%ld microseconds) %s",
+                componentName, objectName, time, g_maxRemediateTime / 1000000, g_maxRemediateTime, g_perfFailure);
         }
     }
 
