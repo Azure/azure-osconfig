@@ -27,7 +27,7 @@ runs:
         cat "$perflog"        
         echo "----------\n"
 
-        failures=$(grep "$failmark" $perflog)
+        failures=$(grep -i "$failmark" $perflog)
         echo "Failures: $failures"
 
         if [ -n "$failures" ]; then
