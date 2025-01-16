@@ -19,12 +19,15 @@ runs:
       run: |
         failed=false
 
-        echo Checking $perflog
+        echo Checking $perflog for any $failmark instances
+        ls -l $perflog 
+        stat $perflog 
         failures=$(grep "$failmark" $perflog)
+        echo "Failures: $failures"
 
         if [ -n "$failures" ]; then
             echo "Found performance failures in $perflog"
-            echo "$failures"
+            echo "Failures: $failures"
             failed=true
         else
             echo "Found no performance failures in $perflog"
