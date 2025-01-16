@@ -19,22 +19,21 @@ runs:
       run: |
         failed=false
 
-        echo "Checking '$perflog' for any '$failmark' instances"
         cat "$perflog"        
 
         failures=$(grep -i "$failmark" $perflog || true)
 
         if [ -n "$failures" ]; then
-            echo "Found performance failures in $perflog"
+            echo "Performance failures found in $perflog:"
             echo "$failures"
             failed=true
         else
-            echo "Found no performance failures in $perflog"
+            echo "No performance failures found
         fi
 
         if [ "$failed" == true ]
         then
-            echo "Found failures in performance log"
+            echo "Performance failures found"
             exit 1
         fi
       shell: bash
