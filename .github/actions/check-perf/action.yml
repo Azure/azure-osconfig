@@ -19,9 +19,10 @@ runs:
       run: |
         failed=false
 
-        echo Checking $perflog for any $failmark instances
-        ls -l $perflog 
-        stat $perflog 
+        echo "Checking $perflog for any $failmark instances"
+        ls -l "$perflog"
+        stat "$perflog"        
+        
         failures=$(grep "$failmark" $perflog)
         echo "Failures: $failures"
 
