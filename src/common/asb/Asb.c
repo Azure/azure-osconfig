@@ -885,23 +885,26 @@ void AsbInitialize(void* log)
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
-    if (NULL != (cpuModel = GetCpuModel(log)))
+    OsConfigLogInfo(GetPerfLog(), "%s", g_asbName);
+
+    if (NULL != (cpuModel = GetCpuModel(GetPerfLog)))
     {
-        OsConfigLogInfo(log, "CPU model: %s", cpuModel);
+        OsConfigLogInfo(GetPerfLog, "CPU model: %s", cpuModel);
     }
 
-    OsConfigLogInfo(log, "Number of CPU cores: %u", GetNumberOfCpuCores(log));
+    OsConfigLogInfo(GetPerfLog, "Number of CPU cores: %u", GetNumberOfCpuCores(log));
 
     totalMemory = GetTotalMemory(log);
-    OsConfigLogInfo(log, "Total memory: %lu kB", totalMemory);
+    OsConfigLogInfo(GetPerfLog, "Total memory: %lu kB", totalMemory);
     
     freeMemory = GetFreeMemory(log);
     freeMemoryPercentage = (freeMemory * 100) / totalMemory;
-    OsConfigLogInfo(log, "Free memory at start of the run instance: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
+    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the run instance: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
-    OsConfigLogInfo(log, "Maximum ASB rule audit time: %lu microseconds", g_maxAuditTime);
-    OsConfigLogInfo(log, "Maximum ASB rule remediation time: %lu microseconds", g_maxRemediateTime);
-    OsConfigLogInfo(log, "Maximum ASB run time: %lu minutes (%lu microseconds)", g_maxTotalTime / 60000000, g_maxTotalTime);
+    OsConfigLogInfo(GetPerfLog(), "%s targeted performance limits:", g_asbName);
+    OsConfigLogInfo(GetPerfLog(), "Maximum rule audit time: %lu microseconds", g_maxAuditTime);
+    OsConfigLogInfo(GetPerfLog(), "Maximum rule remediation time: %lu microseconds", g_maxRemediateTime);
+    OsConfigLogInfo(GetPerfLog(), "Maximum total run time: %lu minutes (%lu microseconds)", g_maxTotalTime / 60000000, g_maxTotalTime);
 
     InitializeSshAudit(log);
 
@@ -962,18 +965,18 @@ void AsbInitialize(void* log)
         OsConfigLogInfo(log, "AsbInitialize: running on an unknown Linux distribution with kernel version '%s' and without a valid PRETTY_NAME in /etc/os-release", kernelVersion);
     }
     
-    OsConfigLogInfo(log, "Running on '%s'", prettyName ? prettyName : "-");
+    OsConfigLogInfo(GetPerfLog(), "Running on '%s'", prettyName ? prettyName : "-");
 
     if (IsCommodore(log))
     {
         OsConfigLogInfo(log, "AsbInitialize: running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
-        OsConfigLogInfo(log, "Running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
+        OsConfigLogInfo(GetPerfLog(), "Running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
     }
 
     if (DetectSelinux(log))
     {
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
-        OsConfigLogInfo(log, "SELinux present");
+        OsConfigLogInfo(GetPerfLog(), "SELinux present");
     }
 
     FREE_MEMORY(prettyName);
