@@ -73,13 +73,11 @@ long GetPerfClockTime(PERF_CLOCK* clock, void* log)
 void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* objectName, int objectResult, long limit, void* log)
 {
     static const char* perfWarning = "*** Warning ***";
-
-    int status = 0;
     long microseconds = -1;
 
     if (NULL == clock)
     {
-        OsConfigLogError(log, "StopPerfClock called with an invalid argument");
+        OsConfigLogError(log, "LogPerfClock called with an invalid clock argument");
         return;
     }
 
