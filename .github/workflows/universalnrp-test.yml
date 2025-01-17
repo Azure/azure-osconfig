@@ -1,4 +1,4 @@
-name: Universal NRP and Modules Combo Test
+name: Universal NRP Test
 
 on:
   workflow_dispatch:
