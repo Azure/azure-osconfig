@@ -80,7 +80,7 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
     if (NULL == clock)
     {
         OsConfigLogError(log, "StopPerfClock called with an invalid argument");
-        return microseconds;
+        return;
     }
 
     microseconds = GetPerfClockTime(clock, log);
@@ -89,7 +89,7 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
     {
         if (0 == objectResult)
         {
-            OsConfigLogInfo(log, "%s.%s completed in %ld microseconds", componentName, objectName, time);
+            OsConfigLogInfo(log, "%s.%s completed in %ld microseconds", componentName, objectName, microseconds);
         }
         else
         {
