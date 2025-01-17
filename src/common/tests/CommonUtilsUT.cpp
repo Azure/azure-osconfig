@@ -2452,24 +2452,30 @@ TEST_F(CommonUtilsTest, IsValidDaemonName)
 
 TEST_F(CommonUtilsTest, StartStopPerfClock)
 {
-    struct timespec start, another;
-    long microSeconds = 0;
+    PERF_CLOCK clock = {0};
+    PERF_CLOCK another = {0};
+    long microseconds = 0;
 
     EXPECT_EQ(EINVAL, StartPerfClock(nullptr, nullptr));
-    EXPECT_EQ(-1, StopPerfClock(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, StopPerfClock(nullptr, nullptr));
+    EXPECT_EQ(-1, GetPerfClockTime(nullptr, nullptr));
+    EXPECT_EQ(-1, GetPerfClockTime(&clock, nullptr));
 
     EXPECT_EQ(0, StartPerfClock(&another, nullptr));
 
-    EXPECT_EQ(0, StartPerfClock(&start, nullptr));
+    EXPECT_EQ(0, StartPerfClock(&clock, nullptr));
     SleepMilliseconds(1);
-    EXPECT_GE(microSeconds = StopPerfClock(&start, nullptr), 1000);
-    EXPECT_LE(microSeconds, 1500);
+    EXPECT_EQ(0, StopPerfClock(&clock, nullptr));
+    EXPECT_GE(microseconds = GetPerfClockTime(&clock, nullptr), 1000);
+    EXPECT_LE(microseconds, 1500);
     
-    EXPECT_EQ(0, StartPerfClock(&start, nullptr));
+    EXPECT_EQ(0, StartPerfClock(&clock, nullptr));
     SleepMilliseconds(2);
-    EXPECT_GE(microSeconds = StopPerfClock(&start, nullptr), 2000);
-    EXPECT_LE(microSeconds, 2500);
+    EXPECT_EQ(0, StopPerfClock(&clock, nullptr));
+    EXPECT_GE(microseconds = GetPerfClockTime(&start, nullptr), 2000);
+    EXPECT_LE(microseconds, 2500);
 
-    EXPECT_GE(microSeconds = StopPerfClock(&another, nullptr), 3000);
+    EXPECT_EQ(0, StopPerfClock(&another, nullptr));
+    EXPECT_GE(microseconds = StopPerfClock(&another, nullptr), 3000);
     EXPECT_LE(microSeconds, 3500);
 }

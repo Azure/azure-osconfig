@@ -237,8 +237,16 @@ int GetGitManagementFromJsonConfig(const char* jsonString, void* log);
 char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, void* log);
 char* GetGitBranchFromJsonConfig(const char* jsonString, void* log);
 
-int StartPerfClock(struct timespec* clock, void* log);
-long StopPerfClock(struct timespec* clock, void* log);
+typedef struct PERF_CLOCK
+{
+    struct timespec start;
+    struct timespec stop;
+} PERF_CLOCK;
+
+int StartPerfClock(PERF_CLOCK* clock, void* log);
+int StopPerfClock(PERF_CLOCK* clock, void* log);
+long GetPerfClockTime(PERF_CLOCK* clock, void* log);
+void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* objectName, int objectResult, long limit, void* log);
 
 #ifdef __cplusplus
 }

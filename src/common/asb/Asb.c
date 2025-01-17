@@ -632,20 +632,14 @@ static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
 static const int g_shadowGid = 42;
 static const int g_varLogJournalMode = 2755;
 
-static struct timespec g_startClock = {0};
-static long g_totalMemory = 0;
-static long g_freeMemory = 0;
+static PERF_CLOCK g_perfClock = {0};
 
-// Maximum rule audit time: 5 seconds
+// Maximum ASB rule audit time: 5 seconds
 static const long g_maxAuditTime = 5000000;
-// Maximum rule remediation time: 15 seconds
+// Maximum ASB rule remediation time: 15 seconds
 static const long g_maxRemediateTime = 15000000;
-// Maximum baseline run time: 30 minutes
+// Maximum ASB baseline run time: 30 minutes
 static const long g_maxTotalTime = 1800000000;
-// Start with 30% minimum free memory
-static unsigned short g_minFreeMemoryPercentage = 30;
-// Performance failure marker
-static const char* g_perfFailure = "*** Performance Failure ***";
 
 static OSCONFIG_LOG_HANDLE g_perfLog = NULL;
 
@@ -880,6 +874,8 @@ void AsbInitialize(void* log)
     char* prettyName = NULL;
     char* kernelVersion = NULL;
     char* cpuModel = NULL;
+    long totalMemory = 0;
+    long freeMemory = 0;
     unsigned short freeMemoryPercentage = 0;
 
     RenameFile(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, GetPerfLog());
@@ -887,7 +883,7 @@ void AsbInitialize(void* log)
     CloseLog(&g_perfLog);
     g_perfLog = NULL;
 
-    StartPerfClock(&g_startClock, GetPerfLog());
+    StartPerfClock(&g_perfClock, GetPerfLog());
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
@@ -896,24 +892,17 @@ void AsbInitialize(void* log)
 
     OsConfigLogInfo(GetPerfLog(), "Number of CPU cores: %u", GetNumberOfCpuCores(GetPerfLog()));
 
-    g_totalMemory = GetTotalMemory(GetPerfLog());
-    OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", g_totalMemory);
+    totalMemory = GetTotalMemory(GetPerfLog());
+    OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", totalMemory);
     
-    g_freeMemory = GetFreeMemory(GetPerfLog());
-    freeMemoryPercentage = (g_freeMemory * 100) / g_totalMemory;
-    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the run instance: %u%% (%lu kB)", freeMemoryPercentage, g_freeMemory);
+    freeMemory = GetFreeMemory(GetPerfLog());
+    freeMemoryPercentage = (freeMemory * 100) / totalMemory;
+    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the run instance: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
-    OsConfigLogInfo(GetPerfLog(), "Maximum audit time: %lu microseconds", g_maxAuditTime);
-    OsConfigLogInfo(GetPerfLog(), "Maximum remediate time: %lu microseconds", g_maxRemediateTime);
-    OsConfigLogInfo(GetPerfLog(), "Maximum baseline run time: %lu minutes (%lu microseconds)", g_maxTotalTime / 60000000, g_maxTotalTime);
-    OsConfigLogInfo(GetPerfLog(), "Minimum free memory percentage at start: %u%%", g_minFreeMemoryPercentage);
+    OsConfigLogInfo(GetPerfLog(), "Maximum ASB rule audit time: %lu microseconds", g_maxAuditTime);
+    OsConfigLogInfo(GetPerfLog(), "Maximum ASB rule remediation time: %lu microseconds", g_maxRemediateTime);
+    OsConfigLogInfo(GetPerfLog(), "Maximum ASB run time: %lu minutes (%lu microseconds)", g_maxTotalTime / 60000000, g_maxTotalTime);
 
-    if (freeMemoryPercentage < g_minFreeMemoryPercentage)
-    {
-        g_minFreeMemoryPercentage = (freeMemoryPercentage > 1) ? (freeMemoryPercentage - 1) : 1;
-        OsConfigLogInfo(GetPerfLog(), "Minimum free memory adjusted to %u%%", g_minFreeMemoryPercentage);
-    }
-    
     InitializeSshAudit(log);
 
     if ((NULL == (g_desiredEnsurePermissionsOnEtcIssue = DuplicateString(g_defaultEnsurePermissionsOnEtcIssue))) ||
@@ -994,32 +983,6 @@ void AsbInitialize(void* log)
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
 
-static void CheckRemainingFreeMemory(void)
-{
-    long freeMemory = GetFreeMemory(GetPerfLog());
-    unsigned short freeMemoryPercentage = (freeMemory * 100) / g_totalMemory;
-
-    OsConfigLogInfo(GetPerfLog(), "Free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
-
-    if (freeMemory < g_freeMemory)
-    {
-        OsConfigLogInfo(GetPerfLog(), "Free memory decreased with %ld kB from start", g_freeMemory - freeMemory);
-
-        if (freeMemoryPercentage < g_minFreeMemoryPercentage)
-        {
-            OsConfigLogError(GetPerfLog(), "Free memory decreased at %u%% which is under minimum %u%%", freeMemoryPercentage, g_minFreeMemoryPercentage);
-        }
-    }
-    else if (freeMemory > g_freeMemory)
-    {
-        OsConfigLogInfo(GetPerfLog(), "Free memory increased with %ld kB from start", freeMemory - g_freeMemory);
-    }
-    else
-    {
-        OsConfigLogInfo(GetPerfLog(), "Free memory remains the same as at start: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
-    }
-}
-
 void AsbShutdown(void* log)
 {
     long time = 0; 
@@ -1063,17 +1026,9 @@ void AsbShutdown(void* log)
 
     SshAuditCleanup(log);
 
-    CheckRemainingFreeMemory();
-
-    if (0 < (time = StopPerfClock(&g_startClock, GetPerfLog())))
+    if (0 == StopPerfClock(&g_perfClock, GetPerfLog())))
     {
-        OsConfigLogInfo(GetPerfLog(), "Total time spent for this run instance: %ld seconds (%ld microseconds)", time / 1000000, time);
-
-        if (time > g_maxTotalTime)
-        {
-            OsConfigLogError(GetPerfLog(), "Total time spent for this run instance (%ld microseconds) is longer than %ld minutes (%ld microseconds) %s",
-                time, g_maxTotalTime / 60000000, g_maxTotalTime, g_perfFailure);
-        }
+        LogPerfClock(g_perfClock, NULL, NULL, 0, g_maxTotalTime, GetPerfLog());
     }
 
     CloseLog(&g_perfLog);
@@ -4840,22 +4795,9 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
     FREE_MEMORY(result);
 
-    if (0 < (time = StopPerfClock(&clock, GetPerfLog())))
+    if (0 == StopPerfClock(&g_perfClock, GetPerfLog())))
     {
-        if (0 == status)
-        {
-            OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld microseconds", componentName, objectName, time);
-        }
-        else
-        {
-            OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, time, status);
-        }
-
-        if (time > g_maxAuditTime)
-        {
-            OsConfigLogError(GetPerfLog(), "%s.%s completion time of %ld microseconds is longer than %ld seconds (%ld microseconds) %s",
-                componentName, objectName, time, g_maxAuditTime / 1000000, g_maxAuditTime, g_perfFailure);
-        }
+        LogPerfClock(g_perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
     }
 
     return status;
@@ -5825,25 +5767,18 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     
     FREE_MEMORY(payloadString);
 
-    if (0 < (time = StopPerfClock(&clock, GetPerfLog())))
+    if (0 == StopPerfClock(&g_perfClock, GetPerfLog())))
     {
-        if (0 == status)
-        {
-            // Ignore the successful init* objects and focus on remediate* ones
-            if (0 != strncmp(objectName, init, strlen(init)))
-            {
-                OsConfigLogInfo(GetPerfLog(), "%s.%s completed in %ld microseconds", componentName, objectName, time);
-            }
-        }
-        else
-        {
-            OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, time, status);
-        }
+        LogPerfClock(g_perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
+    }
 
-        if (time > g_maxRemediateTime)
+    
+    if (0 == StopPerfClock(&g_perfClock, GetPerfLog())))
+    {
+        // Ignore the successful init* objects and focus on remediate* ones
+        if (0 != strncmp(objectName, init, strlen(init)))
         {
-            OsConfigLogError(GetPerfLog(), "%s.%s completion time of %ld microseconds is longer than %ld seconds (%ld microseconds) %s",
-                componentName, objectName, time, g_maxRemediateTime / 1000000, g_maxRemediateTime, g_perfFailure);
+            LogPerfClock(g_perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
         }
     }
 
