@@ -61,7 +61,7 @@ long GetPerfClockTime(PERF_CLOCK* clock, void* log)
     if ((NULL == clock) || (0 == clock->stop.tv_sec))
     {
         OsConfigLogError(log, "GetPerfClockTime called with an invalid clock argument");
-        return status;
+        return microseconds;
     }
 
     microseconds = ((clock->stop.tv_sec - clock->start.tv_sec) * 1000000) + (((clock->stop.tv_nsec > clock->start.tv_nsec) ?
