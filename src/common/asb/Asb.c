@@ -4025,6 +4025,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 {
     JSON_Value* jsonValue = NULL;
     char* serializedValue = NULL;
+    PERF_CLOCK perfClock = {0};
     int status = 0;
     char* result = NULL;
 
@@ -4038,7 +4039,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    StartPerfClock(&g_perfClock, GetPerfLog());
+    StartPerfClock(&perfClock, GetPerfLog());
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
@@ -4792,9 +4793,9 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
     FREE_MEMORY(result);
 
-    if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
+    if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
-        LogPerfClock(&g_perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
+        LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
     }
 
     return status;
@@ -4806,6 +4807,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     JSON_Value* jsonValue = NULL;
     char* jsonString = NULL;
     char* payloadString = NULL;
+    PERF_CLOCK perfClock = {0};
     int status = 0;
 
     // No payload is accepted for now, this may change once the complete Azure Security Baseline is implemented
@@ -4815,7 +4817,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         return EINVAL;
     }
 
-    StartPerfClock(&g_perfClock, GetPerfLog());
+    StartPerfClock(&perfClock, GetPerfLog());
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
@@ -5762,12 +5764,12 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     
     FREE_MEMORY(payloadString);
 
-    if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
+    if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         // Ignore the successful init* objects and focus on remediate* ones
         if (0 != strncmp(objectName, init, strlen(init)))
         {
-            LogPerfClock(&g_perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
+            LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
         }
     }
 
