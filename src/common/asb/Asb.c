@@ -886,6 +886,9 @@ void AsbInitialize(void* log)
     StartPerfClock(&g_perfClock, GetPerfLog());
 
     OsConfigLogInfo(GetPerfLog(), "%s", g_asbName);
+    OsConfigLogInfo(GetPerfLog(), "Targeted audit time per rule: %lu microseconds", g_maxAuditTime);
+    OsConfigLogInfo(GetPerfLog(), "Targeted  remediation time per rule: %lu microseconds", g_maxRemediateTime);
+    OsConfigLogInfo(GetPerfLog(), "Targeted total run time: %lu minutes (%lu microseconds)", g_maxTotalTime / 60000000, g_maxTotalTime);
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
@@ -899,12 +902,7 @@ void AsbInitialize(void* log)
     
     freeMemory = GetFreeMemory(log);
     freeMemoryPercentage = (freeMemory * 100) / totalMemory;
-    OsConfigLogInfo(GetPerfLog(), "Free memory at start of the run instance: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
-
-    OsConfigLogInfo(GetPerfLog(), "%s targeted performance limits:", g_asbName);
-    OsConfigLogInfo(GetPerfLog(), "Maximum rule audit time: %lu microseconds", g_maxAuditTime);
-    OsConfigLogInfo(GetPerfLog(), "Maximum rule remediation time: %lu microseconds", g_maxRemediateTime);
-    OsConfigLogInfo(GetPerfLog(), "Maximum total run time: %lu minutes (%lu microseconds)", g_maxTotalTime / 60000000, g_maxTotalTime);
+    OsConfigLogInfo(GetPerfLog(), "Free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
     InitializeSshAudit(log);
 
