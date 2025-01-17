@@ -2478,6 +2478,6 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     EXPECT_LE(microseconds, 2500);
 
     EXPECT_EQ(0, StopPerfClock(&another, nullptr));
-    EXPECT_GE(microseconds = StopPerfClock(&another, nullptr), 3000);
+    EXPECT_GE(microseconds = GetPerfClockTime(&another, nullptr), 3000);
     EXPECT_LE(microseconds, 3500);
 }
