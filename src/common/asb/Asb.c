@@ -887,15 +887,15 @@ void AsbInitialize(void* log)
 
     OsConfigLogInfo(GetPerfLog(), "%s", g_asbName);
 
-    if (NULL != (cpuModel = GetCpuModel(GetPerfLog)))
+    if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
-        OsConfigLogInfo(GetPerfLog, "CPU model: %s", cpuModel);
+        OsConfigLogInfo(GetPerfLog(), "CPU model: %s", cpuModel);
     }
 
-    OsConfigLogInfo(GetPerfLog, "Number of CPU cores: %u", GetNumberOfCpuCores(log));
+    OsConfigLogInfo(GetPerfLog(), "Number of CPU cores: %u", GetNumberOfCpuCores(log));
 
     totalMemory = GetTotalMemory(log);
-    OsConfigLogInfo(GetPerfLog, "Total memory: %lu kB", totalMemory);
+    OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", totalMemory);
     
     freeMemory = GetFreeMemory(log);
     freeMemoryPercentage = (freeMemory * 100) / totalMemory;
