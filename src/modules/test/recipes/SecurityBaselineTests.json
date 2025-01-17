@@ -1252,6 +1252,14 @@
     "ObjectName": "remediateEnsureSmbWithSambaIsDisabled"
   },
   {
+    "Action": "UnloadModule"
+  },
+  {
+    "Action": "LoadModule",
+    "Module": "securitybaseline.so",
+    "WaitSeconds": 5
+  },
+  {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcSshSshdConfig",
