@@ -632,7 +632,7 @@ static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
 static const int g_shadowGid = 42;
 static const int g_varLogJournalMode = 2755;
 
-static PERF_CLOCK g_perfClock = {0};
+static PERF_CLOCK g_perfClock = {{0, 0}, {0, 0}};
 
 // Maximum ASB rule audit time: 5 seconds
 static const long g_maxAuditTime = 5000000;
@@ -4025,7 +4025,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 {
     JSON_Value* jsonValue = NULL;
     char* serializedValue = NULL;
-    PERF_CLOCK perfClock = {0};
+    PERF_CLOCK perfClock = {{0, 0}, {0, 0}};
     int status = 0;
     char* result = NULL;
 
@@ -4807,7 +4807,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     JSON_Value* jsonValue = NULL;
     char* jsonString = NULL;
     char* payloadString = NULL;
-    PERF_CLOCK perfClock = {0};
+    PERF_CLOCK perfClock = {{0, 0}, {0, 0}};
     int status = 0;
 
     // No payload is accepted for now, this may change once the complete Azure Security Baseline is implemented
