@@ -1026,7 +1026,7 @@ void AsbShutdown(void* log)
 
     if (0 == StopPerfClock(&g_perfClock, log))
     {
-        LogPerfClock(g_perfClock, NULL, NULL, 0, g_maxTotalTime, log);
+        LogPerfClock(&g_perfClock, NULL, NULL, 0, g_maxTotalTime, log);
     }
 
     CloseLog(&g_perfLog);
@@ -4024,7 +4024,6 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 {
     JSON_Value* jsonValue = NULL;
     char* serializedValue = NULL;
-    struct timespec clock = {0};
     int status = 0;
     char* result = NULL;
 
@@ -4794,7 +4793,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
     if (0 == StopPerfClock(&g_perfClock, log))
     {
-        LogPerfClock(g_perfClock, componentName, objectName, status, g_maxAuditTime, log);
+        LogPerfClock(&g_perfClock, componentName, objectName, status, g_maxAuditTime, log);
     }
 
     return status;
@@ -5767,7 +5766,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         // Ignore the successful init* objects and focus on remediate* ones
         if (0 != strncmp(objectName, init, strlen(init)))
         {
-            LogPerfClock(g_perfClock, componentName, objectName, status, g_maxRemediateTime, log);
+            LogPerfClock(&g_perfClock, componentName, objectName, status, g_maxRemediateTime, log);
         }
     }
 
