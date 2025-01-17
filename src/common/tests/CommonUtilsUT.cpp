@@ -2452,8 +2452,8 @@ TEST_F(CommonUtilsTest, IsValidDaemonName)
 
 TEST_F(CommonUtilsTest, StartStopPerfClock)
 {
-    PERF_CLOCK clock = {0};
-    PERF_CLOCK another = {0};
+    PERF_CLOCK clock;
+    PERF_CLOCK another;
     long microseconds = 0;
 
     EXPECT_EQ(EINVAL, StartPerfClock(nullptr, nullptr));
@@ -2472,7 +2472,7 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     EXPECT_EQ(0, StartPerfClock(&clock, nullptr));
     SleepMilliseconds(2);
     EXPECT_EQ(0, StopPerfClock(&clock, nullptr));
-    EXPECT_GE(microseconds = GetPerfClockTime(&start, nullptr), 2000);
+    EXPECT_GE(microseconds = GetPerfClockTime(&clock, nullptr), 2000);
     EXPECT_LE(microseconds, 2500);
 
     EXPECT_EQ(0, StopPerfClock(&another, nullptr));
