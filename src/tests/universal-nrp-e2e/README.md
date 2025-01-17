@@ -198,12 +198,41 @@ ssh -i /home/ahmed/git/azure-osconfig/src/tests/universal-nrp-e2e/_CentOS-7-x86_
 We now have a generalized image you can share and reuse in tests.
 
 ## Testing directly on target machine
-To perform tests directly on a target machine you need to copy over the following files onto the target machine:
+To perform tests directly on a target machine the `StartLocalTest.sh` performs the tests locally.
+
+You need to copy over the following files onto the target machine:
  - UniversalNRP.Tests.ps1
  - StartVMTest.sh
  - A policy package to apply on the machine - for this example, lets assume `AzureLinuxBaseline.zip`
 
-You may then run the tests like so:
+### Usage
+```
+Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip -c resource-count [-r]]
+        -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
+                               If no stage is specified, all stages will be executed in this order:
+                                    dependency_check, run_tests, collect_logs
+
+            - dependency_check: Checks to ensure dependencies are satisfied.
+                                Checks for and installs them if not present:
+                                    - Powershell +modules: MachineConfiguration, Pester
+                                    - OMI
+
+            - run_tests:        Runs the tests (Powershell Pester Tests).
+
+            - collect_logs:     Creates a tar.gz archive with the osconfig logs and JUnit Test Report
+
+        -p policy-package.zip:  The Azure Policy Package to test
+
+        -c resource-count:      The number of resources to validate, tests will fail if this doesn't match (Default: 0)
+
+        -r remediate-flag:      When the flag is enabled, performs remediation on the Policy Package (Default: No remediation performed)
+
+        -g generalize-flag:     Generalize the current machine for tests. Performs the following:
+                                    - Remove logs and tmp directories
+                                    - Clean package management cache
+                                    - Clean cloud-init flags to reset cloud-init to initial-state
+```
+### Example
 ```sh
 ./StartLocalTest.sh -p AzureLinuxBaseline.zip -c 168
 ```
