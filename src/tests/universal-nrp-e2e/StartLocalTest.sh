@@ -72,7 +72,7 @@ dependency_check() {
         # Create the symbolic link that points to pwsh
         do_sudo ln -s /opt/microsoft/powershell/${powershell_version%%.*}/pwsh /usr/bin/pwsh
     fi
-    if pwsh --version > /dev/null 2>&1; then
+    if pwsh --version; then
         echo "Powershell found. Checking for required modules..."
         do_sudo pwsh -Command "
             \$modules = @('GuestConfiguration', 'Pester')
@@ -82,6 +82,8 @@ dependency_check() {
                     Install-Module -Name \$module -Force -SkipPublisherCheck
                 }
             }"
+    else
+        err=true
     fi
     if [ ! -d "/opt/omi/lib" ]; then
         echo -e "\nOMI not found. Installing OMI..."

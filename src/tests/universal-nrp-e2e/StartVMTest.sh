@@ -217,7 +217,7 @@ qemu-system-x86_64                                                    \
     -drive if=virtio,format=raw,file=$basepath/seed.img
 EOF
 )
-do_sudo bash -c "eval $qemu_command"
+do_sudo bash -c "eval $qemu_command" || { echo "qemu failed! Check console for details." 1>&2; exit 1; }
 
 pid_qemu=$(ps aux | grep -m 1 "qemu.*hostfwd=tcp::$qemu_fwport-:22" | awk '{print $2}')
 echo "QEMU process started with PID: $pid_qemu"

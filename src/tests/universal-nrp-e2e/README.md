@@ -16,6 +16,7 @@ Here are a few locations where cloud images can be obtained:
  - [Debian Cloud Images](https://cloud.debian.org/images/cloud/)
  - [CentOS Cloud Images](https://cloud.centos.org/centos/)
  - [Rocky Linux Images](https://rockylinux.org/download) - also contains Cloud images
+ - [Oracle Cloud Images](https://yum.oracle.com/oracle-linux-templates.html)
 
 ### Usage
 ```
@@ -48,7 +49,11 @@ Generalizing an image is useful if its going to be reused for re-running tests o
 You typically want to generalize images that do not just work out-of-box in order to keep a "Golden Master" image that just works to avoid having to reprovision VM images when you want to re-run tests on a particular VM image.
 
 #### Example - Using CentOS-7 an EOL distribution with Errors
-This example will generalize an older distro image, where we will hit some errors. This example will demonstrate some common problems can can occur using older distributions where they are no longer being maintained.
+This example will generalize an older distro image, where we will hit many dependency issues. This example will demonstrate some common problems can can occur using older distributions where they are no longer being maintained and you must build and install some of the needed dependencies.
+
+This example demonstrates:
+ - EOL distribution whose package mirrors are out of date and must be updated
+ - Test dependencies 
 
 Using the _CentOS-7_ distribution below.
 ```sh
@@ -56,19 +61,35 @@ Using the _CentOS-7_ distribution below.
 wget https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-2211.qcow2
 # Add some additional space just to ensure satisfactory space for installing tools/dependencies
 qemu-img resize CentOS-7-x86_64-GenericCloud-2211.qcow2 +2G
-# Start VM Image with generalization and debug flag
-./StartVMTest.sh -i CentOS-7-x86_64-GenericCloud-2211.qcow2 -g -d
+# Start VM Image with extra memory (4096mb) generalization and debug flag
+./StartVMTest.sh -i CentOS-7-x86_64-GenericCloud-2211.qcow2 -m 4096 -g -d
 ```
 The VM will boot and show the console, so any errors can be resolved afterwards, the utility will provide ssh login information in order for you to go and resolve any issues.
 
-As we can see below, there was an issue `StartLocalTest.sh: line 112: wget: command not found`. But our ssh login and credentials are available for us to go and resolve the issue.
+As we can see below, there was an issue `pwsh: /lib64/libstdc++.so.6: version 'GLIBCXX_3.4.21' not found (required by pwsh)`. But our ssh login and credentials are available for us to go and resolve the issue.
 ```
-...
-StartLocalTest.sh: line 112: wget: command not found
-error: open of /tmp/omi.rpm failed: No such file or directory
+Image path: CentOS-7-x86_64-GenericCloud-2211.qcow2.
+VM memory: 8096 mb.
+Generalization Mode: enabled.
+Debug Mode: enabled.
+sudo is available. Attempting to sudo for better VM performance...
+[sudo] password for ahmed:
 done!
+Starting QEMU using qcow2 format SSH port (22) forwarded to 22902 with 8096 mb RAM ...
+QEMU process started with PID: 5448
+Waiting for VM provisioning...........done!
 sudo is available. Attempting to sudo...
 done!
+Checking dependencies...
+
+Powershell not found. Installing Powershell...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100 68.3M  100 68.3M    0     0  5553k      0  0:00:12  0:00:12 --:--:-- 6122k
+ln: failed to create symbolic link '/usr/bin/pwsh': File exists
+pwsh: /lib64/libstdc++.so.6: version `GLIBCXX_3.4.20' not found (required by pwsh)
+pwsh: /lib64/libstdc++.so.6: version `GLIBCXX_3.4.21' not found (required by pwsh)
 Generalizing machine...
 Failed to set locale, defaulting to C
 Loaded plugins: fastestmirror
@@ -83,7 +104,7 @@ When done with VM, terminate the process to free up VM resources.
 ✅ Generalization complete!
 ```
 
-As seen above, our ssh command is present for us to go fix the issue, in this case it seems `wget` is missing, let's go and install it.
+As seen above, our ssh command is present for us to go fix the issue, in this case it seems `GLIBCXX_3.4.21` is missing for the Powershell runtime, let's go and install it.
 
 ```
 ssh -i /home/ahmed/git/azure-osconfig/src/tests/universal-nrp-e2e/_CentOS-7-x86_64-GenericCloud-2211/id_rsa user1@localhost -p 26654
