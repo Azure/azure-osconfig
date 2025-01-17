@@ -4,14 +4,21 @@
 # Description: This script orchestrates tests on particular disk image for testing purposes.
 #              It configures the VM with a specified image and places all required test artifacts in
 #              addition to installing dependencies, running tests, and collecting logs/reports.
+#              Returns an error code if any stage fails.
+#              There is also both a generalize and a debug mode flag that can be used to generalize an
+#              image and a debug mode that will leave the VM up for debugging.
 #
-# Usage: ./StartMCTest.sh -i /path/to/image.img -p /path/to/policypackage.zip -c 42 [-s] [-m 512] [-d]
-#        -i Image Path: Path to the image in qcow2 format
-#        -p Policy Package: Path to the policy package
-#        -c Resource Count: The number of resources to validate
-#        -s Skip Remediation: Skip remediation flag (Default: false)
-#        -d Debug Mode: VM stays up for debugging (Default: false)
-#        -m VM Memory Size (Megabytes): Size of VM's RAM (Default: 512)
+# Usage: ./StartVMTest.sh [-i /path/to/image.img -p /path/to/policypackage.zip -c resource-count [-g]] [-m 512] [-r] [-d]
+#        -i Image Path:            Path to the image qcow2 format
+#        -p Policy Package:        Path to the policy package
+#        -c Resource Count:        The number of resources to validate, tests will fail if this doesn't match (Default: 0)
+#        -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
+#        -r Remediation:           Perform remediation flag (Default: false)
+#        -g Generalize Flag:       Generalize the current machine for tests. Performs the following:
+#                                    - Remove logs and tmp directories
+#                                    - Clean package management cache
+#                                    - Clean cloud-init flags to reset cloud-init to initial-state
+#        -d Debug Mode:            VM stays up for debugging (Default: false)
 #
 # Dependencies: 
 #   - qemu-system-x86_64
@@ -19,25 +26,29 @@
 
 # CLI variables
 imagepath=""
-policypackage=""
-skipremediation=false
-resourcecount=0
 vmmemory=512
-key=""
 debug=false
+policypackage=""
+remediation=false
+resourcecount=0
+generalize=false
 
 # Private variables
 tests_failed=false
 use_sudo=false
 
 usage() { 
-    echo "Usage: $0 -i /path/to/image.img -p /path/to/policypackage.zip -c 42 [-s] [-m 512] [-d]
-    -i Image Path: Path to the image qcow2 format
-    -p Policy Package: Path to the policy package
-    -c Resource Count: The number of resources to validate
-    -s Skip Remediation: Skip remediation flag (Default: false)
-    -d Debug Mode: VM stays up for debugging (Default: false)
-    -m VM Memory Size (Megabytes): Size of VMs RAM (Default: 512)" 1>&2; 
+    echo "Usage: $0 -i /path/to/image.img -p /path/to/policypackage.zip -c resource-count [-m 512] [-r] [-d]
+    -i Image Path:            Path to the image qcow2 format
+    -p Policy Package:        Path to the policy package
+    -c Resource Count:        The number of resources to validate, tests will fail if this doesn't match
+    -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
+    -r Remediation:           Perform remediation flag (Default: false)
+    -g Generalize Flag:       Generalize the current machine for tests. Performs the following:
+                                - Remove logs and tmp directories
+                                - Clean package management cache
+                                - Clean cloud-init flags to reset cloud-init to initial-state
+    -d Debug Mode Flag:       VM stays up for debugging (Default: false)" 1>&2; 
     exit 1; 
 }
 check_if_error() {
@@ -55,35 +66,63 @@ find_free_port() {
         fi
     done
 }
+debug_mode() {
+    if [ $debug = true ]; then
+        echo "######################################################################"
+        echo "Debug mode enabled. To connect via SSH:"
+        echo "  ssh -i $(pwd)/$basepath/id_rsa user1@localhost -p $qemu_fwport"
+        echo "When done with VM, terminate the process to free up VM resources."
+        [ $use_sudo == "true" ] && echo "  sudo kill $pid_qemu" || echo "  kill $pid_qemu"
+        echo "######################################################################"
+    fi
+}
 cleanup() {
     if [ $debug = false ]; then
-        [ $use_sudo == "true" ] && sudo kill $pid_qemu || kill $pid_qemu
+        do_sudo kill $pid_qemu
     fi
     exit $1
 }
+do_sudo() {
+    if [ "$use_sudo" = true ]; then
+        sudo "$@"
+    else
+        "$@"
+    fi
+}
+
 trap cleanup 1 SIGINT
 
-OPTSTRING=":i:p:c:m:sd"
+OPTSTRING=":i:p:c:m:rdg"
 
 while getopts ${OPTSTRING} opt; do
     case ${opt} in
         i)
             imagepath=${OPTARG}
+            echo "Image path: $imagepath."
             ;;
         p)
             policypackage=${OPTARG}
+            echo "Policy package: $policypackage."
             ;;
         c)
             resourcecount=${OPTARG}
-            ;;
-        s)
-            skipremediation=true
-            ;;
-        d)
-            debug=true
+            echo "Resource count: $resourcecount."
             ;;
         m)
             vmmemory=${OPTARG}
+            echo "VM memory: $vmmemory mb."
+            ;;
+        r)
+            echo "Remediation Mode: enabled."
+            remediation=true
+            ;;
+        d)
+            echo "Debug Mode: enabled."
+            debug=true
+            ;;
+        g)
+            echo "Generalization Mode: enabled."
+            generalize=true
             ;;
         :)
             echo "Option -${OPTARG} requires an argument."
@@ -96,7 +135,10 @@ while getopts ${OPTSTRING} opt; do
     esac
 done
 
-if [ -z "${imagepath}" ] || [ -z "${policypackage}" ]; then
+if [ -z "${imagepath}" ]; then
+    usage
+fi
+if [ $generalize = false ] && [ -z "${policypackage}" ]; then
     usage
 fi
 
@@ -159,7 +201,7 @@ touch $basepath/metadata/vendor-data
 # Create seed.img for cloud-init
 cloud-localds $basepath/seed.img $basepath/metadata/user-data $basepath/metadata/meta-data
 
-# Start QEMU, point to local IMDS server for cloud-init to use instance
+# Start QEMU
 qemu_fwport=$(find_free_port)
 qemu_imgformat=$( [ "${imagepath##*.}" = "raw" ] && echo "raw" || echo "qcow2" )
 echo "Starting QEMU using $qemu_imgformat format SSH port (22) forwarded to $qemu_fwport with $vmmemory mb RAM ..." 
@@ -175,7 +217,7 @@ qemu-system-x86_64                                                    \
     -drive if=virtio,format=raw,file=$basepath/seed.img
 EOF
 )
-[ $use_sudo == "true" ] && sudo bash -c "eval $qemu_command" || eval $qemu_command
+do_sudo bash -c "eval $qemu_command"
 
 pid_qemu=$(ps aux | grep -m 1 "qemu.*hostfwd=tcp::$qemu_fwport-:22" | awk '{print $2}')
 echo "QEMU process started with PID: $pid_qemu"
@@ -189,147 +231,53 @@ while true; do
 done
 echo "done!"
 
-# Remote Dependencies Check
-ssh $ssh_args << 'EOF'
-    echo -n "Checking dependencies..."
-    if ! pwsh --version > /dev/null 2>&1; then
-        # echo "[ERROR] Missing Powershell. Please install it and try again." >&2
-        # err=true
-        echo "Powershell not found. Installing Powershell..."
-        # Download the powershell '.tar.gz' archive
-        curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-linux-x64.tar.gz
-
-        # Create the target folder where powershell will be placed
-        sudo mkdir -p /opt/microsoft/powershell/7
-
-        # Expand powershell to the target folder
-        sudo tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7
-
-        # Set execute permissions
-        sudo chmod +x /opt/microsoft/powershell/7/pwsh
-
-        # Create the symbolic link that points to pwsh
-        sudo ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
-    fi
-    if [ ! -d "/opt/omi/lib" ]; then
-        echo "OMI not found. Installing OMI..."
-        # OMI package is based on OpenSSL Versions: 1.0, 1.1, 3.0
-        openssl_version=$(openssl version | awk '{print $2}' | cut -d'.' -f1,2)
-        omi_url=""
-        if [ "$openssl_version" = "1.0" ]; then
-            omi_url="https://github.com/microsoft/omi/releases/download/v1.9.1-0/omi-1.9.1-0.ssl_100.ulinux.s.x64"
-        elif [ "$openssl_version" = "1.1" ]; then
-            omi_url="https://github.com/microsoft/omi/releases/download/v1.9.1-0/omi-1.9.1-0.ssl_110.ulinux.s.x64"
-        elif [ "$openssl_version" = "3.0" ]; then
-            omi_url="https://github.com/microsoft/omi/releases/download/v1.9.1-0/omi-1.9.1-0.ssl_300.ulinux.s.x64"
-        else
-            echo "Unknown OpenSSL version. This system may not be compatible with OMI."
-            err=true
-        fi
-        if command -v dpkg &> /dev/null; then
-            omi_url="$omi_url.deb"
-
-        elif command -v rpm &> /dev/null; then
-            omi_url="$omi_url.rpm"
-        else
-            echo "Unknown package manager. This system may not be Debian or RPM-based."
-            err=true
-        fi
-        if [ "$err" != true ]; then
-            echo "Downloading OMI package at $omi_url"
-            wget $omi_url -O /tmp/omi.${omi_url##*.}
-            if command -v dpkg &> /dev/null; then
-                sudo dpkg -i /tmp/omi.${omi_url##*.}
-            elif command -v rpm &> /dev/null; then
-                sudo rpm -Uvh /tmp/omi.${omi_url##*.}
-            fi
-        fi
-    fi
-    if [ "$err" = true ]; then
-        exit 1
-    fi
-    echo "done!"
-EOF
+# Dependencies Check
+scp -P $qemu_fwport -i $basepath/id_rsa StartLocalTest.sh user1@localhost:~ || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
+ssh $ssh_args "bash StartLocalTest.sh -s dependency_check"
 check_if_error
+
+if [ $generalize = true ]; then
+    ssh $ssh_args "bash StartLocalTest.sh -g" || { echo "Generalization failed! Check console for details." 1>&2; cleanup 1; }
+    if [ $debug = false ]; then
+        echo "Shutting down VM..."
+        ssh $ssh_args "sudo shutdown now"
+    fi
+    debug_mode
+    echo "✅ Generalization complete!"
+    # If image is to be generalized, exit here
+    exit 0
+fi
 
 echo "Copying test artifacts to VM..."
 policyPackageFileName=$(basename $policypackage)
 scp -P $qemu_fwport -i $basepath/id_rsa $policypackage user1@localhost:~ || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
-
-remote_home_dir=$(ssh $ssh_args 'echo $HOME')
-cat << EOF > $basepath/bootstrap.ps1
-Install-Module -Name GuestConfiguration -Force
-Install-Module Pester -Force -SkipPublisherCheck
-Import-Module Pester -Passthru
-
-\$params = @{
-    PolicyPackage = "$remote_home_dir/$policyPackageFileName"
-    SkipRemediation = \$$skipremediation
-    ResourceCount = $resourcecount
-}
-\$container = New-PesterContainer -Path $remote_home_dir/UniversalNRP.Tests.ps1 -Data \$params
-\$pesterConfig = [PesterConfiguration]@{
-    Run = @{
-        Exit = \$true
-        Container = \$container
-    }
-    Output = @{
-        Verbosity = 'Detailed'
-    }
-    TestResult = @{
-        Enabled      = \$true
-        OutputFormat = 'JUnitXml'
-        OutputPath   = '$imagepath.testResults.xml'
-    }
-    Should = @{
-        ErrorAction = 'Continue'
-    }
-};
-Invoke-Pester -Configuration \$pesterConfig
-EOF
-check_if_error
-
-scp -P $qemu_fwport -i $basepath/id_rsa $basepath/bootstrap.ps1 user1@localhost:~ || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
 scp -P $qemu_fwport -i $basepath/id_rsa UniversalNRP.Tests.ps1 user1@localhost:~ || { echo "scp failed! Check console for details."1>&2; cleanup 1; }
 
 # Run tests
-ssh $ssh_args << 'EOF'
-    echo "Running tests..."
-    sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command ./bootstrap.ps1
-EOF
+ssh_command="bash StartLocalTest.sh -s run_tests -p $policyPackageFileName -c $resourcecount"
+if [ $remediation = true ]; then
+    ssh_command="$ssh_command -r"
+fi
+ssh $ssh_args "$ssh_command"
 if [ $? -ne 0 ]; then
     echo "Tests failed! Check console for details." 1>&2;
     tests_failed=true
 fi
 
 # Log/Report collection
-ssh $ssh_args << 'EOF'
-    echo "Collecting logs/reports..."
-    mkdir -p ~/osconfig-logs
-    sudo cp -r /var/log/osconfig* ~/osconfig-logs/
-    cp *testResults.xml ~/osconfig-logs
-    tar -czvf osconfig-logs.tar.gz osconfig-logs
-EOF
+ssh $ssh_args "bash StartLocalTest.sh -s collect_logs"
 check_if_error
 temp_dir=$(mktemp -d)
 scp -P $qemu_fwport -i $basepath/id_rsa user1@localhost:~/osconfig-logs.tar.gz $temp_dir/osconfig-logs.tar.gz || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
 tar -xzf $temp_dir/osconfig-logs.tar.gz -C "$temp_dir"
 rm $temp_dir/osconfig-logs.tar.gz
 cp $log_file $temp_dir
-tar -czf $basepath/osconfig-logs-$curtime.tar.gz -C "$temp_dir" .
+tar -czf $basepath/osconfig-logs-$curtime.tar.gz -C "$temp_dir" . > /dev/null 2>&1
 rm -rf "$temp_dir"
 echo "Log archive created: $basepath/osconfig-logs-$curtime.tar.gz"
 
 # Finished, optionally show debug banner, cleanup and exit with the Pester exit code
-if [ $debug = true ]; then
-    echo "######################################################################"
-    echo "Debug mode enabled. To connect via SSH:"
-    echo "  ssh -i $(pwd)/$basepath/id_rsa user1@localhost -p $qemu_fwport"
-    echo "When done with VM, terminate the process to free up VM resources."
-    [ $use_sudo == "true" ] && echo "  sudo kill $pid_qemu" || echo "  kill $pid_qemu"
-    echo "######################################################################"
-fi
-
+debug_mode
 if [ $tests_failed = true ]; then
     echo "❌ Tests failed! Check console for details. Check logs or enabled debug [-d] to connect to VM with SSH" 1>&2;
     cleanup 1

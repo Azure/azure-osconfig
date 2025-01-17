@@ -1,4 +1,4 @@
 _*
-*.img
-*.qcow2
-*.raw
+*.img*
+*.qcow2*
+*.raw*
