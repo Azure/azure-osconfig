@@ -985,8 +985,6 @@ void AsbInitialize(void* log)
 
 void AsbShutdown(void* log)
 {
-    long time = 0; 
-    
     OsConfigLogInfo(log, "%s shutting down", g_asbName);
 
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
@@ -1026,7 +1024,7 @@ void AsbShutdown(void* log)
 
     SshAuditCleanup(log);
 
-    if (0 == StopPerfClock(&g_perfClock, log)))
+    if (0 == StopPerfClock(&g_perfClock, log))
     {
         LogPerfClock(g_perfClock, NULL, NULL, 0, g_maxTotalTime, log);
     }
@@ -4027,7 +4025,6 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     JSON_Value* jsonValue = NULL;
     char* serializedValue = NULL;
     struct timespec clock = {0};
-    long time = 0;
     int status = 0;
     char* result = NULL;
 
@@ -4041,7 +4038,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    StartPerfClock(&clock, log);
+    StartPerfClock(&g_perfClock, log);
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
@@ -4795,7 +4792,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
     FREE_MEMORY(result);
 
-    if (0 == StopPerfClock(&g_perfClock, log)))
+    if (0 == StopPerfClock(&g_perfClock, log))
     {
         LogPerfClock(g_perfClock, componentName, objectName, status, g_maxAuditTime, log);
     }
@@ -4809,8 +4806,6 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     JSON_Value* jsonValue = NULL;
     char* jsonString = NULL;
     char* payloadString = NULL;
-    struct timespec clock = {0};
-    long time = 0;
     int status = 0;
 
     // No payload is accepted for now, this may change once the complete Azure Security Baseline is implemented
@@ -4820,7 +4815,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         return EINVAL;
     }
 
-    StartPerfClock(&clock, log);
+    StartPerfClock(&g_perfClock, log);
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
@@ -5767,13 +5762,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     
     FREE_MEMORY(payloadString);
 
-    if (0 == StopPerfClock(&g_perfClock, log)))
-    {
-        LogPerfClock(g_perfClock, componentName, objectName, status, g_maxAuditTime, log);
-    }
-
-    
-    if (0 == StopPerfClock(&g_perfClock, log)))
+    if (0 == StopPerfClock(&g_perfClock, log))
     {
         // Ignore the successful init* objects and focus on remediate* ones
         if (0 != strncmp(objectName, init, strlen(init)))
