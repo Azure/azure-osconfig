@@ -63,8 +63,8 @@ long GetPerfClockTime(PERF_CLOCK* clock, void* log)
         return microseconds;
     }
 
-    microseconds = ((clock->stop.tv_sec - clock->start.tv_sec) * 1000000) + (((clock->stop.tv_nsec > clock->start.tv_nsec) ?
-        (clock->stop.tv_nsec - clock->start.tv_nsec) : 0) / 1000);
+    microseconds = ((clock->stop.tv_sec - clock->start.tv_sec) * 1000000) + 
+        (((clock->stop.tv_nsec > clock->start.tv_nsec) ? (clock->stop.tv_nsec - clock->start.tv_nsec) : 0) / 1000);
 
     return microseconds;
 }
@@ -74,15 +74,15 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
     static const char* perfWarning = "*** Warning ***";
     long microseconds = -1;
 
-    if (NULL == clock)
+    if ((NULL == clock) || (NULL == componentName))
     {
-        OsConfigLogError(log, "LogPerfClock called with an invalid clock argument");
+        OsConfigLogError(log, "LogPerfClock called with an invalid argument");
         return;
     }
 
     microseconds = GetPerfClockTime(clock, log);
 
-    if ((NULL != componentName) && (NULL != objectName))
+    if (NULL != objectName)
     {
         if (0 == objectResult)
         {
@@ -101,12 +101,12 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
     }
     else
     {
-        OsConfigLogInfo(log, "Execution completed in %ld seconds (%ld microseconds)", microseconds / 1000000, microseconds);
+        OsConfigLogInfo(log, "%s completed in %ld seconds (%ld microseconds)", componentName, microseconds / 1000000, microseconds);
 
         if (microseconds > limit)
         {
-            OsConfigLogError(log, "Execution completion time of %ld microseconds is longer than %ld minutes (%ld microseconds) %s",
-                microseconds, limit / 60000000, limit, perfWarning);
+            OsConfigLogError(log, "%s completion time of %ld microseconds is longer than %ld minutes (%ld microseconds) %s",
+                componentName, microseconds, limit / 60000000, limit, perfWarning);
         }
     }
 }
