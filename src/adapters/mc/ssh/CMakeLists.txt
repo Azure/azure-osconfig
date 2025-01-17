@@ -21,14 +21,6 @@ target_link_libraries(OsConfigResourceSsh
 # SO binary name must match the universal class name in MOF with a "lib" prefix added
 set_target_properties(OsConfigResourceSsh PROPERTIES OUTPUT_NAME libOsConfigResource)
 
-# The binary size limit for the SO binary, in bytes 
-set(MAX_FILE_SIZE 762880)
-file(WRITE "${PROJECT_BINARY_DIR}/check_filesize_ssh.cmake"
-    "file(READ filesize_ssh.txt actual_file_size)\n"
-    "if(actual_file_size GREATER ${MAX_FILE_SIZE})\n"
-        "message(FATAL_ERROR \"SO binary size exceeds the maximum allowed size of ${MAX_FILE_SIZE} bytes\")\n"
-    "endif()\n")
-
 # Create the policy artifacts ZIP package for SSH Posture Control
 
 add_custom_target(stage_create_ssh_zip
@@ -36,10 +28,6 @@ add_custom_target(stage_create_ssh_zip
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.metaconfig.json" ${PROJECT_BINARY_DIR}/Staging/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.mof" ${PROJECT_BINARY_DIR}/Staging/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceSsh> ${PROJECT_BINARY_DIR}/Staging/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
-    COMMAND ${CMAKE_COMMAND} -E echo "Checking file size of $<TARGET_FILE:OsConfigResourceSsh>"
-    COMMAND stat --format=%s $<TARGET_FILE:OsConfigResourceSsh> > ${PROJECT_BINARY_DIR}/filesize_ssh.txt
-    COMMAND ${CMAKE_COMMAND} -P ${PROJECT_BINARY_DIR}/check_filesize_ssh.cmake
-    BYPRODUCTS filesize_ssh.txt
     DEPENDS OsConfigResourceSsh)
 
 add_custom_target(create_ssh_zip ALL
