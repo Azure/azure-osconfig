@@ -1026,7 +1026,7 @@ void AsbShutdown(void* log)
 
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
-        LogPerfClock(&g_perfClock, NULL, NULL, 0, g_maxTotalTime, GetPerfLog());
+        LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
     }
 
     CloseLog(&g_perfLog);
