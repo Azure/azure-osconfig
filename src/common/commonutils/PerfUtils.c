@@ -93,7 +93,7 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
         }
         else
         {
-            OsConfigLogError(GetPerfLog(), "%s.%s failed in %ld microseconds with %d", componentName, objectName, microseconds, objectResult);
+            OsConfigLogError(log, "%s.%s failed in %ld microseconds with %d", componentName, objectName, microseconds, objectResult);
         }
 
         if (microseconds > limit)
@@ -108,7 +108,7 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
 
         if (microseconds > limit)
         {
-            OsConfigLogError(GetPerfLog(), "Execution completion time of %ld microseconds is longer than %ld minutes (%ld microseconds) %s",
+            OsConfigLogError(log, "Execution completion time of %ld microseconds is longer than %ld minutes (%ld microseconds) %s",
                 microseconds, limit / 60000000, limit, perfWarning);
         }
     }
