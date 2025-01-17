@@ -2459,6 +2459,8 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     EXPECT_EQ(EINVAL, StartPerfClock(nullptr, nullptr));
     EXPECT_EQ(EINVAL, StopPerfClock(nullptr, nullptr));
     EXPECT_EQ(-1, GetPerfClockTime(nullptr, nullptr));
+    
+    clock.stop.tv_sec = 0;
     EXPECT_EQ(-1, GetPerfClockTime(&clock, nullptr));
 
     EXPECT_EQ(0, StartPerfClock(&another, nullptr));
