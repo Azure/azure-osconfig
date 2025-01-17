@@ -883,7 +883,7 @@ void AsbInitialize(void* log)
     CloseLog(&g_perfLog);
     g_perfLog = NULL;
 
-    StartPerfClock(&g_perfClock, log);
+    StartPerfClock(&g_perfClock, GetPerfLog());
 
     if (NULL != (cpuModel = GetCpuModel(log)))
     {
@@ -1024,9 +1024,9 @@ void AsbShutdown(void* log)
 
     SshAuditCleanup(log);
 
-    if (0 == StopPerfClock(&g_perfClock, log))
+    if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
-        LogPerfClock(&g_perfClock, NULL, NULL, 0, g_maxTotalTime, log);
+        LogPerfClock(&g_perfClock, NULL, NULL, 0, g_maxTotalTime, GetPerfLog());
     }
 
     CloseLog(&g_perfLog);
@@ -4037,7 +4037,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    StartPerfClock(&g_perfClock, log);
+    StartPerfClock(&g_perfClock, GetPerfLog());
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
@@ -4791,9 +4791,9 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
     FREE_MEMORY(result);
 
-    if (0 == StopPerfClock(&g_perfClock, log))
+    if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
-        LogPerfClock(&g_perfClock, componentName, objectName, status, g_maxAuditTime, log);
+        LogPerfClock(&g_perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
     }
 
     return status;
@@ -4814,7 +4814,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         return EINVAL;
     }
 
-    StartPerfClock(&g_perfClock, log);
+    StartPerfClock(&g_perfClock, GetPerfLog());
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
@@ -5761,12 +5761,12 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     
     FREE_MEMORY(payloadString);
 
-    if (0 == StopPerfClock(&g_perfClock, log))
+    if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         // Ignore the successful init* objects and focus on remediate* ones
         if (0 != strncmp(objectName, init, strlen(init)))
         {
-            LogPerfClock(&g_perfClock, componentName, objectName, status, g_maxRemediateTime, log);
+            LogPerfClock(&g_perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
         }
     }
 
