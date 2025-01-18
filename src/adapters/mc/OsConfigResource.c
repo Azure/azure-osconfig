@@ -47,15 +47,6 @@ OSCONFIG_LOG_HANDLE GetLog(void)
     return g_log;
 }
 
-static void CloseLogAndAllowReadAccess(void)
-{
-    CloseLog(&g_log);
-
-    // When the NRP is done, allow others read-only (no write, search or execute) access to the NRP logs
-    SetFileAccess(LOG_FILE, 0, 0, 6774, NULL);
-    SetFileAccess(ROLLED_LOG_FILE, 0, 0, 6774, NULL);
-}
-
 void __attribute__((constructor)) Initialize()
 {
     g_resourceId = NULL;
@@ -86,7 +77,11 @@ void __attribute__((destructor)) Destroy()
 
     OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library unloaded by host process %d", getpid());
 
-    CloseLogAndAllowReadAccess();
+    CloseLog(&g_log);
+
+    // When the NRP is done, allow others read-only (no write, search or execute) access to the NRP logs
+    SetFileAccess(LOG_FILE, 0, 0, 6774, NULL);
+    SetFileAccess(ROLLED_LOG_FILE, 0, 0, 6774, NULL);
 }
 
 static void LogOsConfigVersion(MI_Context* context)
@@ -204,9 +199,6 @@ void MI_CALL OsConfigResource_Unload(
     }
 
     MI_Context_PostResult(context, MI_RESULT_OK);
-
-    // Sometimes (such in as OSConfig CI) this is the last call that we receive
-    CloseLogAndAllowReadAccess();
 }
 
 void MI_CALL OsConfigResource_EnumerateInstances(

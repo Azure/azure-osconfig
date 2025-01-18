@@ -1027,11 +1027,9 @@ void AsbShutdown(void* log)
 
     CloseLog(&g_perfLog);
     
-    SetFileAccess(PERF_LOG_FILE, 0, 0, 6774, log);
-    if (true == FileExists(ROLLED_PERF_LOG_FILE))
-    {
-        SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 6774, log);
-    }
+    // When done, allow others access to read the performance log
+    SetFileAccess(PERF_LOG_FILE, 0, 0, 6774, NULL);
+    SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 6774, NULL);
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(void* log)
