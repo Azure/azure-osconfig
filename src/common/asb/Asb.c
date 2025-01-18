@@ -881,7 +881,6 @@ void AsbInitialize(void* log)
     if (true == FileExists(PERF_LOG_FILE))
     {
         RenameFile(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, log);
-        SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 6774, log);
     }
     
     StartPerfClock(&g_perfClock, GetPerfLog());
@@ -1034,6 +1033,10 @@ void AsbShutdown(void* log)
     CloseLog(&g_perfLog);
     
     SetFileAccess(PERF_LOG_FILE, 0, 0, 6774, log);
+    if (true == FileExists(ROLLED_PERF_LOG_FILE))
+    {
+        SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 6774, log);
+    }
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(void* log)
