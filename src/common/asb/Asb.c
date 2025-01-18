@@ -886,6 +886,7 @@ void AsbInitialize(void* log)
     
     StartPerfClock(&g_perfClock, GetPerfLog());
 
+    OsConfigLogInfo(GetPerfLog(), "--------------------------------------------------------------------------------");
     OsConfigLogInfo(GetPerfLog(), "%s", g_asbName);
     OsConfigLogInfo(GetPerfLog(), "Maximum audit time per rule under ideal conditions: %lu microseconds", g_maxAuditTime);
     OsConfigLogInfo(GetPerfLog(), "Maximum remediation time per rule under ideal conditions: %lu microseconds", g_maxRemediateTime);
