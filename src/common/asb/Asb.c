@@ -634,11 +634,12 @@ static const int g_varLogJournalMode = 2755;
 
 static PERF_CLOCK g_perfClock = {{0, 0}, {0, 0}};
 
-// Maximum ASB rule audit time: 5 seconds
+// Expected time limits under ideal conditions
+// Maximum per-rule audit time: 5 seconds
 static const long g_maxAuditTime = 5000000;
 // Maximum ASB rule remediation time: 15 seconds
 static const long g_maxRemediateTime = 15000000;
-// Maximum ASB baseline run time: 30 minutes
+// Maximum baseline run times: 30 minutes
 static const long g_maxTotalTime = 1800000000;
 
 static OSCONFIG_LOG_HANDLE g_perfLog = NULL;
@@ -878,17 +879,14 @@ void AsbInitialize(void* log)
     long freeMemory = 0;
     unsigned short freeMemoryPercentage = 0;
 
-    if (true == FileExists(PERF_LOG_FILE))
-    {
-        RenameFile(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, log);
-    }
+    ForceTrimLog(GetPerfLog());
     
     StartPerfClock(&g_perfClock, GetPerfLog());
 
     OsConfigLogInfo(GetPerfLog(), "%s", g_asbName);
-    OsConfigLogInfo(GetPerfLog(), "Targeted audit time per rule: %lu microseconds", g_maxAuditTime);
-    OsConfigLogInfo(GetPerfLog(), "Targeted  remediation time per rule: %lu microseconds", g_maxRemediateTime);
-    OsConfigLogInfo(GetPerfLog(), "Targeted total run time: %lu minutes (%lu microseconds)", g_maxTotalTime / 60000000, g_maxTotalTime);
+    OsConfigLogInfo(GetPerfLog(), "Maximum audit time per rule under ideal conditions: %lu microseconds", g_maxAuditTime);
+    OsConfigLogInfo(GetPerfLog(), "Maximum remediation time per rule under ideal conditions: %lu microseconds", g_maxRemediateTime);
+    OsConfigLogInfo(GetPerfLog(), "Maximum total run time under ideal conditions: %lu minutes (%lu microseconds)", g_maxTotalTime / 60000000, g_maxTotalTime);
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {

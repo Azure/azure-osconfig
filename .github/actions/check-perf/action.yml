@@ -1,35 +1,35 @@
 name: Check performance
-description: Checks the performance log for failures
+description: Checks the performance log for warnings
 
 inputs:
   perflog:
     description: the performance log path
     required: true
   mark:
-    description: the performance failure marker
+    description: the performance warning marker
     required: true
 
 runs:
   using: composite
   steps:
-    - name: Check for performance failures
+    - name: Check for performance warnings
       env:
         perflog: ${{ inputs.perflog }}
         mark: ${{ inputs.mark }}
       run: |
         failed=false
 
-        echo "Checking '$perflog' for any performance warnings ('$mark')"
+        echo "Checking '$perflog' for any performance wanings"
         ls -l "$perflog"
         echo "Contents of '$perflog':"
         cat "$perflog"        
 
-        failures=$(grep -i "$mark" $perflog || true)
+        warnings=$(grep -i "$mark" $perflog || true)
 
-        if [ -n "$failures" ]; then
-            echo "Found performance failures in '$perflog'"
-            echo "Failures:"
-            echo "$failures"
+        if [ -n "$warnings" ]; then
+            echo "Found performance warnings in '$perflog'"
+            echo "warnings:"
+            echo "$warnings"
             failed=true
         else
             echo "Found no performance warnings in '$perflog'"

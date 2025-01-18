@@ -36,20 +36,6 @@ bool IsFullLoggingEnabled()
 
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
 {
-    if (NULL == fileName)
-    {
-        return EINVAL;
-    }
-
-    // S_ISUID (4000): Set user ID on execution
-    // S_ISGID (2000): Set group ID on execution
-    // S_IRUSR (0400): Read permission, owner
-    // S_IWUSR (0200): Write permission, owner
-    // S_IRGRP (0040): Read permission, group
-    // S_IWGRP (0020): Write permission, group.
-    // S_IXUSR (0100): Execute/search permission, owner
-    // S_IXGRP (0010): Execute/search permission, group
-
     return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
 }
 
@@ -158,6 +144,34 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
             RestrictFileAccessToCurrentAccountOnly(whatLog->backLogFileName);
         }
     }
+}
+
+void ForceTrimLog(OSCONFIG_LOG_HANDLE log)
+{
+    OSCONFIG_LOG* whatLog = NULL;
+    int fileSize = 0;
+
+    if ((NULL == log) || (NULL == (whatLog = (OSCONFIG_LOG*)log)))
+    {
+        return;
+    }
+
+    fclose(whatLog->log);
+
+    // Rename the log in place to make a backup copy, overwriting previous copy if any:
+    if ((NULL == whatLog->backLogFileName) || (0 != rename(whatLog->logFileName, whatLog->backLogFileName)))
+    {
+        // If the log could not be renamed, empty it:
+        whatLog->log = fopen(whatLog->logFileName, "w");
+        fclose(whatLog->log);
+    }
+
+    // Reopen the log in append mode:
+    whatLog->log = fopen(whatLog->logFileName, "a");
+
+    // Reapply restrictions once the file is recreated (also for backup, if any):
+    RestrictFileAccessToCurrentAccountOnly(whatLog->logFileName);
+    RestrictFileAccessToCurrentAccountOnly(whatLog->backLogFileName);
 }
 
 bool IsDaemon()
