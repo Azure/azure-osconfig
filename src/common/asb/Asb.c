@@ -875,9 +875,9 @@ void AsbInitialize(void* log)
     long freeMemory = 0;
     unsigned short freeMemoryPercentage = 0;
 
-    StartPerfClock(&g_perfClock, GetPerfLog());
-
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
+
+    StartPerfClock(&g_perfClock, GetPerfLog());
 
     OsConfigLogInfo(GetPerfLog(), "%s", separatorLine);
     OsConfigLogInfo(GetPerfLog(), "%s", g_asbName);
