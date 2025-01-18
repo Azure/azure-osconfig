@@ -199,6 +199,11 @@ void MI_CALL OsConfigResource_Unload(
     }
 
     MI_Context_PostResult(context, MI_RESULT_OK);
+
+    /////////////////////////////////
+    SetFileAccess(LOG_FILE, 0, 0, 6774, NULL);
+    SetFileAccess(ROLLED_LOG_FILE, 0, 0, 6774, NULL);
+    /////////////////////////////////
 }
 
 void MI_CALL OsConfigResource_EnumerateInstances(
