@@ -31,7 +31,6 @@ bool IsFullLoggingEnabled(void);
 FILE* GetLogFile(OSCONFIG_LOG_HANDLE log);
 char* GetFormattedTime();
 void TrimLog(OSCONFIG_LOG_HANDLE log);
-void ForceTrimLog(OSCONFIG_LOG_HANDLE log);
 bool IsDaemon(void);
 
 #define __SHORT_FILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)

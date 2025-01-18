@@ -872,6 +872,7 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
 
 void AsbInitialize(void* log)
 {
+    const char* separatorLine = "--------------------------------------------------------------------------------";
     char* prettyName = NULL;
     char* kernelVersion = NULL;
     char* cpuModel = NULL;
@@ -879,18 +880,10 @@ void AsbInitialize(void* log)
     long freeMemory = 0;
     unsigned short freeMemoryPercentage = 0;
 
-    /*if (true == FileExists(PERF_LOG_FILE))
-    {
-        ForceTrimLog(GetPerfLog());
-    }*/
-    
     StartPerfClock(&g_perfClock, GetPerfLog());
 
-    OsConfigLogInfo(GetPerfLog(), "--------------------------------------------------------------------------------");
+    OsConfigLogInfo(GetPerfLog(), separatorLine);
     OsConfigLogInfo(GetPerfLog(), "%s", g_asbName);
-    OsConfigLogInfo(GetPerfLog(), "Maximum audit time per rule under ideal conditions: %lu microseconds", g_maxAuditTime);
-    OsConfigLogInfo(GetPerfLog(), "Maximum remediation time per rule under ideal conditions: %lu microseconds", g_maxRemediateTime);
-    OsConfigLogInfo(GetPerfLog(), "Maximum total run time under ideal conditions: %lu minutes (%lu microseconds)", g_maxTotalTime / 60000000, g_maxTotalTime);
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {

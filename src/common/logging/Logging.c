@@ -146,33 +146,6 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
     }
 }
 
-void ForceTrimLog(OSCONFIG_LOG_HANDLE log)
-{
-    OSCONFIG_LOG* whatLog = NULL;
-
-    if ((NULL == log) || (NULL == (whatLog = (OSCONFIG_LOG*)log)))
-    {
-        return;
-    }
-
-    fclose(whatLog->log);
-
-    // Rename the log in place to make a backup copy, overwriting previous copy if any:
-    if ((NULL == whatLog->backLogFileName) || (0 != rename(whatLog->logFileName, whatLog->backLogFileName)))
-    {
-        // If the log could not be renamed, empty it:
-        whatLog->log = fopen(whatLog->logFileName, "w");
-        fclose(whatLog->log);
-    }
-
-    // Reopen the log in append mode:
-    whatLog->log = fopen(whatLog->logFileName, "a");
-
-    // Reapply restrictions once the file is recreated (also for backup, if any):
-    RestrictFileAccessToCurrentAccountOnly(whatLog->logFileName);
-    RestrictFileAccessToCurrentAccountOnly(whatLog->backLogFileName);
-}
-
 bool IsDaemon()
 {
     return (1 == getppid());
