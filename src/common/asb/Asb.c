@@ -882,7 +882,7 @@ void AsbInitialize(void* log)
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
-    OsConfigLogInfo(GetPerfLog(), separatorLine);
+    OsConfigLogInfo(GetPerfLog(), "%s", separatorLine);
     OsConfigLogInfo(GetPerfLog(), "%s", g_asbName);
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
