@@ -879,10 +879,10 @@ void AsbInitialize(void* log)
     long freeMemory = 0;
     unsigned short freeMemoryPercentage = 0;
 
-    if (true == FileExists(PERF_LOG_FILE))
+    /*if (true == FileExists(PERF_LOG_FILE))
     {
         ForceTrimLog(GetPerfLog());
-    }
+    }*/
     
     StartPerfClock(&g_perfClock, GetPerfLog());
 
