@@ -875,6 +875,7 @@ int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* gr
 static int RestoreSelinuxContext(const char* target, void* log)
 {
     char* restoreCommand = NULL;
+    char* textResult = NULL;
     int status = 0;
 
     if (NULL == target)
@@ -887,11 +888,12 @@ static int RestoreSelinuxContext(const char* target, void* log)
         OsConfigLogError(log, "RestoreSelinuxContext: out of memory");
         status = ENOMEM;
     }
-    else if (0 != (status = ExecuteCommand(NULL, restoreCommand, false, false, 0, 0, NULL, NULL, log)))
+    else if (0 != (status = ExecuteCommand(NULL, restoreCommand, false, false, 0, 0, &textResult, NULL, log)))
     {
         OsConfigLogError(log, "RestoreSelinuxContext: restorecon failed %d: %s", status, textResult);
     }
 
+    FREE_MEMORY(textResult);
     FREE_MEMORY(restoreCommand);
 
     return status;
