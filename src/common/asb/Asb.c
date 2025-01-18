@@ -878,11 +878,11 @@ void AsbInitialize(void* log)
     long freeMemory = 0;
     unsigned short freeMemoryPercentage = 0;
 
-    RenameFile(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, log);
+    if (true == FileExists(PERF_LOG_FILE))
+    {
+        RenameFile(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE, log);
+    }
     
-    CloseLog(&g_perfLog);
-    g_perfLog = NULL;
-
     StartPerfClock(&g_perfClock, GetPerfLog());
 
     OsConfigLogInfo(GetPerfLog(), "%s", g_asbName);
