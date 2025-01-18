@@ -867,7 +867,6 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
 
 void AsbInitialize(void* log)
 {
-    const char* separatorLine = "--------------------------------------------------------------------------------";
     char* prettyName = NULL;
     char* kernelVersion = NULL;
     char* cpuModel = NULL;
@@ -879,22 +878,21 @@ void AsbInitialize(void* log)
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
-    OsConfigLogInfo(GetPerfLog(), "%s", separatorLine);
-    OsConfigLogInfo(GetPerfLog(), "%s", g_asbName);
+    OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
-        OsConfigLogInfo(GetPerfLog(), "CPU model: %s", cpuModel);
+        OsConfigLogInfo(log, "AsbInitialize: CPU model: %s", cpuModel);
     }
 
-    OsConfigLogInfo(GetPerfLog(), "Number of CPU cores: %u", GetNumberOfCpuCores(log));
+    OsConfigLogInfo(log, "AsbInitialize: CPU cores: %u", GetNumberOfCpuCores(log));
 
     totalMemory = GetTotalMemory(log);
-    OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", totalMemory);
+    OsConfigLogInfo(log, "AsbInitialize: total memory: %lu kB", totalMemory);
     
     freeMemory = GetFreeMemory(log);
     freeMemoryPercentage = (freeMemory * 100) / totalMemory;
-    OsConfigLogInfo(GetPerfLog(), "Free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
+    OsConfigLogInfo(log, "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
     InitializeSshAudit(log);
 
@@ -955,18 +953,14 @@ void AsbInitialize(void* log)
         OsConfigLogInfo(log, "AsbInitialize: running on an unknown Linux distribution with kernel version '%s' and without a valid PRETTY_NAME in /etc/os-release", kernelVersion);
     }
     
-    OsConfigLogInfo(GetPerfLog(), "Running on '%s'", prettyName ? prettyName : "-");
-
     if (IsCommodore(log))
     {
         OsConfigLogInfo(log, "AsbInitialize: running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
-        OsConfigLogInfo(GetPerfLog(), "Running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
     }
 
     if (DetectSelinux(log))
     {
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
-        OsConfigLogInfo(GetPerfLog(), "SELinux present");
     }
 
     FREE_MEMORY(prettyName);
