@@ -55,12 +55,12 @@ OSCONFIG_LOG_HANDLE OpenLog(const char* logFileName, const char* bakLogFileName)
     if (NULL != newLog->logFileName)
     {
         newLog->log = fopen(newLog->logFileName, "a");
-        RestrictAccessToRootOnly(newLog->logFileName);
+        //TEMP RestrictAccessToRootOnly(newLog->logFileName);
     }
 
     if (NULL != newLog->backLogFileName)
     {
-        RestrictAccessToRootOnly(newLog->backLogFileName);
+        //TEMP RestrictAccessToRootOnly(newLog->backLogFileName);
     }
 
     return (OSCONFIG_LOG_HANDLE)newLog;

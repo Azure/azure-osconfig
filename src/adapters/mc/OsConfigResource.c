@@ -60,6 +60,10 @@ void __attribute__((constructor)) Initialize()
     g_desiredObjectValue = DuplicateString(g_failValue);
 
     OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library loaded by host process %d", getpid());
+
+    //TEMP FOR INVESTIGATION
+    SetFileAccess(LOG_FILE, 0, 0, 6774, NULL);
+    SetFileAccess(ROLLED_LOG_FILE, 0, 0, 6774, NULL);
 }
 
 void __attribute__((destructor)) Destroy()
