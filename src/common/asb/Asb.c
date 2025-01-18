@@ -880,24 +880,24 @@ void AsbInitialize(void* log)
     long freeMemory = 0;
     unsigned short freeMemoryPercentage = 0;
 
-    StartPerfClock(&g_perfClock, GetPerfLog());
+    StartPerfClock(&g_perfClock, log/*GetPerfLog()*/);
 
-    OsConfigLogInfo(GetPerfLog(), "%s", separatorLine);
-    OsConfigLogInfo(GetPerfLog(), "%s", g_asbName);
+    OsConfigLogInfo(log/*GetPerfLog()*/, "%s", separatorLine);
+    OsConfigLogInfo(log/*GetPerfLog()*/, "%s", g_asbName);
 
-    if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
+    if (NULL != (cpuModel = GetCpuModel(log/*GetPerfLog()*/)))
     {
-        OsConfigLogInfo(GetPerfLog(), "CPU model: %s", cpuModel);
+        OsConfigLogInfo(log/*GetPerfLog()*/, "CPU model: %s", cpuModel);
     }
 
-    OsConfigLogInfo(GetPerfLog(), "Number of CPU cores: %u", GetNumberOfCpuCores(log));
+    OsConfigLogInfo(log/*GetPerfLog()*/, "Number of CPU cores: %u", GetNumberOfCpuCores(log));
 
     totalMemory = GetTotalMemory(log);
-    OsConfigLogInfo(GetPerfLog(), "Total memory: %lu kB", totalMemory);
+    OsConfigLogInfo(log/*GetPerfLog()*/, "Total memory: %lu kB", totalMemory);
     
     freeMemory = GetFreeMemory(log);
     freeMemoryPercentage = (freeMemory * 100) / totalMemory;
-    OsConfigLogInfo(GetPerfLog(), "Free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
+    OsConfigLogInfo(log/*GetPerfLog()*/, "Free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
     InitializeSshAudit(log);
 
@@ -958,18 +958,18 @@ void AsbInitialize(void* log)
         OsConfigLogInfo(log, "AsbInitialize: running on an unknown Linux distribution with kernel version '%s' and without a valid PRETTY_NAME in /etc/os-release", kernelVersion);
     }
     
-    OsConfigLogInfo(GetPerfLog(), "Running on '%s'", prettyName ? prettyName : "-");
+    OsConfigLogInfo(log/*GetPerfLog()*/, "Running on '%s'", prettyName ? prettyName : "-");
 
     if (IsCommodore(log))
     {
         OsConfigLogInfo(log, "AsbInitialize: running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
-        OsConfigLogInfo(GetPerfLog(), "Running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
+        OsConfigLogInfo(log/*GetPerfLog()*/, "Running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
     }
 
     if (DetectSelinux(log))
     {
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
-        OsConfigLogInfo(GetPerfLog(), "SELinux present");
+        OsConfigLogInfo(log/*GetPerfLog()*/, "SELinux present");
     }
 
     FREE_MEMORY(prettyName);
@@ -1020,16 +1020,16 @@ void AsbShutdown(void* log)
 
     SshAuditCleanup(log);
 
-    if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
+    if (0 == StopPerfClock(&g_perfClock, log/*GetPerfLog()*/))
     {
-        LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
+        LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, log/*GetPerfLog()*/);
     }
 
-    CloseLog(&g_perfLog);
+    //CloseLog(&g_perfLog);
     
     // When done, allow others access to read the performance log
-    SetFileAccess(PERF_LOG_FILE, 0, 0, 6774, NULL);
-    SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 6774, NULL);
+    //SetFileAccess(PERF_LOG_FILE, 0, 0, 6774, NULL);
+    //SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 6774, NULL);
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(void* log)
@@ -4035,7 +4035,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    StartPerfClock(&perfClock, GetPerfLog());
+    StartPerfClock(&perfClock, log/*GetPerfLog()*/);
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
@@ -4789,9 +4789,9 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
     FREE_MEMORY(result);
 
-    if (0 == StopPerfClock(&perfClock, GetPerfLog()))
+    if (0 == StopPerfClock(&perfClock, log/*GetPerfLog()*/))
     {
-        LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
+        LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, log/*GetPerfLog()*/);
     }
 
     return status;
@@ -4813,7 +4813,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         return EINVAL;
     }
 
-    StartPerfClock(&perfClock, GetPerfLog());
+    StartPerfClock(&perfClock, log/*GetPerfLog()*/);
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
@@ -5760,12 +5760,12 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     
     FREE_MEMORY(payloadString);
 
-    if (0 == StopPerfClock(&perfClock, GetPerfLog()))
+    if (0 == StopPerfClock(&perfClock, log/*GetPerfLog()*/))
     {
         // Ignore the successful init* objects and focus on remediate* ones
         if (0 != strncmp(objectName, init, strlen(init)))
         {
-            LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
+            LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, log/*GetPerfLog()*/);
         }
     }
 
