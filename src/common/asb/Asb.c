@@ -637,8 +637,8 @@ static PERF_CLOCK g_perfClock = {{0, 0}, {0, 0}};
 // Expected time limits under ideal conditions
 // Maximum per-rule audit time: 5 seconds
 static const long g_maxAuditTime = 5000000;
-// Maximum ASB rule remediation time: 15 seconds
-static const long g_maxRemediateTime = 15000000;
+// Maximum ASB rule remediation time: 55 seconds
+static const long g_maxRemediateTime = 55000000;
 // Maximum baseline run times: 30 minutes
 static const long g_maxTotalTime = 1800000000;
 
