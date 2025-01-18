@@ -5,7 +5,7 @@ inputs:
   perflog:
     description: the performance log path
     required: true
-  failmark:
+  mark:
     description: the performance failure marker
     required: true
 
@@ -15,16 +15,16 @@ runs:
     - name: Check for performance failures
       env:
         perflog: ${{ inputs.perflog }}
-        failmark: ${{ inputs.failmark }}
+        mark: ${{ inputs.mark }}
       run: |
         failed=false
 
-        echo "Checking '$perflog' for any '$failmark' instances"
+        echo "Checking '$perflog' for any performance warnings ('$mark')"
         ls -l "$perflog"
         echo "Contents of '$perflog':"
         cat "$perflog"        
 
-        failures=$(grep -i "$failmark" $perflog || true)
+        failures=$(grep -i "$mark" $perflog || true)
 
         if [ -n "$failures" ]; then
             echo "Found performance failures in '$perflog'"
@@ -32,7 +32,7 @@ runs:
             echo "$failures"
             failed=true
         else
-            echo "Found no performance failures in '$perflog'"
+            echo "Found no performance warnings in '$perflog'"
         fi
 
         if [ "$failed" == true ]

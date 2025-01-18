@@ -78,7 +78,7 @@ jobs:
         uses: ./.github/actions/check-perf
         with:
           perflog: /var/log/osconfig_asb_perf.log
-          failmark: "*** Warning ***"
+          mark: "*** Warning ***"
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
