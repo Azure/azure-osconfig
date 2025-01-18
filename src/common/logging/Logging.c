@@ -149,7 +149,6 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
 void ForceTrimLog(OSCONFIG_LOG_HANDLE log)
 {
     OSCONFIG_LOG* whatLog = NULL;
-    int fileSize = 0;
 
     if ((NULL == log) || (NULL == (whatLog = (OSCONFIG_LOG*)log)))
     {
