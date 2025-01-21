@@ -27,8 +27,7 @@ runs:
         warnings=$(grep -i "$mark" $perflog || true)
 
         if [ -n "$warnings" ]; then
-            echo "Found performance warnings in '$perflog'"
-            echo "warnings:"
+            echo "Found performance warnings in '$perflog':"
             echo "$warnings"
             failed=true
         else
