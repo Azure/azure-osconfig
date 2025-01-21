@@ -2480,4 +2480,10 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     EXPECT_EQ(0, StopPerfClock(&another, nullptr));
     EXPECT_GE(microseconds = GetPerfClockTime(&another, nullptr), 3000);
     EXPECT_LE(microseconds, 3500);
+
+    clock.start.tv_sec = 54217;
+    clock.start.tv_nsec = 999942868;
+    clock.stop.tv_sec = 54218;
+    clock.stop.tv_nsec = 18649;
+    EXPECT_EQ(76, GetPerfClockTime(&clock, nullptr));
 }
