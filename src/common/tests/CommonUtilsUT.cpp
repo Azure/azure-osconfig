@@ -868,6 +868,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, cpuType = GetCpuType(nullptr));
     EXPECT_NE(nullptr, cpuVendor = GetCpuType(nullptr));
     EXPECT_NE(nullptr, cpuModel = GetCpuType(nullptr));
+    EXPECT_LE(1, GetNumberOfCpuCores(nullptr));
     EXPECT_NE(nullptr, cpuFlags = GetCpuFlags(nullptr));
     EXPECT_EQ(true, CheckCpuFlagSupported("fpu", nullptr, nullptr));
     EXPECT_EQ(false, CheckCpuFlagSupported("test123", nullptr, nullptr));
@@ -2447,4 +2448,42 @@ TEST_F(CommonUtilsTest, IsValidDaemonName)
     {
         EXPECT_FALSE(IsValidDaemonName(badNames[i]));
     }
+}
+
+TEST_F(CommonUtilsTest, StartStopPerfClock)
+{
+    PERF_CLOCK clock;
+    PERF_CLOCK another;
+    long microseconds = 0;
+
+    EXPECT_EQ(EINVAL, StartPerfClock(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, StopPerfClock(nullptr, nullptr));
+    EXPECT_EQ(-1, GetPerfClockTime(nullptr, nullptr));
+    
+    clock.stop.tv_sec = 0;
+    EXPECT_EQ(-1, GetPerfClockTime(&clock, nullptr));
+
+    EXPECT_EQ(0, StartPerfClock(&another, nullptr));
+
+    EXPECT_EQ(0, StartPerfClock(&clock, nullptr));
+    SleepMilliseconds(1);
+    EXPECT_EQ(0, StopPerfClock(&clock, nullptr));
+    EXPECT_GE(microseconds = GetPerfClockTime(&clock, nullptr), 1000);
+    EXPECT_LE(microseconds, 1500);
+    
+    EXPECT_EQ(0, StartPerfClock(&clock, nullptr));
+    SleepMilliseconds(2);
+    EXPECT_EQ(0, StopPerfClock(&clock, nullptr));
+    EXPECT_GE(microseconds = GetPerfClockTime(&clock, nullptr), 2000);
+    EXPECT_LE(microseconds, 2500);
+
+    EXPECT_EQ(0, StopPerfClock(&another, nullptr));
+    EXPECT_GE(microseconds = GetPerfClockTime(&another, nullptr), 3000);
+    EXPECT_LE(microseconds, 3500);
+
+    clock.start.tv_sec = 54217;
+    clock.start.tv_nsec = 999942868;
+    clock.stop.tv_sec = 54218;
+    clock.stop.tv_nsec = 18649;
+    EXPECT_EQ(76, GetPerfClockTime(&clock, nullptr));
 }

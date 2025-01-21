@@ -150,6 +150,7 @@ char* GetOsKernelVersion(void* log);
 char* GetCpuType(void* log);
 char* GetCpuVendor(void* log);
 char* GetCpuModel(void* log);
+unsigned int GetNumberOfCpuCores(void* log);
 char* GetCpuFlags(void* log);
 bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, void* log);
 long GetTotalMemory(void* log);
@@ -235,6 +236,17 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
 int GetGitManagementFromJsonConfig(const char* jsonString, void* log);
 char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, void* log);
 char* GetGitBranchFromJsonConfig(const char* jsonString, void* log);
+
+typedef struct PERF_CLOCK
+{
+    struct timespec start;
+    struct timespec stop;
+} PERF_CLOCK;
+
+int StartPerfClock(PERF_CLOCK* clock, void* log);
+int StopPerfClock(PERF_CLOCK* clock, void* log);
+long GetPerfClockTime(PERF_CLOCK* clock, void* log);
+void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* objectName, int objectResult, long limit, void* log);
 
 #ifdef __cplusplus
 }

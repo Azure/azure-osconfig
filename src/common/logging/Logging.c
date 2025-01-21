@@ -34,7 +34,7 @@ bool IsFullLoggingEnabled()
     return g_fullLoggingEnabled;
 }
 
-static int RestrictAccessToRootOnly(const char* fileName)
+static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
 {
     return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
 }
@@ -55,12 +55,12 @@ OSCONFIG_LOG_HANDLE OpenLog(const char* logFileName, const char* bakLogFileName)
     if (NULL != newLog->logFileName)
     {
         newLog->log = fopen(newLog->logFileName, "a");
-        RestrictAccessToRootOnly(newLog->logFileName);
+        RestrictFileAccessToCurrentAccountOnly(newLog->logFileName);
     }
 
     if (NULL != newLog->backLogFileName)
     {
-        RestrictAccessToRootOnly(newLog->backLogFileName);
+        RestrictFileAccessToCurrentAccountOnly(newLog->backLogFileName);
     }
 
     return (OSCONFIG_LOG_HANDLE)newLog;
@@ -140,8 +140,8 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
             whatLog->log = fopen(whatLog->logFileName, "a");
             
             // Reapply restrictions once the file is recreated (also for backup, if any):
-            RestrictAccessToRootOnly(whatLog->logFileName);
-            RestrictAccessToRootOnly(whatLog->backLogFileName);
+            RestrictFileAccessToCurrentAccountOnly(whatLog->logFileName);
+            RestrictFileAccessToCurrentAccountOnly(whatLog->backLogFileName);
         }
     }
 }

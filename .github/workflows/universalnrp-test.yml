@@ -222,6 +222,13 @@ jobs:
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
           stat *testResults.xml
 
+      - name: Check performance
+        if: success() || failure()
+        uses: ./.github/actions/check-perf
+        with:
+          perflog: /var/log/osconfig_asb_perf.log
+          mark: "is longer than"
+        
       - name: Stage OSConfig Logs
         if: success() || failure()
         run: |
@@ -291,6 +298,13 @@ jobs:
           echo "$output" > ../../$name.log
 
           exit $result
+
+      - name: Check performance
+        if: success() || failure()
+        uses: ./.github/actions/check-perf
+        with:
+          perflog: /var/log/osconfig_asb_perf.log
+          mark: "is longer than"
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()

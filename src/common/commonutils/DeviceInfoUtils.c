@@ -284,7 +284,7 @@ char* GetCpuType(void* log)
 
 char* GetCpuVendor(void* log)
 {
-    const char* osCpuVendorCommand = "lscpu | grep \"Vendor ID:\"";
+    const char* osCpuVendorCommand = "grep 'vendor_id' /proc/cpuinfo | uniq";
     char* textResult = GetHardwareProperty(osCpuVendorCommand, false, log);
     
     if (IsFullLoggingEnabled())
@@ -297,7 +297,7 @@ char* GetCpuVendor(void* log)
 
 char* GetCpuModel(void* log)
 {
-    const char* osCpuModelCommand = "lscpu | grep \"Model name:\"";
+    const char* osCpuModelCommand = "grep 'model name' /proc/cpuinfo | uniq";
     char* textResult = GetHardwareProperty(osCpuModelCommand, false, log);
     
     if (IsFullLoggingEnabled())
@@ -306,6 +306,27 @@ char* GetCpuModel(void* log)
     }
     
     return textResult;
+}
+
+unsigned int GetNumberOfCpuCores(void* log)
+{
+    const char* osCpuCoresCommand = "grep -c ^processor /proc/cpuinfo";
+    unsigned int numberOfCores = 1;
+    char* textResult = NULL;
+
+    if (NULL != (textResult = GetHardwareProperty(osCpuCoresCommand, false, log)))
+    {
+        numberOfCores = atoi(textResult);
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Number of CPU cores: %u ('%s')", numberOfCores, textResult);
+    }
+
+    FREE_MEMORY(textResult);
+
+    return numberOfCores;
 }
 
 char* GetCpuFlags(void* log)

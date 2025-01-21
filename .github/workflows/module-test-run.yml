@@ -73,6 +73,13 @@ jobs:
 
           exit $result
 
+      - name: Check performance
+        if: success() || failure()
+        uses: ./.github/actions/check-perf
+        with:
+          perflog: /var/log/osconfig_asb_perf.log
+          mark: "is longer than"
+
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
