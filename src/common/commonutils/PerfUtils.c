@@ -110,12 +110,12 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
     }
     else
     {
-        OsConfigLogInfo(log, "%s completed in %ld seconds (%ld microseconds)", componentName, microseconds / 1000000, microseconds);
+        OsConfigLogInfo(log, "%s completed in %f seconds (%ld microseconds)", componentName, microseconds / 1000000.0, microseconds);
 
         if (microseconds > limit)
         {
-            OsConfigLogError(log, "%s completion time of %ld microseconds is longer than %ld minutes (%ld microseconds)",
-                componentName, microseconds, limit / 60000000, limit);
+            OsConfigLogError(log, "%s completion time of %ld microseconds is longer than %f minutes (%ld microseconds)",
+                componentName, microseconds, limit / 60000000.0, limit);
         }
     }
 }
