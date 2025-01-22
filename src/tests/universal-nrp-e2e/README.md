@@ -1,24 +1,68 @@
-# Universal NRP End-to-End Tests
-This directory contains tests for the universal NRP. There is a GitHub workflow which performs these tests but only for modern distros (excluding EOL distributions eg. centos 7-8, ubuntu 18.04-20.04, etc.). We do support EOL
+# Universal NRP End-to-End Tests Local/GitHub
+This directory contains tests for the universal NRP both for local/onprem and GitHub workflows. There is a GitHub workflow which performs these tests but only for modern distros (excluding EOL distributions eg. centos 7-8, ubuntu 18.04-20.04, etc.). We do support EOL testing on our infrastructure, as such, we've developed some tools in order for us to test locally.
 
 The following bash tools have been created to enable testing across any linux-based OS:
- - `StartLocalTest.sh`: Peforms tests locally with a given Azure Policy package.
+ - `StartLocalTest.sh`: Peforms tests locally with a given Azure Policy package. This is meant to be used dirtectly on the machine being tested.
  - `StartVMTest.sh`: Uses QEMU with a given cloud based image (cloud-init enabled) and performs the tests on the VM.
+ - `StartMSFTTests.sh` (MSFT INTERNAL-ONLY): Uses the _StartVMTest.sh_ above to orchestrate tests on images not being tested by GitrHub workflows. These are internal as they leverage Azure Blob Storage for storing the disk images.
 
- ## Testing on VMs
-To perform tests on VMs the `StartVMTest.sh` allows you to perform tests on specific Azure Policy packages targetting a particular VM disk image. QEMU is used as the virtualization platform and allows us to target linux distributions shared as raw/qcow2 images. Images are booted using cloud-init in order to provision the user and help orchestrate tests, collect logs and test reports back to the QEMU host.
+# Testing on VMs
+To perform tests on VMs the `StartVMTest.sh` allows you to perform tests on specific Azure Policy packages targetting a particular VM disk image. QEMU is used as the virtualization platform and allows us to target linux distributions shared as raw/qcow2 images (See [VM Image Sources](#vm-image-sources) for compatible images). Images are booted using cloud-init in order to provision the user and help orchestrate tests, collect logs and test reports back to the QEMU host.
 
-### Image Sources
-Its preferable for images to be "Cloud" images (contain cloud-init) as it makes tooling work out-of-box and does not require creating your own image of the distro and getting all the necessary packages/dependencies installed.
+## Example
+The following example performs tests on an [Ubuntu Noble cloud image](https://cloud-images.ubuntu.com/noble/current/) on the AzureLinuxBaseline.zip (built in directory tree) which has 168 resources defined.
+```sh
+# Download image https://cloud-images.ubuntu.com/
+wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+# Add 2Gb to filesystem in order to install all necessary dependencies
+qemu-img resize noble-server-cloudimg-amd64.img +2G
+./StartVMTest.sh -i noble-server-cloudimg-amd64.img -p ../../build/AzureLinuxBaseline.zip -c 168
+```
+Once completed, log archives are created under `_<distro-image>` directory (in this case __focal-server-cloudimg-amd64.img_) which contain the JUnit test report along with the osconfig logs contained under `/var/log/osconfig*`
 
-Here are a few locations where cloud images can be obtained:
- - [Ubuntu Cloud Images](https://cloud-images.ubuntu.com/)
- - [Debian Cloud Images](https://cloud.debian.org/images/cloud/)
- - [CentOS Cloud Images](https://cloud.centos.org/centos/)
- - [Rocky Linux Images](https://rockylinux.org/download) - also contains Cloud images
- - [Oracle Cloud Images](https://yum.oracle.com/oracle-linux-templates.html)
+# Testing directly on target machine
+To perform tests directly on a target machine the `StartLocalTest.sh` performs the tests locally.
 
-### Usage
+You need to copy over the following files onto the target machine:
+ - UniversalNRP.Tests.ps1
+ - StartLocalTest.sh
+ - A policy package to apply on the machine - for this example, lets assume `AzureLinuxBaseline.zip`
+
+## Example
+```sh
+./StartLocalTest.sh -p AzureLinuxBaseline.zip -c 168
+```
+
+# Advanced Topics
+## Testing Locally
+```
+Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip -c resource-count [-r]]
+        -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
+                               If no stage is specified, all stages will be executed in this order:
+                                    dependency_check, run_tests, collect_logs
+
+            - dependency_check: Checks to ensure dependencies are satisfied.
+                                Checks for and installs them if not present:
+                                    - Powershell +modules: MachineConfiguration, Pester
+                                    - OMI
+
+            - run_tests:        Runs the tests (Powershell Pester Tests).
+
+            - collect_logs:     Creates a tar.gz archive with the osconfig logs and JUnit Test Report
+
+        -p policy-package.zip:  The Azure Policy Package to test
+
+        -c resource-count:      The number of resources to validate, tests will fail if this doesn't match (Default: 0)
+
+        -r remediate-flag:      When the flag is enabled, performs remediation on the Policy Package (Default: No remediation performed)
+
+        -g generalize-flag:     Generalize the current machine for tests. Performs the following:
+                                    - Remove logs and tmp directories
+                                    - Clean package management cache
+                                    - Clean cloud-init flags to reset cloud-init to initial-state
+```
+
+## Testing on VMs
 ```
 Usage: ./StartVMTest.sh [-i /path/to/image.img -p /path/to/policypackage.zip -c resource-count [-g]] [-m 512] [-r] [-d]
        -i Image Path:            Path to the image qcow2 format
@@ -30,30 +74,31 @@ Usage: ./StartVMTest.sh [-i /path/to/image.img -p /path/to/policypackage.zip -c 
                                    - Remove logs and tmp directories
                                    - Clean package management cache
                                    - Clean cloud-init flags to reset cloud-init to initial-state
+       -l Log Directory:         Directory used to place output logs
        -d Debug Mode:            VM stays up for debugging (Default: false)
 ```
-### Example
-The following example performs tests on an [Ubuntu Noble cloud image](https://cloud-images.ubuntu.com/noble/current/) on the AzureLinuxBaseline.zip (built in directory tree) which has 168 resources defined.
-```sh
-# Download image https://cloud-images.ubuntu.com/
-wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
-# Add 2Gb to filesystem in order to install all necessary dependencies
-qemu-img resize noble-server-cloudimg-amd64.img +2G
-./StartVMTest.sh -i noble-server-cloudimg-amd64.img -p ../../build/AzureLinuxBaseline.zip -c 168
-```
-Once completed, log archives are created under `_<distro-image>` directory (in this case __focal-server-cloudimg-amd64.img_) which contain the JUnit test report along with the osconfig logs contained under `/var/log/osconfig*`
+### VM Image Sources
+Its preferable for images to be "Cloud" images (contain cloud-init) as it makes tooling work out-of-box and does not require creating your own image of the distro and getting all the necessary packages/dependencies installed.
 
-### Generalizing a VM Image
+Here are a few locations where cloud images can be obtained:
+ - [Ubuntu Cloud Images](https://cloud-images.ubuntu.com/)
+ - [Debian Cloud Images](https://cloud.debian.org/images/cloud/)
+ - [CentOS Cloud Images](https://cloud.centos.org/centos/)
+ - [Rocky Linux Images](https://rockylinux.org/download) - also contains Cloud images
+ - [Oracle Cloud Images](https://yum.oracle.com/oracle-linux-templates.html)
+
+## Generalizing a VM Image
 Generalizing an image is useful if its going to be reused for re-running tests on it. The tooling provides the ability to provision the VM, install dependencies, cleans logs, bash history and clears the cloud-init boot-flags so it can be reprovisioned appropriately. Once an image is generalized you should copy it somewhere so it can be copied and reused. The debug mode (`-d`) is useful here as it allows you to ssh into the VM once it has been provisioned so you may install any additional dependencies and/or fix any issues with the image.
 
 You typically want to generalize images that do not just work out-of-box in order to keep a "Golden Master" image that just works to avoid having to reprovision VM images when you want to re-run tests on a particular VM image.
 
-#### Example - Using CentOS-7 an EOL distribution with Errors
-This example will generalize an older distro image, where we will hit many dependency issues. This example will demonstrate some common problems can can occur using older distributions where they are no longer being maintained and you must build and install some of the needed dependencies.
+## Example - Using CentOS-7 an EOL distribution with errors
+This example will generalize an older distro image, where we will hit many issues. This example will demonstrate some common problems can can occur using older distributions where they are no longer being maintained and you must build and install some of the needed dependencies.
 
 This example demonstrates:
  - EOL distribution whose package mirrors are out of date and must be updated
- - Test dependencies 
+ - Install dependencies that exist in the package-mirrors
+ - Install dependencies that require building/installing sources
 
 Using the _CentOS-7_ distribution below.
 ```sh
@@ -104,11 +149,12 @@ When done with VM, terminate the process to free up VM resources.
 ✅ Generalization complete!
 ```
 
-As seen above, our ssh command is present for us to go fix the issue, in this case it seems `GLIBCXX_3.4.21` is missing for the Powershell runtime, let's go and install it.
+As seen above, our ssh command is present for us to go fix the issue, in this case it seems `GLIBCXX_3.4.21` is missing for the Powershell runtime.
+GLIBCXX_3.4.21 is included in gcc-9.5, so we will have to build it, meaning we will have to install a C++ toolchain and other needed dependencies.
 
 ```
 ssh -i /home/ahmed/git/azure-osconfig/src/tests/universal-nrp-e2e/_CentOS-7-x86_64-GenericCloud-2211/id_rsa user1@localhost -p 26654
-[user1@osconfige2etest ~]$ sudo yum install wget
+[user1@osconfige2etest ~]$ sudo yum group install "Development Tools"
 Failed to set locale, defaulting to C
 Loaded plugins: fastestmirror
 Determining fastest mirrors
@@ -139,121 +185,81 @@ gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
 EOF
 ```
-Now we can try installing again
+Now we can try installing again and it will resolve the mirrors. We can also install the needed dependencies along with building and install gcc which will resolve our glibcxx dependencies.
 ```
-[user1@osconfige2etest ~]$ sudo yum install wget
-Failed to set locale, defaulting to C
-Loaded plugins: fastestmirror
-Loading mirror speeds from cached hostfile
-Resolving Dependencies
---> Running transaction check
----> Package wget.x86_64 0:1.14-18.el7_6.1 will be installed
---> Finished Dependency Resolution
-
-Dependencies Resolved
-
-==============================================================================================================================================================================
- Package                               Arch                                    Version                                            Repository                             Size
-==============================================================================================================================================================================
-Installing:
- wget                                  x86_64                                  1.14-18.el7_6.1                                    base                                  547 k
-
-Transaction Summary
-==============================================================================================================================================================================
-Install  1 Package
-
-Total download size: 547 k
-Installed size: 2.0 M
-Is this ok [y/d/N]: y
-Downloading packages:
-wget-1.14-18.el7_6.1.x86_64.rpm                                                                                                                        | 547 kB  00:00:01
-Running transaction check
-Running transaction test
-Transaction test succeeded
-Running transaction
-  Installing : wget-1.14-18.el7_6.1.x86_64                                                                                                                                1/1
-  Verifying  : wget-1.14-18.el7_6.1.x86_64                                                                                                                                1/1
-
-Installed:
-  wget.x86_64 0:1.14-18.el7_6.1
-
-Complete!
+[user1@osconfige2etest ~]$ sudo yum group install "Development Tools"
+...
+[user1@osconfige2etest ~]$ sudo yum install gmp-devel mpfr-devel libmpc-devel wget libicu
+[user1@osconfige2etest ~]$ wget https://ftp.gnu.org/gnu/gcc/gcc-9.5.0/gcc-9.5.0.tar.gz
+[user1@osconfige2etest ~]$ tar -zxvf gcc-9.5.0.tar.gz
+[user1@osconfige2etest ~]$ cd gcc-9.5.0
+[user1@osconfige2etest ~]$ ./configure --prefix=/usr --enable-languages=c,c++ --disable-multilib
+[user1@osconfige2etest ~]$ make -j$(nproc)
+[user1@osconfige2etest ~]$ sudo make install
 ```
-Now let's try to regeneralize the image again. Let's shutdown the VM:
+Now let's try PowerShell again
 ```
+[user1@osconfige2etest ~]$ pwsh
+PowerShell 7.4.6
+PS /home/user1> 
+```
+It worked, we can now exit powershell, cleanup everything, regeneralize and shutdown vm
+```
+PS /home/user1> exit
+[user1@osconfige2etest ~]$ cd ~
+[user1@osconfige2etest ~]$ ./StartLocalTests.sh -g
+[user1@osconfige2etest ~]$ rm -rf *
 [user1@osconfige2etest ~]$ sudo shutdown now
 Connection to localhost closed by remote host.
 Connection to localhost closed.
 ```
-and we can restart the generalization:
+We now have a generalized image you can share and reuse in tests. Let's prepare the final image for sharing in a azure blob storage for easy reuse.
+Let's compress the images images before placing them into blob storage.
 ```sh
-./StartVMTest.sh -i CentOS-7-x86_64-GenericCloud-2211.qcow2 -g -d
+# Compress image
+qemu-img convert -c -O qcow2 CentOS-7-x86_64-GenericCloud-2211.qcow2 CentOS-7-x86_64-GenericCloud-2211-Generalized.qcow2
+```
+Let's try the image and ensure it works before widely sharing...
+```
+./StartVMTest.sh -i CentOS-7-x86_64-GenericCloud-2211.qcow2 -p /mnt/c/Users/ahbenmes/Downloads/AzureLinuxBaseline.zip -c 168
+Image path: CentOS-7-x86_64-GenericCloud-2211.qcow2.
+Policy package: /mnt/c/Users/ahbenmes/Downloads/AzureLinuxBaseline.zip.
+Resource count: 168.
 ...
-Configuring OMI service ...
-Created symlink from /etc/systemd/system/multi-user.target.wants/omid.service to /usr/lib/systemd/system/omid.service.
-Trying to start omi with systemctl
-omi is started.
-done!
+...
+Tests Passed: 4, Failed: 0, Skipped: 0, Inconclusive: 0, NotRun: 0
+#######################################################################
+
+Authorized access only!
+
+If you are not authorized to access or use this system, disconnect now!
+
+#######################################################################
 sudo is available. Attempting to sudo...
 done!
-Generalizing machine...
-Failed to set locale, defaulting to C
-Loaded plugins: fastestmirror
-Cleaning repos: base extras updates
-Cleaning up list of fastest mirrors
-done!
-######################################################################
-Debug mode enabled. To connect via SSH:
-  ssh -i /home/ahmed/git/azure-osconfig/src/tests/universal-nrp-e2e/_CentOS-7-x86_64-GenericCloud-2211/id_rsa user1@localhost -p 50720
-When done with VM, terminate the process to free up VM resources.
-  sudo kill 4164
-######################################################################
-✅ Generalization complete!
-```
-There are no errors this time, but the vm is still up and running: let's shutdown the vm
+Collecting logs/reports...
+osconfig-logs/
+osconfig-logs/osconfig_nrp.bak
+osconfig-logs/osconfig_nrp.log
+osconfig-logs/testResults.xml
+#######################################################################
 
+Authorized access only!
+
+If you are not authorized to access or use this system, disconnect now!
+
+#######################################################################
+Log archive created: _CentOS-7-x86_64-GenericCloud-2211/osconfig-logs-20250118_175800.tar.gz
+✅ Tests passed!
+```
+Lets place the image into blob storage.
 ```sh
-# Shutdown VM
-ssh -i /home/ahmed/git/azure-osconfig/src/tests/universal-nrp-e2e/_CentOS-7-x86_64-GenericCloud-2211/id_rsa user1@localhost -p 50720 "sudo shutdown now"
-```
-We now have a generalized image you can share and reuse in tests.
-
-## Testing directly on target machine
-To perform tests directly on a target machine the `StartLocalTest.sh` performs the tests locally.
-
-You need to copy over the following files onto the target machine:
- - UniversalNRP.Tests.ps1
- - StartVMTest.sh
- - A policy package to apply on the machine - for this example, lets assume `AzureLinuxBaseline.zip`
-
-### Usage
-```
-Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip -c resource-count [-r]]
-        -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
-                               If no stage is specified, all stages will be executed in this order:
-                                    dependency_check, run_tests, collect_logs
-
-            - dependency_check: Checks to ensure dependencies are satisfied.
-                                Checks for and installs them if not present:
-                                    - Powershell +modules: MachineConfiguration, Pester
-                                    - OMI
-
-            - run_tests:        Runs the tests (Powershell Pester Tests).
-
-            - collect_logs:     Creates a tar.gz archive with the osconfig logs and JUnit Test Report
-
-        -p policy-package.zip:  The Azure Policy Package to test
-
-        -c resource-count:      The number of resources to validate, tests will fail if this doesn't match (Default: 0)
-
-        -r remediate-flag:      When the flag is enabled, performs remediation on the Policy Package (Default: No remediation performed)
-
-        -g generalize-flag:     Generalize the current machine for tests. Performs the following:
-                                    - Remove logs and tmp directories
-                                    - Clean package management cache
-                                    - Clean cloud-init flags to reset cloud-init to initial-state
-```
-### Example
-```sh
-./StartLocalTest.sh -p AzureLinuxBaseline.zip -c 168
+# Upload into Azure blob storage
+az login
+az storage blob upload \
+  --account-name osconfigstorage \
+  --container-name diskimages \
+  --name centos-7.qcow2 \
+  --file CentOS-7-x86_64-GenericCloud-2211-Generalized.qcow2 \
+  --auth-mode login
 ```

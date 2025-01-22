@@ -130,7 +130,7 @@ run_tests() {
     echo "Policy Package: $policypackage"
     echo "Resource Count: $resourcecount"
     echo "Remediation   : $remediation"
-    skipremediation=$(if [ $remediation ];then echo "false"; else echo "true"; fi)
+    skipremediation=$([ "$remediation" = "false" ] && echo "true" || echo "false")
     echo "Skip Remediation: $skipremediation"
     cat << EOF > bootstrap.ps1
 \$params = @{
@@ -261,7 +261,7 @@ if [ "$stageName" = "collect_logs" ]; then
 fi
 
 if [ $generalize = true ]; then
-    generalize
+    dependency_check && generalize
     exit $?
 fi
 

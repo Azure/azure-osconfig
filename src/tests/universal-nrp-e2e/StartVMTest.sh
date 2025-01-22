@@ -18,7 +18,8 @@
 #                                    - Remove logs and tmp directories
 #                                    - Clean package management cache
 #                                    - Clean cloud-init flags to reset cloud-init to initial-state
-#        -d Debug Mode:            VM stays up for debugging (Default: false)
+#        -l Log Directory:         Directory used to place output logs
+#        -d Debug Mode Flag:       VM stays up for debugging (Default: false)
 #
 # Dependencies: 
 #   - qemu-system-x86_64
@@ -32,10 +33,12 @@ policypackage=""
 remediation=false
 resourcecount=0
 generalize=false
+logDir=""
 
 # Private variables
 tests_failed=false
 use_sudo=false
+provisionedUser="user1"
 
 usage() { 
     echo "Usage: $0 -i /path/to/image.img -p /path/to/policypackage.zip -c resource-count [-m 512] [-r] [-d]
@@ -48,6 +51,7 @@ usage() {
                                 - Remove logs and tmp directories
                                 - Clean package management cache
                                 - Clean cloud-init flags to reset cloud-init to initial-state
+    -l Log Directory:         Directory used to place output logs
     -d Debug Mode Flag:       VM stays up for debugging (Default: false)" 1>&2; 
     exit 1; 
 }
@@ -70,7 +74,7 @@ debug_mode() {
     if [ $debug = true ]; then
         echo "######################################################################"
         echo "Debug mode enabled. To connect via SSH:"
-        echo "  ssh -i $(pwd)/$basepath/id_rsa user1@localhost -p $qemu_fwport"
+        echo "  ssh -i $basepath/id_rsa $provisionedUser@localhost -p $qemu_fwport"
         echo "When done with VM, terminate the process to free up VM resources."
         [ $use_sudo == "true" ] && echo "  sudo kill $pid_qemu" || echo "  kill $pid_qemu"
         echo "######################################################################"
@@ -92,37 +96,41 @@ do_sudo() {
 
 trap cleanup 1 SIGINT
 
-OPTSTRING=":i:p:c:m:rdg"
+OPTSTRING=":i:p:c:m:l:rdg"
 
 while getopts ${OPTSTRING} opt; do
     case ${opt} in
         i)
             imagepath=${OPTARG}
-            echo "Image path: $imagepath."
+            echo "Image path: $imagepath"
             ;;
         p)
             policypackage=${OPTARG}
-            echo "Policy package: $policypackage."
+            echo "Policy package: $policypackage"
             ;;
         c)
             resourcecount=${OPTARG}
-            echo "Resource count: $resourcecount."
+            echo "Resource count: $resourcecount"
             ;;
         m)
             vmmemory=${OPTARG}
-            echo "VM memory: $vmmemory mb."
+            echo "VM memory: $vmmemory mb"
             ;;
         r)
-            echo "Remediation Mode: enabled."
+            echo "Remediation Mode: enabled"
             remediation=true
             ;;
         d)
             echo "Debug Mode: enabled."
+            echo "[WARNING] VM resources are not cleaned up, ensure VM is properly terminated (eg.> ps aux | grep qemu) to find VM PID"
             debug=true
             ;;
         g)
-            echo "Generalization Mode: enabled."
+            echo "Generalization Mode: enabled"
             generalize=true
+            ;;
+        l)
+            logDir=${OPTARG}
             ;;
         :)
             echo "Option -${OPTARG} requires an argument."
@@ -160,10 +168,20 @@ if command -v sudo &> /dev/null; then
     fi
 fi
 
-basepath="_${imagepath%.*}"
+basepath="$(pwd)/${imagepath%.*}"
 curtime=$(date +%Y%m%d_%H%M%S)
 mkdir -p $basepath/metadata
-log_file="$basepath/script_$curtime.log"
+
+if [ -n "$logDir" ]; then
+    log_file="$logDir/script_$curtime.log"
+    mkdir -p $logDir
+else
+    log_file="$basepath/script_$curtime.log"
+fi
+
+echo "VM Cache Directory: $basepath"
+echo "Logging Directory: $logDir"
+
 # Redirect stdout and stderr to the log file
 exec > >(tee -a "$log_file") 2>&1
 
@@ -184,7 +202,7 @@ ssh_pwauth: false
 hostname: osconfige2etest
 fqdn: osconfige2etest.local
 users:
-  - name: user1
+  - name: $provisionedUser
     sudo: ALL=(ALL) NOPASSWD:ALL
     groups: sudo
     shell: /bin/bash
@@ -223,7 +241,7 @@ pid_qemu=$(ps aux | grep -m 1 "qemu.*hostfwd=tcp::$qemu_fwport-:22" | awk '{prin
 echo "QEMU process started with PID: $pid_qemu"
 
 echo -n "Waiting for VM provisioning..."
-ssh_args="-i $basepath/id_rsa -o ConnectTimeout=5 -o StrictHostKeyChecking=no user1@localhost -p $qemu_fwport"
+ssh_args="-i $basepath/id_rsa -o ConnectTimeout=5 -o StrictHostKeyChecking=no $provisionedUser@localhost -p $qemu_fwport"
 while true; do
     ssh $ssh_args 'exit' > /dev/null 2>&1 && break
     echo -n "."
@@ -232,7 +250,7 @@ done
 echo "done!"
 
 # Dependencies Check
-scp -P $qemu_fwport -i $basepath/id_rsa StartLocalTest.sh user1@localhost:~ || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
+scp -P $qemu_fwport -i $basepath/id_rsa StartLocalTest.sh $provisionedUser@localhost:~ || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
 ssh $ssh_args "bash StartLocalTest.sh -s dependency_check"
 check_if_error
 
@@ -250,8 +268,8 @@ fi
 
 echo "Copying test artifacts to VM..."
 policyPackageFileName=$(basename $policypackage)
-scp -P $qemu_fwport -i $basepath/id_rsa $policypackage user1@localhost:~ || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
-scp -P $qemu_fwport -i $basepath/id_rsa UniversalNRP.Tests.ps1 user1@localhost:~ || { echo "scp failed! Check console for details."1>&2; cleanup 1; }
+scp -P $qemu_fwport -i $basepath/id_rsa $policypackage $provisionedUser@localhost:~ || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
+scp -P $qemu_fwport -i $basepath/id_rsa UniversalNRP.Tests.ps1 $provisionedUser@localhost:~ || { echo "scp failed! Check console for details."1>&2; cleanup 1; }
 
 # Run tests
 ssh_command="bash StartLocalTest.sh -s run_tests -p $policyPackageFileName -c $resourcecount"
@@ -268,13 +286,18 @@ fi
 ssh $ssh_args "bash StartLocalTest.sh -s collect_logs"
 check_if_error
 temp_dir=$(mktemp -d)
-scp -P $qemu_fwport -i $basepath/id_rsa user1@localhost:~/osconfig-logs.tar.gz $temp_dir/osconfig-logs.tar.gz || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
+scp -P $qemu_fwport -i $basepath/id_rsa $provisionedUser@localhost:~/osconfig-logs.tar.gz $temp_dir/osconfig-logs.tar.gz || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
 tar -xzf $temp_dir/osconfig-logs.tar.gz -C "$temp_dir"
 rm $temp_dir/osconfig-logs.tar.gz
 cp $log_file $temp_dir
-tar -czf $basepath/osconfig-logs-$curtime.tar.gz -C "$temp_dir" . > /dev/null 2>&1
+if [ -n "$logDir" ]; then
+    tar -czf $logDir/osconfig-logs-$curtime.tar.gz -C "$temp_dir" . > /dev/null 2>&1
+    echo "Log archive created: $logDir/osconfig-logs-$curtime.tar.gz"
+else
+    tar -czf $basepath/osconfig-logs-$curtime.tar.gz -C "$temp_dir" . > /dev/null 2>&1
+    echo "Log archive created: $basepath/osconfig-logs-$curtime.tar.gz"
+fi
 rm -rf "$temp_dir"
-echo "Log archive created: $basepath/osconfig-logs-$curtime.tar.gz"
 
 # Finished, optionally show debug banner, cleanup and exit with the Pester exit code
 debug_mode
