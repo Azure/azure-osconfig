@@ -65,13 +65,12 @@ long GetPerfClockTime(PERF_CLOCK* clock, void* log)
         return microseconds;
     }
 
-    if ((nanoseconds = clock->stop.tv_nsec - clock->start.tv_nsec) < 0)
+    seconds = clock->stop.tv_sec - clock->start.tv_sec;
+    nanoseconds = clock->stop.tv_nsec - clock->start.tv_nsec;
+
+    if (nanoseconds < 0)
     {
-        if ((seconds = clock->stop.tv_sec - clock->start.tv_sec) > 0)
-        {
-            seconds -= 1;
-        }
-        
+        seconds -= 1;
         nanoseconds += 1000000000;
     }
 
@@ -111,12 +110,12 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
     }
     else
     {
-        OsConfigLogInfo(log, "%s completed in %ld seconds (%ld microseconds)", componentName, microseconds / 1000000, microseconds);
+        OsConfigLogInfo(log, "%s completed in %.2f seconds (%ld microseconds)", componentName, microseconds / 1000000.0, microseconds);
 
         if (microseconds > limit)
         {
-            OsConfigLogError(log, "%s completion time of %ld microseconds is longer than %ld minutes (%ld microseconds)",
-                componentName, microseconds, limit / 60000000, limit);
+            OsConfigLogError(log, "%s completion time of %ld microseconds is longer than %.2f minutes (%ld microseconds)",
+                componentName, microseconds, limit / 60000000.0, limit);
         }
     }
 }
