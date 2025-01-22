@@ -19,8 +19,7 @@ runs:
       run: |
         failed=false
 
-        echo "Checking '$perflog' for any performance wanings"
-        ls -l "$perflog"
+        echo "Checking '$perflog' for any performance warnings"
         echo "Contents of '$perflog':"
         cat "$perflog"        
 
