@@ -2,9 +2,9 @@
 This directory contains tests for the universal NRP both for local/onprem and GitHub workflows. There is a GitHub workflow which performs these tests but only for modern distros (excluding EOL distributions eg. centos 7-8, ubuntu 18.04-20.04, etc.). We do support EOL testing on our infrastructure, as such, we've developed some tools in order for us to test locally.
 
 The following bash tools have been created to enable testing across any linux-based OS:
- - `StartLocalTest.sh`: Peforms tests locally with a given Azure Policy package. This is meant to be used dirtectly on the machine being tested.
+ - `StartLocalTest.sh`: Peforms tests locally with a given Azure Policy package. This is meant to be used directly on the machine being tested.
  - `StartVMTest.sh`: Uses QEMU with a given cloud based image (cloud-init enabled) and performs the tests on the VM.
- - `StartMSFTTests.sh` (MSFT INTERNAL-ONLY): Uses the _StartVMTest.sh_ above to orchestrate tests on images not being tested by GitrHub workflows. These are internal as they leverage Azure Blob Storage for storing the disk images.
+ - `StartTests.sh` (Microsoft Internal Only): Uses the _StartVMTest.sh_ above to orchestrate tests on images not being tested by GitrHub workflows. These are internal as they leverage Azure Blob Storage for storing the disk images.
 
 # Testing on VMs
 To perform tests on VMs the `StartVMTest.sh` allows you to perform tests on specific Azure Policy packages targetting a particular VM disk image. QEMU is used as the virtualization platform and allows us to target linux distributions shared as raw/qcow2 images (See [VM Image Sources](#vm-image-sources) for compatible images). Images are booted using cloud-init in order to provision the user and help orchestrate tests, collect logs and test reports back to the QEMU host.
