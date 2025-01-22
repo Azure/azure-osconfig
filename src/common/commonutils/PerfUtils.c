@@ -55,8 +55,8 @@ int StopPerfClock(PERF_CLOCK* clock, void* log)
 
 long GetPerfClockTime(PERF_CLOCK* clock, void* log)
 {
-    long seconds = 0;
-    long nanoseconds = 0;
+    //long seconds = 0;
+    //long nanoseconds = 0;
     long microseconds = -1;
 
     if ((NULL == clock) || (0 == clock->stop.tv_sec))
