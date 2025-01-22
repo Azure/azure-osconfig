@@ -65,16 +65,14 @@ while getopts ${OPTSTRING} opt; do
     esac
 done
 
-if ! command -v jq &> /dev/null
-then
-    echo "jq could not be found, please install jq to proceed"
-    exit 1
-fi
-if ! command -v az &> /dev/null
-then
-    echo "az-cli could not be found, please install az-cli to proceed"
-    exit 1
-fi
+# Ensure local dependencies are installed [cloud-localds, qemu-system-x86_64, jq, az]
+dependencies=(cloud-localds qemu-system-x86_64 jq az)
+for dep in "${dependencies[@]}"; do
+    if ! command -v $dep &> /dev/null; then
+        echo "$dep not found. Please install it and try again." 1>&2
+        exit 1
+    fi
+done
 
 if command -v sudo &> /dev/null; then
     if [ "$(id -u)" -ne 0 ]; then
@@ -84,7 +82,7 @@ fi
 
 echo "Downloading latest Azure Policy packages"
 mkdir -p $packageDir
-pipelineRunId=$(az pipelines runs list --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
+pipelineRunId=$(az pipelines runs list --organization $azdevopsOrg --project $azdevopsProject --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
 echo "Using latest succeeded run:$pipelineRunId"
 az pipelines runs artifact download --organization $azdevopsOrg --project $azdevopsProject --artifact-name $azdevopsArtifactName --path $packageDir --run-id $pipelineRunId
 
@@ -153,6 +151,7 @@ for row in $(echo "${test_data}" | jq -r '.[] | @base64'); do
     run_test $imageFile $policyPackage $resourceCount $vmmemory $logDir &
     pids+=($!)
     echo "  Log directory: $logDir"
+    sleep 1
 done
 
 # Wait for tests to complete and capture exit codes

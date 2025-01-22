@@ -151,14 +151,13 @@ if [ $generalize = false ] && [ -z "${policypackage}" ]; then
 fi
 
 # Ensure local dependencies are installed [cloud-localds, qemu-system-x86_64]
-if ! command -v cloud-localds &> /dev/null; then
-    echo "cloud-localds not found. Please install cloud-image-utils package and try again." 1>&2
-    exit 1
-fi
-if ! command -v qemu-system-x86_64 &> /dev/null; then
-    echo "qemu-system-x86_64 not found. Please install qemu-system-x86_64 and try again." 1>&2
-    exit 1
-fi
+dependencies=(cloud-localds qemu-system-x86_64)
+for dep in "${dependencies[@]}"; do
+    if ! command -v $dep &> /dev/null; then
+        echo "$dep not found. Please install it and try again." 1>&2
+        exit 1
+    fi
+done
 
 if command -v sudo &> /dev/null; then
     if [ "$(id -u)" -ne 0 ]; then
