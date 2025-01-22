@@ -2,6 +2,11 @@ name: Build Azure Policy Packages
 
 on:
   workflow_dispatch:
+    inputs:
+      release:
+        description: 'Release name'
+        required: false
+        type: string
 
 jobs:
   package:
@@ -19,3 +24,47 @@ jobs:
       artifact: policy-packages
       machine-config: true
       release: true
+
+  release:
+    if: ${{ github.event.inputs.release }}
+    name: Release
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: policy-packages
+
+      - name: Update json template
+        run: |
+          set -xe
+          asb_artifact=AzureLinuxBaseline.zip
+          asb_hash="$(sha256sum ${asb_artifact} | awk '{print $1}')"
+          asb_uri="https://github.com/${{ github.repository }}/releases/download/${{ github.event.inputs.release }}/${asb_artifact}"
+          asb_template=./src/adapters/mc/asb/AzureLinuxBaseline_DeployIfNotExists.json.tmpl
+          asb_output=./src/adapters/mc/asb/AzureLinuxBaseline_DeployIfNotExists.json
+
+          ssh_artifact=LinuxSshServerSecurityBaseline.zip
+          ssh_hash="$(sha256sum ${ssh_artifact} | awk '{print $1}')"
+          ssh_uri="https://github.com/${{ github.repository }}/releases/download/${{ github.event.inputs.release }}/${ssh_artifact}"
+          ssh_template=./src/adapters/mc/ssh/LinuxSshServerSecurityBaseline_DeployIfNotExists.json.tmpl
+          ssh_output=./src/adapters/mc/ssh/LinuxSshServerSecurityBaseline_DeployIfNotExists.json
+
+          sed -e "s|@HASH@|${asb_hash}|g" -e "s|@URI@|${asb_uri}|g" ${asb_template} > ${asb_output}
+          sed -e "s|@HASH@|${ssh_hash}|g" -e "s|@URI@|${ssh_uri}|g" ${ssh_template} > ${ssh_output}
+
+      - name: Create or update release with new artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release }}
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          body: |
+            Azure Policy Packages built from ${{ github.sha }} ${{ github.ref_name }}
+          files: |
+            AzureLinuxBaseline.zip
+            LinuxSshServerSecurityBaseline.zip
+            ./src/adapters/mc/asb/AzureLinuxBaseline_DeployIfNotExists.json
+            ./src/adapters/mc/ssh/LinuxSshServerSecurityBaseline_DeployIfNotExists.json
