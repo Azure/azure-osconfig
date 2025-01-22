@@ -262,7 +262,6 @@ if [ $generalize = true ]; then
     fi
     debug_mode
     echo "✅ Generalization complete!"
-    # If image is to be generalized, exit here
     exit 0
 fi
 

@@ -82,42 +82,43 @@ if command -v sudo &> /dev/null; then
     fi
 fi
 
-# echo "Downloading latest Azure Policy packages"
-# mkdir -p $packageDir
-# pipelineRunId=$(az pipelines runs list --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
-# echo "Using latest succeeded run:$pipelineRunId"
-# az pipelines runs artifact download --organization $azdevopsOrg --project $azdevopsProject --artifact-name $azdevopsArtifactName --path $packageDir --run-id $pipelineRunId
+echo "Downloading latest Azure Policy packages"
+mkdir -p $packageDir
+pipelineRunId=$(az pipelines runs list --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
+echo "Using latest succeeded run:$pipelineRunId"
+az pipelines runs artifact download --organization $azdevopsOrg --project $azdevopsProject --artifact-name $azdevopsArtifactName --path $packageDir --run-id $pipelineRunId
 
-# $1 - imageFile
-# $2 - policyPackage
-# $3 - resourceCount
-# $4 - VMMemory
-# $5 - logDirectory
 run_test() {
+    local imageFile=$1
+    local policyPackage=$2
+    local resourceCount=$3
+    local vmMemory=$4
+    local logDirectory=$5
+
     local curtime=$(date +%Y%m%d_%H%M%S)
-    local tempImage="${curtime}_${1}"
-    cp $cacheDir/$1 $cacheDir/$tempImage
-    ./StartVMTest.sh -i $cacheDir/$tempImage -p $packageDir/$2 -c $3 -m $4 -l $5 > /dev/null
+    local tempImage="${curtime}_${imageFile}"
+    cp $cacheDir/$imageFile $cacheDir/$tempImage
+    ./StartVMTest.sh -i $cacheDir/$tempImage -p $packageDir/$policyPackage -c $resourceCount -m $vmMemory -l $logDirectory > /dev/null
     if [[ $? -eq 0 ]]; then
-        echo "✅ Test on $1 completed successfully."
+        echo "✅ Test on $imageFile completed successfully."
     else
-        echo "❌ Test on $1 failed."
+        echo "❌ Test on $imageFile failed."
     fi
     rm $cacheDir/$tempImage
 }
 
-# $1 - imageFile
 download_image() {
-    if [ -z "$cacheDir/$1" ]; then
-        echo "Downloading image: $1"
-        az storage blob download --account-name $storageAccount --container-name $containerName --name $1 --file $cacheDir/$1 --auth-mode login --subscription $subscriptionId > /dev/null
+    local imageFile=$1
+    if [ -z "$cacheDir/$imageFile" ]; then
+        echo "Downloading image: $imageFile"
+        az storage blob download --account-name $storageAccount --container-name $containerName --name $imageFile --file $cacheDir/$imageFile --auth-mode login --subscription $subscriptionId > /dev/null
     else
-        local_file_date=$(stat -c %Y "$cacheDir/$1")
-        blob_date=$(az storage blob show --account-name "$storageAccount" --container-name "$containerName" --name "$1" --auth-mode login --subscription $subscriptionId --query properties.lastModified --output tsv)
+        local_file_date=$(stat -c %Y "$cacheDir/$imageFile")
+        blob_date=$(az storage blob show --account-name "$storageAccount" --container-name "$containerName" --name "$imageFile" --auth-mode login --subscription $subscriptionId --query properties.lastModified --output tsv)
         blob_date_unix=$(date -d "$blob_date" +%s)
         if [[ $blob_date_unix -gt $local_file_date ]]; then
-            echo "Newer $1 image found in blob storage, downloading image"
-            az storage blob download --account-name $storageAccount --container-name $containerName --name $1 --file $cacheDir/$1 --auth-mode login --subscription $subscriptionId > /dev/null
+            echo "Newer $imageFile image found in blob storage, downloading image"
+            az storage blob download --account-name $storageAccount --container-name $containerName --name $imageFile --file $cacheDir/$imageFile --auth-mode login --subscription $subscriptionId > /dev/null
         fi
     fi
 }
@@ -151,12 +152,6 @@ for row in $(echo "${test_data}" | jq -r '.[] | @base64'); do
     logDir="$cacheDir/${curtime}_${imageFile%.*}"
     run_test $imageFile $policyPackage $resourceCount $vmmemory $logDir &
     pids+=($!)
-    # TODO: Remove this logic in favor of specifying a directoryname
-    # sleep 5
-    # echo "find . -type d -name "*${imageFile%.*}" -printf '%p\n' | sort | tail -1"
-    # latestDir=$(find . -type d -name "*${imageFile%.*}" -printf '%p\n' | sort | tail -1)
-    # echo "find $latestDir -type f -name "*.log" -printf '%p\n'"
-    # logFile=$(find "$logDir" -type f -name "*.log" -printf '%p\n')
     echo "  Log directory: $logDir"
 done
 
