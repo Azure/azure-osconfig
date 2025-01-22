@@ -3,7 +3,7 @@
 # StartTests.sh
 # Description: This Microsoft internal only script is used to download the latest Azure Policy packages from internal pipelines
 #              and run the tests on the specified test data provided.
-# Usage: ./StartMSFTTests.sh [-r run-id] [-m vm-memory-mb]
+# Usage: ./StartTests.sh [-r run-id] [-m vm-memory-mb]
 #        -r run-id: Specify the run-id of the pipeline run to download the packages from
 #        -m vm-memory-mb: Specify the memory in MB to be used for the VMs
 
