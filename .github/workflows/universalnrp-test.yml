@@ -184,6 +184,14 @@ jobs:
               Rename-Item -Path $_.Name -NewName "$name.zip"
           }
       
+      - name: Check package size
+        if: success() || failure()
+        working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
+        uses: ./.github/actions/check-size
+        with:
+          package: $name.zip
+          limit: "290000"
+
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
         run: |
