@@ -16,17 +16,11 @@
         {
             "name": "linux-install-packages",
             "parameters": {
-                "packages": "aziot-identity-service jq omi powershell libgsl-dev libgsl27 libgslcblas0"
+                "packages": "jq omi powershell"
             }
         },
         {
             "name": "linux-azcli"
-        },
-        {
-            "name": "linux-dotnet-sdk",
-            "parameters": {
-                "version": "6.0"
-            }
         },
         {
             "name": "linux-bash-command",

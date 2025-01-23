@@ -28,7 +28,7 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo apt update && sudo apt install -y dotnet-sdk-6.0 jq omi"
+                "command": "sudo apt update && sudo apt install -y jq omi"
             }
         },
         {
@@ -38,6 +38,12 @@
             "name": "linux-bash-command",
             "parameters": {
                 "command": "wget https://github.com/PowerShell/PowerShell/releases/download/v7.4.1/powershell_7.4.1-1.deb_amd64.deb -O powershell.deb && sudo dpkg -i powershell.deb && sudo apt-get install -f"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "apt list --installed"
             }
         }
     ]
