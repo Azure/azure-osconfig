@@ -25,10 +25,7 @@ runs:
         echo "Checking the size of '$package'"
         echo "Size of '$package':"
 
-        # command = f"wc -c $package | awk '{{print $1}}'"
-        # actual = int(subprocess.check_output(command, shell=True).strip())
-
-        actual = $(wc -c < "$package")
+        actual=$(du -k "$package" | cut -f1)
 
         if [ "$actual" -gt "$limit" ]; then
             echo "Size of '$package' of $actual bytes is greater than the limit of $limit bytes"
