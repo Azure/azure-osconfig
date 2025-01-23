@@ -104,9 +104,9 @@ run_test() {
     cp $cacheDir/$imageFile $cacheDir/$tempImage
     ./StartVMTest.sh -i $cacheDir/$tempImage -p $packageDir/$policyPackage -c $resourceCount -m $vmMemory -l $logDirectory > /dev/null
     if [[ $? -eq 0 ]]; then
-        echo "✅ Test on $imageFile completed successfully."
+        echo "✅ Test on $imageFile with $policyPackage completed successfully."
     else
-        echo "❌ Test on $imageFile failed."
+        echo "❌ Test on $imageFile with $policyPackage failed."
     fi
     rm $cacheDir/$tempImage
 }
@@ -124,12 +124,17 @@ download_image() {
 
 # Download Distro Images
 pids=()
+declare -A downloaded_images
 for row in $(echo "${test_data}" | jq -r '.[] | @base64'); do
     _jq() {
         echo ${row} | base64 --decode | jq -r ${1}
     }
-    download_image $(_jq '.imageFile') &
-    pids+=($!)
+    imageFile=$(_jq '.imageFile')
+    if [[ -z "${downloaded_images[$imageFile]}" ]]; then
+        download_image $imageFile &
+        pids+=($!)
+        downloaded_images[$imageFile]=1
+    fi
 done
 for pid in "${pids[@]}"; do
     wait $pid

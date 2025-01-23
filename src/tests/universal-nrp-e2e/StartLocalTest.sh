@@ -131,7 +131,6 @@ run_tests() {
     echo "Resource Count: $resourcecount"
     echo "Remediation   : $remediation"
     skipremediation=$([ "$remediation" = "false" ] && echo "true" || echo "false")
-    echo "Skip Remediation: $skipremediation"
     cat << EOF > bootstrap.ps1
 \$params = @{
     PolicyPackage = "$policypackage"
