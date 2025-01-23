@@ -74,6 +74,12 @@ for dep in "${dependencies[@]}"; do
     fi
 done
 
+# Check if the Azure DevOps extension is already installed
+if ! az extension list --output table | grep -q azure-devops; then
+    echo "Azure DevOps extension not found. Installing..."
+    az extension add --name azure-devops
+fi
+
 if command -v sudo &> /dev/null; then
     if [ "$(id -u)" -ne 0 ]; then
         sudo echo -n
@@ -107,17 +113,12 @@ run_test() {
 
 download_image() {
     local imageFile=$1
-    if [ -z "$cacheDir/$imageFile" ]; then
-        echo "Downloading image: $imageFile"
+    local_file_date=$(stat -c %Y "$cacheDir/$imageFile" 2>/dev/null)
+    blob_date=$(az storage blob show --account-name "$storageAccount" --container-name "$containerName" --name "$imageFile" --auth-mode login --subscription $subscriptionId --query properties.lastModified --output tsv)
+    blob_date_unix=$(date -d "$blob_date" +%s)
+    if [[ $blob_date_unix -gt $local_file_date ]]; then
+        echo "Newer $imageFile image found in blob storage, downloading image"
         az storage blob download --account-name $storageAccount --container-name $containerName --name $imageFile --file $cacheDir/$imageFile --auth-mode login --subscription $subscriptionId > /dev/null
-    else
-        local_file_date=$(stat -c %Y "$cacheDir/$imageFile")
-        blob_date=$(az storage blob show --account-name "$storageAccount" --container-name "$containerName" --name "$imageFile" --auth-mode login --subscription $subscriptionId --query properties.lastModified --output tsv)
-        blob_date_unix=$(date -d "$blob_date" +%s)
-        if [[ $blob_date_unix -gt $local_file_date ]]; then
-            echo "Newer $imageFile image found in blob storage, downloading image"
-            az storage blob download --account-name $storageAccount --container-name $containerName --name $imageFile --file $cacheDir/$imageFile --auth-mode login --subscription $subscriptionId > /dev/null
-        fi
     fi
 }
 
