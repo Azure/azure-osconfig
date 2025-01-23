@@ -19,19 +19,13 @@ runs:
       run: |
         failed=false
 
-        echo "Package: $package"
-        echo "Limit: $limit kB"
-        
-        echo "Checking the size of '$package'"
-
         actual=$(du -k "$package" | cut -f1)
-        echo "Actual: $actual kB"
 
         if [ "$actual" -gt "$limit" ]; then
-            echo "Size of '$package' of $actual bytes is greater than the limit of $limit bytes"
+            echo "Size of '$package' of $actual kB is greater than the limit of $limit kB"
             failed=true
         else
-            echo "Size of '$package' of $actual bytes is at or under the limit of $limit bytes"
+            echo "Size of '$package' of $actual kB is at or under the limit of $limit kB"
         fi
 
         if [ "$failed" == true ]
