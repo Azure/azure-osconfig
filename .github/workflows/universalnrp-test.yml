@@ -186,7 +186,6 @@ jobs:
       
       - name: Check package size
         if: success() || failure()
-        working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
         uses: ./.github/actions/check-size
         with:
           package: $name.zip
