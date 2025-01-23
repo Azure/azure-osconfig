@@ -89,6 +89,10 @@ fi
 echo "Downloading latest Azure Policy packages"
 mkdir -p $packageDir
 pipelineRunId=$(az pipelines runs list --organization $azdevopsOrg --project $azdevopsProject --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
+if [[ -z "$pipelineRunId" ]]; then
+    echo "Unable to retreive pipeline run id, ensure "az login" was performed or you have the correct access." 1>&2
+    exit 1
+fi
 echo "Using latest succeeded run:$pipelineRunId"
 az pipelines runs artifact download --organization $azdevopsOrg --project $azdevopsProject --artifact-name $azdevopsArtifactName --path $packageDir --run-id $pipelineRunId
 
