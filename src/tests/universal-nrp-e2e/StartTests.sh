@@ -86,19 +86,27 @@ if command -v sudo &> /dev/null; then
     fi
 fi
 
+get_pipeline_run_id() {
+    local runId=""
+    runId=$(az pipelines runs list --organization $azdevopsOrg --project $azdevopsProject --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
+    if [[ -z "$runId" ]]; then
+        failedLogin=true
+        echo "Unable to retreive pipeline run id, running \"az login\"" 1>&2
+        if ! az login; then
+            echo "Failed to login to Azure. Please check your credentials and try again." 1>&2
+        else
+            az account set --subscription $subscriptionId
+            failedLogin=false
+            runId=$(az pipelines runs list --organization $azdevopsOrg --project $azdevopsProject --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
+        fi
+        [[ "$failedLogin" = true ]] && { echo "Unable to retrieve pipeline run id after login attempt, please check credentials and try again." 1>&2; exit 1; }
+    fi
+    echo $runId
+}
+
 echo "Downloading latest Azure Policy packages"
 mkdir -p $packageDir
-pipelineRunId=$(az pipelines runs list --organization $azdevopsOrg --project $azdevopsProject --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
-if [[ -z "$pipelineRunId" ]]; then
-    failedLogin=true
-    echo "Unable to retreive pipeline run id, running \"az login --subscription $subscriptionId\"" 1>&2
-    if ! az login --subscription $subscriptionId; then
-        echo "Failed to login to Azure. Please check your credentials and try again." 1>&2
-    else
-        failedLogin=false
-    fi
-    [[ "$failedLogin" = true ]] && { echo "Unable to retrieve pipeline run id after login attempt, please check credentials and try again." 1>&2; exit 1; }
-fi
+pipelineRunId=$(get_pipeline_run_id)
 echo "Using latest succeeded run:$pipelineRunId"
 az pipelines runs artifact download --organization $azdevopsOrg --project $azdevopsProject --artifact-name $azdevopsArtifactName --path $packageDir --run-id $pipelineRunId
 
