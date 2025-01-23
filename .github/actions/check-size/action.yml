@@ -19,15 +19,22 @@ runs:
       run: |
         failed=false
 
+        echo "$package"
+        echo "$limit"
+        
         echo "Checking the size of '$package'"
         echo "Size of '$package':"
-        actual = wc -c $package | awk '{print $1}'
 
-        if (actual > limit)
-            echo "Size of '$package' of $actual kB is greater than the limit of $limit kB"
+        # command = f"wc -c $package | awk '{{print $1}}'"
+        # actual = int(subprocess.check_output(command, shell=True).strip())
+
+        actual = $(wc -c < "$package")
+
+        if [ "$actual" -gt "$limit" ]; then
+            echo "Size of '$package' of $actual bytes is greater than the limit of $limit bytes"
             failed=true
         else
-            echo "Size of '$package' of $actual kB is at or under the limit of $limit kB"
+            echo "Size of '$package' of $actual bytes is at or under the limit of $limit bytes"
         fi
 
         if [ "$failed" == true ]
