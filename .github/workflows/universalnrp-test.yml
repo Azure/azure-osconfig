@@ -188,7 +188,7 @@ jobs:
         if: success() || failure()
         uses: ./.github/actions/check-size
         with:
-          package: $name.zip
+          package: '${{ steps.normalize.outputs.path }}'
           limit: "290"
 
       - name: Run Guest Configuration Test
