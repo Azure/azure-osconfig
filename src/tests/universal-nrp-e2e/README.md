@@ -9,6 +9,11 @@ The following bash tools have been created to enable testing across any linux-ba
 # Testing on VMs
 To perform tests on VMs the `StartVMTest.sh` allows you to perform tests on specific Azure Policy packages targetting a particular VM disk image. QEMU is used as the virtualization platform and allows us to target linux distributions shared as raw/qcow2 images (See [VM Image Sources](#vm-image-sources) for compatible images). Images are booted using cloud-init in order to provision the user and help orchestrate tests, collect logs and test reports back to the QEMU host.
 
+## Prerequisites
+ - jq
+ - qemu-system-x86
+ - cloud-image-utils
+
 ## Example
 The following example performs tests on an [Ubuntu Noble cloud image](https://cloud-images.ubuntu.com/noble/current/) on the AzureLinuxBaseline.zip (built in directory tree) which has 168 resources defined.
 ```sh
@@ -35,6 +40,12 @@ You need to copy over the following files onto the target machine:
 
 # Testing all supported distributions (Internal-Only)
 This Microsoft Internal Only script (`StartTests.sh`) downloads generalized images stored in our internal blob storage and then runs `StartVMTest.sh` on each distribution and policy package. You may also specify the amount of memory used by each vm (default: 512mb) in addition to the number of concurrent jobs/tests to run (default: 5).
+
+## Prerequisites
+ - jq
+ - az-cli - [How to install the Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)
+ - qemu-system-x86
+ - cloud-image-utils
 
 ## Example
 ```sh
