@@ -33,8 +33,7 @@ runs:
             echo "Found no performance warnings in '$perflog'"
         fi
 
-        if [ "$failed" == true ]
-        then
+        if [ "$failed" == true ]; then
             echo "Check performance test failed"
             exit 1
         fi

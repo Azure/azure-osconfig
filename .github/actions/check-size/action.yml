@@ -8,6 +8,7 @@ inputs:
   limit:
     description: the maximum size of the package in kB
     required: true
+    type: integer
 
 runs:
   using: composite
@@ -21,15 +22,14 @@ runs:
 
         actual=$(du -k "$package" | cut -f1)
 
-        if [ "$actual" -gt "$limit" ]; then
+        if [ "$actual" -gt $limit ]; then
             echo "Size of '$package' of $actual kB is greater than the limit of $limit kB"
             failed=true
         else
             echo "Size of '$package' of $actual kB is at or under the limit of $limit kB"
         fi
 
-        if [ "$failed" == true ]
-        then
+        if [ "$failed" == true ]; then
             echo "Check package size test failed"
             exit 1
         fi
