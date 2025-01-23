@@ -2,9 +2,9 @@
 This directory contains tests for the universal NRP both for local/onprem and GitHub workflows. There is a GitHub workflow which performs these tests but only for modern distros (excluding EOL distributions eg. centos 7-8, ubuntu 18.04-20.04, etc.). We do support EOL testing on our infrastructure, as such, we've developed some tools in order for us to test locally.
 
 The following bash tools have been created to enable testing across any linux-based OS:
- - `StartLocalTest.sh`: Peforms tests locally with a given Azure Policy package. This is meant to be used directly on the machine being tested.
- - `StartVMTest.sh`: Uses QEMU with a given cloud based image (cloud-init enabled) and performs the tests on the VM.
- - `StartTests.sh` (Microsoft Internal Only): Uses the _StartVMTest.sh_ above to orchestrate tests on images not being tested by GitrHub workflows. These are internal as they leverage Azure Blob Storage for storing the disk images.
+ - `StartLocalTest.sh`: Peforms tests locally with a given Azure Policy package. This is meant to be used directly on the machine being tested (See [Testing on VMs](#testing-on-vms)).
+ - `StartVMTest.sh`: Uses QEMU with a given cloud based image (cloud-init enabled) and performs the tests on the VM (See [Testing directly on target machine](#testing-directly-on-target-machine)).
+ - `StartTests.sh` (Microsoft Internal Only): Uses the _StartVMTest.sh_ above to orchestrate tests on images not being tested by GitrHub workflows. These are internal as they leverage Azure Blob Storage for storing the disk images (See [Testing all supported distributions (Internal-Only)](#testing-all-supported-distributions-internal-only).
 
 # Testing on VMs
 To perform tests on VMs the `StartVMTest.sh` allows you to perform tests on specific Azure Policy packages targetting a particular VM disk image. QEMU is used as the virtualization platform and allows us to target linux distributions shared as raw/qcow2 images (See [VM Image Sources](#vm-image-sources) for compatible images). Images are booted using cloud-init in order to provision the user and help orchestrate tests, collect logs and test reports back to the QEMU host.
@@ -31,6 +31,21 @@ You need to copy over the following files onto the target machine:
 ## Example
 ```sh
 ./StartLocalTest.sh -p AzureLinuxBaseline.zip -c 168
+```
+
+# Testing all supported distributions (Internal-Only)
+This Microsoft Internal Only script (`StartTests.sh`) downloads generalized images stored in our internal blob storage and then runs `StartVMTest.sh` on each distribution and policy package. You may also specify the amount of memory used by each vm (default: 512mb) in addition to the number of concurrent jobs/tests to run (default: 5).
+
+## Example
+```sh
+./StartTest.sh
+```
+## Usage
+```
+Usage: ./StartTests.sh [-r run-id] [-m vm-memory-mb] [-j max-concurrent-jobs]
+          -r run-id: Specify the run-id of the pipeline run to download the packages from (Default: latest-succeeded-run-id)
+          -m vm-memory-mb: Specify the memory in MB to be used for the VMs (Default: 512)
+          -j max-concurrent-jobs: Specify the maximum number of concurrent jobs to run the tests (Default: 5)
 ```
 
 # More Information
