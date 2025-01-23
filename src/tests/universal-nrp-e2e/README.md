@@ -33,8 +33,9 @@ You need to copy over the following files onto the target machine:
 ./StartLocalTest.sh -p AzureLinuxBaseline.zip -c 168
 ```
 
-# Advanced Topics
-## Testing Locally
+# More Information
+## Testing locally/directly on target machine
+Although `StartLocalTest.sh` can be used to simply test a policy package, it can also invoke "Stages" which is used by the `StartVMTest.sh` to orchestrate tests on the VM through its ssh session and provide accurate exit codes for error reporting. It also provides the `-g` flag used to [generalize the image](#generalizing-a-vm-image) which is useful when preparing an image that will be reused/shared.
 ```
 Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip -c resource-count [-r]]
         -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
