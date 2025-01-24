@@ -134,7 +134,8 @@ run_test() {
     local curtime=$(date +%Y%m%d_%H%M%S)
     local tempImage="${curtime}_${imageFile}"
     cp $cacheDir/$imageFile $cacheDir/$tempImage
-    ./StartVMTest.sh -i $cacheDir/$tempImage -p $packageDir/$policyPackage -c $resourceCount -m $vmMemory -l $logDirectory > /dev/null
+    # Start tests with given policy package and remediation enabled
+    ./StartVMTest.sh -i $cacheDir/$tempImage -p $packageDir/$policyPackage -c $resourceCount -m $vmMemory -r -l $logDirectory > /dev/null
     if [[ $? -eq 0 ]]; then
         echo "✅ Test on $imageFile with $policyPackage completed successfully."
     else
