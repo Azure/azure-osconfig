@@ -28,16 +28,16 @@
         {
             "name": "linux-install-packages",
             "parameters": {
-                "packages": "aziot-identity-service jq omi powershell"
+                "packages": "jq omi powershell"
             }
         },
         {
             "name": "linux-azcli"
         },
         {
-            "name": "linux-dotnet-sdk",
+            "name": "linux-bash-command",
             "parameters": {
-                "version": "6.0"
+                "command": "apt list --installed"
             }
         }
     ]

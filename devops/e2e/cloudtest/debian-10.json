@@ -34,7 +34,7 @@
         {
             "name": "linux-install-packages",
             "parameters": {
-                "packages": "dotnet-sdk-6.0 jq powershell omi"
+                "packages": "jq powershell omi"
             }
         },
         {
