@@ -130,14 +130,20 @@ run_tests() {
     echo "Policy Package: $policypackage"
     echo "Resource Count: $resourcecount"
     echo "Remediation   : $remediation"
-    skipremediation=$([ "$remediation" = "false" ] && echo "true" || echo "false")
+    skipremediation=$([ "$remediation" = "false" ] && echo '1' || echo '0')
     cat << EOF > bootstrap.ps1
+param (
+    [string] \$PolicyPackage,
+    [switch] \$SkipRemediation,
+    [int] \$ResourceCount,
+    [string] \$PesterTests
+)
 \$params = @{
-    PolicyPackage = "$policypackage"
-    SkipRemediation = \$$skipremediation
-    ResourceCount = $resourcecount
+    PolicyPackage = \$PolicyPackage
+    SkipRemediation = \$SkipRemediation
+    ResourceCount = \$ResourceCount
 }
-\$container = New-PesterContainer -Path $HOME/UniversalNRP.Tests.ps1 -Data \$params
+\$container = New-PesterContainer -Path \$PesterTests -Data \$params
 \$pesterConfig = [PesterConfiguration]@{
     Run = @{
         Exit = \$true
@@ -157,7 +163,7 @@ run_tests() {
 };
 Invoke-Pester -Configuration \$pesterConfig
 EOF
-    do_sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command ./bootstrap.ps1
+    do_sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -File ./bootstrap.ps1 -PolicyPackage "$policypackage" -SkipRemediation $skipremediation -ResourceCount $resourcecount -PesterTests "$HOME/UniversalNRP.Tests.ps1"
     return $?
 }
 generalize() {

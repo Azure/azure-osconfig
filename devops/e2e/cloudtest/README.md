@@ -1,10 +1,9 @@
 # Cloud Test Directory
-
-This directory contains 1ES Managed Image definitions for the distros being exercised by our end-to-end tests.
+This directory contains 1ES Managed Image definitions for the distros being exercised by our end-to-end tests. If the distro is EOL, see [Universal NRP End-to-End Tests Local/GitHub](../../src/tests/universal-nrp-e2e/README.md) for more information.
 
 # General Guidance for onboarding images
 
-Its best to use a pre-existing Azure Marketplace images as they are updated regularly but some EOL distros might require onboarding into a private compute gallery.
+Its best to use a pre-existing Azure Marketplace images as they are updated regularly but some EOL distros might require [local testing](../../src/tests/universal-nrp-e2e/README.md).
 
 ## Dependencies
 

@@ -105,7 +105,7 @@ Usage: ./StartVMTest.sh [-i /path/to/image.img -p /path/to/policypackage.zip -c 
        -d Debug Mode:            VM stays up for debugging (Default: false)
 ```
 ### VM Image Sources
-Its preferable for images to be "Cloud" images (contain cloud-init) as it makes tooling work out-of-box and does not require creating your own image of the distro and getting all the necessary packages/dependencies installed.
+It's preferable for images to be "Cloud" images (contain cloud-init) as it makes tooling work out-of-box and does not require creating your own image of the distro and getting all the necessary packages/dependencies installed.
 
 Here are a few locations where cloud images can be obtained:
  - [Ubuntu Cloud Images](https://cloud-images.ubuntu.com/)

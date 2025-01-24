@@ -7,6 +7,7 @@
 #        -r run-id: Specify the run-id of the pipeline run to download the packages from (Default: latest-succeeded-run-id)
 #        -m vm-memory-mb: Specify the memory in MB to be used for the VMs (Default: 512)
 #        -j max-concurrent-jobs: Specify the maximum number of concurrent jobs to run the tests (Default: 5)
+# Dependencies: cloud-localds, qemu-system-x86, jq, az
 
 test_data='[
     {"imageFile": "centos-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip", "resourceCount": 168},
