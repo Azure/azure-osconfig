@@ -15,13 +15,13 @@ To perform tests on VMs the `StartVMTest.sh` allows you to perform tests on spec
  - cloud-image-utils
 
 ## Example
-The following example performs tests on an [Ubuntu Noble cloud image](https://cloud-images.ubuntu.com/noble/current/) on the AzureLinuxBaseline.zip (built in directory tree) which has 168 resources defined.
+The following example performs tests on an [Ubuntu Noble cloud image](https://cloud-images.ubuntu.com/noble/current/) on the AzureLinuxBaseline.zip (built in directory tree).
 ```sh
 # Download image https://cloud-images.ubuntu.com/
 wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
 # Add 2Gb to filesystem in order to install all necessary dependencies
 qemu-img resize noble-server-cloudimg-amd64.img +2G
-./StartVMTest.sh -i noble-server-cloudimg-amd64.img -p ../../build/AzureLinuxBaseline.zip -c 168
+./StartVMTest.sh -i noble-server-cloudimg-amd64.img -p ../../build/AzureLinuxBaseline.zip
 ```
 Once completed, log archives are created under `_<distro-image>` directory (in this case __focal-server-cloudimg-amd64.img_) which contain the JUnit test report along with the osconfig logs contained under `/var/log/osconfig*`
 
@@ -35,7 +35,7 @@ You need to copy over the following files onto the target machine:
 
 ## Example
 ```sh
-./StartLocalTest.sh -p AzureLinuxBaseline.zip -c 168
+./StartLocalTest.sh -p AzureLinuxBaseline.zip
 ```
 
 # Testing all supported distributions (Internal-Only)
@@ -63,7 +63,7 @@ Usage: ./StartTests.sh [-r run-id] [-m vm-memory-mb] [-j max-concurrent-jobs]
 ## Testing locally/directly on target machine
 Although `StartLocalTest.sh` can be used to simply test a policy package, it can also invoke "Stages" which is used by the `StartVMTest.sh` to orchestrate tests on the VM through its ssh session and provide accurate exit codes for error reporting. It also provides the `-g` flag used to [generalize the image](#generalizing-a-vm-image) which is useful when preparing an image that will be reused/shared.
 ```
-Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip -c resource-count [-r]]
+Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip [-r]]
         -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
                                If no stage is specified, all stages will be executed in this order:
                                     dependency_check, run_tests, collect_logs
@@ -79,8 +79,6 @@ Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip -c resource-co
 
         -p policy-package.zip:  The Azure Policy Package to test
 
-        -c resource-count:      The number of resources to validate, tests will fail if this doesn't match (Default: 0)
-
         -r remediate-flag:      When the flag is enabled, performs remediation on the Policy Package (Default: No remediation performed)
 
         -g generalize-flag:     Generalize the current machine for tests. Performs the following:
@@ -91,10 +89,9 @@ Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip -c resource-co
 
 ## Testing on VMs
 ```
-Usage: ./StartVMTest.sh [-i /path/to/image.img -p /path/to/policypackage.zip -c resource-count [-g]] [-m 512] [-r] [-d]
+Usage: ./StartVMTest.sh [-i /path/to/image.img -p /path/to/policypackage.zip [-g]] [-m 512] [-r] [-d]
        -i Image Path:            Path to the image qcow2 format
        -p Policy Package:        Path to the policy package
-       -c Resource Count:        The number of resources to validate, tests will fail if this doesn't match (Default: 0)
        -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
        -r Remediation:           Perform remediation flag (Default: false)
        -g Generalize Flag:       Generalize the current machine for tests. Performs the following:
@@ -248,10 +245,9 @@ qemu-img convert -c -O qcow2 CentOS-7-x86_64-GenericCloud-2211.qcow2 CentOS-7-x8
 ```
 Let's try the image and ensure it works before widely sharing...
 ```
-./StartVMTest.sh -i CentOS-7-x86_64-GenericCloud-2211.qcow2 -p /mnt/c/Users/ahbenmes/Downloads/AzureLinuxBaseline.zip -c 168
+./StartVMTest.sh -i CentOS-7-x86_64-GenericCloud-2211.qcow2 -p /mnt/c/Users/ahbenmes/Downloads/AzureLinuxBaseline.zip
 Image path: CentOS-7-x86_64-GenericCloud-2211.qcow2.
 Policy package: /mnt/c/Users/ahbenmes/Downloads/AzureLinuxBaseline.zip.
-Resource count: 168.
 ...
 ...
 Tests Passed: 4, Failed: 0, Skipped: 0, Inconclusive: 0, NotRun: 0

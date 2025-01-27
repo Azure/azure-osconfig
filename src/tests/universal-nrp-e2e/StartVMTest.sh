@@ -8,10 +8,9 @@
 #              There is also both a generalize and a debug mode flag that can be used to generalize an
 #              image and a debug mode that will leave the VM up for debugging.
 #
-# Usage: ./StartVMTest.sh [-i /path/to/image.img -p /path/to/policypackage.zip -c resource-count [-g]] [-m 512] [-r] [-d]
+# Usage: ./StartVMTest.sh [-i /path/to/image.img -p /path/to/policypackage.zip [-g]] [-m 512] [-r] [-d]
 #        -i Image Path:            Path to the image qcow2 format
 #        -p Policy Package:        Path to the policy package
-#        -c Resource Count:        The number of resources to validate, tests will fail if this doesn't match (Default: 0)
 #        -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
 #        -r Remediation:           Perform remediation flag (Default: false)
 #        -g Generalize Flag:       Generalize the current machine for tests. Performs the following:
@@ -40,11 +39,10 @@ tests_failed=false
 use_sudo=false
 provisionedUser="user1"
 
-usage() {
-    echo "Usage: $0 -i /path/to/image.img -p /path/to/policypackage.zip -c resource-count [-m 512] [-r] [-d]
+usage() { 
+    echo "Usage: $0 -i /path/to/image.img -p /path/to/policypackage.zip [-m 512] [-r] [-d]
     -i Image Path:            Path to the image qcow2 format
     -p Policy Package:        Path to the policy package
-    -c Resource Count:        The number of resources to validate, tests will fail if this doesn't match
     -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
     -r Remediation:           Perform remediation flag (Default: false)
     -g Generalize Flag:       Generalize the current machine for tests. Performs the following:
@@ -96,7 +94,7 @@ do_sudo() {
 
 trap cleanup 1 SIGINT
 
-OPTSTRING=":i:p:c:m:l:rdg"
+OPTSTRING=":i:p:m:l:rdg"
 
 while getopts ${OPTSTRING} opt; do
     case ${opt} in
@@ -107,10 +105,6 @@ while getopts ${OPTSTRING} opt; do
         p)
             policypackage=${OPTARG}
             echo "Policy package: $policypackage"
-            ;;
-        c)
-            resourcecount=${OPTARG}
-            echo "Resource count: $resourcecount"
             ;;
         m)
             vmmemory=${OPTARG}
@@ -270,7 +264,7 @@ scp -P $qemu_fwport -i $basepath/id_rsa $policypackage $provisionedUser@localhos
 scp -P $qemu_fwport -i $basepath/id_rsa UniversalNRP.Tests.ps1 $provisionedUser@localhost:~ || { echo "scp failed! Check console for details."1>&2; cleanup 1; }
 
 # Run tests
-ssh_command="bash StartLocalTest.sh -s run_tests -p $policyPackageFileName -c $resourcecount"
+ssh_command="bash StartLocalTest.sh -s run_tests -p $policyPackageFileName"
 if [ $remediation = true ]; then
     ssh_command="$ssh_command -r"
 fi
