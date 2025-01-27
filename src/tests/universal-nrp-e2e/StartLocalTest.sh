@@ -4,12 +4,11 @@
 # Description: This script orchestrates tests on a local machine. Installs dependencies, 
 #              runs tests, and collects logs/reports. Returns an error code if any stage fails.
 #
-# Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip -c resource-count [-r] [-g]]
+# Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip [-r] [-g]]
 #        -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
 #                               If no stage is specified, all stages will be executed in this order:
 #                                   dependency_check, run_tests, collect_logs
 #        -p policy-package.zip: The Azure Policy Package to test
-#        -c resource-count:     The number of resources to validate, tests will fail if this doesn't match (Default: 0)
 #        -r remediate-flag:     When the flag is enabled, performs remediation on the Policy Package (Default: No remediation performed)
 #        -g generalize-flag:    Generalize the current machine for tests. Performs the following:
 #                                   - Remove logs and tmp directories
@@ -30,7 +29,7 @@ generalize=false
 use_sudo=false
 
 usage() { 
-    echo "Usage: $0 [-s stage-name] [-p policy-package.zip -c resource-count [-r]]
+    echo "Usage: $0 [-s stage-name] [-p policy-package.zip [-r]]
         -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
                                If no stage is specified, all stages will be executed in this order:
                                     dependency_check, run_tests, collect_logs
@@ -45,8 +44,6 @@ usage() {
             - collect_logs:     Creates a tar.gz archive with the osconfig logs and JUnit Test Report
 
         -p policy-package.zip:  The Azure Policy Package to test
-
-        -c resource-count:      The number of resources to validate, tests will fail if this doesn't match (Default: 0)
 
         -r remediate-flag:      When the flag is enabled, performs remediation on the Policy Package (Default: No remediation performed)
         
@@ -124,6 +121,15 @@ dependency_check() {
     fi
     echo "done!"
     return 0
+}
+get_instance_count() {
+    local package=$1
+    local instanceCount=0
+    tempDir=$(mktemp -d)
+    unzip -q $package -d $tempDir
+    instanceCount=$(find $tempDir -name "${package%.*}.mof" -exec grep -c "instance of OsConfigResource" {} \;)
+    rm -rf $tempDir
+    echo $instanceCount
 }
 run_tests() {
     echo "Running tests..."
@@ -212,7 +218,7 @@ do_sudo() {
     fi
 }
 
-OPTSTRING=":s:p:c:rg"
+OPTSTRING=":s:p:rg"
 
 while getopts ${OPTSTRING} opt; do
     case ${opt} in
@@ -226,9 +232,6 @@ while getopts ${OPTSTRING} opt; do
             ;;
         p)
             policypackage=${OPTARG}
-            ;;
-        c)
-            resourcecount=${OPTARG}
             ;;
         r)
             remediation=true
@@ -274,9 +277,10 @@ if [ -z "$policypackage" ]; then
     echo "Policy package not provided." 1>&2;
     usage
 fi
+
+$resourcecount=get_instance_count $policypackage
 if [ "$resourcecount" -eq 0 ]; then
-    echo "Resource count not provided." 1>&2;
-    usage
+    echo "Resource count invalid: $resourceCount" 1>&2;
 fi
 if [ -z "$HOME/UniversalNRP.Tests.ps1" ]; then
     echo "UniversalNRP.Tests.ps1 not found. Copy Powershell script into $HOME directory" 1>&2;
