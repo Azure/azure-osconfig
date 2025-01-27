@@ -118,11 +118,11 @@ get_pipeline_run_id() {
     echo $runId
 }
 
-# echo "Downloading latest Azure Policy packages from OneBranch pipeline..."
-# mkdir -p $packageDir
-# pipelineRunId=$(get_pipeline_run_id)
-# echo "Using latest succeeded run:$pipelineRunId"
-# az pipelines runs artifact download --organization $azdevopsOrg --project $azdevopsProject --artifact-name $azdevopsArtifactName --path $packageDir --run-id $pipelineRunId
+echo "Downloading latest Azure Policy packages from OneBranch pipeline..."
+mkdir -p $packageDir
+pipelineRunId=$(get_pipeline_run_id)
+echo "Using latest succeeded run:$pipelineRunId"
+az pipelines runs artifact download --organization $azdevopsOrg --project $azdevopsProject --artifact-name $azdevopsArtifactName --path $packageDir --run-id $pipelineRunId
 
 run_test() {
     local imageFile=$1
