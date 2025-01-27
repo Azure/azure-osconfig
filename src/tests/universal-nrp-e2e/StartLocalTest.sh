@@ -278,7 +278,7 @@ if [ -z "$policypackage" ]; then
     usage
 fi
 
-$resourcecount=get_instance_count $policypackage
+resourcecount=get_instance_count $policypackage
 if [ "$resourcecount" -eq 0 ]; then
     echo "Resource count invalid: $resourceCount" 1>&2;
 fi
