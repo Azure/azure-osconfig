@@ -9,21 +9,20 @@
 #        -j max-concurrent-jobs: Specify the maximum number of concurrent jobs to run the tests (Default: 5)
 # Dependencies: cloud-localds, qemu-system-x86, jq, az
 
-    # {"distroName": "centos-7", "imageFile": "centos-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    # {"distroName": "centos-7", "imageFile": "centos-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    # {"distroName": "centos-8", "imageFile": "centos-8.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    # {"distroName": "centos-8", "imageFile": "centos-8.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    # {"distroName": "debian-10", "imageFile": "debian-10.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    # {"distroName": "debian-10", "imageFile": "debian-10.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    # {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    # {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    # {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    # {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    # {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    # {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    # {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-
 test_data='[
+    {"distroName": "centos-7", "imageFile": "centos-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "centos-7", "imageFile": "centos-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "centos-8", "imageFile": "centos-8.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "centos-8", "imageFile": "centos-8.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "debian-10", "imageFile": "debian-10.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "debian-10", "imageFile": "debian-10.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
     {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
     {"distroName": "ubuntu-18.04", "imageFile": "ubuntu-18.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
     {"distroName": "ubuntu-18.04", "imageFile": "ubuntu-18.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"}
@@ -261,19 +260,17 @@ while [ ${#pids[@]} -gt 0 ]; do
     done
 done
 
+# Collect and print test summary
 echo -e "\nAll tests are complete."
 failedTests=false
 declare -a test_summary=()
 print_test_summary_table() {
-    for row in "${test_summary[@]}"; do
-        echo -e "$row"
+    for i in "${!test_summary[@]}"; do
+        echo -e "${test_summary[$i]}"
     done | column -s $'|' -t
 }
 test_summary+=("Result|Distro Name|Policy Package|Total|Errors|Failures|Skipped|Log Directory")
-sumTests=0
-sumErrors=0
-sumFailures=0
-sumSkipped=0
+sumTests=0; sumErrors=0; sumFailures=0; sumSkipped=0
 for test in "${!testToLogDirMapping[@]}"; do
     logDir=${testToLogDirMapping[$test]}
     pid=${testToPidMapping[$test]}
