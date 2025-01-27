@@ -9,24 +9,24 @@
 #        -j max-concurrent-jobs: Specify the maximum number of concurrent jobs to run the tests (Default: 5)
 # Dependencies: cloud-localds, qemu-system-x86, jq, az
 
-    # {"imageFile": "centos-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip", "resourceCount": 168},
-    # {"imageFile": "centos-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip", "resourceCount": 20},
-    # {"imageFile": "centos-8.qcow2", "policyPackage": "AzureLinuxBaseline.zip", "resourceCount": 168},
-    # {"imageFile": "centos-8.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip", "resourceCount": 20},
-    # {"imageFile": "debian-10.qcow2", "policyPackage": "AzureLinuxBaseline.zip", "resourceCount": 168},
-    # {"imageFile": "debian-10.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip", "resourceCount": 20},
-    # {"imageFile": "oraclelinux-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip", "resourceCount": 168},
-    # {"imageFile": "oraclelinux-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip", "resourceCount": 20},
-    # {"imageFile": "rhel-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip", "resourceCount": 168},
-    # {"imageFile": "rhel-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip", "resourceCount": 20},
-    # {"imageFile": "sles-12.qcow2", "policyPackage": "AzureLinuxBaseline.zip", "resourceCount": 168},
-    # {"imageFile": "sles-12.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip", "resourceCount": 20},
-    # {"imageFile": "ubuntu-16.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip", "resourceCount": 168},
+    # {"distroName": "centos-7", "imageFile": "centos-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    # {"distroName": "centos-7", "imageFile": "centos-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    # {"distroName": "centos-8", "imageFile": "centos-8.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    # {"distroName": "centos-8", "imageFile": "centos-8.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    # {"distroName": "debian-10", "imageFile": "debian-10.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    # {"distroName": "debian-10", "imageFile": "debian-10.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    # {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    # {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    # {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    # {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    # {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    # {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    # {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
 
 test_data='[
-    {"imageFile": "ubuntu-16.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    {"imageFile": "ubuntu-18.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    {"imageFile": "ubuntu-18.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"}
+    {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "ubuntu-18.04", "imageFile": "ubuntu-18.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "ubuntu-18.04", "imageFile": "ubuntu-18.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"}
 ]'
 
 subscriptionId="ce58a062-8d06-4da9-a85b-28939beb0119"
@@ -197,6 +197,7 @@ for row in $(echo "${test_data}" | jq -r '.[] | @base64'); do
         echo ${row} | base64 --decode | jq -r ${1}
     }
 
+    distroName=$(_jq '.distroName')
     imageFile=$(_jq '.imageFile')
     policyPackage=$(_jq '.policyPackage')
 
@@ -212,7 +213,6 @@ for row in $(echo "${test_data}" | jq -r '.[] | @base64'); do
                 # Test completed
                 wait ${pids[$i]}
                 exit_code=$?
-                # exit_codes+=($exit_code)
                 pidToExitCodeMapping[${pids[$i]}]=$exit_code
                 unset pids[$i]
                 countCompletedTests=$((countCompletedTests + 1))
@@ -232,8 +232,8 @@ for row in $(echo "${test_data}" | jq -r '.[] | @base64'); do
     testPid=$!
     pids+=($testPid)
     
-    testToPidMapping["$imageFile--$policyPackage"]=$testPid
-    testToLogDirMapping["$imageFile--$policyPackage"]=$logDir
+    testToPidMapping["$distroName--$policyPackage"]=$testPid
+    testToLogDirMapping["$distroName--$policyPackage"]=$logDir
     
     countInProgressTests=$((countInProgressTests + 1))
     countPendingTests=$((countPendingTests - 1))
@@ -278,8 +278,8 @@ for test in "${!testToLogDirMapping[@]}"; do
     logDir=${testToLogDirMapping[$test]}
     pid=${testToPidMapping[$test]}
     exitCode=${pidToExitCodeMapping[$pid]}
-    # Extract distro name and policy package from test key
-    distroName=$(echo $test | awk -F'--' '{print $1}' | awk -F. '{OFS="."; NF--; print $0}')
+    # Extract distro name and policy package from test key (distroName--policyPackage)
+    distroName=$(echo $test | awk -F'--' '{print $1}')
     policyPackage=$(echo $test | awk -F'--' '{print $2}')
     
     result="Pass"
@@ -305,7 +305,7 @@ for test in "${!testToLogDirMapping[@]}"; do
     test_summary+=("$result|$distroName|$policyPackage|$totalTests|$totalErrors|$totalFailures|$totalSkipped|$logDir")
 done
 
-test_summary+=("Total| | |$sumTests|$sumErrors|$sumFailures|$sumSkipped| ")
+test_summary+=(" | |TOTALS|$sumTests|$sumErrors|$sumFailures|$sumSkipped| ")
 print_test_summary_table
 
 if [ "$failedTests" = true ]; then
