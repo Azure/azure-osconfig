@@ -468,6 +468,10 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
             FREE_MEMORY(objectValue);
         }
     }
+    else
+    {
+        miResult = MI_RESULT_FAILED;
+    }
 
     g_reportedMpiResult = mpiResult;
 
@@ -927,7 +931,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     MI_UNREFERENCED_PARAMETER(methodName);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
-    OsConfigResource_TestTargetResource test_result_object;
+    OsConfigResource_TestTargetResource test_result_object = {{0},{0},{0},{0},{0},{0}};
 
     MI_Result miResult = MI_RESULT_OK;
     MI_Result miCleanup = MI_RESULT_OK;
