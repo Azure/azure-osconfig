@@ -81,4 +81,3 @@ class OsConfigResource : OMI_BaseResource
     uint32 Flags
   );
 };
-
