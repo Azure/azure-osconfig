@@ -14,6 +14,7 @@
 #                                   - Remove logs and tmp directories
 #                                   - Clean package management cache
 #                                   - Clean cloud-init flags to reset cloud-init to initial-state
+# Dependencies: curl, wget
 
 powershell_version="7.4.6"
 powershell_uri="https://github.com/PowerShell/PowerShell/releases/download/v$powershell_version/powershell-$powershell_version-linux-x64.tar.gz"
@@ -53,6 +54,29 @@ usage() {
                                     - Clean cloud-init flags to reset cloud-init to initial-state" 1>&2; 
         
     exit 1; 
+}
+
+_unzip() {
+    if ! command -v unzip &> /dev/null; then
+        echo "unzip not found. Installing unzip..." 1>&2;
+        if command -v apt &> /dev/null; then
+            sudo apt update
+            sudo apt install -y unzip
+        elif command -v yum &> /dev/null; then
+            sudo yum update
+            sudo yum install -y unzip
+        elif command -v dnf &> /dev/null; then
+            sudo dnf update
+            sudo dnf install -y unzip
+        elif command -v zypper &> /dev/null; then
+            sudo zypper refresh
+            sudo zypper install -y unzip
+        else
+            echo "Unsupported Linux distribution." 1>&2;
+            exit 1
+        fi
+    fi
+    unzip "$@"
 }
 dependency_check() {
     echo "Checking dependencies..."
@@ -126,7 +150,7 @@ get_instance_count() {
     local package=$1
     local instanceCount=0
     tempDir=$(mktemp -d)
-    unzip -q $package -d $tempDir
+    _unzip -q $package -d $tempDir > /dev/null 2>&1
     instanceCount=$(find $tempDir -name "${package%.*}.mof" -exec grep -c "instance of OsConfigResource" {} \;)
     rm -rf $tempDir
     echo $instanceCount
@@ -250,6 +274,15 @@ while getopts ${OPTSTRING} opt; do
     esac
 done
 
+# Ensure local dependencies are installed [curl, wget]
+dependencies=(curl wget)
+for dep in "${dependencies[@]}"; do
+    if ! command -v $dep &> /dev/null; then
+        echo "$dep not found. Please install it and try again." 1>&2
+        exit 1
+    fi
+done
+
 if command -v sudo &> /dev/null; then
     if [ "$(id -u)" -ne 0 ]; then
         echo "sudo is available. Attempting to sudo..."
@@ -278,7 +311,7 @@ if [ -z "$policypackage" ]; then
     usage
 fi
 
-resourcecount=get_instance_count $policypackage
+resourcecount=$(get_instance_count $policypackage)
 if [ "$resourcecount" -eq 0 ]; then
     echo "Resource count invalid: $resourceCount" 1>&2;
 fi
