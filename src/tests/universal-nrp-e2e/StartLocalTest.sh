@@ -14,8 +14,10 @@
 #                                   - Remove logs and tmp directories
 #                                   - Clean package management cache
 #                                   - Clean cloud-init flags to reset cloud-init to initial-state
-# Dependencies: curl, wget
+# Dependencies: curl, wget, unzip
 
+# Powershell and OMI are also required for the tests but they have different installation steps and do not use the distros package manager.
+dependencies=(curl wget unzip)
 powershell_version="7.4.6"
 powershell_uri="https://github.com/PowerShell/PowerShell/releases/download/v$powershell_version/powershell-$powershell_version-linux-x64.tar.gz"
 omi_base_uri="https://github.com/microsoft/omi/releases/download/v1.9.1-0/omi-1.9.1-0"
@@ -39,6 +41,7 @@ usage() {
                                 Checks for and installs them if not present:
                                     - Powershell +modules: MachineConfiguration, Pester
                                     - OMI
+                                    - unzip, curl, wget
 
             - run_tests:        Runs the tests (Powershell Pester Tests).
 
@@ -56,30 +59,39 @@ usage() {
     exit 1;
 }
 
+install_package() {
+    if command -v apt &> /dev/null; then
+        sudo apt update
+        sudo apt install -y "$@"
+    elif command -v yum &> /dev/null; then
+        sudo yum update
+        sudo yum install -y "$@"
+    elif command -v dnf &> /dev/null; then
+        sudo dnf update
+        sudo dnf install -y "$@"
+    elif command -v zypper &> /dev/null; then
+        sudo zypper refresh
+        sudo zypper install -y "$@"
+    else
+        echo "Unsupported Linux distribution." 1>&2;
+        exit 1
+    fi
+}
 _unzip() {
     if ! command -v unzip &> /dev/null; then
         echo "unzip not found. Installing unzip..." 1>&2;
-        if command -v apt &> /dev/null; then
-            sudo apt update
-            sudo apt install -y unzip
-        elif command -v yum &> /dev/null; then
-            sudo yum update
-            sudo yum install -y unzip
-        elif command -v dnf &> /dev/null; then
-            sudo dnf update
-            sudo dnf install -y unzip
-        elif command -v zypper &> /dev/null; then
-            sudo zypper refresh
-            sudo zypper install -y unzip
-        else
-            echo "Unsupported Linux distribution." 1>&2;
-            exit 1
-        fi
+        install_package unzip > /dev/null 2>&1
     fi
     unzip "$@"
 }
 dependency_check() {
     echo "Checking dependencies..."
+    for dep in "${dependencies[@]}"; do
+        if ! command -v $dep &> /dev/null; then
+            echo -e "\n$dep not found. Installing $dep..."
+            install_package $dep > /dev/null 2>&1
+        fi
+    done
     if ! pwsh --version > /dev/null 2>&1; then
         echo -e "\nPowershell not found. Installing Powershell..."
         # Download the powershell '.tar.gz' archive
