@@ -294,7 +294,7 @@ for test in "${!testToLogDirMapping[@]}"; do
     sumSkipped=$((sumSkipped + totalSkipped))
     rm -rf $tempDir
 
-    if [ "$exitCode" -gt 0 ]; then
+    if [ "$exitCode" -gt 0 ] || [ "$totalErrors" -gt 0 ] || [ "$totalFailures" -gt 0 ]; then
         failedTests=true
         result="Fail"
     fi
