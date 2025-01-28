@@ -11,7 +11,7 @@ RUN dnf install -y \
     libtool \
     make \
     openssl-devel \
-    rpm-build 
+    rpm-build
 
 WORKDIR /git
 

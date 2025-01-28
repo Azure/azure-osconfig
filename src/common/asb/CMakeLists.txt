@@ -12,7 +12,7 @@ target_include_directories(asb PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${PLATFORM_INC_DIR})
 
-target_link_libraries(asb PRIVATE 
-    logging 
-    commonutils 
+target_link_libraries(asb PRIVATE
+    logging
+    commonutils
     parsonlib)

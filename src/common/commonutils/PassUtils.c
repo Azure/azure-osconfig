@@ -124,7 +124,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     //
     // const char* endsHereIfSucceedsTemplate = "password sufficient pam_unix.so sha512 shadow %s=%d retry=3\n";
     //
-    // Where 'sufficient' says that if this module succeeds other modules are not invoked. 
+    // Where 'sufficient' says that if this module succeeds other modules are not invoked.
     // While 'required'  says that if this module fails, authentication fails.
 
     const char* endsHereIfFailsTemplate = "password required %s sha512 shadow %s=%d retry=3\n";
@@ -160,7 +160,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
         OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
         status = ENOMEM;
     }
-    
+
     FREE_MEMORY(newline);
     FREE_MEMORY(pamModulePath);
 
@@ -212,7 +212,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
 
         while (NULL != fgets(line, lineMax + 1, fileHandle))
         {
-            // Example of valid lines: 
+            // Example of valid lines:
             //
             // 'auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900'
             // 'auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900'
@@ -223,7 +223,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                 status = 0;
                 continue;
             }
-            else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) && 
+            else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) &&
                 (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) &&
                 (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny <= 5) &&
                 (0 < (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))))
@@ -232,7 +232,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                     auth, required, pamSo, deny, unlockTime, fileName);
                 OsConfigCaptureSuccessReason(reason, "'%s %s %s' found uncommented with 'deny' set to %d and 'unlock_time' set to %d in '%s'",
                     auth, required, pamSo, deny, unlockTime, fileName);
-                
+
                 status = 0;
                 FREE_MEMORY(authValue);
                 break;
@@ -245,7 +245,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
 
             memset(line, 0, lineMax + 1);
         }
-        
+
         if (status)
         {
             if (INT_ENOENT == deny)
@@ -255,11 +255,11 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             }
             else
             {
-                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5", 
+                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5",
                     deny, fileName, pamSo);
                 OsConfigCaptureReason(reason, "'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5", deny, fileName, pamSo);
             }
-        
+
             if (INT_ENOENT == unlockTime)
             {
                 OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
@@ -340,7 +340,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
                 {
                     _status = ENOMEM;
                 }
-                
+
                 FREE_MEMORY(pamModulePath);
             }
             else if (NULL != (pamModulePath = FindPamModule(pamTally2So, log)))
@@ -357,7 +357,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
                 FREE_MEMORY(pamModulePath);
             }
-            else if ((NULL != (pamModulePath = FindPamModule(pamTallySo, log))) && 
+            else if ((NULL != (pamModulePath = FindPamModule(pamTallySo, log))) &&
                 (NULL != (pamModulePath2 = FindPamModule(pamDenySo, log))))
             {
                 if (NULL != (line = FormatAllocateString(pamTallyDenyLineTemplate, pamModulePath, pamModulePath2)))
@@ -437,19 +437,19 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
 
         while (NULL != fgets(line, lineMax + 1, fileHandle))
         {
-            // Example of valid line: 
+            // Example of valid line:
             // 'password requisite pam_pwquality.so retry=3 minlen=14 lcredit=-1 ucredit=1 ocredit=-1 dcredit=-1'
-            
+
             if ((commentCharacter == line[0]) || (EOL == line[0]))
             {
                 status = 0;
                 continue;
             }
-            else if ((NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) && 
+            else if ((NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) &&
                 ((NULL != strstr(line, pamPwQualitySo)) || (NULL != strstr(line, pamCrackLibSo)) || (NULL != strstr(line, g_pamUnixSo))))
             {
                 found = true;
-                
+
                 if ((retry == (retryOption = GetIntegerOptionFromBuffer(line, "retry", '=', log))) &&
                     (minlen == (minlenOption = GetIntegerOptionFromBuffer(line, "minlen", '=', log))) &&
                     (dcredit == (dcreditOption = GetIntegerOptionFromBuffer(line, "dcredit", '=', log))) &&
@@ -458,7 +458,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                     (lcredit == (lcreditOption = GetIntegerOptionFromBuffer(line, "lcredit", '=', log))))
                 {
                     OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s' contains uncommented '%s %s' with "
-                        "the expected password creation requirements (retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", 
+                        "the expected password creation requirements (retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)",
                         g_etcPamdCommonPassword, password, requisite, retryOption, minlenOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
                     OsConfigCaptureSuccessReason(reason, "'%s' contains uncommented '%s %s' with the expected password creation requirements "
                         "(retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", g_etcPamdCommonPassword, password, requisite,
@@ -641,7 +641,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
         while (NULL != fgets(line, lineMax + 1, fileHandle))
         {
-            // Example of typical lines coming by default commented out: 
+            // Example of typical lines coming by default commented out:
             //
             //# retry = 3
             //# minlen = 8
@@ -739,10 +739,10 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     //
     // 'retry = 3'
     // 'minlen = 14'
-    // 'minclass = 4' 
+    // 'minclass = 4'
     // 'dcredit = -1'
     // 'ucredit = -1'
-    // 'ocredit = -1' 
+    // 'ocredit = -1'
     // 'lcredit = -1'
     //
     // Where:
@@ -755,7 +755,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     // - ucredit: the minimum number of uppercase letters required in the password (negative means no requirement)
     // - ocredit: the minimum number of other (non-alphanumeric) characters required in the password (negative means none)
     // - dcredit: the minimum number of digits required in the password  (negative means no requirement)
-    
+
     const char* etcPamdCommonPasswordLineTemplate = "password requisite %s retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
     const char* etcSecurityPwQualityConfLineTemplate = "%s = %d\n";
     const char* pamPwQualitySo = "pam_pwquality.so";
@@ -781,7 +781,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
         if (pamPwQualitySoExists || pamCrackLibSoExists || pamUnixSoExists)
         {
-            if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, 
+            if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate,
                 pamPwQualitySoExists ? pamModulePath : (pamCrackLibSoExists ? pamModulePath2 : pamModulePath3),
                 retry, minlen, lcredit, ucredit, ocredit, dcredit)))
             {
@@ -812,7 +812,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         entries[4].value = ucredit;
         entries[5].value = ocredit;
         entries[6].value = lcredit;
-        
+
         for (i = 0; i < numEntries; i++)
         {
             if (NULL != (line = FormatAllocateString(etcSecurityPwQualityConfLineTemplate, entries[i].name, entries[i].value)))

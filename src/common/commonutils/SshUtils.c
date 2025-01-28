@@ -186,7 +186,7 @@ static char* GetSshServerState(const char* name, void* log)
 static int IsSshServerActive(void* log)
 {
     int result = 0;
-   
+
     if (false == FileExists(g_sshServerConfiguration))
     {
         OsConfigLogInfo(log, "IsSshServerActive: the OpenSSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
@@ -218,7 +218,7 @@ static int IsSshConfigIncludeSupported(void* log)
     int versionMajor = 0;
     int versionMinor = 0;
     int result = 0;
-    
+
     if (false == IsDaemonActive(g_sshServerService, log))
     {
         OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the OpenSSH Server service '%s' is not active on this device, assuming Include is not supported", g_sshServerService);
@@ -232,7 +232,7 @@ static int IsSshConfigIncludeSupported(void* log)
 
     if (NULL != textResult)
     {
-        if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult))) 
+        if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult)))
         {
             textCursor = textResult + strlen(expectedPrefix) + 1;
             if (isdigit(textCursor[0]) && ('.' == textCursor[1]) && isdigit(textCursor[2]))
@@ -245,13 +245,13 @@ static int IsSshConfigIncludeSupported(void* log)
 
             if ((versionMajor >= minVersionMajor) && (versionMinor >= minVersionMinor))
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (%d.%d or newer) and appears to support Include", 
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (%d.%d or newer) and appears to support Include",
                     g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
                 result = 0;
             }
             else
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (older than %d.%d) and appears to not support Include", 
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (older than %d.%d) and appears to not support Include",
                     g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
                 result = ENOENT;
             }
@@ -267,9 +267,9 @@ static int IsSshConfigIncludeSupported(void* log)
         OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s', assuming Include is not supported", command);
         result = ENOENT;
     }
-    
+
     FREE_MEMORY(textResult);
-    
+
     return result;
 }
 
@@ -519,11 +519,11 @@ static int CheckSshClientAliveInterval(char** reason, void* log)
 {
     char* clientAliveInterval = DuplicateStringToLowercase(g_sshClientAliveInterval);
     int actualValue = 0;
-    int status = 0; 
-    
+    int status = 0;
+
     if (0 == IsSshServerActive(log))
     {
-        if (0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log))) 
+        if (0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log)))
         {
             OsConfigResetReason(reason);
 
@@ -552,7 +552,7 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
     char* loginGraceTime = DuplicateStringToLowercase(g_sshLoginGraceTime);
     int targetValue = atoi(value ? value : g_sshDefaultSshLoginGraceTime);
     int actualValue = 0;
-    int status = 0; 
+    int status = 0;
 
     if (0 == IsSshServerActive(log))
     {
@@ -593,7 +593,7 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
         {
             OsConfigLogError(log, "CheckSshWarningBanner: invalid arguments");
             status = EINVAL;
-        } 
+        }
         else if (0 == (status = CheckSshOptionIsSet(banner, bannerFile, &actualValue, reason, log)))
         {
             OsConfigResetReason(reason);
@@ -612,7 +612,7 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
             }
             else if (0 == (status = CheckFileAccess(bannerFile, 0, 0, desiredAccess, reason, log)))
             {
-                OsConfigCaptureSuccessReason(reason, "%s reports that '%s' is set to '%s', this file has access '%u' and contains the expected banner text", 
+                OsConfigCaptureSuccessReason(reason, "%s reports that '%s' is set to '%s', this file has access '%u' and contains the expected banner text",
                     g_sshServerService, banner, actualValue, desiredAccess);
             }
         }
@@ -714,7 +714,7 @@ int CheckSshProtocol(char** reason, void* log)
             FREE_MEMORY(inclusion);
         }
     }
-    
+
     FREE_MEMORY(protocol);
 
     OsConfigLogInfo(log, "CheckSshProtocol: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
@@ -996,7 +996,7 @@ static int SaveRemediationToConfFile(void* log)
         OsConfigLogInfo(log, "SaveRemediationToConfFile: failed formatting, cannot save remediation to '%s'", g_osconfigRemediationConf);
         return ENOMEM;
     }
-    
+
     if ((NULL != (currentRemediation = LoadStringFromFile(g_osconfigRemediationConf, false, log))) && (0 == strncmp(currentRemediation, newRemediation, newRemediationSize)))
     {
         OsConfigLogInfo(log, "SaveRemediationToConfFile: '%s' already contains the correct remediation values:\n---\n%s---", g_osconfigRemediationConf, newRemediation);
@@ -1156,9 +1156,9 @@ int InitializeSshAudit(void* log)
 void SshAuditCleanup(void* log)
 {
     bool configurationChanged = false;
-    
+
     OsConfigLogInfo(log, "SshAuditCleanup: %s", g_auditOnlySession ? "audit only" : "audit and remediate");
-    
+
     if (false == g_auditOnlySession)
     {
         if (0 == IsSshConfigIncludeSupported(log))
@@ -1180,7 +1180,7 @@ void SshAuditCleanup(void* log)
             RestartDaemon(g_sshServerService, log);
         }
     }
-    
+
     FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
     FREE_MEMORY(g_desiredSshPort);
     FREE_MEMORY(g_desiredSshBestPracticeProtocol);
@@ -1304,7 +1304,7 @@ int InitializeSshAuditCheck(const char* name, char* value, void* log)
     else if ((0 == strcmp(name, g_remediateEnsureSshWarningBannerIsEnabledObject)) || (0 == strcmp(name, g_initEnsureSshWarningBannerIsEnabledObject)))
     {
         FREE_MEMORY(g_desiredSshWarningBannerIsEnabled);
-        status = (NULL != (g_desiredSshWarningBannerIsEnabled = (isValidValue && (NULL != strstr(value, "\\n"))) ? 
+        status = (NULL != (g_desiredSshWarningBannerIsEnabled = (isValidValue && (NULL != strstr(value, "\\n"))) ?
             RepairBrokenEolCharactersIfAny(value) : DuplicateString(isValidValue ? value : g_sshDefaultSshBannerText))) ? 0 : ENOMEM;
     }
     else if ((0 == strcmp(name, g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject)) || (0 == strcmp(name, g_initEnsureUsersCannotSetSshEnvironmentOptionsObject)))
@@ -1343,7 +1343,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
 
     if (0 == strcmp(name, g_auditEnsurePermissionsOnEtcSshSshdConfigObject))
     {
-        CheckFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? 
+        CheckFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ?
             g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), reason, log);
     }
     else if (0 == strcmp(name, g_auditEnsureSshPortIsConfiguredObject))
@@ -1424,7 +1424,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     }
     else if (0 == strcmp(name, g_auditEnsureSshWarningBannerIsEnabledObject))
     {
-        CheckSshWarningBanner(g_sshBannerFile, g_desiredSshWarningBannerIsEnabled ? g_desiredSshWarningBannerIsEnabled : g_sshDefaultSshBannerText, 
+        CheckSshWarningBanner(g_sshBannerFile, g_desiredSshWarningBannerIsEnabled ? g_desiredSshWarningBannerIsEnabled : g_sshDefaultSshBannerText,
             atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), reason, log);
     }
     else if (0 == strcmp(name, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
@@ -1440,7 +1440,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     {
         if (0 == (status = InitializeSshAuditCheck(name, value, log)))
         {
-            status = SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? 
+            status = SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ?
                 g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
         }
     }
@@ -1469,7 +1469,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     {
         if (0 == (status = InitializeSshAuditCheck(name, value, log)))
         {
-            status = SetSshWarningBanner(atoi(g_desiredPermissionsOnEtcSshSshdConfig ? 
+            status = SetSshWarningBanner(atoi(g_desiredPermissionsOnEtcSshSshdConfig ?
                 g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), g_desiredSshWarningBannerIsEnabled, log);
         }
     }

@@ -89,14 +89,14 @@ char* ConcatenateStrings(const char* first, const char* second)
 int SleepMilliseconds(long milliseconds)
 {
     struct timespec remaining = {0};
-    struct timespec interval = {0}; 
-    
+    struct timespec interval = {0};
+
     if ((milliseconds < 0) || (milliseconds > 999999999))
     {
         return EINVAL;
     }
-    
-    interval.tv_sec = (int)(milliseconds / 1000); 
+
+    interval.tv_sec = (int)(milliseconds / 1000);
     interval.tv_nsec = (milliseconds % 1000) * 1000000;
 
     return nanosleep(&interval, &remaining);
@@ -256,7 +256,7 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
             {
                 (*integers)[(*numIntegers) - 1] = atoi(value);
             }
-            
+
             FREE_MEMORY(value);
         }
     }
@@ -300,7 +300,7 @@ int DisableAllWirelessInterfaces(void* log)
     const char* nmCliRadioAllOff = "nmcli radio wifi off";
     const char* rfKillBlockAll = "rfkill block all";
     int status = 0;
-   
+
     if (0 == CheckAllWirelessInterfacesAreDisabled(NULL, log))
     {
         OsConfigLogInfo(log, "DisableAllWirelessInterfaces: no active wireless interfaces are present");
@@ -557,7 +557,7 @@ int RemoveDotsFromPath(void* log)
                 {
                     if (0 == (_status = SetEtcConfValue(pathLocations[i].location, pathLocations[i].path, newPath, log)))
                     {
-                        OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set '%s' to '%s' in '%s'", 
+                        OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set '%s' to '%s' in '%s'",
                             pathLocations[i].path, pathLocations[i].location, newPath);
                     }
 
@@ -565,7 +565,7 @@ int RemoveDotsFromPath(void* log)
                 }
                 else
                 {
-                    OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '%c' from '%s' for '%s'", 
+                    OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '%c' from '%s' for '%s'",
                         dot[0], currentPath, pathLocations[i].location);
                     _status = EINVAL;
                 }
@@ -618,7 +618,7 @@ int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, uns
         OsConfigLogInfo(log, "ReplaceEscapesFromFile: failed to replace desired characters in '%s'", fileName);
         status = ENOENT;
     }
-    
+
     FREE_MEMORY(fileContents);
     FREE_MEMORY(newFileContents);
 

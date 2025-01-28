@@ -37,7 +37,7 @@ int StopPerfClock(PERF_CLOCK* clock, void* log)
     {
         if (clock->stop.tv_sec < clock->start.tv_sec)
         {
-            OsConfigLogError(log, "StopPerfClock: clock_gettime returned an earlier time than expected (%ld seconds earlier)", 
+            OsConfigLogError(log, "StopPerfClock: clock_gettime returned an earlier time than expected (%ld seconds earlier)",
                 clock->start.tv_sec - clock->stop.tv_sec);
 
             memset(clock, 0, sizeof(PERF_CLOCK));

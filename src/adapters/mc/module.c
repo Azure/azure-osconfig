@@ -16,7 +16,7 @@ void MI_CALL Load(MI_Module_Self** self, struct _MI_Context* context)
 void MI_CALL Unload(MI_Module_Self* self, struct _MI_Context* context)
 {
     OsConfigLogInfo(GetLog(), "[OsConfigResource] MI module unload (PID: %d)", getpid());
-    
+
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(context);
 
@@ -26,10 +26,10 @@ void MI_CALL Unload(MI_Module_Self* self, struct _MI_Context* context)
 MI_EXTERN_C MI_EXPORT MI_Module* MI_MAIN_CALL MI_Main(MI_Server* server)
 {
     OsConfigLogInfo(GetLog(), "[OsConfigResource] MI module main (PID: %d)", getpid());
-    
+
     static MI_Module module;
     MI_EXTERN_C MI_Server* __mi_server;
-    
+
     __mi_server = server;
 
     module.flags |= MI_MODULE_FLAG_DESCRIPTIONS;
@@ -42,6 +42,6 @@ MI_EXTERN_C MI_EXPORT MI_Module* MI_MAIN_CALL MI_Main(MI_Server* server)
     module.schemaDecl = &schemaDecl;
     module.Load = Load;
     module.Unload = Unload;
-    
+
     return &module;
 }

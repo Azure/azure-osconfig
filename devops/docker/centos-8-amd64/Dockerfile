@@ -1,9 +1,9 @@
 # TODO: Add mcr.io retagged images
 FROM centos:latest
 
-# CentOS Linux 8 had reached the End Of Life (EOL) on December 31st, 2021. 
+# CentOS Linux 8 had reached the End Of Life (EOL) on December 31st, 2021.
 # It means that CentOS 8 will no longer receive development resources from
-# the official CentOS project. After Dec 31st, 2021, if you need to update 
+# the official CentOS project. After Dec 31st, 2021, if you need to update
 # your CentOS, you need to change the mirrors to vault.centos.org where they
 # will be archived permanently
 RUN cd /etc/yum.repos.d/
@@ -20,7 +20,7 @@ RUN yum update -y && yum install -y \
     libtool \
     make \
     openssl-devel \
-    rpm-build 
+    rpm-build
 
 WORKDIR /git
 

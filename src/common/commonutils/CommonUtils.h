@@ -34,7 +34,7 @@
 
 #define PROTOCOL_AUTO 0
 // Uncomment next line when the PROTOCOL_MQTT macro will be needed (compiling with -Werror-unused-macros)
-//#define PROTOCOL_MQTT 1 
+//#define PROTOCOL_MQTT 1
 #define PROTOCOL_MQTT_WS 2
 
 #ifdef __cplusplus

@@ -21,7 +21,7 @@ runs:
 
         echo "Checking '$perflog' for any performance warnings"
         echo "Contents of '$perflog':"
-        cat "$perflog"        
+        cat "$perflog"
 
         warnings=$(grep -i "$mark" $perflog || true)
 

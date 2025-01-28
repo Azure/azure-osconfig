@@ -148,8 +148,8 @@ static IOTHUB_CLIENT_RESULT PropertyUpdateFromIotHubCallback(const char* compone
 static char* CopyPayloadToString(const unsigned char* payload, size_t size)
 {
     char* jsonStr = NULL;
-    size_t sizeToAllocate = 0; 
-    
+    size_t sizeToAllocate = 0;
+
     if ((NULL != payload) && (size > 0) && (size < SIZE_MAX))
     {
         sizeToAllocate = size + 1;
@@ -317,7 +317,7 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
 
 static void QueueDesiredTwinUpdate(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char* payload, size_t size)
 {
-    // This code is currently running all on a single thread. If it will become multi-threaded, 
+    // This code is currently running all on a single thread. If it will become multi-threaded,
     // add a mutex and lock within all functions that access this common desired twin queue data.
 
     int queueSize = (int)ARRAY_SIZE(g_desiredTwinUpdates);
@@ -327,7 +327,7 @@ static void QueueDesiredTwinUpdate(DEVICE_TWIN_UPDATE_STATE updateState, const u
         OsConfigLogError(GetLog(), "QueueDesiredTwinUpdate failed, no payload to queue or invalid payload size (%p, %d)", payload,  (int)size);
         return;
     }
-   
+
     // Clear existing slot
     FREE_MEMORY(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload);
     memset(&(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex]), 0, sizeof(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex]));
@@ -372,7 +372,7 @@ void ProcessDesiredTwinUpdates()
 {
     int queueSize = (int)ARRAY_SIZE(g_desiredTwinUpdates);
     int i = 0;
-    
+
     for (i = 0; i < queueSize; i++)
     {
         if ((g_desiredTwinUpdates[i].size > 0) && (NULL != g_desiredTwinUpdates[i].payload) && (0 == g_desiredTwinUpdates[i].processed))
@@ -431,7 +431,7 @@ static bool IotHubSetOption(const char* optionName, const void* value)
     }
 }
 
-IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char* productInfo, const char* connectionString, bool traceOn, 
+IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char* productInfo, const char* connectionString, bool traceOn,
     const char* x509Certificate, const char* x509PrivateKeyHandle, const HTTP_PROXY_OPTIONS* proxyOptions, IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol)
 {
     IOTHUB_CLIENT_RESULT iothubResult = IOTHUB_CLIENT_OK;
@@ -555,7 +555,7 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
 
         mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength, GetLog());
     }
-        
+
     if ((MPI_OK == mpiResult) && (valueLength > 0) && (NULL != valuePayload))
     {
         decoratedLength = strlen(componentName) + strlen(propertyName) + valueLength + EXTRA_PROP_PAYLOAD_ESTIMATE;

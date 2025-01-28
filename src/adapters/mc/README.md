@@ -1,4 +1,4 @@
-# OSConfig Universal Native Resource Provider (NRP) for Azure Automanage Machine Configuration (MC) 
+# OSConfig Universal Native Resource Provider (NRP) for Azure Automanage Machine Configuration (MC)
 
 ## 1. About Machine Configuration
 
@@ -6,10 +6,10 @@ Read about Azure Automanage Machine Configuration (formerly called Azure Policy 
 
 ## 2. Regenerating the NRP code for a changed resource class
 
-To regenerate code, see [codegen.cmd](codegen.cmd). 
+To regenerate code, see [codegen.cmd](codegen.cmd).
 
- > **Warning** 
- > Regenerating code will overwrite all customizations and additions specific to OSConfig. 
+ > **Warning**
+ > Regenerating code will overwrite all customizations and additions specific to OSConfig.
 
 ## 3. Building the OSConfig Universal NRP
 
@@ -19,7 +19,7 @@ The OSConfig Universal NRP binary (libOsConfigResource.so) is built with rest of
 
 The OSConfig Universal NRP binary is built on Ubuntu 14 with gcc 4.8 in order for this same binary to run as-is on all newer Linux distros.
 
-Install Ubuntu 14.04 LTS from one of the archived locations such as at [Ubuntu](https://www.releases.ubuntu.com/14.04/), or [Ubuntu MATE](https://releases.ubuntu-mate.org/archived/14.04/amd64/)). 
+Install Ubuntu 14.04 LTS from one of the archived locations such as at [Ubuntu](https://www.releases.ubuntu.com/14.04/), or [Ubuntu MATE](https://releases.ubuntu-mate.org/archived/14.04/amd64/)).
 
 Install the minimal set of dependencies necessary:
 
@@ -39,7 +39,7 @@ $ cmake ../src -DCMAKE_BUILD_TYPE=Release
 $ cmake --build . --config Release  --target all
 ```
 
-This builds the libOsConfigResource.so binary and the ZIP artifacts package, for example: 
+This builds the libOsConfigResource.so binary and the ZIP artifacts package, for example:
 
 ```bash
 $ cmake ../src -DCMAKE_BUILD_TYPE=Release
@@ -97,7 +97,7 @@ Scanning dependencies of target create_zip
 
 ## 4. Validating the OSConfig Universal NRP locally with PowerShell and the MC Agent
 
-Follow the instructions at [How to set up a machine configuration authoring environment](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-setup). 
+Follow the instructions at [How to set up a machine configuration authoring environment](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-setup).
 
 ### 4.1. Installing PowerShell
 
@@ -140,8 +140,8 @@ In addition to the MC traces written to the the PowerShell console, you can also
 
 ## 5. Onboarding a device to Arc
 
-1. Go to Azure Portal | Azure Arc | Add your infrastructure for free | Add your existing server | Generate script. 
-2. Specify the desired Azure subscription, resource group and OS (Linux) for the device. 
+1. Go to Azure Portal | Azure Arc | Add your infrastructure for free | Add your existing server | Generate script.
+2. Specify the desired Azure subscription, resource group and OS (Linux) for the device.
 3. Copy and run the generated instructions in the local shell on the device to be onboarded:
 
 ```bash
@@ -168,7 +168,7 @@ The generated artifacts ZIP package OsConfigPolicy.zip needs to be uploaded to A
 
 Go to Azure Portal and create a Storage Account. In there, go to Containers and create a new container. Then inside of that container upload the artifacts ZIP package OsConfigPolicy.zip.
 
-> **Important** 
+> **Important**
 > After each update of the ZIP package the policy definition will need to be updated.
 
 Once uploaded, generate a SAS token for the package. Two strings will be generated, the first being the token. Copy the second string, which is the URL of the package. This URL string will start with the following:
@@ -240,7 +240,7 @@ The last argument (`-Mode ApplyAndAutoCorrect`) is for remediation, without this
 
 Run this command on the Arc device in PowerShell. This will produce a JSON holding the policy definition, copy that JSON, it will be needed for creating the new policy in Azure Portal.
 
-> **Important** 
+> **Important**
 > In the generated policy definition JSON, before creating a new policy with it, manually search and remove all instances of prefixes with the resource type wrapped in square brackets (for example: `[OsConfigResource]`).
 
 Save a copy of the generated policy definition JSON in case the policy will need to be updated later (for example, because of an updated artifacts ZIP package).
@@ -249,7 +249,7 @@ An example of a generated policy definition JSON (with the SAS token and file ha
 
 #### 7.1.2. Creating the new policy
 
-Next, go to Azure Portal | Policy | Definitions, select the subscription, then create a new Policy Definition and fill out:  
+Next, go to Azure Portal | Policy | Definitions, select the subscription, then create a new Policy Definition and fill out:
 
 - Definition location: select here the Azure subscription.
 - Name: enter the name for the policy
@@ -262,13 +262,13 @@ Then save.
 #### 7.1.3. Assigning the new policy
 
 Next, the new policy needs to be assigned. Go to Azure Portal | Policy | Definitions and assign the policy:
-1. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group). 
-1. Select `Include Arc connected machines` and uncheck the uncheck the `Only show parameters` box. 
-1. Enter the desired values for the policy parameters: `ComponentName`, `ReportedObjectName`, `DesiredObjectName`, `DesiredObjectValue`, etc. 
+1. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group).
+1. Select `Include Arc connected machines` and uncheck the uncheck the `Only show parameters` box.
+1. Enter the desired values for the policy parameters: `ComponentName`, `ReportedObjectName`, `DesiredObjectName`, `DesiredObjectValue`, etc.
 
 #### 7.1.4. Creating a remediation task
 
-One more step is necessary for so called brownfield devices, which are created (onboarded to Arc) before the policy is created (greenfield devices are created after the policy). 
+One more step is necessary for so called brownfield devices, which are created (onboarded to Arc) before the policy is created (greenfield devices are created after the policy).
 
 For these brownfield devices, go to Azure Portal | Policy | Compliance, select the policy and then create a remediation task.
 
@@ -278,7 +278,7 @@ To delete a policy, delete it first from Azure Portal | Policy | Assignments, th
 
 ### 7.2. [If the policy already exists] Editing the existing policy definition
 
-If there is a new artifacts ZIP package, the policy definition can be manually updated for it. We need the existing policy definition, the new package URL and the new file hash of the package. 
+If there is a new artifacts ZIP package, the policy definition can be manually updated for it. We need the existing policy definition, the new package URL and the new file hash of the package.
 
 On the device, obtain the hash with:
 
@@ -287,17 +287,17 @@ sudo pwsh
 get-filehash <local path to package>.zip
 ```
 
-Then, keeping as-is the existing policy assignment, change the policy definition as following: 
-1. Go to the Azure Portal | Policy | Definitions, select the policy and edit. 
+Then, keeping as-is the existing policy assignment, change the policy definition as following:
+1. Go to the Azure Portal | Policy | Definitions, select the policy and edit.
 1. Use the policy definition JSON that was used to generate the policy with or if that is no longer available, copy the current policy definition JSON from the Azure Portal.
-1. There will be several instances of the URL (`"contentUri":`) and the hash (`"contentHash":`) in the policy defition JSON. Carefully replace all with the new token URL and hash. 
+1. There will be several instances of the URL (`"contentUri":`) and the hash (`"contentHash":`) in the policy defition JSON. Carefully replace all with the new token URL and hash.
 1. If the policy definition JSON was obtained from current policy definition in Azure Portal, manually remove the instances of `"createdBy":`, `"createdOn":`, `"updatedBy":`, `"updatedOn":`, plus the root instances of `"type":`, `"name":` and the whole block of `"systemData":`.
 1. Once the policy definition JSON is updated, copy its contents and paste that as the new  policy definition in Azure Portal, and save.
 1. If necessary, create a new remediation task. Then wait for the updated policy to be applied to all Arc devices in the designated group.
 
 ### 7.3. Monitoring the policy activity from the device side
 
-On the device, the MC Agent will check on the policy every 15 minutes. The MC Agent logs will record this activity. The logs are at `/var/lib/GuestConfig`. 
+On the device, the MC Agent will check on the policy every 15 minutes. The MC Agent logs will record this activity. The logs are at `/var/lib/GuestConfig`.
 
 ```bash
 sudo su
@@ -337,7 +337,7 @@ sudo rm -rf /var/lib/GuestConfig/
 sudo service gcad start
 ```
 
-Execute following export commands copied from the Arc onboarding script (filled in with the right data) and register the device with the new name: 
+Execute following export commands copied from the Arc onboarding script (filled in with the right data) and register the device with the new name:
 
 ```bash
 export subscriptionId="...";

@@ -34,7 +34,7 @@ class ConfigurationTest : public ::testing::Test
         const char* m_iotHubProtocolObject = "iotHubProtocol";
         const char* m_gitManagementEnabledObject = "gitManagementEnabled";
         const char* m_gitBranchObject = "gitBranch";
-                
+
         const char* m_desiredRefreshIntervalObject = "desiredRefreshInterval";
         const char* m_desiredLocalManagementEnabledObject = "desiredLocalManagementEnabled";
         const char* m_desiredFullLoggingEnabledObject = "desiredFullLoggingEnabled";
@@ -44,7 +44,7 @@ class ConfigurationTest : public ::testing::Test
         const char* m_desiredGitManagementEnabledObject = "desiredGitManagementEnabled";
         const char* m_desiredGitBranchObject = "desiredGitBranch";
 
-        const char* m_testConfiguration = 
+        const char* m_testConfiguration =
             "{"
                 "\"CommandLogging\": 0,"
                 "\"FullLogging\" : 0,"
@@ -56,7 +56,7 @@ class ConfigurationTest : public ::testing::Test
                 "\"GitManagement\" : 1,"
                 "\"GitBranch\" : \"Test/Foo\""
             "}";
-        
+
         const char* m_testConfigurationFile = "~testConfiguration.json";
 
         const char* m_clientName = "Test";
@@ -87,7 +87,7 @@ TEST_F(ConfigurationTest, MmiOpen)
 char* CopyPayloadToString(const char* payload, int payloadSizeBytes)
 {
     char* output = nullptr;
-    
+
     EXPECT_NE(nullptr, payload);
     EXPECT_NE(0, payloadSizeBytes);
     EXPECT_NE(nullptr, output = (char*)malloc(payloadSizeBytes + 1));
@@ -137,7 +137,7 @@ TEST_F(ConfigurationTest, MmiGet)
         m_gitManagementEnabledObject,
         m_gitBranchObject
     };
-    
+
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
 
     EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
@@ -152,7 +152,7 @@ TEST_F(ConfigurationTest, MmiGet)
         FREE_MEMORY(payloadString);
         ConfigurationMmiFree(payload);
     }
-    
+
     ConfigurationMmiClose(handle);
 }
 
@@ -205,7 +205,7 @@ TEST_F(ConfigurationTest, MmiGetInvalidComponent)
     EXPECT_EQ(EINVAL, ConfigurationMmiGet(handle, "Test123", m_modelVersionObject, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     ConfigurationMmiClose(handle);
 }
 
@@ -220,7 +220,7 @@ TEST_F(ConfigurationTest, MmiGetInvalidObject)
     EXPECT_EQ(EINVAL, ConfigurationMmiGet(handle, m_configurationComponentName, "Test123", &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     ConfigurationMmiClose(handle);
 }
 
@@ -255,7 +255,7 @@ TEST_F(ConfigurationTest, MmiSet)
 {
     MMI_HANDLE handle = nullptr;
 
-    ConfigurationCombination testCombinations[] = 
+    ConfigurationCombination testCombinations[] =
     {
         { m_desiredRefreshIntervalObject, "5", 0, m_refreshIntervalObject, "5" },
         { m_desiredRefreshIntervalObject, "30", 0, m_refreshIntervalObject, "30" },
@@ -279,9 +279,9 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredGitManagementEnabledObject, "false", 0, m_gitManagementEnabledObject, "false" },
         { m_desiredGitBranchObject, "\"Test\\/Foo\"", 0, m_gitBranchObject, "\"Test\\/Foo\"" }
     };
-    
+
     int numTestCombinations = ARRAY_SIZE(testCombinations);
-    
+
     char* payload = nullptr;
     char* payloadString = nullptr;
     int payloadSizeBytes = 0;
@@ -290,7 +290,7 @@ TEST_F(ConfigurationTest, MmiSet)
 
     for (int i = 0; i < numTestCombinations; i++)
     {
-        EXPECT_EQ(testCombinations[i].expectedResult, ConfigurationMmiSet(handle, m_configurationComponentName, 
+        EXPECT_EQ(testCombinations[i].expectedResult, ConfigurationMmiSet(handle, m_configurationComponentName,
             testCombinations[i].desiredObject, (MMI_JSON_STRING)testCombinations[i].desiredValue, strlen(testCombinations[i].desiredValue)));
 
         if (MMI_OK == testCombinations[i].expectedResult)
