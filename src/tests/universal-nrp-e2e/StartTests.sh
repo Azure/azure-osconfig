@@ -15,19 +15,18 @@ test_data='[
     {"distroName": "centos-8", "imageFile": "centos-8.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
     {"distroName": "centos-8", "imageFile": "centos-8.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
     {"distroName": "debian-10", "imageFile": "debian-10.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    {"distroName": "debian-10", "imageFile": "debian-10.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"}
+    {"distroName": "debian-10", "imageFile": "debian-10.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "ubuntu-18.04", "imageFile": "ubuntu-18.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "ubuntu-18.04", "imageFile": "ubuntu-18.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"}
 ]'
-    
-    # {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    # {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    # {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    # {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    # {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    # {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    # {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    # {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    # {"distroName": "ubuntu-18.04", "imageFile": "ubuntu-18.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    # {"distroName": "ubuntu-18.04", "imageFile": "ubuntu-18.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"}
 
 subscriptionId="ce58a062-8d06-4da9-a85b-28939beb0119"
 storageAccount="osconfigstorage"
@@ -273,22 +272,17 @@ print_test_summary_table() {
 test_summary+=("Result|Distro Name|Policy Package|Total|Errors|Failures|Skipped|Log Directory")
 sumTests=0; sumErrors=0; sumFailures=0; sumSkipped=0
 for test in "${!testToLogDirMapping[@]}"; do
-    # echo "DEBUG: Start processing test: $test"
     logDir=${testToLogDirMapping[$test]}
     pid=${testToPidMapping[$test]}
     exitCode=${pidToExitCodeMapping[$pid]}
     # Extract distro name and policy package from test key (distroName--policyPackage)
     distroName=$(echo $test | awk -F'--' '{print $1}')
     policyPackage=$(echo $test | awk -F'--' '{print $2}')
-    # echo "  DEBUG: Distro: $distroName, Policy Package: $policyPackage, Exit Code: $exitCode"
     result="Pass"
     logArchive="$(find $logDir -name *.tar.gz)"
-    # echo "  DEBUG: Log Archive: $logArchive"
     tempDir=$(mktemp -d)
     tar -xzf $logArchive -C $tempDir
-    # echo "  DEBUG: Extracted log archive to $tempDir"
     testReport="$(find $tempDir -name *.xml)"
-    # echo "  DEBUG: Test Report: $testReport"
     # If there is no test report, consider the test as failed
     if [ ! -f "$testReport" ]; then
         result="Fail"
@@ -301,14 +295,11 @@ for test in "${!testToLogDirMapping[@]}"; do
     totalErrors=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'errors="' '{print $2}' | awk -F'"' '{print $1}')
     totalFailures=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'failures="' '{print $2}' | awk -F'"' '{print $1}')
     totalSkipped=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'skipped="' '{print $2}' | awk -F'"' '{print $1}')
-    echo "  DEBUG: Total Tests: $totalTests, Errors: $totalErrors, Failures: $totalFailures, Skipped: $totalSkipped"
     sumTests=$((sumTests + totalTests))
     sumErrors=$((sumErrors + totalErrors))
     sumFailures=$((sumFailures + totalFailures))
     sumSkipped=$((sumSkipped + totalSkipped))
-    # echo "  DEBUG: Total Tests: $sumTests, Errors: $sumErrors, Failures: $sumFailures, Skipped: $sumSkipped"
     rm -rf $tempDir
-    # echo "  DEBUG: Removed temp directory: $tempDir"
 
     if [ "$exitCode" -gt 0 ] || [ "$totalErrors" -gt 0 ] || [ "$totalFailures" -gt 0 ]; then
         failedTests=true
@@ -316,7 +307,6 @@ for test in "${!testToLogDirMapping[@]}"; do
     fi
 
     test_summary+=("$result|$distroName|$policyPackage|$totalTests|$totalErrors|$totalFailures|$totalSkipped|$logDir")
-    # echo "DEBUG: End processing test: $test"
 done
 
 test_summary+=(" | |TOTALS|$sumTests|$sumErrors|$sumFailures|$sumSkipped| ")
