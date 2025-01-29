@@ -270,6 +270,7 @@ print_test_summary_table() {
     done | column -s $'|' -t
 }
 test_summary+=("Result|Distro Name|Policy Package|Total|Errors|Failures|Skipped|Log Directory")
+test_summary+=("------|-----------|--------------|-----|------|--------|-------|-------------")
 sumTests=0; sumErrors=0; sumFailures=0; sumSkipped=0
 for test in "${!testToLogDirMapping[@]}"; do
     logDir=${testToLogDirMapping[$test]}
@@ -308,7 +309,7 @@ for test in "${!testToLogDirMapping[@]}"; do
 
     test_summary+=("$result|$distroName|$policyPackage|$totalTests|$totalErrors|$totalFailures|$totalSkipped|$logDir")
 done
-
+test_summary+=(" | |------|-----|------|--------|-------| ")
 test_summary+=(" | |TOTALS|$sumTests|$sumErrors|$sumFailures|$sumSkipped| ")
 print_test_summary_table
 
