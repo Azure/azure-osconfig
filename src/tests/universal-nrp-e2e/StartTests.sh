@@ -288,16 +288,19 @@ for test in "${!testToLogDirMapping[@]}"; do
     tar -xzf $logArchive -C $tempDir
     echo "  DEBUG: Extracted log archive to $tempDir"
     testReport="$(find $tempDir -name *.xml)"
+    echo "  DEBUG: Test Report: $testReport"
     totalTests=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'tests="' '{print $2}' | awk -F'"' '{print $1}')
     totalErrors=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'errors="' '{print $2}' | awk -F'"' '{print $1}')
     totalFailures=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'failures="' '{print $2}' | awk -F'"' '{print $1}')
     totalSkipped=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'skipped="' '{print $2}' | awk -F'"' '{print $1}')
+    echo "  DEBUG: Total Tests: $totalTests, Errors: $totalErrors, Failures: $totalFailures, Skipped: $totalSkipped"
     sumTests=$((sumTests + totalTests))
     sumErrors=$((sumErrors + totalErrors))
     sumFailures=$((sumFailures + totalFailures))
     sumSkipped=$((sumSkipped + totalSkipped))
+    echo "  DEBUG: Total Tests: $sumTests, Errors: $sumErrors, Failures: $sumFailures, Skipped: $sumSkipped"
     rm -rf $tempDir
-    echo "  DEBUG: Total Tests: $totalTests, Errors: $totalErrors, Failures: $totalFailures, Skipped: $totalSkipped"
+    echo "  DEBUG: Removed temp directory: $tempDir"
 
     if [ "$exitCode" -gt 0 ] || [ "$totalErrors" -gt 0 ] || [ "$totalFailures" -gt 0 ]; then
         failedTests=true
