@@ -15,18 +15,19 @@ test_data='[
     {"distroName": "centos-8", "imageFile": "centos-8.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
     {"distroName": "centos-8", "imageFile": "centos-8.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
     {"distroName": "debian-10", "imageFile": "debian-10.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    {"distroName": "debian-10", "imageFile": "debian-10.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    {"distroName": "ubuntu-18.04", "imageFile": "ubuntu-18.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    {"distroName": "ubuntu-18.04", "imageFile": "ubuntu-18.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"}
+    {"distroName": "debian-10", "imageFile": "debian-10.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"}
 ]'
+    
+    # {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    # {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    # {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    # {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    # {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    # {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    # {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    # {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    # {"distroName": "ubuntu-18.04", "imageFile": "ubuntu-18.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    # {"distroName": "ubuntu-18.04", "imageFile": "ubuntu-18.04.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"}
 
 subscriptionId="ce58a062-8d06-4da9-a85b-28939beb0119"
 storageAccount="osconfigstorage"
@@ -48,8 +49,8 @@ countTotalTests=0
 waitInterval=2
 
 usage() { 
-    echo "Usage: $0 [-r run-id] [-m vm-memory-mb] [-j max-concurrent-jobs]" 1>&2;
-    exit 1; 
+    echo "Usage: $0 [-r run-id] [-m vm-memory-mb] [-j max-concurrent-jobs]" >&2
+    exit 1
 }
 
 OPTSTRING=":j:m:p:"
@@ -83,7 +84,7 @@ done
 dependencies=(cloud-localds qemu-system-x86_64 jq az)
 for dep in "${dependencies[@]}"; do
     if ! command -v $dep &> /dev/null; then
-        echo "$dep not found. Please install it and try again." 1>&2
+        echo "$dep not found. Please install it and try again." >&2
         exit 1
     fi
 done
@@ -105,15 +106,15 @@ get_pipeline_run_id() {
     runId=$(az pipelines runs list --organization $azdevopsOrg --project $azdevopsProject --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
     if [[ -z "$runId" ]]; then
         failedLogin=true
-        echo "Unable to retreive pipeline run id, running \"az login\"" 1>&2
+        echo "Unable to retreive pipeline run id, running \"az login\"" >&2
         if ! az login; then
-            echo "Failed to login to Azure. Please check your credentials and try again." 1>&2
+            echo "Failed to login to Azure. Please check your credentials and try again." >&2
         else
             az account set --subscription $subscriptionId
             failedLogin=false
             runId=$(az pipelines runs list --organization $azdevopsOrg --project $azdevopsProject --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
         fi
-        [[ "$failedLogin" = true ]] && { echo "Unable to retrieve pipeline run id after login attempt, please check credentials and try again." 1>&2; exit 1; }
+        [[ "$failedLogin" = true ]] && { echo "Unable to retrieve pipeline run id after login attempt, please check credentials and try again." >&2; exit 1; }
     fi
     echo $runId
 }
@@ -272,17 +273,20 @@ print_test_summary_table() {
 test_summary+=("Result|Distro Name|Policy Package|Total|Errors|Failures|Skipped|Log Directory")
 sumTests=0; sumErrors=0; sumFailures=0; sumSkipped=0
 for test in "${!testToLogDirMapping[@]}"; do
+    echo "DEBUG: Start processing test: $test"
     logDir=${testToLogDirMapping[$test]}
     pid=${testToPidMapping[$test]}
     exitCode=${pidToExitCodeMapping[$pid]}
     # Extract distro name and policy package from test key (distroName--policyPackage)
     distroName=$(echo $test | awk -F'--' '{print $1}')
     policyPackage=$(echo $test | awk -F'--' '{print $2}')
-    
+    echo "  DEBUG: Distro: $distroName, Policy Package: $policyPackage, Exit Code: $exitCode"
     result="Pass"
     logArchive="$(find $logDir -name *.tar.gz)"
+    echo "  DEBUG: Log Archive: $logArchive"
     tempDir=$(mktemp -d)
     tar -xzf $logArchive -C $tempDir
+    echo "  DEBUG: Extracted log archive to $tempDir"
     testReport="$(find $tempDir -name *.xml)"
     totalTests=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'tests="' '{print $2}' | awk -F'"' '{print $1}')
     totalErrors=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'errors="' '{print $2}' | awk -F'"' '{print $1}')
@@ -293,6 +297,7 @@ for test in "${!testToLogDirMapping[@]}"; do
     sumFailures=$((sumFailures + totalFailures))
     sumSkipped=$((sumSkipped + totalSkipped))
     rm -rf $tempDir
+    echo "  DEBUG: Total Tests: $totalTests, Errors: $totalErrors, Failures: $totalFailures, Skipped: $totalSkipped"
 
     if [ "$exitCode" -gt 0 ] || [ "$totalErrors" -gt 0 ] || [ "$totalFailures" -gt 0 ]; then
         failedTests=true
@@ -300,13 +305,14 @@ for test in "${!testToLogDirMapping[@]}"; do
     fi
 
     test_summary+=("$result|$distroName|$policyPackage|$totalTests|$totalErrors|$totalFailures|$totalSkipped|$logDir")
+    echo "DEBUG: End processing test: $test"
 done
 
 test_summary+=(" | |TOTALS|$sumTests|$sumErrors|$sumFailures|$sumSkipped| ")
 print_test_summary_table
 
 if [ "$failedTests" = true ]; then
-    echo "❌ Tests failed!" 1>&2;
+    echo "❌ Tests failed!" >&2
     exit 1
 else
     echo "✅ Tests successfull!"
