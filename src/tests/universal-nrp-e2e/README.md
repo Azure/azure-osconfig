@@ -89,8 +89,8 @@ Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip [-r]]
 
 ## Testing on VMs
 ```
-Usage: ./StartVMTest.sh [-i /path/to/image.img -p /path/to/policypackage.zip [-g]] [-m 512] [-r] [-d]
-       -i Image Path:            Path to the image qcow2 format
+Usage: ./StartVMTest.sh [-i image.img -p policypackage.zip [-r]] [-i image.img -g] [-m 512] [-d]
+       -i Image Path:            Path to the image (raw or qcow2 format)
        -p Policy Package:        Path to the policy package
        -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
        -r Remediation:           Perform remediation flag (Default: false)
@@ -99,7 +99,7 @@ Usage: ./StartVMTest.sh [-i /path/to/image.img -p /path/to/policypackage.zip [-g
                                    - Clean package management cache
                                    - Clean cloud-init flags to reset cloud-init to initial-state
        -l Log Directory:         Directory used to place output logs
-       -d Debug Mode:            VM stays up for debugging (Default: false)
+       -d Debug Mode Flag:       VM stays up for debugging (Default: false)
 ```
 ### VM Image Sources
 It's preferable for images to be "Cloud" images (contain cloud-init) as it makes tooling work out-of-box and does not require creating your own image of the distro and getting all the necessary packages/dependencies installed.
