@@ -294,7 +294,7 @@ rm -rf "$temp_dir"
 # Finished, optionally show debug banner, cleanup and exit with the Pester exit code
 debug_mode
 if [ $tests_failed = true ]; then
-    echo "❌ Tests failed! Check console for details. Check logs or enabled debug [-d] to connect to VM with SSH" >&2;
+    echo "❌ Tests failed! Check console for details. Check logs or enable debug [-d] to connect to VM with SSH" >&2;
     cleanup 1
 else
     echo "✅ Tests passed!"

@@ -273,22 +273,30 @@ print_test_summary_table() {
 test_summary+=("Result|Distro Name|Policy Package|Total|Errors|Failures|Skipped|Log Directory")
 sumTests=0; sumErrors=0; sumFailures=0; sumSkipped=0
 for test in "${!testToLogDirMapping[@]}"; do
-    echo "DEBUG: Start processing test: $test"
+    # echo "DEBUG: Start processing test: $test"
     logDir=${testToLogDirMapping[$test]}
     pid=${testToPidMapping[$test]}
     exitCode=${pidToExitCodeMapping[$pid]}
     # Extract distro name and policy package from test key (distroName--policyPackage)
     distroName=$(echo $test | awk -F'--' '{print $1}')
     policyPackage=$(echo $test | awk -F'--' '{print $2}')
-    echo "  DEBUG: Distro: $distroName, Policy Package: $policyPackage, Exit Code: $exitCode"
+    # echo "  DEBUG: Distro: $distroName, Policy Package: $policyPackage, Exit Code: $exitCode"
     result="Pass"
     logArchive="$(find $logDir -name *.tar.gz)"
-    echo "  DEBUG: Log Archive: $logArchive"
+    # echo "  DEBUG: Log Archive: $logArchive"
     tempDir=$(mktemp -d)
     tar -xzf $logArchive -C $tempDir
-    echo "  DEBUG: Extracted log archive to $tempDir"
+    # echo "  DEBUG: Extracted log archive to $tempDir"
     testReport="$(find $tempDir -name *.xml)"
-    echo "  DEBUG: Test Report: $testReport"
+    # echo "  DEBUG: Test Report: $testReport"
+    # If there is no test report, consider the test as failed
+    if [ ! -f "$testReport" ]; then
+        result="Fail"
+        failedTests=true
+        test_summary+=("$result|$distroName|$policyPackage|0|0|0|0|$logDir")
+        rm -rf $tempDir
+        continue
+    fi
     totalTests=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'tests="' '{print $2}' | awk -F'"' '{print $1}')
     totalErrors=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'errors="' '{print $2}' | awk -F'"' '{print $1}')
     totalFailures=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'failures="' '{print $2}' | awk -F'"' '{print $1}')
@@ -298,9 +306,9 @@ for test in "${!testToLogDirMapping[@]}"; do
     sumErrors=$((sumErrors + totalErrors))
     sumFailures=$((sumFailures + totalFailures))
     sumSkipped=$((sumSkipped + totalSkipped))
-    echo "  DEBUG: Total Tests: $sumTests, Errors: $sumErrors, Failures: $sumFailures, Skipped: $sumSkipped"
+    # echo "  DEBUG: Total Tests: $sumTests, Errors: $sumErrors, Failures: $sumFailures, Skipped: $sumSkipped"
     rm -rf $tempDir
-    echo "  DEBUG: Removed temp directory: $tempDir"
+    # echo "  DEBUG: Removed temp directory: $tempDir"
 
     if [ "$exitCode" -gt 0 ] || [ "$totalErrors" -gt 0 ] || [ "$totalFailures" -gt 0 ]; then
         failedTests=true
@@ -308,7 +316,7 @@ for test in "${!testToLogDirMapping[@]}"; do
     fi
 
     test_summary+=("$result|$distroName|$policyPackage|$totalTests|$totalErrors|$totalFailures|$totalSkipped|$logDir")
-    echo "DEBUG: End processing test: $test"
+    # echo "DEBUG: End processing test: $test"
 done
 
 test_summary+=(" | |TOTALS|$sumTests|$sumErrors|$sumFailures|$sumSkipped| ")
