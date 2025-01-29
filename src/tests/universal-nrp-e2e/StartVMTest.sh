@@ -8,7 +8,7 @@
 #              There is also both a generalize and a debug mode flag that can be used to generalize an
 #              image and a debug mode that will leave the VM up for debugging.
 #
-# Usage: ./StartVMTest.sh -i /path/to/image.img [-p /path/to/policypackage.zip] [-m 512] [-r] [-g] [-d]
+# Usage: ./StartVMTest.sh [-i image.img -p policypackage.zip [-r]] [-i image.img -g] [-m 512] [-d]
 #        -i Image Path:            Path to the image qcow2 format
 #        -p Policy Package:        Path to the policy package
 #        -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
@@ -40,7 +40,7 @@ use_sudo=false
 provisionedUser="user1"
 
 usage() { 
-    echo "Usage: $0 -i /path/to/image.img [-p /path/to/policypackage.zip] [-m 512] [-r] [-g] [-d]
+    echo "Usage: $0 [-i image.img -p policypackage.zip [-r]] [-i image.img -g] [-m 512] [-d]
     -i Image Path:            Path to the image qcow2 format
     -p Policy Package:        Path to the policy package
     -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
