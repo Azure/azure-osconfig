@@ -163,7 +163,7 @@ get_instance_count() {
     local instanceCount=0
     tempDir=$(mktemp -d)
     _unzip -q $package -d $tempDir > /dev/null 2>&1
-    instanceCount=$(find $tempDir -name "${package%.*}.mof" -exec grep -c "instance of OsConfigResource" {} \;)
+    instanceCount=$(find $tempDir -name "${package%.*}.mof" -exec grep -c "instance of OsConfigResource as \$OsConfigResource" {} \;)
     rm -rf $tempDir
     echo $instanceCount
 }
