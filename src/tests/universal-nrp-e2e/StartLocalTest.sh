@@ -73,13 +73,13 @@ install_package() {
         sudo zypper refresh
         sudo zypper install -y "$@"
     else
-        echo "Unsupported Linux distribution." 1>&2;
+        echo "Unsupported Linux distribution." >&2
         exit 1
     fi
 }
 _unzip() {
     if ! command -v unzip &> /dev/null; then
-        echo "unzip not found. Installing unzip..." 1>&2;
+        echo "unzip not found. Installing unzip..." >&2
         install_package unzip > /dev/null 2>&1
     fi
     unzip "$@"
@@ -290,7 +290,7 @@ done
 dependencies=(curl wget)
 for dep in "${dependencies[@]}"; do
     if ! command -v $dep &> /dev/null; then
-        echo "$dep not found. Please install it and try again." 1>&2
+        echo "$dep not found. Please install it and try again." >&2
         exit 1
     fi
 done
@@ -319,16 +319,16 @@ if [ $generalize = true ]; then
 fi
 
 if [ -z "$policypackage" ]; then
-    echo "Policy package not provided." 1>&2;
+    echo "Policy package not provided." >&2
     usage
 fi
 
 resourcecount=$(get_instance_count $policypackage)
 if [ "$resourcecount" -eq 0 ]; then
-    echo "Resource count invalid: $resourceCount" 1>&2;
+    echo "Resource count invalid: $resourceCount" >&2
 fi
 if [ -z "$HOME/UniversalNRP.Tests.ps1" ]; then
-    echo "UniversalNRP.Tests.ps1 not found. Copy Powershell script into $HOME directory" 1>&2;
+    echo "UniversalNRP.Tests.ps1 not found. Copy Powershell script into $HOME directory" >&2
 fi
 
 if [ "$stageName" = "run_tests" ]; then

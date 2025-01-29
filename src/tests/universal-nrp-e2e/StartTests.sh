@@ -47,9 +47,9 @@ countPendingTests=0
 countTotalTests=0
 waitInterval=2
 
-usage() {
-    echo "Usage: $0 [-r run-id] [-m vm-memory-mb] [-j max-concurrent-jobs]" 1>&2;
-    exit 1;
+usage() { 
+    echo "Usage: $0 [-r run-id] [-m vm-memory-mb] [-j max-concurrent-jobs]" >&2
+    exit 1
 }
 
 OPTSTRING=":j:m:p:"
@@ -83,7 +83,7 @@ done
 dependencies=(cloud-localds qemu-system-x86_64 jq az)
 for dep in "${dependencies[@]}"; do
     if ! command -v $dep &> /dev/null; then
-        echo "$dep not found. Please install it and try again." 1>&2
+        echo "$dep not found. Please install it and try again." >&2
         exit 1
     fi
 done
@@ -105,15 +105,15 @@ get_pipeline_run_id() {
     runId=$(az pipelines runs list --organization $azdevopsOrg --project $azdevopsProject --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
     if [[ -z "$runId" ]]; then
         failedLogin=true
-        echo "Unable to retreive pipeline run id, running \"az login\"" 1>&2
+        echo "Unable to retreive pipeline run id, running \"az login\"" >&2
         if ! az login; then
-            echo "Failed to login to Azure. Please check your credentials and try again." 1>&2
+            echo "Failed to login to Azure. Please check your credentials and try again." >&2
         else
             az account set --subscription $subscriptionId
             failedLogin=false
             runId=$(az pipelines runs list --organization $azdevopsOrg --project $azdevopsProject --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
         fi
-        [[ "$failedLogin" = true ]] && { echo "Unable to retrieve pipeline run id after login attempt, please check credentials and try again." 1>&2; exit 1; }
+        [[ "$failedLogin" = true ]] && { echo "Unable to retrieve pipeline run id after login attempt, please check credentials and try again." >&2; exit 1; }
     fi
     echo $runId
 }
@@ -270,6 +270,7 @@ print_test_summary_table() {
     done | column -s $'|' -t
 }
 test_summary+=("Result|Distro Name|Policy Package|Total|Errors|Failures|Skipped|Log Directory")
+test_summary+=("------|-----------|--------------|-----|------|--------|-------|-------------")
 sumTests=0; sumErrors=0; sumFailures=0; sumSkipped=0
 for test in "${!testToLogDirMapping[@]}"; do
     logDir=${testToLogDirMapping[$test]}
@@ -278,12 +279,19 @@ for test in "${!testToLogDirMapping[@]}"; do
     # Extract distro name and policy package from test key (distroName--policyPackage)
     distroName=$(echo $test | awk -F'--' '{print $1}')
     policyPackage=$(echo $test | awk -F'--' '{print $2}')
-    
     result="Pass"
     logArchive="$(find $logDir -name *.tar.gz)"
     tempDir=$(mktemp -d)
     tar -xzf $logArchive -C $tempDir
     testReport="$(find $tempDir -name *.xml)"
+    # If there is no test report, consider the test as failed
+    if [ ! -f "$testReport" ]; then
+        result="Fail"
+        failedTests=true
+        test_summary+=("$result|$distroName|$policyPackage|0|0|0|0|$logDir")
+        rm -rf $tempDir
+        continue
+    fi
     totalTests=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'tests="' '{print $2}' | awk -F'"' '{print $1}')
     totalErrors=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'errors="' '{print $2}' | awk -F'"' '{print $1}')
     totalFailures=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'failures="' '{print $2}' | awk -F'"' '{print $1}')
@@ -301,12 +309,12 @@ for test in "${!testToLogDirMapping[@]}"; do
 
     test_summary+=("$result|$distroName|$policyPackage|$totalTests|$totalErrors|$totalFailures|$totalSkipped|$logDir")
 done
-
+test_summary+=(" | |------|-----|------|--------|-------| ")
 test_summary+=(" | |TOTALS|$sumTests|$sumErrors|$sumFailures|$sumSkipped| ")
 print_test_summary_table
 
 if [ "$failedTests" = true ]; then
-    echo "❌ Tests failed!" 1>&2;
+    echo "❌ Tests failed!" >&2
     exit 1
 else
     echo "✅ Tests successfull!"
