@@ -228,7 +228,7 @@ Now let's try PowerShell again
 ```
 [user1@osconfige2etest ~]$ pwsh
 PowerShell 7.4.6
-PS /home/user1> 
+PS /home/user1>
 ```
 It worked, we can now exit powershell, cleanup everything, regeneralize and shutdown vm
 ```

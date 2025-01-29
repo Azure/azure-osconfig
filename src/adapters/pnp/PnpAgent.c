@@ -166,7 +166,7 @@ static void SignalInterrupt(int signal)
 static void SignalReloadConfiguration(int incomingSignal)
 {
     g_refreshSignal = incomingSignal;
-    
+
     // Reset the handler
     signal(SIGHUP, SignalReloadConfiguration);
 }
@@ -174,7 +174,7 @@ static void SignalReloadConfiguration(int incomingSignal)
 static IOTHUB_DEVICE_CLIENT_LL_HANDLE CallIotHubInitialize(void)
 {
     IOTHUB_DEVICE_CLIENT_LL_HANDLE moduleHandle = NULL;
-    
+
     if (g_isIotHubEnabled)
     {
         if (NULL == (moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, g_x509PrivateKeyHandle,
@@ -365,7 +365,7 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
 
 static bool InitializeAgent(void)
 {
-    bool status = true; 
+    bool status = true;
 
     g_lastTime = (unsigned int)time(NULL);
 
@@ -411,7 +411,7 @@ void CloseAgent(void)
     }
 
     FREE_MEMORY(g_reportedProperties);
-    
+
     OsConfigLogInfo(GetLog(), "The OSConfig Agent session is closed");
 }
 
@@ -554,7 +554,7 @@ int main(int argc, char *argv[])
     }
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
-    
+
     snprintf(g_productName, sizeof(g_productName), g_productNameTemplate, g_modelVersion, OSCONFIG_VERSION);
     OsConfigLogInfo(GetLog(), "Product name: %s", g_productName);
 
@@ -574,21 +574,21 @@ int main(int argc, char *argv[])
     productVendor = GetProductVendor(GetLog());
     productName = GetProductName(GetLog());
 
-    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion, 
+    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion,
         cpuType, cpuVendor, cpuModel, totalMemory, freeMemory, kernelName, kernelRelease, kernelVersion, productVendor, productName);
-        
+
     if (NULL != (encodedProductInfo = UrlEncode(g_productInfo)))
     {
         if (strlen(encodedProductInfo) >= sizeof(g_productInfo))
         {
-            OsConfigLogError(GetLog(), "Encoded product info string is too long (%d bytes, over maximum of %d bytes) and will be truncated", 
+            OsConfigLogError(GetLog(), "Encoded product info string is too long (%d bytes, over maximum of %d bytes) and will be truncated",
                 (int)strlen(encodedProductInfo), (int)sizeof(g_productInfo));
-        } 
-        
+        }
+
         memset(g_productInfo, 0, sizeof(g_productInfo));
         memcpy(g_productInfo, encodedProductInfo, sizeof(g_productInfo) - 1);
     }
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
@@ -698,7 +698,7 @@ int main(int argc, char *argv[])
     while (0 == g_stopSignal)
     {
         AgentDoWork();
-        
+
         SleepMilliseconds(DOWORK_SLEEP);
 
         if (0 != g_refreshSignal)
@@ -717,9 +717,9 @@ done:
     FREE_MEMORY(g_iotHubConnectionString);
 
     WatcherCleanup(GetLog());
-    
+
     CloseAgent();
-    
+
     StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog());
 
     CloseLog(&g_agentLog);

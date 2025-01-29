@@ -13,7 +13,7 @@ extern "C"
 
 typedef void(*IOTHUB_CLIENT_REPORTED_STATE_CALLBACK)(int status_code, void* userContextCallback);
 
-IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char* productInfo, const char* connectionString, bool traceOn, 
+IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char* productInfo, const char* connectionString, bool traceOn,
     const char* x509Certificate, const char* x509PrivateKeyHandle, const HTTP_PROXY_OPTIONS* proxyName, IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol);
 void IotHubDeInitialize(void);
 void IotHubDoWork(void);

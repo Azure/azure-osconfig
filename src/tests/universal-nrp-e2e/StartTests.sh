@@ -47,9 +47,9 @@ countPendingTests=0
 countTotalTests=0
 waitInterval=2
 
-usage() { 
+usage() {
     echo "Usage: $0 [-r run-id] [-m vm-memory-mb] [-j max-concurrent-jobs]" 1>&2;
-    exit 1; 
+    exit 1;
 }
 
 OPTSTRING=":j:m:p:"
@@ -178,10 +178,10 @@ done
 wait_with_timeout() {
     local pid=$1
     local timeout=$2
-    
+
     local interval=1
     local elapsed=0
-    
+
     while kill -0 $pid 2>/dev/null; do
         if [ $elapsed -ge $timeout ]; then
             return 1
