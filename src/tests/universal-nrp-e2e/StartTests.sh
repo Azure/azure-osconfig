@@ -10,6 +10,8 @@
 # Dependencies: cloud-localds, qemu-system-x86, jq, az
 
 test_data='[
+    {"distroName": "amazonlinux-2", "imageFile": "amazonlinux-2.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
+    {"distroName": "amazonlinux-2", "imageFile": "amazonlinux-2.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
     {"distroName": "centos-7", "imageFile": "centos-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
     {"distroName": "centos-7", "imageFile": "centos-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
     {"distroName": "centos-8", "imageFile": "centos-8.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
