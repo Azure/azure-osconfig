@@ -21,7 +21,7 @@
 #        -l Log Directory:         Directory used to place output logs
 #        -d Debug Mode Flag:       VM stays up for debugging (Default: false)
 #
-# Dependencies: 
+# Dependencies:
 #   - qemu-system-x86_64
 #   - cloud-image-utils
 
@@ -40,7 +40,7 @@ tests_failed=false
 use_sudo=false
 provisionedUser="user1"
 
-usage() { 
+usage() {
     echo "Usage: $0 -i /path/to/image.img -p /path/to/policypackage.zip -c resource-count [-m 512] [-r] [-d]
     -i Image Path:            Path to the image qcow2 format
     -p Policy Package:        Path to the policy package
@@ -52,8 +52,8 @@ usage() {
                                 - Clean package management cache
                                 - Clean cloud-init flags to reset cloud-init to initial-state
     -l Log Directory:         Directory used to place output logs
-    -d Debug Mode Flag:       VM stays up for debugging (Default: false)" 1>&2; 
-    exit 1; 
+    -d Debug Mode Flag:       VM stays up for debugging (Default: false)" 1>&2;
+    exit 1;
 }
 check_if_error() {
     if [ $? -ne 0 ]; then
@@ -221,7 +221,7 @@ cloud-localds $basepath/seed.img $basepath/metadata/user-data $basepath/metadata
 # Start QEMU
 qemu_fwport=$(find_free_port)
 qemu_imgformat=$( [ "${imagepath##*.}" = "raw" ] && echo "raw" || echo "qcow2" )
-echo "Starting QEMU using $qemu_imgformat format SSH port (22) forwarded to $qemu_fwport with $vmmemory mb RAM ..." 
+echo "Starting QEMU using $qemu_imgformat format SSH port (22) forwarded to $qemu_fwport with $vmmemory mb RAM ..."
 
 qemu_command=$(cat <<EOF
 qemu-system-x86_64                                                    \

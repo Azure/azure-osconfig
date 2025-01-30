@@ -183,7 +183,7 @@ jobs:
               Write-Host "Renaming $($_.Name) to $name.zip"
               Rename-Item -Path $_.Name -NewName "$name.zip"
           }
-      
+
       - name: Check package size
         if: success() || failure()
         uses: ./.github/actions/check-size
@@ -235,7 +235,7 @@ jobs:
         with:
           perflog: /var/log/osconfig_asb_perf.log
           mark: "is longer than"
-        
+
       - name: Stage OSConfig Logs
         if: success() || failure()
         run: |

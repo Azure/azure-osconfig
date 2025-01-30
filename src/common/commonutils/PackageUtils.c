@@ -83,7 +83,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     }
 
     status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
-    
+
     OsConfigLogInfo(log, "Package manager '%s' command '%s' complete with %d (errno: %d)", packageManager, command, status, errno);
 
     FREE_MEMORY(command);
@@ -141,7 +141,7 @@ static bool WildcardsPresent(const char* packageName)
 
 int CheckPackageInstalled(const char* packageName, char** reason, void* log)
 {
-    int result = 0; 
+    int result = 0;
 
     if (0 == (result = IsPackageInstalled(packageName, log)))
     {
@@ -190,7 +190,7 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, void
         OsConfigLogError(log, "ExecuteSimplePackageCommand called with invalid arguments");
         return EINVAL;
     }
-    
+
     if (true == *executed)
     {
         return status;
@@ -231,7 +231,7 @@ int InstallOrUpdatePackage(const char* packageName, void* log)
     int status = ENOENT;
 
     CheckPackageManagersPresence(log);
-    
+
     if (g_aptGetIsPresent)
     {
         ExecuteAptGetUpdate(log);
@@ -330,7 +330,7 @@ int UninstallPackage(const char* packageName, void* log)
         {
             status = ENOENT;
         }
-        
+
         if (0 == status)
         {
             OsConfigLogInfo(log, "UninstallPackage: package '%s' was successfully uninstalled", packageName);

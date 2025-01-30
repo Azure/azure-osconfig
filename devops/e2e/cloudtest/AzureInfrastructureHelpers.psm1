@@ -57,43 +57,43 @@ function Create-AzureManagedDisk {
     param (
         [Parameter(Mandatory=$true)]
         [string] $DiskPath,
-        
+
         [Parameter(Mandatory=$true)]
         [string] $SubscriptionName,
-        
+
         [Parameter(Mandatory=$true)]
         [string] $ResourceGroupName,
-        
+
         [Parameter(Mandatory=$true)]
         [string] $DiskName,
-        
+
         [Parameter(Mandatory=$true)]
         [string] $GalleryName,
-        
+
         [Parameter(Mandatory=$true)]
         [string] $OSType,
-        
+
         [Parameter(Mandatory=$true)]
         [string] $Publisher,
-        
+
         [Parameter(Mandatory=$true)]
         [string] $Offer,
-        
+
         [Parameter(Mandatory=$true)]
         [string] $Sku,
-        
+
         [Parameter(Mandatory=$true)]
         [string] $Location,
-        
+
         [Parameter(Mandatory=$true)]
         [string] $ImageVersionName,
-        
+
         [Parameter(Mandatory=$true)]
         [string] $OSState
     )
 
     $ErrorActionPreference = "Stop"
-    
+
     if (-not (Get-AzContext)) {
         Write-Host "Signing into Azure..."
         Connect-AzAccount

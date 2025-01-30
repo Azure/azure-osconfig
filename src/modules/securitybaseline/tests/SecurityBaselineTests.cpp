@@ -243,7 +243,7 @@ TEST_F(SecurityBaselineTest, MmiOpen)
 char* CopyPayloadToString(const char* payload, int payloadSizeBytes)
 {
     char* output = nullptr;
-    
+
     EXPECT_NE(nullptr, payload);
     EXPECT_NE(0, payloadSizeBytes);
     EXPECT_NE(nullptr, output = (char*)malloc(payloadSizeBytes + 1));
@@ -501,7 +501,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         FREE_MEMORY(payloadString);
         SecurityBaselineMmiFree(payload);
     }
-    
+
     SecurityBaselineMmiClose(handle);
 }
 
@@ -535,7 +535,7 @@ TEST_F(SecurityBaselineTest, MmiGetInvalidComponent)
     EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, "Test123", m_securityBaselineComponentName, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     SecurityBaselineMmiClose(handle);
 }
 
@@ -550,7 +550,7 @@ TEST_F(SecurityBaselineTest, MmiGetInvalidObject)
     EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, "Test123", &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     SecurityBaselineMmiClose(handle);
 }
 

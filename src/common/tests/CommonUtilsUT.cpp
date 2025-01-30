@@ -209,7 +209,7 @@ TEST_F(CommonUtilsTest, SingleByteFileEndsInEol)
 {
     const char* eol = "\n";
     const char* noEol = "0";
-    
+
     EXPECT_TRUE(CreateTestFile(m_path, eol));
     EXPECT_EQ(true, FileEndsInEol(m_path, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
@@ -276,11 +276,11 @@ TEST_F(CommonUtilsTest, MakeFileBackupCopy)
 {
     const char* fileCopyPath = "/tmp/~test.test.copy";
     char* contents = NULL;
-    
+
     EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
-    
+
     EXPECT_TRUE(MakeFileBackupCopy(m_path, fileCopyPath, true, nullptr));
     EXPECT_TRUE(FileExists(fileCopyPath));
     EXPECT_STREQ(m_data, contents = LoadStringFromFile(fileCopyPath, false, nullptr));
@@ -380,7 +380,7 @@ TEST_F(CommonUtilsTest, ExecuteMultipleCommandsAsOneCommandWithTextResult)
         EXPECT_EQ(0, ExecuteCommand(nullptr, options[i].command, options[i].replaceEol, options[i].forJson, options[i].maxTextResultBytes, options[i].timeoutSeconds, &textResult, nullptr, nullptr));
         EXPECT_NE(nullptr, textResult);
         EXPECT_NE(nullptr, strstr(textResult, options[i].expectedTextResultOne));
-        
+
         if (nullptr != options[i].expectedTextResultTwo)
         {
             EXPECT_NE(nullptr, strstr(textResult, options[i].expectedTextResultTwo));
@@ -474,9 +474,9 @@ void* TestTimeoutCommand(void*)
 TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOutOnWorkerThread)
 {
     pthread_t tid = 0;
-    
+
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestTimeoutCommand, NULL));
-    
+
     // Wait for the worker thread to finish so test errors will be captured for this test case
     EXPECT_EQ(0, pthread_join(tid, NULL));
 }
@@ -537,7 +537,7 @@ TEST_F(CommonUtilsTest, CancelCommandOnWorkerThread)
     ::numberOfTimes = 0;
 
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommand, NULL));
-    
+
     // Wait for the worker thread to finish so test errors will be captured for this test case
     EXPECT_EQ(0, pthread_join(tid, NULL));
 }
@@ -571,7 +571,7 @@ TEST_F(CommonUtilsTest, CancelCommandWithContextOnWorkerThread)
     ::numberOfTimes = 0;
 
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommandWithContext, NULL));
-    
+
     // Wait for the worker thread to finish so test errors will be captured for this test case
     EXPECT_EQ(0, pthread_join(tid, NULL));
 }
@@ -1219,7 +1219,7 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
 {
     const char* testPath = "~socket.test";
     char* contents = NULL;
-    
+
     TestHttpHeader testHttpHeaders[] = {
         { "POST /foo/ HTTP/1.1\r\nblah blah\r\n\r\n\"", "foo", 404, 0 },
         { "HTTP/1.1 301\r\ntest 123\r\n\r\n\"", NULL, 301, 0 },
@@ -1284,7 +1284,7 @@ TEST_F(CommonUtilsTest, MillisecondsSleep)
 
 TEST_F(CommonUtilsTest, LoadConfiguration)
 {
-    const char* configuration = 
+    const char* configuration =
         "{"
           "\"CommandLogging\": 0,"
           "\"FullLogging\": 1,"
@@ -1310,7 +1310,7 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     REPORTED_PROPERTY* reportedProperties = nullptr;
 
     char* value = nullptr;
-    
+
     EXPECT_FALSE(IsCommandLoggingEnabledInJsonConfig(configuration));
     EXPECT_TRUE(IsFullLoggingEnabledInJsonConfig(configuration));
     EXPECT_EQ(30, GetReportingIntervalFromJsonConfig(configuration, nullptr));
@@ -1341,7 +1341,7 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
 {
     unsigned int testModes[] = { 0, 600, 601, 640, 644, 650, 700, 710, 750, 777 };
     int numTestModes = ARRAY_SIZE(testModes);
-    
+
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
     for (int i = 0; i < numTestModes; i++)
     {
@@ -1350,7 +1350,7 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
     }
 
     EXPECT_TRUE(Cleanup(m_path));
-    
+
     EXPECT_EQ(EINVAL, SetFileAccess(nullptr, 0, 0, 777, nullptr));
     EXPECT_EQ(EINVAL, CheckFileAccess(nullptr, 0, 0, 777, nullptr, nullptr));
 }
@@ -1374,7 +1374,7 @@ TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
 
 TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 {
-    const char* testFstab = 
+    const char* testFstab =
         "# /etc/fstab: static file system information.\n"
         "#\n"
         "# Use 'blkid' to print the universally unique identifier for a\n"
@@ -1404,7 +1404,7 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", "swap", "does_not_exist", nullptr, nullptr));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", nullptr, "this_neither", nullptr, nullptr));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "swap", "also_not_this", nullptr, nullptr));
-    
+
     // This directory and mounting point do not appear at all
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "doesnotexist", nullptr, "doesnotexist", nullptr, nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "doesnotexist", "doesnotexist", nullptr, nullptr));
@@ -1458,19 +1458,19 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
     for (unsigned int i = 0; i < userListSize; i++)
     {
         EXPECT_NE(nullptr, userList[i].username);
-        
+
         EXPECT_EQ(0, EnumerateUserGroups(&userList[i], &groupList, &groupListSize, nullptr, nullptr));
         EXPECT_NE(nullptr, groupList);
-        
+
         for (unsigned int j = 0; j < groupListSize; j++)
         {
             EXPECT_NE(nullptr, groupList[j].groupName);
         }
-        
+
         FreeGroupList(&groupList, groupListSize);
         EXPECT_EQ(nullptr, groupList);
     }
-    
+
     FreeUsersList(&userList, userListSize);
     EXPECT_EQ(nullptr, userList);
 }
@@ -1511,7 +1511,7 @@ TEST_F(CommonUtilsTest, CheckNoDuplicateUsersGroups)
 TEST_F(CommonUtilsTest, CheckNoPlusEntriesInFile)
 {
     const char* testPath = "~plusentries";
-    
+
     const char* goodTestFileContents[] = {
         "hplip:*:18858:0:99999:7:::\nwhoopsie:*:18858:0:99999:7:::\ncolord:*:18858:0:99999:7:::\ngeoclue:*:18858:0:99999:7:::",
         "gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin",
@@ -1552,7 +1552,7 @@ TEST_F(CommonUtilsTest, CheckRootUserAndGroup)
     EXPECT_EQ(0, CheckRootGroupExists(nullptr, nullptr));
     EXPECT_EQ(0, CheckDefaultRootAccountGroupIsGidZero(nullptr, nullptr));
     EXPECT_EQ(0, CheckRootIsOnlyUidZeroAccount(nullptr, nullptr));
-    
+
     // Optional:
     CheckRootPasswordForSingleUserMode(nullptr, nullptr);
 }
@@ -1600,7 +1600,7 @@ TEST_F(CommonUtilsTest, FindTextInFile)
     EXPECT_EQ(ENOENT, FindTextInFile("~~DoesNotExist", "text", nullptr));
     EXPECT_EQ(ENOENT, CheckTextIsFoundInFile("~~DoesNotExist", "text", nullptr, nullptr));
     EXPECT_EQ(0, CheckTextIsNotFoundInFile("~~DoesNotExist", "text", nullptr, nullptr));
-    
+
     EXPECT_EQ(0, FindTextInFile(m_path, "text", nullptr));
     EXPECT_EQ(0, FindTextInFile(m_path, "/1", nullptr));
     EXPECT_EQ(0, FindTextInFile(m_path, "\\3", nullptr));
@@ -1652,9 +1652,9 @@ TEST_F(CommonUtilsTest, CheckMarkedTextNotFoundInFile)
     EXPECT_EQ(EINVAL, CheckMarkedTextNotFoundInFile("~~DoesNotExist", "FOO", ";", '#', nullptr, nullptr));
 
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ".", '#', nullptr, nullptr));
-    
+
     EXPECT_EQ(0, CheckMarkedTextNotFoundInFile(m_path, "FOO", "!", '#', nullptr, nullptr));
-    
+
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", ";", '#', nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckMarkedTextNotFoundInFile(m_path, "FOO", "..", '#', nullptr, nullptr));
 
@@ -1781,7 +1781,7 @@ TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
     EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Test 123", nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 uncommented", nullptr, nullptr));
     EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Test 123 uncommented", nullptr, nullptr));
-    
+
     EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test 345 Test # 345 Test", nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test", nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345", nullptr, nullptr));
@@ -1793,11 +1793,11 @@ TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
     EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "ABC!DEF # Test 678 1234567890", nullptr, nullptr));
     EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "ABC!DEF # Test 678 1234567890", nullptr, nullptr));
     EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 678 1234567890", nullptr, nullptr));
-    
+
     EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example of a line", nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example", nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', " of a ", nullptr, nullptr));
-    
+
     EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Example of a line", nullptr, nullptr));
     EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Example", nullptr, nullptr));
     EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', " of a ", nullptr, nullptr));
@@ -1844,7 +1844,7 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
         "Test2:     12 $!    test test\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
-    
+
     char* value = nullptr;
 
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
@@ -1857,7 +1857,7 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     EXPECT_EQ(-999, GetIntegerOptionFromFile(nullptr, "Test1", ':', nullptr));
     EXPECT_EQ(nullptr, GetStringOptionFromFile("~does_not_exist", "Test", '=', nullptr));
     EXPECT_EQ(-999, GetIntegerOptionFromFile("~does_not_exist", "Test", '=', nullptr));
-    
+
     EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1:", ':', nullptr));
     FREE_MEMORY(value);
     EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1", ':', nullptr));
@@ -1958,7 +1958,7 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth	[success=1 default=ignore]	pam_unix.so nullok\n"
         "auth	requisite			pam_deny.so\n"
         "auth	required			pam_permit.so\n"
-        "auth	optional			pam_cap.so\n" 
+        "auth	optional			pam_cap.so\n"
     };
 
     int goodTestFileContentsSize = ARRAY_SIZE(goodTestFileContents);
@@ -1974,7 +1974,7 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         EXPECT_TRUE(CreateTestFile(m_path, goodTestFileContents[i]));
         if (NULL != strstr(goodTestFileContents[i], "pam_tally2.so"))
         {
-            EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, "pam_tally2.so", '#', nullptr, nullptr)); 
+            EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, "pam_tally2.so", '#', nullptr, nullptr));
         }
         else
         {
@@ -1998,7 +1998,7 @@ TEST_F(CommonUtilsTest, RepairBrokenEolCharactersIfAny)
 
     EXPECT_EQ(nullptr, RepairBrokenEolCharactersIfAny(nullptr));
     EXPECT_EQ(nullptr, RepairBrokenEolCharactersIfAny(""));
-        
+
     EXPECT_STREQ(expected, value = RepairBrokenEolCharactersIfAny("\\nThis is a test\\n\\nHere is another line\\nAnd another\\n\\n\\nEnd\\n"));
     FREE_MEMORY(value);
 
@@ -2080,7 +2080,7 @@ TEST_F(CommonUtilsTest, ConcatenateStrings)
 
     EXPECT_EQ(nullptr, testString = ConcatenateStrings("Test", nullptr));
     FREE_MEMORY(testString);
-    
+
     EXPECT_EQ(nullptr, testString = ConcatenateStrings(nullptr, nullptr));
     FREE_MEMORY(testString);
 
@@ -2251,7 +2251,7 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
     EXPECT_EQ(EINVAL, ReplaceMarkedLinesInFile(m_path, nullptr, nullptr, '#', false, nullptr));
 
     EXPECT_EQ(0, ReplaceMarkedLinesInFile("does_not_exist", marker1, newline1, '#', true, nullptr));
-    
+
     EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker1, newline1, '#', true, nullptr));
     EXPECT_STREQ(outFile1, contents = LoadStringFromFile(m_path, false, nullptr));
     FREE_MEMORY(contents);
@@ -2332,7 +2332,7 @@ TEST_F(CommonUtilsTest, ReplaceEscapeSequencesInString)
     EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This\\s\\o\\zis\\za\\otest", "soz", 3, ' ', nullptr));
     EXPECT_STREQ(value, "This   is a test");
     FREE_MEMORY(value);
-    
+
     EXPECT_NE(nullptr, value = ReplaceEscapeSequencesInString("This\\xis\\xa\\ftest", "xf", 2, ' ', nullptr));
     EXPECT_STREQ(value, "This is a test");
     FREE_MEMORY(value);
@@ -2373,7 +2373,7 @@ TEST_F(CommonUtilsTest, RemoveEscapeSequencesFromFile)
     EXPECT_EQ(0, RemoveEscapeSequencesFromFile(m_path, escapes, numEscapes, ' ', nullptr));
     EXPECT_NE(nullptr, cleanedContents = LoadStringFromFile(m_path, false, nullptr));
     EXPECT_STREQ(cleanedContents, targetContents);
-    
+
     FREE_MEMORY(cleanedContents);
     EXPECT_TRUE(Cleanup(m_path));
 }
@@ -2387,9 +2387,9 @@ TEST_F(CommonUtilsTest, AsbIsValidResourceIdRuleId)
     const char* badResourceId = "Ensure the rsh client is not installed (CIS: L1 - Server - 2.3.2)";
     const char* badRuleId = "6d441f31-f888-4f4f-b1da-7cfc26263e3f";
     const char* differentCaseBadRuleId = "6D441F31-F888-4F4F-B1DA-7CFC26263E3F";
-    
+
     const char* payloadKey = "EnsureSmbWithSambaIsDisabled";
-    
+
     EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(nullptr, nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(goodResourceId, nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, AsbIsValidResourceIdRuleId(goodResourceId, goodRuleId, nullptr, nullptr));
@@ -2459,7 +2459,7 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     EXPECT_EQ(EINVAL, StartPerfClock(nullptr, nullptr));
     EXPECT_EQ(EINVAL, StopPerfClock(nullptr, nullptr));
     EXPECT_EQ(-1, GetPerfClockTime(nullptr, nullptr));
-    
+
     clock.stop.tv_sec = 0;
     EXPECT_EQ(-1, GetPerfClockTime(&clock, nullptr));
 
@@ -2470,7 +2470,7 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     EXPECT_EQ(0, StopPerfClock(&clock, nullptr));
     EXPECT_GE(microseconds = GetPerfClockTime(&clock, nullptr), 1000);
     EXPECT_LE(microseconds, 1500);
-    
+
     EXPECT_EQ(0, StartPerfClock(&clock, nullptr));
     SleepMilliseconds(2);
     EXPECT_EQ(0, StopPerfClock(&clock, nullptr));

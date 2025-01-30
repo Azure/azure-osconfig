@@ -46,7 +46,7 @@ jobs:
       matrix:
         target:
           [
-            # Skip ARM64 CI builds for now 
+            # Skip ARM64 CI builds for now
             { os: amazonlinux, version: 2, arch: amd64, dist: amazonlinux2, package-type: RPM, repo: microsoft-amazonlinux2-insiders-fast-prod-yum, container-tag: latest },
             { os: centos, version: 7, arch: amd64, dist: centos7, package-type: RPM, repo: microsoft-centos7-insiders-fast-prod-yum, container-tag: latest },
             { os: centos, version: 8, arch: amd64, dist: centos8, package-type: RPM, repo: microsoft-centos8-insiders-fast-prod-yum, container-tag: latest },

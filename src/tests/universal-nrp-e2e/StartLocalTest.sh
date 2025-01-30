@@ -1,7 +1,7 @@
 #!/bin/bash
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # StartLocalTest.sh
-# Description: This script orchestrates tests on a local machine. Installs dependencies, 
+# Description: This script orchestrates tests on a local machine. Installs dependencies,
 #              runs tests, and collects logs/reports. Returns an error code if any stage fails.
 #
 # Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip -c resource-count [-r] [-g]]
@@ -29,7 +29,7 @@ generalize=false
 # Private variables
 use_sudo=false
 
-usage() { 
+usage() {
     echo "Usage: $0 [-s stage-name] [-p policy-package.zip -c resource-count [-r]]
         -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
                                If no stage is specified, all stages will be executed in this order:
@@ -49,13 +49,13 @@ usage() {
         -c resource-count:      The number of resources to validate, tests will fail if this doesn't match (Default: 0)
 
         -r remediate-flag:      When the flag is enabled, performs remediation on the Policy Package (Default: No remediation performed)
-        
+
         -g generalize-flag:     Generalize the current machine for tests. Performs the following:
                                     - Remove logs and tmp directories
                                     - Clean package management cache
-                                    - Clean cloud-init flags to reset cloud-init to initial-state" 1>&2; 
-        
-    exit 1; 
+                                    - Clean cloud-init flags to reset cloud-init to initial-state" 1>&2;
+
+    exit 1;
 }
 dependency_check() {
     echo "Checking dependencies..."

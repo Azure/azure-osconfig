@@ -14,8 +14,8 @@ find_path(
 find_library(Parson_LIBRARY parson)
 
 find_package_handle_standard_args(
-    Parson DEFAULT_MSG 
-    Parson_INCLUDE_DIR 
+    Parson DEFAULT_MSG
+    Parson_INCLUDE_DIR
     Parson_LIBRARY)
 
 if (Parson_FOUND)
@@ -23,7 +23,7 @@ if (Parson_FOUND)
     set (Parson_INCLUDE_DIRS ${Parson_INCLUDE_DIR})
     if (NOT TARGET Parson::parson)
         add_library(Parson::parson INTERFACE IMPORTED)
-        set_target_properties(Parson::parson 
+        set_target_properties(Parson::parson
             PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
                 "${Parson_INCLUDE_DIRS}"
                 INTERFACE_LINK_LIBRARIES
