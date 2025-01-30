@@ -8,3 +8,4 @@
 - [ ] I added unit-tests to validate my changes. All unit tests are passing.
 - [ ] I have merged the latest `dev` branch prior to this PR submission.
 - [ ] I submitted this PR against the `dev` branch.
+- [ ] I have run pre_commit run --all-files this PR instrucition in [contribution guidelines](https://github.com/Azure/azure-osconfig/blob/dev/CONTRIBUTING.md#run-code-formatting-locally-for-pr).
