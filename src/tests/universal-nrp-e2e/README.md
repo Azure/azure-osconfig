@@ -279,7 +279,6 @@ Lets place the image into blob storage.
 ```sh
 # Upload into Azure blob storage
 az login
-
 az storage blob upload \
   --account-name osconfigstorage \
   --container-name diskimages \
