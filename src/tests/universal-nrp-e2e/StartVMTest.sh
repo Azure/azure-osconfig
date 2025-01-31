@@ -8,10 +8,9 @@
 #              There is also both a generalize and a debug mode flag that can be used to generalize an
 #              image and a debug mode that will leave the VM up for debugging.
 #
-# Usage: ./StartVMTest.sh [-i /path/to/image.img -p /path/to/policypackage.zip -c resource-count [-g]] [-m 512] [-r] [-d]
-#        -i Image Path:            Path to the image qcow2 format
+# Usage: ./StartVMTest.sh [-i image.img -p policypackage.zip [-r]] [-i image.img -g] [-m 512] [-d]
+#        -i Image Path:            Path to the image (raw or qcow2 format)
 #        -p Policy Package:        Path to the policy package
-#        -c Resource Count:        The number of resources to validate, tests will fail if this doesn't match (Default: 0)
 #        -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
 #        -r Remediation:           Perform remediation flag (Default: false)
 #        -g Generalize Flag:       Generalize the current machine for tests. Performs the following:
@@ -41,10 +40,9 @@ use_sudo=false
 provisionedUser="user1"
 
 usage() {
-    echo "Usage: $0 -i /path/to/image.img -p /path/to/policypackage.zip -c resource-count [-m 512] [-r] [-d]
-    -i Image Path:            Path to the image qcow2 format
+    echo "Usage: $0 [-i image.img -p policypackage.zip [-r]] [-i image.img -g] [-m 512] [-d]
+    -i Image Path:            Path to the image (raw or qcow2 format)
     -p Policy Package:        Path to the policy package
-    -c Resource Count:        The number of resources to validate, tests will fail if this doesn't match
     -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
     -r Remediation:           Perform remediation flag (Default: false)
     -g Generalize Flag:       Generalize the current machine for tests. Performs the following:
@@ -96,7 +94,7 @@ do_sudo() {
 
 trap cleanup 1 SIGINT
 
-OPTSTRING=":i:p:c:m:l:rdg"
+OPTSTRING=":i:p:m:l:rdg"
 
 while getopts ${OPTSTRING} opt; do
     case ${opt} in
@@ -107,10 +105,6 @@ while getopts ${OPTSTRING} opt; do
         p)
             policypackage=${OPTARG}
             echo "Policy package: $policypackage"
-            ;;
-        c)
-            resourcecount=${OPTARG}
-            echo "Resource count: $resourcecount"
             ;;
         m)
             vmmemory=${OPTARG}
@@ -154,7 +148,7 @@ fi
 dependencies=(cloud-localds qemu-system-x86_64)
 for dep in "${dependencies[@]}"; do
     if ! command -v $dep &> /dev/null; then
-        echo "$dep not found. Please install it and try again." 1>&2
+        echo "$dep not found. Please install it and try again." >&2
         exit 1
     fi
 done
@@ -234,7 +228,7 @@ qemu-system-x86_64                                                    \
     -drive if=virtio,format=raw,file=$basepath/seed.img
 EOF
 )
-do_sudo bash -c "eval $qemu_command" || { echo "qemu failed! Check console for details." 1>&2; exit 1; }
+do_sudo bash -c "eval $qemu_command" || { echo "qemu failed! Check console for details." >&2; exit 1; }
 
 pid_qemu=$(ps aux | grep -m 1 "qemu.*hostfwd=tcp::$qemu_fwport-:22" | awk '{print $2}')
 echo "QEMU process started with PID: $pid_qemu"
@@ -249,12 +243,12 @@ done
 echo "done!"
 
 # Dependencies Check
-scp -P $qemu_fwport -i $basepath/id_rsa StartLocalTest.sh $provisionedUser@localhost:~ || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
+scp -P $qemu_fwport -i $basepath/id_rsa StartLocalTest.sh $provisionedUser@localhost:~ || { echo "scp failed! Check console for details." >&2; cleanup 1; }
 ssh $ssh_args "bash StartLocalTest.sh -s dependency_check"
 check_if_error
 
 if [ $generalize = true ]; then
-    ssh $ssh_args "bash StartLocalTest.sh -g" || { echo "Generalization failed! Check console for details." 1>&2; cleanup 1; }
+    ssh $ssh_args "bash StartLocalTest.sh -g" || { echo "Generalization failed! Check console for details." >&2; cleanup 1; }
     if [ $debug = false ]; then
         echo "Shutting down VM..."
         ssh $ssh_args "sudo shutdown now"
@@ -266,11 +260,11 @@ fi
 
 echo "Copying test artifacts to VM..."
 policyPackageFileName=$(basename $policypackage)
-scp -P $qemu_fwport -i $basepath/id_rsa $policypackage $provisionedUser@localhost:~ || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
-scp -P $qemu_fwport -i $basepath/id_rsa UniversalNRP.Tests.ps1 $provisionedUser@localhost:~ || { echo "scp failed! Check console for details."1>&2; cleanup 1; }
+scp -P $qemu_fwport -i $basepath/id_rsa $policypackage $provisionedUser@localhost:~ || { echo "scp failed! Check console for details." >&2; cleanup 1; }
+scp -P $qemu_fwport -i $basepath/id_rsa UniversalNRP.Tests.ps1 $provisionedUser@localhost:~ || { echo "scp failed! Check console for details." >&2; cleanup 1; }
 
 # Run tests
-ssh_command="bash StartLocalTest.sh -s run_tests -p $policyPackageFileName -c $resourcecount"
+ssh_command="bash StartLocalTest.sh -s run_tests -p $policyPackageFileName"
 if [ $remediation = true ]; then
     ssh_command="$ssh_command -r"
 fi
@@ -284,7 +278,7 @@ fi
 ssh $ssh_args "bash StartLocalTest.sh -s collect_logs"
 check_if_error
 temp_dir=$(mktemp -d)
-scp -P $qemu_fwport -i $basepath/id_rsa $provisionedUser@localhost:~/osconfig-logs.tar.gz $temp_dir/osconfig-logs.tar.gz || { echo "scp failed! Check console for details." 1>&2; cleanup 1; }
+scp -P $qemu_fwport -i $basepath/id_rsa $provisionedUser@localhost:~/osconfig-logs.tar.gz $temp_dir/osconfig-logs.tar.gz || { echo "scp failed! Check console for details." >&2; cleanup 1; }
 tar -xzf $temp_dir/osconfig-logs.tar.gz -C "$temp_dir"
 rm $temp_dir/osconfig-logs.tar.gz
 cp $log_file $temp_dir
@@ -300,7 +294,7 @@ rm -rf "$temp_dir"
 # Finished, optionally show debug banner, cleanup and exit with the Pester exit code
 debug_mode
 if [ $tests_failed = true ]; then
-    echo "❌ Tests failed! Check console for details. Check logs or enabled debug [-d] to connect to VM with SSH" 1>&2;
+    echo "❌ Tests failed! Check console for details. Check logs or enable debug [-d] to connect to VM with SSH" >&2;
     cleanup 1
 else
     echo "✅ Tests passed!"

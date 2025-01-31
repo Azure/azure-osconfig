@@ -18,4 +18,4 @@ In addition to performing distro specific setup for [Preparing Linux for imaging
 
  # Azure Helpers
 
- The PowerShell module [AzureInfrastructureHelpers.psm1](./AzureInfrastructureHelpers.psm1) provides the `Create-AzureManagedDisk` PowerShell cmdlet which helps onboard a generalized Hyper-V Linux VHD into an Azure Compute Gallery. See the internal documentation for full onboarding instructions.
+ The PowerShell module [AzureInfrastructureHelpers.psm1](./AzureInfrastructureHelpers.psm1) provides the `Create-AzureManagedDisk` PowerShell cmdlet which helps onboard a generalized Hyper-V Linux VHD into an Azure Compute Gallery. See the internal documentation for full onboarding instructions ([Onboarding new VM Images](https://eng.ms/docs/cloud-ai-platform/azure-edge-platform-aep/aep-security/ens-enterprise-and-security/commercial-fist/edge-security-platform-documentation/teams/est/osconfig/linux/readme#onboarding-new-vm-images)).

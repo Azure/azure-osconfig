@@ -4,18 +4,20 @@
 # Description: This script orchestrates tests on a local machine. Installs dependencies,
 #              runs tests, and collects logs/reports. Returns an error code if any stage fails.
 #
-# Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip -c resource-count [-r] [-g]]
+# Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip [-r] [-g]] [-g]
 #        -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
 #                               If no stage is specified, all stages will be executed in this order:
 #                                   dependency_check, run_tests, collect_logs
 #        -p policy-package.zip: The Azure Policy Package to test
-#        -c resource-count:     The number of resources to validate, tests will fail if this doesn't match (Default: 0)
 #        -r remediate-flag:     When the flag is enabled, performs remediation on the Policy Package (Default: No remediation performed)
 #        -g generalize-flag:    Generalize the current machine for tests. Performs the following:
 #                                   - Remove logs and tmp directories
 #                                   - Clean package management cache
 #                                   - Clean cloud-init flags to reset cloud-init to initial-state
+# Dependencies: curl, wget, unzip
 
+# Powershell and OMI are also required for the tests but they have different installation steps and do not use the distros package manager.
+dependencies=(curl wget unzip)
 powershell_version="7.4.6"
 powershell_uri="https://github.com/PowerShell/PowerShell/releases/download/v$powershell_version/powershell-$powershell_version-linux-x64.tar.gz"
 omi_base_uri="https://github.com/microsoft/omi/releases/download/v1.9.1-0/omi-1.9.1-0"
@@ -30,7 +32,7 @@ generalize=false
 use_sudo=false
 
 usage() {
-    echo "Usage: $0 [-s stage-name] [-p policy-package.zip -c resource-count [-r]]
+    echo "Usage: $0 [-s stage-name] [-p policy-package.zip [-r]] [-g]
         -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
                                If no stage is specified, all stages will be executed in this order:
                                     dependency_check, run_tests, collect_logs
@@ -39,14 +41,13 @@ usage() {
                                 Checks for and installs them if not present:
                                     - Powershell +modules: MachineConfiguration, Pester
                                     - OMI
+                                    - unzip, curl, wget
 
             - run_tests:        Runs the tests (Powershell Pester Tests).
 
             - collect_logs:     Creates a tar.gz archive with the osconfig logs and JUnit Test Report
 
         -p policy-package.zip:  The Azure Policy Package to test
-
-        -c resource-count:      The number of resources to validate, tests will fail if this doesn't match (Default: 0)
 
         -r remediate-flag:      When the flag is enabled, performs remediation on the Policy Package (Default: No remediation performed)
 
@@ -57,8 +58,40 @@ usage() {
 
     exit 1;
 }
+
+install_package() {
+    if command -v apt &> /dev/null; then
+        sudo apt update
+        sudo apt install -y "$@"
+    elif command -v yum &> /dev/null; then
+        sudo yum update
+        sudo yum install -y "$@"
+    elif command -v dnf &> /dev/null; then
+        sudo dnf update
+        sudo dnf install -y "$@"
+    elif command -v zypper &> /dev/null; then
+        sudo zypper refresh
+        sudo zypper install -y "$@"
+    else
+        echo "Unsupported Linux distribution." >&2
+        exit 1
+    fi
+}
+_unzip() {
+    if ! command -v unzip &> /dev/null; then
+        echo "unzip not found. Installing unzip..." >&2
+        install_package unzip > /dev/null 2>&1
+    fi
+    unzip "$@"
+}
 dependency_check() {
     echo "Checking dependencies..."
+    for dep in "${dependencies[@]}"; do
+        if ! command -v $dep &> /dev/null; then
+            echo -e "\n$dep not found. Installing $dep..."
+            install_package $dep > /dev/null 2>&1
+        fi
+    done
     if ! pwsh --version > /dev/null 2>&1; then
         echo -e "\nPowershell not found. Installing Powershell..."
         # Download the powershell '.tar.gz' archive
@@ -125,6 +158,15 @@ dependency_check() {
     echo "done!"
     return 0
 }
+get_instance_count() {
+    local package=$1
+    local instanceCount=0
+    tempDir=$(mktemp -d)
+    _unzip -q $package -d $tempDir > /dev/null 2>&1
+    instanceCount=$(find $tempDir -name "${package%.*}.mof" -exec grep -c "instance of OsConfigResource as \$OsConfigResource" {} \;)
+    rm -rf $tempDir
+    echo $instanceCount
+}
 run_tests() {
     echo "Running tests..."
     echo "Policy Package: $policypackage"
@@ -168,7 +210,10 @@ EOF
 }
 generalize() {
     echo "Generalizing machine..."
+    # Clear bash history both for current user and root
+    rm -f ~/.bash_history
     do_sudo su -c "
+        rm -f ~/.bash_history
         # Clear system logs
         rm -rf /var/log/*
         # Clear authentication logs
@@ -212,7 +257,7 @@ do_sudo() {
     fi
 }
 
-OPTSTRING=":s:p:c:rg"
+OPTSTRING=":s:p:rg"
 
 while getopts ${OPTSTRING} opt; do
     case ${opt} in
@@ -226,9 +271,6 @@ while getopts ${OPTSTRING} opt; do
             ;;
         p)
             policypackage=${OPTARG}
-            ;;
-        c)
-            resourcecount=${OPTARG}
             ;;
         r)
             remediation=true
@@ -271,15 +313,17 @@ if [ $generalize = true ]; then
 fi
 
 if [ -z "$policypackage" ]; then
-    echo "Policy package not provided." 1>&2;
+    echo "Policy package not provided." >&2
     usage
 fi
-if [ "$resourcecount" -eq 0 ]; then
-    echo "Resource count not provided." 1>&2;
-    usage
+
+resourcecount=$(get_instance_count $policypackage)
+if [ -z "$resourcecount" ] || [ "$resourcecount" -eq 0 ]; then
+    echo "Resource count invalid: $resourcecount" >&2
+    exit 1
 fi
 if [ -z "$HOME/UniversalNRP.Tests.ps1" ]; then
-    echo "UniversalNRP.Tests.ps1 not found. Copy Powershell script into $HOME directory" 1>&2;
+    echo "UniversalNRP.Tests.ps1 not found. Copy Powershell script into $HOME directory" >&2
 fi
 
 if [ "$stageName" = "run_tests" ]; then
