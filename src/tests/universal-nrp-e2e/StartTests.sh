@@ -49,7 +49,7 @@ countPendingTests=0
 countTotalTests=0
 waitInterval=2
 
-usage() { 
+usage() {
     echo "Usage: $0 [-r run-id] [-m vm-memory-mb] [-j max-concurrent-jobs]" >&2
     exit 1
 }
@@ -231,10 +231,10 @@ for row in $(echo "${test_data}" | jq -r '.[] | @base64'); do
     run_test $imageFile $policyPackage $vmmemory $logDir &
     testPid=$!
     pids+=($testPid)
-    
+
     testToPidMapping["$distroName--$policyPackage"]=$testPid
     testToLogDirMapping["$distroName--$policyPackage"]=$logDir
-    
+
     countInProgressTests=$((countInProgressTests + 1))
     countPendingTests=$((countPendingTests - 1))
     sleep 1

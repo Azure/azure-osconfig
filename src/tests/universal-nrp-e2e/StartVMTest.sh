@@ -39,7 +39,7 @@ tests_failed=false
 use_sudo=false
 provisionedUser="user1"
 
-usage() { 
+usage() {
     echo "Usage: $0 [-i image.img -p policypackage.zip [-r]] [-i image.img -g] [-m 512] [-d]
     -i Image Path:            Path to the image (raw or qcow2 format)
     -p Policy Package:        Path to the policy package

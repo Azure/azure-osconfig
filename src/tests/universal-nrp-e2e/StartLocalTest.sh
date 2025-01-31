@@ -31,7 +31,7 @@ generalize=false
 # Private variables
 use_sudo=false
 
-usage() { 
+usage() {
     echo "Usage: $0 [-s stage-name] [-p policy-package.zip [-r]] [-g]
         -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
                                If no stage is specified, all stages will be executed in this order:
