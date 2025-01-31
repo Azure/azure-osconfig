@@ -142,11 +142,10 @@ run_test() {
 
 download_image() {
     local imageFile=$1
-    local_file_date=$(stat -c %Y "$cacheDir/$imageFile" 2>/dev/null)
-    blob_date=$(az storage blob show --account-name "$storageAccount" --container-name "$containerName" --name "$imageFile" --auth-mode login --subscription $subscriptionId --query properties.lastModified --output tsv)
-    blob_date_unix=$(date -d "$blob_date" +%s)
-    if [[ $blob_date_unix -gt $local_file_date ]]; then
-        echo "Newer $imageFile image found in blob storage, downloading image"
+    local_file_md5=$(md5sum "$cacheDir/$imageFile" 2>/dev/null | awk '{ print $1 }')
+    blob_md5=$(az storage blob show --account-name "$storageAccount" --container-name "$containerName" --name "$imageFile" --auth-mode login --subscription $subscriptionId --query properties.contentSettings.contentMd5 --output tsv)
+    if [[ "$blob_md5" != "$local_file_md5" ]]; then
+        echo "MD5 hash mismatch for $imageFile, downloading image"
         az storage blob download --account-name $storageAccount --container-name $containerName --name $imageFile --file $cacheDir/$imageFile --auth-mode login --subscription $subscriptionId > /dev/null
     fi
 }
