@@ -45,6 +45,12 @@
         },
         {
             "name": "linux-azcli"
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "apt list --installed"
+            }
         }
     ]
 }
