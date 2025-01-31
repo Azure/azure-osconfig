@@ -20,53 +20,14 @@ Most contributions require you to agree to a Contributor License Agreement (CLA)
 2. Fork the public GitHub repo: [https://github.com/Azure/azure-osconfig](https://github.com/Azure/azure-osconfig). [Learn more about forking a repo](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo).
 3. Clone the forked repo. Optionally create a new branch to keep your changes isolated from the `dev` branch. By forking and cloning the public GitHub repo, a copy of repo will be created in your GitHub account and a local copy will be locally created in your clone. Use this local copy to make modifications.
 4. Commit the changes locally and push to your fork.
+5. When the source changes are ready, manually run [pre-commit](https://pre-commit.com/) with the following command:
+```bash
+python3 -m pre_commit run --all-files
+```
 6. From your fork, create a PR that targets the `dev` branch. [Learn more about pull request](https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/creating-an-issue-or-pull-request#creating-a-pull-request).
 7. The PR triggers a series of GitHub actions that will validate the new submitted changes.
 
 The OSConfig Core team will respond to a PR that passes all checks in 3 business days.
-
-### Run code Formatting locally for PR
-
-Azure Device OS Configuration (OSConfig) uses [pre-commit](https://pre-commit.com/) configured in .pre-commit-config.yaml
-To set it up as git pre-commit hook:
-
-#### 0. Install python
-
-##### Windows
-
-```cmd
-python
-```
-If python is not installed this will open browser and with Microsoft Store, where you can install python3.
-Then go to step 1. Linux & Windows
-
-##### Linux
-
-```bash
-sudo apt-get install python3
-```
-
-##### 1. Linux & Windows
-
-1. Install python pre-commit-hook package
-
-```cmd
-pip3 install pre_commit
-```
-
-2. Install .git/pre-commit hook
-
-```cmd
-python3 -m pre_commit install
-```
-
-This will install allow pre-commit to run locally on each commit.
-
-To run pre-commit manually you can always
-
-```
-python3 -m pre_commit run --all-files
-```
 
 # Contact
 
