@@ -4,7 +4,7 @@
 # Description: This script orchestrates tests on a local machine. Installs dependencies,
 #              runs tests, and collects logs/reports. Returns an error code if any stage fails.
 #
-# Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip [-r] [-g]]
+# Usage: ./StartLocalTest.sh [-s stage-name] [-p policy-package.zip [-r] [-g]] [-g]
 #        -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
 #                               If no stage is specified, all stages will be executed in this order:
 #                                   dependency_check, run_tests, collect_logs
@@ -32,7 +32,7 @@ generalize=false
 use_sudo=false
 
 usage() { 
-    echo "Usage: $0 [-s stage-name] [-p policy-package.zip [-r]]
+    echo "Usage: $0 [-s stage-name] [-p policy-package.zip [-r]] [-g]
         -s stage-name:         Specify the stage name. Valid options are: dependency_check, run_tests, collect_logs.
                                If no stage is specified, all stages will be executed in this order:
                                     dependency_check, run_tests, collect_logs
@@ -210,7 +210,10 @@ EOF
 }
 generalize() {
     echo "Generalizing machine..."
+    # Clear bash history both for current user and root
+    rm -f ~/.bash_history
     do_sudo su -c "
+        rm -f ~/.bash_history
         # Clear system logs
         rm -rf /var/log/*
         # Clear authentication logs
@@ -286,15 +289,6 @@ while getopts ${OPTSTRING} opt; do
     esac
 done
 
-# Ensure local dependencies are installed [curl, wget]
-dependencies=(curl wget)
-for dep in "${dependencies[@]}"; do
-    if ! command -v $dep &> /dev/null; then
-        echo "$dep not found. Please install it and try again." >&2
-        exit 1
-    fi
-done
-
 if command -v sudo &> /dev/null; then
     if [ "$(id -u)" -ne 0 ]; then
         echo "sudo is available. Attempting to sudo..."
@@ -324,8 +318,9 @@ if [ -z "$policypackage" ]; then
 fi
 
 resourcecount=$(get_instance_count $policypackage)
-if [ "$resourcecount" -eq 0 ]; then
-    echo "Resource count invalid: $resourceCount" >&2
+if [ -z "$resourcecount" ] || [ "$resourcecount" -eq 0 ]; then
+    echo "Resource count invalid: $resourcecount" >&2
+    exit 1
 fi
 if [ -z "$HOME/UniversalNRP.Tests.ps1" ]; then
     echo "UniversalNRP.Tests.ps1 not found. Copy Powershell script into $HOME directory" >&2
