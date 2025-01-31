@@ -279,10 +279,12 @@ Lets place the image into blob storage.
 ```sh
 # Upload into Azure blob storage
 az login
+
 az storage blob upload \
   --account-name osconfigstorage \
   --container-name diskimages \
   --name centos-7.qcow2 \
   --file CentOS-7-x86_64-GenericCloud-2211-Generalized.qcow2 \
+  --content-md5 $(md5sum CentOS-7-x86_64-GenericCloud-2211-Generalized.qcow2 | awk '{ print $1 }') \
   --auth-mode login
 ```
