@@ -34,6 +34,14 @@ gcc --version
 
 For IoT Hub management, you can install and configure the *Azure IoT Identity Service (AIS)* package as described at [azure.github.io/iot-identity-service/](https://azure.github.io/iot-identity-service/).
 
+For contributing to the project, also install the following prerequisites for [pre-commit](https://pre-commit.com/):
+
+```bash
+sudo apt-get install python3
+pip3 install pre_commit
+python3 -m pre_commit install
+```
+
 ### Build
 
 Create a folder build folder under the repo root /build
