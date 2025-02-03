@@ -16,7 +16,7 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "wget https://github.com/microsoft/omi/releases/download/v1.8.1-0/omi-1.8.1-0.ssl_300.ulinux.s.x64.rpm -O omi.rpm && rpm -fi omi.rpm"
+                "command": "wget https://github.com/microsoft/omi/releases/download/v1.9.1-0/omi-1.9.1-0.ssl_300.ulinux.s.x64.rpm -O omi.rpm && rpm -fi omi.rpm"
             }
         },
         {
