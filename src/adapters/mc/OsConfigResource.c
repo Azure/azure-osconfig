@@ -420,8 +420,8 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, char* compone
 
         if (NULL != g_mpiHandle)
         {
-            mpiResult = BaselineMmiGet(componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog());
-            LogInfo(context, GetLog(), "[%s] BaselineMmiGet(%s, %s): '%s' (%d)", who, componentName, g_reportedObjectName, objectValue, objectValueLength);
+            mpiResult = CallMpiGet(componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog());
+            LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s): '%s' (%d)", who, componentName, g_reportedObjectName, objectValue, objectValueLength);
         }
     }
 
