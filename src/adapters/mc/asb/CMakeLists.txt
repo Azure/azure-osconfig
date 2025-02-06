@@ -8,7 +8,8 @@ add_library(OsConfigResourceAsb
     SHARED
         ../module.c
         ../schema.c
-        ../OsConfigResource.c)
+        ../OsConfigResource.c
+        Baseline.c)
 
 target_link_libraries(OsConfigResourceAsb
     PRIVATE
@@ -16,7 +17,8 @@ target_link_libraries(OsConfigResourceAsb
         logging
         mpiclient
         parsonlib
-        asb)
+        asb
+        compliance)
 
 # SO binary name must match the universal class name in MOF with a "lib" prefix added
 set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME libOsConfigResource)
