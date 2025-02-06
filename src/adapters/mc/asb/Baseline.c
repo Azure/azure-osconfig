@@ -20,7 +20,7 @@ void BaselineShutdown(void* log)
 }
 
 int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log)
-{ 
+{
     return AsbMmiGet(componentName, objectName, payload, payloadSizeBytes, maxPayloadSizeBytes, log);
 }
 
