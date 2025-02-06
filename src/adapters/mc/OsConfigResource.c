@@ -840,10 +840,10 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
 
     // Write the desired procedure MIM object name to the output resource values if present in input resource values
-    if ((in->InputResource.value->ProcedureObjectName.exists == MI_TRUE) && (NULL != in->InputResource.value->ProcedureObjecttName.value))
+    if ((in->InputResource.value->ProcedureObjectName.exists == MI_TRUE) && (NULL != in->InputResource.value->ProcedureObjectName.value))
     {
         memset(&miValue, 0, sizeof(miValue));
-        miValue.string = (MI_Char*)(g_procedureObjecttName);
+        miValue.string = (MI_Char*)(g_procedureObjectName);
         if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ProcedureObjecttName"), &miValue, MI_STRING, 0)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ProcedureObjecttName) to string value '%s' failed with miResult %d", miValue.string, miResult);
@@ -876,7 +876,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     if (MI_TRUE == isCompliant)
     {
-        if (0 == AsbIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
+        if (0 == BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
         {
             reasonCode = FormatAllocateString(auditPassedCodeTemplate, g_ruleId);
         }
