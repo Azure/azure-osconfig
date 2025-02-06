@@ -652,7 +652,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
                 else
                 {
                     // We have both a procedure object name and value, we need to set then now to apply context for commpliance
-                    SetDesiredObjectValueToDevice("OsConfigResource.Get", g_procedureObjectName, g_procedureObjectValue, context);
+                    SetDesiredObjectValueToDevice("OsConfigResource.Get", g_componentName, g_procedureObjectName, g_procedureObjectValue, context);
                 }
             }
             else
@@ -1163,7 +1163,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
                 else
                 {
                     // We have both a procedure object name and value, we need to set then now to apply context for commpliance
-                    SetDesiredObjectValueToDevice("OsConfigResource.Test", g_procedureObjectName, g_procedureObjectValue, context);
+                    SetDesiredObjectValueToDevice("OsConfigResource.Test", g_componentName, g_procedureObjectName, g_procedureObjectValue, context);
                 }
             }
             else
@@ -1397,7 +1397,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
                 else
                 {
                     // We have both a procedure object name and value, we need to set then now to apply context for commpliance
-                    SetDesiredObjectValueToDevice("OsConfigResource.Set", g_procedureObjectName, g_procedureObjectValue, context);
+                    SetDesiredObjectValueToDevice("OsConfigResource.Set", g_componentName, g_procedureObjectName, g_procedureObjectValue, context);
                 }
             }
             else
@@ -1415,7 +1415,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         FREE_MEMORY(g_procedureObjectName);
     }
 
-    SetDesiredObjectValueToDevice("OsConfigResource.Set", g_desiredObjectName, g_desiredObjectValue, context);
+    SetDesiredObjectValueToDevice("OsConfigResource.Set", g_componentName, g_desiredObjectName, g_desiredObjectValue, context);
 
     miResult = MI_RESULT_OK;
 
