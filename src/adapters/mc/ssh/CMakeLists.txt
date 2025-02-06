@@ -17,8 +17,7 @@ target_link_libraries(OsConfigResourceSsh
         logging
         mpiclient
         parsonlib
-        asb
-        compliance)
+        asb)
 
 # SO binary name must match the universal class name in MOF with a "lib" prefix added
 set_target_properties(OsConfigResourceSsh PROPERTIES OUTPUT_NAME libOsConfigResource)

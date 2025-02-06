@@ -17,8 +17,7 @@ target_link_libraries(OsConfigResourceAsb
         logging
         mpiclient
         parsonlib
-        asb
-        compliance)
+        asb)
 
 # SO binary name must match the universal class name in MOF with a "lib" prefix added
 set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME libOsConfigResource)
