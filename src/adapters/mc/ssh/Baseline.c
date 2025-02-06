@@ -6,7 +6,7 @@
 
 int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, void* log)
 {
-    return AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, void* log);
+    return AsbIsValidResourceIdRuleId(resourceId, ruleId, payloadKey, log);
 }
 
 void BaselineInitialize(void* log)
