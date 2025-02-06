@@ -176,7 +176,7 @@ void MI_CALL OsConfigResource_Load(
         g_mpiHandle = NULL;
     }
 
-    InitializeComponent(g_componentName, GetLog());
+    BaselineInitialize(g_componentName, GetLog());
 
     LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d)", getpid());
 
@@ -193,7 +193,7 @@ void MI_CALL OsConfigResource_Unload(
     {
         LogInfo(context, GetLog(), "[OsConfigResource] Unload (PID: %d)", getpid());
 
-        ShutdownComponent(g_componentName, GetLog());
+        BaselineShutdown(g_componentName, GetLog());
     }
     else
     {
