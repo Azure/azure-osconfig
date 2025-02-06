@@ -402,7 +402,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, char* compone
     }
 
     // If this reported object has a corresponding init object, initalize it with the desired object value
-    if ((NULL != g_initObjectName) && (0 != strcmp(g_initObjectName, g_defaultValue)) && 
+    if ((NULL != g_initObjectName) && (0 != strcmp(g_initObjectName, g_defaultValue)) &&
         (NULL != g_desiredObjectValue) && (0 != strcmp(g_desiredObjectValue, g_defaultValue)))
     {
         SetDesiredObjectValueToDevice(who, componentName, g_initObjectName, g_desiredObjectValue, context);
