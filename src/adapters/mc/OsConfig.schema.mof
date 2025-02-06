@@ -28,6 +28,12 @@ class OsConfigResource : OMI_BaseResource
   [write, Description("Initialization MIM Object (for audit and remediation)")]
   string InitObjectName;
 
+  [write, Description("Procedure MIM Object (for audit and remediation)")]
+  string ProcedureObjectName;
+
+  [write, Description("Procedure MIM Value (for audit and remediation)")]
+  string ProcedureObjectValue;
+
   [write, Description("Reported MIM Object (for audit)")]
   string ReportedObjectName;
 
