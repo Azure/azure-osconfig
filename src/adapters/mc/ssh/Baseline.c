@@ -3,7 +3,6 @@
 
 #include "Common.h"
 #include <Asb.h>
-#include "../Baseline.h"
 
 int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, void* log)
 {
