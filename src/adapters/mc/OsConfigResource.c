@@ -301,7 +301,7 @@ void MI_CALL OsConfigResource_DeleteInstance(
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
 
-static MI_Result SetDesiredObjectValueToDevice(const char* who, char* componentName, char* objectName, char* objectValue, MI_Context* context)
+static MI_Result SetDesiredObjectValueToDevice(const char* who, const char* componentName, const char* objectName, char* objectValue, MI_Context* context)
 {
     char* payloadString = NULL;
     int payloadSize = 0;
@@ -385,7 +385,7 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* componentN
     return miResult;
 }
 
-static MI_Result GetReportedObjectValueFromDevice(const char* who, char* componentName, MI_Context* context)
+static MI_Result GetReportedObjectValueFromDevice(const char* who, const char* componentName, MI_Context* context)
 {
     JSON_Value* jsonValue = NULL;
     const char* jsonString = NULL;
@@ -644,22 +644,24 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
                 FREE_MEMORY(g_procedureObjectValue);
                 if (NULL == (g_procedureObjectValue = DuplicateString(in->InputResource.value->ProcedureObjectValue.value)))
                 {
+                    miResult = MI_RESULT_FAILED;
                     LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectValue.value);
                     g_procedureObjectValue = DuplicateString(g_defaultValue);
-                    miResult = MI_RESULT_FAILED;
                     goto Exit;
                 }
                 else
                 {
-                    // We have both a procedure object name and value, we need to set then now to apply context for commpliance
+                    // We have both a procedure object name and value, we need to set then now to apply context for compliance
                     SetDesiredObjectValueToDevice("OsConfigResource.Get", g_componentName, g_procedureObjectName, g_procedureObjectValue, context);
                 }
             }
             else
             {
-                // Not an error
-                LogInfo(context, GetLog(), "[OsConfigResource.Get] No ProcedureObjectValue");
+                // Cannot have a procedure object name without a procedure object value
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No ProcedureObjectValue");
                 FREE_MEMORY(g_procedureObjectValue);
+                goto Exit;
             }
         }
     }
@@ -844,9 +846,9 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     {
         memset(&miValue, 0, sizeof(miValue));
         miValue.string = (MI_Char*)(g_procedureObjectName);
-        if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ProcedureObjecttName"), &miValue, MI_STRING, 0)))
+        if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ProcedureObjectName"), &miValue, MI_STRING, 0)))
         {
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ProcedureObjecttName) to string value '%s' failed with miResult %d", miValue.string, miResult);
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ProcedureObjectName) to string value '%s' failed with miResult %d", miValue.string, miResult);
             goto Exit;
         }
     }
@@ -1155,22 +1157,25 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
                 FREE_MEMORY(g_procedureObjectValue);
                 if (NULL == (g_procedureObjectValue = DuplicateString(in->InputResource.value->ProcedureObjectValue.value)))
                 {
+                    miResult = MI_RESULT_FAILED;
                     LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectValue.value);
                     g_procedureObjectValue = DuplicateString(g_defaultValue);
-                    miResult = MI_RESULT_FAILED;
                     goto Exit;
                 }
                 else
                 {
-                    // We have both a procedure object name and value, we need to set then now to apply context for commpliance
+                    // We have both a procedure object name and value, we need to set then now to apply context for compliance
                     SetDesiredObjectValueToDevice("OsConfigResource.Test", g_componentName, g_procedureObjectName, g_procedureObjectValue, context);
+                    miResult = MI_RESULT_FAILED;
                 }
             }
             else
             {
-                // Not an error
-                LogInfo(context, GetLog(), "[OsConfigResource.Test] No ProcedureObjectValue");
+                // Cannot have a procedure object name without a procedure object value
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No ProcedureObjectValue");
                 FREE_MEMORY(g_procedureObjectValue);
+                goto Exit;
             }
         }
     }
@@ -1389,22 +1394,24 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
                 FREE_MEMORY(g_procedureObjectValue);
                 if (NULL == (g_procedureObjectValue = DuplicateString(in->InputResource.value->ProcedureObjectValue.value)))
                 {
+                    miResult = MI_RESULT_FAILED;
                     LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectValue.value);
                     g_procedureObjectValue = DuplicateString(g_defaultValue);
-                    miResult = MI_RESULT_FAILED;
                     goto Exit;
                 }
                 else
                 {
-                    // We have both a procedure object name and value, we need to set then now to apply context for commpliance
+                    // We have both a procedure object name and value, we need to set then now to apply context for compliance
                     SetDesiredObjectValueToDevice("OsConfigResource.Set", g_componentName, g_procedureObjectName, g_procedureObjectValue, context);
                 }
             }
             else
             {
-                // Not an error
-                LogInfo(context, GetLog(), "[OsConfigResource.Set] No ProcedureObjectValue");
+                // Cannot have a procedure object name without a procedure object value
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No ProcedureObjectValue");
                 FREE_MEMORY(g_procedureObjectValue);
+                goto Exit;
             }
         }
     }
