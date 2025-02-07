@@ -5,10 +5,18 @@ project(compliancelib)
 
 add_library(compliancelib STATIC
     ComplianceInterface.cpp
+    Evaluator.cpp
+    ProcedureMap.cpp
+    JSON.cpp
     ${PROCEDURES}
     )
 
 set_property(TARGET compliancelib PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+target_link_libraries(compliancelib PRIVATE
+    logging
+    commonutils
+    parsonlib)
 
 target_include_directories(compliancelib PUBLIC
     ${MODULES_INC_DIR}
