@@ -6,7 +6,13 @@ project(compliancetests)
 include(CTest)
 find_package(GTest REQUIRED)
 
-add_executable(compliancetests ComplianceTests.cpp)
-target_link_libraries(compliancetests gtest gtest_main pthread compliancelib logging commonutils)
+add_executable(compliancetests
+    ComplianceTest.cpp
+    OptionalTest.cpp
+    ResultTest.cpp
+    EvaluatorTest.cpp
+)
+
+target_link_libraries(compliancetests gtest gtest_main pthread compliancelib logging commonutils parsonlib)
 
 gtest_discover_tests(compliancetests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
