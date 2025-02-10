@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "Common.h"
+#include "Baseline.h"
 
 // The log file for the NRP
 #define LOG_FILE "/var/log/osconfig_nrp.log"
@@ -12,8 +13,8 @@
 #define MPI_CLIENT_NAME "OSConfig Universal NRP"
 
 static const char* g_defaultValue = "-";
-static const char* g_passValue = SECURITY_AUDIT_PASS;
-static const char* g_failValue = SECURITY_AUDIT_FAIL;
+static const char* g_passValue = "PASS";
+static const char* g_failValue = "FAIL";
 
 // Desired (write; also reported together with read group)
 static char* g_resourceId = NULL;
@@ -36,8 +37,8 @@ MPI_HANDLE g_mpiHandle = NULL;
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-const char* g_osconfig = "osconfig";
-const char* g_mpiServer = "osconfig-platform";
+static const char* g_osconfig = "osconfig";
+static const char* g_mpiServer = "osconfig-platform";
 
 OSCONFIG_LOG_HANDLE GetLog(void)
 {
@@ -175,7 +176,7 @@ void MI_CALL OsConfigResource_Load(
         g_mpiHandle = NULL;
     }
 
-    AsbInitialize(GetLog());
+    BaselineInitialize(GetLog());
 
     LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d)", getpid());
 
@@ -192,7 +193,7 @@ void MI_CALL OsConfigResource_Unload(
     {
         LogInfo(context, GetLog(), "[OsConfigResource] Unload (PID: %d)", getpid());
 
-        AsbShutdown(GetLog());
+        BaselineShutdown(GetLog());
     }
     else
     {
@@ -300,7 +301,7 @@ void MI_CALL OsConfigResource_DeleteInstance(
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
 
-static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName, MI_Context* context)
+static MI_Result SetDesiredObjectValueToDevice(const char* who, const char* componentName, const char* objectName, char* objectValue, MI_Context* context)
 {
     char* payloadString = NULL;
     int payloadSize = 0;
@@ -311,13 +312,13 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName
     MI_Result miResult = MI_RESULT_OK;
     int mpiResult = MPI_OK;
 
-    if ((NULL == objectName) || (NULL == g_desiredObjectValue))
+    if ((NULL == componentName) || (NULL == objectName) || (NULL == objectValue))
     {
-        LogError(context, miResult, GetLog(), "[%s] SetDesiredObjectValueToDevice called with an invalid object name and/or desired object value", who);
+        LogError(context, miResult, GetLog(), "[%s] SetDesiredObjectValueToDevice called with an invalid component name, object name and/or desired object value", who);
         return MI_RESULT_INVALID_PARAMETER;
     }
 
-    if (NULL == (jsonValue = json_value_init_string(g_desiredObjectValue)))
+    if (NULL == (jsonValue = json_value_init_string(objectValue)))
     {
         miResult = MI_RESULT_FAILED;
         mpiResult = ENOMEM;
@@ -337,9 +338,9 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName
             memset(payloadString, 0, payloadSize + 1);
             memcpy(payloadString, serializedValue, payloadSize);
 
-            mpiResult = AsbMmiSet(g_componentName, objectName, payloadString, payloadSize, GetLog());
-            LogInfo(context, GetLog(), "[%s] AsbMmiSet(%s, %s, '%.*s', %d) returned %d",
-                who, g_componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult);
+            mpiResult = BaselineMmiSet(componentName, objectName, payloadString, payloadSize, GetLog());
+            LogInfo(context, GetLog(), "[%s] BaselineMmiSet(%s, %s, '%.*s', %d) returned %d",
+                who, componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult);
 
             if (MPI_OK != mpiResult)
             {
@@ -350,9 +351,9 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName
 
                 if (NULL != g_mpiHandle)
                 {
-                    mpiResult = CallMpiSet(g_componentName, objectName, payloadString, payloadSize, GetLog());
+                    mpiResult = CallMpiSet(componentName, objectName, payloadString, payloadSize, GetLog());
                     LogInfo(context, GetLog(), "[%s] CallMpiSet(%s, %s, '%.*s', %d) returned %d",
-                        who, g_componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult);
+                        who, componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult);
                 }
             }
 
@@ -384,7 +385,7 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName
     return miResult;
 }
 
-static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* context)
+static MI_Result GetReportedObjectValueFromDevice(const char* who, const char* componentName, MI_Context* context)
 {
     JSON_Value* jsonValue = NULL;
     const char* jsonString = NULL;
@@ -394,14 +395,21 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     int mpiResult = MPI_OK;
     MI_Result miResult = MI_RESULT_OK;
 
-    // If this reported object has a corresponding init object, initalize it with the desired object value
-    if ((NULL != g_initObjectName) && (0 != strcmp(g_initObjectName, g_defaultValue)))
+    if (NULL == componentName)
     {
-        SetDesiredObjectValueToDevice(who, g_initObjectName, context);
+        LogError(context, miResult, GetLog(), "[%s] GetReportedObjectValueFromDevice called with an invalid component name", who);
+        return MI_RESULT_INVALID_PARAMETER;
     }
 
-    mpiResult = AsbMmiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, MAX_PAYLOAD_LENGTH, GetLog());
-    LogInfo(context, GetLog(), "[%s] AsbMmiGet(%s, %s): '%s' (%d)", who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
+    // If this reported object has a corresponding init object, initalize it with the desired object value
+    if ((NULL != g_initObjectName) && (0 != strcmp(g_initObjectName, g_defaultValue)) &&
+        (NULL != g_desiredObjectValue) && (0 != strcmp(g_desiredObjectValue, g_defaultValue)))
+    {
+        SetDesiredObjectValueToDevice(who, componentName, g_initObjectName, g_desiredObjectValue, context);
+    }
+
+    mpiResult = BaselineMmiGet(componentName, g_reportedObjectName, &objectValue, &objectValueLength, MAX_PAYLOAD_LENGTH, GetLog());
+    LogInfo(context, GetLog(), "[%s] BaselineMmiGet(%s, %s): '%s' (%d)", who, componentName, g_reportedObjectName, objectValue, objectValueLength);
 
     if (MPI_OK != mpiResult)
     {
@@ -412,8 +420,8 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
 
         if (NULL != g_mpiHandle)
         {
-            mpiResult = CallMpiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog());
-            LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s): '%s' (%d)", who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
+            mpiResult = CallMpiGet(componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog());
+            LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s): '%s' (%d)", who, componentName, g_reportedObjectName, objectValue, objectValueLength);
         }
     }
 
@@ -424,7 +432,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
             mpiResult = ENODATA;
             miResult = MI_RESULT_FAILED;
             LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s): no payload (%s, %d) (%d)",
-                who, g_componentName, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
+                who, componentName, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
         }
         else
         {
@@ -617,7 +625,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         FREE_MEMORY(g_initObjectName);
     }
 
-    // Read the MIM procedure object name from the input resource values
+    // Check if we have the optional MIM procedure object name in the input resource value
     if ((MI_TRUE == in->InputResource.value->ProcedureObjectName.exists) && (NULL != in->InputResource.value->ProcedureObjectName.value))
     {
         FREE_MEMORY(g_procedureObjectName);
@@ -627,6 +635,34 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
             g_procedureObjectName = DuplicateString(g_defaultValue);
             miResult = MI_RESULT_FAILED;
             goto Exit;
+        }
+        else
+        {
+            // We have a procedure object name, next see if we also have a procedure object value (also optional)
+            if ((MI_TRUE == in->InputResource.value->ProcedureObjectValue.exists) && (NULL != in->InputResource.value->ProcedureObjectValue.value))
+            {
+                FREE_MEMORY(g_procedureObjectValue);
+                if (NULL == (g_procedureObjectValue = DuplicateString(in->InputResource.value->ProcedureObjectValue.value)))
+                {
+                    miResult = MI_RESULT_FAILED;
+                    LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectValue.value);
+                    g_procedureObjectValue = DuplicateString(g_defaultValue);
+                    goto Exit;
+                }
+                else
+                {
+                    // We have both a procedure object name and value, we need to set then now to apply context for compliance
+                    SetDesiredObjectValueToDevice("OsConfigResource.Get", g_componentName, g_procedureObjectName, g_procedureObjectValue, context);
+                }
+            }
+            else
+            {
+                // Cannot have a procedure object name without a procedure object value
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No ProcedureObjectValue");
+                FREE_MEMORY(g_procedureObjectValue);
+                goto Exit;
+            }
         }
     }
     else
@@ -681,19 +717,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         }
     }
 
-    // Read the procedure MIM object value from the input resource values
-    if ((in->InputResource.value->ProcedureObjectValue.exists == MI_TRUE) && (in->InputResource.value->ProcedureObjectValue.value != NULL))
-    {
-        FREE_MEMORY(g_procedureObjectValue);
-        if (NULL == (g_procedureObjectValue = DuplicateString(in->InputResource.value->ProcedureObjectValue.value)))
-        {
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectValue.value);
-            g_procedureObjectValue = DuplicateString(g_defaultValue);
-        }
-    }
-
     // Read the reported MIM object value from the local device
-    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", context)))
+    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", g_componentName, context)))
     {
         goto Exit;
     }
@@ -816,6 +841,30 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         }
     }
 
+    // Write the desired procedure MIM object name to the output resource values if present in input resource values
+    if ((in->InputResource.value->ProcedureObjectName.exists == MI_TRUE) && (NULL != in->InputResource.value->ProcedureObjectName.value))
+    {
+        memset(&miValue, 0, sizeof(miValue));
+        miValue.string = (MI_Char*)(g_procedureObjectName);
+        if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ProcedureObjectName"), &miValue, MI_STRING, 0)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ProcedureObjectName) to string value '%s' failed with miResult %d", miValue.string, miResult);
+            goto Exit;
+        }
+    }
+
+    // Write the desired procedure MIM object value to the output resource values if present in input resource values
+    if ((in->InputResource.value->ProcedureObjectValue.exists == MI_TRUE) && (NULL != in->InputResource.value->ProcedureObjectValue.value))
+    {
+        memset(&miValue, 0, sizeof(miValue));
+        miValue.string = (MI_Char*)(g_procedureObjectValue);
+        if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ProcedureObjectValue"), &miValue, MI_STRING, 0)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ProcedureObjectValue) to string value '%s' failed with miResult %d", miValue.string, miResult);
+            goto Exit;
+        }
+    }
+
     // Write the MPI result for the MpiGet that returned the reported MIM object value to the output resource values
     memset(&miValue, 0, sizeof(miValue));
     miValue.uint32 = (MI_Uint32)(g_reportedMpiResult);
@@ -829,7 +878,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     if (MI_TRUE == isCompliant)
     {
-        if (0 == AsbIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
+        if (0 == BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
         {
             reasonCode = FormatAllocateString(auditPassedCodeTemplate, g_ruleId);
         }
@@ -846,7 +895,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
     else
     {
-        if (0 == AsbIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
+        if (0 == BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
         {
             reasonCode = FormatAllocateString(auditFailedCodeTemplate, g_ruleId);
         }
@@ -1059,25 +1108,6 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         FREE_MEMORY(g_initObjectName);
     }
 
-    // Read the MIM procedure object name from the input resource values
-    if ((MI_TRUE == in->InputResource.value->ProcedureObjectName.exists) && (NULL != in->InputResource.value->ProcedureObjectName.value))
-    {
-        FREE_MEMORY(g_procedureObjectName);
-        if (NULL == (g_procedureObjectName = DuplicateString(in->InputResource.value->ProcedureObjectName.value)))
-        {
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectName.value);
-            g_procedureObjectName = DuplicateString(g_defaultValue);
-            miResult = MI_RESULT_FAILED;
-            goto Exit;
-        }
-    }
-    else
-    {
-        // Not an error
-        LogInfo(context, GetLog(), "[OsConfigResource.Test] No ProcedureObjectName");
-        FREE_MEMORY(g_procedureObjectName);
-    }
-
     // Read the MIM reported object name from the input resource values
     if ((MI_TRUE == in->InputResource.value->ReportedObjectName.exists) && (NULL != in->InputResource.value->ReportedObjectName.value))
     {
@@ -1108,19 +1138,56 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         }
     }
 
-    // Read the procedure MIM object value from the input resource values
-    if ((in->InputResource.value->ProcedureObjectValue.exists == MI_TRUE) && (in->InputResource.value->ProcedureObjectValue.value != NULL))
+    // Check if we have the optional MIM procedure object name in the input resource value
+    if ((MI_TRUE == in->InputResource.value->ProcedureObjectName.exists) && (NULL != in->InputResource.value->ProcedureObjectName.value))
     {
-        FREE_MEMORY(g_procedureObjectValue);
-        if (NULL == (g_procedureObjectValue = DuplicateString(in->InputResource.value->ProcedureObjectValue.value)))
+        FREE_MEMORY(g_procedureObjectName);
+        if (NULL == (g_procedureObjectName = DuplicateString(in->InputResource.value->ProcedureObjectName.value)))
         {
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectValue.value);
-            g_procedureObjectValue = DuplicateString(g_defaultValue);
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectName.value);
+            g_procedureObjectName = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
         }
+        else
+        {
+            // We have a procedure object name, next see if we also have a procedure object value (also optional)
+            if ((MI_TRUE == in->InputResource.value->ProcedureObjectValue.exists) && (NULL != in->InputResource.value->ProcedureObjectValue.value))
+            {
+                FREE_MEMORY(g_procedureObjectValue);
+                if (NULL == (g_procedureObjectValue = DuplicateString(in->InputResource.value->ProcedureObjectValue.value)))
+                {
+                    miResult = MI_RESULT_FAILED;
+                    LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectValue.value);
+                    g_procedureObjectValue = DuplicateString(g_defaultValue);
+                    goto Exit;
+                }
+                else
+                {
+                    // We have both a procedure object name and value, we need to set then now to apply context for compliance
+                    SetDesiredObjectValueToDevice("OsConfigResource.Test", g_componentName, g_procedureObjectName, g_procedureObjectValue, context);
+                    miResult = MI_RESULT_FAILED;
+                }
+            }
+            else
+            {
+                // Cannot have a procedure object name without a procedure object value
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No ProcedureObjectValue");
+                FREE_MEMORY(g_procedureObjectValue);
+                goto Exit;
+            }
+        }
+    }
+    else
+    {
+        // Not an error
+        LogInfo(context, GetLog(), "[OsConfigResource.Test] No ProcedureObjectName");
+        FREE_MEMORY(g_procedureObjectName);
     }
 
     // Read the reported MIM object value from the local device
-    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Test", context)))
+    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Test", g_componentName, context)))
     {
         goto Exit;
     }
@@ -1308,7 +1375,54 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         goto Exit;
     }
 
-    SetDesiredObjectValueToDevice("OsConfigResource.Set", g_desiredObjectName, context);
+    // Check if we have the optional MIM procedure object name in the input resource value
+    if ((MI_TRUE == in->InputResource.value->ProcedureObjectName.exists) && (NULL != in->InputResource.value->ProcedureObjectName.value))
+    {
+        FREE_MEMORY(g_procedureObjectName);
+        if (NULL == (g_procedureObjectName = DuplicateString(in->InputResource.value->ProcedureObjectName.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectName.value);
+            g_procedureObjectName = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+        else
+        {
+            // We have a procedure object name, next see if we also have a procedure object value (also optional)
+            if ((MI_TRUE == in->InputResource.value->ProcedureObjectValue.exists) && (NULL != in->InputResource.value->ProcedureObjectValue.value))
+            {
+                FREE_MEMORY(g_procedureObjectValue);
+                if (NULL == (g_procedureObjectValue = DuplicateString(in->InputResource.value->ProcedureObjectValue.value)))
+                {
+                    miResult = MI_RESULT_FAILED;
+                    LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->ProcedureObjectValue.value);
+                    g_procedureObjectValue = DuplicateString(g_defaultValue);
+                    goto Exit;
+                }
+                else
+                {
+                    // We have both a procedure object name and value, we need to set then now to apply context for compliance
+                    SetDesiredObjectValueToDevice("OsConfigResource.Set", g_componentName, g_procedureObjectName, g_procedureObjectValue, context);
+                }
+            }
+            else
+            {
+                // Cannot have a procedure object name without a procedure object value
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No ProcedureObjectValue");
+                FREE_MEMORY(g_procedureObjectValue);
+                goto Exit;
+            }
+        }
+    }
+    else
+    {
+        // Not an error
+        LogInfo(context, GetLog(), "[OsConfigResource.Test] No ProcedureObjectName");
+        FREE_MEMORY(g_procedureObjectName);
+    }
+
+    SetDesiredObjectValueToDevice("OsConfigResource.Set", g_componentName, g_desiredObjectName, g_desiredObjectValue, context);
 
     miResult = MI_RESULT_OK;
 
