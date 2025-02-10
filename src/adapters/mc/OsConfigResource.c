@@ -13,8 +13,8 @@
 #define MPI_CLIENT_NAME "OSConfig Universal NRP"
 
 static const char* g_defaultValue = "-";
-static const char* g_passValue = "PASS";
-static const char* g_failValue = "FAIL";
+static const char* g_passValue = SECURITY_AUDIT_PASS;
+static const char* g_failValue = SECURITY_AUDIT_FAIL;
 
 // Desired (write; also reported together with read group)
 static char* g_resourceId = NULL;

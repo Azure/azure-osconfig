@@ -12,6 +12,7 @@
 #include <UserUtils.h>
 #include <SshUtils.h>
 #include <Logging.h>
+#include <Reasons.h>
 #include <Asb.h>
 
 #define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
