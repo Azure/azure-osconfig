@@ -37,7 +37,7 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "wget https://github.com/PowerShell/PowerShell/releases/download/v7.4.1/powershell_7.4.1-1.deb_amd64.deb -O powershell.deb && sudo dpkg -i powershell.deb && sudo apt-get install -f"
+                "command": "wget https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/powershell_7.5.0-1.deb_amd64.deb -O powershell.deb && sudo dpkg -i powershell.deb && sudo apt-get install -f"
             }
         },
         {
