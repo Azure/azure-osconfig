@@ -17,5 +17,5 @@ target_link_libraries(OsConfigResourceCompliance
         logging
         mpiclient
         parsonlib
-        asb
+        asb # Temporary until PR #857 is merged
         compliancelib)

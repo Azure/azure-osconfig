@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "../Common.h"
-#include <ComplianceInterface.hpp>
+#include "ComplianceInterface.h"
 
 static MMI_HANDLE gCompliance = NULL;
 

@@ -8,7 +8,7 @@ target_link_libraries(compliance
     PRIVATE
         commonutils
         logging
-        asb
+        asb # Temporary until PR #857 is merged
     PUBLIC
         compliancelib
 )

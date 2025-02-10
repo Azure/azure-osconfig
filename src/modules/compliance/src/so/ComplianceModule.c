@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <Mmi.h>
-#include <ComplianceInterface.hpp>
+#include "ComplianceInterface.h"
 #include <stddef.h>
 
 void __attribute__((constructor)) InitModule(void)

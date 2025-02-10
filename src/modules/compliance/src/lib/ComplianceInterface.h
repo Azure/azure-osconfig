@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef COMPLIANCE_H
-#define COMPLIANCE_H
+#ifndef COMPLIANCE_INTERFACE_H
+#define COMPLIANCE_INTERFACE_H
 
 #include "../inc/Mmi.h"
 
@@ -25,4 +25,4 @@ void ComplianceMmiFree(char* payload);
 }
 #endif
 
-#endif // COMPLIANCE_H
+#endif // COMPLIANCE_INTERFACE_H

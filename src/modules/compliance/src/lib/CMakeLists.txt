@@ -8,6 +8,12 @@ add_library(compliancelib STATIC
     ${PROCEDURES}
     )
 
+target_link_libraries(compliancelib
+    PRIVATE
+        commonutils
+        logging
+)
+
 set_property(TARGET compliancelib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(compliancelib PUBLIC

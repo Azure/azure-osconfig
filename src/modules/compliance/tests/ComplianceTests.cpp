@@ -5,7 +5,7 @@
 #include <version.h>
 #include <Mmi.h>
 #include <CommonUtils.h>
-#include "ComplianceInterface.hpp"
+#include "ComplianceInterface.h"
 
 using namespace std;
 
