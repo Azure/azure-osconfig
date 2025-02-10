@@ -12,6 +12,12 @@
             "parameters": {
                 "command": "sudo yum install -y yum-utils && yum-config-manager --add-repo https://packages.microsoft.com/yumrepos/microsoft-rhel9.0-prod/ && sudo yum install -y powershell omi"
             }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "yum list installed"
+            }
         }
     ]
 }
