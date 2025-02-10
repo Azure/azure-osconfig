@@ -84,9 +84,18 @@ namespace compliance
             }
         }
 
-        Result(Result&& other) noexcept : mTag(other.mTag), mPointer{other.mPointer}
+        Result(Result&& other) noexcept : mTag(other.mTag)
         {
-            other.mPointer.value = nullptr;
+            if(mTag == Tag::Value)
+            {
+                mPointer.value = other.mPointer.value;
+            }
+            else
+            {
+                mPointer.error = other.mPointer.error;
+            }
+
+            other.mPointer.error = nullptr;
             other.mTag = Tag::Error;
         }
 
@@ -120,8 +129,17 @@ namespace compliance
 
             mTag = other.mTag;
             other.mTag = Tag::Error;
-            mPointer.value = other.mPointer.value;
-            other.mPointer.value = nullptr;
+
+            if (mTag == Tag::Value)
+            {
+                mPointer.value = other.mPointer.value;
+            }
+            else
+            {
+                mPointer.error = other.mPointer.error;
+            }
+
+            other.mPointer.error = nullptr;
             return *this;
         }
 
