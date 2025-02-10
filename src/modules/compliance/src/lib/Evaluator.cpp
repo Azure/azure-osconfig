@@ -27,17 +27,20 @@ Result<bool> Evaluator::ExecuteAudit(char** payload, int* payloadSizeBytes)
 {
     if (mJson == nullptr)
     {
+        OsConfigLogError(mLog, "Invalid argument: rule is null");
         return Error("Rule is null");
     }
 
     if(nullptr == payload || nullptr == payloadSizeBytes)
     {
+        OsConfigLogError(mLog, "Invalid argument: payload or payloadSizeBytes is null");
         return Error("Payload or payloadSizeBytes is null");
     }
 
     auto result = EvaluateProcedure(mJson, Action::Audit);
     if (!result.has_value())
     {
+        OsConfigLogError(mLog, "Evaluation failed: %s", result.error().message.c_str());
         return result.error();
     }
 

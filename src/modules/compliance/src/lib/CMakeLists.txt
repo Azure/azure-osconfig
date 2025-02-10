@@ -19,5 +19,6 @@ target_link_libraries(compliancelib PRIVATE
     parsonlib)
 
 target_include_directories(compliancelib PUBLIC
+    ${logging_SOURCE_DIR}
     ${MODULES_INC_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
