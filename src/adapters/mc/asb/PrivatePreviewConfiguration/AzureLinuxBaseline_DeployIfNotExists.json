@@ -6,7 +6,7 @@
     "description": "This policy configures the Azure security baseline on Linux machines (Azure VMs and Arc-enabled machines)",
     "metadata": {
       "category": "Guest Configuration",
-      "version": "1.0.0",
+      "version": "1.0.0.0",
       "requiredProviders": [
         "Microsoft.GuestConfiguration"
       ],
@@ -333,7 +333,7 @@
                     "location": "[parameters('location')]",
                     "properties": {
                       "guestConfiguration": {
-                        "name": "[parameters('configurationName')]",
+                        "name": "SetAzureLinuxBaseline",
                         "version": "1.*",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
@@ -347,7 +347,7 @@
                     "location": "[parameters('location')]",
                     "properties": {
                       "guestConfiguration": {
-                        "name": "[parameters('configurationName')]",
+                        "name": "SetAzureLinuxBaseline",
                         "version": "1.*",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
@@ -361,7 +361,7 @@
                     "location": "[parameters('location')]",
                     "properties": {
                       "guestConfiguration": {
-                        "name": "[parameters('configurationName')]",
+                        "name": "SetAzureLinuxBaseline",
                         "version": "1.*",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
