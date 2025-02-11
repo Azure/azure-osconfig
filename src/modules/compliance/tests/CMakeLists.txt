@@ -11,6 +11,7 @@ add_executable(compliancetests
     OptionalTest.cpp
     ResultTest.cpp
     EvaluatorTest.cpp
+    EngineTest.cpp
 )
 
 target_link_libraries(compliancetests gtest gtest_main pthread compliancelib logging commonutils parsonlib)
