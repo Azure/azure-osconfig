@@ -4,7 +4,7 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo yum update"
+                "command": "sudo yum update -y"
             }
         },
         {

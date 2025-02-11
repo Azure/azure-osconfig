@@ -16,7 +16,7 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo tdnf -y update"
+                "command": "sudo tdnf update -y"
             }
         },
         {

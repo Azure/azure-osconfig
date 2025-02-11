@@ -10,7 +10,7 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/packages-microsoft-com_key.asc"
+                "command": "wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg"
             }
         },
         {
@@ -28,7 +28,7 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo apt update && sudo apt upgrade -y"
+                "command": "sudo apt update -y && sudo apt upgrade -y"
             }
         },
         {
