@@ -15,6 +15,7 @@ target_link_libraries(OsConfigResourceSsh
     PRIVATE
         commonutils
         logging
+        telemetry
         mpiclient
         parsonlib
         asb)

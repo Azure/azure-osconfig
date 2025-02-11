@@ -1,12 +1,26 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-project(osconfig)
-
 set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
 
-cmake_minimum_required(VERSION 3.3)
+# VCPKG integration
+if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    if (DEFINED ENV{VCPKG_ROOT})
+        set (CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+        set (VCPKG_INSTALLED_DIR "$ENV{VCPKG_ROOT}/vcpkg_installed")
+        message (STATUS "VCPKG_ROOT found, using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+    else()
+        if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../external/vcpkg/scripts/buildsystems/vcpkg.cmake)
+            set (CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../external/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
+            message (STATUS "VCPKG_ROOT not found, using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+        else()
+            message (ERROR "Ensure git submodules are initialized or VCPKG_ROOT is set and install the vcpkg ports")
+        endif()
+    endif()
+endif()
+
+cmake_minimum_required(VERSION 3.2)
 
 set(MAJOR_VERSION "1" CACHE STRING "Major version")
 set(MINOR_VERSION "0" CACHE STRING "Minor version")
@@ -21,9 +35,8 @@ option(BUILD_SAMPLES "Build samples" OFF)
 option(COVERAGE "Enable code coverage" OFF)
 option(BUILD_FUZZER "Build fuzzer" OFF)
 
+add_compile_options("-Wno-psabi;-fPIC")
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
-    add_compile_options("-Wno-psabi;-fPIC")
-
     # Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Universal NRP adapter
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.7" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4.8.5")
         set(BUILD_PLATFORM OFF)
@@ -61,6 +74,10 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     endif()
 endif()
 
+project(osconfig)
+
+find_package(opentelemetry-cpp REQUIRED)
+find_package(nlohmann_json REQUIRED)
 find_package(Git QUIET)
 
 if(TWEAK_VERSION)
