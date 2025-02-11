@@ -28,7 +28,13 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo apt update && sudo apt install -y jq omi"
+                "command": "sudo apt update && sudo apt upgrade -y"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo apt install -y jq omi"
             }
         },
         {

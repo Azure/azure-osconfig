@@ -4,6 +4,12 @@
         {
             "name": "linux-bash-command",
             "parameters": {
+                "command": "sudo yum update"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
                 "command": "sudo yum install -y glibc* libicu wget which"
             }
         },

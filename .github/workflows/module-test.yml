@@ -21,12 +21,10 @@ jobs:
             { os: oraclelinux, version: 8, package-type: RPM },
             { os: rhel, version: 8, package-type: RPM },
             { os: rhel, version: 9, package-type: RPM },
-            { os: rockylinux, version: 9, package-type: RPM },
             { os: sles, version: 15, package-type: RPM },
             { os: ubuntu, version: 20.04, package-type: DEB },
             { os: ubuntu, version: 22.04, package-type: DEB },
           ]
-          # { os: amazonlinux, version: 2, package-type: RPM }, [TODO: Onboard]
           # { os: azurelinux, version: 3, package-type: RPM }, [TODO: Onboard]
         arch: [amd64]
     with:

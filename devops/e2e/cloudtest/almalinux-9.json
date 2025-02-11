@@ -22,6 +22,12 @@
         {
             "name": "linux-bash-command",
             "parameters": {
+                "command": "sudo yum update -y"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
                 "command": "yum list installed"
             }
         }
