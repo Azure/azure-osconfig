@@ -284,6 +284,12 @@ az storage blob upload \
   --container-name diskimages \
   --name centos-7.qcow2 \
   --file CentOS-7-x86_64-GenericCloud-2211-Generalized.qcow2 \
+  --auth-mode login
+# Update MD5 hash
+az storage blob update \
+  --account-name osconfigstorage \
+  --container-name diskimages \
+  --name centos-7.qcow2 \
   --content-md5 $(md5sum CentOS-7-x86_64-GenericCloud-2211-Generalized.qcow2 | awk '{ print $1 }') \
   --auth-mode login
 ```
