@@ -51,6 +51,7 @@ jobs:
           TARGETS: |
             [
               { "os": "almalinux", "version": "9" },
+              { "os": "azurelinux", "version": "3" },
               { "os": "debian", "version": "11" },
               { "os": "debian", "version": "12" },
               { "os": "mariner", "version": "2" },
@@ -61,7 +62,6 @@ jobs:
               { "os": "ubuntu", "version": "20.04" },
               { "os": "ubuntu", "version": "22.04" }
             ]
-          # { "os": "azurelinux", "version": "3" }, [TODO: Onboard]
         run: |
           # If no explicit packages defined, use the default packages
           if [[ '${{ inputs.policy_packages }}' == '[]' || '${{ inputs.policy_packages }}' == '' ]]; then
