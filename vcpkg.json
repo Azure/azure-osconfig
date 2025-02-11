@@ -1,0 +1,13 @@
+{
+  "dependencies": [
+    {
+      "name": "opentelemetry-cpp",
+      "features": [
+        "otlp-http"
+      ]
+    },
+    {
+      "name": "openssl"
+    }
+  ]
+}

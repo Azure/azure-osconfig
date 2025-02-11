@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "Common.h"
+#include "telemetry_wrapper.h"
 
 MI_EXTERN_C MI_SchemaDecl schemaDecl;
 
@@ -15,6 +16,7 @@ void MI_CALL Load(MI_Module_Self** self, struct _MI_Context* context)
 
 void MI_CALL Unload(MI_Module_Self* self, struct _MI_Context* context)
 {
+    cleanup_tracer();
     OsConfigLogInfo(GetLog(), "[OsConfigResource] MI module unload (PID: %d)", getpid());
 
     MI_UNREFERENCED_PARAMETER(self);
@@ -25,7 +27,10 @@ void MI_CALL Unload(MI_Module_Self* self, struct _MI_Context* context)
 
 MI_EXTERN_C MI_EXPORT MI_Module* MI_MAIN_CALL MI_Main(MI_Server* server)
 {
+    init_tracer();
+    OPTL_TRACE_HANDLE span = start_span("MI_Main");
     OsConfigLogInfo(GetLog(), "[OsConfigResource] MI module main (PID: %d)", getpid());
+    end_span(span);
 
     static MI_Module module;
     MI_EXTERN_C MI_Server* __mi_server;

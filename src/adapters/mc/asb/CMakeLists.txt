@@ -9,15 +9,18 @@ add_library(OsConfigResourceAsb
         ../module.c
         ../schema.c
         ../OsConfigResource.c
-        Baseline.c)
+        Baseline.c
+        ../telemetry_wrapper.cpp)
 
+# message(STATUS "!!!!!!!!!!!!! OPENTELEMETRY_CPP_LIBRARIES: ${OPENTELEMETRY_CPP_LIBRARIES}")
 target_link_libraries(OsConfigResourceAsb
     PRIVATE
         commonutils
         logging
         mpiclient
         parsonlib
-        asb)
+        asb
+        ${OPENTELEMETRY_CPP_LIBRARIES})
 
 # SO binary name must match the universal class name in MOF with a "lib" prefix added
 set_target_properties(OsConfigResourceAsb PROPERTIES OUTPUT_NAME libOsConfigResource)
