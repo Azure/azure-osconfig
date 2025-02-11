@@ -5,7 +5,6 @@
 #define LOGGING_H
 
 #include <string.h>
-#include <stdio.h>
 
 // Maximum log size (1,024,000 is 1MB aka 1024 * 1000), increase or decrease as needed
 #define MAX_LOG_SIZE 1024000

@@ -12,4 +12,11 @@ include_directories(
     ${parson_SOURCE_DIR}
     )
 add_executable(osconfig-fuzzer target.cpp)
-target_link_libraries(osconfig-fuzzer PRIVATE mpiclient asb pthread securitybaselinelib compliancelib)
+target_link_libraries(osconfig-fuzzer PRIVATE
+    logging
+    mpiclient
+    asb
+    pthread
+    securitybaselinelib
+    compliancelib
+)
