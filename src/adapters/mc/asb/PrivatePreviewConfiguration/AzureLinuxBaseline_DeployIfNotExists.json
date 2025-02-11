@@ -11,7 +11,7 @@
         "Microsoft.GuestConfiguration"
       ],
       "guestConfiguration": {
-        "name": "SetAzureLinuxBaseline",
+        "name": "AzureLinuxBaseline",
         "version": "1.*"
       }
     },
@@ -333,7 +333,7 @@
                     "location": "[parameters('location')]",
                     "properties": {
                       "guestConfiguration": {
-                        "name": "SetAzureLinuxBaseline",
+                        "name": "AzureLinuxBaseline",
                         "version": "1.*",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
@@ -347,7 +347,7 @@
                     "location": "[parameters('location')]",
                     "properties": {
                       "guestConfiguration": {
-                        "name": "SetAzureLinuxBaseline",
+                        "name": "AzureLinuxBaseline",
                         "version": "1.*",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
@@ -361,7 +361,7 @@
                     "location": "[parameters('location')]",
                     "properties": {
                       "guestConfiguration": {
-                        "name": "SetAzureLinuxBaseline",
+                        "name": "AzureLinuxBaseline",
                         "version": "1.*",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
