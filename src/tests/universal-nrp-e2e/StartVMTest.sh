@@ -222,6 +222,7 @@ qemu-system-x86_64                                                    \
     -net nic                                                          \
     -net user,hostfwd=tcp::$qemu_fwport-:22                           \
     -machine accel=kvm                                                \
+    -cpu host                                                         \
     -m $vmmemory                                                      \
     -daemonize                                                        \
     -drive file=$imagepath,format=$qemu_imgformat                     \

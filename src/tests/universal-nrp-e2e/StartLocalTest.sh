@@ -18,7 +18,8 @@
 
 # Powershell and OMI are also required for the tests but they have different installation steps and do not use the distros package manager.
 dependencies=(curl wget unzip)
-powershell_version="7.4.6"
+dependencies_ps="@('GuestConfiguration', 'Pester')"
+powershell_version="7.5.0"
 powershell_uri="https://github.com/PowerShell/PowerShell/releases/download/v$powershell_version/powershell-$powershell_version-linux-x64.tar.gz"
 omi_base_uri="https://github.com/microsoft/omi/releases/download/v1.9.1-0/omi-1.9.1-0"
 
@@ -61,13 +62,13 @@ usage() {
 
 install_package() {
     if command -v apt &> /dev/null; then
-        sudo apt update
+        sudo apt update -y
         sudo apt install -y "$@"
     elif command -v yum &> /dev/null; then
-        sudo yum update
+        sudo yum update -y
         sudo yum install -y "$@"
     elif command -v dnf &> /dev/null; then
-        sudo dnf update
+        sudo dnf update -y
         sudo dnf install -y "$@"
     elif command -v zypper &> /dev/null; then
         sudo zypper refresh
@@ -108,7 +109,7 @@ dependency_check() {
     if pwsh --version; then
         echo "Powershell found. Checking for required modules..."
         do_sudo pwsh -Command "
-            \$modules = @('GuestConfiguration', 'Pester')
+            \$modules = $dependencies_ps
             foreach (\$module in \$modules) {
                 if (-not (Get-Module -ListAvailable -Name \$module)) {
                     Write-Host "Installing module: \$module"
@@ -120,17 +121,17 @@ dependency_check() {
     fi
     if [ ! -d "/opt/omi/lib" ]; then
         echo -e "\nOMI not found. Installing OMI..."
-        # OMI package is based on OpenSSL Versions: 1.0, 1.1, 3.0
+        # OMI package is based on OpenSSL Versions: 1.0, 1.1, 3.x
         openssl_version=$(openssl version | awk '{print $2}' | cut -d'.' -f1,2)
         omi_url=""
         if [ "$openssl_version" = "1.0" ]; then
             omi_url="$omi_base_uri.ssl_100.ulinux.s.x64"
         elif [ "$openssl_version" = "1.1" ]; then
             omi_url="$omi_base_uri.ssl_110.ulinux.s.x64"
-        elif [ "$openssl_version" = "3.0" ]; then
+        elif [[ "$openssl_version" =~ ^3\.[0-9]+$ ]]; then
             omi_url="$omi_base_uri.ssl_300.ulinux.s.x64"
         else
-            echo "Unknown OpenSSL version. This system may not be compatible with OMI."
+            echo "Unknown OpenSSL version ($openssl_version). This system may not be compatible with OMI."
             err=true
         fi
         if command -v dpkg &> /dev/null; then

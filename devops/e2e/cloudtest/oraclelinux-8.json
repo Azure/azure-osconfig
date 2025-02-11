@@ -4,6 +4,12 @@
         {
             "name": "linux-bash-command",
             "parameters": {
+                "command": "sudo yum update -y"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
                 "command": "sudo yum install -y glibc* libicu wget which"
             }
         },
@@ -16,7 +22,7 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "wget https://github.com/PowerShell/PowerShell/releases/download/v7.4.1/powershell-7.4.1-1.rh.x86_64.rpm -O powershell.rpm && rpm -fi powershell.rpm --nodeps"
+                "command": "wget https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/powershell-7.5.0-1.rh.x86_64.rpm -O powershell.rpm && rpm -fi powershell.rpm --nodeps"
             }
         },
         {
