@@ -22,8 +22,8 @@ test_data='[
     {"distroName": "oraclelinux-7", "imageFile": "oraclelinux-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
     {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
     {"distroName": "rhel-7", "imageFile": "rhel-7.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
-    {"distroName": "rockylinux-9", "imageFile": "rockylinux-9.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
-    {"distroName": "rockylinux-9", "imageFile": "rockylinux-9.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
+    {"distroName": "rockylinux-9", "imageFile": "rockylinux-9.qcow2", "policyPackage": "AzureLinuxBaseline.zip", "qemuArgs": "-cpu host"},
+    {"distroName": "rockylinux-9", "imageFile": "rockylinux-9.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip", "qemuArgs": "-cpu host"},
     {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
     {"distroName": "sles-12", "imageFile": "sles-12.qcow2", "policyPackage": "LinuxSshServerSecurityBaseline.zip"},
     {"distroName": "ubuntu-16.04", "imageFile": "ubuntu-16.04.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
@@ -83,6 +83,71 @@ while getopts ${OPTSTRING} opt; do
     esac
 done
 
+failedTests=false
+declare -a test_summary=()
+print_test_summary_table() {
+    echo -e "\n"
+    for i in "${!test_summary[@]}"; do
+        echo -e "${test_summary[$i]}"
+    done | column -s $'|' -t
+}
+test_summary+=("Result|Distro Name|Policy Package|Total|Errors|Failures|Skipped|Log Directory")
+test_summary+=("------|-----------|--------------|-----|------|--------|-------|-------------")
+
+print_test_summary() {
+    sumTests=0; sumErrors=0; sumFailures=0; sumSkipped=0
+    for test in "${!testToLogDirMapping[@]}"; do
+        logDir=${testToLogDirMapping[$test]}
+        pid=${testToPidMapping[$test]}
+        exitCode=${pidToExitCodeMapping[$pid]}
+        # Extract distro name and policy package from test key (distroName--policyPackage)
+        distroName=$(echo $test | awk -F'--' '{print $1}')
+        policyPackage=$(echo $test | awk -F'--' '{print $2}')
+        result="Pass"
+        logArchive="$(find $logDir -name *.tar.gz)"
+        tempDir=$(mktemp -d)
+        tar -xzf $logArchive -C $tempDir &> /dev/null
+        testReport="$(find $tempDir -name *.xml)"
+        # If there is no test report, consider the test as failed
+        if [ ! -f "$testReport" ]; then
+            result="Fail"
+            failedTests=true
+            test_summary+=("$result|$distroName|$policyPackage|0|0|0|0|$logDir")
+            rm -rf $tempDir
+            continue
+        fi
+        totalTests=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'tests="' '{print $2}' | awk -F'"' '{print $1}')
+        totalErrors=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'errors="' '{print $2}' | awk -F'"' '{print $1}')
+        totalFailures=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'failures="' '{print $2}' | awk -F'"' '{print $1}')
+        totalSkipped=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'skipped="' '{print $2}' | awk -F'"' '{print $1}')
+        sumTests=$((sumTests + totalTests))
+        sumErrors=$((sumErrors + totalErrors))
+        sumFailures=$((sumFailures + totalFailures))
+        sumSkipped=$((sumSkipped + totalSkipped))
+        rm -rf $tempDir
+
+        if [ "$exitCode" -gt 0 ] || [ "$totalErrors" -gt 0 ] || [ "$totalFailures" -gt 0 ]; then
+            failedTests=true
+            result="Fail"
+        fi
+
+        test_summary+=("$result|$distroName|$policyPackage|$totalTests|$totalErrors|$totalFailures|$totalSkipped|$logDir")
+    done
+    test_summary+=(" | |------|-----|------|--------|-------| ")
+    test_summary+=(" | |TOTALS|$sumTests|$sumErrors|$sumFailures|$sumSkipped| ")
+    print_test_summary_table
+
+    if [ "$failedTests" = true ]; then
+        echo "❌ Tests failed!" >&2
+        exit 1
+    else
+        echo "✅ Tests successfull!"
+        exit 0
+    fi
+}
+
+trap print_test_summary SIGINT
+
 # Ensure local dependencies are installed [cloud-localds, qemu-system-x86_64, jq, az]
 dependencies=(cloud-localds qemu-system-x86_64 jq az)
 for dep in "${dependencies[@]}"; do
@@ -133,12 +198,13 @@ run_test() {
     local policyPackage=$2
     local vmMemory=$3
     local logDirectory=$4
+    local qemuArgs=$5
 
     local curtime=$(date +%Y%m%d_%H%M%S)
     local tempImage="${curtime}_${imageFile}"
     cp $cacheDir/$imageFile $cacheDir/$tempImage
     # Start tests with given policy package and remediation enabled
-    ./StartVMTest.sh -i $cacheDir/$tempImage -p $packageDir/$policyPackage -m $vmMemory -r -l $logDirectory > /dev/null
+    ./StartVMTest.sh -i $cacheDir/$tempImage -p $packageDir/$policyPackage -m $vmMemory -r -l $logDirectory ${qemuArgs:+-a "$qemuArgs"} > /dev/null
     rm $cacheDir/$tempImage
 }
 
@@ -202,6 +268,10 @@ for row in $(echo "${test_data}" | jq -r '.[] | @base64'); do
     distroName=$(_jq '.distroName')
     imageFile=$(_jq '.imageFile')
     policyPackage=$(_jq '.policyPackage')
+    qemuArgs=$(_jq '.qemuArgs')
+    if [ "$qemuArgs" = "null" ]; then
+        qemuArgs=""
+    fi
 
     # Wait for a slot if the number of concurrent jobs reaches the limit
     showWaitingMessage=true
@@ -230,7 +300,7 @@ for row in $(echo "${test_data}" | jq -r '.[] | @base64'); do
 
     curtime=$(date +%Y%m%d_%H%M%S)
     logDir="$cacheDir/${curtime}_${imageFile%.*}"
-    run_test $imageFile $policyPackage $vmmemory $logDir &
+    run_test $imageFile $policyPackage $vmmemory $logDir "$qemuArgs" &
     testPid=$!
     pids+=($testPid)
 
@@ -265,61 +335,4 @@ done
 
 # Collect and print test summary
 echo -e "\nAll tests are complete."
-failedTests=false
-declare -a test_summary=()
-print_test_summary_table() {
-    for i in "${!test_summary[@]}"; do
-        echo -e "${test_summary[$i]}"
-    done | column -s $'|' -t
-}
-test_summary+=("Result|Distro Name|Policy Package|Total|Errors|Failures|Skipped|Log Directory")
-test_summary+=("------|-----------|--------------|-----|------|--------|-------|-------------")
-sumTests=0; sumErrors=0; sumFailures=0; sumSkipped=0
-for test in "${!testToLogDirMapping[@]}"; do
-    logDir=${testToLogDirMapping[$test]}
-    pid=${testToPidMapping[$test]}
-    exitCode=${pidToExitCodeMapping[$pid]}
-    # Extract distro name and policy package from test key (distroName--policyPackage)
-    distroName=$(echo $test | awk -F'--' '{print $1}')
-    policyPackage=$(echo $test | awk -F'--' '{print $2}')
-    result="Pass"
-    logArchive="$(find $logDir -name *.tar.gz)"
-    tempDir=$(mktemp -d)
-    tar -xzf $logArchive -C $tempDir
-    testReport="$(find $tempDir -name *.xml)"
-    # If there is no test report, consider the test as failed
-    if [ ! -f "$testReport" ]; then
-        result="Fail"
-        failedTests=true
-        test_summary+=("$result|$distroName|$policyPackage|0|0|0|0|$logDir")
-        rm -rf $tempDir
-        continue
-    fi
-    totalTests=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'tests="' '{print $2}' | awk -F'"' '{print $1}')
-    totalErrors=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'errors="' '{print $2}' | awk -F'"' '{print $1}')
-    totalFailures=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'failures="' '{print $2}' | awk -F'"' '{print $1}')
-    totalSkipped=$(grep 'testsuite.*UniversalNRP.Tests.ps1.*' $testReport | awk -F'skipped="' '{print $2}' | awk -F'"' '{print $1}')
-    sumTests=$((sumTests + totalTests))
-    sumErrors=$((sumErrors + totalErrors))
-    sumFailures=$((sumFailures + totalFailures))
-    sumSkipped=$((sumSkipped + totalSkipped))
-    rm -rf $tempDir
-
-    if [ "$exitCode" -gt 0 ] || [ "$totalErrors" -gt 0 ] || [ "$totalFailures" -gt 0 ]; then
-        failedTests=true
-        result="Fail"
-    fi
-
-    test_summary+=("$result|$distroName|$policyPackage|$totalTests|$totalErrors|$totalFailures|$totalSkipped|$logDir")
-done
-test_summary+=(" | |------|-----|------|--------|-------| ")
-test_summary+=(" | |TOTALS|$sumTests|$sumErrors|$sumFailures|$sumSkipped| ")
-print_test_summary_table
-
-if [ "$failedTests" = true ]; then
-    echo "❌ Tests failed!" >&2
-    exit 1
-else
-    echo "✅ Tests successfull!"
-    exit 0
-fi
+print_test_summary

@@ -8,10 +8,11 @@
 #              There is also both a generalize and a debug mode flag that can be used to generalize an
 #              image and a debug mode that will leave the VM up for debugging.
 #
-# Usage: ./StartVMTest.sh [-i image.img -p policypackage.zip [-r]] [-i image.img -g] [-m 512] [-d]
+# Usage: ./StartVMTest.sh [-i image.img -p policypackage.zip [-r]] [-i image.img -g] [-m 512] [-a qemuArgs] [-d]
 #        -i Image Path:            Path to the image (raw or qcow2 format)
 #        -p Policy Package:        Path to the policy package
 #        -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
+#        -a Additional qemu args:  Additional arguments to pass to qemu (eg. -a '-cpu host') (Default: none)
 #        -r Remediation:           Perform remediation flag (Default: false)
 #        -g Generalize Flag:       Generalize the current machine for tests. Performs the following:
 #                                    - Remove logs and tmp directories
@@ -33,6 +34,7 @@ remediation=false
 resourcecount=0
 generalize=false
 logDir=""
+qemu_additional_args=""
 
 # Private variables
 tests_failed=false
@@ -40,10 +42,11 @@ use_sudo=false
 provisionedUser="user1"
 
 usage() {
-    echo "Usage: $0 [-i image.img -p policypackage.zip [-r]] [-i image.img -g] [-m 512] [-d]
+    echo "Usage: $0 [-i image.img -p policypackage.zip [-r]] [-i image.img -g] [-m 512] [-a qemuArgs] [-d]
     -i Image Path:            Path to the image (raw or qcow2 format)
     -p Policy Package:        Path to the policy package
     -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
+    -a Additional qemu args:  Additional arguments to pass to qemu (eg. -a '-cpu host') (Default: none)
     -r Remediation:           Perform remediation flag (Default: false)
     -g Generalize Flag:       Generalize the current machine for tests. Performs the following:
                                 - Remove logs and tmp directories
@@ -94,7 +97,7 @@ do_sudo() {
 
 trap cleanup 1 SIGINT
 
-OPTSTRING=":i:p:m:l:rdg"
+OPTSTRING=":i:p:m:l:a:rdg"
 
 while getopts ${OPTSTRING} opt; do
     case ${opt} in
@@ -125,6 +128,9 @@ while getopts ${OPTSTRING} opt; do
             ;;
         l)
             logDir=${OPTARG}
+            ;;
+        a)
+            qemu_additional_args=${OPTARG}
             ;;
         :)
             echo "Option -${OPTARG} requires an argument."
@@ -222,7 +228,7 @@ qemu-system-x86_64                                                    \
     -net nic                                                          \
     -net user,hostfwd=tcp::$qemu_fwport-:22                           \
     -machine accel=kvm                                                \
-    -cpu host                                                         \
+    $qemu_additional_args                                             \
     -m $vmmemory                                                      \
     -daemonize                                                        \
     -drive file=$imagepath,format=$qemu_imgformat                     \
