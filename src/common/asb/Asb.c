@@ -1403,7 +1403,7 @@ static char* AuditEnsureNoDuplicateUidsExist(void* log)
     char* reason = NULL;
     if (0 != CheckNoDuplicateUidsExist(&reason, log))
     {
-        OsConfigCaptureReason(reason, g_remediationIsNotPossible);
+        OsConfigCaptureReason(&reason, g_remediationIsNotPossible);
     }
     return reason;
 }
@@ -1413,7 +1413,7 @@ static char* AuditEnsureNoDuplicateGidsExist(void* log)
     char* reason = NULL;
     if (0 != CheckNoDuplicateGidsExist(&reason, log))
     {
-        OsConfigCaptureReason(reason, g_remediationIsNotPossible);
+        OsConfigCaptureReason(&reason, g_remediationIsNotPossible);
     }
     return reason;
 }
@@ -1423,7 +1423,7 @@ static char* AuditEnsureNoDuplicateUserNamesExist(void* log)
     char* reason = NULL;
     if (0 != CheckNoDuplicateUserNamesExist(&reason, log))
     {
-        OsConfigCaptureReason(reason, g_remediationIsNotPossible);
+        OsConfigCaptureReason(&reason, g_remediationIsNotPossible);
     }
     return reason;
 }
@@ -1433,7 +1433,7 @@ static char* AuditEnsureNoDuplicateGroupsExist(void* log)
     char* reason = NULL;
     if (0 != CheckNoDuplicateGroupNamesExist(&reason, log))
     {
-        OsConfigCaptureReason(reason, g_remediationIsNotPossible);
+        OsConfigCaptureReason(&reason, g_remediationIsNotPossible);
     }
     return reason;
 }
