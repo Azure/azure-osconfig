@@ -1411,7 +1411,8 @@ static char* AuditEnsureNoDuplicateUidsExist(void* log)
 
 static char* AuditEnsureNoDuplicateGidsExist(void* log)
 {
-    char* reason = NULL, updatedReason = NULL;
+    char* reason = NULL;
+    char* updatedReason = NULL;
     if (0 != CheckNoDuplicateGidsExist(&reason, log))
     {
         updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible);
@@ -1422,7 +1423,8 @@ static char* AuditEnsureNoDuplicateGidsExist(void* log)
 
 static char* AuditEnsureNoDuplicateUserNamesExist(void* log)
 {
-    char* reason = NULL, updatedReason = NULL;
+    char* reason = NULL;
+    char* updatedReason = NULL;
     if (0 != CheckNoDuplicateUserNamesExist(&reason, log))
     {
         updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible);
@@ -1433,7 +1435,8 @@ static char* AuditEnsureNoDuplicateUserNamesExist(void* log)
 
 static char* AuditEnsureNoDuplicateGroupsExist(void* log)
 {
-    char* reason = NULL, updatedReason = NULL;
+    char* reason = NULL;
+    char* updatedReason = NULL;
     {
         updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible);
         FREE_MEMORY(reason);
