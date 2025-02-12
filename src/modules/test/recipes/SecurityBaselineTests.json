@@ -931,11 +931,6 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureCronServiceIsEnabled"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcAnacronTab",
     "Payload": "600"
   },
@@ -2103,11 +2098,6 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureZeroconfNetworkingIsDisabled"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureCronServiceIsEnabled"
   },
   {
     "ObjectType": "Desired",
