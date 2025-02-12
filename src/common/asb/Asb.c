@@ -1400,42 +1400,45 @@ static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void* log)
 
 static char* AuditEnsureNoDuplicateUidsExist(void* log)
 {
-    char* reason = NULL;
+    char* reason = NULL, updatedReson = NULL;
     if (0 != CheckNoDuplicateUidsExist(&reason, log))
     {
-        OsConfigCaptureReason(&reason, g_remediationIsNotPossible);
+        updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible);
+        FREE_MEMORY(reason);
     }
-    return reason;
+    return updateedReason;
 }
 
 static char* AuditEnsureNoDuplicateGidsExist(void* log)
 {
-    char* reason = NULL;
+    char* reason = NULL, updatedReson = NULL;
     if (0 != CheckNoDuplicateGidsExist(&reason, log))
     {
-        OsConfigCaptureReason(&reason, g_remediationIsNotPossible);
+        updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible);
+        FREE_MEMORY(reason);
     }
-    return reason;
+    return updateedReason;
 }
 
 static char* AuditEnsureNoDuplicateUserNamesExist(void* log)
 {
-    char* reason = NULL;
+    char* reason = NULL, updatedReson = NULL;
     if (0 != CheckNoDuplicateUserNamesExist(&reason, log))
     {
-        OsConfigCaptureReason(&reason, g_remediationIsNotPossible);
+        updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible);
+        FREE_MEMORY(reason);
     }
-    return reason;
+    return updateedReason;
 }
 
 static char* AuditEnsureNoDuplicateGroupsExist(void* log)
 {
-    char* reason = NULL;
-    if (0 != CheckNoDuplicateGroupNamesExist(&reason, log))
+    char* reason = NULL, updatedReson = NULL;
     {
-        OsConfigCaptureReason(&reason, g_remediationIsNotPossible);
+        updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible);
+        FREE_MEMORY(reason);
     }
-    return reason;
+    return updateedReason;
 }
 
 static char* AuditEnsureShadowGroupIsEmpty(void* log)
