@@ -1400,7 +1400,8 @@ static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void* log)
 
 static char* AuditEnsureNoDuplicateUidsExist(void* log)
 {
-    char* reason = NULL, updatedReson = NULL;
+    char* reason = NULL;
+    char* updatedReason = NULL;
     if (0 != CheckNoDuplicateUidsExist(&reason, log))
     {
         updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible);
