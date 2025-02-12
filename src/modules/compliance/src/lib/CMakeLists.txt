@@ -7,7 +7,7 @@ add_library(compliancelib STATIC
     ComplianceInterface.cpp
     Evaluator.cpp
     ProcedureMap.cpp
-    JSON.cpp
+    JsonWrapper.cpp
     ${PROCEDURES}
     )
 

@@ -64,6 +64,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
 {
     if (nullptr == json)
     {
+        OsConfigLogError(mLog, "invalid json argument");
         return Error("invalid json argument");
     }
 
@@ -71,6 +72,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
     JSON_Value* value = json_object_get_value_at(json, 0);
     if ((nullptr == name) || (nullptr == value))
     {
+        OsConfigLogError(mLog, "Rule name or value is null");
         return Error("Rule name or value is null");
     }
 
@@ -79,6 +81,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         if (json_value_get_type(value) != JSONArray)
         {
             mLogstream << "ERROR: anyOf value is not an array";
+            OsConfigLogError(mLog, "anyOf value is not an array");
             return Error("anyOf value is not an array");
         }
         JSON_Array *array = json_value_get_array(value);
@@ -114,6 +117,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         if (json_value_get_type(value) != JSONArray)
         {
             mLogstream << "ERROR: allOf value is not an array";
+            OsConfigLogError(mLog, "allOf value is not an array");
             return Error("allOf value is not an array");
         }
         auto array = json_value_get_array(value);
@@ -174,7 +178,8 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
     {
         if (json_value_get_type(value) != JSONObject)
         {
-            mLogstream << "ERROR: not value is not an object";
+            mLogstream << "ERROR: value is not an object";
+            OsConfigLogError(mLog, "value is not an object");
             return Error("value is not an object");
         }
         std::map<std::string, std::string> arguments;
@@ -187,6 +192,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
             if (json_value_get_type(val) != JSONString)
             {
                 mLogstream << "ERROR: Argument type is not a string";
+                OsConfigLogError(mLog, "Argument type is not a string");
                 return Error("Argument type is not a string");
             }
             arguments[key] = json_value_get_string(val);
@@ -196,6 +202,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
                 if (f == mParameters.end())
                 {
                     mLogstream << "ERROR: Unknown parameter " << arguments[key];
+                    OsConfigLogError(mLog, "Unknown parameter '%s'", arguments[key].c_str());
                     return Error("Unknown parameter");
                 }
                 arguments[key] = f->second;
@@ -206,6 +213,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         if (procedure == mProcedureMap.end())
         {
             mLogstream << "ERROR: Unknown function " << name;
+            OsConfigLogError(mLog, "Unknown function '%s'", name);
             return Error("Unknown function");
         }
         action_func_t fn;
@@ -214,6 +222,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
             fn = procedure->second.second;
             if (nullptr == fn)
             {
+                OsConfigLogInfo(mLog, "No remediation function found for '%s', using audit function", name);
                 fn = procedure->second.first;
             }
         }
@@ -224,6 +233,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         if (nullptr == fn)
         {
             mLogstream << "ERROR: Function not found";
+            OsConfigLogError(mLog, "Function not found");
             return Error("Function not found");
         }
         mLogstream << "{ " << name << ": ";
