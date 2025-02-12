@@ -880,51 +880,6 @@ static int LockUser(SIMPLIFIED_USER* user, void* log)
     return status;
 }
 
-int SetNoDuplicateUids(void* log)
-{
-    SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0;
-    unsigned int i = 0, j = 0;
-    unsigned int hits = 0;
-    int status = 0, _status = 0;
-
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
-    {
-        for (i = 0; i < userListSize; i++)
-        {
-            hits = 0;
-
-            for (j = 0; j < userListSize; j++)
-            {
-                if (userList[i].userId == userList[j].userId)
-                {
-                    hits += 1;
-                }
-            }
-
-            if (hits > 1)
-            {
-                OsConfigLogError(log, "SetNoDuplicateUids: user '%s' (%u) appears more than a single time in '/etc/passwd', locking this user account",
-                    userList[i].username, userList[i].userId);
-
-                if ((0 != (_status = LockUser(&(userList[i]), log))) && (0 == status))
-                {
-                    status = _status;
-                }
-            }
-        }
-    }
-
-    FreeUsersList(&userList, userListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "SetNoDuplicateUids: no duplicate uids exist in /etc/passwd");
-    }
-
-    return status;
-}
-
 int CheckNoDuplicateGidsExist(char** reason, void* log)
 {
     SIMPLIFIED_GROUP* groupList = NULL;
@@ -1031,49 +986,6 @@ static int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
     return status;
 }
 
-int SetNoDuplicateGids(void* log)
-{
-    SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupListSize = 0;
-    unsigned int i = 0, j = 0;
-    unsigned int hits = 0;
-    int status = 0, _status = 0;
-
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log)))
-    {
-        for (i = 0; i < groupListSize; i++)
-        {
-            hits = 0;
-
-            for (j = 0; j < groupListSize; j++)
-            {
-                if (groupList[i].groupId == groupList[j].groupId)
-                {
-                    hits += 1;
-                }
-            }
-
-            if (hits > 1)
-            {
-                OsConfigLogError(log, "SetNoDuplicateGids: gid %u appears more than a single time in '/etc/group'", groupList[i].groupId);
-                if ((0 != (_status = RemoveGroup(&(groupList[i]), log))) && (0 == status))
-                {
-                    status = _status;
-                }
-            }
-        }
-    }
-
-    FreeGroupList(&groupList, groupListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "SetNoDuplicateGids: no duplicate gids exist in '/etc/group'");
-    }
-
-    return status;
-}
-
 int CheckNoDuplicateUserNamesExist(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
@@ -1117,50 +1029,6 @@ int CheckNoDuplicateUserNamesExist(char** reason, void* log)
     return status;
 }
 
-int SetNoDuplicateUserNames(void* log)
-{
-    SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0;
-    unsigned int i = 0, j = 0;
-    unsigned int hits = 0;
-    int status = 0, _status = 0;
-
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
-    {
-        for (i = 0; i < userListSize; i++)
-        {
-            hits = 0;
-
-            for (j = 0; j < userListSize; j++)
-            {
-                if (userList[i].username && userList[j].username && (0 == strcmp(userList[i].username, userList[j].username)))
-                {
-                    hits += 1;
-                }
-            }
-
-            if (hits > 1)
-            {
-                OsConfigLogError(log, "SetNoDuplicateUserNames: username '%s' appears more than a single time in '/etc/passwd', locking this user account", userList[i].username);
-
-                if ((0 != (_status = LockUser(&(userList[i]), log))) && (0 == status))
-                {
-                    status = _status;
-                }
-            }
-        }
-    }
-
-    FreeUsersList(&userList, userListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "SetNoDuplicateUserNames: no duplicate usernames exist in '/etc/passwd'");
-    }
-
-    return status;
-}
-
 int CheckNoDuplicateGroupNamesExist(char** reason, void* log)
 {
     SIMPLIFIED_GROUP* groupList = NULL;
@@ -1199,49 +1067,6 @@ int CheckNoDuplicateGroupNamesExist(char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckNoDuplicateGroupNamesExist: no duplicate group names exist in '/etc/group'");
         OsConfigCaptureSuccessReason(reason, "No duplicate group names exist in '/etc/group'");
-    }
-
-    return status;
-}
-
-int SetNoDuplicateGroupNames(void* log)
-{
-    SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupListSize = 0;
-    unsigned int i = 0, j = 0;
-    unsigned int hits = 0;
-    int status = 0, _status = 0;
-
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log)))
-    {
-        for (i = 0; i < groupListSize; i++)
-        {
-            hits = 0;
-
-            for (j = 0; j < groupListSize; j++)
-            {
-                if (groupList[i].groupId == groupList[j].groupId)
-                {
-                    hits += 1;
-                }
-            }
-
-            if (hits > 1)
-            {
-                OsConfigLogError(log, "SetNoDuplicateGroupNames: group name '%s' appears more than a single time in '/etc/group'", groupList[i].groupName);
-                if ((0 != (_status = RemoveGroup(&(groupList[i]), log))) && (0 == status))
-                {
-                    status = _status;
-                }
-            }
-        }
-    }
-
-    FreeGroupList(&groupList, groupListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "SetNoDuplicateGroupNames: no duplicate group names exist in '/etc/group'");
     }
 
     return status;

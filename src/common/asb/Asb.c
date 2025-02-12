@@ -592,6 +592,8 @@ static const char* g_bootGrubGrubCfg = "/boot/grub/grub.cfg";
 static const char* g_minSambaProtocol = "min protocol = SMB2";
 static const char* g_login = "login";
 
+static const char* g_remediationIsNotPossible = "automatic remediation is not possible";
+
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
 
@@ -1399,28 +1401,40 @@ static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void* log)
 static char* AuditEnsureNoDuplicateUidsExist(void* log)
 {
     char* reason = NULL;
-    CheckNoDuplicateUidsExist(&reason, log);
+    if (0 != CheckNoDuplicateUidsExist(&reason, log))
+    {
+        OsConfigCaptureReason(reason, g_remediationIsNotPossible);
+    }
     return reason;
 }
 
 static char* AuditEnsureNoDuplicateGidsExist(void* log)
 {
     char* reason = NULL;
-    CheckNoDuplicateGidsExist(&reason, log);
+    if (0 != CheckNoDuplicateGidsExist(&reason, log))
+    {
+        OsConfigCaptureReason(reason, g_remediationIsNotPossible);
+    }
     return reason;
 }
 
 static char* AuditEnsureNoDuplicateUserNamesExist(void* log)
 {
     char* reason = NULL;
-    CheckNoDuplicateUserNamesExist(&reason, log);
+    if (0 != CheckNoDuplicateUserNamesExist(&reason, log))
+    {
+        OsConfigCaptureReason(reason, g_remediationIsNotPossible);
+    }
     return reason;
 }
 
 static char* AuditEnsureNoDuplicateGroupsExist(void* log)
 {
     char* reason = NULL;
-    CheckNoDuplicateGroupNamesExist(&reason, log);
+    if (0 != CheckNoDuplicateGroupNamesExist(&reason, log))
+    {
+        OsConfigCaptureReason(reason, g_remediationIsNotPossible);
+    }
     return reason;
 }
 
@@ -2976,7 +2990,7 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, void* log)
 static int RemediateEnsureKernelSupportForCpuNx(char* value, void* log)
 {
     UNUSED(value);
-    OsConfigLogInfo(log, "A CPU that supports the NX (no-execute) bit technology is necessary, automatic remediation is not possible");
+    OsConfigLogInfo(log, "A CPU that supports the NX (no-execute) bit technology is necessary, %s", g_remediationIsNotPossible);
     return 0;
 }
 
@@ -3062,25 +3076,29 @@ static int RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(char* value, void* l
 static int RemediateEnsureNoDuplicateUidsExist(char* value, void* log)
 {
     UNUSED(value);
-    return SetNoDuplicateUids(log);
+    OsConfigLogInfo(log, "Any duplicate UIDs must be manually removed, %s", g_remediationIsNotPossible);
+    return 0;
 }
 
 static int RemediateEnsureNoDuplicateGidsExist(char* value, void* log)
 {
     UNUSED(value);
-    return SetNoDuplicateGids(log);
+    OsConfigLogInfo(log, "Any duplicate GIDs must be manually removed, %s", g_remediationIsNotPossible);
+    return 0;
 }
 
 static int RemediateEnsureNoDuplicateUserNamesExist(char* value, void* log)
 {
     UNUSED(value);
-    return SetNoDuplicateUserNames(log);
+    OsConfigLogInfo(log, "Any duplicate usernames must be manually removed, %s", g_remediationIsNotPossible);
+    return 0;
 }
 
 static int RemediateEnsureNoDuplicateGroupsExist(char* value, void* log)
 {
     UNUSED(value);
-    return SetNoDuplicateGroupNames(log);
+    OsConfigLogInfo(log, "Any duplicate groups must be manually removed, %s", g_remediationIsNotPossible);
+    return 0;
 }
 
 static int RemediateEnsureShadowGroupIsEmpty(char* value, void* log)
@@ -3217,7 +3235,7 @@ static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, v
 {
     UNUSED(value);
     OsConfigLogInfo(log, "For single user mode the root user account must have a password set. "
-        "Manually set a password for root user account if necessary. Automatic remediation is not possible");
+        "Manually set a password for root user account if necessary, %s", g_remediationIsNotPossible);
     return 0;
 }
 
@@ -3560,7 +3578,7 @@ static int RemediateEnsureVirtualMemoryRandomizationIsEnabled(char* value, void*
 static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(char* value, void* log)
 {
     UNUSED(value);
-    OsConfigLogInfo(log, "Manually set a boot loader password for GRUB. Automatic remediation is not possible");
+    OsConfigLogInfo(log, "Manually set a boot loader password for GRUB, %s", g_remediationIsNotPossible);
     return 0;
 }
 
