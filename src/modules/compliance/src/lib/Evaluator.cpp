@@ -55,7 +55,7 @@ Result<bool> Evaluator::ExecuteRemediation()
     return result;
 }
 
-void Evaluator::setProcedureMap(std::map<std::string, std::pair<action_func_t, action_func_t>> procedureMap)
+void Evaluator::setProcedureMap(ProcedureMap procedureMap)
 {
     mProcedureMap = std::move(procedureMap);
 }
