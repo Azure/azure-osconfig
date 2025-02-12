@@ -41,7 +41,7 @@ Result<bool> Evaluator::ExecuteAudit(char** payload, int* payloadSizeBytes)
     *payload = strdup(vlog.c_str());
     *payloadSizeBytes = static_cast<int>(vlog.size());
     return result;
-};
+}
 
 Result<bool> Evaluator::ExecuteRemediation()
 {

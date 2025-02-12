@@ -996,7 +996,7 @@ static int ComplianceEvaluateAudit_target(const char* data, std::size_t size) no
         return c_skip_input;
     }
 
-    auto evaluator = Evaluator(json_value_get_object(json), parameters.value(), nullptr);
+    Evaluator evaluator(json_value_get_object(json), parameters.value(), nullptr);
 
     std::map<std::string, std::pair<action_func_t, action_func_t>> procedureMap = {
         { "remediationFailure", { nullptr, complianceFailure } },
@@ -1030,7 +1030,7 @@ static int ComplianceEvaluateRemediation_target(const char* data, std::size_t si
         return c_skip_input;
     }
 
-    auto evaluator = Evaluator(json_value_get_object(json), parameters.value(), nullptr);
+    Evaluator evaluator(json_value_get_object(json), parameters.value(), nullptr);
 
     std::map<std::string, std::pair<action_func_t, action_func_t>> procedureMap = {
         { "remediationFailure", { nullptr, complianceFailure } },

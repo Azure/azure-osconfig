@@ -12,7 +12,7 @@ namespace compliance
     template<typename T>
     class Optional
     {
-        std::unique_ptr<T> mValue = nullptr;
+        std::unique_ptr<T> mValue;
     public:
         Optional() = default;
         Optional(T value)

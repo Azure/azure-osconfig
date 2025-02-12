@@ -24,8 +24,13 @@ namespace compliance
     class Evaluator
     {
     public:
-        Evaluator(const struct json_object_t *json, const std::map<std::string, std::string> &parameters, OSCONFIG_LOG_HANDLE log) : mJson(json), mParameters(parameters), mLog(log) {}
-        Result<bool> ExecuteAudit(char **payload, int *payloadSizeBytes);
+        Evaluator(const struct json_object_t* json, const std::map<std::string, std::string>& parameters, OSCONFIG_LOG_HANDLE log) : mJson(json), mParameters(parameters), mLog(log) {}
+        Evaluator(const Evaluator&) = delete;
+        Evaluator(Evaluator&&) = delete;
+        Evaluator& operator=(const Evaluator&) = delete;
+        Evaluator& operator=(Evaluator&&) = delete;
+
+        Result<bool> ExecuteAudit(char** payload, int* payloadSizeBytes);
         Result<bool> ExecuteRemediation();
 
         void setProcedureMap(std::map<std::string, std::pair<action_func_t, action_func_t>> procedureMap);
