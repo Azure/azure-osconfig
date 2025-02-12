@@ -923,7 +923,7 @@ int CheckNoDuplicateGidsExist(char** reason, void* log)
     return status;
 }
 
-static int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
+int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
 {
     const char* commandTemplate = "groupdel -f %s";
     char* command = NULL;
