@@ -1404,10 +1404,13 @@ static char* AuditEnsureNoDuplicateUidsExist(void* log)
     char* updatedReason = NULL;
     if (0 != CheckNoDuplicateUidsExist(&reason, log))
     {
-        updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible);
-        FREE_MEMORY(reason);
+        if (NULL != (updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible)))
+        {
+            FREE_MEMORY(reason);
+            reason = updatedReason;
+        }
     }
-    return updateedReason;
+    return reason;
 }
 
 static char* AuditEnsureNoDuplicateGidsExist(void* log)
@@ -1416,10 +1419,13 @@ static char* AuditEnsureNoDuplicateGidsExist(void* log)
     char* updatedReason = NULL;
     if (0 != CheckNoDuplicateGidsExist(&reason, log))
     {
-        updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible);
-        FREE_MEMORY(reason);
+        if (NULL != (updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible)))
+        {
+            FREE_MEMORY(reason);
+            reason = updatedReason;
+        }
     }
-    return updateedReason;
+    return reason;
 }
 
 static char* AuditEnsureNoDuplicateUserNamesExist(void* log)
@@ -1428,21 +1434,28 @@ static char* AuditEnsureNoDuplicateUserNamesExist(void* log)
     char* updatedReason = NULL;
     if (0 != CheckNoDuplicateUserNamesExist(&reason, log))
     {
-        updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible);
-        FREE_MEMORY(reason);
+        if (NULL != (updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible)))
+        {
+            FREE_MEMORY(reason);
+            reason = updatedReason;
+        }
     }
-    return updateedReason;
+    return reason;
 }
 
 static char* AuditEnsureNoDuplicateGroupsExist(void* log)
 {
     char* reason = NULL;
     char* updatedReason = NULL;
+    if (0 != CheckNoDuplicateGroupNamesExist(&reason, log))
     {
-        updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible);
-        FREE_MEMORY(reason);
+        if (NULL != (updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible)))
+        {
+            FREE_MEMORY(reason);
+            reason = updatedReason;
+        }
     }
-    return updateedReason;
+    return reason;
 }
 
 static char* AuditEnsureShadowGroupIsEmpty(void* log)
