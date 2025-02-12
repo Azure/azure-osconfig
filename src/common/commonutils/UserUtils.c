@@ -1640,7 +1640,7 @@ int SetRootIsOnlyUidZeroAccount(void* log)
                 OsConfigLogError(log, "SetRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
                     userList[i].username, userList[i].userId, userList[i].groupId);
 
-                if ((0 != (_status = LockUser(&(userList[i]), false, log))) && (0 == status))
+                if ((0 != (_status = LockUser(&(userList[i]), log))) && (0 == status))
                 {
                     status = _status;
                 }
