@@ -5,6 +5,9 @@ project(compliancelib)
 
 add_library(compliancelib STATIC
     ComplianceInterface.cpp
+    Evaluator.cpp
+    ProcedureMap.cpp
+    JsonWrapper.cpp
     ${PROCEDURES}
     )
 
@@ -16,6 +19,12 @@ target_link_libraries(compliancelib
 
 set_property(TARGET compliancelib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
+target_link_libraries(compliancelib PRIVATE
+    logging
+    commonutils
+    parsonlib)
+
 target_include_directories(compliancelib PUBLIC
+    ${logging_SOURCE_DIR}
     ${MODULES_INC_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})

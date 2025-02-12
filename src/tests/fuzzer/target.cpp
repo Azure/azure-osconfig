@@ -5,6 +5,9 @@
 #include "SecurityBaseline.h"
 #include "CommonUtils.h"
 #include "UserUtils.h"
+#include "Evaluator.h"
+#include "Optional.h"
+#include "parson.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdint>
@@ -15,6 +18,13 @@
 #include <stdexcept>
 #include <limits>
 #include <vector>
+#include <sstream>
+
+using compliance::Optional;
+using compliance::Result;
+using compliance::Error;
+using compliance::Evaluator;
+using compliance::action_func_t;
 
 // Tells libfuzzer to skip the input when it doesn't contain a valid target
 static const int c_skip_input = -1;
@@ -920,6 +930,123 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
     return 0;
 }
 
+static Result<bool> complianceFailure(std::map<std::string, std::string>, std::ostringstream&)
+{
+    return false;
+}
+
+static Result<bool> complianceSuccess(std::map<std::string, std::string>, std::ostringstream&)
+{
+    return true;
+}
+
+static Result<bool> complianceParametrized(std::map<std::string, std::string> arguments, std::ostringstream&)
+{
+    auto it = arguments.find("result");
+    if (it == arguments.end())
+    {
+        return Error("Missing 'result' parameter");
+    }
+
+    if (it->second == "success")
+    {
+        return true;
+    }
+    else if (it->second == "failure")
+    {
+        return false;
+    }
+
+    return Error("Invalid 'result' parameter");
+}
+
+static Optional<std::map<std::string, std::string>> parseComplianceParams(const std::string& input)
+{
+    std::map<std::string, std::string> result;
+    std::istringstream stream(input);
+    std::string token;
+    while (std::getline(stream, token, ','))
+    {
+        auto delimiterPos = token.find('=');
+        if (delimiterPos == std::string::npos)
+        {
+            return {};
+        }
+
+        auto key = token.substr(0, delimiterPos);
+        auto value = token.substr(delimiterPos + 1);
+        result.emplace(std::move(key), std::move(value));
+    }
+
+    return result;
+}
+
+static int ComplianceEvaluateAudit_target(const char* data, std::size_t size) noexcept
+{
+    auto parameters = parseComplianceParams(g_context.ExtractVariant(data, size));
+    if (!parameters)
+    {
+        return c_skip_input;
+    }
+
+    auto body = std::string(data, size);
+    auto* json = json_parse_string(body.c_str());
+    if (nullptr == json)
+    {
+        return c_skip_input;
+    }
+
+    Evaluator evaluator(json_value_get_object(json), parameters.value(), nullptr);
+
+    std::map<std::string, std::pair<action_func_t, action_func_t>> procedureMap = {
+        { "remediationFailure", { nullptr, complianceFailure } },
+        { "remediationSuccess", { nullptr, complianceSuccess } },
+        { "auditFailure", { complianceFailure, nullptr } },
+        { "auditSuccess", { complianceSuccess, nullptr } },
+        { "auditParametrized", { complianceParametrized, nullptr } },
+        { "remediationParametrized", { nullptr, complianceParametrized } }
+    };
+    evaluator.setProcedureMap(std::move(procedureMap));
+
+    char* payload = nullptr;
+    int payloadSize = 0;
+    evaluator.ExecuteAudit(&payload, &payloadSize);
+    json_value_free(json);
+    free(payload);
+    return c_valid_input;
+}
+
+static int ComplianceEvaluateRemediation_target(const char* data, std::size_t size) noexcept
+{
+    auto parameters = parseComplianceParams(g_context.ExtractVariant(data, size));
+    if (!parameters)
+    {
+        return c_skip_input;
+    }
+
+    auto* json = json_parse_string(std::string(data, size).c_str());
+    if (nullptr == json)
+    {
+        return c_skip_input;
+    }
+
+    Evaluator evaluator(json_value_get_object(json), parameters.value(), nullptr);
+
+    std::map<std::string, std::pair<action_func_t, action_func_t>> procedureMap = {
+        { "remediationFailure", { nullptr, complianceFailure } },
+        { "remediationSuccess", { nullptr, complianceSuccess } },
+        { "auditFailure", { complianceFailure, nullptr } },
+        { "auditSuccess", { complianceSuccess, nullptr } },
+        { "auditParametrized", { complianceParametrized, nullptr } },
+        { "remediationParametrized", { nullptr, complianceParametrized } }
+    };
+    evaluator.setProcedureMap(std::move(procedureMap));
+
+    evaluator.ExecuteRemediation();
+    json_value_free(json);
+    return c_valid_input;
+}
+
 // List of supported fuzzing targets.
 // The key is taken from the input data and is used to determine which target to call.
 static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets = {
@@ -981,6 +1108,8 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "GetGitBranchFromJsonConfig.", GetGitBranchFromJsonConfig_target },
     { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
+    { "ComplianceEvaluateAudit.", ComplianceEvaluateAudit_target },
+    { "ComplianceEvaluateRemediation.", ComplianceEvaluateRemediation_target },
 };
 
 // libfuzzer entry point
