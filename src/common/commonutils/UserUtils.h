@@ -88,7 +88,6 @@ int CheckRootGroupExists(char** reason, void* log);
 int RepairRootGroup(void* log);
 int CheckRootIsOnlyUidZeroAccount(char** reason, void* log);
 int SetRootIsOnlyUidZeroAccount(void* log);
-
 int CheckAllUsersHavePasswordsSet(char** reason, void* log);
 int RemoveUsersWithoutPasswords(void* log);
 int RemoveGroup(SIMPLIFIED_GROUP* group, void* log);
