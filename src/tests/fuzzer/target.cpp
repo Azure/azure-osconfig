@@ -8,6 +8,7 @@
 #include "Evaluator.h"
 #include "Optional.h"
 #include "parson.h"
+#include "Base64.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdint>
@@ -1047,6 +1048,12 @@ static int ComplianceEvaluateRemediation_target(const char* data, std::size_t si
     return c_valid_input;
 }
 
+static int Base64Decode_target(const char* data, std::size_t size) noexcept
+{
+    compliance::Base64Decode(std::string(data, size));
+    return c_valid_input;
+}
+
 // List of supported fuzzing targets.
 // The key is taken from the input data and is used to determine which target to call.
 static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets = {
@@ -1110,6 +1117,7 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
     { "ComplianceEvaluateAudit.", ComplianceEvaluateAudit_target },
     { "ComplianceEvaluateRemediation.", ComplianceEvaluateRemediation_target },
+    { "Base64Decode.", Base64Decode_target },
 };
 
 // libfuzzer entry point
