@@ -90,7 +90,7 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, void* log);
 int SetRootIsOnlyUidZeroAccount(void* log);
 int CheckAllUsersHavePasswordsSet(char** reason, void* log);
 int RemoveUsersWithoutPasswords(void* log);
-int RemoveGroup(SIMPLIFIED_GROUP* group, void* log);
+int RemoveGroup(SIMPLIFIED_GROUP* group, bool force, void* log);
 int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log);
 int SetDefaultRootAccountGroupIsGidZero(void* log);
 int CheckAllUsersHomeDirectoriesExist(char** reason, void* log);
@@ -120,7 +120,6 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 int CheckUserAccountsNotFound(const char* names, char** reason, void* log);
 int RemoveUserAccounts(const char* names, bool force, void* log);
 int RestrictSuToRootGroup(void* log);
-
 
 #ifdef __cplusplus
 }

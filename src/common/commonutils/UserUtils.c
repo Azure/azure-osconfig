@@ -923,7 +923,7 @@ int CheckNoDuplicateGidsExist(char** reason, void* log)
     return status;
 }
 
-int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
+int RemoveGroup(SIMPLIFIED_GROUP* group, bool force, void* log)
 {
     const char* commandTemplate = "groupdel -f %s";
     char* command = NULL;
@@ -956,7 +956,7 @@ int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
                 {
                     OsConfigLogError(log, "RemoveGroup: group '%s' (%u) is primary group of user '%s' (%u), try first to delete this user account",
                         group->groupName, group->groupId, userList[i].username, userList[i].userId);
-                    RemoveUser(&(userList[i]), false, log);
+                    RemoveUser(&(userList[i]), force, log);
                 }
             }
         }
@@ -1465,7 +1465,7 @@ int SetRootIsOnlyUidZeroAccount(void* log)
                 OsConfigLogError(log, "SetRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
                     userList[i].username, userList[i].userId, userList[i].groupId);
 
-                if ((0 != (_status = LockUser(&(userList[i]), log))) && (0 == status))
+                if ((0 != (_status = RemoveUser(&(userList[i]), false, log))) && (0 == status))
                 {
                     status = _status;
                 }
