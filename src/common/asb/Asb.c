@@ -3210,7 +3210,7 @@ static int RemediateEnsurePasswordExpirationWarning(char* value, void* log)
 static int RemediateEnsureSystemAccountsAreNonLogin(char* value, void* log)
 {
     UNUSED(value);
-    return RemoveSystemAccountsThatCanLogin(log);
+    return LockSystemAccountsThatCanLogin(log);
 }
 
 static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, void* log)
@@ -4006,7 +4006,7 @@ static int RemediateEnsureRloginServiceIsDisabled(char* value, void* log)
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, void* log)
 {
     InitEnsureUnnecessaryAccountsAreRemoved(value);
-    return RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log);
+    return RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, true, log);
 }
 
 int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log)

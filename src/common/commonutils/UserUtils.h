@@ -115,13 +115,13 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, void* log);
 int CheckLockoutAfterInactivityLessThan(long days, char** reason, void* log);
 int SetLockoutAfterInactivityLessThan(long days, void* log);
 int CheckSystemAccountsAreNonLogin(char** reason, void* log);
-int RemoveSystemAccountsThatCanLogin(void* log);
+int LockSystemAccountsThatCanLogin(void* log);
 int CheckRootPasswordForSingleUserMode(char** reason, void* log);
 int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, char** reason, void* log);
 int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, void* log);
 int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, void* log);
 int CheckUserAccountsNotFound(const char* names, char** reason, void* log);
-int RemoveUserAccounts(const char* names, void* log);
+int RemoveUserAccounts(const char* names, bool force, void* log);
 int RestrictSuToRootGroup(void* log);
 
 #ifdef __cplusplus

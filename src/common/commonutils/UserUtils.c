@@ -793,9 +793,9 @@ int CheckNoDuplicateUidsExist(char** reason, void* log)
     return status;
 }
 
-static int RemoveUser(SIMPLIFIED_USER* user, void* log)
+static int RemoveUser(SIMPLIFIED_USER* user, bool force, void* log)
 {
-    const char* commandTemplate = "userdel -f -r %s";
+    const char* commandTemplate = "userdel %s %s";
     char* command = NULL;
     int status = 0, _status = 0;
 
@@ -810,7 +810,7 @@ static int RemoveUser(SIMPLIFIED_USER* user, void* log)
         return EPERM;
     }
 
-    if (NULL != (command = FormatAllocateString(commandTemplate, user->username)))
+    if (NULL != (command = FormatAllocateString(commandTemplate, force ? "-f -r" : "-r", user->username)))
     {
         if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
         {
@@ -841,6 +841,45 @@ static int RemoveUser(SIMPLIFIED_USER* user, void* log)
     return status;
 }
 
+static int LockUser(SIMPLIFIED_USER* user, void* log)
+{
+    const char* commandTemplate = "usermod -L %s";
+    char* command = NULL;
+    int status = 0, _status = 0;
+
+    if (NULL == user)
+    {
+        OsConfigLogError(log, "LockUser: invalid argument");
+        return EINVAL;
+    }
+    else if (0 == user->userId)
+    {
+        OsConfigLogError(log, "LockUser: cannot lock user with uid 0 ('%s' %u, %u)", user->username, user->userId, user->groupId);
+        return EPERM;
+    }
+
+    if (NULL != (command = FormatAllocateString(commandTemplate, user->username)))
+    {
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "LockUser: locked user '%s' (%u, %u, '%s')", user->username, user->userId, user->groupId, user->home);
+        }
+        else
+        {
+            OsConfigLogError(log, "LockUser: failed to lock user '%s' (%u, %u) (%d)", user->username, user->userId, user->groupId, _status);
+        }
+
+        FREE_MEMORY(command);
+    }
+    else
+    {
+        OsConfigLogError(log, "LockUser: out of memory");
+        status = ENOMEM;
+    }
+
+    return status;
+}
+
 int SetNoDuplicateUids(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
@@ -865,10 +904,10 @@ int SetNoDuplicateUids(void* log)
 
             if (hits > 1)
             {
-                OsConfigLogError(log, "SetNoDuplicateUids: user '%s' (%u) appears more than a single time in '/etc/passwd', deleting this user account",
+                OsConfigLogError(log, "SetNoDuplicateUids: user '%s' (%u) appears more than a single time in '/etc/passwd', locking this user account",
                     userList[i].username, userList[i].userId);
 
-                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                if ((0 != (_status = LockUser(&(userList[i]), log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -962,7 +1001,7 @@ static int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
                 {
                     OsConfigLogError(log, "RemoveGroup: group '%s' (%u) is primary group of user '%s' (%u), try first to delete this user account",
                         group->groupName, group->groupId, userList[i].username, userList[i].userId);
-                    RemoveUser(&(userList[i]), log);
+                    RemoveUser(&(userList[i]), false, log);
                 }
             }
         }
@@ -1102,9 +1141,9 @@ int SetNoDuplicateUserNames(void* log)
 
             if (hits > 1)
             {
-                OsConfigLogError(log, "SetNoDuplicateUserNames: username '%s' appears more than a single time in '/etc/passwd'", userList[i].username);
+                OsConfigLogError(log, "SetNoDuplicateUserNames: username '%s' appears more than a single time in '/etc/passwd', locking this user account", userList[i].username);
 
-                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                if ((0 != (_status = LockUser(&(userList[i]), log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -1536,7 +1575,7 @@ int RemoveUsersWithoutPasswords(void* log)
                     OsConfigLogError(log, "RemoveUsersWithoutPasswords: the root account's password must be manually fixed");
                     status = EPERM;
                 }
-                else if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                else if ((0 != (_status = RemoveUser(&(userList[i]), false, log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -1601,7 +1640,7 @@ int SetRootIsOnlyUidZeroAccount(void* log)
                 OsConfigLogError(log, "SetRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
                     userList[i].username, userList[i].userId, userList[i].groupId);
 
-                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                if ((0 != (_status = LockUser(&(userList[i]), false, log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -2792,7 +2831,7 @@ int CheckSystemAccountsAreNonLogin(char** reason, void* log)
     return status;
 }
 
-int RemoveSystemAccountsThatCanLogin(void* log)
+int LockSystemAccountsThatCanLogin(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -2804,10 +2843,10 @@ int RemoveSystemAccountsThatCanLogin(void* log)
         {
             if ((userList[i].isLocked || userList[i].noLogin || userList[i].cannotLogin) && userList[i].hasPassword && userList[i].userId)
             {
-                OsConfigLogError(log, "RemoveSystemAccountsThatCanLogin: user '%s' (%u, %u, '%s', '%s') is either locked, no-login, or cannot-login, "
+                OsConfigLogError(log, "LockSystemAccountsThatCanLogin: user '%s' (%u, %u, '%s', '%s') is either locked, no-login, or cannot-login, "
                     "but can login with password",  userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
 
-                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                if ((0 != (_status = LockUser(&(userList[i]), log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -2819,7 +2858,7 @@ int RemoveSystemAccountsThatCanLogin(void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "RemoveSystemAccountsThatCanLogin: all system accounts are non-login");
+        OsConfigLogInfo(log, "LockSystemAccountsThatCanLogin: all system accounts are non-login");
     }
 
     return status;
@@ -3282,7 +3321,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
     return status;
 }
 
-int RemoveUserAccounts(const char* names, void* log)
+int RemoveUserAccounts(const char* names, bool force, void* log)
 {
     const char* userTemplate = "%s:";
     size_t namesLength = 0;
@@ -3332,7 +3371,7 @@ int RemoveUserAccounts(const char* names, void* log)
 
                         if (0 == strcmp(userList[i].username, name))
                         {
-                            if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                            if ((0 != (_status = RemoveUser(&(userList[i]), force, log))) && (0 == status))
                             {
                                 status = _status;
                             }
