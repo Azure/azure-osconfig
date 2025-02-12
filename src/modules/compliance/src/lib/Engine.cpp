@@ -5,7 +5,7 @@
 
 #include <CommonUtils.h>
 #include "Evaluator.h"
-#include "base64.h"
+#include "Base64.h"
 
 #include "parson.h"
 #include <string>
@@ -105,7 +105,6 @@ namespace compliance
 
     Result<JsonWrapper> Engine::decodeB64JSON(const char* input) const
     {
-        unsigned int baseLen = 0;
         if (nullptr == input)
         {
             return Error("Input is null", EINVAL);
@@ -115,19 +114,12 @@ namespace compliance
         {
             inputStr = inputStr.substr(1, inputStr.length() - 2);
         }
-        Base64Decode(inputStr.c_str(), NULL, &baseLen);
-        if (0 == baseLen)
+        auto decodedString = Base64Decode(inputStr);
+        if (!decodedString.has_value())
         {
-            return Error("Failed to decode base64 input length", EINVAL);
+            return decodedString.error();
         }
-
-        std::unique_ptr<char[]> inputJSONString(new char[baseLen]);
-        if (Base64Decode(inputStr.c_str(), (unsigned char*)inputJSONString.get(), &baseLen) != 0)
-        {
-            return Error("Failed to decode base64 input", EINVAL);
-        }
-
-        auto result = json_parse_string(inputJSONString.get());
+        auto result = json_parse_string(decodedString.value().c_str());
         if (nullptr == result)
         {
             return Error("Failed to parse JSON", EINVAL);

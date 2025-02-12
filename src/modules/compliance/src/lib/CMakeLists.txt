@@ -8,6 +8,7 @@ add_library(compliancelib STATIC
     Evaluator.cpp
     ProcedureMap.cpp
     JsonWrapper.cpp
+    Base64.cpp
     Engine.cpp
     Procedure.cpp
     ${PROCEDURES}
@@ -19,7 +20,7 @@ target_link_libraries(compliancelib PRIVATE
     logging
     commonutils
     parsonlib
-    base64)
+    )
 
 target_include_directories(compliancelib PUBLIC
     ${MODULES_INC_DIR}

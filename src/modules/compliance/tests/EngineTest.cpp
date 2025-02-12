@@ -114,7 +114,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_1)
 {
     auto result = mEngine.mmiSet("procedureX", "", 0);
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.error().message, std::string("Failed to decode base64 input length"));
+    EXPECT_EQ(result.error().message, std::string("Failed to parse JSON"));
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_2)
