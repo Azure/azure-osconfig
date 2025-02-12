@@ -3118,7 +3118,7 @@ static int RemediateEnsureAllAccountsHavePasswords(char* value, void* log)
     UNUSED(value);
     // We cannot automatically add passwords for user accounts that can login and do not have passwords set.
     // If we try for example to run a command such as usermod, the command line can reveal that password
-    // in clear before it gets encrypted and saved. Thus we simply lock such accounts:
+    // in clear before it gets encrypted and saved. Thus we simply remove such accounts:
     return RemoveUsersWithoutPasswords(log);
 }
 
