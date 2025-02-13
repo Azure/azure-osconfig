@@ -57,11 +57,6 @@ Result<bool> Evaluator::ExecuteRemediation()
     return result;
 }
 
-void Evaluator::setProcedureMap(ProcedureMap procedureMap)
-{
-    mProcedureMap = std::move(procedureMap);
-}
-
 Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action action)
 {
     if (nullptr == json)
