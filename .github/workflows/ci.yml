@@ -24,6 +24,7 @@ jobs:
           [
             { "name": "almalinux-9", "arch": "amd64", "tag": "latest" },
             { "name": "amazonlinux-2", "arch": "amd64", "tag": "latest" },
+            { "name": "azurelinux-3", "arch": "amd64", "tag": "latest" },
             { "name": "centos-7", "arch": "amd64", "tag": "latest" },
             { "name": "centos-8", "arch": "amd64", "tag": "latest" },
             { "name": "debian-10", "arch": "amd64", "tag": "latest" },
