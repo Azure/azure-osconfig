@@ -43,15 +43,18 @@ namespace compliance
         }
     }
 
-    void Engine::setMaxPayloadSize(unsigned int value) noexcept {
+    void Engine::setMaxPayloadSize(unsigned int value) noexcept
+    {
         mMaxPayloadSize = value;
     }
 
-    unsigned int Engine::getMaxPayloadSize() const noexcept {
+    unsigned int Engine::getMaxPayloadSize() const noexcept
+    {
         return mMaxPayloadSize;
     }
 
-    OSCONFIG_LOG_HANDLE Engine::log() const noexcept {
+    OSCONFIG_LOG_HANDLE Engine::log() const noexcept
+    {
         return mLog;
     }
 
@@ -60,7 +63,8 @@ namespace compliance
         return cModuleInfo;
     }
 
-    Result<Engine::AuditResult> Engine::mmiGet(const char* objectName) {
+    Result<Engine::AuditResult> Engine::mmiGet(const char* objectName)
+    {
         if (nullptr == objectName)
         {
             return Error("Invalid argument", EINVAL);
@@ -274,7 +278,8 @@ namespace compliance
         return result;
     }
 
-    Result<bool> Engine::mmiSet(const char* objectName, const char* payload, const int payloadSizeBytes) {
+    Result<bool> Engine::mmiSet(const char* objectName, const char* payload, const int payloadSizeBytes)
+    {
         if (nullptr == objectName)
         {
             OsConfigLogError(log(), "Object name is null");
