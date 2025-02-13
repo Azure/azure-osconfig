@@ -2,8 +2,16 @@
 // Licensed under the MIT License.
 
 #include "ComplianceInterface.h"
+
 #include "CommonUtils.h"
 #include "Engine.h"
+#include "Logging.h"
+#include "Mmi.h"
+
+#include <cerrno>
+#include <cstddef>
+#include <cstring>
+#include <exception>
 
 using compliance::Engine;
 
@@ -126,7 +134,8 @@ int ComplianceMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
             return result.error().code;
         }
 
-        OsConfigLogInfo(engine.log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, result.value() ? "true" : "false");
+        OsConfigLogInfo(engine.log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload,
+            payloadSizeBytes, result.value() ? "true" : "false");
         return MMI_OK;
     }
     catch (const std::exception& e)
