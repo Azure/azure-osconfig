@@ -793,7 +793,7 @@ int CheckNoDuplicateUidsExist(char** reason, void* log)
     return status;
 }
 
-static int RemoveUser(SIMPLIFIED_USER* user, bool force, void* log)
+int RemoveUser(SIMPLIFIED_USER* user, bool removeHome, void* log)
 {
     const char* commandTemplate = "userdel %s %s";
     char* command = NULL;
@@ -810,7 +810,7 @@ static int RemoveUser(SIMPLIFIED_USER* user, bool force, void* log)
         return EPERM;
     }
 
-    if (NULL != (command = FormatAllocateString(commandTemplate, force ? "-f -r" : "-r", user->username)))
+    if (NULL != (command = FormatAllocateString(commandTemplate, removeHome ? "-f -r" : "-f", user->username)))
     {
         if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
         {
@@ -841,43 +841,53 @@ static int RemoveUser(SIMPLIFIED_USER* user, bool force, void* log)
     return status;
 }
 
-static int LockUser(SIMPLIFIED_USER* user, void* log)
+static int LockUnlockUser(SIMPLIFIED_USER* user, bool lock, void* log)
 {
-    const char* commandTemplate = "usermod -L %s";
+    const char* commandTemplate = "usermod %s %s";
     char* command = NULL;
     int status = 0, _status = 0;
 
     if (NULL == user)
     {
-        OsConfigLogError(log, "LockUser: invalid argument");
+        OsConfigLogError(log, "LockUnlockUser: invalid argument");
         return EINVAL;
     }
     else if (0 == user->userId)
     {
-        OsConfigLogError(log, "LockUser: cannot lock user with uid 0 ('%s' %u, %u)", user->username, user->userId, user->groupId);
+        OsConfigLogError(log, "LockUnlockUser: cannot %s user with uid 0 ('%s' %u, %u)", lock ? "lock" : "unlock", user->username, user->userId, user->groupId);
         return EPERM;
     }
 
-    if (NULL != (command = FormatAllocateString(commandTemplate, user->username)))
+    if (NULL != (command = FormatAllocateString(commandTemplate, lock ? "-L" : "-U", user->username)))
     {
         if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogInfo(log, "LockUser: locked user '%s' (%u, %u, '%s')", user->username, user->userId, user->groupId, user->home);
+            OsConfigLogInfo(log, "LockUnlockUser: %s user '%s' (%u, %u, '%s')", lock ? "locked" : "unlocked", user->username, user->userId, user->groupId, user->home);
         }
         else
         {
-            OsConfigLogError(log, "LockUser: failed to lock user '%s' (%u, %u) (%d)", user->username, user->userId, user->groupId, _status);
+            OsConfigLogError(log, "LockUnlockUser: failed to %s user '%s' (%u, %u) (%d)", lock ? "lock" : "unlock", user->username, user->userId, user->groupId, _status);
         }
 
         FREE_MEMORY(command);
     }
     else
     {
-        OsConfigLogError(log, "LockUser: out of memory");
+        OsConfigLogError(log, "LockUnlockUser: out of memory");
         status = ENOMEM;
     }
 
     return status;
+}
+
+int LockUser(SIMPLIFIED_USER* user, void* log)
+{
+    return LockUnlockUser(user, true, log);
+}
+
+int UnlockUser(SIMPLIFIED_USER* user, void* log)
+{
+    return LockUnlockUser(user, false, log);
 }
 
 int CheckNoDuplicateGidsExist(char** reason, void* log)
@@ -923,7 +933,7 @@ int CheckNoDuplicateGidsExist(char** reason, void* log)
     return status;
 }
 
-int RemoveGroup(SIMPLIFIED_GROUP* group, bool force, void* log)
+int RemoveGroup(SIMPLIFIED_GROUP* group, bool removeHomeDirs, void* log)
 {
     const char* commandTemplate = "groupdel -f %s";
     char* command = NULL;
@@ -956,7 +966,7 @@ int RemoveGroup(SIMPLIFIED_GROUP* group, bool force, void* log)
                 {
                     OsConfigLogError(log, "RemoveGroup: group '%s' (%u) is primary group of user '%s' (%u), try first to delete this user account",
                         group->groupName, group->groupId, userList[i].username, userList[i].userId);
-                    RemoveUser(&(userList[i]), force, log);
+                    RemoveUser(&(userList[i]), removeHomeDirs, log);
                 }
             }
         }
@@ -3146,7 +3156,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
     return status;
 }
 
-int RemoveUserAccounts(const char* names, bool force, void* log)
+int RemoveUserAccounts(const char* names, bool removeHomeDirs, void* log)
 {
     const char* userTemplate = "%s:";
     size_t namesLength = 0;
@@ -3196,7 +3206,7 @@ int RemoveUserAccounts(const char* names, bool force, void* log)
 
                         if (0 == strcmp(userList[i].username, name))
                         {
-                            if ((0 != (_status = RemoveUser(&(userList[i]), force, log))) && (0 == status))
+                            if ((0 != (_status = RemoveUser(&(userList[i]), removeHomeDirs, log))) && (0 == status))
                             {
                                 status = _status;
                             }

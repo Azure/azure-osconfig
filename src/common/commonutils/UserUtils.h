@@ -90,7 +90,8 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, void* log);
 int SetRootIsOnlyUidZeroAccount(void* log);
 int CheckAllUsersHavePasswordsSet(char** reason, void* log);
 int RemoveUsersWithoutPasswords(void* log);
-int RemoveGroup(SIMPLIFIED_GROUP* group, bool force, void* log);
+int RemoveUser(SIMPLIFIED_USER* user, bool removeHomeDir, void* log);
+int RemoveGroup(SIMPLIFIED_GROUP* group, bool removeHomeDirs, void* log);
 int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log);
 int SetDefaultRootAccountGroupIsGidZero(void* log);
 int CheckAllUsersHomeDirectoriesExist(char** reason, void* log);
@@ -112,13 +113,15 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, void* log);
 int CheckLockoutAfterInactivityLessThan(long days, char** reason, void* log);
 int SetLockoutAfterInactivityLessThan(long days, void* log);
 int CheckSystemAccountsAreNonLogin(char** reason, void* log);
+int LockUser(SIMPLIFIED_USER* user, void* log);
+int UnlockUser(SIMPLIFIED_USER* user, void* log);
 int LockSystemAccountsThatCanLogin(void* log);
 int CheckRootPasswordForSingleUserMode(char** reason, void* log);
 int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, char** reason, void* log);
 int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, void* log);
 int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, void* log);
 int CheckUserAccountsNotFound(const char* names, char** reason, void* log);
-int RemoveUserAccounts(const char* names, bool force, void* log);
+int RemoveUserAccounts(const char* names, bool removeHomeDirs, void* log);
 int RestrictSuToRootGroup(void* log);
 
 #ifdef __cplusplus
