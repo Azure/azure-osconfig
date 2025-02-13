@@ -14,7 +14,7 @@ namespace compliance
         mParameters[key] = std::move(value);
     }
 
-    Optional<Error> Procedure::updateUserParameters(const std::string &input)
+    Optional<Error> Procedure::updateUserParameters(const std::string& input)
     {
         std::istringstream stream(input);
         std::string token;
@@ -72,7 +72,7 @@ namespace compliance
 
     Optional<Error> Procedure::setAudit(const json_value_t* rule)
     {
-        if(mAuditRule != nullptr)
+        if (mAuditRule != nullptr)
         {
             return Error("Audit rule already set");
         }
@@ -81,8 +81,9 @@ namespace compliance
         return Optional<Error>();
     }
 
-    const JSON_Object* Procedure::audit() const noexcept {
-        if( mAuditRule == nullptr )
+    const JSON_Object* Procedure::audit() const noexcept
+    {
+        if (mAuditRule == nullptr)
         {
             return nullptr;
         }
@@ -100,7 +101,8 @@ namespace compliance
         return Optional<Error>();
     }
 
-    const JSON_Object* Procedure::remediation() const noexcept {
+    const JSON_Object* Procedure::remediation() const noexcept
+    {
         if (mRemediationRule == nullptr)
         {
             return nullptr;

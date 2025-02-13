@@ -9,10 +9,11 @@
 
 namespace compliance
 {
-    template<typename T>
+    template <typename T>
     class Optional
     {
         std::unique_ptr<T> mValue;
+
     public:
         Optional() = default;
         Optional(T value)
@@ -58,7 +59,7 @@ namespace compliance
 
         Optional& operator=(T value)
         {
-            if( mValue != nullptr )
+            if (mValue != nullptr)
             {
                 *mValue = std::move(value);
             }

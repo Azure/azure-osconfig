@@ -5,7 +5,7 @@
 #include <string>
 #include <Evaluator.h>
 
-namespace compliance {
-    ProcedureMap Evaluator::mProcedureMap = {
-    };
+namespace compliance
+{
+    ProcedureMap Evaluator::mProcedureMap = {};
 }

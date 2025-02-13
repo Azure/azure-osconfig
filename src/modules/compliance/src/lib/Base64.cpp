@@ -40,7 +40,7 @@ namespace compliance
         return (isalnum(c) || (c == '+') || (c == '/') || (c == '='));
     }
 
-    Result<std::string> Base64Decode(const std::string &input)
+    Result<std::string> Base64Decode(const std::string& input)
     {
         if (input.size() % 4 != 0)
         {
@@ -64,7 +64,7 @@ namespace compliance
             int j = 0;
             for (j = 0; j < 4; ++j)
             {
-                if (input[i+j] == '=')
+                if (input[i + j] == '=')
                 {
                     break;
                 }
@@ -93,4 +93,4 @@ namespace compliance
         }
         return ret;
     }
-}
+} // namespace compliance

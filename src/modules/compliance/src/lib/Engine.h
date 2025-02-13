@@ -60,6 +60,7 @@ namespace compliance
                 return *this;
             }
         };
+
     private:
         OSCONFIG_LOG_HANDLE mLog = nullptr;
         bool mLocalLog = false;
@@ -70,6 +71,7 @@ namespace compliance
         Optional<Error> setProcedure(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
         Optional<Error> initAudit(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
         Result<bool> executeRemediation(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
+
     public:
         // Create engine with external log file
         Engine(void* log) noexcept;
@@ -86,6 +88,6 @@ namespace compliance
         Result<AuditResult> mmiGet(const char* objectName);
         Result<bool> mmiSet(const char* objectName, const char* payload, const int payloadSizeBytes);
     };
-}
+} // namespace compliance
 
 #endif // COMPLIANCE_ENGINE_H

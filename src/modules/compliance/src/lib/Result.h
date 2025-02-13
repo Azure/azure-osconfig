@@ -14,10 +14,25 @@ namespace compliance
         int code = -1;
         std::string message;
 
-        Error(std::string message, int code) : code(code), message(std::move(message)) {}
-        Error(std::string message) : message(std::move(message)) {}
-        Error(const Error& other) : code(other.code), message(other.message) {}
-        Error(Error&& other) noexcept : code(other.code), message(std::move(other.message)) {}
+        Error(std::string message, int code)
+            : code(code)
+            , message(std::move(message))
+        {
+        }
+        Error(std::string message)
+            : message(std::move(message))
+        {
+        }
+        Error(const Error& other)
+            : code(other.code)
+            , message(other.message)
+        {
+        }
+        Error(Error&& other) noexcept
+            : code(other.code)
+            , message(std::move(other.message))
+        {
+        }
         Error& operator=(const Error& other)
         {
             if (this == &other)
@@ -44,7 +59,7 @@ namespace compliance
         ~Error() = default;
     };
 
-    template<typename T>
+    template <typename T>
     class Result
     {
         union Pointer
@@ -61,18 +76,22 @@ namespace compliance
 
         Tag mTag;
         Pointer mPointer;
+
     public:
-        Result(T value) : mTag(Tag::Value)
+        Result(T value)
+            : mTag(Tag::Value)
         {
             mPointer.value = new T(std::move(value));
         }
 
-        Result(Error error) : mTag(Tag::Error)
+        Result(Error error)
+            : mTag(Tag::Error)
         {
             mPointer.error = new Error(std::move(error));
         }
 
-        Result(const Result& other) : mTag(other.mTag)
+        Result(const Result& other)
+            : mTag(other.mTag)
         {
             if (mTag == Tag::Value)
             {
@@ -84,9 +103,10 @@ namespace compliance
             }
         }
 
-        Result(Result&& other) noexcept : mTag(other.mTag)
+        Result(Result&& other) noexcept
+            : mTag(other.mTag)
         {
-            if(mTag == Tag::Value)
+            if (mTag == Tag::Value)
             {
                 mPointer.value = other.mPointer.value;
             }
@@ -186,7 +206,7 @@ namespace compliance
 
         T value_or(T default_value) const& noexcept(noexcept_copyable<T>())
         {
-            if(mTag == Tag::Error)
+            if (mTag == Tag::Error)
             {
                 return std::move(default_value);
             }
@@ -224,7 +244,7 @@ namespace compliance
             return mPointer.value;
         }
 
-        T* operator->()&
+        T* operator->() &
         {
             return mPointer.value;
         }

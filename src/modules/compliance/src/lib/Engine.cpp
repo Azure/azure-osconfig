@@ -17,7 +17,8 @@ namespace compliance
 {
     static constexpr const char* cLogFile = "/var/log/osconfig_compliance.log";
     static constexpr const char* cRolledLogFile = "/var/log/osconfig_compliance.bak";
-    static constexpr const char* cModuleInfo = "{\"Name\": \"Compliance\","
+    static constexpr const char* cModuleInfo =
+        "{\"Name\": \"Compliance\","
         "\"Description\": \"Provides functionality to audit and remediate Security Baseline policies on device\","
         "\"Manufacturer\": \"Microsoft\","
         "\"VersionMajor\": 2,"
@@ -27,17 +28,20 @@ namespace compliance
         "\"Lifetime\": 2,"
         "\"UserAccount\": 0}";
 
-    Engine::Engine(void* log) noexcept : mLog{ log }
+    Engine::Engine(void* log) noexcept
+        : mLog{ log }
     {
     }
 
-    Engine::Engine() noexcept : mLog{ OpenLog(cLogFile, cRolledLogFile) }, mLocalLog{ true }
+    Engine::Engine() noexcept
+        : mLog{ OpenLog(cLogFile, cRolledLogFile) }
+        , mLocalLog{ true }
     {
     }
 
     Engine::~Engine()
     {
-        if(mLocalLog)
+        if (mLocalLog)
         {
             CloseLog(&mLog);
         }
@@ -169,7 +173,7 @@ namespace compliance
         {
             return error.value();
         }
-        if(nullptr == procedure.audit())
+        if (nullptr == procedure.audit())
         {
             OsConfigLogError(log(), "Failed to copy 'audit' object");
             return Error("Out of memory");
@@ -310,7 +314,7 @@ namespace compliance
         else if (ruleName.find(initPrefix) == 0)
         {
             auto error = initAudit(ruleName.substr(strlen(initPrefix)), payload, payloadSizeBytes);
-            if(error)
+            if (error)
             {
                 OsConfigLogInfo(log(), "Failed to init audit: %s", error->message.c_str());
                 return error.value();
@@ -326,4 +330,4 @@ namespace compliance
         OsConfigLogError(log(), "Invalid object name: Must start with %s, %s or %s prefix", initPrefix, procedurePrefix, remediatePrefix);
         return Error("Invalid object name");
     }
-}
+} // namespace compliance
