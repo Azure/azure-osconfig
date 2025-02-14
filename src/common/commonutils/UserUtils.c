@@ -2684,18 +2684,19 @@ int SetSystemAccountsNonLogin(void* log)
         {
             if ((userList[i].isLocked || userList[i].noLogin || userList[i].cannotLogin) && userList[i].hasPassword && userList[i].userId)
             {
-                OsConfigLogError(log, "SetSystemAccountsNonLogin: user '%s' (%u, %u, '%s', '%s') is either locked, non-login, or cannot-login, "
+                OsConfigLogInfo(log, "SetSystemAccountsNonLogin: user '%s' (%u, %u, '%s', '%s') is either locked, non-login, or cannot-login, "
                     "but can login with password",  userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
 
                 // If the account is not already true non-login, try to make it non-login and if that does not work, remove the account
                 if (0 != (_status = SetUserNonLogin(&(userList[i]), log)))
                 {
                     _status = RemoveUser(&(userList[i]), false, log);
+                }
 
-                    if (0 == status)
-                    {
-                        status = _status;
-                    }
+                // Do not overwrite a previous non zero status value if any
+                if (_status && (0 == status))
+                {
+                    status = _status;
                 }
             }
         }
