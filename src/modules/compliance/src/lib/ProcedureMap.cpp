@@ -5,5 +5,5 @@
 
 namespace compliance
 {
-    ProcedureMap Evaluator::mProcedureMap = {};
+ProcedureMap Evaluator::mProcedureMap = {};
 }

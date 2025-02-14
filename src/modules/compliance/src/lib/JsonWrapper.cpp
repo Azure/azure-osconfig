@@ -7,13 +7,13 @@
 
 namespace compliance
 {
-    void JsonWrapperDeleter::operator()(json_value_t* value) const
-    {
-        json_value_free(value);
-    }
+void JsonWrapperDeleter::operator()(json_value_t* value) const
+{
+    json_value_free(value);
+}
 
-    JsonWrapper parseJSON(const char* input)
-    {
-        return JsonWrapper(json_parse_string(input), JsonWrapperDeleter());
-    }
+JsonWrapper parseJSON(const char* input)
+{
+    return JsonWrapper(json_parse_string(input), JsonWrapperDeleter());
+}
 } // namespace compliance
