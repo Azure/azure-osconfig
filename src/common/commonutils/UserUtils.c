@@ -16,6 +16,8 @@ static const char* g_etcPasswd = "/etc/passwd";
 static const char* g_etcPasswdDash = "/etc/passwd-";
 static const char* g_etcShadowDash = "/etc/shadow-";
 
+static const char* g_noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", "" };
+
 static void ResetUserEntry(SIMPLIFIED_USER* target)
 {
     if (NULL != target)
@@ -165,18 +167,16 @@ static char* EncryptionName(int type)
     return name;
 }
 
-static bool IsNoLoginUser(SIMPLIFIED_USER* user)
+static bool IsUserNonLogin(SIMPLIFIED_USER* user)
 {
-    const char* noLoginShell[] = {"/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", ""};
-
-    int index = ARRAY_SIZE(noLoginShell);
+    int index = ARRAY_SIZE(g_noLoginShell);
     bool noLogin = false;
 
     if (user && user->shell)
     {
         while (index > 0)
         {
-            if (0 == strcmp(user->shell, noLoginShell[index - 1]))
+            if (0 == strcmp(user->shell, g_noLoginShell[index - 1]))
             {
                 noLogin = true;
                 break;
@@ -187,6 +187,61 @@ static bool IsNoLoginUser(SIMPLIFIED_USER* user)
     }
 
     return noLogin;
+}
+
+static int SetUserNonLogin(SIMPLIFIED_USER* user, void* log)
+{
+    const char* commandTemplate = "usermod -s %s %s";
+    char* command = NULL;
+    int noLoginShells = ARRAY_SIZE(g_noLoginShell), i = 0, result = 0;
+
+    if ((NULL == user) || (NULL == user->username))
+    {
+        OsConfigLogError(log, "SetUserNonLogin: invalid argument");
+        return EINVAL;
+    }
+
+    if (true == (user->noLogin = IsUserNonLogin(user)))
+    {
+        OsConfigLogInfo(log, "SetUserNonLogin: user '%s' (%u) is already set to be non-login", user->username, user->userId);
+        return 0;
+    }
+
+    result = ENOENT;
+
+    for (i = 0; i < noLoginShells; i++)
+    {
+        if (true == FileExists(g_noLoginShell[i]))
+        {
+            if (NULL == (command = FormatAllocateString(commandTemplate, g_noLoginShell[i], user->username)))
+            {
+                OsConfigLogError(log, "SetUserNonLogin: out of memory");
+                result = ENOMEM;
+            }
+            else if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+            {
+                OsConfigLogInfo(log, "SetUserNonLogin: '%s' failed with %d (errno: %d)", command, result, errno);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "SetUserNonLogin: user '%s' (%u) is now set to be non-login", user->username, user->userId);
+            }
+
+            FREE_MEMORY(command);
+
+            if ((0 == result) || (ENOMEM == result))
+            {
+                break;
+            }
+        }
+    }
+
+    if (ENOENT == result)
+    {
+        OsConfigLogInfo(log, "SetUserNonLogin: no suitable no login shell found (to make user '%s' (%u) non-login)", user->username, user->userId);
+    }
+
+    return result;
 }
 
 static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
@@ -201,7 +256,7 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
         return EINVAL;
     }
 
-    if (true == (user->noLogin = IsNoLoginUser(user)))
+    if (true == (user->noLogin = IsUserNonLogin(user)))
     {
         return 0;
     }
@@ -793,9 +848,9 @@ int CheckNoDuplicateUidsExist(char** reason, void* log)
     return status;
 }
 
-static int RemoveUser(SIMPLIFIED_USER* user, void* log)
+int RemoveUser(SIMPLIFIED_USER* user, bool removeHome, void* log)
 {
-    const char* commandTemplate = "userdel -f -r %s";
+    const char* commandTemplate = "userdel %s %s";
     char* command = NULL;
     int status = 0, _status = 0;
 
@@ -810,7 +865,7 @@ static int RemoveUser(SIMPLIFIED_USER* user, void* log)
         return EPERM;
     }
 
-    if (NULL != (command = FormatAllocateString(commandTemplate, user->username)))
+    if (NULL != (command = FormatAllocateString(commandTemplate, removeHome ? "-f -r" : "-f", user->username)))
     {
         if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
         {
@@ -836,51 +891,6 @@ static int RemoveUser(SIMPLIFIED_USER* user, void* log)
     {
         OsConfigLogError(log, "RemoveUser: out of memory");
         status = ENOMEM;
-    }
-
-    return status;
-}
-
-int SetNoDuplicateUids(void* log)
-{
-    SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0;
-    unsigned int i = 0, j = 0;
-    unsigned int hits = 0;
-    int status = 0, _status = 0;
-
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
-    {
-        for (i = 0; i < userListSize; i++)
-        {
-            hits = 0;
-
-            for (j = 0; j < userListSize; j++)
-            {
-                if (userList[i].userId == userList[j].userId)
-                {
-                    hits += 1;
-                }
-            }
-
-            if (hits > 1)
-            {
-                OsConfigLogError(log, "SetNoDuplicateUids: user '%s' (%u) appears more than a single time in '/etc/passwd', deleting this user account",
-                    userList[i].username, userList[i].userId);
-
-                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
-                {
-                    status = _status;
-                }
-            }
-        }
-    }
-
-    FreeUsersList(&userList, userListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "SetNoDuplicateUids: no duplicate uids exist in /etc/passwd");
     }
 
     return status;
@@ -929,7 +939,7 @@ int CheckNoDuplicateGidsExist(char** reason, void* log)
     return status;
 }
 
-static int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
+int RemoveGroup(SIMPLIFIED_GROUP* group, bool removeHomeDirs, void* log)
 {
     const char* commandTemplate = "groupdel -f %s";
     char* command = NULL;
@@ -962,7 +972,7 @@ static int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
                 {
                     OsConfigLogError(log, "RemoveGroup: group '%s' (%u) is primary group of user '%s' (%u), try first to delete this user account",
                         group->groupName, group->groupId, userList[i].username, userList[i].userId);
-                    RemoveUser(&(userList[i]), log);
+                    RemoveUser(&(userList[i]), removeHomeDirs, log);
                 }
             }
         }
@@ -987,49 +997,6 @@ static int RemoveGroup(SIMPLIFIED_GROUP* group, void* log)
     {
         OsConfigLogError(log, "RemoveGroup: out of memory");
         status = ENOMEM;
-    }
-
-    return status;
-}
-
-int SetNoDuplicateGids(void* log)
-{
-    SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupListSize = 0;
-    unsigned int i = 0, j = 0;
-    unsigned int hits = 0;
-    int status = 0, _status = 0;
-
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log)))
-    {
-        for (i = 0; i < groupListSize; i++)
-        {
-            hits = 0;
-
-            for (j = 0; j < groupListSize; j++)
-            {
-                if (groupList[i].groupId == groupList[j].groupId)
-                {
-                    hits += 1;
-                }
-            }
-
-            if (hits > 1)
-            {
-                OsConfigLogError(log, "SetNoDuplicateGids: gid %u appears more than a single time in '/etc/group'", groupList[i].groupId);
-                if ((0 != (_status = RemoveGroup(&(groupList[i]), log))) && (0 == status))
-                {
-                    status = _status;
-                }
-            }
-        }
-    }
-
-    FreeGroupList(&groupList, groupListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "SetNoDuplicateGids: no duplicate gids exist in '/etc/group'");
     }
 
     return status;
@@ -1078,50 +1045,6 @@ int CheckNoDuplicateUserNamesExist(char** reason, void* log)
     return status;
 }
 
-int SetNoDuplicateUserNames(void* log)
-{
-    SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0;
-    unsigned int i = 0, j = 0;
-    unsigned int hits = 0;
-    int status = 0, _status = 0;
-
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
-    {
-        for (i = 0; i < userListSize; i++)
-        {
-            hits = 0;
-
-            for (j = 0; j < userListSize; j++)
-            {
-                if (userList[i].username && userList[j].username && (0 == strcmp(userList[i].username, userList[j].username)))
-                {
-                    hits += 1;
-                }
-            }
-
-            if (hits > 1)
-            {
-                OsConfigLogError(log, "SetNoDuplicateUserNames: username '%s' appears more than a single time in '/etc/passwd'", userList[i].username);
-
-                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
-                {
-                    status = _status;
-                }
-            }
-        }
-    }
-
-    FreeUsersList(&userList, userListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "SetNoDuplicateUserNames: no duplicate usernames exist in '/etc/passwd'");
-    }
-
-    return status;
-}
-
 int CheckNoDuplicateGroupNamesExist(char** reason, void* log)
 {
     SIMPLIFIED_GROUP* groupList = NULL;
@@ -1160,49 +1083,6 @@ int CheckNoDuplicateGroupNamesExist(char** reason, void* log)
     {
         OsConfigLogInfo(log, "CheckNoDuplicateGroupNamesExist: no duplicate group names exist in '/etc/group'");
         OsConfigCaptureSuccessReason(reason, "No duplicate group names exist in '/etc/group'");
-    }
-
-    return status;
-}
-
-int SetNoDuplicateGroupNames(void* log)
-{
-    SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupListSize = 0;
-    unsigned int i = 0, j = 0;
-    unsigned int hits = 0;
-    int status = 0, _status = 0;
-
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log)))
-    {
-        for (i = 0; i < groupListSize; i++)
-        {
-            hits = 0;
-
-            for (j = 0; j < groupListSize; j++)
-            {
-                if (groupList[i].groupId == groupList[j].groupId)
-                {
-                    hits += 1;
-                }
-            }
-
-            if (hits > 1)
-            {
-                OsConfigLogError(log, "SetNoDuplicateGroupNames: group name '%s' appears more than a single time in '/etc/group'", groupList[i].groupName);
-                if ((0 != (_status = RemoveGroup(&(groupList[i]), log))) && (0 == status))
-                {
-                    status = _status;
-                }
-            }
-        }
-    }
-
-    FreeGroupList(&groupList, groupListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "SetNoDuplicateGroupNames: no duplicate group names exist in '/etc/group'");
     }
 
     return status;
@@ -1536,7 +1416,7 @@ int RemoveUsersWithoutPasswords(void* log)
                     OsConfigLogError(log, "RemoveUsersWithoutPasswords: the root account's password must be manually fixed");
                     status = EPERM;
                 }
-                else if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                else if ((0 != (_status = RemoveUser(&(userList[i]), false, log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -1601,7 +1481,7 @@ int SetRootIsOnlyUidZeroAccount(void* log)
                 OsConfigLogError(log, "SetRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
                     userList[i].username, userList[i].userId, userList[i].groupId);
 
-                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                if ((0 != (_status = RemoveUser(&(userList[i]), false, log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -2792,7 +2672,7 @@ int CheckSystemAccountsAreNonLogin(char** reason, void* log)
     return status;
 }
 
-int RemoveSystemAccountsThatCanLogin(void* log)
+int SetSystemAccountsNonLogin(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -2804,10 +2684,17 @@ int RemoveSystemAccountsThatCanLogin(void* log)
         {
             if ((userList[i].isLocked || userList[i].noLogin || userList[i].cannotLogin) && userList[i].hasPassword && userList[i].userId)
             {
-                OsConfigLogError(log, "RemoveSystemAccountsThatCanLogin: user '%s' (%u, %u, '%s', '%s') is either locked, no-login, or cannot-login, "
+                OsConfigLogInfo(log, "SetSystemAccountsNonLogin: user '%s' (%u, %u, '%s', '%s') is either locked, non-login, or cannot-login, "
                     "but can login with password",  userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
 
-                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                // If the account is not already true non-login, try to make it non-login and if that does not work, remove the account
+                if (0 != (_status = SetUserNonLogin(&(userList[i]), log)))
+                {
+                    _status = RemoveUser(&(userList[i]), false, log);
+                }
+
+                // Do not overwrite a previous non zero status value if any
+                if (_status && (0 == status))
                 {
                     status = _status;
                 }
@@ -2819,7 +2706,7 @@ int RemoveSystemAccountsThatCanLogin(void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "RemoveSystemAccountsThatCanLogin: all system accounts are non-login");
+        OsConfigLogInfo(log, "SetSystemAccountsNonLogin: all system accounts are non-login");
     }
 
     return status;
@@ -3282,7 +3169,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
     return status;
 }
 
-int RemoveUserAccounts(const char* names, void* log)
+int RemoveUserAccounts(const char* names, bool removeHomeDirs, void* log)
 {
     const char* userTemplate = "%s:";
     size_t namesLength = 0;
@@ -3332,7 +3219,7 @@ int RemoveUserAccounts(const char* names, void* log)
 
                         if (0 == strcmp(userList[i].username, name))
                         {
-                            if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                            if ((0 != (_status = RemoveUser(&(userList[i]), removeHomeDirs, log))) && (0 == status))
                             {
                                 status = _status;
                             }
