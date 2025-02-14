@@ -5,6 +5,7 @@
 #define COMPLIANCE_RESULT_H
 
 #include "TypeTraits.h"
+
 #include <string>
 
 namespace compliance

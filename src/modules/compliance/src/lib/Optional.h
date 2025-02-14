@@ -5,6 +5,7 @@
 #define COMPLIANCE_OPTIONAL_H
 
 #include "TypeTraits.h"
+
 #include <memory>
 
 namespace compliance

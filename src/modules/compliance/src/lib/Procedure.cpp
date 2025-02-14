@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "Procedure.h"
+
 #include "Logging.h"
 
 #include <parson.h>

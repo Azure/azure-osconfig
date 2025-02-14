@@ -2,6 +2,7 @@
 #define BASE64_H
 
 #include "Result.h"
+
 #include <string>
 
 namespace compliance

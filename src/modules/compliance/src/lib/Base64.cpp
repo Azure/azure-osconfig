@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 
 #include "Base64.h"
+
 #include "Result.h"
+
 #include <string>
 
 namespace compliance

@@ -84,3 +84,4 @@ UseTab: Never
 IndentAccessModifiers: false
 AccessModifierOffset: -4
 EmptyLineBeforeAccessModifier: Always
+IncludeBlocks: Regroup

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "Engine.h"
+
 #include "Base64.h"
 #include "Evaluator.h"
 #include "JsonWrapper.h"
