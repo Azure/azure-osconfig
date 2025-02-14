@@ -129,7 +129,7 @@ char* DuplicateString(const char* source);
 char* ConcatenateStrings(const char* first, const char* second);
 char* DuplicateStringToLowercase(const char* source);
 char* FormatAllocateString(const char* format, ...);
-int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log);
+int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, int base, void* log);
 char* RemoveCharacterFromString(const char* source, char what, void* log);
 char* ReplaceEscapeSequencesInString(const char* source, const char* escapes, unsigned int numEscapes, char replacement, void* log);
 int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, unsigned int numEscapes, char replacement, void* log);

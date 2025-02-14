@@ -1339,7 +1339,7 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
 TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
 {
-    unsigned int testModes[] = { 0, 600, 601, 640, 644, 650, 700, 710, 750, 777 };
+    unsigned int testModes[] = { 0, 0600, 0601, 0640, 0644, 0650, 0700, 0710, 0750, 0777 };
     int numTestModes = ARRAY_SIZE(testModes);
 
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
@@ -1351,13 +1351,13 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
 
     EXPECT_TRUE(Cleanup(m_path));
 
-    EXPECT_EQ(EINVAL, SetFileAccess(nullptr, 0, 0, 777, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileAccess(nullptr, 0, 0, 777, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, SetFileAccess(nullptr, 0, 0, 0777, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileAccess(nullptr, 0, 0, 0777, nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
 {
-    unsigned int testModes[] = { 0, 600, 601, 640, 644, 650, 700, 710, 750, 777 };
+    unsigned int testModes[] = { 0, 0600, 0601, 0640, 0644, 0650, 0700, 0710, 0750, 0777 };
     int numTestModes = ARRAY_SIZE(testModes);
 
     EXPECT_EQ(0, ExecuteCommand(nullptr, "mkdir ~test", false, false, 0, 0, nullptr, nullptr, nullptr));
@@ -1368,8 +1368,8 @@ TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
     }
     EXPECT_EQ(0, ExecuteCommand(nullptr, "rm -r ~test", false, false, 0, 0, nullptr, nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, SetDirectoryAccess(nullptr, 0, 0, 777, nullptr));
-    EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 777, false, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, SetDirectoryAccess(nullptr, 0, 0, 0777, nullptr));
+    EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 0777, false, nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
@@ -2108,20 +2108,20 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     int* integers = NULL;
     int numIntegers = 0;
 
-    EXPECT_EQ(EINVAL, ConvertStringToIntegers(nullptr, ',', nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, ConvertStringToIntegers("123 456", ',', nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, ConvertStringToIntegers("123 456", ',', &integers, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, ConvertStringToIntegers("123 456", ',', nullptr, &numIntegers, nullptr));
-    EXPECT_EQ(EINVAL, ConvertStringToIntegers(nullptr, ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringToIntegers(nullptr, ',', nullptr, nullptr, 10, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringToIntegers("123 456", ',', nullptr, nullptr, 10, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringToIntegers("123 456", ',', &integers, nullptr, 10, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringToIntegers("123 456", ',', nullptr, &numIntegers, 10, nullptr));
+    EXPECT_EQ(EINVAL, ConvertStringToIntegers(nullptr, ',', &integers, &numIntegers, 10, nullptr));
 
-    EXPECT_EQ(0, ConvertStringToIntegers("123,456", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(0, ConvertStringToIntegers("123,456", ',', &integers, &numIntegers, 10, nullptr));
     EXPECT_EQ(2, numIntegers);
     EXPECT_EQ(123, integers[0]);
     EXPECT_EQ(456, integers[1]);
     FREE_MEMORY(integers);
     numIntegers = 0;
 
-    EXPECT_EQ(0, ConvertStringToIntegers("1,-2,-3", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(0, ConvertStringToIntegers("1,-2,-3", ',', &integers, &numIntegers, 10, nullptr));
     EXPECT_EQ(3, numIntegers);
     EXPECT_EQ(1, integers[0]);
     EXPECT_EQ(-2, integers[1]);
@@ -2129,7 +2129,7 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     FREE_MEMORY(integers);
     numIntegers = 0;
 
-    EXPECT_EQ(0, ConvertStringToIntegers("11, -222, -333, 444", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(0, ConvertStringToIntegers("11, -222, -333, 444", ',', &integers, &numIntegers, 10, nullptr));
     EXPECT_EQ(4, numIntegers);
     EXPECT_EQ(11, integers[0]);
     EXPECT_EQ(-222, integers[1]);
@@ -2138,7 +2138,7 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     FREE_MEMORY(integers);
     numIntegers = 0;
 
-    EXPECT_EQ(0, ConvertStringToIntegers("  -100 , 200     ,-300  ", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(0, ConvertStringToIntegers("  -100 , 200     ,-300  ", ',', &integers, &numIntegers, 10, nullptr));
     EXPECT_EQ(3, numIntegers);
     EXPECT_EQ(-100, integers[0]);
     EXPECT_EQ(200, integers[1]);
@@ -2146,7 +2146,7 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     FREE_MEMORY(integers);
     numIntegers = 0;
 
-    EXPECT_EQ(0, ConvertStringToIntegers("  -101 # 202     #-303  ", '#', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(0, ConvertStringToIntegers("  -101 # 202     #-303  ", '#', &integers, &numIntegers, 10, nullptr));
     EXPECT_EQ(3, numIntegers);
     EXPECT_EQ(-101, integers[0]);
     EXPECT_EQ(202, integers[1]);
@@ -2154,14 +2154,14 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     FREE_MEMORY(integers);
     numIntegers = 0;
 
-    EXPECT_EQ(0, ConvertStringToIntegers("111 222 -333", ' ', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(0, ConvertStringToIntegers("111 222 -333", ' ', &integers, &numIntegers, 10, nullptr));
     EXPECT_EQ(3, numIntegers);
     EXPECT_EQ(111, integers[0]);
     EXPECT_EQ(222, integers[1]);
     EXPECT_EQ(-333, integers[2]);
     FREE_MEMORY(integers);
 
-    EXPECT_EQ(0, ConvertStringToIntegers("3,14,4,-1,-1,-1,-1", ',', &integers, &numIntegers, nullptr));
+    EXPECT_EQ(0, ConvertStringToIntegers("3,14,4,-1,-1,-1,-1", ',', &integers, &numIntegers, 10, nullptr));
     EXPECT_EQ(7, numIntegers);
     EXPECT_EQ(3, integers[0]);
     EXPECT_EQ(14, integers[1]);
@@ -2170,6 +2170,20 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(-1, integers[4]);
     EXPECT_EQ(-1, integers[5]);
     EXPECT_EQ(-1, integers[6]);
+    FREE_MEMORY(integers);
+
+    EXPECT_EQ(0, ConvertStringToIntegers("111 222 333", ' ', &integers, &numIntegers, 8, nullptr));
+    EXPECT_EQ(3, numIntegers);
+    EXPECT_EQ(0111, integers[0]);
+    EXPECT_EQ(0222, integers[1]);
+    EXPECT_EQ(0333, integers[2]);
+    FREE_MEMORY(integers);
+
+    EXPECT_EQ(0, ConvertStringToIntegers("123 abc def", ' ', &integers, &numIntegers, 16, nullptr));
+    EXPECT_EQ(3, numIntegers);
+    EXPECT_EQ(0x123, integers[0]);
+    EXPECT_EQ(0xabc, integers[1]);
+    EXPECT_EQ(0xdef, integers[2]);
     FREE_MEMORY(integers);
 }
 

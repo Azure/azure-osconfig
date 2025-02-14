@@ -907,7 +907,7 @@ static int IncludeRemediationSshConfFile(void* log)
     char* inclusion = NULL;
     size_t newConfigurationSize = 0;
     size_t inclusionSize = 0;
-    int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
+    int desiredAccess = strtol(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8);
     int status = 0;
 
     if (false == FileExists(g_sshServerConfiguration))
@@ -1014,7 +1014,7 @@ static int SaveRemediationToConfFile(void* log)
         }
     }
 
-    SetFileAccess(g_osconfigRemediationConf, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
+    SetFileAccess(g_osconfigRemediationConf, 0, 0, strtol(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), log);
 
     FREE_MEMORY(newRemediation);
     FREE_MEMORY(currentRemediation);
@@ -1046,7 +1046,7 @@ static int SaveRemediationToSshdConfig(void* log)
     char* remediation = NULL;
     size_t remediationSize = 0;
     size_t newConfigurationSize = 0;
-    int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
+    int desiredAccess = strtol(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8);
     int status = 0;
 
     if (false == FileExists(g_sshServerConfiguration))
@@ -1343,8 +1343,8 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
 
     if (0 == strcmp(name, g_auditEnsurePermissionsOnEtcSshSshdConfigObject))
     {
-        CheckFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ?
-            g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), reason, log);
+        CheckFileAccess(g_sshServerConfiguration, 0, 0, strtol(g_desiredPermissionsOnEtcSshSshdConfig ?
+            g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), reason, log);
     }
     else if (0 == strcmp(name, g_auditEnsureSshPortIsConfiguredObject))
     {
@@ -1425,7 +1425,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     else if (0 == strcmp(name, g_auditEnsureSshWarningBannerIsEnabledObject))
     {
         CheckSshWarningBanner(g_sshBannerFile, g_desiredSshWarningBannerIsEnabled ? g_desiredSshWarningBannerIsEnabled : g_sshDefaultSshBannerText,
-            atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), reason, log);
+            strtol(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), reason, log);
     }
     else if (0 == strcmp(name, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
     {
@@ -1440,8 +1440,8 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     {
         if (0 == (status = InitializeSshAuditCheck(name, value, log)))
         {
-            status = SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ?
-                g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
+            status = SetFileAccess(g_sshServerConfiguration, 0, 0, strtol(g_desiredPermissionsOnEtcSshSshdConfig ?
+                g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), log);
         }
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject)) ||
@@ -1469,8 +1469,8 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     {
         if (0 == (status = InitializeSshAuditCheck(name, value, log)))
         {
-            status = SetSshWarningBanner(atoi(g_desiredPermissionsOnEtcSshSshdConfig ?
-                g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), g_desiredSshWarningBannerIsEnabled, log);
+            status = SetSshWarningBanner(strtol(g_desiredPermissionsOnEtcSshSshdConfig ?
+                g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), g_desiredSshWarningBannerIsEnabled, log);
         }
     }
     else
