@@ -3248,7 +3248,7 @@ static int RemediateEnsurePasswordExpirationWarning(char* value, void* log)
 static int RemediateEnsureSystemAccountsAreNonLogin(char* value, void* log)
 {
     UNUSED(value);
-    return LockSystemAccountsThatCanLogin(log);
+    return SetSystemAccountsNonLogin(log);
 }
 
 static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, void* log)
