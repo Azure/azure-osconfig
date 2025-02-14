@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <string>
-#include "Result.h"
 #include "Base64.h"
+#include "Result.h"
+#include <string>
 
 namespace compliance
 {

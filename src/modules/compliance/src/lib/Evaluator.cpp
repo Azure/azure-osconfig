@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <string>
-#include <memory>
-#include <map>
-#include <sstream>
-#include <parson.h>
-#include <Logging.h>
 #include "Evaluator.h"
+#include "Logging.h"
 #include "Result.h"
+
+#include <cstring>
+#include <map>
+#include <parson.h>
+#include <sstream>
+#include <string>
+#include <utility>
 
 #define lenof(str) (sizeof(str) - 1)
 

@@ -2,16 +2,21 @@
 // Licensed under the MIT License.
 
 #include "Engine.h"
-
-#include <CommonUtils.h>
-#include "Evaluator.h"
 #include "Base64.h"
+#include "Evaluator.h"
+#include "JsonWrapper.h"
+#include "Logging.h"
+#include "Optional.h"
+#include "Procedure.h"
+#include "Result.h"
 
-#include "parson.h"
-#include <string>
-#include <vector>
+#include <cerrno>
+#include <cstring>
 #include <map>
-#include <sstream>
+#include <memory>
+#include <parson.h>
+#include <string>
+#include <utility>
 
 namespace compliance
 {

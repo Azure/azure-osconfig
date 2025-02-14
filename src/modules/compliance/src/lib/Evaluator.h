@@ -4,11 +4,12 @@
 #ifndef COMPLIANCE_EVALUATOR_H
 #define COMPLIANCE_EVALUATOR_H
 
-#include <map>
-#include <string>
-#include <sstream>
-#include "Result.h"
 #include "Logging.h"
+#include "Result.h"
+
+#include <map>
+#include <sstream>
+#include <string>
 
 struct json_object_t;
 

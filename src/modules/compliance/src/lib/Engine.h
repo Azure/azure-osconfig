@@ -4,17 +4,16 @@
 #ifndef COMPLIANCE_ENGINE_H
 #define COMPLIANCE_ENGINE_H
 
-#include <Mmi.h>
+#include "JsonWrapper.h"
 #include "Logging.h"
-
-#include "Result.h"
+#include "Mmi.h"
 #include "Optional.h"
 #include "Procedure.h"
-#include "JsonWrapper.h"
+#include "Result.h"
 
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
 
 struct json_object_t;
 

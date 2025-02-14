@@ -4,6 +4,13 @@
 #include "ComplianceInterface.h"
 #include "CommonUtils.h"
 #include "Engine.h"
+#include "Logging.h"
+#include "Mmi.h"
+#include <cerrno>
+#include <cstddef>
+#include <cstring>
+#include <exception>
+#include <string.h>
 
 using compliance::Engine;
 

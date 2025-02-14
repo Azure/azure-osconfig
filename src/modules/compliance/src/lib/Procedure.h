@@ -4,9 +4,9 @@
 #ifndef PROCEDURE_HPP
 #define PROCEDURE_HPP
 
-#include "Result.h"
-#include "Optional.h"
 #include "JsonWrapper.h"
+#include "Optional.h"
+#include "Result.h"
 
 #include <map>
 #include <string>
