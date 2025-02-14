@@ -220,7 +220,7 @@ static int SetUserNonLogin(SIMPLIFIED_USER* user, void* log)
             }
             else if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
             {
-                OsConfigLogInfo(log, "SetUserNonLogin: '%s' failed with %d (errno: %d)", command, status, errno);
+                OsConfigLogInfo(log, "SetUserNonLogin: '%s' failed with %d (errno: %d)", command, result, errno);
             }
             else
             {
