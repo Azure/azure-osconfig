@@ -240,7 +240,7 @@ static int SetUserNonLogin(SIMPLIFIED_USER* user, void* log)
     {
         OsConfigLogInfo(log, "SetUserNonLogin: no suitable no login shell found (to make user '%s' (%u) non-login)", userList[i].username, userList[i].userId);
     }
-    
+
     return result;
 }
 
@@ -2691,7 +2691,7 @@ int SetSystemAccountsNonLogin(void* log)
                 if (0 != (_status = SetUserNonLogin(&(userList[i]), log)))
                 {
                     _status = RemoveUser(&(userList[i]), false, log);
-                        
+
                     if (0 == status))
                     {
                         status = _status;
