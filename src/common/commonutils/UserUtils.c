@@ -213,7 +213,7 @@ static int SetUserNonLogin(SIMPLIFIED_USER* user, void* log)
     {
         if (true == FileExists(g_noLoginShell[i]))
         {
-            if (NULL == (command = FormatAllocateString(commandTemplate, g_noLoginShell[i], user->username))
+            if (NULL == (command = FormatAllocateString(commandTemplate, g_noLoginShell[i], user->username)))
             {
                 OsConfigLogError(log, "SetUserNonLogin: out of memory");
                 result = ENOMEM;
@@ -224,7 +224,7 @@ static int SetUserNonLogin(SIMPLIFIED_USER* user, void* log)
             }
             else
             {
-                OsConfigLogInfo(log, "SetUserNonLogin: user '%s' (%u) is now set to be non-login", userList[i].username, userList[i].userId);
+                OsConfigLogInfo(log, "SetUserNonLogin: user '%s' (%u) is now set to be non-login", user->username, user->userId);
             }
 
             FREE_MEMORY(command);
@@ -238,7 +238,7 @@ static int SetUserNonLogin(SIMPLIFIED_USER* user, void* log)
 
     if (ENOENT == result)
     {
-        OsConfigLogInfo(log, "SetUserNonLogin: no suitable no login shell found (to make user '%s' (%u) non-login)", userList[i].username, userList[i].userId);
+        OsConfigLogInfo(log, "SetUserNonLogin: no suitable no login shell found (to make user '%s' (%u) non-login)", user->username, user->userId);
     }
 
     return result;
@@ -2692,7 +2692,7 @@ int SetSystemAccountsNonLogin(void* log)
                 {
                     _status = RemoveUser(&(userList[i]), false, log);
 
-                    if (0 == status))
+                    if (0 == status)
                     {
                         status = _status;
                     }
