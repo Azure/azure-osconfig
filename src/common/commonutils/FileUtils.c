@@ -598,8 +598,9 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 currentMode = statStruct.st_mode & 07777;
                 desiredMode = desiredAccess & 07777;
 
-                // S_ISVTX (01000) is only valid for directories
-                if (!directory) {
+                // S_ISVTX (01000): restricted deletion flag (for directories only)
+                if (!directory) 
+                {
                     desiredMode &= ~S_ISVTX;
                 }
 
