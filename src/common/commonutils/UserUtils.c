@@ -16,6 +16,8 @@ static const char* g_etcPasswd = "/etc/passwd";
 static const char* g_etcPasswdDash = "/etc/passwd-";
 static const char* g_etcShadowDash = "/etc/shadow-";
 
+static const char* g_noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", "" };
+
 static void ResetUserEntry(SIMPLIFIED_USER* target)
 {
     if (NULL != target)
@@ -165,18 +167,16 @@ static char* EncryptionName(int type)
     return name;
 }
 
-static bool IsNoLoginUser(SIMPLIFIED_USER* user)
+static bool IsUserNonLogin(SIMPLIFIED_USER* user)
 {
-    const char* noLoginShell[] = {"/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", ""};
-
-    int index = ARRAY_SIZE(noLoginShell);
+    int index = ARRAY_SIZE(g_noLoginShell);
     bool noLogin = false;
 
     if (user && user->shell)
     {
         while (index > 0)
         {
-            if (0 == strcmp(user->shell, noLoginShell[index - 1]))
+            if (0 == strcmp(user->shell, g_noLoginShell[index - 1]))
             {
                 noLogin = true;
                 break;
@@ -187,6 +187,61 @@ static bool IsNoLoginUser(SIMPLIFIED_USER* user)
     }
 
     return noLogin;
+}
+
+static int SetUserNonLogin(SIMPLIFIED_USER* user, void* log)
+{
+    const char* commandTemplate = "usermod -s %s %s";
+    char* command = NULL;
+    int noLoginShells = ARRAY_SIZE(g_noLoginShell), i = 0, result = 0;
+
+    if ((NULL == user) || (NULL == user->username))
+    {
+        OsConfigLogError(log, "SetUserNonLogin: invalid argument");
+        return EINVAL;
+    }
+
+    if (true == (user->noLogin = IsUserNonLogin(user)))
+    {
+        OsConfigLogInfo(log, "SetUserNonLogin: user '%s' (%u) is already set to be non-login", userList[i].username, userList[i].userId);
+        return 0;
+    }
+
+    result = ENOENT;
+
+    for (i = 0; i < noLoginShells; i++)
+    {
+        if (true == FileExists(g_noLoginShell[i]))
+        {
+            if (NULL == (command = FormatAllocateString(commandTemplate, g_noLoginShell[i], user->username))
+            {
+                OsConfigLogError(log, "SetUserNonLogin: out of memory");
+                result = ENOMEM;
+            }
+            else if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+            {
+                OsConfigLogInfo(log, "SetUserNonLogin: '%s' failed with %d (errno: %d)", command, status, errno);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "SetUserNonLogin: user '%s' (%u) is now set to be non-login", userList[i].username, userList[i].userId);
+            }
+
+            FREE_MEMORY(command);
+
+            if ((0 == result) || (ENOMEM == result))
+            {
+                break;
+            }
+        }
+    }
+
+    if (ENOENT == result)
+    {
+        OsConfigLogInfo(log, "SetUserNonLogin: no suitable no login shell found (to make user '%s' (%u) non-login)", userList[i].username, userList[i].userId);
+    }
+    
+    return result;
 }
 
 static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
@@ -201,7 +256,7 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
         return EINVAL;
     }
 
-    if (true == (user->noLogin = IsNoLoginUser(user)))
+    if (true == (user->noLogin = IsUserNonLogin(user)))
     {
         return 0;
     }
@@ -839,55 +894,6 @@ int RemoveUser(SIMPLIFIED_USER* user, bool removeHome, void* log)
     }
 
     return status;
-}
-
-static int LockUnlockUser(SIMPLIFIED_USER* user, bool lock, void* log)
-{
-    const char* commandTemplate = "usermod %s %s";
-    char* command = NULL;
-    int status = 0, _status = 0;
-
-    if (NULL == user)
-    {
-        OsConfigLogError(log, "LockUnlockUser: invalid argument");
-        return EINVAL;
-    }
-    else if (0 == user->userId)
-    {
-        OsConfigLogError(log, "LockUnlockUser: cannot %s user with uid 0 ('%s' %u, %u)", lock ? "lock" : "unlock", user->username, user->userId, user->groupId);
-        return EPERM;
-    }
-
-    if (NULL != (command = FormatAllocateString(commandTemplate, lock ? "-L" : "-U", user->username)))
-    {
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-        {
-            OsConfigLogInfo(log, "LockUnlockUser: %s user '%s' (%u, %u, '%s')", lock ? "locked" : "unlocked", user->username, user->userId, user->groupId, user->home);
-        }
-        else
-        {
-            OsConfigLogError(log, "LockUnlockUser: failed to %s user '%s' (%u, %u) (%d)", lock ? "lock" : "unlock", user->username, user->userId, user->groupId, _status);
-        }
-
-        FREE_MEMORY(command);
-    }
-    else
-    {
-        OsConfigLogError(log, "LockUnlockUser: out of memory");
-        status = ENOMEM;
-    }
-
-    return status;
-}
-
-int LockUser(SIMPLIFIED_USER* user, void* log)
-{
-    return LockUnlockUser(user, true, log);
-}
-
-int UnlockUser(SIMPLIFIED_USER* user, void* log)
-{
-    return LockUnlockUser(user, false, log);
 }
 
 int CheckNoDuplicateGidsExist(char** reason, void* log)
@@ -2666,7 +2672,7 @@ int CheckSystemAccountsAreNonLogin(char** reason, void* log)
     return status;
 }
 
-int LockSystemAccountsThatCanLogin(void* log)
+int SetSystemAccountsNonLogin(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -2678,12 +2684,18 @@ int LockSystemAccountsThatCanLogin(void* log)
         {
             if ((userList[i].isLocked || userList[i].noLogin || userList[i].cannotLogin) && userList[i].hasPassword && userList[i].userId)
             {
-                OsConfigLogError(log, "LockSystemAccountsThatCanLogin: user '%s' (%u, %u, '%s', '%s') is either locked, no-login, or cannot-login, "
+                OsConfigLogError(log, "SetSystemAccountsNonLogin: user '%s' (%u, %u, '%s', '%s') is either locked, non-login, or cannot-login, "
                     "but can login with password",  userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
 
-                if ((0 != (_status = LockUser(&(userList[i]), log))) && (0 == status))
+                // If the account is not already true non-login, try to make it non-login and if that does not work, remove the account
+                if (0 != (_status = SetUserNonLogin(&(userList[i]), log)))
                 {
-                    status = _status;
+                    _status = RemoveUser(&(userList[i]), false, log);
+                        
+                    if (0 == status))
+                    {
+                        status = _status;
+                    }
                 }
             }
         }
@@ -2693,7 +2705,7 @@ int LockSystemAccountsThatCanLogin(void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "LockSystemAccountsThatCanLogin: all system accounts are non-login");
+        OsConfigLogInfo(log, "SetSystemAccountsNonLogin: all system accounts are non-login");
     }
 
     return status;
