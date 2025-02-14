@@ -203,7 +203,7 @@ static int SetUserNonLogin(SIMPLIFIED_USER* user, void* log)
 
     if (true == (user->noLogin = IsUserNonLogin(user)))
     {
-        OsConfigLogInfo(log, "SetUserNonLogin: user '%s' (%u) is already set to be non-login", userList[i].username, userList[i].userId);
+        OsConfigLogInfo(log, "SetUserNonLogin: user '%s' (%u) is already set to be non-login", user->username, user->userId);
         return 0;
     }
 
