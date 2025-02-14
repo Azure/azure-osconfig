@@ -649,7 +649,7 @@ static int ConvertStringToIntegers_target(const char* data, std::size_t size) no
     auto source = std::string(data, size);
     int* values = nullptr;
     int count = 0;
-    ConvertStringToIntegers(source.c_str(), separator.at(0), &values, &count, nullptr);
+    ConvertStringToIntegers(source.c_str(), separator.at(0), &values, &count, 10,  nullptr);
     free(values);
     return 0;
 }

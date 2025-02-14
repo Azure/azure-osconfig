@@ -631,7 +631,7 @@ static char* g_desiredEnsureUnnecessaryAccountsAreRemoved = NULL;
 static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
 
 static const int g_shadowGid = 42;
-static const int g_varLogJournalMode = 2755;
+static const int g_varLogJournalMode = 02755;
 
 static PERF_CLOCK g_perfClock = {{0, 0}, {0, 0}};
 
@@ -1020,39 +1020,39 @@ void AsbShutdown(void* log)
     CloseLog(&g_perfLog);
 
     // When done, allow others access to read the performance log
-    SetFileAccess(PERF_LOG_FILE, 0, 0, 6774, NULL);
-    SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 6774, NULL);
+    SetFileAccess(PERF_LOG_FILE, 0, 0, 06774, NULL);
+    SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 06774, NULL);
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcIssue, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcIssue ?
-        g_desiredEnsurePermissionsOnEtcIssue : g_defaultEnsurePermissionsOnEtcIssue), &reason, log);
+    CheckFileAccess(g_etcIssue, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssue ?
+        g_desiredEnsurePermissionsOnEtcIssue : g_defaultEnsurePermissionsOnEtcIssue, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcIssueNet(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcIssueNet, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcIssueNet ?
-        g_desiredEnsurePermissionsOnEtcIssueNet : g_defaultEnsurePermissionsOnEtcIssueNet), &reason, log);
+    CheckFileAccess(g_etcIssueNet, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssueNet ?
+        g_desiredEnsurePermissionsOnEtcIssueNet : g_defaultEnsurePermissionsOnEtcIssueNet, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcHostsAllow(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcHostsAllow, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcHostsAllow ?
-        g_desiredEnsurePermissionsOnEtcHostsAllow : g_defaultEnsurePermissionsOnEtcHostsAllow), &reason, log);
+    CheckFileAccess(g_etcHostsAllow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsAllow ?
+        g_desiredEnsurePermissionsOnEtcHostsAllow : g_defaultEnsurePermissionsOnEtcHostsAllow, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcHostsDeny(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcHostsDeny, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcHostsDeny ?
-        g_desiredEnsurePermissionsOnEtcHostsDeny : g_defaultEnsurePermissionsOnEtcHostsDeny), &reason, log);
+    CheckFileAccess(g_etcHostsDeny, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsDeny ?
+        g_desiredEnsurePermissionsOnEtcHostsDeny : g_defaultEnsurePermissionsOnEtcHostsDeny, NULL, 8), &reason, log);
     return reason;
 }
 
@@ -1066,120 +1066,120 @@ static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void* log)
 static char* AuditEnsurePermissionsOnEtcShadow(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadow, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcShadow ?
-        g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow), &reason, log);
+    CheckFileAccess(g_etcShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadow ?
+        g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcShadowDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcShadowDash, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcShadowDash ?
-        g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash), &reason, log);
+    CheckFileAccess(g_etcShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadowDash ?
+        g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcGShadow(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGShadow, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcGShadow ?
-        g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow), &reason, log);
+    CheckFileAccess(g_etcGShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadow ?
+        g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcGShadowDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGShadowDash, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash ?
-        g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash), &reason, log);
+    CheckFileAccess(g_etcGShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash ?
+        g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcPasswd(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcPasswd, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswd ?
-        g_desiredEnsurePermissionsOnEtcPasswd : g_defaultEnsurePermissionsOnEtcPasswd), &reason, log);
+    CheckFileAccess(g_etcPasswd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswd ?
+        g_desiredEnsurePermissionsOnEtcPasswd : g_defaultEnsurePermissionsOnEtcPasswd, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcPasswdDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcPasswdDash, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswdDash ?
-        g_desiredEnsurePermissionsOnEtcPasswdDash : g_defaultEnsurePermissionsOnEtcPasswdDash), &reason, log);
+    CheckFileAccess(g_etcPasswdDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswdDash ?
+        g_desiredEnsurePermissionsOnEtcPasswdDash : g_defaultEnsurePermissionsOnEtcPasswdDash, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcGroup(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGroup, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcGroup ?
-        g_desiredEnsurePermissionsOnEtcGroup : g_defaultEnsurePermissionsOnEtcGroup), &reason, log);
+    CheckFileAccess(g_etcGroup, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroup ?
+        g_desiredEnsurePermissionsOnEtcGroup : g_defaultEnsurePermissionsOnEtcGroup, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcGroupDash(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcGroupDash, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcGroupDash ?
-        g_desiredEnsurePermissionsOnEtcGroupDash : g_defaultEnsurePermissionsOnEtcGroupDash), &reason, log);
+    CheckFileAccess(g_etcGroupDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroupDash ?
+        g_desiredEnsurePermissionsOnEtcGroupDash : g_defaultEnsurePermissionsOnEtcGroupDash, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcAnacronTab(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcAnacronTab, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcAnacronTab ?
-        g_desiredEnsurePermissionsOnEtcAnacronTab : g_defaultEnsurePermissionsOnEtcAnacronTab), &reason, log);
+    CheckFileAccess(g_etcAnacronTab, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcAnacronTab ?
+        g_desiredEnsurePermissionsOnEtcAnacronTab : g_defaultEnsurePermissionsOnEtcAnacronTab, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcCronD(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronD, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronD ?
-        g_desiredEnsurePermissionsOnEtcCronD : g_defaultEnsurePermissionsOnEtcCronD), &reason, log);
+    CheckFileAccess(g_etcCronD, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronD ?
+        g_desiredEnsurePermissionsOnEtcCronD : g_defaultEnsurePermissionsOnEtcCronD, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcCronDaily(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronDaily, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronDaily ?
-        g_desiredEnsurePermissionsOnEtcCronDaily : g_defaultEnsurePermissionsOnEtcCronDaily), &reason, log);
+    CheckFileAccess(g_etcCronDaily, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronDaily ?
+        g_desiredEnsurePermissionsOnEtcCronDaily : g_defaultEnsurePermissionsOnEtcCronDaily, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcCronHourly(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronHourly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronHourly ?
-        g_desiredEnsurePermissionsOnEtcCronHourly : g_defaultEnsurePermissionsOnEtcCronHourly), &reason, log);
+    CheckFileAccess(g_etcCronHourly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronHourly ?
+        g_desiredEnsurePermissionsOnEtcCronHourly : g_defaultEnsurePermissionsOnEtcCronHourly, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcCronMonthly(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronMonthly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronMonthly ?
-        g_desiredEnsurePermissionsOnEtcCronMonthly : g_defaultEnsurePermissionsOnEtcCronMonthly), &reason, log);
+    CheckFileAccess(g_etcCronMonthly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronMonthly ?
+        g_desiredEnsurePermissionsOnEtcCronMonthly : g_defaultEnsurePermissionsOnEtcCronMonthly, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcCronWeekly(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcCronWeekly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronWeekly ?
-        g_desiredEnsurePermissionsOnEtcCronWeekly : g_defaultEnsurePermissionsOnEtcCronWeekly), &reason, log);
+    CheckFileAccess(g_etcCronWeekly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronWeekly ?
+        g_desiredEnsurePermissionsOnEtcCronWeekly : g_defaultEnsurePermissionsOnEtcCronWeekly, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcMotd(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcMotd, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcMotd ?
-        g_desiredEnsurePermissionsOnEtcMotd : g_defaultEnsurePermissionsOnEtcMotd), &reason, log);
+    CheckFileAccess(g_etcMotd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcMotd ?
+        g_desiredEnsurePermissionsOnEtcMotd : g_defaultEnsurePermissionsOnEtcMotd, NULL, 8), &reason, log);
     return reason;
 }
 
@@ -1509,7 +1509,7 @@ static char* AuditEnsureRestrictedUserHomeDirectories(void* log)
     char* reason = NULL;
 
     if (0 == ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories ?
-        g_desiredEnsureRestrictedUserHomeDirectories : g_defaultEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, log))
+        g_desiredEnsureRestrictedUserHomeDirectories : g_defaultEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, 8, log))
     {
         CheckRestrictedUserHomeDirectories((unsigned int*)modes, (unsigned int)numberOfModes, &reason, log);
     }
@@ -1849,7 +1849,7 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void* log)
 {
     const char* value = g_desiredEnsurePermissionsOnBootloaderConfig ?
         g_desiredEnsurePermissionsOnBootloaderConfig : g_defaultEnsurePermissionsOnBootloaderConfig;
-    unsigned int mode = (unsigned int)atoi(value);
+    unsigned int mode = strtol(value, NULL, 8);
     char* reason = NULL;
 
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubCfg, 0, 0, mode, &reason, log));
@@ -1888,7 +1888,7 @@ static char* AuditEnsurePasswordCreationRequirements(void* log)
     char* reason = NULL;
 
     if ((0 == ConvertStringToIntegers(g_desiredEnsurePasswordCreationRequirements ? g_desiredEnsurePasswordCreationRequirements :
-        g_defaultEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, log)) && (7 == numberOfValues))
+        g_defaultEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, 10, log)) && (7 == numberOfValues))
     {
         CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], &reason, log);
     }
@@ -2031,7 +2031,7 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void* log)
     char* reason = NULL;
 
     if ((0 == ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles ? g_desiredEnsureFilePermissionsForAllRsyslogLogFiles :
-        g_defaultEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, log)) && (numberOfModes > 0))
+        g_defaultEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, 8, log)) && (numberOfModes > 0))
     {
         CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, g_fileCreateMode, ' ', modes, numberOfModes, &reason, log);
     }
@@ -2048,8 +2048,8 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void* log)
 static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void* log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcRsyslogConf, 0, 0, 640, &reason, log));
-    CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcRsyslogConf, 0, 0, 0640, &reason, log));
+    CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 0640, &reason, log);
     return reason;
 }
 
@@ -2083,7 +2083,7 @@ static char* AuditEnsureSyslogRotaterServiceIsEnabled(void* log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_logrotate, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronDailyLogRotate, 0, 0, 0755, &reason, log));
     if ((false == IsRedHatBased(log)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_16_04, log)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_18_04, log)))
     {
         CheckDaemonActive(g_logrotateTimer, &reason, log);
@@ -2122,8 +2122,8 @@ static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void* log)
     RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcAtDeny, &reason, log) ? 0 : ENOENT);
     RETURN_REASON_IF_NOT_ZERO(CheckFileExists(g_etcCronAllow, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileExists(g_etcAtAllow, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronAllow, 0, 0, 600, &reason, log));
-    CheckFileAccess(g_etcAtAllow, 0, 0, 600, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronAllow, 0, 0, 0600, &reason, log));
+    CheckFileAccess(g_etcAtAllow, 0, 0, 0600, &reason, log);
     return reason;
 }
 
@@ -2382,7 +2382,7 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void* log)
     char* reason = NULL;
 
     if ((0 == ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable ? g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable :
-        g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, log)) && (numberOfModes >= 2))
+        g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, 8, log)) && (numberOfModes >= 2))
     {
         CheckUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, &reason, log);
     }
@@ -2726,25 +2726,25 @@ static int InitEnsureDefaultDenyFirewallPolicyIsSet(char* value)
 static int RemediateEnsurePermissionsOnEtcIssue(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcIssue(value);
-    return SetFileAccess(g_etcIssue, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcIssue), log);
+    return SetFileAccess(g_etcIssue, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssue, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcIssueNet(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcIssueNet(value);
-    return SetFileAccess(g_etcIssueNet, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcIssueNet), log);
+    return SetFileAccess(g_etcIssueNet, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssueNet, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcHostsAllow(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcHostsAllow(value);
-    return SetFileAccess(g_etcHostsAllow, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcHostsAllow), log);
+    return SetFileAccess(g_etcHostsAllow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsAllow, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcHostsDeny(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcHostsDeny(value);
-    return SetFileAccess(g_etcHostsDeny, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcHostsDeny), log);
+    return SetFileAccess(g_etcHostsDeny, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsDeny, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
@@ -2755,91 +2755,91 @@ static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
 static int RemediateEnsurePermissionsOnEtcShadow(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcShadow(value);
-    return SetFileAccess(g_etcShadow, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcShadow), log);
+    return SetFileAccess(g_etcShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadow, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcShadowDash(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcShadowDash(value);
-    return SetFileAccess(g_etcShadowDash, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcShadowDash), log);
+    return SetFileAccess(g_etcShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadowDash, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadow(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcGShadow(value);
-    return SetFileAccess(g_etcGShadow, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcGShadow), log);
+    return SetFileAccess(g_etcGShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadow, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadowDash(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcGShadowDash(value);
-    return SetFileAccess(g_etcGShadowDash, 0, g_shadowGid, atoi(g_desiredEnsurePermissionsOnEtcGShadowDash), log);
+    return SetFileAccess(g_etcGShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswd(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcPasswd(value);
-    return SetFileAccess(g_etcPasswd, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswd), log);
+    return SetFileAccess(g_etcPasswd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswd, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswdDash(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcPasswdDash(value);
-    return SetFileAccess(g_etcPasswdDash, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcPasswdDash), log);
+    return SetFileAccess(g_etcPasswdDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswdDash, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGroup(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcGroup(value);
-    return SetFileAccess(g_etcGroup, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcGroup), log);
+    return SetFileAccess(g_etcGroup, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroup, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcGroupDash(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcGroupDash(value);
-    return SetFileAccess(g_etcGroupDash, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcGroupDash), log);
+    return SetFileAccess(g_etcGroupDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroupDash, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcAnacronTab(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcAnacronTab(value);
-    return SetFileAccess(g_etcAnacronTab, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcAnacronTab), log);
+    return SetFileAccess(g_etcAnacronTab, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcAnacronTab, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronD(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcCronD(value);
-    return SetFileAccess(g_etcCronD, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronD), log);
+    return SetFileAccess(g_etcCronD, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronD, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronDaily(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcCronDaily(value);
-    return SetFileAccess(g_etcCronDaily, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronDaily), log);
+    return SetFileAccess(g_etcCronDaily, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronDaily, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronHourly(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcCronHourly(value);
-    return SetFileAccess(g_etcCronHourly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronHourly), log);
+    return SetFileAccess(g_etcCronHourly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronHourly, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronMonthly(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcCronMonthly(value);
-    return SetFileAccess(g_etcCronMonthly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronMonthly), log);
+    return SetFileAccess(g_etcCronMonthly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronMonthly, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcCronWeekly(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcCronWeekly(value);
-    return SetFileAccess(g_etcCronWeekly, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcCronWeekly), log);
+    return SetFileAccess(g_etcCronWeekly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronWeekly, NULL, 8), log);
 };
 
 static int RemediateEnsurePermissionsOnEtcMotd(char* value, void* log)
 {
     InitEnsurePermissionsOnEtcMotd(value);
-    return SetFileAccess(g_etcMotd, 0, 0, atoi(g_desiredEnsurePermissionsOnEtcMotd), log);
+    return SetFileAccess(g_etcMotd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcMotd, NULL, 8), log);
 };
 
 static int RemediateEnsureInetdNotInstalled(char* value, void* log)
@@ -3160,7 +3160,7 @@ static int RemediateEnsureRestrictedUserHomeDirectories(char* value, void* log)
 
     InitEnsureRestrictedUserHomeDirectories(value);
 
-    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, log))) && (numberOfModes > 1))
+    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, 8, log))) && (numberOfModes > 1))
     {
         status = SetRestrictedUserHomeDirectories((unsigned int*)modes, (unsigned int)numberOfModes, modes[0], modes[numberOfModes - 1], log);
     }
@@ -3443,7 +3443,7 @@ static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, void* log)
 {
     unsigned int mode = 0;
     InitEnsurePermissionsOnBootloaderConfig(value);
-    mode = (unsigned int)atoi(g_desiredEnsurePermissionsOnBootloaderConfig);
+    mode = strtol(g_desiredEnsurePermissionsOnBootloaderConfig, NULL, 8);
 
     return ((FileExists(g_bootGrubGrubCfg) && (0 == SetFileAccess(g_bootGrubGrubCfg, 0, 0, mode, log))) ||
         (FileExists(g_bootGrubGrubConf) && (0 == SetFileAccess(g_bootGrubGrubConf, 0, 0, mode, log))) ||
@@ -3490,7 +3490,7 @@ static int RemediateEnsurePasswordCreationRequirements(char* value, void* log)
 
     InitEnsurePasswordCreationRequirements(value);
 
-    if ((0 == ConvertStringToIntegers(g_desiredEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, log)) && (7 == numberOfValues))
+    if ((0 == ConvertStringToIntegers(g_desiredEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, 10, log)) && (7 == numberOfValues))
     {
         status = SetPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], log);
     }
@@ -3609,7 +3609,7 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, void
 
     InitEnsureFilePermissionsForAllRsyslogLogFiles(value);
 
-    if (0 == (status = ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, log)))
+    if (0 == (status = ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, 8, log)))
     {
         if (numberOfModes > 0)
         {
@@ -3639,8 +3639,8 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, void
 static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, void* log)
 {
     UNUSED(value);
-    return ((0 == SetFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, log)) &&
-        (0 == SetFileAccess(g_etcRsyslogConf, 0, 0, 640, log))) ? 0 : ENOENT;
+    return ((0 == SetFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 0640, log)) &&
+        (0 == SetFileAccess(g_etcRsyslogConf, 0, 0, 0640, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, void* log)
@@ -3666,7 +3666,7 @@ static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, void* log)
 {
     int status = ENOENT;
     UNUSED(value);
-    if ((0 == InstallPackage(g_logrotate, log)) && (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 755, log)))
+    if ((0 == InstallPackage(g_logrotate, log)) && (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 0755, log)))
     {
         status = 0;
         if ((false == IsRedHatBased(log)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_16_04, log)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_18_04, log)))
@@ -3711,8 +3711,8 @@ static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, void*
         SecureSaveToFile(g_etcAtAllow, payload, strlen(payload), log) &&
         (0 != CheckFileExists(g_etcCronDeny, NULL, log)) &&
         (0 != CheckFileExists(g_etcAtDeny, NULL, log)) &&
-        (0 == SetFileAccess(g_etcCronAllow, 0, 0, 600, log)) &&
-        (0 == SetFileAccess(g_etcAtAllow, 0, 0, 600, log))) ? 0 : ENOENT;
+        (0 == SetFileAccess(g_etcCronAllow, 0, 0, 0600, log)) &&
+        (0 == SetFileAccess(g_etcAtAllow, 0, 0, 0600, log))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSshPortIsConfigured(char* value, void* log)
@@ -3963,7 +3963,7 @@ static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, vo
 
     InitEnsureUsersDotFilesArentGroupOrWorldWritable(value);
 
-    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, log))) && (numberOfModes > 0))
+    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, 8, log))) && (numberOfModes > 0))
     {
         status = SetUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, modes[numberOfModes - 1], log);
     }

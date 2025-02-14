@@ -560,28 +560,6 @@ bool UnlockFile(FILE* file, void* log)
     return LockUnlockFile(file, false, log);
 }
 
-static int DecimalToOctal(int decimal)
-{
-    char buffer[10] = {0};
-    snprintf(buffer, ARRAY_SIZE(buffer), "%o", decimal);
-    return atoi(buffer);
-}
-
-static int OctalToDecimal(int octal)
-{
-    int internalOctal = octal;
-    int decimal = 0;
-    int i = 0;
-
-    while (internalOctal)
-    {
-        decimal += (internalOctal % 10) * pow(8, i++);
-        internalOctal = internalOctal / 10;
-    }
-
-    return decimal;
-}
-
 static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, void* log)
 {
     struct stat statStruct = {0};
@@ -617,41 +595,13 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                         name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                 }
 
-                // S_IXOTH (00001): Execute/search permission, others
-                // S_IWOTH (00002): Write permission, others
-                // S_IROTH (00004): Read permission, others
-                // S_IRWXO (00007): Read, write, execute/search by others
-                // S_IXGRP (00010): Execute/search permission, group
-                // S_IWGRP (00020): Write permission, group
-                // S_IRGRP (00040): Read permission, group
-                // S_IRWXG (00070): Read, write, execute/search by group
-                // S_IXUSR (00100): Execute/search permission, owner
-                // S_IWUSR (00200): Write permission, owner
-                // S_IRUSR (00400): Read permission, owner
-                // S_IRWXU (00700): Read, write, execute/search by owner
-                // S_ISVTX (01000): On directories, restricted deletion flag
-                // S_ISGID (02000): Set-group-ID on execution
-                // S_ISUID (04000): Set-user-ID on execution
+                currentMode = statStruct.st_mode & 07777;
+                desiredMode = desiredAccess & 07777;
 
-                currentMode = DecimalToOctal(statStruct.st_mode & 07777);
-                desiredMode = desiredAccess;
-
-                if (((desiredMode & S_IRWXU) && ((desiredMode & S_IRWXU) != (currentMode & S_IRWXU))) ||
-                    ((desiredMode & S_IRWXG) && ((desiredMode & S_IRWXG) != (currentMode & S_IRWXG))) ||
-                    ((desiredMode & S_IRWXO) && ((desiredMode & S_IRWXO) != (currentMode & S_IRWXO))) ||
-                    ((desiredMode & S_IRUSR) && ((desiredMode & S_IRUSR) != (currentMode & S_IRUSR))) ||
-                    ((desiredMode & S_IRGRP) && ((desiredMode & S_IRGRP) != (currentMode & S_IRGRP))) ||
-                    ((desiredMode & S_IROTH) && ((desiredMode & S_IROTH) != (currentMode & S_IROTH))) ||
-                    ((desiredMode & S_IWUSR) && ((desiredMode & S_IWUSR) != (currentMode & S_IWUSR))) ||
-                    ((desiredMode & S_IWGRP) && ((desiredMode & S_IWGRP) != (currentMode & S_IWGRP))) ||
-                    ((desiredMode & S_IWOTH) && ((desiredMode & S_IWOTH) != (currentMode & S_IWOTH))) ||
-                    ((desiredMode & S_IXUSR) && ((desiredMode & S_IXUSR) != (currentMode & S_IXUSR))) ||
-                    ((desiredMode & S_IXGRP) && ((desiredMode & S_IXGRP) != (currentMode & S_IXGRP))) ||
-                    ((desiredMode & S_IXOTH) && ((desiredMode & S_IXOTH) != (currentMode & S_IXOTH))) ||
-                    ((desiredMode & S_ISUID) && ((desiredMode & S_ISUID) != (currentMode & S_ISUID))) ||
-                    ((desiredMode & S_ISGID) && ((desiredMode & S_ISGID) != (currentMode & S_ISGID))) ||
-                    (directory && (desiredMode & S_ISVTX) && ((desiredMode & S_ISVTX) != (currentMode & S_ISVTX))) ||
-                    (currentMode > desiredMode))
+                if (!directory) {
+                    desiredMode &= ~S_ISVTX;
+                }
+                if (currentMode != desiredMode)
                 {
                     OsConfigLogError(log, "CheckAccess: access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
                     OsConfigCaptureReason(reason, "Access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
@@ -694,7 +644,6 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
 
 static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
-    mode_t mode = OctalToDecimal(desiredAccess);
     int result = ENOENT;
 
     if (NULL == name)
@@ -717,7 +666,7 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
             {
                 OsConfigLogInfo(log, "SetAccess: successfully set ownership of '%s' to owner %u, group %u", name, desiredOwnerId, desiredGroupId);
 
-                if (0 == (result = chmod(name, mode)))
+                if (0 == (result = chmod(name, desiredAccess)))
                 {
                     OsConfigLogInfo(log, "SetAccess: successfully set access to '%s' to %u", name, desiredAccess);
                 }
@@ -847,7 +796,7 @@ static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, 
         {
             *ownerId = statStruct.st_uid;
             *groupId = statStruct.st_gid;
-            *mode = DecimalToOctal(statStruct.st_mode & 07777);
+            *mode = statStruct.st_mode & 07777;
         }
         else
         {
