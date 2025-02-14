@@ -15,6 +15,7 @@ target_link_libraries(OsConfigResourceCompliance
     PRIVATE
         commonutils
         logging
+        telemetry
         mpiclient
         parsonlib
         compliancelib)

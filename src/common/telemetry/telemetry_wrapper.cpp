@@ -17,20 +17,20 @@ namespace trace_sdk = opentelemetry::sdk::trace;
 namespace trace_exporter = opentelemetry::exporter::trace;
 namespace otlp = opentelemetry::exporter::otlp;
 
-std::shared_ptr<trace_api::Tracer> tracer;
+std::shared_ptr<opentelemetry::sdk::trace::TracerProvider> provider;
 
 void init_tracer() {
-    trace_sdk::BatchSpanProcessorOptions bspOpts{};
+    // trace_sdk::BatchSpanProcessorOptions bspOpts{};
     otlp::OtlpHttpExporterOptions opts;
     opts.url = "http://localhost:4318/v1/traces";
 
     auto exporter  = otlp::OtlpHttpExporterFactory::Create(opts);
-    auto processor = trace_sdk::BatchSpanProcessorFactory::Create(std::move(exporter), bspOpts);
+    auto processor = trace_sdk::SimpleSpanProcessorFactory::Create(std::move(exporter));
     // auto exporter = std::unique_ptr<trace_sdk::SpanExporter>(new trace_exporter::OStreamSpanExporter); // immediately forwards ended spans to the exporter
     // auto processor = trace_sdk::SimpleSpanProcessorFactory::Create(std::move(exporter));
     
-    std::shared_ptr<trace_api::TracerProvider> sdk_provider = trace_sdk::TracerProviderFactory::Create(std::move(processor));
-    const std::shared_ptr<trace_api::TracerProvider> &api_provider = sdk_provider;
+    provider = trace_sdk::TracerProviderFactory::Create(std::move(processor));
+    const std::shared_ptr<trace_api::TracerProvider> &api_provider = provider;
 
     // auto provider = nostd::shared_ptr<trace_sdk::TracerProvider>(new trace_sdk::TracerProvider(std::move(processor)));
     // set the global trace provider
@@ -40,6 +40,8 @@ void init_tracer() {
 
 void cleanup_tracer() {
     // trace::Provider::SetTracerProvider(std::shared_ptr<sdktrace::TracerProvider>(nullptr));
+    provider->ForceFlush();
+    provider.reset();
     std::shared_ptr<trace_api::TracerProvider> noop;
     trace_api::Provider::SetTracerProvider(noop);
 }
@@ -47,12 +49,16 @@ void cleanup_tracer() {
 OPTL_TRACE_HANDLE start_span(const char* name) {
     auto tracer = trace_api::Provider::GetTracerProvider()->GetTracer("osconfig_tracer");
     auto span = tracer->StartSpan(name);
+    // auto scope = tracer->WithActiveSpan(span);
+    span->AddEvent("StartSpan");
+    span->SetStatus(trace_api::StatusCode::kUnset, "Span started");
     return new std::shared_ptr<trace_api::Span>(span.get()); 
 }
 
 void end_span(OPTL_TRACE_HANDLE handle) {
     auto span_ptr = static_cast<std::shared_ptr<trace_api::Span>*>(handle);
     if (span_ptr && *span_ptr) {
+        (*span_ptr)->SetStatus(trace_api::StatusCode::kOk, "Span ended");
         (*span_ptr)->End();
         delete span_ptr;
     }
