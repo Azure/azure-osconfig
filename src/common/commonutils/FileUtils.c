@@ -598,18 +598,12 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 currentMode = statStruct.st_mode & 07777;
                 desiredMode = desiredAccess & 07777;
 
-<<<<<<< HEAD
-                if (!directory) {
-                    desiredMode &= ~S_ISVTX;
-                }
-=======
                 // S_ISVTX (01000): restricted deletion flag (for directories only)
                 if (!directory)
                 {
                     desiredMode &= ~S_ISVTX;
                 }
 
->>>>>>> 6c439501cd75af418addaae5d26aa91490bdd5cf
                 if (currentMode != desiredMode)
                 {
                     OsConfigLogError(log, "CheckAccess: access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
