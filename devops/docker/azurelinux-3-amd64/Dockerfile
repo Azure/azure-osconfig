@@ -10,8 +10,6 @@ RUN tdnf install -y \
     file \
     gcovr \
     git \
-    gmock-devel \
-    gtest-devel \
     jq \
     ninja-build \
     openssl-devel \
@@ -22,7 +20,12 @@ RUN tdnf install -y \
     tree \
     unzip \
     util-linux \
+    uuid-devel \
     wget \
     zip && \
     tdnf upgrade -y && \
     tdnf clean all
+
+# GTest
+RUN git clone https://github.com/google/googletest --recursive -b release-1.12.0
+RUN cd googletest && cmake . && cmake --build . --parallel --target install && rm -rf /git/googletest
