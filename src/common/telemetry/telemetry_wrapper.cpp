@@ -10,14 +10,21 @@
 #include <opentelemetry/sdk/trace/tracer_provider_factory.h>
 #include "opentelemetry/sdk/trace/batch_span_processor_factory.h"
 #include "opentelemetry/sdk/trace/batch_span_processor_options.h"
+#include <opentelemetry/nostd/shared_ptr.h>
 #include <opentelemetry/trace/provider.h>
 
 namespace trace_api = opentelemetry::trace;
 namespace trace_sdk = opentelemetry::sdk::trace;
 namespace trace_exporter = opentelemetry::exporter::trace;
 namespace otlp = opentelemetry::exporter::otlp;
+namespace nostd = opentelemetry::nostd;
 
 std::shared_ptr<opentelemetry::sdk::trace::TracerProvider> provider;
+
+struct SpanAndScope {
+    nostd::shared_ptr<trace_api::Span> span;
+    nostd::shared_ptr<trace_api::Scope> scope;
+};
 
 void init_tracer() {
     // trace_sdk::BatchSpanProcessorOptions bspOpts{};
@@ -42,24 +49,24 @@ void cleanup_tracer() {
     // trace::Provider::SetTracerProvider(std::shared_ptr<sdktrace::TracerProvider>(nullptr));
     provider->ForceFlush();
     provider.reset();
-    std::shared_ptr<trace_api::TracerProvider> noop;
+    nostd::shared_ptr<trace_api::TracerProvider> noop;
     trace_api::Provider::SetTracerProvider(noop);
 }
 
 OPTL_TRACE_HANDLE start_span(const char* name) {
     auto tracer = trace_api::Provider::GetTracerProvider()->GetTracer("osconfig_tracer");
     auto span = tracer->StartSpan(name);
-    // auto scope = tracer->WithActiveSpan(span);
+    auto scope = std::make_shared<trace_api::Scope>(tracer->WithActiveSpan(span));
     span->AddEvent("StartSpan");
     span->SetStatus(trace_api::StatusCode::kUnset, "Span started");
-    return new std::shared_ptr<trace_api::Span>(span.get()); 
+    return new SpanAndScope{span, scope};
 }
 
 void end_span(OPTL_TRACE_HANDLE handle) {
-    auto span_ptr = static_cast<std::shared_ptr<trace_api::Span>*>(handle);
-    if (span_ptr && *span_ptr) {
-        (*span_ptr)->SetStatus(trace_api::StatusCode::kOk, "Span ended");
-        (*span_ptr)->End();
-        delete span_ptr;
+    auto span_and_scope = static_cast<SpanAndScope*>(handle);
+    if (span_and_scope && span_and_scope->span) {
+        span_and_scope->span->SetStatus(trace_api::StatusCode::kOk, "Span ended");
+        span_and_scope->span->End();
+        delete span_and_scope;
     }
 }

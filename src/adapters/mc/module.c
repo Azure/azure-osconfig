@@ -28,9 +28,9 @@ MI_EXTERN_C MI_EXPORT MI_Module* MI_MAIN_CALL MI_Main(MI_Server* server)
 {
     init_tracer();
     OPTL_TRACE_HANDLE span = start_span("MI_Main");
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] MI module main (PID: %d)", getpid());
     end_span(span);
     cleanup_tracer();
-    OsConfigLogInfo(GetLog(), "[OsConfigResource] MI module main (PID: %d)", getpid());
 
     static MI_Module module;
     MI_EXTERN_C MI_Server* __mi_server;
