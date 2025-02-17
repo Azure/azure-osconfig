@@ -7,12 +7,12 @@ include(CTest)
 find_package(GTest REQUIRED)
 
 add_executable(compliancetests
+    Base64Test.cpp
     ComplianceTest.cpp
+    EngineTest.cpp
+    EvaluatorTest.cpp
     OptionalTest.cpp
     ResultTest.cpp
-    EvaluatorTest.cpp
-    EngineTest.cpp
-    Base64Test.cpp
 )
 
 target_link_libraries(compliancetests gtest gtest_main pthread compliancelib logging commonutils parsonlib)

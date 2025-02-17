@@ -269,13 +269,7 @@ namespace compliance
         }
 
         Evaluator evaluator(procedure.remediation(), procedure.parameters(), log());
-        auto result = evaluator.ExecuteRemediation();
-        if (!result.has_value())
-        {
-            return result;
-        }
-
-        return result;
+        return evaluator.ExecuteRemediation();
     }
 
     Result<bool> Engine::mmiSet(const char* objectName, const char* payload, const int payloadSizeBytes)
@@ -307,7 +301,8 @@ namespace compliance
 
             return true;
         }
-        else if (ruleName.find(initPrefix) == 0)
+
+        if (ruleName.find(initPrefix) == 0)
         {
             auto error = initAudit(ruleName.substr(strlen(initPrefix)), payload, payloadSizeBytes);
             if(error)
@@ -318,7 +313,8 @@ namespace compliance
 
             return true;
         }
-        else if (ruleName.find(remediatePrefix) == 0)
+
+        if (ruleName.find(remediatePrefix) == 0)
         {
             return executeRemediation(ruleName.substr(strlen(remediatePrefix)), payload, payloadSizeBytes);
         }
