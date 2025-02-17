@@ -12,9 +12,6 @@
 #include <sstream>
 #include <string>
 #include <utility>
-
-#define lenof(str) (sizeof(str) - 1)
-
 namespace compliance
 {
 
@@ -33,7 +30,7 @@ Result<bool> Evaluator::ExecuteAudit(char** payload, int* payloadSizeBytes)
         return result.error();
     }
 
-    std::string vlog = mLogstream.str().substr(0, cLogstreamMaxSize - (1 + lenof("PASS") + lenof("\"\"")));
+    std::string vlog = mLogstream.str().substr(0, cLogstreamMaxSize - (1 + strlen("PASS") + strlen("\"\"")));
     if (result.value() == true)
     {
         vlog = "\"PASS" + vlog + "\"";
