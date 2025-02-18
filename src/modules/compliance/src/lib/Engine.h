@@ -36,10 +36,11 @@ public:
 
         AuditResult(const AuditResult&) = delete;
         AuditResult(AuditResult&& other) noexcept
+            : result(other.result)
+            , payload(other.payload)
+            , payloadSize(other.payloadSize)
         {
-            result = other.result;
-            payload = other.payload;
-            payloadSize = other.payloadSize;
+
             other.payload = nullptr;
         }
 

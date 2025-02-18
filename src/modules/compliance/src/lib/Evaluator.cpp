@@ -217,7 +217,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
             OsConfigLogError(mLog, "Unknown function '%s'", name);
             return Error("Unknown function");
         }
-        action_func_t fn;
+        action_func_t fn = nullptr;
         if (action == Action::Remediate)
         {
             fn = procedure->second.second;

@@ -35,8 +35,8 @@ public:
     }
 
     Optional(Optional&& other) noexcept
+        : mValue(std::move(other.mValue))
     {
-        mValue = std::move(other.mValue);
     }
 
     Optional& operator=(const Optional& other)
