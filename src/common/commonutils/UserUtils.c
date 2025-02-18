@@ -2110,7 +2110,7 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, void* log)
                 }
                 else
                 {
-                    OsConfigLogINfo(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %ld days",
+                    OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %ld days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
                     OsConfigCaptureReason(reason, "User '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %ld days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
