@@ -606,8 +606,8 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
 
                 if (currentMode != desiredMode)
                 {
-                    OsConfigLogError(log, "CheckAccess: access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
-                    OsConfigCaptureReason(reason, "Access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
+                    OsConfigLogError(log, "CheckAccess: access to '%s' (%04o) does not match expected (%04o)", name, currentMode, desiredMode);
+                    OsConfigCaptureReason(reason, "Access to '%s' (%04o) does not match expected (%04o)", name, currentMode, desiredMode);
                     result = ENOENT;
                 }
                 else
@@ -615,10 +615,10 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     // Special case for the MPI Client
                     if (NULL != log)
                     {
-                        OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d) matches expected (%d)", name, currentMode, desiredMode);
+                        OsConfigLogInfo(log, "CheckAccess: access to '%s' (%04o) matches expected (%04o)", name, currentMode, desiredMode);
                     }
 
-                    OsConfigCaptureSuccessReason(reason, "'%s' has required access (%d) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
+                    OsConfigCaptureSuccessReason(reason, "'%s' has required access (%04o) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
                     result = 0;
                 }
             }
@@ -1915,11 +1915,11 @@ int DisablePostfixNetworkListening(void* log)
         OsConfigLogInfo(log, "DisablePostfixNetworkListening: directory '%s' does not exist", etcPostfix);
         if (0 == (status = mkdir(etcPostfix, mode)))
         {
-            OsConfigLogInfo(log, "DisablePostfixNetworkListening: created directory '%s' with %d access", etcPostfix, mode);
+            OsConfigLogInfo(log, "DisablePostfixNetworkListening: created directory '%s' with %04o access", etcPostfix, mode);
         }
         else
         {
-            OsConfigLogError(log, "DisablePostfixNetworkListening: failed creating directory '%s' with %d access", etcPostfix, mode);
+            OsConfigLogError(log, "DisablePostfixNetworkListening: failed creating directory '%s' with %04o access", etcPostfix, mode);
         }
     }
 
