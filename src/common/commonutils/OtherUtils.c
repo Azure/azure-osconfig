@@ -279,7 +279,7 @@ int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
 
     if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log)))
     {
-        OsConfigLogError(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
+        OsConfigLogInfo(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
         OsConfigCaptureReason(reason, "At least one active wireless interface is present");
         status = EEXIST;
     }
@@ -312,7 +312,7 @@ int DisableAllWirelessInterfaces(void* log)
         OsConfigLogInfo(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed", nmcli, rfkill);
         if (0 != (status = InstallOrUpdatePackage(rfkill, log)))
         {
-            OsConfigLogError(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed, also failed "
+            OsConfigLogInfo(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed, also failed "
                 "to install '%s', automatic remediation is not possible", nmcli, rfkill, rfkill);
             status = ENOENT;
         }
@@ -324,7 +324,7 @@ int DisableAllWirelessInterfaces(void* log)
         {
             if (0 != (status = ExecuteCommand(NULL, nmCliRadioAllOff, true, false, 0, 0, NULL, NULL, log)))
             {
-                OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", nmCliRadioAllOff, status);
+                OsConfigLogInfo(log, "DisableAllWirelessInterfaces: '%s' failed with %d", nmCliRadioAllOff, status);
             }
         }
 
@@ -332,7 +332,7 @@ int DisableAllWirelessInterfaces(void* log)
         {
             if (0 != (status = ExecuteCommand(NULL, rfKillBlockAll, true, false, 0, 0, NULL, NULL, log)))
             {
-                OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
+                OsConfigLogInfo(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
             }
         }
     }
@@ -355,15 +355,15 @@ int SetDefaultDenyFirewallPolicy(void* log)
     // First, ensure all current traffic is accepted:
     if (0 != (status = ExecuteCommand(NULL, acceptInput, true, false, 0, 0, NULL, NULL, log)))
     {
-        OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptInput, status);
+        OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptInput, status);
     }
     else if (0 != (status = ExecuteCommand(NULL, acceptForward, true, false, 0, 0, NULL, NULL, log)))
     {
-        OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptForward, status);
+        OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptForward, status);
     }
     else if (0 != (status = ExecuteCommand(NULL, acceptOutput, true, false, 0, 0, NULL, NULL, log)))
     {
-        OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptOutput, status);
+        OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptOutput, status);
     }
 
     if (0 == status)
@@ -371,15 +371,15 @@ int SetDefaultDenyFirewallPolicy(void* log)
         // Then set default to drop:
         if (0 != (status = ExecuteCommand(NULL, dropInput, true, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropInput, status);
+            OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropInput, status);
         }
         else if (0 != (status = ExecuteCommand(NULL, dropForward, true, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropForward, status);
+            OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropForward, status);
         }
         else if (0 != (status = ExecuteCommand(NULL, dropOutput, true, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropOutput, status);
+            OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropOutput, status);
         }
     }
 
@@ -515,7 +515,7 @@ int RemoveDotsFromPath(void* log)
                     }
                     else
                     {
-                        OsConfigLogError(log, "RemoveDotsFromPath: '%s failed with %d", setenv, status);
+                        OsConfigLogINfo(log, "RemoveDotsFromPath: '%s failed with %d", setenv, status);
                     }
 
                     FREE_MEMORY(setenv);
@@ -530,7 +530,7 @@ int RemoveDotsFromPath(void* log)
             }
             else
             {
-                OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '%c' from '%s'", dot[0], currentPath);
+                OsConfigLogInfo(log, "RemoveDotsFromPath: cannot remove '%c' from '%s'", dot[0], currentPath);
                 status = EINVAL;
             }
 
@@ -538,7 +538,7 @@ int RemoveDotsFromPath(void* log)
         }
         else
         {
-            OsConfigLogError(log, "RemoveDotsFromPath: '%s' failed with %d", printenv, status);
+            OsConfigLogInfo(log, "RemoveDotsFromPath: '%s' failed with %d", printenv, status);
         }
     }
 
@@ -565,7 +565,7 @@ int RemoveDotsFromPath(void* log)
                 }
                 else
                 {
-                    OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '%c' from '%s' for '%s'",
+                    OsConfigLogInfo(log, "RemoveDotsFromPath: cannot remove '%c' from '%s' for '%s'",
                         dot[0], currentPath, pathLocations[i].location);
                     _status = EINVAL;
                 }

@@ -941,7 +941,7 @@ void AsbInitialize(void* log)
     {
         if (false == MakeFileBackupCopy(g_etcFstab, g_etcFstabCopy, false, log))
         {
-            OsConfigLogError(log, "AsbInitialize: failed to make a local backup copy of '%s'", g_etcFstab);
+            OsConfigLogInfo(log, "AsbInitialize: failed to make a local backup copy of '%s'", g_etcFstab);
         }
     }
 
@@ -4784,7 +4784,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
                 if ((maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > maxPayloadSizeBytes))
                 {
-                    OsConfigLogError(log, "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
+                    OsConfigLogInfo(log, "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
                         componentName, objectName, maxPayloadSizeBytes, *payloadSizeBytes);
 
                     *payloadSizeBytes = maxPayloadSizeBytes;

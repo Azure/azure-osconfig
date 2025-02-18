@@ -638,7 +638,7 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
         }
         else
         {
-            OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
+            OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
                 distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
             OsConfigCaptureReason(reason, "Distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match, automatic remediation is not possible",
                 distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
@@ -654,7 +654,7 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
         }
         else
         {
-            OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s') and installed image ('%s', '%s') do not match", linuxName, kernelName, kernelVersion);
+            OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro ('%s') and installed image ('%s', '%s') do not match", linuxName, kernelName, kernelVersion);
             OsConfigCaptureReason(reason, "Distro ('%s') and installed image ('%s', '%s') do not match, automatic remediation is not possible", linuxName, kernelName, kernelVersion);
         }
     }
@@ -707,7 +707,7 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
 
     if (NULL == (current = GetLoginUmask(reason, log)))
     {
-        OsConfigLogError(log, "CheckLoginUmask: GetLoginUmask failed");
+        OsConfigLogInfo(log, "CheckLoginUmask: GetLoginUmask failed");
         status = ENOENT;
     }
     else
@@ -719,7 +719,7 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
         }
         else
         {
-            OsConfigLogError(log, "CheckLoginUmask: current login UMASK '%s' does not match desired '%s'", current, desired);
+            OsConfigLogInfo(log, "CheckLoginUmask: current login UMASK '%s' does not match desired '%s'", current, desired);
             OsConfigCaptureReason(reason, "Current login UMASK '%s' does not match desired '%s'", current, desired);
             status = ENOENT;
         }
@@ -858,7 +858,7 @@ bool IsCurrentOs(const char* name, void* log)
 
     if ((NULL == (prettyName = GetOsPrettyName(log))) || (0 == (prettyNameLength = strlen(prettyName))))
     {
-        OsConfigLogError(log, "IsCurrentOs: no valid PRETTY_NAME found in /etc/os-release, assuming this is not the '%s' distro", name);
+        OsConfigLogInfo(log, "IsCurrentOs: no valid PRETTY_NAME found in /etc/os-release, assuming this is not the '%s' distro", name);
     }
     else
     {
@@ -889,7 +889,7 @@ bool IsRedHatBased(void* log)
 
     if ((NULL == (prettyName = GetOsPrettyName(log))) || (0 == (prettyNameLength = strlen(prettyName))))
     {
-        OsConfigLogError(log, "IsRedHatBased: no valid PRETTY_NAME found in /etc/os-release, cannot check if Red Hat based, assuming not");
+        OsConfigLogInfo(log, "IsRedHatBased: no valid PRETTY_NAME found in /etc/os-release, cannot check if Red Hat based, assuming not");
     }
     else
     {
@@ -939,7 +939,7 @@ int EnableVirtualMemoryRandomization(void* log)
         }
         else
         {
-            OsConfigLogError(log, "EnableVirtualMemoryRandomization: failed writing '%s' to '%s' (%d)", fullRandomization, procSysKernelRandomizeVaSpace, errno);
+            OsConfigLogInfo(log, "EnableVirtualMemoryRandomization: failed writing '%s' to '%s' (%d)", fullRandomization, procSysKernelRandomizeVaSpace, errno);
             status = ENOENT;
         }
     }

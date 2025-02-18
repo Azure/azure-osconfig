@@ -159,7 +159,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
                 // Timer process is done, kill the timed out worker process
                 if (IsCommandLoggingEnabled())
                 {
-                    OsConfigLogError(log, "Command timed out or it was canceled, command process killed (%d)", status);
+                    OsConfigLogInfo(log, "Command timed out or it was canceled, command process killed (%d)", status);
                 }
                 KillProcess(workerProcess);
             }
@@ -205,7 +205,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             // If our fork fails, try system(), if that also fails then the call fails
             if (IsCommandLoggingEnabled())
             {
-                OsConfigLogError(log, "Failed forking process to execute command, attempting system");
+                OsConfigLogInfo(log, "Failed forking process to execute command, attempting system");
             }
             status = system(command);
         }
