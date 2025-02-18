@@ -1,0 +1,12 @@
+Checks: >-
+  -*,
+  readability-identifier-naming
+WarningsAsErrors: ''
+
+CheckOptions:
+  - key: readability-identifier-naming.FunctionCase
+    value: CamelCase
+  - key: readability-identifier-naming.ClassMethodCase
+    value: CamelCase
+  - key: readability-identifier-naming.MethodCase
+    value: CamelCase

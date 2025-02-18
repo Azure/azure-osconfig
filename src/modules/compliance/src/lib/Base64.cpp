@@ -37,7 +37,7 @@ static inline char Base64Char(const unsigned char c)
     }
 }
 
-static inline bool is_base64(const unsigned char c)
+static inline bool IsBase64(const unsigned char c)
 {
     return (isalnum(c) || (c == '+') || (c == '/') || (c == '='));
 }
@@ -50,7 +50,7 @@ Result<std::string> Base64Decode(const std::string& input)
     }
     for (const char c : input)
     {
-        if (!is_base64(c))
+        if (!IsBase64(c))
         {
             return Error("Invalid base64 character", EINVAL);
         }
