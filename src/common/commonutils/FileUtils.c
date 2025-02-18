@@ -382,7 +382,7 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
     // S_IXUSR (0100): Execute/search permission, owner
     // S_IXGRP (0010): Execute/search permission, group
 
-    return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
+    return chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 }
 
 static bool IsATrueFileOrDirectory(bool directory, const char* name, void* log)
