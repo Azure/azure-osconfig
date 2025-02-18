@@ -17,7 +17,7 @@
 
 using compliance::Engine;
 using compliance::JSONFromString;
-using compliance::parseJSON;
+using compliance::ParseJson;
 using compliance::Status;
 
 static OsConfigLogHandle g_log = nullptr;
@@ -52,7 +52,7 @@ int ComplianceMmiGetInfo(const char* clientName, char** payload, int* payloadSiz
         return EINVAL;
     }
 
-    *payload = strdup(Engine::getModuleInfo());
+    *payload = strdup(Engine::GetModuleInfo());
     if (!*payload)
     {
         OsConfigLogError(g_log, "ComplianceMmiGetInfo: failed to duplicate module info");
@@ -89,31 +89,31 @@ int ComplianceMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 
     try
     {
-        auto result = engine.mmiGet(objectName);
-        if (!result.has_value())
+        auto result = engine.MmiGet(objectName);
+        if (!result.HasValue())
         {
-            OsConfigLogError(engine.log(), "ComplianceMmiGet failed: %s", result.error().message.c_str());
-            return result.error().code;
+            OsConfigLogError(engine.Log(), "ComplianceMmiGet failed: %s", result.Error().message.c_str());
+            return result.Error().code;
         }
 
-        auto json = JSONFromString(result.value().payload.c_str());
+        auto json = JSONFromString(result.Value().payload.c_str());
         if (NULL == json)
         {
-            OsConfigLogError(engine.log(), "ComplianceMmiGet failed: Failed to create JSON object from string");
+            OsConfigLogError(engine.Log(), "ComplianceMmiGet failed: Failed to create JSON object from string");
             return ENOMEM;
         }
         else if (NULL == (*payload = json_serialize_to_string(json.get())))
         {
-            OsConfigLogError(engine.log(), "ComplianceMmiGet failed: Failed to serialize JSON object");
+            OsConfigLogError(engine.Log(), "ComplianceMmiGet failed: Failed to serialize JSON object");
             return ENOMEM;
         }
         *payloadSizeBytes = strlen(*payload);
-        OsConfigLogInfo(engine.log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
+        OsConfigLogInfo(engine.Log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
         return MMI_OK;
     }
     catch (const std::exception& e)
     {
-        OsConfigLogError(engine.log(), "ComplianceMmiGet failed: %s", e.what());
+        OsConfigLogError(engine.Log(), "ComplianceMmiGet failed: %s", e.what());
     }
 
     return -1;
@@ -143,27 +143,27 @@ int ComplianceMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
     try
     {
         std::string payloadStr(payload, payloadSizeBytes);
-        auto object = parseJSON(payloadStr.c_str());
+        auto object = ParseJson(payloadStr.c_str());
         if (NULL == object || JSONString != json_value_get_type(object.get()))
         {
-            OsConfigLogError(engine.log(), "ComplianceMmiSet failed: Failed to parse JSON string");
+            OsConfigLogError(engine.Log(), "ComplianceMmiSet failed: Failed to parse JSON string");
             return EINVAL;
         }
         std::string realPayload = json_value_get_string(object.get());
-        auto result = engine.mmiSet(objectName, realPayload);
-        if (!result.has_value())
+        auto result = engine.MmiSet(objectName, realPayload);
+        if (!result.HasValue())
         {
-            OsConfigLogError(engine.log(), "ComplianceMmiSet failed: %s", result.error().message.c_str());
-            return result.error().code;
+            OsConfigLogError(engine.Log(), "ComplianceMmiSet failed: %s", result.Error().message.c_str());
+            return result.Error().code;
         }
 
-        OsConfigLogInfo(engine.log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload,
-            payloadSizeBytes, result.value() == Status::Compliant ? "compliant" : "non-compliant");
+        OsConfigLogInfo(engine.Log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload,
+            payloadSizeBytes, result.Value() == Status::Compliant ? "compliant" : "non-compliant");
         return MMI_OK;
     }
     catch (const std::exception& e)
     {
-        OsConfigLogError(engine.log(), "ComplianceMmiSet failed: %s", e.what());
+        OsConfigLogError(engine.Log(), "ComplianceMmiSet failed: %s", e.what());
     }
 
     return -1;

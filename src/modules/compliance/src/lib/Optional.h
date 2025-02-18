@@ -35,8 +35,8 @@ public:
     }
 
     Optional(Optional&& other) noexcept
+        : mValue(std::move(other.mValue))
     {
-        mValue = std::move(other.mValue);
     }
 
     Optional& operator=(const Optional& other)
@@ -82,12 +82,12 @@ public:
         return *this;
     }
 
-    bool has_value() const
+    bool HasValue() const
     {
         return mValue != nullptr;
     }
 
-    T value_or(T default_value) const noexcept(noexcept_copyable<T>())
+    T ValueOr(T default_value) const noexcept(NoexceptCopyable<T>())
     {
         if (mValue == nullptr)
         {
@@ -97,17 +97,17 @@ public:
         return *mValue;
     }
 
-    const T& value() const&
+    const T& Value() const&
     {
         return *mValue;
     }
 
-    T value() && noexcept(noexcept_movable<T>())
+    T Value() && noexcept(NoexceptMovable<T>())
     {
         return std::move(*mValue);
     }
 
-    T& value() &
+    T& Value() &
     {
         return *mValue;
     }
@@ -124,10 +124,10 @@ public:
 
     operator bool() const noexcept
     {
-        return has_value();
+        return HasValue();
     }
 
-    void reset()
+    void Reset()
     {
         mValue.reset();
     }
