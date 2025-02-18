@@ -35,14 +35,14 @@ void TrimLog(OSCONFIG_LOG_HANDLE log);
 bool IsDaemon(void);
 
 #define __SHORT_FILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define __LOG__(log, loglevel, format, ...) printf("[%s] [%s:%d]%s" format "\n", GetFormattedTime(), loglevel, __SHORT_FILE__, __LINE__, ## __VA_ARGS__)
+#define __LOG__(log, loglevel, format, ...) printf("[%s][%s][%s:%d]" format "\n", GetFormattedTime(), loglevel, __SHORT_FILE__, __LINE__, ## __VA_ARGS__)
 #define __LOG_TO_FILE__(log, loglevel, format, ...) {\
     TrimLog(log);\
-    fprintf(GetLogFile(log), "[%s] [%s:%d]%s" format "\n", GetFormattedTime(), loglevel, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
+    fprintf(GetLogFile(log), "[%s][%s][%s:%d]" format "\n", GetFormattedTime(), loglevel, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
 }\
 
-#define __INFO__ " [INFO] "
-#define __ERROR__ " [ERROR] "
+#define __INFO__ "INFO"
+#define __ERROR__ "ERROR"
 
 #define OSCONFIG_LOG_INFO(log, format, ...) __LOG__(log, __INFO__, format, ## __VA_ARGS__)
 #define OSCONFIG_LOG_ERROR(log, format, ...) __LOG__(log, __ERROR__, format, ## __VA_ARGS__)
