@@ -47,6 +47,6 @@ repos:
     - id: clang-format
       files: |
          (?x)(
-          ^src/modules/compliance/src/.*\.h$|
-          ^src/modules/compliance/src/.*\.cpp$
+          ^src/modules/compliance/.*\.h$|
+          ^src/modules/compliance/.*\.cpp$
             )

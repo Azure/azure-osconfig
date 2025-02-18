@@ -1,13 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <gtest/gtest.h>
 #include "Base64.h"
+
 #include "Result.h"
 
+#include <gtest/gtest.h>
+
 using compliance::Base64Decode;
-using compliance::Result;
 using compliance::Error;
+using compliance::Result;
 
 class Base64Test : public ::testing::Test
 {

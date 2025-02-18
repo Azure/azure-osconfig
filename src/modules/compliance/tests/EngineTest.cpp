@@ -2,16 +2,17 @@
 // Licensed under the MIT License.
 
 #include "Engine.h"
+
 #include "Evaluator.h"
 #include "parson.h"
 
 #include <gtest/gtest.h>
 
-using compliance::Result;
-using compliance::Error;
-using compliance::Engine;
-using compliance::JsonWrapper;
 using compliance::action_func_t;
+using compliance::Engine;
+using compliance::Error;
+using compliance::JsonWrapper;
+using compliance::Result;
 
 static Result<bool> auditFailure(std::map<std::string, std::string>, std::ostringstream&)
 {
@@ -33,9 +34,9 @@ protected:
     void SetUp() override
     {
         mProcedureMap = {
-            {"success", {auditSuccess, auditSuccess}},
-            {"failure", {auditFailure, auditFailure}},
-            {"NoAudit", {nullptr, auditSuccess}},
+            { "success", { auditSuccess, auditSuccess } },
+            { "failure", { auditFailure, auditFailure } },
+            { "NoAudit", { nullptr, auditSuccess } },
         };
         // mEngine.setProcedureMap(mProcedureMap);
     }
