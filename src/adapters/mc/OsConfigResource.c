@@ -87,8 +87,8 @@ void __attribute__((destructor)) Destroy()
     CloseLog(&g_log);
 
     // When the NRP is done, allow others read-only (no write, search or execute) access to the NRP logs
-    SetFileAccess(LOG_FILE, 0, 0, 06774, NULL);
-    SetFileAccess(ROLLED_LOG_FILE, 0, 0, 06774, NULL);
+    SetFileAccess(LOG_FILE, 0, 0, 0644, NULL);
+    SetFileAccess(ROLLED_LOG_FILE, 0, 0, 0644, NULL);
 }
 
 static void LogOsConfigVersion(MI_Context* context)
