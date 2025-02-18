@@ -515,7 +515,7 @@ int RemoveDotsFromPath(void* log)
                     }
                     else
                     {
-                        OsConfigLogINfo(log, "RemoveDotsFromPath: '%s failed with %d", setenv, status);
+                        OsConfigLogInfo(log, "RemoveDotsFromPath: '%s failed with %d", setenv, status);
                     }
 
                     FREE_MEMORY(setenv);
