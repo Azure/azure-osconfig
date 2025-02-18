@@ -35,8 +35,8 @@ void TrimLog(OSCONFIG_LOG_HANDLE log);
 bool IsDaemon(void);
 
 #define __SHORT_FILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define __LOG__(log, format, loglevel, ...) printf("[%s] [%s:%d]%s" format "\n", GetFormattedTime(), __SHORT_FILE__, __LINE__, loglevel, ## __VA_ARGS__)
-#define __LOG_TO_FILE__(log, format, loglevel, ...) {\
+#define __LOG__(log, loglevel, format, ...) printf("[%s] [%s:%d]%s" format "\n", GetFormattedTime(), __SHORT_FILE__, __LINE__, loglevel, ## __VA_ARGS__)
+#define __LOG_TO_FILE__(log, loglevel, format, ...) {\
     TrimLog(log);\
     fprintf(GetLogFile(log), "[%s] [%s:%d]%s" format "\n", GetFormattedTime(), __SHORT_FILE__, __LINE__, loglevel, ## __VA_ARGS__);\
 }\
