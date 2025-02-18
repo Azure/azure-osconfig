@@ -41,7 +41,7 @@ bool IsDaemon(void);
     fprintf(GetLogFile(log), "[%s] [%s:%d]%s" format "\n", GetFormattedTime(), __SHORT_FILE__, __LINE__, loglevel, ## __VA_ARGS__);\
 }\
 
-#define __INFO__ " "
+#define __INFO__ " [INFO] "
 #define __ERROR__ " [ERROR] "
 
 #define OSCONFIG_LOG_INFO(log, format, ...) __LOG__(log, format, __INFO__, ## __VA_ARGS__)
