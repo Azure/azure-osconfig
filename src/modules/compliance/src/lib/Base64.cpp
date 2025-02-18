@@ -61,7 +61,7 @@ Result<std::string> Base64Decode(const std::string& input)
 
     for (size_t i = 0; i < input.size(); i += 4)
     {
-        unsigned char enc[4];
+        char enc[4];
 
         int j = 0;
         for (j = 0; j < 4; j++)
@@ -75,18 +75,18 @@ Result<std::string> Base64Decode(const std::string& input)
 
         if (j == 4)
         {
-            ret += (enc[0] << 2) | (enc[1] >> 4);
-            ret += ((enc[1] & 0x0f) << 4) | (enc[2] >> 2);
-            ret += ((enc[2] & 0x03) << 6) | enc[3];
+            ret += static_cast<char>((enc[0] << 2) | (enc[1] >> 4));
+            ret += static_cast<char>(((enc[1] & 0x0f) << 4) | (enc[2] >> 2));
+            ret += static_cast<char>(((enc[2] & 0x03) << 6) | enc[3]);
         }
         else if (j == 3)
         {
-            ret += (enc[0] << 2) | (enc[1] >> 4);
-            ret += ((enc[1] & 0x0f) << 4) | (enc[2] >> 2);
+            ret += static_cast<char>((enc[0] << 2) | (enc[1] >> 4));
+            ret += static_cast<char>(((enc[1] & 0x0f) << 4) | (enc[2] >> 2));
         }
         else if (j == 2)
         {
-            ret += (enc[0] << 2) | (enc[1] >> 4);
+            ret += static_cast<char>((enc[0] << 2) | (enc[1] >> 4));
         }
         else
         {
