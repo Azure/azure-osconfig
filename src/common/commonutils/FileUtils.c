@@ -681,7 +681,7 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
             }
             else
             {
-                OsConfigLogImfo(log, "SetAccess: chown('%s', %d, %d) failed with %d", name, desiredOwnerId, desiredGroupId, errno);
+                OsConfigLogInfo(log, "SetAccess: chown('%s', %d, %d) failed with %d", name, desiredOwnerId, desiredGroupId, errno);
             }
         }
     }
