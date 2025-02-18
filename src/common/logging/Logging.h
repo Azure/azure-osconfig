@@ -44,10 +44,10 @@ bool IsDaemon(void);
 #define __INFO__ " [INFO] "
 #define __ERROR__ " [ERROR] "
 
-#define OSCONFIG_LOG_INFO(log, format, ...) __LOG__(log, format, __INFO__, ## __VA_ARGS__)
-#define OSCONFIG_LOG_ERROR(log, format, ...) __LOG__(log, format, __ERROR__, ## __VA_ARGS__)
-#define OSCONFIG_FILE_LOG_INFO(log, format, ...) __LOG_TO_FILE__(log, format, __INFO__, ## __VA_ARGS__)
-#define OSCONFIG_FILE_LOG_ERROR(log, format, ...) __LOG_TO_FILE__(log, format, __ERROR__, ## __VA_ARGS__)
+#define OSCONFIG_LOG_INFO(log, format, ...) __LOG__(log, __INFO__, format, ## __VA_ARGS__)
+#define OSCONFIG_LOG_ERROR(log, format, ...) __LOG__(log, __ERROR__, format, ## __VA_ARGS__)
+#define OSCONFIG_FILE_LOG_INFO(log, format, ...) __LOG_TO_FILE__(log, __INFO__, format, ## __VA_ARGS__)
+#define OSCONFIG_FILE_LOG_ERROR(log, format, ...) __LOG_TO_FILE__(log, __ERROR__, format, ## __VA_ARGS__)
 
 #define OsConfigLogInfo(log, FORMAT, ...) {\
     if (NULL != GetLogFile(log)) {\
