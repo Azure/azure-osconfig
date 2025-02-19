@@ -31,17 +31,17 @@ public:
     Procedure(Procedure&&) = default;
     Procedure& operator=(Procedure&&) = default;
 
-    const std::map<std::string, std::string>& parameters() const noexcept
+    const std::map<std::string, std::string>& Parameters() const noexcept
     {
         return mParameters;
     }
-    const json_object_t* audit() const noexcept;
-    const json_object_t* remediation() const noexcept;
+    const json_object_t* Audit() const noexcept;
+    const json_object_t* Remediation() const noexcept;
 
-    void setParameter(const std::string& key, std::string value);
-    Optional<Error> updateUserParameters(const std::string& userParameters);
-    Optional<Error> setAudit(const json_value_t* rule);
-    Optional<Error> setRemediation(const json_value_t* rule);
+    void SetParameter(const std::string& key, std::string value);
+    Optional<Error> UpdateUserParameters(const std::string& userParameters);
+    Optional<Error> SetAudit(const json_value_t* rule);
+    Optional<Error> SetRemediation(const json_value_t* rule);
 };
 } // namespace compliance
 

@@ -24,14 +24,14 @@ Result<bool> Evaluator::ExecuteAudit(char** payload, int* payloadSizeBytes)
     }
 
     auto result = EvaluateProcedure(mJson, Action::Audit);
-    if (!result.has_value())
+    if (!result.HasValue())
     {
-        OsConfigLogError(mLog, "Evaluation failed: %s", result.error().message.c_str());
-        return result.error();
+        OsConfigLogError(mLog, "Evaluation failed: %s", result.Error().message.c_str());
+        return result.Error();
     }
 
     std::string vlog = mLogstream.str().substr(0, cLogstreamMaxSize - (1 + strlen("PASS") + strlen("\"\"")));
-    if (result.value() == true)
+    if (result.Value() == true)
     {
         vlog = "\"PASS" + vlog + "\"";
     }
@@ -47,16 +47,16 @@ Result<bool> Evaluator::ExecuteAudit(char** payload, int* payloadSizeBytes)
 Result<bool> Evaluator::ExecuteRemediation()
 {
     auto result = EvaluateProcedure(mJson, Action::Remediate);
-    if (!result.has_value())
+    if (!result.HasValue())
     {
-        OsConfigLogError(mLog, "Evaluation failed: %s", result.error().message.c_str());
-        return result.error();
+        OsConfigLogError(mLog, "Evaluation failed: %s", result.Error().message.c_str());
+        return result.Error();
     }
 
     return result;
 }
 
-void Evaluator::setProcedureMap(ProcedureMap procedureMap)
+void Evaluator::SetProcedureMap(ProcedureMap procedureMap)
 {
     mProcedureMap = std::move(procedureMap);
 }
@@ -92,12 +92,12 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         {
             JSON_Object* subObject = json_array_get_object(array, i);
             auto result = EvaluateProcedure(subObject, action);
-            if (!result.has_value())
+            if (!result.HasValue())
             {
                 mLogstream << "] == FAILURE }";
                 return result;
             }
-            if (result.value() == false)
+            if (result.Value() == false)
             {
                 if (i < count - 1)
                 {
@@ -128,12 +128,12 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         {
             auto subObject = json_array_get_object(array, i);
             auto result = EvaluateProcedure(subObject, action);
-            if (!result.has_value())
+            if (!result.HasValue())
             {
                 mLogstream << "] == FAILURE }";
                 return result;
             }
-            if (result.value() == true)
+            if (result.Value() == true)
             {
                 if (i < count - 1)
                 {
@@ -159,12 +159,12 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         mLogstream << "{ not: ";
         // NOT can be only used as an audit!
         auto result = EvaluateProcedure(json_value_get_object(value), Action::Audit);
-        if (!result.has_value())
+        if (!result.HasValue())
         {
             mLogstream << "] == FAILURE }";
             return result;
         }
-        if (result.value() == true)
+        if (result.Value() == true)
         {
             mLogstream << "] == FALSE }";
             return false;
@@ -217,7 +217,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
             OsConfigLogError(mLog, "Unknown function '%s'", name);
             return Error("Unknown function");
         }
-        action_func_t fn;
+        action_func_t fn = nullptr;
         if (action == Action::Remediate)
         {
             fn = procedure->second.second;
@@ -240,11 +240,11 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         mLogstream << "{ " << name << ": ";
         auto result = fn(arguments, mLogstream);
         mLogstream << " } == ";
-        if (!result.has_value())
+        if (!result.HasValue())
         {
             mLogstream << "FAILURE";
         }
-        else if (result.value() == true)
+        else if (result.Value() == true)
         {
             mLogstream << "TRUE";
         }

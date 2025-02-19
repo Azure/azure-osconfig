@@ -39,7 +39,7 @@ public:
     Result<bool> ExecuteAudit(char** payload, int* payloadSizeBytes);
     Result<bool> ExecuteRemediation();
 
-    void setProcedureMap(ProcedureMap procedureMap);
+    void SetProcedureMap(ProcedureMap procedureMap);
 
 private:
     enum class Action

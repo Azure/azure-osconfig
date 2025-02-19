@@ -36,10 +36,11 @@ public:
 
         AuditResult(const AuditResult&) = delete;
         AuditResult(AuditResult&& other) noexcept
+            : result(other.result)
+            , payload(other.payload)
+            , payloadSize(other.payloadSize)
         {
-            result = other.result;
-            payload = other.payload;
-            payloadSize = other.payloadSize;
+
             other.payload = nullptr;
         }
 
@@ -66,10 +67,10 @@ private:
     unsigned int mMaxPayloadSize = 0;
     std::map<std::string, Procedure> mDatabase;
 
-    Result<JsonWrapper> decodeB64JSON(const char* input) const;
-    Optional<Error> setProcedure(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
-    Optional<Error> initAudit(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
-    Result<bool> executeRemediation(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
+    Result<JsonWrapper> DecodeB64Json(const char* input) const;
+    Optional<Error> SetProcedure(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
+    Optional<Error> InitAudit(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
+    Result<bool> ExecuteRemediation(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
 
 public:
     // Create engine with external log file
@@ -78,14 +79,14 @@ public:
     Engine() noexcept;
     ~Engine();
 
-    void setMaxPayloadSize(unsigned int value) noexcept;
-    unsigned int getMaxPayloadSize() const noexcept;
-    OSCONFIG_LOG_HANDLE log() const noexcept;
+    void SetMaxPayloadSize(unsigned int value) noexcept;
+    unsigned int GetMaxPayloadSize() const noexcept;
+    OSCONFIG_LOG_HANDLE Log() const noexcept;
 
-    static const char* getMoguleInfo() noexcept;
+    static const char* GetModuleInfo() noexcept;
 
-    Result<AuditResult> mmiGet(const char* objectName);
-    Result<bool> mmiSet(const char* objectName, const char* payload, const int payloadSizeBytes);
+    Result<AuditResult> MmiGet(const char* objectName);
+    Result<bool> MmiSet(const char* objectName, const char* payload, const int payloadSizeBytes);
 };
 } // namespace compliance
 

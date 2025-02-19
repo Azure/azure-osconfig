@@ -9,15 +9,15 @@
 namespace compliance
 {
 template <typename T>
-constexpr bool noexcept_copyable() noexcept
+constexpr bool NoexceptCopyable() noexcept
 {
-    return noexcept(std::is_copy_constructible<T>::value);
+    return std::is_nothrow_copy_constructible<T>::value;
 }
 
 template <typename T>
-constexpr bool noexcept_movable() noexcept
+constexpr bool NoexceptMovable() noexcept
 {
-    return noexcept(std::is_move_constructible<T>::value);
+    return std::is_nothrow_move_constructible<T>::value;
 }
 } // namespace compliance
 

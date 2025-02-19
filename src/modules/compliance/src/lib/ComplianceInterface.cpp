@@ -47,7 +47,7 @@ int ComplianceMmiGetInfo(const char* clientName, char** payload, int* payloadSiz
         return EINVAL;
     }
 
-    *payload = (char*)strdup(Engine::getMoguleInfo());
+    *payload = (char*)strdup(Engine::GetModuleInfo());
     if (!*payload)
     {
         OsConfigLogError(g_log, "ComplianceMmiGetInfo: failed to duplicate module info");
@@ -84,21 +84,21 @@ int ComplianceMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 
     try
     {
-        auto result = engine.mmiGet(objectName);
-        if (!result.has_value())
+        auto result = engine.MmiGet(objectName);
+        if (!result.HasValue())
         {
-            OsConfigLogError(engine.log(), "ComplianceMmiGet failed: %s", result.error().message.c_str());
-            return result.error().code;
+            OsConfigLogError(engine.Log(), "ComplianceMmiGet failed: %s", result.Error().message.c_str());
+            return result.Error().code;
         }
 
-        *payload = strdup(result.value().payload);
-        *payloadSizeBytes = result.value().payloadSize;
-        OsConfigLogInfo(engine.log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
+        *payload = strdup(result.Value().payload);
+        *payloadSizeBytes = result.Value().payloadSize;
+        OsConfigLogInfo(engine.Log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
         return MMI_OK;
     }
     catch (const std::exception& e)
     {
-        OsConfigLogError(engine.log(), "ComplianceMmiGet failed: %s", e.what());
+        OsConfigLogError(engine.Log(), "ComplianceMmiGet failed: %s", e.what());
     }
 
     return -1;
@@ -127,20 +127,20 @@ int ComplianceMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
 
     try
     {
-        auto result = engine.mmiSet(objectName, payload, payloadSizeBytes);
-        if (!result.has_value())
+        auto result = engine.MmiSet(objectName, payload, payloadSizeBytes);
+        if (!result.HasValue())
         {
-            OsConfigLogError(engine.log(), "ComplianceMmiSet failed: %s", result.error().message.c_str());
-            return result.error().code;
+            OsConfigLogError(engine.Log(), "ComplianceMmiSet failed: %s", result.Error().message.c_str());
+            return result.Error().code;
         }
 
-        OsConfigLogInfo(engine.log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload,
-            payloadSizeBytes, result.value() ? "true" : "false");
+        OsConfigLogInfo(engine.Log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload,
+            payloadSizeBytes, result.Value() ? "true" : "false");
         return MMI_OK;
     }
     catch (const std::exception& e)
     {
-        OsConfigLogError(engine.log(), "ComplianceMmiSet failed: %s", e.what());
+        OsConfigLogError(engine.Log(), "ComplianceMmiSet failed: %s", e.what());
     }
 
     return -1;
