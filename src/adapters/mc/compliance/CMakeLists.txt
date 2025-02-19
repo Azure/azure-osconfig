@@ -3,7 +3,11 @@
 
 # Compliance module for Linux
 project(OsConfigResourceCompliance)
-add_link_options("LINKER:-z,defs")
+if (BUILD_FUZZER)
+    add_link_options("LINKER:-z,defs -shared-libasan")
+else (BUILD_FUZZER)
+    add_link_options("LINKER:-z,defs")
+endif (BUILD_FUZZER)
 add_library(OsConfigResourceCompliance
     SHARED
         ../module.c
