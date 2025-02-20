@@ -816,7 +816,7 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
         if (0 != mkdir(etcAzSec, desiredBannerFileAccess))
         {
             status = errno ? errno : ENOENT;
-            OsConfigLogInfo(log, "SetSshWarningBanner: mkdir(%s, %u) failed with %d (errno: %d)", etcAzSec, desiredBannerFileAccess, status);
+            OsConfigLogInfo(log, "SetSshWarningBanner: mkdir(%s, %u) failed with %d (errno: %d)", etcAzSec, desiredBannerFileAccess, status, errno);
         }
     }
 
