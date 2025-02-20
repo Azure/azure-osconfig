@@ -141,11 +141,10 @@ static int CopyMountTableFile(const char* source, const char* target, void* log)
         {
             while (NULL != (mountStruct = getmntent(sourceHandle)))
             {
-                if (0 != addmntent(targetHandle, mountStruct))
+                if (0 != (status = addmntent(targetHandle, mountStruct)))
                 {
-                    status = (0 == errno) ? ENOENT: errno;
-                    OsConfigLogInfo(log, "CopyMountTableFile ('%s' to '%s'): failed adding '%s %s %s %s %d %d', addmntent() failed with %d", source, target,
-                        mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno, status);
+                    OsConfigLogInfo(log, "CopyMountTableFile ('%s' to '%s'): failed adding '%s %s %s %s %d %d', addmntent() failed with %d (errno: %d)", source, target,
+                        mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno, status, errno);
                     break;
                 }
             }

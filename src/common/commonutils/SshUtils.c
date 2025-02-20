@@ -816,7 +816,7 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
         if (0 != mkdir(etcAzSec, desiredBannerFileAccess))
         {
             status = errno ? errno : ENOENT;
-            OsConfigLogInfo(log, "SetSshWarningBanner: mkdir(%s, %u) failed with %d", etcAzSec, desiredBannerFileAccess, status);
+            OsConfigLogInfo(log, "SetSshWarningBanner: mkdir(%s, %u) failed with %d (errno: %d)", etcAzSec, desiredBannerFileAccess, status);
         }
     }
 
@@ -958,7 +958,7 @@ static int IncludeRemediationSshConfFile(void* log)
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "IncludeRemediationSshConfFile: out of memory, cannot include '%s' into '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
+                    OsConfigLogError(log, "IncludeRemediationSshConfFile: out of memory, cannot include '%s' into '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
                     status = ENOMEM;
                 }
             }

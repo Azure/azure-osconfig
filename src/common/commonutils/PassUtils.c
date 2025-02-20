@@ -203,7 +203,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
 
     if (NULL == (fileHandle = fopen(fileName, "r")))
     {
-        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: cannot read from '%s'", fileName);
+        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: cannot read from '%s' (errno: %d)", fileName, errno);
         status = EACCES;
     }
     else

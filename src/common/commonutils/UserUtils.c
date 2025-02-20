@@ -372,7 +372,7 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, char** reason
             {
                 if (0 != (status = CopyUserEntry(&((*userList)[i]), userEntry, log)))
                 {
-                    OsConfigLogInfo(log, "EnumerateUsers: failed making copy of user entry (%d)", status);
+                    OsConfigLogError(log, "EnumerateUsers: failed making copy of user entry (%d)", status);
                     break;
                 }
                 else if (0 != (status = CheckIfUserHasPassword(&((*userList)[i]), log)))
@@ -451,7 +451,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     }
     else if (NULL == user->username)
     {
-        OsConfigLogInfo(log, "EnumerateUserGroups: unable to enumerate groups for user without name");
+        OsConfigLogError(log, "EnumerateUserGroups: unable to enumerate groups for user without name");
         return ENOENT;
     }
 
@@ -521,7 +521,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
             {
                 if (NULL == (groupEntry = getgrgid(groupIds[i])))
                 {
-                    OsConfigLogInfo(log, "EnumerateUserGroups: getgrgid(for gid: %u) failed", (unsigned int)groupIds[i]);
+                    OsConfigLogInfo(log, "EnumerateUserGroups: getgrgid(for gid: %u) failed (errno: %d)", (unsigned int)groupIds[i], errno);
                     status = ENOENT;
                     break;
                 }
@@ -3126,7 +3126,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, void* log)
 
                 if (NULL == (decoratedName = FormatAllocateString(userTemplate, name)))
                 {
-                    OsConfigLogInfo(log, "CheckUserAccountsNotFound: out of memory, unable to check for user '%s' presence in '%s' andr '%s'",
+                    OsConfigLogError(log, "CheckUserAccountsNotFound: out of memory, unable to check for user '%s' presence in '%s' andr '%s'",
                         name, g_etcPasswd, g_etcShadow);
                 }
                 else
@@ -3256,7 +3256,7 @@ int RemoveUserAccounts(const char* names, bool removeHomeDirs, void* log)
 
                 if (NULL == (decoratedName = FormatAllocateString(userTemplate, name)))
                 {
-                    OsConfigLogInfo(log, "RemoveUserAccounts: out of memory");
+                    OsConfigLogError(log, "RemoveUserAccounts: out of memory");
                 }
                 else
                 {
