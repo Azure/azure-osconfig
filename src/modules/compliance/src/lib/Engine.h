@@ -82,7 +82,7 @@ namespace compliance
         unsigned int getMaxPayloadSize() const noexcept;
         OSCONFIG_LOG_HANDLE log() const noexcept;
 
-        const char* getMoguleInfo() const noexcept;
+        static const char* getModuleInfo() noexcept;
 
         Result<AuditResult> mmiGet(const char* objectName);
         Result<bool> mmiSet(const char* objectName, const char* payload, const int payloadSizeBytes);

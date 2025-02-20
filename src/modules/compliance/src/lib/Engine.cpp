@@ -58,7 +58,7 @@ namespace compliance
         return mLog;
     }
 
-    const char* Engine::getMoguleInfo() const noexcept
+    const char* Engine::getModuleInfo() noexcept
     {
         return cModuleInfo;
     }
