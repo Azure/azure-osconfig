@@ -545,7 +545,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
                     }
                     else
                     {
-                        OsConfigLogError(log, "EnumerateUserGroups: out of memory (3)");
+                        OsConfigLogError(log, "EnumerateUserGroups: out of memory");
                         status = ENOMEM;
                         break;
                     }
@@ -612,7 +612,7 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, char** 
                     }
                     else
                     {
-                        OsConfigLogError(log, "EnumerateAllGroups: out of memory (2)");
+                        OsConfigLogError(log, "EnumerateAllGroups: out of memory");
                         status = ENOMEM;
                         break;
                     }
@@ -632,7 +632,7 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, char** 
         }
         else
         {
-            OsConfigLogError(log, "EnumerateAllGroups: out of memory (1)");
+            OsConfigLogError(log, "EnumerateAllGroups: out of memory");
             status = ENOMEM;
         }
     }
@@ -955,7 +955,7 @@ int RemoveGroup(SIMPLIFIED_GROUP* group, bool removeHomeDirs, void* log)
     }
     else if (0 == strcmp(g_root, group->groupName))
     {
-        OsConfigLogError(log, "RemoveGroup: cannot remove root group");
+        OsConfigLogInfo(log, "RemoveGroup: cannot remove root group");
         return EPERM;
     }
 
