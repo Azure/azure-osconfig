@@ -1,0 +1,34 @@
+name: Defer test execution
+description: Wait for background services to avoid module tests races
+
+runs:
+  using: composite
+  steps:
+    - name: Stop apt-daily
+      run: |
+        source /etc/os-release
+        if [[ "$ID" == "ubuntu" ]] || [[ "$ID" == "debian" ]]; then
+          sudo systemctl stop apt-daily.service || true
+          sudo systemctl stop apt-daily.timer || true
+          sudo systemctl stop apt-daily-upgrade.service || true
+          sudo systemctl stop apt-daily-upgrade.timer || true
+        fi
+
+    - name: Wait for packages installed by azsec
+      run: |
+        source /etc/os-release
+        if [[ "$ID" == "ubuntu" ]] || [[ "$ID" == "debian" ]]; then
+          until dpkg -l azsec-bpftrace 2>/dev/null | grep -q '^ii'; do
+            echo "Waiting for azsec-bpftrace to be installed..."
+            sleep 5
+          done
+        elif [[ "$ID" == "mariner" ]]; then
+          until rpm -q azsec-bpftrace &>/dev/null; do
+            echo "Waiting for azsec-bpftrace to be installed..."
+            sleep 5
+          done
+          until rpm -q KeysInUse-OpenSSL &>/dev/null; do
+            echo "Waiting for azsec-bpftrace to be installed..."
+            sleep 5
+          done
+        fi
