@@ -1397,7 +1397,7 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
 
     if ((NULL == directory) || (false == DirectoryExists(directory)) || (NULL == text))
     {
-        OsConfigLogError(log, "FindTextInFolder called with invalid arguments");
+        OsConfigLogInfo(log, "FindTextInFolder called for a directory that does not exist");
         return EINVAL;
     }
 
