@@ -5,7 +5,6 @@
 #define COMPLIANCE_ENGINE_H
 
 #include <Mmi.h>
-#include <cstdio>
 #include "Logging.h"
 
 #include "Result.h"
