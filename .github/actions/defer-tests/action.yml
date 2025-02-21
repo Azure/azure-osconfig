@@ -13,6 +13,7 @@ runs:
           sudo systemctl stop apt-daily-upgrade.service || true
           sudo systemctl stop apt-daily-upgrade.timer || true
         fi
+      shell: bash
 
     - name: Wait for packages installed by azsec
       run: |
@@ -32,3 +33,4 @@ runs:
             sleep 5
           done
         fi
+      shell: bash
