@@ -2,17 +2,17 @@
 // Licensed under the MIT License.
 
 #include "Evaluator.h"
-#include "JsonWrapper.h"
 
+#include "JsonWrapper.h"
 #include "parson.h"
 
 #include <gtest/gtest.h>
 
-using compliance::Result;
+using compliance::action_func_t;
 using compliance::Error;
 using compliance::Evaluator;
 using compliance::JsonWrapper;
-using compliance::action_func_t;
+using compliance::Result;
 
 static Result<bool> remediationFailure(std::map<std::string, std::string>, std::ostringstream&)
 {
@@ -37,16 +37,16 @@ static Result<bool> auditSuccess(std::map<std::string, std::string>, std::ostrin
 static Result<bool> remediationParametrized(std::map<std::string, std::string> arguments, std::ostringstream&)
 {
     auto it = arguments.find("result");
-    if(it == arguments.end())
+    if (it == arguments.end())
     {
         return Error("Missing 'result' parameter");
     }
 
-    if(it->second == "success")
+    if (it->second == "success")
     {
         return true;
     }
-    else if(it->second == "failure")
+    else if (it->second == "failure")
     {
         return false;
     }
@@ -62,13 +62,9 @@ protected:
 
     void SetUp() override
     {
-        mProcedureMap = {
-            {"auditSuccess", {auditSuccess, nullptr}},
-            {"auditFailure", {auditFailure, nullptr}},
-            {"remediationSuccess", {nullptr, remediationSuccess}},
-            {"remediationFailure", {nullptr, remediationFailure}},
-            {"remediationParametrized", {nullptr, remediationParametrized}}
-        };
+        mProcedureMap = {{"auditSuccess", {auditSuccess, nullptr}}, {"auditFailure", {auditFailure, nullptr}},
+            {"remediationSuccess", {nullptr, remediationSuccess}}, {"remediationFailure", {nullptr, remediationFailure}},
+            {"remediationParametrized", {nullptr, remediationParametrized}}};
     }
 };
 
@@ -612,7 +608,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_5)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_6)
 {
-    mParameters = { {"placeholder", "failure"} };
+    mParameters = {{"placeholder", "failure"}};
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationParametrized\":{\"result\":\"$placeholder\"}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
@@ -625,7 +621,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_6)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_7)
 {
-    mParameters = { {"placeholder", "success"} };
+    mParameters = {{"placeholder", "success"}};
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationParametrized\":{\"result\":\"$placeholder\"}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);

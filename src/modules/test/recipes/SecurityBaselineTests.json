@@ -931,6 +931,11 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureCronServiceIsEnabled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcAnacronTab",
     "Payload": "600"
   },
@@ -1210,6 +1215,16 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
     "Payload": "games,test"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureAuditdInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureAuditdServiceIsRunning"
   },
   {
     "ObjectType": "Desired",
@@ -2100,6 +2115,11 @@
     "ObjectName": "auditEnsureZeroconfNetworkingIsDisabled"
   },
   {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureCronServiceIsEnabled"
+  },
+  {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcAnacronTab",
@@ -2367,6 +2387,16 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAuditdInstalled"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAuditdServiceIsRunning"
   },
   {
     "ObjectType": "Reported",

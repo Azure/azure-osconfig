@@ -26,7 +26,7 @@ void BaselineInitialize(void* log)
 void BaselineShutdown(void* log)
 {
     UNUSED(log);
-    if(NULL == gCompliance)
+    if (NULL == gCompliance)
     {
         return;
     }
@@ -38,30 +38,31 @@ void BaselineShutdown(void* log)
 
 int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log)
 {
-    UNUSED(log);
-    UNUSED(maxPayloadSizeBytes);
-
-    if (0 != strcmp(componentName, gComponentName))
+    if ((NULL == componentName) || (NULL == objectName))
     {
+        OsConfigLogError(log, "BaselineMmiGet called with invalid arguments");
         return EINVAL;
     }
 
-    if (NULL == gCompliance)
+    int result = ComplianceMmiGet(gCompliance, componentName, objectName, payload, payloadSizeBytes);
+    if (MMI_OK != result)
     {
-        return EINVAL;
+        OsConfigLogError(log, "BaselineMmiGet(%s, %s) failed: %d", componentName, objectName, result);
+        return result;
     }
 
-    return ComplianceMmiGet(gCompliance, componentName, objectName, payload, payloadSizeBytes);
+    if ((NULL != *payload) && (*payloadSizeBytes > 0) & (maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > maxPayloadSizeBytes))
+    {
+        OsConfigLogInfo(log, "BaselineMmiGet(%s, %s) payload truncated from %d to %u bytes", componentName, objectName, *payloadSizeBytes, maxPayloadSizeBytes);
+        *payloadSizeBytes = (int)maxPayloadSizeBytes;
+        *payload[*payloadSizeBytes] = '\0';
+    }
+
+    return MMI_OK;
 }
 
 int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, void* log)
 {
     UNUSED(log);
-
-    if (0 != strcmp(componentName, gComponentName))
-    {
-        return EINVAL;
-    }
-
     return ComplianceMmiSet(gCompliance, componentName, objectName, payload, payloadSizeBytes);
 }

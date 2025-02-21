@@ -1,18 +1,20 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <string>
-#include <memory>
-#include <map>
-#include <sstream>
-#include <parson.h>
-#include <Logging.h>
 #include "Evaluator.h"
+
+#include "Logging.h"
 #include "Result.h"
 
-#define lenof(str) (sizeof(str)-1)
+#include <cstring>
+#include <map>
+#include <parson.h>
+#include <sstream>
+#include <string>
+#include <utility>
 
-namespace compliance {
+namespace compliance
+{
 
 Result<bool> Evaluator::ExecuteAudit(char** payload, int* payloadSizeBytes)
 {
@@ -29,7 +31,7 @@ Result<bool> Evaluator::ExecuteAudit(char** payload, int* payloadSizeBytes)
         return result.error();
     }
 
-    std::string vlog = mLogstream.str().substr(0, cLogstreamMaxSize - (1 + lenof("PASS") + lenof("\"\"")));
+    std::string vlog = mLogstream.str().substr(0, cLogstreamMaxSize - (1 + strlen("PASS") + strlen("\"\"")));
     if (result.value() == true)
     {
         vlog = "\"PASS" + vlog + "\"";
@@ -84,12 +86,12 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
             OsConfigLogError(mLog, "anyOf value is not an array");
             return Error("anyOf value is not an array");
         }
-        JSON_Array *array = json_value_get_array(value);
+        JSON_Array* array = json_value_get_array(value);
         size_t count = json_array_get_count(array);
         mLogstream << "{ anyOf: [";
         for (size_t i = 0; i < count; ++i)
         {
-            JSON_Object *subObject = json_array_get_object(array, i);
+            JSON_Object* subObject = json_array_get_object(array, i);
             auto result = EvaluateProcedure(subObject, action);
             if (!result.has_value())
             {
@@ -187,8 +189,8 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         size_t count = json_object_get_count(args_object);
         for (size_t i = 0; i < count; ++i)
         {
-            const char *key = json_object_get_name(args_object, i);
-            JSON_Value *val = json_object_get_value_at(args_object, i);
+            const char* key = json_object_get_name(args_object, i);
+            JSON_Value* val = json_object_get_value_at(args_object, i);
             if (json_value_get_type(val) != JSONString)
             {
                 mLogstream << "ERROR: Argument type is not a string";
@@ -256,4 +258,4 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
     return Error("Unreachable"); // unreachable
 }
 
-}
+} // namespace compliance

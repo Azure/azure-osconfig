@@ -279,6 +279,9 @@ jobs:
           sudo mkdir -p /etc/osconfig
           sudo cp -r ${{ steps.download.outputs.download-path }}/modules/test/osconfig.json /etc/osconfig/osconfig.json
 
+      - name: Defer test execution
+        uses: ./.github/actions/defer-tests
+
       - name: Run moduletest
         working-directory: ${{ steps.download.outputs.download-path }}/modules/test
         run: |
