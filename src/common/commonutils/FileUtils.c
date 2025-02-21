@@ -1210,10 +1210,15 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
     bool foundMarker = false;
     int status = 0;
 
-    if ((false == FileExists(fileName)) || (NULL == text) || (NULL == marker) || (0 == strlen(text)) || (0 == strlen(marker)) ||
+    if ((NULL == fileName) || (NULL == text) || (NULL == marker) || (0 == strlen(text)) || (0 == strlen(marker)) ||
         (false == IsValidGrepArgument(text)) || (false == IsValidCommentCharacter(commentCharacter)))
     {
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile called with invalid arguments");
+        return EINVAL;
+    }
+    else if (false == FileExists(fileName))
+    {
+        OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile called for a file that does not exist ('%s')", fileName);
         return EINVAL;
     }
     else if (NULL == (command = FormatAllocateString(commandTemplate, commentCharacter, fileName, text)))
