@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "ComplianceInterface.h"
+
+#include <CommonUtils.h>
+#include <Mmi.h>
 #include <gtest/gtest.h>
 #include <version.h>
-#include <Mmi.h>
-#include <CommonUtils.h>
-#include "ComplianceInterface.h"
 
 using namespace std;
 

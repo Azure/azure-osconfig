@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <gtest/gtest.h>
 #include "Result.h"
 
-using compliance::Result;
+#include <gtest/gtest.h>
+
 using compliance::Error;
+using compliance::Result;
 
 class ResultTest : public ::testing::Test
 {
