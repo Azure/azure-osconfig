@@ -44,11 +44,15 @@ bool IsDaemon(void);
 
 #define __INFO__ "INFO"
 #define __ERROR__ "ERROR"
+#define __DEBUG__ "DEBUG"
 
 #define OSCONFIG_LOG_INFO(log, format, ...) __LOG__(log, __INFO__, format, ## __VA_ARGS__)
 #define OSCONFIG_LOG_ERROR(log, format, ...) __LOG__(log, __ERROR__, format, ## __VA_ARGS__)
+#define OSCONFIG_LOG_DEBUG(log, format, ...) __LOG__(log, __DEBUG__, format, ## __VA_ARGS__)
+
 #define OSCONFIG_FILE_LOG_INFO(log, format, ...) __LOG_TO_FILE__(log, __INFO__, format, ## __VA_ARGS__)
 #define OSCONFIG_FILE_LOG_ERROR(log, format, ...) __LOG_TO_FILE__(log, __ERROR__, format, ## __VA_ARGS__)
+#define OSCONFIG_FILE_LOG_DEBUG(log, format, ...) __LOG_TO_FILE__(log, __DEBUG__, format, ## __VA_ARGS__)
 
 #define OsConfigLogInfo(log, FORMAT, ...) {\
     if (NULL != GetLogFile(log)) {\
@@ -67,6 +71,16 @@ bool IsDaemon(void);
     }\
     if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
         OSCONFIG_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
+    }\
+}\
+
+#define OsConfigLogDebug(log, FORMAT, ...) {\
+    if (NULL != GetLogFile(log)) {\
+        OSCONFIG_FILE_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
+        fflush(GetLogFile(log));\
+    }\
+    if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
+        OSCONFIG_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
     }\
 }\
 
