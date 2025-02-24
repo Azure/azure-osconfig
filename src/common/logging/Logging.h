@@ -43,6 +43,16 @@ bool IsDaemon(void);
     fprintf(GetLogFile(log), "[%s] [%s:%d]%s" format "\n", GetFormattedTime(), __SHORT_FILE__, __LINE__, loglevel, ## __VA_ARGS__);\
 }\
 
+enum OsConfigLogLevel {
+    LOG_LVL_SENSITIVE_DATA = 0,
+    LOG_LVL_DEBUG,
+    LOG_LVL_INFO,
+    LOG_LVL_ERROR,
+};
+
+void SetLogLevel(enum OsConfigLogLevel lvl);
+int GetLogLevel(void);
+
 #define __INFO__ " "
 #define __ERROR__ " [ERROR] "
 

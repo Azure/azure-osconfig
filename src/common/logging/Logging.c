@@ -14,7 +14,7 @@
 
 #define MAX_LOG_TRIM 1000
 
-static bool g_fullLoggingEnabled = false;
+static enum OsConfigLogLevel g_osconfigLogLevel = LOG_LVL_INFO;
 
 struct OSCONFIG_LOG
 {
@@ -26,14 +26,30 @@ struct OSCONFIG_LOG
 
 void SetFullLogging(bool fullLogging)
 {
-    g_fullLoggingEnabled = fullLogging;
+    if (fullLogging)
+    {
+        g_osconfigLogLevel = LOG_LVL_SENSITIVE_DATA;
+    }
+    else
+    {
+        g_osconfigLogLevel = LOG_LVL_INFO;
+    }
 }
 
 bool IsFullLoggingEnabled()
 {
-    return g_fullLoggingEnabled;
+    return g_osconfigLogLevel <= (int)LOG_LVL_SENSITIVE_DATA;
 }
 
+void SetLogLevel(enum OsConfigLogLevel lvl)
+{
+    g_osconfigLogLevel = lvl;
+}
+
+int GetLogLevel(void)
+{
+    return (int)g_osconfigLogLevel;
+}
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
 {
     return chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
