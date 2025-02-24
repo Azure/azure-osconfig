@@ -88,7 +88,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
                 // Intermediate process
                 if (IsCommandLoggingEnabled())
                 {
-                    OsConfigLogDebug(log, "Failed forking process to execute command (errno: %d, '%s')", errno, strerror(errno));
+                    OsConfigLogError(log, "Failed forking process to execute command (errno: %d, '%s')", errno, strerror(errno));
                 }
                 status = -1;
 
@@ -130,7 +130,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
                 // Intermediate process
                 if (IsCommandLoggingEnabled())
                 {
-                    OsConfigLogDebug(log, "Failed forking timer process (errno: %d, '%s')", errno, strerror(errno));
+                    OsConfigLogError(log, "Failed forking timer process (errno: %d, '%s')", errno, strerror(errno));
                 }
                 status = -1;
 
@@ -178,7 +178,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             status = -1;
             if (IsCommandLoggingEnabled())
             {
-                OsConfigLogDebug(log, "Failed forking intermediate process (errno: %d, '%s')", errno, strerror(errno));
+                OsConfigLogError(log, "Failed forking intermediate process (errno: %d, '%s')", errno, strerror(errno));
             }
         }
     }
@@ -205,7 +205,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             // If our fork fails, try system(), if that also fails then the call fails
             if (IsCommandLoggingEnabled())
             {
-                OsConfigLogDebug(log, "Failed forking process to execute command (errno: %d, '%s'), attempting system", errno, strerror(errno));
+                OsConfigLogError(log, "Failed forking process to execute command (errno: %d, '%s'), attempting system", errno, strerror(errno));
             }
             status = system(command);
         }
@@ -270,7 +270,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     {
         if (IsCommandLoggingEnabled())
         {
-            OsConfigLogDebug(log, "Cannot run command '%s', cannot allocate %u bytes for command, out of memory", command, (unsigned)commandLineLength);
+            OsConfigLogError(log, "Cannot run command '%s', cannot allocate %u bytes for command, out of memory", command, (unsigned)commandLineLength);
         }
         return ENOMEM;
     }
