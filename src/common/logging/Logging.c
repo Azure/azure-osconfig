@@ -109,6 +109,7 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
 {
     OSCONFIG_LOG* whatLog = NULL;
     int fileSize = 0;
+    int savedErrno = errno;
 
     if ((NULL == log) || (NULL == (whatLog = (OSCONFIG_LOG*)log)))
     {
@@ -144,6 +145,8 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
             RestrictFileAccessToCurrentAccountOnly(whatLog->backLogFileName);
         }
     }
+
+    errno = savedErrno;
 }
 
 bool IsDaemon()

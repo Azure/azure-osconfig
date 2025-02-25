@@ -63,7 +63,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     {
         if (IsCommandLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation on %s thread",
+            OsConfigLogDebug(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation on %s thread",
                 command, timeout, (NULL == callback) ? " no " : " ", mainProcessThread ? "main process" : "worker");
         }
 
@@ -88,7 +88,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
                 // Intermediate process
                 if (IsCommandLoggingEnabled())
                 {
-                    OsConfigLogError(log, "Failed forking process to execute command");
+                    OsConfigLogError(log, "Failed forking process to execute command (errno: %d, '%s')", errno, strerror(errno));
                 }
                 status = -1;
 
@@ -130,7 +130,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
                 // Intermediate process
                 if (IsCommandLoggingEnabled())
                 {
-                    OsConfigLogError(log, "Failed forking timer process");
+                    OsConfigLogError(log, "Failed forking timer process (errno: %d, '%s')", errno, strerror(errno));
                 }
                 status = -1;
 
@@ -150,7 +150,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             {
                 if (IsCommandLoggingEnabled())
                 {
-                    OsConfigLogInfo(log, "Command execution complete with status %d", status);
+                    OsConfigLogDebug(log, "Command execution complete with status %d", status);
                 }
                 KillProcess(timerProcess);
             }
@@ -159,7 +159,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
                 // Timer process is done, kill the timed out worker process
                 if (IsCommandLoggingEnabled())
                 {
-                    OsConfigLogError(log, "Command timed out or it was canceled, command process killed (%d)", status);
+                    OsConfigLogDebug(log, "Command timed out or it was canceled, command process killed (%d)", status);
                 }
                 KillProcess(workerProcess);
             }
@@ -178,7 +178,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             status = -1;
             if (IsCommandLoggingEnabled())
             {
-                OsConfigLogError(log, "Failed forking intermediate process");
+                OsConfigLogError(log, "Failed forking intermediate process (errno: %d, '%s')", errno, strerror(errno));
             }
         }
     }
@@ -186,7 +186,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     {
         if (IsCommandLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' without timeout or cancelation on %s thread",
+            OsConfigLogDebug(log, "SystemCommand: executing command '%s' without timeout or cancelation on %s thread",
                 command, mainProcessThread ? "main process" : "worker");
         }
         if (0 == (workerProcess = fork()))
@@ -205,7 +205,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             // If our fork fails, try system(), if that also fails then the call fails
             if (IsCommandLoggingEnabled())
             {
-                OsConfigLogError(log, "Failed forking process to execute command, attempting system");
+                OsConfigLogError(log, "Failed forking process to execute command (errno: %d, '%s'), attempting system", errno, strerror(errno));
             }
             status = system(command);
         }
@@ -214,7 +214,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     status = NormalizeStatus(status);
     if (IsCommandLoggingEnabled())
     {
-        OsConfigLogInfo(log, "SystemCommand: command '%s' completed with %d", command, status);
+        OsConfigLogDebug(log, "SystemCommand: command '%s' completed with %d", command, status);
     }
     return status;
 }
@@ -242,7 +242,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     {
         if (IsCommandLoggingEnabled())
         {
-            OsConfigLogError(log, "Cannot run command '%s'", command);
+            OsConfigLogDebug(log, "Cannot run command '%s'", command);
         }
         return -1;
     }
@@ -260,7 +260,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     {
         if (IsCommandLoggingEnabled())
         {
-            OsConfigLogError(log, "Cannot run command '%s', command too long (%u), ARG_MAX: %u", command, (unsigned)commandLineLength, (unsigned)maximumCommandLine);
+            OsConfigLogDebug(log, "Cannot run command '%s', command too long (%u), ARG_MAX: %u", command, (unsigned)commandLineLength, (unsigned)maximumCommandLine);
         }
         return E2BIG;
     }
@@ -337,10 +337,10 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
     if (IsCommandLoggingEnabled())
     {
-        OsConfigLogInfo(log, "Context: '%p'", context);
-        OsConfigLogInfo(log, "Command: '%s'", command);
-        OsConfigLogInfo(log, "Status: %d (errno: %d)", status, errno);
-        OsConfigLogInfo(log, "Text result: '%s'", (NULL != textResult && NULL != *textResult) ? (*textResult) : "");
+        OsConfigLogDebug(log, "Context: '%p'", context);
+        OsConfigLogDebug(log, "Command: '%s'", command);
+        OsConfigLogDebug(log, "Status: %d (errno: %d)", status, errno);
+        OsConfigLogDebug(log, "Text result: '%s'", (NULL != textResult && NULL != *textResult) ? (*textResult) : "");
     }
 
     return status;

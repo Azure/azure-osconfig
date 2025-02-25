@@ -34,20 +34,25 @@ char* GetFormattedTime();
 void TrimLog(OSCONFIG_LOG_HANDLE log);
 bool IsDaemon(void);
 
+#define __PREFIX_TEMPLATE__ "[%s][%s][%s:%d] "
 #define __SHORT_FILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define __LOG__(log, format, loglevel, ...) printf("[%s] [%s:%d]%s" format "\n", GetFormattedTime(), __SHORT_FILE__, __LINE__, loglevel, ## __VA_ARGS__)
-#define __LOG_TO_FILE__(log, format, loglevel, ...) {\
+#define __LOG__(log, loglevel, format, ...) printf(__PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), loglevel, __SHORT_FILE__, __LINE__, ## __VA_ARGS__)
+#define __LOG_TO_FILE__(log, loglevel, format, ...) {\
     TrimLog(log);\
-    fprintf(GetLogFile(log), "[%s] [%s:%d]%s" format "\n", GetFormattedTime(), __SHORT_FILE__, __LINE__, loglevel, ## __VA_ARGS__);\
+    fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), loglevel, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
 }\
 
-#define __INFO__ " "
-#define __ERROR__ " [ERROR] "
+#define __INFO__ "INFO"
+#define __ERROR__ "ERROR"
+#define __DEBUG__ "DEBUG"
 
-#define OSCONFIG_LOG_INFO(log, format, ...) __LOG__(log, format, __INFO__, ## __VA_ARGS__)
-#define OSCONFIG_LOG_ERROR(log, format, ...) __LOG__(log, format, __ERROR__, ## __VA_ARGS__)
-#define OSCONFIG_FILE_LOG_INFO(log, format, ...) __LOG_TO_FILE__(log, format, __INFO__, ## __VA_ARGS__)
-#define OSCONFIG_FILE_LOG_ERROR(log, format, ...) __LOG_TO_FILE__(log, format, __ERROR__, ## __VA_ARGS__)
+#define OSCONFIG_LOG_INFO(log, format, ...) __LOG__(log, __INFO__, format, ## __VA_ARGS__)
+#define OSCONFIG_LOG_ERROR(log, format, ...) __LOG__(log, __ERROR__, format, ## __VA_ARGS__)
+#define OSCONFIG_LOG_DEBUG(log, format, ...) __LOG__(log, __DEBUG__, format, ## __VA_ARGS__)
+
+#define OSCONFIG_FILE_LOG_INFO(log, format, ...) __LOG_TO_FILE__(log, __INFO__, format, ## __VA_ARGS__)
+#define OSCONFIG_FILE_LOG_ERROR(log, format, ...) __LOG_TO_FILE__(log, __ERROR__, format, ## __VA_ARGS__)
+#define OSCONFIG_FILE_LOG_DEBUG(log, format, ...) __LOG_TO_FILE__(log, __DEBUG__, format, ## __VA_ARGS__)
 
 #define OsConfigLogInfo(log, FORMAT, ...) {\
     if (NULL != GetLogFile(log)) {\
@@ -66,6 +71,16 @@ bool IsDaemon(void);
     }\
     if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
         OSCONFIG_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
+    }\
+}\
+
+#define OsConfigLogDebug(log, FORMAT, ...) {\
+    if (NULL != GetLogFile(log)) {\
+        OSCONFIG_FILE_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
+        fflush(GetLogFile(log));\
+    }\
+    if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
+        OSCONFIG_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
     }\
 }\
 

@@ -99,7 +99,7 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
         }
         else
         {
-            OsConfigLogError(log, "%s.%s failed in %ld microseconds with %d", componentName, objectName, microseconds, objectResult);
+            OsConfigLogInfo(log, "%s.%s failed in %ld microseconds with %d", componentName, objectName, microseconds, objectResult);
         }
 
         if (microseconds > limit)

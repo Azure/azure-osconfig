@@ -77,7 +77,7 @@ bool CheckDaemonActive(const char* daemonName, char** reason, void* log)
     }
     else
     {
-        OsConfigLogError(log, "CheckDaemonActive: service '%s' is inactive", daemonName);
+        OsConfigLogInfo(log, "CheckDaemonActive: service '%s' is inactive", daemonName);
         OsConfigCaptureReason(reason, "Service '%s' is inactive", daemonName);
     }
 
@@ -90,7 +90,7 @@ bool CheckDaemonNotActive(const char* daemonName, char** reason, void* log)
 
     if (true == (result = IsDaemonActive(daemonName, log)))
     {
-        OsConfigLogError(log, "CheckDaemonNotActive: service '%s' is active", daemonName);
+        OsConfigLogInfo(log, "CheckDaemonNotActive: service '%s' is active", daemonName);
         OsConfigCaptureReason(reason, "Service '%s' is active", daemonName);
         result = false;
     }
@@ -121,7 +121,7 @@ static bool CommandDaemon(const char* command, const char* daemonName, void* log
     }
     else
     {
-        OsConfigLogError(log, "Failed to %s service '%s' (%d)", command, daemonName, result);
+        OsConfigLogInfo(log, "Failed to %s service '%s' (%d)", command, daemonName, result);
         status = false;
     }
 
