@@ -294,10 +294,7 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                 value = (char*)json_object_get_string(rootObject, valueName);
                 if (NULL == value)
                 {
-                    if (IsFullLoggingEnabled())
-                    {
-                        OsConfigLogInfo(log, "GetStringFromJsonConfig: %s value not found or empty", valueName);
-                    }
+                    OsConfigLogSensitiveData(log, "GetStringFromJsonConfig: %s value not found or empty", valueName);
                 }
                 else
                 {
@@ -308,9 +305,9 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                         memcpy(buffer, value, valueLength);
                         buffer[valueLength] = 0;
                     }
-                    else if (IsFullLoggingEnabled())
+                    else
                     {
-                        OsConfigLogError(log, "GetStringFromJsonConfig: failed to allocate %d bytes for %s", (int)(valueLength + 1), valueName);
+                        OsConfigLogSensitiveData(log, "GetStringFromJsonConfig: failed to allocate %d bytes for %s", (int)(valueLength + 1), valueName);
                     }
                 }
             }
