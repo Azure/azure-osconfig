@@ -47,9 +47,9 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     *response = NULL;
     *responseSize = 0;
 
-    if (0 != (status = CheckFileAccess(mpiSocket, 0, 0, 06770, NULL, IsFullLoggingEnabled() ? log : NULL)))
+    if (0 != (status = CheckFileAccess(mpiSocket, 0, 0, 06770, NULL, IsDebugLoggingEnabled() ? log : NULL)))
     {
-        if (0 != (status = SetFileAccess(mpiSocket, 0, 0, 06770, IsFullLoggingEnabled() ? log : NULL)))
+        if (0 != (status = SetFileAccess(mpiSocket, 0, 0, 06770, IsDebugLoggingEnabled() ? log : NULL)))
         {
             OsConfigLogError(log, "CallMpi(%s): access to the MPI socket is not protected, cannot call the MPI (%d)", name, status);
             return status;
@@ -103,7 +103,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         if (bytes != actualDataSize)
         {
             status = errno ? errno : EIO;
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(log, "CallMpi(%s): failed to send request '%s' (%d bytes) to socket '%s' (%d)", name, data, actualDataSize, mpiSocket, status);
             }
@@ -112,7 +112,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
                 OsConfigLogError(log, "CallMpi(%s): failed to send request to socket '%s' of %d bytes (%d)", name, mpiSocket, actualDataSize, status);
             }
         }
-        else if (IsFullLoggingEnabled())
+        else if (IsDebugLoggingEnabled())
         {
             OsConfigLogInfo(log, "CallMpi(%s): sent to '%s' '%s' (%d bytes)", name, mpiSocket, data, actualDataSize);
         }
@@ -133,7 +133,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
 
             if (*responseSize != read(socketHandle, *response, *responseSize))
             {
-                if ((MPI_OK == status) || IsFullLoggingEnabled())
+                if ((MPI_OK == status) || IsDebugLoggingEnabled())
                 {
                     OsConfigLogError(log, "CallMpi(%s): failed to read %d bytes response from socket '%s' (%d)", name, *responseSize, mpiSocket, status);
                 }
@@ -153,7 +153,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         close(socketHandle);
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(log, "CallMpi(name: '%s', request: '%s', response: '%s', response size: %d bytes) to socket '%s' returned %d",
             name, request, *response, *responseSize, mpiSocket, status);
@@ -330,7 +330,7 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
         FREE_MEMORY(statusFromResponse);
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(log, "CallMpiSet(%p, %s, %s, %.*s, %d bytes) returned %d", g_mpiHandle, componentName, propertyName, payloadSizeBytes, payload, payloadSizeBytes, status);
     }
@@ -411,7 +411,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
         *payloadSizeBytes = 0;
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(log, "CallMpiGet(%p, %s, %s, %.*s, %d bytes): %d", g_mpiHandle, componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
@@ -468,7 +468,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes,
         FREE_MEMORY(statusFromResponse);
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(log, "CallMpiSetDesired(%p, %.*s, %d bytes) returned %d", g_mpiHandle, payloadSizeBytes, payload, payloadSizeBytes, status);
     }
@@ -550,7 +550,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OSCONFIG
         *payloadSizeBytes = 0;
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(log, "CallMpiGetReported(%p, %.*s, %d bytes): %d", g_mpiHandle, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }

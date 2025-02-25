@@ -14,7 +14,7 @@
 
 #define MAX_LOG_TRIM 1000
 
-static bool g_fullLoggingEnabled = false;
+static bool g_debugLoggingEnabled = false;
 
 struct OSCONFIG_LOG
 {
@@ -24,14 +24,14 @@ struct OSCONFIG_LOG
     unsigned int trimLogCount;
 };
 
-void SetFullLogging(bool fullLogging)
+void SetDebugLogging(bool fullLogging)
 {
-    g_fullLoggingEnabled = fullLogging;
+    g_debugLoggingEnabled = fullLogging;
 }
 
-bool IsFullLoggingEnabled()
+bool IsDebugLoggingEnabled(void)
 {
-    return g_fullLoggingEnabled;
+    return g_debugLoggingEnabled;
 }
 
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)

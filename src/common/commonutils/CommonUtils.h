@@ -52,9 +52,6 @@ bool AppendToFile(const char* fileName, const char* payload, const int payloadSi
 bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, bool preserveAccess, OSCONFIG_LOG_HANDLE log);
 int RenameFile(const char* original, const char* target, OSCONFIG_LOG_HANDLE log);
 
-void SetCommandLogging(bool commandLogging);
-bool IsCommandLoggingEnabled(void);
-
 typedef int(*CommandCallback)(void* context);
 
 // If called from the main process thread the timeoutSeconds and callback arguments are ignored
@@ -226,7 +223,7 @@ typedef struct REPORTED_PROPERTY
 } REPORTED_PROPERTY;
 
 bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString);
-bool IsFullLoggingEnabledInJsonConfig(const char* jsonString);
+bool IsDebugLoggingEnabledInJsonConfig(const char* jsonString);
 bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString);
 int GetReportingIntervalFromJsonConfig(const char* jsonString, OSCONFIG_LOG_HANDLE log);
 int GetModelVersionFromJsonConfig(const char* jsonString, OSCONFIG_LOG_HANDLE log);

@@ -115,7 +115,7 @@ int SecurityBaselineMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload,
         status = ENOMEM;
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(SecurityBaselineGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }

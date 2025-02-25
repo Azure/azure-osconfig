@@ -52,7 +52,7 @@ static MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayl
 
 static void CallMpiClose(MPI_HANDLE handle)
 {
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(GetPlatformLog(), "Received MpiClose request, session %p ('%s')", handle, (char*)handle);
     }
@@ -68,7 +68,7 @@ static int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* 
 
     status = MpiSet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         if (MPI_OK == status)
         {
@@ -93,7 +93,7 @@ static int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* 
 
     status = MpiGet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         if (MPI_OK == status)
         {
@@ -118,7 +118,7 @@ static int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, c
 
     status = MpiSetDesired((MPI_HANDLE)handle, payload, payloadSize);
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         if (MPI_OK == status)
         {
@@ -143,7 +143,7 @@ static int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* 
 
     status = MpiGetReported((MPI_HANDLE)handle, payload, payloadSize);
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         if (MPI_OK == status)
         {
@@ -373,7 +373,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                             if (MPI_OK != (mpiStatus = handlers.mpiSet((MPI_HANDLE)client, component, object, (MPI_JSON_STRING)payload, strlen(payload))))
                             {
                                 status = SetErrorResponse(uri, mpiStatus, response, responseSize);
-                                if (IsFullLoggingEnabled())
+                                if (IsDebugLoggingEnabled())
                                 {
                                     OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed for client '%s' with %d (returning %d)", uri, component, object, client, mpiStatus, status);
                                 }
@@ -383,7 +383,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                     else if (MPI_OK != (mpiStatus = handlers.mpiGet((MPI_HANDLE)client, component, object, response, responseSize)))
                     {
                         status = SetErrorResponse(uri, mpiStatus, response, responseSize);
-                        if (IsFullLoggingEnabled())
+                        if (IsDebugLoggingEnabled())
                         {
                             OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed for client '%s' with %d (returning %d)", uri, component, object, client, mpiStatus, status);
                         }
@@ -494,7 +494,7 @@ static void* MpiServerWorker(void* arguments)
         {
             AreModulesLoadedAndLoadIfNot(MODULES_BIN_PATH, CONFIG_JSON_PATH);
 
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogInfo(GetPlatformLog(), "Accepted connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
@@ -524,7 +524,7 @@ static void* MpiServerWorker(void* arguments)
 
             if (HTTP_OK == status)
             {
-                if (IsFullLoggingEnabled())
+                if (IsDebugLoggingEnabled())
                 {
                     OsConfigLogInfo(GetPlatformLog(), "%s: content-length %d, body, '%s'", uri, contentLength, requestBody);
                 }
@@ -557,7 +557,7 @@ static void* MpiServerWorker(void* arguments)
                 OsConfigLogError(GetPlatformLog(), "Failed to close socket: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
 
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogInfo(GetPlatformLog(), "Closed connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }

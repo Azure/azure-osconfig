@@ -516,8 +516,7 @@ int main(int argc, char *argv[])
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        SetCommandLogging(IsCommandLoggingEnabledInJsonConfig(jsonConfiguration));
-        SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
+        SetDebugLogging(IsDebugLoggingEnabledInJsonConfig(jsonConfiguration));
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -537,9 +536,9 @@ int main(int argc, char *argv[])
     OsConfigLogInfo(GetLog(), "OSConfig Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
-    if (IsCommandLoggingEnabled() || IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "WARNING: verbose logging (command and/or full) is enabled. To disable verbose logging edit %s and restart OSConfig", CONFIG_FILE);
+        OsConfigLogInfo(GetLog(), "WARNING: debug logging is enabled. To disable debug logging edit %s and restart OSConfig", CONFIG_FILE);
     }
 
     // Load remaining configuration
@@ -589,7 +588,7 @@ int main(int argc, char *argv[])
         memcpy(g_productInfo, encodedProductInfo, sizeof(g_productInfo) - 1);
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
     }

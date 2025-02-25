@@ -121,7 +121,7 @@ static bool CommandDaemon(const char* command, const char* daemonName, OSCONFIG_
     }
     else
     {
-        OsConfigLogInfo(log, "Failed to %s service '%s' (%d)", command, daemonName, result);
+        OsConfigLogInfo(log, "Cannot %s service '%s' (%d, errno: %d)", command, daemonName, result, errno);
         status = false;
     }
 

@@ -341,7 +341,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
     FREE_MEMORY(macsValue);
     FREE_MEMORY(sshMacs);
 
-    OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+    OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed complete with %d", status);
 
     return status;
 }
@@ -443,7 +443,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OSC
     FREE_MEMORY(ciphersValue);
     FREE_MEMORY(sshCiphers);
 
-    OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+    OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh complete with %d", status);
 
     return status;
 }
@@ -493,7 +493,7 @@ static int CheckSshOptionIsSet(const char* option, const char* expectedValue, ch
         status = ENOENT;
     }
 
-    OsConfigLogInfo(log, "CheckSshOptionIsSet: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+    OsConfigLogInfo(log, "CheckSshOptionIsSet complete with %d", status);
 
     return status;
 }
@@ -542,7 +542,7 @@ static int CheckSshClientAliveInterval(char** reason, OSCONFIG_LOG_HANDLE log)
 
     FREE_MEMORY(clientAliveInterval);
 
-    OsConfigLogInfo(log, "CheckSshClientAliveInterval: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+    OsConfigLogInfo(log, "CheckSshClientAliveInterval complete with %d", status);
 
     return status;
 }
@@ -575,7 +575,7 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, OSCONFIG_LOG
 
     FREE_MEMORY(loginGraceTime);
 
-    OsConfigLogInfo(log, "CheckSshLoginGraceTime: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+    OsConfigLogInfo(log, "CheckSshLoginGraceTime complete with %d", status);
 
     return status;
 }
@@ -623,7 +623,7 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
 
     FREE_MEMORY(banner);
 
-    OsConfigLogInfo(log, "CheckSshWarningBanner: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+    OsConfigLogInfo(log, "CheckSshWarningBanner complete with %d", status);
 
     return status;
 }
@@ -717,7 +717,7 @@ int CheckSshProtocol(char** reason, OSCONFIG_LOG_HANDLE log)
 
     FREE_MEMORY(protocol);
 
-    OsConfigLogInfo(log, "CheckSshProtocol: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+    OsConfigLogInfo(log, "CheckSshProtocol complete with %d", status);
 
     return status;
 }
@@ -795,7 +795,7 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
         OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response", lowercase, expectedValue);
     }
 
-    OsConfigLogInfo(log, "CheckAllowDenyUsersGroups: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+    OsConfigLogInfo(log, "CheckAllowDenyUsersGroups complete with %d", status);
 
     return status;
 }

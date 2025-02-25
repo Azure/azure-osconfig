@@ -133,7 +133,7 @@ int AdhsMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloa
         status = ENOMEM;
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(AdhsGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
@@ -208,7 +208,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
 
                     if (NULL == value)
                     {
-                        if (IsFullLoggingEnabled())
+                        if (IsDebugLoggingEnabled())
                         {
                             OsConfigLogError(AdhsGetLog(), "MmiGet failed to find valid TOML property '%s'", g_permissionConfigName);
                         }
@@ -217,7 +217,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
                 }
                 else
                 {
-                    if (IsFullLoggingEnabled())
+                    if (IsDebugLoggingEnabled())
                     {
                         OsConfigLogError(AdhsGetLog(), "MmiGet failed to find TOML property '%s'", g_permissionConfigName);
                     }
@@ -234,7 +234,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
         }
         else
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(AdhsGetLog(), "MmiGet failed to read TOML file '%s'", g_adhsConfigFile);
             }
@@ -270,7 +270,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
         }
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(AdhsGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }

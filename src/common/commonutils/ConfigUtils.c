@@ -18,8 +18,7 @@
 #define IOT_HUB_MANAGEMENT "IotHubManagement"
 #define LOCAL_MANAGEMENT "LocalManagement"
 
-#define COMMAND_LOGGING "CommandLogging"
-#define FULL_LOGGING "FullLogging"
+#define DEBUG_LOGGING "DebugLogging"
 
 #define PROTOCOL "IotHubProtocol"
 
@@ -51,14 +50,9 @@ static bool IsOptionEnabledInJsonConfig(const char* jsonString, const char* sett
     return result;
 }
 
-bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString)
+bool IsDebugLoggingEnabledInJsonConfig(const char* jsonString)
 {
-    return IsOptionEnabledInJsonConfig(jsonString, COMMAND_LOGGING);
-}
-
-bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
-{
-    return IsOptionEnabledInJsonConfig(jsonString, FULL_LOGGING);
+    return IsOptionEnabledInJsonConfig(jsonString, DEBUG_LOGGING);
 }
 
 bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString)
@@ -74,7 +68,7 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
 
     if (NULL == valueName)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(log, "GetIntegerFromJsonConfig: no value name, using the specified default (%d)", defaultValue);
         }
@@ -83,7 +77,7 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
 
     if (minValue >= maxValue)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(log, "GetIntegerFromJsonConfig: bad min (%d) and/or max (%d) values for %s, using default (%d)", minValue, maxValue, valueName, defaultValue);
         }
@@ -100,14 +94,14 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
                 if (0 == valueToReturn)
                 {
                     valueToReturn = defaultValue;
-                    if (IsFullLoggingEnabled())
+                    if (IsDebugLoggingEnabled())
                     {
                         OsConfigLogInfo(log, "GetIntegerFromJsonConfig: %s value not found or 0, using default (%d)", valueName, defaultValue);
                     }
                 }
                 else if (valueToReturn < minValue)
                 {
-                    if (IsFullLoggingEnabled())
+                    if (IsDebugLoggingEnabled())
                     {
                         OsConfigLogError(log, "GetIntegerFromJsonConfig: %s value %d too small, using minimum (%d)", valueName, valueToReturn, minValue);
                     }
@@ -115,29 +109,29 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
                 }
                 else if (valueToReturn > maxValue)
                 {
-                    if (IsFullLoggingEnabled())
+                    if (IsDebugLoggingEnabled())
                     {
                         OsConfigLogError(log, "GetIntegerFromJsonConfig: %s value %d too big, using maximum (%d)", valueName, valueToReturn, maxValue);
                     }
                     valueToReturn = maxValue;
                 }
-                else if (IsFullLoggingEnabled())
+                else if (IsDebugLoggingEnabled())
                 {
                     OsConfigLogInfo(log, "GetIntegerFromJsonConfig: %s: %d", valueName, valueToReturn);
                 }
             }
-            else if (IsFullLoggingEnabled())
+            else if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(log, "GetIntegerFromJsonConfig: json_value_get_object(root) failed, using default (%d) for %s", defaultValue, valueName);
             }
             json_value_free(rootValue);
         }
-        else if (IsFullLoggingEnabled())
+        else if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(log, "GetIntegerFromJsonConfig: json_parse_string failed, using default (%d) for %s", defaultValue, valueName);
         }
     }
-    else if (IsFullLoggingEnabled())
+    else if (IsDebugLoggingEnabled())
     {
         OsConfigLogError(log, "GetIntegerFromJsonConfig: no configuration data, using default (%d) for %s", defaultValue, valueName);
     }
@@ -278,7 +272,7 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
 
     if (NULL == valueName)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(log, "GetStringFromJsonConfig: no value name");
         }
@@ -294,7 +288,7 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                 value = (char*)json_object_get_string(rootObject, valueName);
                 if (NULL == value)
                 {
-                    if (IsFullLoggingEnabled())
+                    if (IsDebugLoggingEnabled())
                     {
                         OsConfigLogInfo(log, "GetStringFromJsonConfig: %s value not found or empty", valueName);
                     }
@@ -308,29 +302,29 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                         memcpy(buffer, value, valueLength);
                         buffer[valueLength] = 0;
                     }
-                    else if (IsFullLoggingEnabled())
+                    else if (IsDebugLoggingEnabled())
                     {
                         OsConfigLogError(log, "GetStringFromJsonConfig: failed to allocate %d bytes for %s", (int)(valueLength + 1), valueName);
                     }
                 }
             }
-            else if (IsFullLoggingEnabled())
+            else if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(log, "GetStringFromJsonConfig: json_value_get_object(root) failed for %s", valueName);
             }
             json_value_free(rootValue);
         }
-        else if (IsFullLoggingEnabled())
+        else if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(log, "GetStringFromJsonConfig: json_parse_string failed for %s", valueName);
         }
     }
-    else if (IsFullLoggingEnabled())
+    else if (IsDebugLoggingEnabled())
     {
         OsConfigLogError(log, "GetStringFromJsonConfig: no configuration data for %s", valueName);
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(log, "GetStringFromJsonConfig(%s): %s", valueName, buffer);
     }

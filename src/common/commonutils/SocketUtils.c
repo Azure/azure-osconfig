@@ -104,7 +104,7 @@ char* ReadUriFromSocket(int socketHandle, OSCONFIG_LOG_HANDLE log)
         memset(returnUri, 0, uriLength + 1);
         strncpy(returnUri, bufferUri, uriLength);
 
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogInfo(log, "ReadUriFromSocket: %s", returnUri);
         }
@@ -144,7 +144,7 @@ int ReadHttpStatusFromSocket(int socketHandle, OSCONFIG_LOG_HANDLE log)
     {
         httpStatus = atoi(status);
 
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogInfo(log, "ReadHttpStatusFromSocket: %d ('%s')", httpStatus, status);
         }
@@ -196,7 +196,7 @@ int ReadHttpContentLengthFromSocket(int socketHandle, OSCONFIG_LOG_HANDLE log)
             {
                 httpContentLength = atoi(isolatedContentLength);
 
-                if (IsFullLoggingEnabled())
+                if (IsDebugLoggingEnabled())
                 {
                     OsConfigLogInfo(log, "ReadHttpContentLengthFromSocket: %d ('%s')", httpContentLength, isolatedContentLength);
                 }

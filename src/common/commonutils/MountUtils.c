@@ -76,7 +76,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
                     }
                 }
 
-                if (IsFullLoggingEnabled())
+                if (IsDebugLoggingEnabled())
                 {
                     OsConfigLogInfo(log, "CheckFileSystemMountingOption, line %d in '%s': mnt_fsname '%s', mnt_dir '%s', mnt_type '%s', mnt_opts '%s', mnt_freq %d, mnt_passno %d",
                         lineNumber, mountFileName, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts,
@@ -109,7 +109,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     else
     {
         status = (0 == errno) ? ENOENT : errno;
-        OsConfigLogInfo(log, "CheckFileSystemMountingOption: could not open file '%s', setmntent() failed (%d)", mountFileName, status);
+        OsConfigLogInfo(log, "CheckFileSystemMountingOption: cannot open file '%s', setmntent() failed (%d, errno: %d)", mountFileName, status, errno);
         OsConfigCaptureReason(reason, "Cannot access '%s', setmntent() failed (%d)", mountFileName, status);
     }
 
@@ -280,7 +280,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                         {
                             if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                             {
-                                OsConfigLogInfo(log, "SetFileSystemMountingOption: failed collecting entries from '%s'", fsMountTable);
+                                OsConfigLogInfo(log, "SetFileSystemMountingOption: cannot collect entries from '%s'", fsMountTable);
                                 break;
                             }
                         }
@@ -303,7 +303,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                         {
                             if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                             {
-                                OsConfigLogInfo(log, "SetFileSystemMountingOption: failed copying existing entries from '%s'", fsMountTable);
+                                OsConfigLogInfo(log, "SetFileSystemMountingOption: cannot copy existing entries from '%s'", fsMountTable);
                                 break;
                             }
                         }
@@ -369,7 +369,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                                     {
                                         if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                                         {
-                                            OsConfigLogInfo(log, "SetFileSystemMountingOption: failed collecting entry from '%s'", mountTable);
+                                            OsConfigLogInfo(log, "SetFileSystemMountingOption: cannot collect entry from '%s'", mountTable);
                                             break;
                                         }
                                     }
@@ -390,7 +390,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     else
                     {
                         status = (0 == errno) ? ENOENT : errno;
-                        OsConfigLogInfo(log, "SetFileSystemMountingOption: could not open '%s', setmntent() failed (%d)", mountTable, status);
+                        OsConfigLogInfo(log, "SetFileSystemMountingOption: cannot open '%s', setmntent() failed (%d)", mountTable, status);
                     }
                 }
             }
@@ -404,7 +404,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
         else
         {
             status = (0 == errno) ? ENOENT : errno;
-            OsConfigLogInfo(log, "SetFileSystemMountingOption: could not open '%s', setmntent() failed (%d)", fsMountTable, status);
+            OsConfigLogInfo(log, "SetFileSystemMountingOption: cannot open '%s', setmntent() failed (%d)", fsMountTable, status);
         }
 
         if (matchFound && (0 == status))
@@ -434,7 +434,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "SetFileSystemMountingOption:  RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempFileNameTwo, fsMountTable, status);
+                    OsConfigLogInfo(log, "SetFileSystemMountingOption:  RenameFileWithOwnerAndAccess('%s' to '%s') completed with %d", tempFileNameTwo, fsMountTable, status);
                 }
             }
         }

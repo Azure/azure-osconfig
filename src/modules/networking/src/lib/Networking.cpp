@@ -115,7 +115,7 @@ std::string NetworkingObject::RunCommand(const char* command)
     {
         commandOutputToReturn = (nullptr != textResult) ? std::string(textResult) : g_emptyString;
     }
-    else if (IsFullLoggingEnabled())
+    else if (IsDebugLoggingEnabled())
     {
         OsConfigLogError(NetworkingLog::Get(), "Failed to execute command '%s': %d, '%s'", command, status, (nullptr != textResult) ? textResult : g_dash);
     }
@@ -506,7 +506,7 @@ void NetworkingObjectBase::GenerateInterfaceTypesMap()
     }
     if (this->m_networkManagementService == NetworkManagementService::Unknown)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(NetworkingLog::Get(), "Network interface management service not found");
         }
@@ -895,7 +895,7 @@ int NetworkingObjectBase::Get(
 
     if ((nullptr == componentName) || (0 != std::strcmp(componentName, NETWORKING)))
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(NetworkingLog::Get(), "NetworkingObjectBase::Get(%s, %s, %.*s, %d) componentName %s is invalid, %s is expected",
                 componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), componentName, NETWORKING);
@@ -904,7 +904,7 @@ int NetworkingObjectBase::Get(
     }
     else if ((nullptr == objectName) || (0 != std::strcmp(objectName, NETWORK_CONFIGURATION)))
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(NetworkingLog::Get(), "NetworkingObjectBase::Get(%s, %s, %.*s, %d) objectName %s is invalid, %s is expected",
                 componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), objectName, NETWORK_CONFIGURATION);
@@ -913,7 +913,7 @@ int NetworkingObjectBase::Get(
     }
     else if (nullptr == payload)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(NetworkingLog::Get(), "NetworkingObjectBase::Get(%s, %s, %.*s, %d) payload %.*s is null",
                 componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), (payloadSizeBytes ? *payloadSizeBytes : 0), *payload);
@@ -922,7 +922,7 @@ int NetworkingObjectBase::Get(
     }
     else if (nullptr == payloadSizeBytes)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(NetworkingLog::Get(), "NetworkingObjectBase::Get(%s, %s, %.*s, %d) payloadSizeBytes %d is null",
                 componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), (payloadSizeBytes ? *payloadSizeBytes : 0));

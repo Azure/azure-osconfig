@@ -17,8 +17,7 @@
 #define LOG_FILE "/var/log/osconfig_platform.log"
 #define ROLLED_LOG_FILE "/var/log/osconfig_platform.bak"
 
-#define COMMAND_LOGGING "CommandLogging"
-#define FULL_LOGGING "FullLogging"
+#define DEBUG_LOGGING "DebugLogging"
 
 static unsigned int g_lastTime = 0;
 
@@ -181,14 +180,9 @@ static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* log
     return result;
 }
 
-bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString)
+bool IsDebugLoggingEnabledInJsonConfig(const char* jsonString)
 {
-    return IsLoggingEnabledInJsonConfig(jsonString, COMMAND_LOGGING);
-}
-
-bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
-{
-    return IsLoggingEnabledInJsonConfig(jsonString, FULL_LOGGING);
+    return IsDebugLoggingEnabledInJsonConfig(jsonString, DEBUG_LOGGING);
 }
 
 int main(int argc, char* argv[])
@@ -202,8 +196,7 @@ int main(int argc, char* argv[])
     char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetPlatformLog());
     if (NULL != jsonConfiguration)
     {
-        SetCommandLogging(IsCommandLoggingEnabledInJsonConfig(jsonConfiguration));
-        SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
+        SetDebugLogging(IsDebugLoggingEnabledInJsonConfig(jsonConfiguration));
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -214,9 +207,9 @@ int main(int argc, char* argv[])
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetPlatformLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
-    if (IsCommandLoggingEnabled() || IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "WARNING: verbose logging (command and/or full) is enabled. To disable verbose logging edit %s and restart OSConfig", CONFIG_FILE);
+        OsConfigLogInfo(GetPlatformLog(), "WARNING: debug logging is enabled. To disable debug logging edit %s and restart OSConfig", CONFIG_FILE);
     }
 
     for (int i = 0; i < stopSignalsCount; i++)

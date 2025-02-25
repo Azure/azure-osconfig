@@ -203,7 +203,7 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, OSCO
     }
     else
     {
-        OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' failed with %d (errno: %d)", command, status, errno);
+        OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' completed with %d (errno: %d)", command, status, errno);
         *executed = false;
     }
 
@@ -267,7 +267,7 @@ int InstallOrUpdatePackage(const char* packageName, OSCONFIG_LOG_HANDLE log)
     }
     else
     {
-        OsConfigLogInfo(log, "InstallOrUpdatePackage: installation or update of package '%s' failed with %d (errno: %d)", packageName, status, errno);
+        OsConfigLogInfo(log, "InstallOrUpdatePackage: installation or update of package '%s' completed with %d (errno: %d)", packageName, status, errno);
     }
 
     return status;
@@ -337,7 +337,7 @@ int UninstallPackage(const char* packageName, OSCONFIG_LOG_HANDLE log)
         }
         else
         {
-            OsConfigLogInfo(log, "UninstallPackage: uninstallation of package '%s' failed with %d (errno: %d)", packageName, status, errno);
+            OsConfigLogInfo(log, "UninstallPackage: uninstallation of package '%s' completed with %d (errno: %d)", packageName, status, errno);
         }
     }
     else if (EINVAL != status)

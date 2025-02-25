@@ -834,17 +834,10 @@ static int RemoveEscapeSequencesFromFile_target(const char* data, std::size_t si
     return 0;
 }
 
-static int IsCommandLoggingEnabledInJsonConfig_target(const char* data, std::size_t size) noexcept
+static int IsDebugLoggingEnabledInJsonConfig_target(const char* data, std::size_t size) noexcept
 {
     auto json = std::string(data, size);
-    IsCommandLoggingEnabledInJsonConfig(json.c_str());
-    return 0;
-}
-
-static int IsFullLoggingEnabledInJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    IsFullLoggingEnabledInJsonConfig(json.c_str());
+    IsDebugLoggingEnabledInJsonConfig(json.c_str());
     return 0;
 }
 
@@ -1103,7 +1096,7 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "RepairBrokenEolCharactersIfAny.", RepairBrokenEolCharactersIfAny_target },
     { "RemoveEscapeSequencesFromFile.", RemoveEscapeSequencesFromFile_target },
     { "IsCommandLoggingEnabledInJsonConfig.", IsCommandLoggingEnabledInJsonConfig_target },
-    { "IsFullLoggingEnabledInJsonConfig.", IsFullLoggingEnabledInJsonConfig_target },
+    { "IsDebugLoggingEnabledInJsonConfig.", IsDebugLoggingEnabledInJsonConfig_target },
     { "IsIotHubManagementEnabledInJsonConfig.", IsIotHubManagementEnabledInJsonConfig_target },
     { "GetReportingIntervalFromJsonConfig.", GetReportingIntervalFromJsonConfig_target },
     { "GetModelVersionFromJsonConfig.", GetModelVersionFromJsonConfig_target },

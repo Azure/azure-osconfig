@@ -25,11 +25,25 @@ extern "C"
 {
 #endif
 
+// Matching the severity values in RFC 5424 
+enum LoggingLevel
+{
+    LoggingLevelEmergency = 0,
+    LoggingLevelAlert = 1,
+    LoggingLevelCritical = 2,
+    LoggingLevelError = 3, //used for default error logging
+    LoggingLevelWarning = 4,
+    LoggingLevelNotice = 5,
+    LoggingLevelInformational = 6, //used for default informational logging
+    LoggingLevelDebug = 7 //used for CommandLogging and DebugLogging
+};
+typedef enum LoggingLevel LoggingLevel;
+
 OSCONFIG_LOG_HANDLE OpenLog(const char* logFileName, const char* bakLogFileName);
 void CloseLog(OSCONFIG_LOG_HANDLE* log);
 
-void SetFullLogging(bool fullLogging);
-bool IsFullLoggingEnabled(void);
+bool IsDebugLoggingEnabled(void);
+void SetDebugLogging(bool fullLogging);
 
 FILE* GetLogFile(OSCONFIG_LOG_HANDLE log);
 char* GetFormattedTime();
@@ -61,7 +75,7 @@ bool IsDaemon(void);
         OSCONFIG_FILE_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
         fflush(GetLogFile(log));\
     }\
-    if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
+    if ((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) {\
         OSCONFIG_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
     }\
 }\
@@ -71,18 +85,20 @@ bool IsDaemon(void);
         OSCONFIG_FILE_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
         fflush(GetLogFile(log));\
     }\
-    if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
+    if ((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) {\
         OSCONFIG_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
     }\
 }\
 
 #define OsConfigLogDebug(log, FORMAT, ...) {\
-    if (NULL != GetLogFile(log)) {\
-        OSCONFIG_FILE_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
-        fflush(GetLogFile(log));\
-    }\
-    if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
-        OSCONFIG_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
+    if (true == IsDebugLoggingEnabled()) {\
+        if (NULL != GetLogFile(log)) {\
+            OSCONFIG_FILE_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
+            fflush(GetLogFile(log));\
+        }\
+        if ((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) {\
+            OSCONFIG_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
+        }\
     }\
 }\
 
