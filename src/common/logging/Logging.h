@@ -5,6 +5,7 @@
 #define LOGGING_H
 
 #include <string.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 // Maximum log size (1,024,000 is 1MB aka 1024 * 1000), increase or decrease as needed
@@ -16,7 +17,8 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif
 
-typedef void* OSCONFIG_LOG_HANDLE;
+typedef struct OSCONFIG_LOG OSCONFIG_LOG;
+typedef OSCONFIG_LOG* OSCONFIG_LOG_HANDLE;
 
 #ifdef __cplusplus
 extern "C"

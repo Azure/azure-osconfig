@@ -9,13 +9,13 @@ extern "C"
 {
 #endif
 
-int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, void* log);
+int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OSCONFIG_LOG_HANDLE log);
 
-void BaselineInitialize(void* log);
-void BaselineShutdown(void* log);
+void BaselineInitialize(OSCONFIG_LOG_HANDLE log);
+void BaselineShutdown(OSCONFIG_LOG_HANDLE log);
 
-int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log);
-int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, void* log);
+int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OSCONFIG_LOG_HANDLE log);
+int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OSCONFIG_LOG_HANDLE log);
 
 #ifdef __cplusplus
 }

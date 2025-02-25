@@ -95,7 +95,7 @@ void TruncateAtFirst(char* target, char marker)
     }
 }
 
-char* GetOsPrettyName(void* log)
+char* GetOsPrettyName(OSCONFIG_LOG_HANDLE log)
 {
     const char* osPrettyNameCommand = "cat /etc/os-release | grep PRETTY_NAME=";
     char* textResult = NULL;
@@ -120,7 +120,7 @@ char* GetOsPrettyName(void* log)
     return textResult;
 }
 
-char* GetOsName(void* log)
+char* GetOsName(OSCONFIG_LOG_HANDLE log)
 {
     const char* osNameCommand = "cat /etc/os-release | grep ID=";
     char* textResult = NULL;
@@ -155,7 +155,7 @@ char* GetOsName(void* log)
     return textResult;
 }
 
-char* GetOsVersion(void* log)
+char* GetOsVersion(OSCONFIG_LOG_HANDLE log)
 {
     const char* osVersionCommand = "cat /etc/os-release | grep VERSION=";
     char* textResult = NULL;
@@ -181,7 +181,7 @@ char* GetOsVersion(void* log)
     return textResult;
 }
 
-static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace, void* log)
+static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace, OSCONFIG_LOG_HANDLE log)
 {
     char* textResult = NULL;
 
@@ -208,7 +208,7 @@ static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace,
     return textResult;
 }
 
-static char* GetAnotherOsProperty(const char* command, void* log)
+static char* GetAnotherOsProperty(const char* command, OSCONFIG_LOG_HANDLE log)
 {
     char* textResult = NULL;
 
@@ -230,7 +230,7 @@ static char* GetAnotherOsProperty(const char* command, void* log)
     return textResult;
 }
 
-char* GetOsKernelName(void* log)
+char* GetOsKernelName(OSCONFIG_LOG_HANDLE log)
 {
     static char* osKernelNameCommand = "uname -s";
     char* textResult = GetAnotherOsProperty(osKernelNameCommand, log);
@@ -243,7 +243,7 @@ char* GetOsKernelName(void* log)
     return textResult;
 }
 
-char* GetOsKernelRelease(void* log)
+char* GetOsKernelRelease(OSCONFIG_LOG_HANDLE log)
 {
     static char* osKernelReleaseCommand = "uname -r";
     char* textResult = GetAnotherOsProperty(osKernelReleaseCommand, log);
@@ -256,7 +256,7 @@ char* GetOsKernelRelease(void* log)
     return textResult;
 }
 
-char* GetOsKernelVersion(void* log)
+char* GetOsKernelVersion(OSCONFIG_LOG_HANDLE log)
 {
     static char* osKernelVersionCommand = "uname -v";
     char* textResult = GetAnotherOsProperty(osKernelVersionCommand, log);
@@ -269,7 +269,7 @@ char* GetOsKernelVersion(void* log)
     return textResult;
 }
 
-char* GetCpuType(void* log)
+char* GetCpuType(OSCONFIG_LOG_HANDLE log)
 {
     const char* osCpuTypeCommand = "lscpu | grep Architecture:";
     char* textResult = GetHardwareProperty(osCpuTypeCommand, false, log);
@@ -282,7 +282,7 @@ char* GetCpuType(void* log)
     return textResult;
 }
 
-char* GetCpuVendor(void* log)
+char* GetCpuVendor(OSCONFIG_LOG_HANDLE log)
 {
     const char* osCpuVendorCommand = "grep 'vendor_id' /proc/cpuinfo | uniq";
     char* textResult = GetHardwareProperty(osCpuVendorCommand, false, log);
@@ -295,7 +295,7 @@ char* GetCpuVendor(void* log)
     return textResult;
 }
 
-char* GetCpuModel(void* log)
+char* GetCpuModel(OSCONFIG_LOG_HANDLE log)
 {
     const char* osCpuModelCommand = "grep 'model name' /proc/cpuinfo | uniq";
     char* textResult = GetHardwareProperty(osCpuModelCommand, false, log);
@@ -308,7 +308,7 @@ char* GetCpuModel(void* log)
     return textResult;
 }
 
-unsigned int GetNumberOfCpuCores(void* log)
+unsigned int GetNumberOfCpuCores(OSCONFIG_LOG_HANDLE log)
 {
     const char* osCpuCoresCommand = "grep -c ^processor /proc/cpuinfo";
     unsigned int numberOfCores = 1;
@@ -329,7 +329,7 @@ unsigned int GetNumberOfCpuCores(void* log)
     return numberOfCores;
 }
 
-char* GetCpuFlags(void* log)
+char* GetCpuFlags(OSCONFIG_LOG_HANDLE log)
 {
     const char* osCpuFlagsCommand = "lscpu | grep \"Flags:\"";
     char* textResult = GetHardwareProperty(osCpuFlagsCommand, false, log);
@@ -342,7 +342,7 @@ char* GetCpuFlags(void* log)
     return textResult;
 }
 
-bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, void* log)
+bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, OSCONFIG_LOG_HANDLE log)
 {
     bool result = false;
     char* cpuFlags = GetCpuFlags(log);
@@ -364,7 +364,7 @@ bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, void* log)
     return result;
 }
 
-long GetTotalMemory(void* log)
+long GetTotalMemory(OSCONFIG_LOG_HANDLE log)
 {
     const char* osTotalMemoryCommand = "grep MemTotal /proc/meminfo";
     char* textResult = GetHardwareProperty(osTotalMemoryCommand, true, log);
@@ -384,7 +384,7 @@ long GetTotalMemory(void* log)
     return totalMemory;
 }
 
-long GetFreeMemory(void* log)
+long GetFreeMemory(OSCONFIG_LOG_HANDLE log)
 {
     const char* osFreeMemoryCommand = "grep MemFree /proc/meminfo";
     char* textResult = GetHardwareProperty(osFreeMemoryCommand, true, log);
@@ -404,7 +404,7 @@ long GetFreeMemory(void* log)
     return freeMemory;
 }
 
-char* GetProductName(void* log)
+char* GetProductName(OSCONFIG_LOG_HANDLE log)
 {
     const char* osProductNameCommand = "cat /sys/devices/virtual/dmi/id/product_name";
     const char* osProductNameAlternateCommand = "lshw -c system | grep -m 1 \"product:\"";
@@ -424,7 +424,7 @@ char* GetProductName(void* log)
     return textResult;
 }
 
-char* GetProductVendor(void* log)
+char* GetProductVendor(OSCONFIG_LOG_HANDLE log)
 {
     const char* osProductVendorCommand = "cat /sys/devices/virtual/dmi/id/sys_vendor";
     const char* osProductVendorAlternateCommand = "lshw -c system | grep -m 1 \"vendor:\"";
@@ -444,7 +444,7 @@ char* GetProductVendor(void* log)
     return textResult;
 }
 
-char* GetProductVersion(void* log)
+char* GetProductVersion(OSCONFIG_LOG_HANDLE log)
 {
     const char* osProductVersionCommand = "cat /sys/devices/virtual/dmi/id/product_version";
     const char* osProductVersionAlternateCommand = "lshw -c system | grep -m 1 \"version:\"";
@@ -464,7 +464,7 @@ char* GetProductVersion(void* log)
     return textResult;
 }
 
-char* GetSystemCapabilities(void* log)
+char* GetSystemCapabilities(OSCONFIG_LOG_HANDLE log)
 {
     const char* osSystemCapabilitiesCommand = "lshw -c system | grep -m 1 \"capabilities:\"";
     char* textResult = GetHardwareProperty(osSystemCapabilitiesCommand, false, log);
@@ -477,7 +477,7 @@ char* GetSystemCapabilities(void* log)
     return textResult;
 }
 
-char* GetSystemConfiguration(void* log)
+char* GetSystemConfiguration(OSCONFIG_LOG_HANDLE log)
 {
     const char* osSystemConfigurationCommand = "lshw -c system | grep -m 1 \"configuration:\"";
     char* textResult = GetHardwareProperty(osSystemConfigurationCommand, false, log);
@@ -490,7 +490,7 @@ char* GetSystemConfiguration(void* log)
     return textResult;
 }
 
-static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, char separator, void* log)
+static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, char separator, OSCONFIG_LOG_HANDLE log)
 {
     char* command = NULL;
     char* result = NULL;
@@ -552,12 +552,12 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
     return result;
 }
 
-static char* GetEtcReleaseEntry(const char* name, void* log)
+static char* GetEtcReleaseEntry(const char* name, OSCONFIG_LOG_HANDLE log)
 {
     return GetOsReleaseEntry("cat /etc/*-release | grep %s=", name, '=', log);
 }
 
-static char* GetLsbReleaseEntry(const char* name, void* log)
+static char* GetLsbReleaseEntry(const char* name, OSCONFIG_LOG_HANDLE log)
 {
     return GetOsReleaseEntry("lsb_release -a | grep \"%s:\"", name, ':', log);
 }
@@ -573,7 +573,7 @@ static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
     }
 }
 
-bool CheckOsAndKernelMatchDistro(char** reason, void* log)
+bool CheckOsAndKernelMatchDistro(char** reason, OSCONFIG_LOG_HANDLE log)
 {
     const char* linuxName = "Linux";
     const char* ubuntuName = "Ubuntu";
@@ -668,7 +668,7 @@ bool CheckOsAndKernelMatchDistro(char** reason, void* log)
     return match;
 }
 
-char* GetLoginUmask(char** reason, void* log)
+char* GetLoginUmask(char** reason, OSCONFIG_LOG_HANDLE log)
 {
     const char* command = "grep -v '^#' /etc/login.defs | grep UMASK";
     char* result = NULL;
@@ -693,7 +693,7 @@ char* GetLoginUmask(char** reason, void* log)
     return result;
 }
 
-int CheckLoginUmask(const char* desired, char** reason, void* log)
+int CheckLoginUmask(const char* desired, char** reason, OSCONFIG_LOG_HANDLE log)
 {
     char* current = NULL;
     size_t length = 0;
@@ -730,7 +730,7 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
     return status;
 }
 
-static long GetPasswordDays(const char* name, void* log)
+static long GetPasswordDays(const char* name, OSCONFIG_LOG_HANDLE log)
 {
     const char* commandTemplate = "cat /etc/login.defs | grep %s | grep -v ^#";
     size_t commandLength = 0;
@@ -777,22 +777,22 @@ static long GetPasswordDays(const char* name, void* log)
     return days;
 }
 
-long GetPassMinDays(void* log)
+long GetPassMinDays(OSCONFIG_LOG_HANDLE log)
 {
     return GetPasswordDays("PASS_MIN_DAYS", log);
 }
 
-long GetPassMaxDays(void* log)
+long GetPassMaxDays(OSCONFIG_LOG_HANDLE log)
 {
     return GetPasswordDays("PASS_MAX_DAYS", log);
 }
 
-long GetPassWarnAge(void* log)
+long GetPassWarnAge(OSCONFIG_LOG_HANDLE log)
 {
     return GetPasswordDays("PASS_WARN_AGE", log);
 }
 
-static int SetPasswordDays(const char* name, long days, void* log)
+static int SetPasswordDays(const char* name, long days, OSCONFIG_LOG_HANDLE log)
 {
     const char* etcLoginDefs = "/etc/login.defs";
     char* value = NULL;
@@ -828,22 +828,22 @@ static int SetPasswordDays(const char* name, long days, void* log)
     return status;
 }
 
-int SetPassMinDays(long days, void* log)
+int SetPassMinDays(long days, OSCONFIG_LOG_HANDLE log)
 {
     return SetPasswordDays("PASS_MIN_DAYS", days, log);
 }
 
-int SetPassMaxDays(long days, void* log)
+int SetPassMaxDays(long days, OSCONFIG_LOG_HANDLE log)
 {
     return SetPasswordDays("PASS_MAX_DAYS", days, log);
 }
 
-int SetPassWarnAge(long days, void* log)
+int SetPassWarnAge(long days, OSCONFIG_LOG_HANDLE log)
 {
     return SetPasswordDays("PASS_WARN_AGE", days, log);
 }
 
-bool IsCurrentOs(const char* name, void* log)
+bool IsCurrentOs(const char* name, OSCONFIG_LOG_HANDLE log)
 {
     char* prettyName = NULL;
     size_t prettyNameLength = 0;
@@ -877,7 +877,7 @@ bool IsCurrentOs(const char* name, void* log)
     return result;
 }
 
-bool IsRedHatBased(void* log)
+bool IsRedHatBased(OSCONFIG_LOG_HANDLE log)
 {
     const char* distros[] = {"Red Hat", "CentOS", "AlmaLinux", "Rocky Linux", "Oracle Linux"};
     int numDistros = ARRAY_SIZE(distros);
@@ -921,7 +921,7 @@ bool IsRedHatBased(void* log)
     return result;
 }
 
-int EnableVirtualMemoryRandomization(void* log)
+int EnableVirtualMemoryRandomization(OSCONFIG_LOG_HANDLE log)
 {
     const char* procSysKernelRandomizeVaSpace = "/proc/sys/kernel/randomize_va_space";
     const char* fullRandomization = "2";
@@ -947,7 +947,7 @@ int EnableVirtualMemoryRandomization(void* log)
     return status;
 }
 
-bool IsCommodore(void* log)
+bool IsCommodore(OSCONFIG_LOG_HANDLE log)
 {
     const char* productNameCommand = "cat /etc/os-subrelease | grep PRODUCT_NAME=";
     char* textResult = NULL;
@@ -977,7 +977,7 @@ bool IsSelinuxPresent(void)
     return g_selinuxPresent;
 }
 
-bool DetectSelinux(void* log)
+bool DetectSelinux(OSCONFIG_LOG_HANDLE log)
 {
     const char* command = "cat /sys/kernel/security/lsm | grep selinux";
     bool status = false;

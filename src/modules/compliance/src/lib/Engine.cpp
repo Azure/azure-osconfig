@@ -33,7 +33,7 @@ static constexpr const char* cModuleInfo = "{\"Name\": \"Compliance\","
                                            "\"Lifetime\": 2,"
                                            "\"UserAccount\": 0}";
 
-Engine::Engine(void* log) noexcept
+Engine::Engine(OSCONFIG_LOG_HANDLE log) noexcept
     : mLog{log}
 {
 }
