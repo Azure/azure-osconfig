@@ -5,7 +5,7 @@
 
 #define MAX_MPI_URI_LENGTH 32
 
-static char* ReadUntilStringFound(int socketHandle, const char* what, void* log)
+static char* ReadUntilStringFound(int socketHandle, const char* what, OSCONFIG_LOG_HANDLE log)
 {
     char* found = NULL;
     char* buffer = NULL;
@@ -57,7 +57,7 @@ static char* ReadUntilStringFound(int socketHandle, const char* what, void* log)
     return buffer;
 }
 
-char* ReadUriFromSocket(int socketHandle, void* log)
+char* ReadUriFromSocket(int socketHandle, OSCONFIG_LOG_HANDLE log)
 {
     const char* postPrefix = "POST /";
     char* returnUri = NULL;
@@ -117,7 +117,7 @@ char* ReadUriFromSocket(int socketHandle, void* log)
     return returnUri;
 }
 
-int ReadHttpStatusFromSocket(int socketHandle, void* log)
+int ReadHttpStatusFromSocket(int socketHandle, OSCONFIG_LOG_HANDLE log)
 {
     const char* httpPrefix = "HTTP/1.1";
 
@@ -155,7 +155,7 @@ int ReadHttpStatusFromSocket(int socketHandle, void* log)
     return httpStatus;
 }
 
-int ReadHttpContentLengthFromSocket(int socketHandle, void* log)
+int ReadHttpContentLengthFromSocket(int socketHandle, OSCONFIG_LOG_HANDLE log)
 {
     const char* contentLengthLabel = "Content-Length: ";
     const char* doubleTerminator = "\r\n\r\n";

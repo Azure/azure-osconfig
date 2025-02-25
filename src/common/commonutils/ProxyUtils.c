@@ -29,7 +29,7 @@ static void RemoveProxyStringEscaping(char* value)
     }
 }
 
-bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* proxyPort, char** proxyUsername, char** proxyPassword, void* log)
+bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* proxyPort, char** proxyUsername, char** proxyPassword, OSCONFIG_LOG_HANDLE log)
 {
     // We accept the proxy data string to be in one of two following formats:
     //

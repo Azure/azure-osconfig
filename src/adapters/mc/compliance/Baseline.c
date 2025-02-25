@@ -8,7 +8,7 @@ static MMI_HANDLE gCompliance = NULL;
 
 static const char gComponentName[] = "Compliance";
 
-int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, void* log)
+int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OSCONFIG_LOG_HANDLE log)
 {
     UNUSED(resourceId);
     UNUSED(ruleId);
@@ -17,13 +17,13 @@ int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, 
     return 0;
 }
 
-void BaselineInitialize(void* log)
+void BaselineInitialize(OSCONFIG_LOG_HANDLE log)
 {
     ComplianceInitialize(log);
     gCompliance = ComplianceMmiOpen(gComponentName, -1);
 }
 
-void BaselineShutdown(void* log)
+void BaselineShutdown(OSCONFIG_LOG_HANDLE log)
 {
     UNUSED(log);
     if (NULL == gCompliance)
@@ -36,7 +36,7 @@ void BaselineShutdown(void* log)
     gCompliance = NULL;
 }
 
-int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, void* log)
+int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OSCONFIG_LOG_HANDLE log)
 {
     if ((NULL == componentName) || (NULL == objectName))
     {
@@ -61,7 +61,7 @@ int BaselineMmiGet(const char* componentName, const char* objectName, char** pay
     return MMI_OK;
 }
 
-int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, void* log)
+int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OSCONFIG_LOG_HANDLE log)
 {
     UNUSED(log);
     return ComplianceMmiSet(gCompliance, componentName, objectName, payload, payloadSizeBytes);

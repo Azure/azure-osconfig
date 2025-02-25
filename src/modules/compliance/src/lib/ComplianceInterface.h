@@ -6,12 +6,14 @@
 
 #include "../inc/Mmi.h"
 
+#include <Logging.h>
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-void ComplianceInitialize(void*);
+void ComplianceInitialize(OSCONFIG_LOG_HANDLE);
 void ComplianceShutdown();
 
 MMI_HANDLE ComplianceMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes);
