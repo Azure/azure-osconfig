@@ -182,7 +182,7 @@ static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* log
 
 bool IsDebugLoggingEnabledInJsonConfig(const char* jsonString)
 {
-    return IsDebugLoggingEnabledInJsonConfig(jsonString, DEBUG_LOGGING);
+    return IsLoggingEnabledInJsonConfig(jsonString, DEBUG_LOGGING);
 }
 
 int main(int argc, char* argv[])
