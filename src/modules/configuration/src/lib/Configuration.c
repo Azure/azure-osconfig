@@ -151,7 +151,6 @@ static int UpdateConfigurationFile(void)
     int refreshInterval = g_refreshInterval;
     bool localManagementEnabled = g_localManagementEnabled;
     bool debugLoggingEnabled = g_debugLoggingEnabled;
-    bool commandLoggingEnabled = g_commandLoggingEnabled;
     bool iotHubManagementEnabled = g_iotHubManagementEnabled;
     int iotHubProtocol = g_iotHubProtocol;
     bool gitManagementEnabled = g_gitManagementEnabled;
@@ -405,10 +404,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         else if (0 == strcmp(objectName, g_debugLoggingEnabledObject))
         {
             jsonValue = json_value_init_boolean(g_debugLoggingEnabled ? 1 : 0);
-        }
-        else if (0 == strcmp(objectName, g_commandLoggingEnabledObject))
-        {
-            jsonValue = json_value_init_boolean(g_commandLoggingEnabled ? 1 : 0);
         }
         else if (0 == strcmp(objectName, g_iotHubManagementEnabledObject))
         {
