@@ -149,7 +149,7 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
                     if ((m_commandMap.find(arguments.m_id) != m_commandMap.end()) && (m_commandMap[arguments.m_id]->GetId() == m_commandIdLoadedFromDisk))
                     {
                         OsConfigLogDebug(CommandRunnerLog::Get(), "Updating command (%s) loaded from disk, with complete payload", arguments.m_id.c_str());
- 
+
                         // Update the partial command loaded from the persisted cache
                         Command::Status currentStatus = m_commandMap[arguments.m_id]->GetStatus();
 
