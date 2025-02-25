@@ -166,8 +166,7 @@ static int UpdateConfigurationFile(void)
     }
 
     if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) ||
-        (debugLoggingEnabled != g_debugLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) ||
-        (iotHubManagementEnabled != g_iotHubManagementEnabled) || (iotHubProtocol != g_iotHubProtocol) ||
+        (debugLoggingEnabled != g_debugLoggingEnabled) || (iotHubManagementEnabled != g_iotHubManagementEnabled) || (iotHubProtocol != g_iotHubProtocol) ||
         (gitManagementEnabled != g_gitManagementEnabled) || strcmp(gitBranch, g_gitBranch))
     {
         if (NULL == (jsonValue = json_parse_string(existingConfiguration)))
