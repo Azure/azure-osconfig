@@ -73,7 +73,7 @@ private:
 
 public:
     // Create engine with external log file
-    Engine(void* log) noexcept;
+    Engine(OSCONFIG_LOG_HANDLE log) noexcept;
     // Create engine with locally initialized log file
     Engine() noexcept;
     ~Engine();

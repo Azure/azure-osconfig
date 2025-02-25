@@ -3,7 +3,7 @@
 
 #include "Internal.h"
 
-int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, void* log)
+int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, OSCONFIG_LOG_HANDLE log)
 {
     FILE* mountFileHandle = NULL;
     struct mntent* mountStruct = NULL;
@@ -116,7 +116,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     return status;
 }
 
-static int CopyMountTableFile(const char* source, const char* target, void* log)
+static int CopyMountTableFile(const char* source, const char* target, OSCONFIG_LOG_HANDLE log)
 {
     FILE* sourceHandle = NULL;
     FILE* targetHandle = NULL;
@@ -169,7 +169,7 @@ static int CopyMountTableFile(const char* source, const char* target, void* log)
     return status;
 }
 
-static int LineAlreadyExistsInFile(const char* fileName, const char* text)
+static int LineAlreadyExistsInFile(const char* fileName, const char* text, OSCONFIG_LOG_HANDLE log)
 {
     char* contents = NULL;
     int status = 0;
@@ -200,7 +200,7 @@ static int LineAlreadyExistsInFile(const char* fileName, const char* text)
     return status;
 }
 
-int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
+int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, OSCONFIG_LOG_HANDLE log)
 {
     const char* fsMountTable = "/etc/fstab";
     const char* mountTable = "/etc/mtab";
@@ -277,7 +277,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                     if (NULL != newLine)
                     {
-                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine))
+                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log))
                         {
                             if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                             {
@@ -300,7 +300,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                         mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno)))
                     {
-                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine))
+                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log))
                         {
                             if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                             {
@@ -366,7 +366,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                                 if (NULL != newLine)
                                 {
-                                    if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine))
+                                    if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log))
                                     {
                                         if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
                                         {

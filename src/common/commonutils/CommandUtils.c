@@ -41,7 +41,7 @@ static int NormalizeStatus(int status)
     return newStatus;
 }
 
-static int SystemCommand(void* context, const char* command, int timeoutSeconds, CommandCallback callback, void* log)
+static int SystemCommand(void* context, const char* command, int timeoutSeconds, CommandCallback callback, OSCONFIG_LOG_HANDLE log)
 {
     const int callbackIntervalSeconds = 5; //seconds
     const int defaultCommandTimeout = 60; //seconds
@@ -221,7 +221,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
 
 #define MAX_COMMAND_RESULT_FILE_NAME 100
 
-int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, void* log)
+int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, OSCONFIG_LOG_HANDLE log)
 {
     const char commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
     const char commandSeparator[] = " > ";
@@ -346,7 +346,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     return status;
 }
 
-char* HashCommand(const char* source, void* log)
+char* HashCommand(const char* source, OSCONFIG_LOG_HANDLE log)
 {
     static const char hashCommandTemplate[] = "%s | sha256sum | head -c 64";
 

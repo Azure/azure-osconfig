@@ -102,7 +102,7 @@ int SleepMilliseconds(long milliseconds)
     return nanosleep(&interval, &remaining);
 }
 
-char* GetHttpProxyData(void* log)
+char* GetHttpProxyData(OSCONFIG_LOG_HANDLE log)
 {
     const char* proxyVariables[] = {
         "http_proxy",
@@ -197,7 +197,7 @@ char* RepairBrokenEolCharactersIfAny(const char* value)
     return result;
 }
 
-int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, int base, void* log)
+int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, int base, OSCONFIG_LOG_HANDLE log)
 {
     const char space = ' ';
     char* value = NULL;
@@ -272,7 +272,7 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
     return status;
 }
 
-int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
+int CheckAllWirelessInterfacesAreDisabled(char** reason, OSCONFIG_LOG_HANDLE log)
 {
     const char* command = "iwconfig 2>&1 | egrep -v 'no wireless extensions|not found' | grep Frequency";
     int status = 0;
@@ -293,7 +293,7 @@ int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
     return status;
 }
 
-int DisableAllWirelessInterfaces(void* log)
+int DisableAllWirelessInterfaces(OSCONFIG_LOG_HANDLE log)
 {
     const char* nmcli = "nmcli";
     const char* rfkill = "rfkill";
@@ -342,7 +342,7 @@ int DisableAllWirelessInterfaces(void* log)
     return status;
 }
 
-int SetDefaultDenyFirewallPolicy(void* log)
+int SetDefaultDenyFirewallPolicy(OSCONFIG_LOG_HANDLE log)
 {
     const char* acceptInput = "iptables -A INPUT -j ACCEPT";
     const char* acceptForward = "iptables -A FORWARD -j ACCEPT";
@@ -388,7 +388,7 @@ int SetDefaultDenyFirewallPolicy(void* log)
     return 0;
 }
 
-char* RemoveCharacterFromString(const char* source, char what, void* log)
+char* RemoveCharacterFromString(const char* source, char what, OSCONFIG_LOG_HANDLE log)
 {
     char* target = NULL;
     size_t sourceLength = 0, i = 0, j = 0;
@@ -421,7 +421,7 @@ char* RemoveCharacterFromString(const char* source, char what, void* log)
     return target;
 }
 
-char* ReplaceEscapeSequencesInString(const char* source, const char* escapes, unsigned int numEscapes, char replacement, void* log)
+char* ReplaceEscapeSequencesInString(const char* source, const char* escapes, unsigned int numEscapes, char replacement, OSCONFIG_LOG_HANDLE log)
 {
     char* target = NULL;
     size_t sourceLength = 0, i = 0, j = 0, k = 0;
@@ -482,7 +482,7 @@ typedef struct PATH_LOCATIONS
     const char* path;
 } PATH_LOCATIONS;
 
-int RemoveDotsFromPath(void* log)
+int RemoveDotsFromPath(OSCONFIG_LOG_HANDLE log)
 {
     const char* path = "PATH";
     const char* dot = ".";
@@ -583,7 +583,7 @@ int RemoveDotsFromPath(void* log)
     return status;
 }
 
-int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, unsigned int numEscapes, char replacement, void* log)
+int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, unsigned int numEscapes, char replacement, OSCONFIG_LOG_HANDLE log)
 {
     char* fileContents = NULL;
     char* newFileContents = NULL;

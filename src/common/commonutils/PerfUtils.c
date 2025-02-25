@@ -3,7 +3,7 @@
 
 #include "Internal.h"
 
-int StartPerfClock(PERF_CLOCK* clock, void* log)
+int StartPerfClock(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log)
 {
     int status = EINVAL;
 
@@ -23,7 +23,7 @@ int StartPerfClock(PERF_CLOCK* clock, void* log)
     return status;
 }
 
-int StopPerfClock(PERF_CLOCK* clock, void* log)
+int StopPerfClock(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log)
 {
     int status = EINVAL;
 
@@ -53,7 +53,7 @@ int StopPerfClock(PERF_CLOCK* clock, void* log)
     return status;
 }
 
-long GetPerfClockTime(PERF_CLOCK* clock, void* log)
+long GetPerfClockTime(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log)
 {
     long seconds = 0;
     long nanoseconds = 0;
@@ -79,7 +79,7 @@ long GetPerfClockTime(PERF_CLOCK* clock, void* log)
     return microseconds;
 }
 
-void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* objectName, int objectResult, long limit, void* log)
+void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* objectName, int objectResult, long limit, OSCONFIG_LOG_HANDLE log)
 {
     long microseconds = -1;
 

@@ -61,7 +61,7 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
     }
 }
 
-static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* hash, void* log)
+static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* hash, OSCONFIG_LOG_HANDLE log)
 {
     size_t payloadHash = 0;
     int payloadSizeBytes = 0;
@@ -98,7 +98,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     }
 }
 
-static int DeleteGitClone(const char* gitClonePath, void* log)
+static int DeleteGitClone(const char* gitClonePath, OSCONFIG_LOG_HANDLE log)
 {
     const char* g_gitCloneCleanUpTemplate = "rm -r %s";
     char* cleanUpCommand = NULL;
@@ -117,7 +117,7 @@ static int DeleteGitClone(const char* gitClonePath, void* log)
     return result;
 }
 
-static int ProtectDcFile(const char* gitClonedDcFile, void* log)
+static int ProtectDcFile(const char* gitClonedDcFile, OSCONFIG_LOG_HANDLE log)
 {
     int error = 0;
 
@@ -139,7 +139,7 @@ static int ProtectDcFile(const char* gitClonedDcFile, void* log)
     return error;
 }
 
-static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, void* log)
+static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, OSCONFIG_LOG_HANDLE log)
 {
     const char* g_gitCloneTemplate = "git clone -q --branch %s --single-branch %s %s";
     const char* g_gitConfigTemplate = "git config --global --add safe.directory %s";
@@ -191,7 +191,7 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
     return error;
 }
 
-static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, void* log)
+static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, OSCONFIG_LOG_HANDLE log)
 {
     const char* g_gitCheckoutTemplate = "git checkout %s";
     const char* g_gitPullCommand = "git pull";
@@ -248,7 +248,7 @@ static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, cons
     return error;
 }
 
-void InitializeWatcher(const char* jsonConfiguration, void* log)
+void InitializeWatcher(const char* jsonConfiguration, OSCONFIG_LOG_HANDLE log)
 {
     if (NULL != jsonConfiguration)
     {
@@ -265,7 +265,7 @@ void InitializeWatcher(const char* jsonConfiguration, void* log)
     RestrictFileAccessToCurrentAccountOnly(GIT_DC_FILE);
 }
 
-void WatcherDoWork(void* log)
+void WatcherDoWork(OSCONFIG_LOG_HANDLE log)
 {
     if (g_localManagement)
     {
@@ -291,7 +291,7 @@ void WatcherDoWork(void* log)
     }
 }
 
-void WatcherCleanup(void* log)
+void WatcherCleanup(OSCONFIG_LOG_HANDLE log)
 {
     OsConfigLogInfo(log, "Watcher shutting down");
 
