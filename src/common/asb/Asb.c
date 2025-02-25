@@ -881,8 +881,6 @@ void AsbInitialize(OSCONFIG_LOG_HANDLE log)
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
-    SetDebugLogging(true); //////////////////
-
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
