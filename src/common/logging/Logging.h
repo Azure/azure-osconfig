@@ -25,7 +25,9 @@ extern "C"
 {
 #endif
 
-// Matching the severity values in RFC 5424 
+// Matching the severity values in RFC 5424. Currently we only use 2 values from this enumeration:
+// - LoggingLevelInformational (6) is default and has [INFO] and [ERROR] labels
+// - LoggingLevelDebug (7) is optional, has the [DEBUG] label, and is managed via the 'DebugLogging' entry in osconfig.json configuration
 enum LoggingLevel
 {
     LoggingLevelEmergency = 0,
