@@ -3,16 +3,21 @@
 
 #include "Internal.h"
 
-static bool g_commandLoggingEnabled = false;
-
 void SetCommandLogging(bool commandLogging)
 {
-    g_commandLoggingEnabled = commandLogging;
+    if (commandLogging)
+    {
+        SetLogLevel(LOG_LVL_DEBUG);
+    }
+    else
+    {
+        SetLogLevel(LOG_LVL_INFO);
+    }
 }
 
 bool IsCommandLoggingEnabled(void)
 {
-    return g_commandLoggingEnabled;
+    return GetLogLevel() <= LOG_LVL_DEBUG;
 }
 
 static void KillProcess(pid_t processId)
