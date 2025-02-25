@@ -5,19 +5,12 @@
 
 void SetCommandLogging(bool commandLogging)
 {
-    if (commandLogging)
-    {
-        SetLogLevel(LOG_LVL_DEBUG);
-    }
-    else
-    {
-        SetLogLevel(LOG_LVL_INFO);
-    }
+    Legacy_SetCommandLogging(commandLogging);
 }
 
 bool IsCommandLoggingEnabled(void)
 {
-    return GetLogLevel() <= LOG_LVL_DEBUG;
+    return Legacy_GetCommandLogging();
 }
 
 static void KillProcess(pid_t processId)

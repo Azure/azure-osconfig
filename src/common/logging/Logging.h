@@ -43,23 +43,61 @@ bool IsDaemon(void);
     fprintf(GetLogFile(log), "[%s] [%s:%d]%s" format "\n", GetFormattedTime(), __SHORT_FILE__, __LINE__, loglevel, ## __VA_ARGS__);\
 }\
 
+// LEGACY LOG LEVELS
+#define LOG_LVL_LEGACY_SENSITIVE_DATA  (1 << 0)
+#define LOG_LVL_LEGACY_DEBUG   (1 << 1)
+#define LOG_LVL_LEGACY_SHIFT   2
+#define LOG_LEVEL_LEGACY_MASK ((1<<LOG_LVL_LEGACY_SHIFT)-1)
+
 enum OsConfigLogLevel {
-    LOG_LVL_SENSITIVE_DATA = 0,
+    // OSconfig New log leves that starts above bitmask of Legacy log levels
+    // those are consequite numbers not a bitmask
+    LOG_LVL_SENSITIVE_DATA =  1,
     LOG_LVL_DEBUG,
     LOG_LVL_INFO,
     LOG_LVL_ERROR,
 };
 
+void Legacy_SetCommandLogging(bool commandLogging);
+bool Legacy_GetCommandLogging(void);
 void SetLogLevel(enum OsConfigLogLevel lvl);
 int GetLogLevel(void);
 
+#define __DEBUG__ " [DEBUG] "
 #define __INFO__ " "
 #define __ERROR__ " [ERROR] "
 
 #define OSCONFIG_LOG_INFO(log, format, ...) __LOG__(log, format, __INFO__, ## __VA_ARGS__)
 #define OSCONFIG_LOG_ERROR(log, format, ...) __LOG__(log, format, __ERROR__, ## __VA_ARGS__)
+#define OSCONFIG_FILE_LOG_DEBUG(log, format, ...) __LOG_TO_FILE__(log, format, __DEBUG__, ## __VA_ARGS__)
 #define OSCONFIG_FILE_LOG_INFO(log, format, ...) __LOG_TO_FILE__(log, format, __INFO__, ## __VA_ARGS__)
 #define OSCONFIG_FILE_LOG_ERROR(log, format, ...) __LOG_TO_FILE__(log, format, __ERROR__, ## __VA_ARGS__)
+
+#define OsConfigLogSenstive(log, FORMAT, ...) { \
+    if (NULL != GetLogFile(log)) {\
+        OSCONFIG_FILE_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
+        fflush(GetLogFile(log));\
+    }\
+    if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
+        OSCONFIG_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
+    }\
+}\
+
+#define OsConfigLogSensitiveData(log, FORMAT, ...)  { \
+    if (IsFullLoggingEnabled()) { \
+        OsConfigLogSenstive(log, FORMAT, ## __VA_ARGS__); \
+    } else if (GetLogLevel() <= LOG_LVL_SENSITIVE_DATA) {  \
+        OsConfigLogSenstive(log, FORMAT, ## __VA_ARGS__); \
+    } \
+}\
+
+
+#define OsConfigLogDebug(log, FORMAT, ...) {\
+    if (IsCommandLoggingEnabled()) { \
+        OsConfigLogDebug(log, FORMAT, ## __VA_ARGS__); \
+    } else if ( GetLogLevel() <= LOG_LVL_DEBUG) {  \
+        OsConfigLogDebug(log, FORMAT, ## __VA_ARGS__); \
+    } \
 
 #define OsConfigLogInfo(log, FORMAT, ...) {\
     if (NULL != GetLogFile(log)) {\

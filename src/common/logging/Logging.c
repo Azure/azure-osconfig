@@ -14,7 +14,7 @@
 
 #define MAX_LOG_TRIM 1000
 
-static enum OsConfigLogLevel g_osconfigLogLevel = LOG_LVL_INFO;
+static int g_osconfigLogLevel = LOG_LVL_INFO;
 
 struct OSCONFIG_LOG
 {
@@ -28,27 +28,44 @@ void SetFullLogging(bool fullLogging)
 {
     if (fullLogging)
     {
-        g_osconfigLogLevel = LOG_LVL_SENSITIVE_DATA;
+        g_osconfigLogLevel |= LOG_LVL_LEGACY_SENSITIVE_DATA ;
     }
     else
     {
-        g_osconfigLogLevel = LOG_LVL_INFO;
+        g_osconfigLogLevel &= ~LOG_LVL_LEGACY_SENSITIVE_DATA ;
     }
 }
 
 bool IsFullLoggingEnabled()
 {
-    return g_osconfigLogLevel <= (int)LOG_LVL_SENSITIVE_DATA;
+    return !!(g_osconfigLogLevel & LOG_LVL_LEGACY_SENSITIVE_DATA);
+}
+
+void Legacy_SetCommandLogging(bool commandLogging)
+{
+    if (commandLogging)
+    {
+        g_osconfigLogLevel |= LOG_LVL_LEGACY_DEBUG ;
+    }
+    else
+    {
+        g_osconfigLogLevel &= ~LOG_LVL_LEGACY_DEBUG;
+    }
+}
+
+bool Legacy_GetCommandLogging(void)
+{
+    return !!(g_osconfigLogLevel & LOG_LVL_LEGACY_DEBUG);
 }
 
 void SetLogLevel(enum OsConfigLogLevel lvl)
 {
-    g_osconfigLogLevel = lvl;
+    g_osconfigLogLevel = (lvl << LOG_LVL_LEGACY_SHIFT);
 }
 
 int GetLogLevel(void)
 {
-    return (int)g_osconfigLogLevel;
+    return g_osconfigLogLevel >> (LOG_LVL_LEGACY_SHIFT);
 }
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
 {
