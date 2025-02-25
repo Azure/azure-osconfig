@@ -29,7 +29,6 @@ class ConfigurationTest : public ::testing::Test
         const char* m_refreshIntervalObject = "refreshInterval";
         const char* m_localManagementEnabledObject = "localManagementEnabled";
         const char* m_debugLoggingEnabledObject = "debugLoggingEnabled";
-        const char* m_commandLoggingEnabledObject = "commandLoggingEnabled";
         const char* m_iotHubManagementEnabledObject = "iotHubManagementEnabled";
         const char* m_iotHubProtocolObject = "iotHubProtocol";
         const char* m_gitManagementEnabledObject = "gitManagementEnabled";
@@ -130,7 +129,6 @@ TEST_F(ConfigurationTest, MmiGet)
         m_refreshIntervalObject,
         m_localManagementEnabledObject,
         m_debugLoggingEnabledObject,
-        m_commandLoggingEnabledObject,
         m_iotHubManagementEnabledObject,
         m_iotHubProtocolObject,
         m_gitManagementEnabledObject,
@@ -167,7 +165,6 @@ TEST_F(ConfigurationTest, MmiGetTruncatedPayload)
         m_refreshIntervalObject,
         m_localManagementEnabledObject,
         m_debugLoggingEnabledObject,
-        m_commandLoggingEnabledObject,
         m_iotHubManagementEnabledObject,
         m_iotHubProtocolObject,
         m_gitManagementEnabledObject,
@@ -264,9 +261,6 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredDebugLoggingEnabledObject, "true", 0, m_debugLoggingEnabledObject, "true" },
         { m_desiredDebugLoggingEnabledObject, "false", 0, m_debugLoggingEnabledObject, "false" },
         { m_desiredDebugLoggingEnabledObject, "notImplemented", 22, m_debugLoggingEnabledObject, "false" },
-        { m_desiredCommandLoggingEnabledObject, "true", 0, m_commandLoggingEnabledObject, "true" },
-        { m_desiredCommandLoggingEnabledObject, "false", 0, m_commandLoggingEnabledObject, "false" },
-        { m_desiredCommandLoggingEnabledObject, "notImplemented", 22, m_commandLoggingEnabledObject, "false" },
         { m_desiredIotHubManagementEnabledObject, "true", 0, m_iotHubManagementEnabledObject, "true" },
         { m_desiredIotHubManagementEnabledObject, "false", 0, m_iotHubManagementEnabledObject, "false" },
         { m_desiredIotHubManagementEnabledObject, "notImplemented", 22, m_iotHubManagementEnabledObject, "false" },
