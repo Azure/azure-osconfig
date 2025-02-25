@@ -31,11 +31,11 @@ enum LoggingLevel
     LoggingLevelEmergency = 0,
     LoggingLevelAlert = 1,
     LoggingLevelCritical = 2,
-    LoggingLevelError = 3, //used for default error logging
+    LoggingLevelError = 3,
     LoggingLevelWarning = 4,
     LoggingLevelNotice = 5,
-    LoggingLevelInformational = 6, //used for default informational logging
-    LoggingLevelDebug = 7 //used for CommandLogging and DebugLogging
+    LoggingLevelInformational = 6,
+    LoggingLevelDebug = 7
 };
 typedef enum LoggingLevel LoggingLevel;
 

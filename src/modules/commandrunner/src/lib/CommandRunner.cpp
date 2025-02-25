@@ -148,11 +148,8 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
                     std::lock_guard<std::mutex> lock(m_cacheMutex);
                     if ((m_commandMap.find(arguments.m_id) != m_commandMap.end()) && (m_commandMap[arguments.m_id]->GetId() == m_commandIdLoadedFromDisk))
                     {
-                        if (IsDebugLoggingEnabled())
-                        {
-                            OsConfigLogInfo(CommandRunnerLog::Get(), "Updating command (%s) loaded from disk, with complete payload", arguments.m_id.c_str());
-                        }
-
+                        OsConfigLogDebug(CommandRunnerLog::Get(), "Updating command (%s) loaded from disk, with complete payload", arguments.m_id.c_str());
+ 
                         // Update the partial command loaded from the persisted cache
                         Command::Status currentStatus = m_commandMap[arguments.m_id]->GetStatus();
 
@@ -381,9 +378,9 @@ int CommandRunner::ScheduleCommand(std::shared_ptr<Command> command)
             status = EINVAL;
         }
     }
-    else if (IsDebugLoggingEnabled())
+    else
     {
-        OsConfigLogInfo(CommandRunnerLog::Get(), "Command already recieved: %s (%s)", command->GetId().c_str(), command->m_arguments.c_str());
+        OsConfigLogDebug(CommandRunnerLog::Get(), "Command already recieved: %s (%s)", command->GetId().c_str(), command->m_arguments.c_str());
     }
 
     return status;
@@ -466,7 +463,7 @@ void CommandRunner::WorkerThread(CommandRunner& instance)
 
         if (IsDebugLoggingEnabled())
         {
-            OsConfigLogInfo(CommandRunnerLog::Get(), "Command '%s' (%s) completed with code: %d", command->GetId().c_str(), command->m_arguments.c_str(), exitCode);
+            OsConfigLogDebug(CommandRunnerLog::Get(), "Command '%s' (%s) completed with code: %d", command->GetId().c_str(), command->m_arguments.c_str(), exitCode);
         }
         else
         {
@@ -533,9 +530,9 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
                 }
             }
         }
-        else if (IsDebugLoggingEnabled())
+        else
         {
-            OsConfigLogInfo(CommandRunnerLog::Get(), "Cache file does not contain a status for client: %s", clientName.c_str());
+            OsConfigLogDebug(CommandRunnerLog::Get(), "Cache file does not contain a status for client: %s", clientName.c_str());
         }
     }
 

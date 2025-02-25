@@ -103,11 +103,7 @@ char* ReadUriFromSocket(int socketHandle, OSCONFIG_LOG_HANDLE log)
     {
         memset(returnUri, 0, uriLength + 1);
         strncpy(returnUri, bufferUri, uriLength);
-
-        if (IsDebugLoggingEnabled())
-        {
-            OsConfigLogInfo(log, "ReadUriFromSocket: %s", returnUri);
-        }
+        OsConfigLogDebug(log, "ReadUriFromSocket: %s", returnUri);
     }
     else
     {
@@ -143,11 +139,7 @@ int ReadHttpStatusFromSocket(int socketHandle, OSCONFIG_LOG_HANDLE log)
         (3 == read(socketHandle, status, 3)) && (isdigit(status[0]) && (status[0] >= '1') && (status[0] <= '5') && isdigit(status[1]) && isdigit(status[2])))
     {
         httpStatus = atoi(status);
-
-        if (IsDebugLoggingEnabled())
-        {
-            OsConfigLogInfo(log, "ReadHttpStatusFromSocket: %d ('%s')", httpStatus, status);
-        }
+        OsConfigLogDebug(log, "ReadHttpStatusFromSocket: %d ('%s')", httpStatus, status);
     }
 
     FREE_MEMORY(buffer);
@@ -195,11 +187,7 @@ int ReadHttpContentLengthFromSocket(int socketHandle, OSCONFIG_LOG_HANDLE log)
             if (isdigit(isolatedContentLength[0]))
             {
                 httpContentLength = atoi(isolatedContentLength);
-
-                if (IsDebugLoggingEnabled())
-                {
-                    OsConfigLogInfo(log, "ReadHttpContentLengthFromSocket: %d ('%s')", httpContentLength, isolatedContentLength);
-                }
+                OsConfigLogDebug(log, "ReadHttpContentLengthFromSocket: %d ('%s')", httpContentLength, isolatedContentLength);
             }
         }
 

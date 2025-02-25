@@ -920,9 +920,9 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, OSCON
         {
             OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' without restored original owner and access mode", original, target);
         }
-        else if (IsDebugLoggingEnabled())
+        else
         {
-            OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode %u",
+            OsConfigLogDebug(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode %u",
                 original, target, ownerId, groupId, mode);
         }
 

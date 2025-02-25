@@ -222,7 +222,6 @@ typedef struct REPORTED_PROPERTY
     size_t lastPayloadHash;
 } REPORTED_PROPERTY;
 
-bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString);
 bool IsDebugLoggingEnabledInJsonConfig(const char* jsonString);
 bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString);
 int GetReportingIntervalFromJsonConfig(const char* jsonString, OSCONFIG_LOG_HANDLE log);

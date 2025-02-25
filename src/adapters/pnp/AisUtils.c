@@ -277,10 +277,7 @@ static int SendAisRequest(const char* udsSocketPath, const char* apiUriPath, con
         }
 
         OsConfigLogInfo(GetLog(), "SendAisRequest: %s %s to %s, %d long", (HTTP_CLIENT_REQUEST_POST == clientRequestType) ? "POST" : "GET", apiUriPath, udsSocketPath, (int)payloadLen);
-        if (IsDebugLoggingEnabled())
-        {
-            OsConfigLogInfo(GetLog(), "SendAisRequest payload: %s", payload);
-        }
+        OsConfigLogDebug(GetLog(), "SendAisRequest payload: %s", payload);
 
         if (HTTP_CLIENT_OK != (httpResult = uhttp_client_execute_request(clientHandle, clientRequestType, apiUriPath, httpHeadersHandle, (const unsigned char*)payload, payloadLen, HttpReceiveCallback, &context)))
         {
@@ -333,10 +330,7 @@ static int SendAisRequest(const char* udsSocketPath, const char* apiUriPath, con
                 (*response)[responseLen] = 0;
                 result = AIS_SUCCESS;
                 OsConfigLogInfo(GetLog(), "SendAisRequest: ok");
-                if (IsDebugLoggingEnabled())
-                {
-                    OsConfigLogInfo(GetLog(), "SendAisRequest response: %s", *response);
-                }
+                OsConfigLogDebug(GetLog(), "SendAisRequest response: %s", *response);
             }
             else
             {
@@ -688,10 +682,7 @@ char* RequestConnectionStringFromAis(char** x509Certificate, char** x509PrivateK
         connectAs = useModuleId ? "module" : "device";
         connectTo = useGatewayHost ? "Edge gateway" : "IoT Hub";
         OsConfigLogInfo(GetLog(), "RequestConnectionStringFromAis: connected to %s as %s (%d)", connectTo, connectAs, result);
-        if (IsDebugLoggingEnabled())
-        {
-            OsConfigLogInfo(GetLog(), "Connection string: %s", connectionString);
-        }
+        OsConfigLogDebug(GetLog(), "Connection string: %s", connectionString);
     }
     else
     {

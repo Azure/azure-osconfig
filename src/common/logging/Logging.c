@@ -14,7 +14,7 @@
 
 #define MAX_LOG_TRIM 1000
 
-static bool g_debugLoggingEnabled = false;
+static LoggingLevel g_loggingLevel = LoggingLevelInformational;
 
 struct OSCONFIG_LOG
 {
@@ -26,12 +26,12 @@ struct OSCONFIG_LOG
 
 void SetDebugLogging(bool fullLogging)
 {
-    g_debugLoggingEnabled = fullLogging;
+    g_loggingLevel = fullLogging ? LoggingLevelDebug : LoggingLevelInformational;
 }
 
 bool IsDebugLoggingEnabled(void)
 {
-    return g_debugLoggingEnabled;
+    return (LoggingLevelDebug == g_loggingLevel) ? true : false;
 }
 
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)

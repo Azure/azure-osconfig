@@ -407,11 +407,11 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, char** reason
     }
     else if (IsDebugLoggingEnabled())
     {
-        OsConfigLogInfo(log, "EnumerateUsers: %u users found", *size);
+        OsConfigLogDebug(log, "EnumerateUsers: %u users found", *size);
 
         for (i = 0; i < *size; i++)
         {
-            OsConfigLogInfo(log, "EnumerateUsers(user %u): name '%s', uid %d, gid %d, home '%s', shell '%s'", i,
+            OsConfigLogDebug(log, "EnumerateUsers(user %u): name '%s', uid %d, gid %d, home '%s', shell '%s'", i,
                 (*userList)[i].username, (*userList)[i].userId, (*userList)[i].groupId, (*userList)[i].home, (*userList)[i].shell);
         }
     }
@@ -466,12 +466,8 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     }
     else if (-1 == (getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups)))
     {
-        if (IsDebugLoggingEnabled())
-        {
-            OsConfigLogInfo(log, "EnumerateUserGroups: first call to getgrouplist for user '%s' (%u) returned %d and %d",
-                user->username, user->groupId, getGroupListResult, numberOfGroups);
-        }
-
+        OsConfigLogDebug(log, "EnumerateUserGroups: first call to getgrouplist for user '%s' (%u) returned %d and %d",
+            user->username, user->groupId, getGroupListResult, numberOfGroups);
         FREE_MEMORY(groupIds);
 
         if (0 < numberOfGroups)
@@ -479,12 +475,8 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
             if (NULL != (groupIds = malloc(numberOfGroups * sizeof(gid_t))))
             {
                 getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups);
-
-                if (IsDebugLoggingEnabled())
-                {
-                    OsConfigLogInfo(log, "EnumerateUserGroups: second call to getgrouplist for user '%s' (%u) returned %d and %d",
-                        user->username, user->groupId, getGroupListResult, numberOfGroups);
-                }
+                OsConfigLogDebug(log, "EnumerateUserGroups: second call to getgrouplist for user '%s' (%u) returned %d and %d",
+                    user->username, user->groupId, getGroupListResult, numberOfGroups);
             }
             else
             {
@@ -503,10 +495,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
 
     if ((0 == status) && (0 < numberOfGroups))
     {
-        if (IsDebugLoggingEnabled())
-        {
-            OsConfigLogInfo(log, "EnumerateUserGroups: user '%s' (%u) is in %d group%s", user->username, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
-        }
+        OsConfigLogDebug(log, "EnumerateUserGroups: user '%s' (%u) is in %d group%s", user->username, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
 
         if (NULL == (*groupList = malloc(sizeof(SIMPLIFIED_GROUP) * numberOfGroups)))
         {
@@ -537,11 +526,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                        if (IsDebugLoggingEnabled())
-                        {
-                            OsConfigLogInfo(log, "EnumerateUserGroups: user '%s' (%u) is in group '%s' (%u)",
-                                user->username, user->groupId, (*groupList)[i].groupName, (*groupList)[i].groupId);
-                        }
+                        OsConfigLogDebug(log, "EnumerateUserGroups: user '%s' (%u) is in group '%s' (%u)", user->username, user->groupId, (*groupList)[i].groupName, (*groupList)[i].groupId);
                     }
                     else
                     {
@@ -604,11 +589,8 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, char** 
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                        if (IsDebugLoggingEnabled())
-                        {
-                            OsConfigLogInfo(log, "EnumerateAllGroups(group %d): group name '%s', gid %u, %s", i,
-                                (*groupList)[i].groupName, (*groupList)[i].groupId, (*groupList)[i].hasUsers ? "has users" : "empty");
-                        }
+                        OsConfigLogDebug(log, "EnumerateAllGroups(group %d): group name '%s', gid %u, %s", i,
+                            (*groupList)[i].groupName, (*groupList)[i].groupId, (*groupList)[i].hasUsers ? "has users" : "empty");
                     }
                     else
                     {
@@ -623,10 +605,7 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, char** 
 
             endgrent();
 
-            if (IsDebugLoggingEnabled())
-            {
-                OsConfigLogInfo(log, "EnumerateAllGroups: found %u groups (expected %u)", i, *size);
-            }
+            OsConfigLogDebug(log, "EnumerateAllGroups: found %u groups (expected %u)", i, *size);
 
             *size = i;
         }
@@ -677,12 +656,8 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OSCONFIG_LOG_HANDLE lo
                     {
                         if (userGroupList[j].groupId == groupList[k].groupId)
                         {
-                            if (IsDebugLoggingEnabled())
-                            {
-                                OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in '/etc/group'",
-                                    userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
-                            }
-
+                            OsConfigLogDebug(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in '/etc/group'",
+                                userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                             found = true;
                             break;
                         }
@@ -745,12 +720,8 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OSCONFIG_LOG_HANDLE log)
                     {
                         if (userGroupList[j].groupId == groupList[k].groupId)
                         {
-                            if (IsDebugLoggingEnabled())
-                            {
-                                OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in '/etc/group'",
-                                    userGroupList[j].groupName, userGroupList[j].groupId, userList[i].username, userList[i].userId);
-                            }
-
+                            OsConfigLogDebug(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in '/etc/group'",
+                                userGroupList[j].groupName, userGroupList[j].groupId, userList[i].username, userList[i].userId);
                             found = true;
                             break;
                         }
