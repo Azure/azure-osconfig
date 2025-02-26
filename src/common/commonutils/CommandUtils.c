@@ -127,7 +127,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             status = NormalizeStatus(status);
             if (childProcess == workerProcess)
             {
-                OsConfigLogDebug(log, "Command execution complete with status %d", status);
+                OsConfigLogDebug(log, "Command execution returning %d", status);
                 KillProcess(timerProcess);
             }
             else
@@ -175,7 +175,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     }
 
     status = NormalizeStatus(status);
-    OsConfigLogDebug(log, "SystemCommand: command '%s' completed with %d", command, status);
+    OsConfigLogDebug(log, "SystemCommand: command '%s' returning %d", command, status);
 
     return status;
 }

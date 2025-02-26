@@ -1248,7 +1248,7 @@ int RepairRootGroup(OSCONFIG_LOG_HANDLE log)
                                 // In a single atomic operation move edited contents from temporary file to /etc/group
                                 if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, etcGroup, log)))
                                 {
-                                    OsConfigLogInfo(log, "RepairRootGroup:  RenameFileWithOwnerAndAccess('%s' to '%s') completed with %d",
+                                    OsConfigLogInfo(log, "RepairRootGroup:  RenameFileWithOwnerAndAccess('%s' to '%s') returned %d",
                                         tempFileName, etcGroup, status);
                                 }
                             }
@@ -3164,7 +3164,7 @@ int RemoveUserAccounts(const char* names, bool removeHomeDirs, OSCONFIG_LOG_HAND
     }
     else if (EEXIST != status)
     {
-        OsConfigLogInfo(log, "RemoveUserAccounts: CheckUserAccountsNotFound('%s') completed with %d", names, status);
+        OsConfigLogInfo(log, "RemoveUserAccounts: CheckUserAccountsNotFound('%s') returned %d", names, status);
         return status;
     }
 

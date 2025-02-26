@@ -431,7 +431,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "SetFileSystemMountingOption:  RenameFileWithOwnerAndAccess('%s' to '%s') completed with %d", tempFileNameTwo, fsMountTable, status);
+                    OsConfigLogInfo(log, "SetFileSystemMountingOption:  RenameFileWithOwnerAndAccess('%s' to '%s') returned %d", tempFileNameTwo, fsMountTable, status);
                 }
             }
         }

@@ -337,7 +337,7 @@ int DisableAllWirelessInterfaces(OSCONFIG_LOG_HANDLE log)
         }
     }
 
-    OsConfigLogInfo(log, "DisableAllWirelessInterfaces completed with %d", status);
+    OsConfigLogInfo(log, "DisableAllWirelessInterfaces returned %d", status);
 
     return status;
 }
@@ -383,7 +383,7 @@ int SetDefaultDenyFirewallPolicy(OSCONFIG_LOG_HANDLE log)
         }
     }
 
-    OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy completed with %d", status);
+    OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy returned %d", status);
 
     return 0;
 }

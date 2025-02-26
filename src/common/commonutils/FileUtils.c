@@ -153,7 +153,7 @@ bool FileEndsInEol(const char* fileName, OSCONFIG_LOG_HANDLE log)
     }
     else
     {
-        OsConfigLogInfo(log, "FileEndsInEol: stat('%s') completed with %d (errno: %d)", fileName, status, errno);
+        OsConfigLogInfo(log, "FileEndsInEol: stat('%s') returned %d (errno: %d)", fileName, status, errno);
     }
 
     return result;
@@ -270,7 +270,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     {
         if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, fileName, log)))
         {
-            OsConfigLogInfo(log, "InternalSecureSaveToFile: RenameFileWithOwnerAndAccess('%s' to '%s') completed with %d", tempFileName, fileName, status);
+            OsConfigLogInfo(log, "InternalSecureSaveToFile: RenameFileWithOwnerAndAccess('%s' to '%s') returned %d", tempFileName, fileName, status);
             result = false;
         }
 
@@ -454,7 +454,7 @@ static bool IsATrueFileOrDirectory(bool directory, const char* name, OSCONFIG_LO
     }
     else
     {
-        OsConfigLogInfo(log, "IsATrueFileOrDirectory: stat('%s') completed with %d (errno: %d)", name, status, errno);
+        OsConfigLogInfo(log, "IsATrueFileOrDirectory: stat('%s') returned %d (errno: %d)", name, status, errno);
     }
 
     return result;
@@ -1078,14 +1078,14 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         {
             if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, fileName, log)))
             {
-                OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: RenameFileWithOwnerAndAccess('%s' to '%s') completed with %d", tempFileName, fileName, status);
+                OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: RenameFileWithOwnerAndAccess('%s' to '%s') returned %d", tempFileName, fileName, status);
             }
         }
         else
         {
             if (0 != (status = RenameFile(tempFileName, fileName, log)))
             {
-                OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: RenameFile('%s' to '%s') completed with %d", tempFileName, fileName, status);
+                OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: RenameFile('%s' to '%s') returned %d", tempFileName, fileName, status);
             }
         }
 
@@ -1095,7 +1095,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     FREE_MEMORY(tempFileName);
     FREE_MEMORY(fileNameCopy);
 
-    OsConfigLogInfo(log, "ReplaceMarkedLinesInFile('%s', '%s') complete with %d", fileName, marker, status);
+    OsConfigLogInfo(log, "ReplaceMarkedLinesInFile('%s', '%s') returning %d", fileName, marker, status);
 
     return status;
 }
