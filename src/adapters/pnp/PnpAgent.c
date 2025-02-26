@@ -538,7 +538,7 @@ int main(int argc, char *argv[])
 
     if (IsDebugLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "WARNING: debug logging is enabled. To disable debug logging edit %s and restart OSConfig", CONFIG_FILE);
+        OsConfigLogInfo(GetLog(), "WARNING: debug logging is enabled. To disable debug logging, edit '%s' and restart OSConfig", CONFIG_FILE);
     }
 
     // Load remaining configuration

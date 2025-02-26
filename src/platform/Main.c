@@ -209,7 +209,7 @@ int main(int argc, char* argv[])
 
     if (IsDebugLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "WARNING: debug logging is enabled. To disable debug logging edit %s and restart OSConfig", CONFIG_FILE);
+        OsConfigLogInfo(GetPlatformLog(), "WARNING: debug logging is enabled. To disable debug logging, edit '%s' and restart OSConfig", CONFIG_FILE);
     }
 
     for (int i = 0; i < stopSignalsCount; i++)
