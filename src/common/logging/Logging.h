@@ -26,8 +26,8 @@ extern "C"
 #endif
 
 // Matching the severity values in RFC 5424. Currently we only use 2 values from this enumeration:
-// - LoggingLevelInformational (6) is default and has [INFO] and [ERROR] labels
-// - LoggingLevelDebug (7) is optional, has the [DEBUG] label, and is managed via the 'DebugLogging' entry in osconfig.json configuration
+// - LoggingLevelInformational (6) uses [INFO] and [ERROR] labels and is always enabled by default
+// - LoggingLevelDebug (7) is optional, uses the [DEBUG] label, and is managed via the 'DebugLogging' entry in the osconfig.json configuration
 enum LoggingLevel
 {
     LoggingLevelEmergency = 0,
@@ -54,10 +54,10 @@ bool IsDaemon(void);
 
 #define __PREFIX_TEMPLATE__ "[%s][%s][%s:%d] "
 #define __SHORT_FILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define __LOG__(log, loglevel, format, ...) printf(__PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), loglevel, __SHORT_FILE__, __LINE__, ## __VA_ARGS__)
-#define __LOG_TO_FILE__(log, loglevel, format, ...) {\
+#define __LOG__(log, label, format, ...) printf(__PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__)
+#define __LOG_TO_FILE__(log, label, format, ...) {\
     TrimLog(log);\
-    fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), loglevel, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
+    fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
 }\
 
 #define __INFO__ "INFO"
@@ -98,7 +98,7 @@ bool IsDaemon(void);
             OSCONFIG_FILE_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
             fflush(GetLogFile(log));\
         }\
-        if ((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) {\
+        if (false == IsDaemon()) {\
             OSCONFIG_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
         }\
     }\
