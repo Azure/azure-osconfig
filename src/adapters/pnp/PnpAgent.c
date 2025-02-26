@@ -536,7 +536,10 @@ int main(int argc, char *argv[])
     OsConfigLogInfo(GetLog(), "OSConfig Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
-    OsConfigLogDebug(GetLog(), "WARNING: debug logging is enabled. To disable debug logging edit %s and restart OSConfig", CONFIG_FILE);
+    if (IsDebugLoggingEnabled())
+    {
+        OsConfigLogInfo(GetLog(), "WARNING: debug logging is enabled. To disable debug logging edit %s and restart OSConfig", CONFIG_FILE);
+    }
 
     // Load remaining configuration
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
