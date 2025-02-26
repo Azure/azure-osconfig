@@ -1,0 +1,88 @@
+[
+    {
+        "name": "Ensure NIS Client is not installed",
+        "key": "/cis/Ubuntu/24.04/v1.0.0/2/2/1",
+        "audit": {
+            "not": {
+                "packageInstalled": {
+                    "packageName": "nis"
+                }
+            }
+        }
+    },
+    {
+        "name": "Ensure permissions on /etc/crontab are configured",
+        "key": "/cis/Ubuntu/24.04/v1.0.0/2/4/1/2",
+        "audit": {
+            "anyOf": [
+                {
+                    "not": {
+                        "packageInstalled": {
+                            "packageName": "$CRON_PKG_NAME:cron"
+                        }
+                    }
+                },
+                {
+                    "ensureFilePermissions": {
+                        "filename": "/etc/crontab",
+                        "user": "root",
+                        "group": "root",
+                        "permissions": "600"
+                    }
+                }
+            ]
+        },
+        "remediate": {
+                "anyOf": [
+                    {
+                        "not": {
+                            "packageInstalled": {
+                                "packageName": "$CRON_PKG_NAME"
+                            }
+                        }
+                    },
+                    {
+                        "ensureFilePermissions": {
+                            "filename": "/etc/crontab",
+                            "user": "root",
+                            "group": "root",
+                            "permissions": "600"
+                        }
+                    }
+                ]
+        }
+    },
+    {
+        "name": "Ensure permissions on /etc/cron.hourly are configured",
+        "key": "/cis/Ubuntu/22.04/v2.0.0/2/4/1/3",
+        "audit": {
+            "anyOf": [
+                {
+                    "not": {
+                        "anyOf": [
+                            {
+                                "packageInstalled": {
+                                    "packageName": "$CRON_PKG_NAME:cron"
+                                }
+                            },
+                            {
+                                "packageInstalled": {
+                                    "packageName": "cronie"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "ensureFilePermissions": {
+                        "filename": "/etc/cron.hourly",
+                        "user": "root",
+                        "group": "root",
+                        "permissions": "600"
+                    }
+                }
+            ]
+        }
+    }
+
+]

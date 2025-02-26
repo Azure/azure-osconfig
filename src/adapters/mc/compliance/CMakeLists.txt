@@ -22,3 +22,5 @@ target_link_libraries(OsConfigResourceCompliance
         mpiclient
         parsonlib
         compliancelib)
+
+add_subdirectory(example)
