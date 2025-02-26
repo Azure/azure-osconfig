@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include "inc/AgentCommon.h"
-#include "inc/PnpUtils.h"
 #include "inc/PnpAgent.h"
+#include "inc/PnpUtils.h"
 #include "inc/AisUtils.h"
 #include "inc/Watcher.h"
 
@@ -71,7 +71,11 @@ static ConnectionStringSource g_connectionStringSource = FromAis;
 static int g_stopSignal = 0;
 static int g_refreshSignal = 0;
 
+#if defined(IOT)
 static bool g_isIotHubEnabled = false;
+#else // !defined(IOT)
+#define g_isIotHubEnabled 0
+#endif
 static char* g_iotHubConnectionString = NULL;
 const char* g_iotHubConnectionStringPrefix = "HostName=";
 
@@ -417,6 +421,11 @@ void CloseAgent(void)
 
 static void ReportProperties()
 {
+    if (!g_isIotHubEnabled)
+    {
+        return;
+    }
+
     if ((g_numReportedProperties <= 0) || (NULL == g_reportedProperties))
     {
         // No properties to report
@@ -550,7 +559,9 @@ int main(int argc, char *argv[])
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, GetLog());
         g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties, GetLog());
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog());
+#if defined(IOT)
         g_isIotHubEnabled = IsIotHubManagementEnabledInJsonConfig(jsonConfiguration);
+#endif
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, GetLog());
     }
 

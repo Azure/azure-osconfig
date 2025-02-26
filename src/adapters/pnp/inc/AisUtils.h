@@ -11,9 +11,14 @@ extern "C"
 {
 #endif
 
+#if defined(IOT)
 char* RequestConnectionStringFromAis(char** x509Certificate, char** x509PrivateKeyHandle);
 
 char* FormatAllocateString(const char* format, ...);
+#else // !defined(IOT)
+static inline char* RequestConnectionStringFromAis(char**, char**) { return NULL; }
+static inline int mallocAndStrcpy_s(char**, const char*) { return 1; }
+#endif
 
 #ifdef __cplusplus
 }

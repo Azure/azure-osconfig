@@ -23,22 +23,24 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include "iothub.h"
-#include "parson.h"
-#include "iothub_device_client.h"
-#include "iothub_device_client_ll.h"
-#include "iothub_client_options.h"
-#include "iothubtransportmqtt.h"
-#include "iothubtransportmqtt_websockets.h"
-#include "azure_c_shared_utility/threadapi.h"
-#include "azure_c_shared_utility/tickcounter.h"
-#include "azure_c_shared_utility/xlogging.h"
-#include "azure_c_shared_utility/shared_util_options.h"
-#include "azure_c_shared_utility/urlencode.h"
-#include "azure_c_shared_utility/azure_base64.h"
-#include "azure_c_shared_utility/buffer_.h"
-#include "azure_c_shared_utility/socketio.h"
-#include "azure_uhttp_c/uhttp.h"
+#if defined(IOT)
+# include "iothub.h"
+# include "parson.h"
+# include "iothub_device_client.h"
+# include "iothub_device_client_ll.h"
+# include "iothub_client_options.h"
+# include "iothubtransportmqtt.h"
+# include "iothubtransportmqtt_websockets.h"
+# include "azure_c_shared_utility/threadapi.h"
+# include "azure_c_shared_utility/tickcounter.h"
+# include "azure_c_shared_utility/xlogging.h"
+# include "azure_c_shared_utility/shared_util_options.h"
+# include "azure_c_shared_utility/urlencode.h"
+# include "azure_c_shared_utility/azure_base64.h"
+# include "azure_c_shared_utility/buffer_.h"
+# include "azure_c_shared_utility/socketio.h"
+# include "azure_uhttp_c/uhttp.h"
+#endif // defined(IOT)
 
 #include <CommonUtils.h>
 #include <Logging.h>

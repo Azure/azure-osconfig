@@ -7,30 +7,40 @@ if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4.7)
     message(FATAL_ERROR "gcc-4.4.7 or newer is needed")
 endif()
 
+option(IOT "" FALSE)
 SET(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
 
 project(osconfig)
 
 set(osconfig_files
-    ./AisUtils.c
     ./PnpAgent.c
-    ./PnpUtils.c
     ./Watcher.c)
+if (IOT)
+    set(osconfig_files ${osconfig_files} ./AisUtils.c ./PnpUtils.c)
+endif ()
 
 set(target_name osconfig)
 
 add_executable(${target_name} ${osconfig_files})
+if (IOT)
+    target_compile_definitions(${target_name} PRIVATE IOT)
+endif ()
 
-if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
+if (IOT AND EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
     message(STATUS "Using azure-iot-sdk-c as source")
     add_subdirectory(azure-iot-sdk-c EXCLUDE_FROM_ALL)
-else ()
+elseif (IOT)
     message(STATUS "Using azure-iot-sdk-c as package")
     #find_package(azure-iot-sdk-c REQUIRED)
 endif ()
 
-if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
-    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security)
+target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security)
+target_link_libraries(${target_name}
+    commonutils
+    mpiclient
+    logging)
+
+if (IOT AND EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
 
     target_include_directories(${target_name} PUBLIC
         ${azure_iot_sdks_SOURCE_DIR}/deps/parson
@@ -51,12 +61,9 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         prov_auth_client
         umqtt
         uhttp
-        aziotsharedutil
-        logging
-        commonutils
-        mpiclient)
-else()
-    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-unused-result)
+        aziotsharedutil)
+elseif (IOT)
+    target_compile_options(${target_name} PRIVATE -Wno-unused-result)
 
     find_package (azure_c_shared_utility REQUIRED)
     find_package (azure_macro_utils_c REQUIRED)
@@ -78,9 +85,6 @@ else()
         umqtt
         uhttp
         aziotsharedutil
-        logging
-        commonutils
-        mpiclient
         hsm_security_client
         msr_riot
         prov_device_client
