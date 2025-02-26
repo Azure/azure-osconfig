@@ -211,8 +211,13 @@ static int IsSshConfigIncludeSupported(void* log)
     const int minVersionMinor = 2;
     char* textResult = NULL;
     char* textResultCopy = NULL;
+    char* line = NULL;
+    char* sctx = NULL;
     int versionMajor = 0;
     int versionMinor = 0;
+    char* vendor = NULL;
+    char* major = NULL;
+    char* minor = NULL;
     int result = 0;
 
     if (false == IsDaemonActive(g_sshServerService, log))
@@ -226,51 +231,61 @@ static int IsSshConfigIncludeSupported(void* log)
 
     ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
 
-    if ((NULL != textResult) && (NULL != (textResultCopy = DuplicateString(textResult))))
-    {
-        char * line = NULL;
-        char * strtokctx = NULL;
-        do {
-            line = strtok_r(textResultCopy, "\n", &strtokctx);
-        } while (line != NULL && (0 != strncmp(line, expectedVendor, strlen(expectedVendor))));
-
-        if (NULL != line && 0 == strncmp(line, expectedVendor, strlen(expectedVendor)))
-        {
-            char * sctx = NULL;
-            char * vendor = strtok_r(line, "_", &sctx);
-            char * major = strtok_r(NULL, ".", &sctx);
-            char * minor = strtok_r(NULL, ",", &sctx);
-            if ((NULL != vendor) && (NULL != major) && (NULL != minor))
-            {
-                versionMajor = atoi(major);
-                versionMinor = atoi(minor);
-                if (((versionMajor == minVersionMajor) && (versionMinor >= minVersionMinor)) || (versionMajor > minVersionMajor))
-                {
-                    OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (%d.%d or newer) and appears to support Include",
-                        g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
-                    result = 0;
-                }
-                else
-                {
-                    OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (older than %d.%d) and appears to not support Include",
-                        g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
-                    result = ENOENT;
-                }
-            } else {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' ('%s'), assuming Include is not supported", command, textResult);
-                result = ENOENT;
-            }
-        } else {
-            OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' ('%s'), assuming Include is not supported", command, textResult);
-            result = ENOENT;
-
-        }
-    }
-    else
+    if (NULL == textResult)
     {
         OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s', assuming Include is not supported", command);
         result = ENOENT;
+        goto exit;
     }
+
+    if (NULL == (textResultCopy = DuplicateString(textResult)))
+    {
+        OsConfigLogError(log, "IsSshConfigIncludeSupported: DuplicateString failed");
+        result = ENOMEM;
+        goto exit;
+    }
+
+    line = strtok_r(textResultCopy, "\n", &sctx);
+    while (NULL != line && (0 != strncmp(line, expectedVendor, strlen(expectedVendor))))
+    {
+        line = strtok_r(NULL, "\n", &sctx);
+    }
+
+    if (NULL == line)
+    {
+        OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' - '%s', assuming Include is not supported", command, textResult);
+        result = ENOENT;
+        goto exit;
+    }
+
+    sctx = NULL;
+    vendor = strtok_r(line, "_", &sctx);
+    major = strtok_r(NULL, ".", &sctx);
+    minor = strtok_r(NULL, ",", &sctx);
+
+    if ((NULL == vendor) && (NULL == major) && (NULL == minor))
+    {
+        OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' - '%s', assuming Include is not supported", command, textResult);
+        result = ENOENT;
+        goto exit;
+    }
+
+    versionMajor = atoi(major);
+    versionMinor = atoi(minor);
+    if (((versionMajor == minVersionMajor) && (versionMinor >= minVersionMinor)) || (versionMajor > minVersionMajor))
+    {
+        OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (%d.%d or newer) and appears to support Include",
+            g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
+        result = 0;
+    }
+    else
+    {
+        OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (older than %d.%d) and appears to not support Include",
+            g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
+        result = ENOENT;
+    }
+
+exit:
     FREE_MEMORY(textResultCopy);
     FREE_MEMORY(textResult);
 
