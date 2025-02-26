@@ -94,7 +94,7 @@ FILE* GetLogFile(OSCONFIG_LOG_HANDLE log)
 static char g_logTime[TIME_FORMAT_STRING_LENGTH] = {0};
 
 // Returns the local date/time formatted as YYYY-MM-DD HH:MM:SS (for example: 2014-03-19 11:11:52)
-char* GetFormattedTime()
+char* GetFormattedTime(void)
 {
     time_t rawTime = {0};
     struct tm* timeInfo = NULL;

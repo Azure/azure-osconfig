@@ -48,7 +48,7 @@ bool IsDebugLoggingEnabled(void);
 void SetDebugLogging(bool fullLogging);
 
 FILE* GetLogFile(OSCONFIG_LOG_HANDLE log);
-char* GetFormattedTime();
+char* GetFormattedTime(void);
 void TrimLog(OSCONFIG_LOG_HANDLE log);
 bool IsDaemon(void);
 
