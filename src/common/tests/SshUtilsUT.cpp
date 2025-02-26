@@ -153,6 +153,12 @@ protected:
         storeSshd(s);
     }
 
+    void prepareCustomSsh91() const
+    {
+        const char* s = "OpenSSH_9.1, OpenSSL 3.0.15 3 Sep 2024\n";
+        storeSshd(s);
+    }
+
     ~SshExecutableTest()
     {
         ::remove(systemctl.c_str());
@@ -221,6 +227,18 @@ TEST_F(SshExecutableTest, CheckSshVersionDebian12)
     EXPECT_EQ(9, major);
     EXPECT_EQ(2, minor);
     EXPECT_EQ(0, IsSshConfigIncludeSupportedTest());
+}
+
+TEST_F(SshExecutableTest, CheckSshVersionCustom91)
+{
+    int major = 0;
+    int minor = 0;
+    prepareCustomSsh91();
+    int result = GetSshdVersionTest(&major, &minor);
+    EXPECT_EQ(0, result);
+    EXPECT_EQ(9, major);
+    EXPECT_EQ(1, minor);
+    EXPECT_EQ(1, IsSshConfigIncludeSupportedTest());
 }
 
 TEST_F(SshExecutableTest, SaveRemediation)
