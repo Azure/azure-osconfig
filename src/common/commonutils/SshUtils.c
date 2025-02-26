@@ -205,16 +205,12 @@ static int IsSshServerActive(void* log)
 // See https://www.openssh.com/txt/release-8.2, quote: "add an Include sshd_config keyword that allows including additional configuration files"
 static int IsSshConfigIncludeSupported(void* log)
 {
-    const char* expectedPrefix = "unknown option -- V OpenSSH_";
+    const char* expectedVendor = "OpenSSH";
     const char* command = "sshd -V";
     const int minVersionMajor = 8;
     const int minVersionMinor = 2;
     char* textResult = NULL;
-    size_t textResultLength = 0;
-    size_t textPrefixLength = 0;
-    char* textCursor = NULL;
-    char versionMajorString[2] = {0};
-    char versionMinorString[2] = {0};
+    char* textResultCopy = NULL;
     int versionMajor = 0;
     int versionMinor = 0;
     int result = 0;
@@ -230,36 +226,44 @@ static int IsSshConfigIncludeSupported(void* log)
 
     ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
 
-    if (NULL != textResult)
+    if ((NULL != textResult) && (NULL != (textResultCopy = DuplicateString(textResult))))
     {
-        if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult)))
-        {
-            textCursor = textResult + strlen(expectedPrefix) + 1;
-            if (isdigit(textCursor[0]) && ('.' == textCursor[1]) && isdigit(textCursor[2]))
-            {
-                versionMajorString[0] = textCursor[0];
-                versionMinorString[0] = textCursor[2];
-                versionMajor = atoi(versionMajorString);
-                versionMinor = atoi(versionMinorString);
-            }
+        char * line = NULL;
+        char * strtokctx = NULL;
+        do {
+            line = strtok_r(textResultCopy, "\n", &strtokctx);
+        } while (line != NULL && (0 != strncmp(line, expectedVendor, strlen(expectedVendor))));
 
-            if ((versionMajor >= minVersionMajor) && (versionMinor >= minVersionMinor))
+        if (NULL != line && 0 == strncmp(line, expectedVendor, strlen(expectedVendor)))
+        {
+            char * sctx = NULL;
+            char * vendor = strtok_r(line, "_", &sctx);
+            char * major = strtok_r(NULL, ".", &sctx);
+            char * minor = strtok_r(NULL, ",", &sctx);
+            if ((NULL != vendor) && (NULL != major) && (NULL != minor))
             {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (%d.%d or newer) and appears to support Include",
-                    g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
-                result = 0;
-            }
-            else
-            {
-                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (older than %d.%d) and appears to not support Include",
-                    g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
+                versionMajor = atoi(major);
+                versionMinor = atoi(minor);
+                if (((versionMajor == minVersionMajor) && (versionMinor >= minVersionMinor)) || (versionMajor > minVersionMajor))
+                {
+                    OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (%d.%d or newer) and appears to support Include",
+                        g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
+                    result = 0;
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "IsSshConfigIncludeSupported: %s reports OpenSSH version %d.%d (older than %d.%d) and appears to not support Include",
+                        g_sshServerService, versionMajor, versionMinor, minVersionMajor, minVersionMinor);
+                    result = ENOENT;
+                }
+            } else {
+                OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' ('%s'), assuming Include is not supported", command, textResult);
                 result = ENOENT;
             }
-        }
-        else
-        {
+        } else {
             OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s' ('%s'), assuming Include is not supported", command, textResult);
             result = ENOENT;
+
         }
     }
     else
@@ -267,7 +271,7 @@ static int IsSshConfigIncludeSupported(void* log)
         OsConfigLogInfo(log, "IsSshConfigIncludeSupported: unexpected response to '%s', assuming Include is not supported", command);
         result = ENOENT;
     }
-
+    FREE_MEMORY(textResultCopy);
     FREE_MEMORY(textResult);
 
     return result;
