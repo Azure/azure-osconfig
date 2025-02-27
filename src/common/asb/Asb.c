@@ -648,6 +648,8 @@ static const long g_maxRemediateTime = 55000000;
 // Maximum baseline run times: 30 minutes
 static const long g_maxTotalTime = 1800000000;
 
+static char* g_prettyName = NULL;
+
 static OSCONFIG_LOG_HANDLE g_perfLog = NULL;
 static OSCONFIG_LOG_HANDLE g_telemetryLog = NULL;
 
@@ -879,7 +881,6 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
 
 void AsbInitialize(OSCONFIG_LOG_HANDLE log)
 {
-    char* prettyName = NULL;
     char* kernelVersion = NULL;
     char* cpuModel = NULL;
     long totalMemory = 0;
@@ -957,9 +958,9 @@ void AsbInitialize(OSCONFIG_LOG_HANDLE log)
 
     kernelVersion = GetOsKernelVersion(log);
 
-    if (NULL != (prettyName = GetOsPrettyName(log)))
+    if (NULL != (g_prettyName = GetOsPrettyName(log)))
     {
-        OsConfigLogInfo(log, "AsbInitialize: running on '%s' ('%s')", prettyName, kernelVersion);
+        OsConfigLogInfo(log, "AsbInitialize: running on '%s' ('%s')", g_prettyName, kernelVersion);
     }
     else
     {
@@ -976,7 +977,6 @@ void AsbInitialize(OSCONFIG_LOG_HANDLE log)
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
     }
 
-    FREE_MEMORY(prettyName);
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(cpuModel);
 
@@ -986,6 +986,8 @@ void AsbInitialize(OSCONFIG_LOG_HANDLE log)
 void AsbShutdown(OSCONFIG_LOG_HANDLE log)
 {
     OsConfigLogInfo(log, "%s shutting down", g_asbName);
+
+    FREE_MEMORY(g_prettyName);
 
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
@@ -1027,7 +1029,7 @@ void AsbShutdown(OSCONFIG_LOG_HANDLE log)
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
-        LogPerfClockTelemetry(&g_perfClock, g_asbName, NULL, 0, GetTelemetryLog());
+        LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, NULL, 0, GetTelemetryLog());
     }
 
     CloseLog(&g_perfLog);
@@ -4834,7 +4836,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
-        LogPerfClockTelemetry(&perfClock, componentName, objectName, status, GetTelemetryLog());
+        LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
     }
 
     return status;
@@ -5809,7 +5811,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         if (0 != strncmp(objectName, init, strlen(init)))
         {
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
-            LogPerfClockTelemetry(&perfClock, componentName, objectName, status, GetTelemetryLog());
+            LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
         }
     }
 
