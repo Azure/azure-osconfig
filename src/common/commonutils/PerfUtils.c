@@ -133,5 +133,5 @@ void LogPerfClockTelemetry(PERF_CLOCK* clock, const char* targetName, const char
     microseconds = GetPerfClockTime(clock, log);
 
     OsConfigLogInfo(log, "{\"TargetName\": \"%s\", \"ComponentName\": \"%s\", \"ObjectName\": \"%s\", \"ObjectResult\": \"%s (%d)\", \"Microseconds\": \"%ld\"}",
-        (targetName && strchr(targetName, '"')) ? "unknown" : targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
+        targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
 }
