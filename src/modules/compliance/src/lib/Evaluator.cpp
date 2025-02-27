@@ -179,8 +179,8 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
             JSON_Value* val = json_object_get_value_at(args_object, i);
             if (json_value_get_type(val) != JSONString)
             {
-                mLogstream << "ERROR: Argument type is not a string";
-                OsConfigLogError(mLog, "Argument type is not a string");
+                mLogstream << "ERROR: Argument type is not a string '" << key << "' ";
+                OsConfigLogError(mLog, "Argument type is not a string for a key '%s'", key);
                 return Error("Argument type is not a string");
             }
             arguments[key] = json_value_get_string(val);
