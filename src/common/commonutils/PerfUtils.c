@@ -134,13 +134,13 @@ void LogPerfClockTelemetry(PERF_CLOCK* clock, const char* targetName, const char
     
     if (NULL != objectName)
     {
-        OsConfigLogInfo(log, "{""""TargetName"""": """"%s"""", """"ComponentName"""": """"%s"""", """"ObjectName"""": """"%s"""", """"ObjectResult"""": """"%d"""", """"Microseconds"""": """"%ld""""}",
+        OsConfigLogInfo(log, "{\"TargetName\": \"%s\", \"ComponentName\": \"%s\", \"ObjectName\": \"%s\", \"ObjectResult\": \"%d\", \"Microseconds\": \"%ld\"}",
             targetName, componentName, objectName, objectResult, microseconds);
     }
     else
     {
         UNUSED(objectResult);
-        OsConfigLogInfo(log, "{""""TargetName"""": """"%s"""", """"ComponentName"""": """"%s"""", """"Seconds"""": """"%.2f""""}",
+        OsConfigLogInfo(log, "{\"TargetName\": \"%s\", \"ComponentName\": \"%s\", \"Seconds\": \"%.2f\"}",
             targetName, componentName, microseconds / 1000000.0);
     }
 }
