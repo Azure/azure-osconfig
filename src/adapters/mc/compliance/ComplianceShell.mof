@@ -1,0 +1,8 @@
+instance of OMI_ConfigurationDocument
+{
+    Version="3.0.0";
+    CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
+    Author="Microsoft";
+    GenerationDate="02/26/2025 13:48:30 UTC";
+    Name="ComplianceExample";
+};
