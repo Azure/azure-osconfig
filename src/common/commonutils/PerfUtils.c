@@ -119,3 +119,19 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
         }
     }
 }
+
+void LogPerfClockTelemetry(PERF_CLOCK* clock, const char* targetName, const char* componentName, const char* objectName, int objectResult, OSCONFIG_LOG_HANDLE log)
+{
+    long microseconds = -1;
+
+    if (NULL == clock)
+    {
+        OsConfigLogError(log, "LogPerfClockTelemetry called with an invalid clock argument");
+        return;
+    }
+
+    microseconds = GetPerfClockTime(clock, log);
+
+    OsConfigLogInfo(log, "{\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Microseconds\":\"%ld\"}",
+        targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
+}
