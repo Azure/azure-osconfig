@@ -19,11 +19,11 @@ AUDIT_FN(ensureFilePermissions)
     {
         return Error("No filename provided");
     }
-    logstream << "ensureFilePermissions for " << args["filename"];
+    logstream << "ensureFilePermissions for '" << args["filename"] << "' ";
 
     if (0 != stat(args["filename"].c_str(), &statbuf))
     {
-        logstream << "Stat error" << strerror(errno);
+        logstream << "Stat error '" << strerror(errno) << "'";
         return false;
     }
 
