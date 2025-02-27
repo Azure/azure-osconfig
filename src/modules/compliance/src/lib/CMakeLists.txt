@@ -3,6 +3,7 @@
 
 project(compliancelib)
 
+# Temporary solution, until we stabilize the list of procedures.
 FILE(GLOB PROCEDURES procedures/*.cpp)
 
 add_library(compliancelib STATIC

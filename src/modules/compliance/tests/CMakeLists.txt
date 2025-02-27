@@ -5,6 +5,8 @@ project(compliancetests)
 
 include(CTest)
 find_package(GTest REQUIRED)
+
+# Temporary solution, until we stabilize the list of procedures.
 FILE(GLOB PROCEDURES procedures/*.cpp)
 
 add_executable(compliancetests
