@@ -4834,7 +4834,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
-        LogPerfClockTelemetry(&perfClock, , componentName, objectName, status, GetTelemetryLog());
+        LogPerfClockTelemetry(&perfClock, componentName, objectName, status, GetTelemetryLog());
     }
 
     return status;
