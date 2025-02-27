@@ -119,3 +119,33 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
         }
     }
 }
+
+void LogPerfClockTelemetry(PERF_CLOCK* clock, const char* componentName, const char* objectName, int objectResult, OSCONFIG_LOG_HANDLE log)
+{
+    static const char* ruleTemplate = "{""TargetName"": ""%s"", ""ComponentName"": ""%s"", ""ObjectName"": ""%s"", ""ObjectResult"": ""%s"", ""Microseconds"": ""%s""}";
+    static const char* baselineTemplate = "{""TargetName"": ""%s"", ""ComponentName"": ""%s"", ""Seconds"": ""%s""}";
+
+    char* targetName = NULL;
+    long microseconds = -1;
+
+    if ((NULL == clock) || (NULL == componentName))
+    {
+        OsConfigLogError(log, "LogPerfClockTelemetry called with an invalid argument");
+        return;
+    }
+
+    microseconds = GetPerfClockTime(clock, log);
+    
+    targetName = GetOsPrettyName(log);
+
+    if (NULL != objectName)
+    {
+        OsConfigLogInfo(log, "ruleTemplate", targetName, componentName, objectName, objectResult, microseconds);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "baselineTemplate", targetName, componentName, microseconds / 1000000.0);
+    }
+
+    return;
+}

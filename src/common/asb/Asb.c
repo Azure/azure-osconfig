@@ -18,6 +18,9 @@
 #define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_asb_perf.bak"
 
+#define TELEMETRY_FILE "/var/log/osconfig_asb_telemetry.log"
+#define ROLLED_TELEMETRY_FILE "/var/log/osconfig_asb_telemetry.bak"
+
 #define RETURN_REASON_IF_ZERO(call) {\
     if (0 == (call)) {\
         return reason;\
@@ -646,10 +649,16 @@ static const long g_maxRemediateTime = 55000000;
 static const long g_maxTotalTime = 1800000000;
 
 static OSCONFIG_LOG_HANDLE g_perfLog = NULL;
+static OSCONFIG_LOG_HANDLE g_telemetryLog = NULL;
 
 OSCONFIG_LOG_HANDLE GetPerfLog(void)
 {
     return g_perfLog;
+}
+
+OSCONFIG_LOG_HANDLE GetTelemetryLog(void)
+{
+    return g_telemetryLog;
 }
 
 typedef struct BASELINE_RULE
@@ -878,12 +887,13 @@ void AsbInitialize(OSCONFIG_LOG_HANDLE log)
     unsigned short freeMemoryPercentage = 0;
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
+    g_telemetryLog = OpenLog(TELEMETRY_FILE, ROLLED_TELEMETRY_FILE);
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
-    if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
+    if (NULL != (cpuModel = GetCpuModel(log)))
     {
         OsConfigLogInfo(log, "AsbInitialize: CPU model: %s", cpuModel);
     }
@@ -1017,9 +1027,11 @@ void AsbShutdown(OSCONFIG_LOG_HANDLE log)
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
+        LogPerfClockTelemetry(&g_perfClock, g_asbName, NULL, 0, GetTelemetryLog());
     }
 
     CloseLog(&g_perfLog);
+    CloseLog(&g_telemetryLog);
 
     // When done, allow others access to read the performance log
     SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);
@@ -4822,6 +4834,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
+        LogPerfClockTelemetry(&perfClock, , componentName, objectName, status, GetTelemetryLog());
     }
 
     return status;
@@ -5796,6 +5809,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         if (0 != strncmp(objectName, init, strlen(init)))
         {
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
+            LogPerfClockTelemetry(&perfClock, componentName, objectName, status, GetTelemetryLog());
         }
     }
 

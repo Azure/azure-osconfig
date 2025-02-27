@@ -244,6 +244,7 @@ int StartPerfClock(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log);
 int StopPerfClock(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log);
 long GetPerfClockTime(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log);
 void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* objectName, int objectResult, long limit, OSCONFIG_LOG_HANDLE log);
+void LogPerfClockTelemetry(PERF_CLOCK* clock, const char* componentName, const char* objectName, int objectResult, OSCONFIG_LOG_HANDLE log);
 
 #ifdef __cplusplus
 }
