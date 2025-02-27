@@ -140,11 +140,11 @@ void LogPerfClockTelemetry(PERF_CLOCK* clock, const char* componentName, const c
 
     if (NULL != objectName)
     {
-        OsConfigLogInfo(log, "ruleTemplate", targetName, componentName, objectName, objectResult, microseconds);
+        OsConfigLogInfo(log, ruleTemplate, targetName, componentName, objectName, objectResult, microseconds);
     }
     else
     {
-        OsConfigLogInfo(log, "baselineTemplate", targetName, componentName, microseconds / 1000000.0);
+        OsConfigLogInfo(log, baselineTemplate, targetName, componentName, microseconds / 1000000.0);
     }
 
     return;
