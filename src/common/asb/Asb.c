@@ -1037,6 +1037,10 @@ void AsbShutdown(OSCONFIG_LOG_HANDLE log)
     // When done, allow others access to read the performance log
     SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);
     SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 0644, NULL);
+
+    // And also the telemetry log
+    SetFileAccess(TELEMETRY_FILE, 0, 0, 0644, NULL);
+    SetFileAccess(ROLLED_TELEMETRY_FILE, 0, 0, 0644, NULL);
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(OSCONFIG_LOG_HANDLE log)
