@@ -121,7 +121,7 @@ int DeliveryOptimizationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payl
         status = ENOMEM;
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(DeliveryOptimizationGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
@@ -228,7 +228,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
                 }
                 else
                 {
-                    if (IsFullLoggingEnabled())
+                    if (IsDebugLoggingEnabled())
                     {
                         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to serialize JSON property '%s'", jsonPropertyName);
                     }
@@ -237,7 +237,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
             }
             else
             {
-                if (IsFullLoggingEnabled())
+                if (IsDebugLoggingEnabled())
                 {
                     OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to find JSON property '%s'", jsonPropertyName);
                 }
@@ -246,7 +246,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
         }
         else
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to parse JSON file '%s'", g_deliveryOptimizationConfigFile);
             }
@@ -288,7 +288,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
         }
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(DeliveryOptimizationGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }

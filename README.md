@@ -146,37 +146,21 @@ OSConfig periodically reports device data at a default time period of 30 seconds
 
 This interval is used for RC/DC, GitOps DC, and IoT Hub processing.
 
-### Enabling logging of system commands executed by OSConfig for debugging purposes
+### Enabling full debug logging
 
-Command logging means that OSConfig will log all input and output from system commands executed by Agent, Platform and Modules.
+Full debug logging means that OSConfig will log all input and output from and to all management authority channels, as well as all input and output from system commands executed by Agent, Platform and Modules.
 
-Generally it is not recommended to run OSConfig with command logging enabled.
+Generally it is not recommended to run OSConfig with full debug logging enabled.
 
-To enable command logging for debugging purposes, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "CommandLogging" to a non-zero value:
-
-```json
-{
-    "CommandLogging": 1
-}
-```
-
-To disable command logging, set "CommandLogging" to 0.
-
-### Enabling full logging for debugging purposes
-
-Full logging means that OSConfig will log all input and output from and to IoT Hub, AIS, RC/DC, GitOps DC, etc.
-
-Generally it is not recommended to run OSConfig with full logging enabled.
-
-To enable full logging for debugging purposes, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "FullLogging" to a non-zero value:
+To enable full debug logging, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "DebugLogging" to a non-zero value:
 
 ```json
 {
-    "FullLogging": 1
+    "DebugLogging": 1
 }
 ```
 
-To disable full logging, set "FullLogging" to 0.
+To disable full debug logging, set "DebugLogging" to 0.
 
 ## Local Management over RC/DC
 

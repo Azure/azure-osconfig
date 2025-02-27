@@ -848,8 +848,7 @@ int main(int argc, char const* argv[])
         else if (strcmp(argv[i], "--verbose") == 0)
         {
             g_verbose = true;
-            SetFullLogging(true);
-            SetCommandLogging(true);
+            SetDebugLogging(true);
         }
         else if (strcmp(argv[i], "--help") == 0)
         {

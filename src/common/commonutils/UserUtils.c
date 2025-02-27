@@ -377,7 +377,7 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, char** reason
                 }
                 else if (0 != (status = CheckIfUserHasPassword(&((*userList)[i]), log)))
                 {
-                    OsConfigLogInfo(log, "EnumerateUsers: failed checking user's login and password (%d)", status);
+                    OsConfigLogInfo(log, "EnumerateUsers: cannot check user's login and password (%d)", status);
                     break;
                 }
 
@@ -405,13 +405,13 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, char** reason
         OsConfigLogInfo(log, "EnumerateUsers failed with %d", status);
         OsConfigCaptureReason(reason, "Failed to enumerate users (%d). User database may be corrupt. Automatic remediation is not possible", status);
     }
-    else if (IsFullLoggingEnabled())
+    else if (IsDebugLoggingEnabled())
     {
-        OsConfigLogInfo(log, "EnumerateUsers: %u users found", *size);
+        OsConfigLogDebug(log, "EnumerateUsers: %u users found", *size);
 
         for (i = 0; i < *size; i++)
         {
-            OsConfigLogInfo(log, "EnumerateUsers(user %u): name '%s', uid %d, gid %d, home '%s', shell '%s'", i,
+            OsConfigLogDebug(log, "EnumerateUsers(user %u): name '%s', uid %d, gid %d, home '%s', shell '%s'", i,
                 (*userList)[i].username, (*userList)[i].userId, (*userList)[i].groupId, (*userList)[i].home, (*userList)[i].shell);
         }
     }
@@ -466,12 +466,8 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     }
     else if (-1 == (getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups)))
     {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogInfo(log, "EnumerateUserGroups: first call to getgrouplist for user '%s' (%u) returned %d and %d",
-                user->username, user->groupId, getGroupListResult, numberOfGroups);
-        }
-
+        OsConfigLogDebug(log, "EnumerateUserGroups: first call to getgrouplist for user '%s' (%u) returned %d and %d",
+            user->username, user->groupId, getGroupListResult, numberOfGroups);
         FREE_MEMORY(groupIds);
 
         if (0 < numberOfGroups)
@@ -479,12 +475,8 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
             if (NULL != (groupIds = malloc(numberOfGroups * sizeof(gid_t))))
             {
                 getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups);
-
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogInfo(log, "EnumerateUserGroups: second call to getgrouplist for user '%s' (%u) returned %d and %d",
-                        user->username, user->groupId, getGroupListResult, numberOfGroups);
-                }
+                OsConfigLogDebug(log, "EnumerateUserGroups: second call to getgrouplist for user '%s' (%u) returned %d and %d",
+                    user->username, user->groupId, getGroupListResult, numberOfGroups);
             }
             else
             {
@@ -495,7 +487,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
         }
         else
         {
-            OsConfigLogInfo(log, "EnumerateUserGroups: first call to getgrouplist for user '%s' (%u) failed with -1 and returned %d groups",
+            OsConfigLogInfo(log, "EnumerateUserGroups: first call to getgrouplist for user '%s' (%u) returned -1 and %d groups",
                 user->username, user->groupId, numberOfGroups);
             status = ENOENT;
         }
@@ -503,10 +495,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
 
     if ((0 == status) && (0 < numberOfGroups))
     {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogInfo(log, "EnumerateUserGroups: user '%s' (%u) is in %d group%s", user->username, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
-        }
+        OsConfigLogDebug(log, "EnumerateUserGroups: user '%s' (%u) is in %d group%s", user->username, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
 
         if (NULL == (*groupList = malloc(sizeof(SIMPLIFIED_GROUP) * numberOfGroups)))
         {
@@ -537,11 +526,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                        if (IsFullLoggingEnabled())
-                        {
-                            OsConfigLogInfo(log, "EnumerateUserGroups: user '%s' (%u) is in group '%s' (%u)",
-                                user->username, user->groupId, (*groupList)[i].groupName, (*groupList)[i].groupId);
-                        }
+                        OsConfigLogDebug(log, "EnumerateUserGroups: user '%s' (%u) is in group '%s' (%u)", user->username, user->groupId, (*groupList)[i].groupName, (*groupList)[i].groupId);
                     }
                     else
                     {
@@ -604,11 +589,8 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, char** 
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                        if (IsFullLoggingEnabled())
-                        {
-                            OsConfigLogInfo(log, "EnumerateAllGroups(group %d): group name '%s', gid %u, %s", i,
-                                (*groupList)[i].groupName, (*groupList)[i].groupId, (*groupList)[i].hasUsers ? "has users" : "empty");
-                        }
+                        OsConfigLogDebug(log, "EnumerateAllGroups(group %d): group name '%s', gid %u, %s", i,
+                            (*groupList)[i].groupName, (*groupList)[i].groupId, (*groupList)[i].hasUsers ? "has users" : "empty");
                     }
                     else
                     {
@@ -623,10 +605,7 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, char** 
 
             endgrent();
 
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogInfo(log, "EnumerateAllGroups: found %u groups (expected %u)", i, *size);
-            }
+            OsConfigLogDebug(log, "EnumerateAllGroups: found %u groups (expected %u)", i, *size);
 
             *size = i;
         }
@@ -677,12 +656,8 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OSCONFIG_LOG_HANDLE lo
                     {
                         if (userGroupList[j].groupId == groupList[k].groupId)
                         {
-                            if (IsFullLoggingEnabled())
-                            {
-                                OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in '/etc/group'",
-                                    userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
-                            }
-
+                            OsConfigLogDebug(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in '/etc/group'",
+                                userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                             found = true;
                             break;
                         }
@@ -745,12 +720,8 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OSCONFIG_LOG_HANDLE log)
                     {
                         if (userGroupList[j].groupId == groupList[k].groupId)
                         {
-                            if (IsFullLoggingEnabled())
-                            {
-                                OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in '/etc/group'",
-                                    userGroupList[j].groupName, userGroupList[j].groupId, userList[i].username, userList[i].userId);
-                            }
-
+                            OsConfigLogDebug(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in '/etc/group'",
+                                userGroupList[j].groupName, userGroupList[j].groupId, userList[i].username, userList[i].userId);
                             found = true;
                             break;
                         }
@@ -882,7 +853,7 @@ int RemoveUser(SIMPLIFIED_USER* user, bool removeHome, OSCONFIG_LOG_HANDLE log)
         }
         else
         {
-            OsConfigLogInfo(log, "RemoveUser: failed to remove user '%s' (%u, %u) (%d)", user->username, user->userId, user->groupId, _status);
+            OsConfigLogInfo(log, "RemoveUser: cannot remove user '%s' (%u, %u) (%d)", user->username, user->userId, user->groupId, _status);
         }
 
         FREE_MEMORY(command);
@@ -988,7 +959,7 @@ int RemoveGroup(SIMPLIFIED_GROUP* group, bool removeHomeDirs, OSCONFIG_LOG_HANDL
         }
         else
         {
-            OsConfigLogInfo(log, "RemoveGroup: failed to remove group '%s' (%u) (%d)", group->groupName, group->groupId, status);
+            OsConfigLogInfo(log, "RemoveGroup: cannot remove group '%s' (%u) (%d)", group->groupName, group->groupId, status);
         }
 
         FREE_MEMORY(command);
@@ -1277,13 +1248,13 @@ int RepairRootGroup(OSCONFIG_LOG_HANDLE log)
                                 // In a single atomic operation move edited contents from temporary file to /etc/group
                                 if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, etcGroup, log)))
                                 {
-                                    OsConfigLogInfo(log, "RepairRootGroup:  RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d",
+                                    OsConfigLogInfo(log, "RepairRootGroup:  RenameFileWithOwnerAndAccess('%s' to '%s') returned %d",
                                         tempFileName, etcGroup, status);
                                 }
                             }
                             else
                             {
-                                OsConfigLogInfo(log, "RepairRootGroup: failed appending to to temp file '%s", tempFileName);
+                                OsConfigLogInfo(log, "RepairRootGroup: cannot append to to temp file '%s' (%d)", tempFileName, errno);
                                 status = ENOENT;
                             }
 
@@ -1292,18 +1263,18 @@ int RepairRootGroup(OSCONFIG_LOG_HANDLE log)
                     }
                     else
                     {
-                        OsConfigLogInfo(log, "RepairRootGroup: failed reading '%s", tempFileName);
+                        OsConfigLogInfo(log, "RepairRootGroup: cannot read from '%s' (%d)", tempFileName, errno);
                         status = EACCES;
                     }
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "RepairRootGroup: failed removing potentially corrupted root entries from '%s' ", etcGroup);
+                    OsConfigLogInfo(log, "RepairRootGroup: cannot remove potentially corrupted root entries from '%s' (%d)", etcGroup, errno);
                 }
             }
             else
             {
-                OsConfigLogInfo(log, "RepairRootGroup: failed saving to temp file '%s", tempFileName);
+                OsConfigLogInfo(log, "RepairRootGroup: cannot save to temp file '%s' (%d)", tempFileName, errno);
                 status = EPERM;
             }
 
@@ -1311,7 +1282,7 @@ int RepairRootGroup(OSCONFIG_LOG_HANDLE log)
         }
         else
         {
-            OsConfigLogInfo(log, "RepairRootGroup: failed reading '%s", etcGroup);
+            OsConfigLogInfo(log, "RepairRootGroup: cannot read from '%s' (%d)", etcGroup, errno);
             status = EACCES;
         }
     }
@@ -1621,8 +1592,8 @@ int SetUserHomeDirectories(OSCONFIG_LOG_HANDLE log)
                 {
                     if (0 != (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, defaultHomeDirAccess, log)))
                     {
-                        OsConfigLogInfo(log, "SetUserHomeDirectories: failed to set access and ownership for home directory '%s' of user '%s' (%u, %u) (%d)",
-                            userList[i].home, userList[i].username, userList[i].userId, userList[i].groupId, _status);
+                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot set access and ownership for home directory '%s' of user '%s' (%u, %u) (%d, errno: %d)",
+                            userList[i].home, userList[i].username, userList[i].userId, userList[i].groupId, _status, errno);
                     }
                 }
 
@@ -1842,7 +1813,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
                     }
                     else
                     {
-                        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: failed to set restricted access (%u) for user '%s' (%u, %u) assigned home directory '%s' (%d)",
+                        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: cannot set restricted access (%u) for user '%s' (%u, %u) assigned home directory '%s' (%d)",
                             userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, _status);
 
                         if (0 == status)
@@ -1901,7 +1872,7 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, OSCONFI
             status = ENOENT;
         }
 
-        OsConfigLogInfo(log, "CheckPasswordHashingAlgorithm: failed to read 'ENCRYPT_METHOD' from '/etc/login.defs' (%d)", status);
+        OsConfigLogInfo(log, "CheckPasswordHashingAlgorithm: cannot read 'ENCRYPT_METHOD' from '/etc/login.defs' (%d)", status);
         OsConfigCaptureReason(reason, "Failed to read 'ENCRYPT_METHOD' from '/etc/login.defs' (%d)", status);
     }
 
@@ -1928,7 +1899,7 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, OSCONFIG_LOG_HANDLE log)
         }
         else
         {
-            OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: failed to set 'ENCRYPT_METHOD' to '%s' in '/etc/login.defs' (%d)", encryption, status);
+            OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: cannot set 'ENCRYPT_METHOD' to '%s' in '/etc/login.defs' (%d)", encryption, status);
         }
     }
 
@@ -2065,7 +2036,7 @@ int SetMinDaysBetweenPasswordChanges(long days, OSCONFIG_LOG_HANDLE log)
     }
     else
     {
-        OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: failed to set 'PASS_MIN_DAYS' to %ld days in '/etc/login.defs' (%d)", days, _status);
+        OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: cannot set 'PASS_MIN_DAYS' to %ld days in '/etc/login.defs' (%d)", days, _status);
     }
 
     if (_status && (0 == status))
@@ -2208,7 +2179,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, OSCONFIG_LOG_HANDLE log)
     }
     else
     {
-        OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: failed to set 'PASS_MAX_DAYS' to %ld days in '/etc/login.defs' (%d)", days, _status);
+        OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: cannot set 'PASS_MAX_DAYS' to %ld days in '/etc/login.defs' (%d)", days, _status);
     }
 
     if (_status & (0 == status))
@@ -2481,7 +2452,7 @@ int SetPasswordExpirationWarning(long days, OSCONFIG_LOG_HANDLE log)
     }
     else
     {
-        OsConfigLogInfo(log, "SetPasswordExpirationWarning: failed to set 'PASS_WARN_AGE' to %ld days in '/etc/login.defs' (%d)", days, _status);
+        OsConfigLogInfo(log, "SetPasswordExpirationWarning: cannot set 'PASS_WARN_AGE' to %ld days in '/etc/login.defs' (%d)", days, _status);
     }
 
     if (_status && (0 == status))
@@ -3012,7 +2983,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                             }
                             else
                             {
-                                OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: failed to set restricted access (%u) for user '%s' (%u, %u) dot file '%s'",
+                                OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: cannot set restricted access (%u) for user '%s' (%u, %u) dot file '%s'",
                                     mode, userList[i].username, userList[i].userId, userList[i].groupId, path);
 
                                 if (0 == status)
@@ -3193,7 +3164,7 @@ int RemoveUserAccounts(const char* names, bool removeHomeDirs, OSCONFIG_LOG_HAND
     }
     else if (EEXIST != status)
     {
-        OsConfigLogInfo(log, "RemoveUserAccounts: CheckUserAccountsNotFound('%s') failed with %d", names, status);
+        OsConfigLogInfo(log, "RemoveUserAccounts: CheckUserAccountsNotFound('%s') returned %d", names, status);
         return status;
     }
 
@@ -3312,7 +3283,7 @@ int RestrictSuToRootGroup(OSCONFIG_LOG_HANDLE log)
     }
     else
     {
-        OsConfigLogInfo(log, "RestrictSuToRootGroup: failed writing '%s' to '%s' (%d)", suRestrictedToRootGroup, etcPamdSu, errno);
+        OsConfigLogInfo(log, "RestrictSuToRootGroup: cannot write '%s' to '%s' (%d)", suRestrictedToRootGroup, etcPamdSu, errno);
         status = ENOENT;
     }
 

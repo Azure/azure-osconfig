@@ -230,7 +230,7 @@ int FirewallModuleBase::Set(const char* componentName, const char* objectName, c
             }
             else
             {
-                if (IsFullLoggingEnabled())
+                if (IsDebugLoggingEnabled())
                 {
                     OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload: %s", payloadJson.c_str());
                     status = EINVAL;
@@ -401,7 +401,7 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
         m_parseError.push_back("Rule JSON is not an object");
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         for (auto& error : m_parseError)
         {
@@ -595,7 +595,7 @@ int IpTables::SetDefaultPolicies(const std::vector<IpTablesPolicy> policies)
     for (const std::string& error : errors)
     {
         errorMessage += error + "\n";
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
         }
@@ -630,7 +630,7 @@ int IpTables::Add(const IpTables::Rule& rule, std::string& error)
 
     if (0 != (status = ExecuteCommand(nullptr, command.c_str(), true, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(FirewallLog::Get(), "Failed to add rule (%s): %s", command.c_str(), textResult);
         }
@@ -655,7 +655,7 @@ int IpTables::Remove(const IpTables::Rule& rule, std::string& error)
 
     if (0 != (status = ExecuteCommand(nullptr, command.c_str(), true, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(FirewallLog::Get(), "Failed to remove rule (%s): %s", command.c_str(), textResult);
         }
@@ -733,7 +733,7 @@ int IpTables::SetRules(const std::vector<IpTables::Rule>& rules)
         for (const std::string& error : errors)
         {
             errorMessage += error + "\n";
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
             }
@@ -831,7 +831,7 @@ std::vector<IpTablesPolicy> IpTables::GetDefaultPolicies() const
                         OsConfigLogError(FirewallLog::Get(), "Invalid action: %s", match[2].str().c_str());
                     }
                 }
-                else if (IsFullLoggingEnabled())
+                else if (IsDebugLoggingEnabled())
                 {
                     OsConfigLogError(FirewallLog::Get(), "Invalid policy line: %s", line.c_str());
                 }
@@ -906,7 +906,7 @@ GenericPolicy& GenericPolicy::Parse(const rapidjson::Value& value)
 
     for (auto& error : m_parseError)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
         }

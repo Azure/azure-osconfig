@@ -1286,8 +1286,7 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 {
     const char* configuration =
         "{"
-          "\"CommandLogging\": 0,"
-          "\"FullLogging\": 1,"
+          "\"DebugLogging\": 1,"
           "\"GitManagement\": 1,"
           "\"GitRepositoryUrl\": \"https://USERNAME:PASSWORD@github.com/Azure/azure-osconfig\","
           "\"GitBranch\": \"foo/test\","
@@ -1311,8 +1310,7 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
     char* value = nullptr;
 
-    EXPECT_FALSE(IsCommandLoggingEnabledInJsonConfig(configuration));
-    EXPECT_TRUE(IsFullLoggingEnabledInJsonConfig(configuration));
+    EXPECT_TRUE(IsDebugLoggingEnabledInJsonConfig(configuration));
     EXPECT_EQ(30, GetReportingIntervalFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(11, GetModelVersionFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(2, GetIotHubProtocolFromJsonConfig(configuration, nullptr));

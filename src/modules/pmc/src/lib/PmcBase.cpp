@@ -135,7 +135,7 @@ int PmcBase::Set(const char* componentName, const char* objectName, const MMI_JS
     size_t payloadHash = HashString(payload);
     if (m_lastReachedStateHash == payloadHash)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogInfo(PmcLog::Get(), "Ignoring update, desired state equals current state.");
         }
@@ -471,7 +471,7 @@ int PmcBase::ExecuteUpdate(const std::string &value)
     std::string command = std::regex_replace(g_commandExecuteUpdate, std::regex("\\$value"), value);
 
     int status = RunCommand(command.c_str(), nullptr, true);
-    if (status != PMC_0K && IsFullLoggingEnabled())
+    if (status != PMC_0K && IsDebugLoggingEnabled())
     {
         OsConfigLogError(PmcLog::Get(), "ExecuteUpdate failed with status %d and arguments '%s'", status, value.c_str());
     }
@@ -606,7 +606,7 @@ std::vector<std::string> PmcBase::GetReportedPackages(const std::vector<std::str
 
             std::string rawVersion = "";
             status = RunCommand(command.c_str(), &rawVersion);
-            if (status != PMC_0K && IsFullLoggingEnabled())
+            if (status != PMC_0K && IsDebugLoggingEnabled())
             {
                 OsConfigLogError(PmcLog::Get(), "Get the installed version of package %s failed with status %d", packageName.c_str(), status);
             }
@@ -708,7 +708,7 @@ std::vector<std::string> PmcBase::ListFiles(const char* directory, const char* f
         }
         closedir(directoryStream);
     }
-    else if (IsFullLoggingEnabled())
+    else if (IsDebugLoggingEnabled())
     {
         OsConfigLogError(PmcLog::Get(), "Failed to open directory %s, cannot list files", directory);
     }
@@ -733,7 +733,7 @@ int PmcBase::ConfigureSources(const std::map<std::string, std::string>& sources,
             {
                 status = remove(sourcesFilePath.c_str());
             }
-            else if (IsFullLoggingEnabled())
+            else if (IsDebugLoggingEnabled())
             {
                 OsConfigLogInfo(PmcLog::Get(), "Nothing to delete. Source(s) file: %s does not exist", sourcesFilePath.c_str());
             }
@@ -859,14 +859,14 @@ int PmcBase::DownloadGpgKeys(const std::map<std::string, std::string>& gpgKeys)
                     m_executionState.SetExecutionState(StateComponent::Failed, SubstateComponent::ModifyingSources, key.first);
                 }
             }
-            else if (IsFullLoggingEnabled())
+            else if (IsDebugLoggingEnabled())
             {
                 OsConfigLogInfo(PmcLog::Get(), "Nothing to delete. Key file %s does not exist", keyFilePath.c_str());
             }
         }
         else
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogInfo(PmcLog::Get(), "Downloading GPG key from %s to %s", sourceUrl.c_str(), keyFilePath.c_str());
             }

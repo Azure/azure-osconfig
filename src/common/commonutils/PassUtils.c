@@ -164,7 +164,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, OSCONFIG_LOG_HANDLE log)
     FREE_MEMORY(newline);
     FREE_MEMORY(pamModulePath);
 
-    OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited(%d) complete with %d", remember, status);
+    OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited(%d) returning %d", remember, status);
 
     return status;
 }

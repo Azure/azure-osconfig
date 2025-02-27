@@ -112,10 +112,7 @@ char* GetOsPrettyName(OSCONFIG_LOG_HANDLE log)
         FREE_MEMORY(textResult);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "OS pretty name: '%s'", textResult);
-    }
+    OsConfigLogDebug(log, "OS pretty name: '%s'", textResult);
 
     return textResult;
 }
@@ -147,10 +144,7 @@ char* GetOsName(OSCONFIG_LOG_HANDLE log)
         }
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "OS name: '%s'", textResult);
-    }
+    OsConfigLogDebug(log, "OS name: '%s'", textResult);
 
     return textResult;
 }
@@ -173,10 +167,7 @@ char* GetOsVersion(OSCONFIG_LOG_HANDLE log)
         FREE_MEMORY(textResult);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "OS version: '%s'", textResult);
-    }
+    OsConfigLogDebug(log, "OS version: '%s'", textResult);
 
     return textResult;
 }
@@ -234,12 +225,7 @@ char* GetOsKernelName(OSCONFIG_LOG_HANDLE log)
 {
     static char* osKernelNameCommand = "uname -s";
     char* textResult = GetAnotherOsProperty(osKernelNameCommand, log);
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Kernel name: '%s'", textResult);
-    }
-
+    OsConfigLogDebug(log, "Kernel name: '%s'", textResult);
     return textResult;
 }
 
@@ -247,12 +233,7 @@ char* GetOsKernelRelease(OSCONFIG_LOG_HANDLE log)
 {
     static char* osKernelReleaseCommand = "uname -r";
     char* textResult = GetAnotherOsProperty(osKernelReleaseCommand, log);
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Kernel release: '%s'", textResult);
-    }
-
+    OsConfigLogDebug(log, "Kernel release: '%s'", textResult);
     return textResult;
 }
 
@@ -260,12 +241,7 @@ char* GetOsKernelVersion(OSCONFIG_LOG_HANDLE log)
 {
     static char* osKernelVersionCommand = "uname -v";
     char* textResult = GetAnotherOsProperty(osKernelVersionCommand, log);
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Kernel version: '%s'", textResult);
-    }
-
+    OsConfigLogDebug(log, "Kernel version: '%s'", textResult);
     return textResult;
 }
 
@@ -273,12 +249,7 @@ char* GetCpuType(OSCONFIG_LOG_HANDLE log)
 {
     const char* osCpuTypeCommand = "lscpu | grep Architecture:";
     char* textResult = GetHardwareProperty(osCpuTypeCommand, false, log);
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "CPU type: '%s'", textResult);
-    }
-
+    OsConfigLogDebug(log, "CPU type: '%s'", textResult);
     return textResult;
 }
 
@@ -286,12 +257,7 @@ char* GetCpuVendor(OSCONFIG_LOG_HANDLE log)
 {
     const char* osCpuVendorCommand = "grep 'vendor_id' /proc/cpuinfo | uniq";
     char* textResult = GetHardwareProperty(osCpuVendorCommand, false, log);
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "CPU vendor id: '%s'", textResult);
-    }
-
+    OsConfigLogDebug(log, "CPU vendor id: '%s'", textResult);
     return textResult;
 }
 
@@ -299,12 +265,7 @@ char* GetCpuModel(OSCONFIG_LOG_HANDLE log)
 {
     const char* osCpuModelCommand = "grep 'model name' /proc/cpuinfo | uniq";
     char* textResult = GetHardwareProperty(osCpuModelCommand, false, log);
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "CPU model: '%s'", textResult);
-    }
-
+    OsConfigLogDebug(log, "CPU model: '%s'", textResult);
     return textResult;
 }
 
@@ -319,10 +280,7 @@ unsigned int GetNumberOfCpuCores(OSCONFIG_LOG_HANDLE log)
         numberOfCores = atoi(textResult);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Number of CPU cores: %u ('%s')", numberOfCores, textResult);
-    }
+    OsConfigLogDebug(log, "Number of CPU cores: %u ('%s')", numberOfCores, textResult);
 
     FREE_MEMORY(textResult);
 
@@ -333,12 +291,7 @@ char* GetCpuFlags(OSCONFIG_LOG_HANDLE log)
 {
     const char* osCpuFlagsCommand = "lscpu | grep \"Flags:\"";
     char* textResult = GetHardwareProperty(osCpuFlagsCommand, false, log);
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "CPU flags: '%s'", textResult);
-    }
-
+    OsConfigLogDebug(log, "CPU flags: '%s'", textResult);
     return textResult;
 }
 
@@ -376,10 +329,7 @@ long GetTotalMemory(OSCONFIG_LOG_HANDLE log)
         FREE_MEMORY(textResult);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Total memory: %lu kB", totalMemory);
-    }
+    OsConfigLogDebug(log, "Total memory: %lu kB", totalMemory);
 
     return totalMemory;
 }
@@ -396,10 +346,7 @@ long GetFreeMemory(OSCONFIG_LOG_HANDLE log)
         FREE_MEMORY(textResult);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Free memory: %lu kB", freeMemory);
-    }
+    OsConfigLogDebug(log, "Free memory: %lu kB", freeMemory);
 
     return freeMemory;
 }
@@ -416,10 +363,7 @@ char* GetProductName(OSCONFIG_LOG_HANDLE log)
         textResult = GetHardwareProperty(osProductNameAlternateCommand, false, log);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Product name: '%s'", textResult);
-    }
+    OsConfigLogDebug(log, "Product name: '%s'", textResult);
 
     return textResult;
 }
@@ -436,10 +380,7 @@ char* GetProductVendor(OSCONFIG_LOG_HANDLE log)
         textResult = GetHardwareProperty(osProductVendorAlternateCommand, false, log);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Product vendor: '%s'", textResult);
-    }
+    OsConfigLogDebug(log, "Product vendor: '%s'", textResult);
 
     return textResult;
 }
@@ -456,10 +397,7 @@ char* GetProductVersion(OSCONFIG_LOG_HANDLE log)
         textResult = GetHardwareProperty(osProductVersionAlternateCommand, false, log);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Product version: '%s'", textResult);
-    }
+    OsConfigLogDebug(log, "Product version: '%s'", textResult);
 
     return textResult;
 }
@@ -468,12 +406,7 @@ char* GetSystemCapabilities(OSCONFIG_LOG_HANDLE log)
 {
     const char* osSystemCapabilitiesCommand = "lshw -c system | grep -m 1 \"capabilities:\"";
     char* textResult = GetHardwareProperty(osSystemCapabilitiesCommand, false, log);
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Product capabilities: '%s'", textResult);
-    }
-
+    OsConfigLogDebug(log, "Product capabilities: '%s'", textResult);
     return textResult;
 }
 
@@ -481,12 +414,7 @@ char* GetSystemConfiguration(OSCONFIG_LOG_HANDLE log)
 {
     const char* osSystemConfigurationCommand = "lshw -c system | grep -m 1 \"configuration:\"";
     char* textResult = GetHardwareProperty(osSystemConfigurationCommand, false, log);
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Product configuration: '%s'", textResult);
-    }
-
+    OsConfigLogDebug(log, "Product configuration: '%s'", textResult);
     return textResult;
 }
 
@@ -544,10 +472,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
         result = DuplicateString("<null>");
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "'%s': '%s'", name, result);
-    }
+    OsConfigLogDebug(log, "'%s': '%s'", name, result);
 
     return result;
 }
@@ -685,10 +610,7 @@ char* GetLoginUmask(char** reason, OSCONFIG_LOG_HANDLE log)
         FREE_MEMORY(result);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "UMASK: '%s'", result);
-    }
+    OsConfigLogDebug(log, "UMASK: '%s'", result);
 
     return result;
 }
@@ -769,10 +691,7 @@ static long GetPasswordDays(const char* name, OSCONFIG_LOG_HANDLE log)
         FREE_MEMORY(command);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "%s: %ld", name, days);
-    }
+    OsConfigLogDebug(log, "%s: %ld", name, days);
 
     return days;
 }
@@ -939,7 +858,7 @@ int EnableVirtualMemoryRandomization(OSCONFIG_LOG_HANDLE log)
         }
         else
         {
-            OsConfigLogInfo(log, "EnableVirtualMemoryRandomization: failed writing '%s' to '%s' (%d)", fullRandomization, procSysKernelRandomizeVaSpace, errno);
+            OsConfigLogInfo(log, "EnableVirtualMemoryRandomization: cannot write '%s' to '%s' (%d)", fullRandomization, procSysKernelRandomizeVaSpace, errno);
             status = ENOENT;
         }
     }

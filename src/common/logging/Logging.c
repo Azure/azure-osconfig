@@ -14,7 +14,7 @@
 
 #define MAX_LOG_TRIM 1000
 
-static bool g_fullLoggingEnabled = false;
+static LoggingLevel g_loggingLevel = LoggingLevelInformational;
 
 struct OSCONFIG_LOG
 {
@@ -24,14 +24,14 @@ struct OSCONFIG_LOG
     unsigned int trimLogCount;
 };
 
-void SetFullLogging(bool fullLogging)
+void SetDebugLogging(bool fullLogging)
 {
-    g_fullLoggingEnabled = fullLogging;
+    g_loggingLevel = fullLogging ? LoggingLevelDebug : LoggingLevelInformational;
 }
 
-bool IsFullLoggingEnabled()
+bool IsDebugLoggingEnabled(void)
 {
-    return g_fullLoggingEnabled;
+    return (LoggingLevelDebug == g_loggingLevel) ? true : false;
 }
 
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
@@ -94,7 +94,7 @@ FILE* GetLogFile(OSCONFIG_LOG_HANDLE log)
 static char g_logTime[TIME_FORMAT_STRING_LENGTH] = {0};
 
 // Returns the local date/time formatted as YYYY-MM-DD HH:MM:SS (for example: 2014-03-19 11:11:52)
-char* GetFormattedTime()
+char* GetFormattedTime(void)
 {
     time_t rawTime = {0};
     struct tm* timeInfo = NULL;

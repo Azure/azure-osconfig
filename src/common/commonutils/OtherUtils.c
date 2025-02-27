@@ -337,7 +337,7 @@ int DisableAllWirelessInterfaces(OSCONFIG_LOG_HANDLE log)
         }
     }
 
-    OsConfigLogInfo(log, "DisableAllWirelessInterfaces completed with %d", status);
+    OsConfigLogInfo(log, "DisableAllWirelessInterfaces returned %d", status);
 
     return status;
 }
@@ -383,7 +383,7 @@ int SetDefaultDenyFirewallPolicy(OSCONFIG_LOG_HANDLE log)
         }
     }
 
-    OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy completed with %d", status);
+    OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy returned %d", status);
 
     return 0;
 }
@@ -609,13 +609,13 @@ int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, uns
     {
         if (false == SecureSaveToFile(fileName, newFileContents, strlen(newFileContents), log))
         {
-            OsConfigLogInfo(log, "ReplaceEscapesFromFile: failed saving '%s'", fileName);
+            OsConfigLogInfo(log, "ReplaceEscapesFromFile: cannot save '%s' (%d)", fileName, errno);
             status = ENOENT;
         }
     }
     else
     {
-        OsConfigLogInfo(log, "ReplaceEscapesFromFile: failed to replace desired characters in '%s'", fileName);
+        OsConfigLogInfo(log, "ReplaceEscapesFromFile: cannot replace desired characters in '%s'", fileName);
         status = ENOENT;
     }
 

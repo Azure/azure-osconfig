@@ -1,6 +1,5 @@
 {
-  "CommandLogging": 0,
-  "FullLogging": 0,
+  "DebugLogging": 0,
   "GitManagement": 0,
   "GitRepositoryUrl": " ",
   "GitBranch": " ",
@@ -15,11 +14,7 @@
     },
     {
       "ComponentName": "Configuration",
-      "ObjectName": "commandLoggingEnabled"
-    },
-    {
-      "ComponentName": "Configuration",
-      "ObjectName": "fullLoggingEnabled"
+      "ObjectName": "debugLoggingEnabled"
     },
     {
       "ComponentName": "Configuration",

@@ -25,23 +25,39 @@ extern "C"
 {
 #endif
 
+// Matching the severity values in RFC 5424. Currently we only use 2 values from this enumeration:
+// - LoggingLevelInformational (6) uses [INFO] and [ERROR] labels and is always enabled by default
+// - LoggingLevelDebug (7) is optional, uses the [DEBUG] label, and is managed via the 'DebugLogging' entry in the osconfig.json configuration
+enum LoggingLevel
+{
+    LoggingLevelEmergency = 0,
+    LoggingLevelAlert = 1,
+    LoggingLevelCritical = 2,
+    LoggingLevelError = 3,
+    LoggingLevelWarning = 4,
+    LoggingLevelNotice = 5,
+    LoggingLevelInformational = 6,
+    LoggingLevelDebug = 7
+};
+typedef enum LoggingLevel LoggingLevel;
+
 OSCONFIG_LOG_HANDLE OpenLog(const char* logFileName, const char* bakLogFileName);
 void CloseLog(OSCONFIG_LOG_HANDLE* log);
 
-void SetFullLogging(bool fullLogging);
-bool IsFullLoggingEnabled(void);
+bool IsDebugLoggingEnabled(void);
+void SetDebugLogging(bool fullLogging);
 
 FILE* GetLogFile(OSCONFIG_LOG_HANDLE log);
-char* GetFormattedTime();
+char* GetFormattedTime(void);
 void TrimLog(OSCONFIG_LOG_HANDLE log);
 bool IsDaemon(void);
 
 #define __PREFIX_TEMPLATE__ "[%s][%s][%s:%d] "
 #define __SHORT_FILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define __LOG__(log, loglevel, format, ...) printf(__PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), loglevel, __SHORT_FILE__, __LINE__, ## __VA_ARGS__)
-#define __LOG_TO_FILE__(log, loglevel, format, ...) {\
+#define __LOG__(log, label, format, ...) printf(__PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__)
+#define __LOG_TO_FILE__(log, label, format, ...) {\
     TrimLog(log);\
-    fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), loglevel, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
+    fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
 }\
 
 #define __INFO__ "INFO"
@@ -61,7 +77,7 @@ bool IsDaemon(void);
         OSCONFIG_FILE_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
         fflush(GetLogFile(log));\
     }\
-    if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
+    if ((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) {\
         OSCONFIG_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
     }\
 }\
@@ -71,18 +87,20 @@ bool IsDaemon(void);
         OSCONFIG_FILE_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
         fflush(GetLogFile(log));\
     }\
-    if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
+    if ((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) {\
         OSCONFIG_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
     }\
 }\
 
 #define OsConfigLogDebug(log, FORMAT, ...) {\
-    if (NULL != GetLogFile(log)) {\
-        OSCONFIG_FILE_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
-        fflush(GetLogFile(log));\
-    }\
-    if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
-        OSCONFIG_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
+    if (true == IsDebugLoggingEnabled()) {\
+        if (NULL != GetLogFile(log)) {\
+            OSCONFIG_FILE_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
+            fflush(GetLogFile(log));\
+        }\
+        if (false == IsDaemon()) {\
+            OSCONFIG_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
+        }\
     }\
 }\
 
