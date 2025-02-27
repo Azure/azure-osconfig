@@ -122,8 +122,8 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
 
 void LogPerfClockTelemetry(PERF_CLOCK* clock, const char* componentName, const char* objectName, int objectResult, OSCONFIG_LOG_HANDLE log)
 {
-    static const char* ruleTemplate = "{""TargetName"": ""%s"", ""ComponentName"": ""%s"", ""ObjectName"": ""%s"", ""ObjectResult"": ""%s"", ""Microseconds"": ""%s""}";
-    static const char* baselineTemplate = "{""TargetName"": ""%s"", ""ComponentName"": ""%s"", ""Seconds"": ""%s""}";
+    static const char* ruleTemplate = "{""TargetName"": ""%s"", ""ComponentName"": ""%s"", ""ObjectName"": ""%s"", ""ObjectResult"": ""%s"", ""Microseconds"": ""%ld""}";
+    static const char* baselineTemplate = "{""TargetName"": ""%s"", ""ComponentName"": ""%s"", ""Seconds"": ""%.2f""}";
 
     char* targetName = NULL;
     long microseconds = -1;
