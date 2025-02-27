@@ -125,7 +125,6 @@ void LogPerfClockTelemetry(PERF_CLOCK* clock, const char* targetName, const char
     const char* ruleTemplate = "{""TargetName"": ""%s"", ""ComponentName"": ""%s"", ""ObjectName"": ""%s"", ""ObjectResult"": ""%d"", ""Microseconds"": ""%ld""}";
     const char* baselineTemplate = "{""TargetName"": ""%s"", ""ComponentName"": ""%s"", ""Seconds"": ""%.2f""}";
 
-    char* targetName = NULL;
     long microseconds = -1;
 
     if ((NULL == clock) || (NULL == componentName))
