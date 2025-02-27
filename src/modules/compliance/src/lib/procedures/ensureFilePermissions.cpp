@@ -57,9 +57,11 @@ AUDIT_FN(ensureFilePermissions)
         }
     }
 
+    unsigned short perms = 0xFFF;
+    unsigned short mask = 0xFFF;
+    bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
-        unsigned short perms;
         char* endptr;
         perms = strtol(args["permissions"].c_str(), &endptr, 8);
         if ('\0' != *endptr)
@@ -67,22 +69,24 @@ AUDIT_FN(ensureFilePermissions)
             logstream << "Invalid permissions: " << args["permissions"];
             return false;
         }
-        unsigned short mask = 0xFFF;
-        if (args.find("permissions_mask") != args.end())
+        has_perms_or_mask = true;
+    }
+    if (args.find("mask") != args.end())
+    {
+        char* endptr;
+        mask = strtol(args["mask"].c_str(), &endptr, 8);
+        if ('\0' != *endptr)
         {
-            mask = strtol(args["permissions_mask"].c_str(), &endptr, 8);
-            if ('\0' != *endptr)
-            {
-                logstream << "Invalid permissions mask: " << args["permissions_mask"];
-                return false;
-            }
-        }
-        if ((perms & mask) != (statbuf.st_mode & mask))
-        {
-            logstream << "Invalid permissions - are " << std::oct << statbuf.st_mode << " should be " << std::oct << perms << " with mask " << std::oct
-                      << mask << std::dec;
+            logstream << "Invalid permissions mask: " << args["mask"];
             return false;
         }
+        has_perms_or_mask = true;
+    }
+    if (has_perms_or_mask && ((perms & mask) != (statbuf.st_mode & mask)))
+    {
+        logstream << "Invalid permissions - are " << std::oct << statbuf.st_mode << " should be " << std::oct << perms << " with mask " << std::oct
+                  << mask << std::dec;
+        return false;
     }
     return true;
 }
@@ -136,10 +140,11 @@ REMEDIATE_FN(ensureFilePermissions)
         }
     }
 
+    unsigned short perms = 0xFFF;
+    unsigned short mask = 0xFFF;
+    bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
-        unsigned short perms;
-        unsigned short mask = 0xFFF;
         char* endptr;
         perms = strtol(args["permissions"].c_str(), &endptr, 8);
         if ('\0' != *endptr)
@@ -147,23 +152,26 @@ REMEDIATE_FN(ensureFilePermissions)
             logstream << "ERROR: Invalid permissions: " << args["permissions"];
             return Error("Invalid permissions: " + args["permissions"]);
         }
-        if (args.find("permissions_mask") != args.end())
+        has_perms_or_mask = true;
+    }
+    if (args.find("mask") != args.end())
+    {
+        char* endptr;
+        mask = strtol(args["mask"].c_str(), &endptr, 8);
+        if ('\0' != *endptr)
         {
-            mask = strtol(args["permissions_mask"].c_str(), &endptr, 8);
-            if ('\0' != *endptr)
-            {
-                logstream << "ERROR: Invalid permissions mask: " << args["permissions_mask"];
-                return Error("Invalid permissions mask: " + args["permissions_mask"]);
-            }
+            logstream << "ERROR: Invalid permissions mask: " << args["mask"];
+            return Error("Invalid permissions mask: " + args["mask"]);
         }
-        unsigned short new_perms = (statbuf.st_mode & ~mask) | (perms & mask);
-        if (new_perms != statbuf.st_mode)
+        has_perms_or_mask = true;
+    }
+    unsigned short new_perms = (statbuf.st_mode & ~mask) | (perms & mask);
+    if (has_perms_or_mask && (new_perms != statbuf.st_mode))
+    {
+        if (chmod(args["filename"].c_str(), new_perms) < 0)
         {
-            if (chmod(args["filename"].c_str(), new_perms) < 0)
-            {
-                logstream << "ERROR: Chmod error";
-                return Error("Chmod error");
-            }
+            logstream << "ERROR: Chmod error";
+            return Error("Chmod error");
         }
     }
 
