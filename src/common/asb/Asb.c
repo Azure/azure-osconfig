@@ -1022,15 +1022,14 @@ void AsbShutdown(OSCONFIG_LOG_HANDLE log)
     FREE_MEMORY(g_desiredEnsureUnnecessaryAccountsAreRemoved);
     FREE_MEMORY(g_desiredEnsureDefaultDenyFirewallPolicyIsSet);
 
+    FREE_MEMORY(g_prettyName);
+
     SshAuditCleanup(log);
 
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
-        LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, NULL, 0, GetTelemetryLog());
     }
-
-    FREE_MEMORY(g_prettyName);
 
     CloseLog(&g_perfLog);
     CloseLog(&g_telemetryLog);
