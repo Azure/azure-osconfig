@@ -987,8 +987,6 @@ void AsbShutdown(OSCONFIG_LOG_HANDLE log)
 {
     OsConfigLogInfo(log, "%s shutting down", g_asbName);
 
-    FREE_MEMORY(g_prettyName);
-
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcHostsAllow);
@@ -1031,6 +1029,8 @@ void AsbShutdown(OSCONFIG_LOG_HANDLE log)
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
         LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, NULL, 0, GetTelemetryLog());
     }
+
+    FREE_MEMORY(g_prettyName);
 
     CloseLog(&g_perfLog);
     CloseLog(&g_telemetryLog);
