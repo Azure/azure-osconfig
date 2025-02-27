@@ -50,9 +50,20 @@ AUDIT_FN(ensureFilePermissions)
             logstream << "No group with gid " << statbuf.st_gid;
             return false;
         }
-        if (args["group"] != grp->gr_name)
+        std::istringstream iss(args["group"]);
+        std::string group;
+        bool groupOk = false;
+        while (std::getline(iss, group, '|'))
         {
-            logstream << "Invalid group - is " << grp->gr_name << " should be " << args["group"];
+            if (group == grp->gr_name)
+            {
+                groupOk = true;
+                break;
+            }
+        }
+        if (!groupOk)
+        {
+            logstream << "Invalid group - is '" << grp->gr_name << "' should be '" << args["group"] << "' ";
             return false;
         }
     }
@@ -122,14 +133,39 @@ REMEDIATE_FN(ensureFilePermissions)
     }
     if (args.find("group") != args.end())
     {
-        struct group* grp = getgrnam(args["group"].c_str());
-        if (grp == nullptr)
+        struct group* grp = getgrgid(statbuf.st_gid);
+        if (nullptr == grp)
         {
-            logstream << "ERROR: No group with name " << args["group"];
-            return Error("No group with name " + args["group"]);
+            logstream << "ERROR: No group with gid " << statbuf.st_gid;
+            return false;
         }
-        gid = grp->gr_gid;
-        owner_changed = true;
+        std::istringstream iss(args["group"]);
+        std::string group;
+        std::string firstGroup;
+        bool groupOk = false;
+        while (std::getline(iss, group, '|'))
+        {
+            if (firstGroup.empty())
+            {
+                firstGroup = group;
+            }
+            if (group == grp->gr_name)
+            {
+                groupOk = true;
+                break;
+            }
+        }
+        if (!groupOk)
+        {
+            struct group* grp = getgrnam(firstGroup.c_str());
+            if (grp == nullptr)
+            {
+                logstream << "ERROR: No group with name " << args["group"];
+                return Error("No group with name " + args["group"]);
+            }
+            gid = grp->gr_gid;
+            owner_changed = true;
+        }
     }
     if (owner_changed)
     {
