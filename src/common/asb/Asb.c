@@ -635,7 +635,7 @@ static char* g_desiredEnsureDefaultDenyFirewallPolicyIsSet = NULL;
 static const int g_shadowGid = 42;
 static const int g_varLogJournalMode = 02755;
 
-static PERF_CLOCK g_perfClock = {{0, 0}, {0, 0}};
+static PerfClock g_perfClock = {{0, 0}, {0, 0}};
 
 // Expected time limits under ideal conditions
 // Maximum per-rule audit time: 5 seconds
@@ -645,21 +645,21 @@ static const long g_maxRemediateTime = 55000000;
 // Maximum baseline run times: 30 minutes
 static const long g_maxTotalTime = 1800000000;
 
-static OSCONFIG_LOG_HANDLE g_perfLog = NULL;
+static OsConfigLogHandle g_perfLog = NULL;
 
-OSCONFIG_LOG_HANDLE GetPerfLog(void)
+OsConfigLogHandle GetPerfLog(void)
 {
     return g_perfLog;
 }
 
-typedef struct BASELINE_RULE
+typedef struct BaselineRule
 {
     const char* resourceId;
     const char* ruleId;
     const char* payloadKey;
-} BASELINE_RULE;
+} BaselineRule;
 
-const BASELINE_RULE g_rules[] =
+const BaselineRule g_rules[] =
 {
     { "Ensure permissions on /etc/ssh/sshd_config are configured (CIS: L1 - Server - 5.2.1)", "43119747-263c-2c92-4ce5-726e63259049", "EnsurePermissionsOnEtcSshSshdConfig" },
     { "Ensure that the SSH protocol is configured (CIS: L1 - Server - 5.2.4)", "35868e8c-97eb-4981-ab79-99b25101cc86", "EnsureSshBestPracticeProtocol" },
@@ -831,7 +831,7 @@ const BASELINE_RULE g_rules[] =
     { "Ensure SMB V1 with Samba is disabled (CIS: L1 - Server - 2.2.12)", "7624efb0-3026-4c72-8920-48d5be78a50e", "EnsureSmbWithSambaIsDisabled" }
 };
 
-int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OSCONFIG_LOG_HANDLE log)
+int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log)
 {
     int numRules = ARRAY_SIZE(g_rules);
     int i = 0;
@@ -868,7 +868,7 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
     return result;
 }
 
-void AsbInitialize(OSCONFIG_LOG_HANDLE log)
+void AsbInitialize(OsConfigLogHandle log)
 {
     char* prettyName = NULL;
     char* kernelVersion = NULL;
@@ -973,7 +973,7 @@ void AsbInitialize(OSCONFIG_LOG_HANDLE log)
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
 
-void AsbShutdown(OSCONFIG_LOG_HANDLE log)
+void AsbShutdown(OsConfigLogHandle log)
 {
     OsConfigLogInfo(log, "%s shutting down", g_asbName);
 
@@ -1026,7 +1026,7 @@ void AsbShutdown(OSCONFIG_LOG_HANDLE log)
     SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 0644, NULL);
 }
 
-static char* AuditEnsurePermissionsOnEtcIssue(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcIssue(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcIssue, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssue ?
@@ -1034,7 +1034,7 @@ static char* AuditEnsurePermissionsOnEtcIssue(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcIssueNet(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcIssueNet(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcIssueNet, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssueNet ?
@@ -1042,7 +1042,7 @@ static char* AuditEnsurePermissionsOnEtcIssueNet(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcHostsAllow(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcHostsAllow(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcHostsAllow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsAllow ?
@@ -1050,7 +1050,7 @@ static char* AuditEnsurePermissionsOnEtcHostsAllow(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcHostsDeny(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcHostsDeny(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcHostsDeny, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsDeny ?
@@ -1058,14 +1058,14 @@ static char* AuditEnsurePermissionsOnEtcHostsDeny(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcSshSshdConfig(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcSshSshdConfig(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsurePermissionsOnEtcSshSshdConfigObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcShadow(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcShadow(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadow ?
@@ -1073,7 +1073,7 @@ static char* AuditEnsurePermissionsOnEtcShadow(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcShadowDash(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcShadowDash(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadowDash ?
@@ -1081,7 +1081,7 @@ static char* AuditEnsurePermissionsOnEtcShadowDash(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcGShadow(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcGShadow(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcGShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadow ?
@@ -1089,7 +1089,7 @@ static char* AuditEnsurePermissionsOnEtcGShadow(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcGShadowDash(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcGShadowDash(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcGShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash ?
@@ -1097,7 +1097,7 @@ static char* AuditEnsurePermissionsOnEtcGShadowDash(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcPasswd(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcPasswd(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcPasswd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswd ?
@@ -1105,7 +1105,7 @@ static char* AuditEnsurePermissionsOnEtcPasswd(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcPasswdDash(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcPasswdDash(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcPasswdDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswdDash ?
@@ -1113,7 +1113,7 @@ static char* AuditEnsurePermissionsOnEtcPasswdDash(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcGroup(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcGroup(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcGroup, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroup ?
@@ -1121,7 +1121,7 @@ static char* AuditEnsurePermissionsOnEtcGroup(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcGroupDash(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcGroupDash(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcGroupDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroupDash ?
@@ -1129,7 +1129,7 @@ static char* AuditEnsurePermissionsOnEtcGroupDash(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcAnacronTab(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcAnacronTab(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcAnacronTab, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcAnacronTab ?
@@ -1137,7 +1137,7 @@ static char* AuditEnsurePermissionsOnEtcAnacronTab(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcCronD(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcCronD(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronD, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronD ?
@@ -1145,7 +1145,7 @@ static char* AuditEnsurePermissionsOnEtcCronD(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcCronDaily(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcCronDaily(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronDaily, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronDaily ?
@@ -1153,7 +1153,7 @@ static char* AuditEnsurePermissionsOnEtcCronDaily(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcCronHourly(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcCronHourly(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronHourly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronHourly ?
@@ -1161,7 +1161,7 @@ static char* AuditEnsurePermissionsOnEtcCronHourly(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcCronMonthly(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcCronMonthly(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronMonthly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronMonthly ?
@@ -1169,7 +1169,7 @@ static char* AuditEnsurePermissionsOnEtcCronMonthly(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcCronWeekly(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcCronWeekly(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronWeekly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronWeekly ?
@@ -1177,7 +1177,7 @@ static char* AuditEnsurePermissionsOnEtcCronWeekly(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcMotd(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnEtcMotd(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcMotd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcMotd ?
@@ -1185,7 +1185,7 @@ static char* AuditEnsurePermissionsOnEtcMotd(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureKernelSupportForCpuNx(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureKernelSupportForCpuNx(OsConfigLogHandle log)
 {
     char* reason = NULL;
     if (false == CheckCpuFlagSupported("nx", &reason, log))
@@ -1196,77 +1196,77 @@ static char* AuditEnsureKernelSupportForCpuNx(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureNodevOptionOnHomePartition(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNodevOptionOnHomePartition(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNodevOptionOnTmpPartition(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNodevOptionOnTmpPartition(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNodevOptionOnVarTmpPartition(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNodevOptionOnVarTmpPartition(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNosuidOptionOnTmpPartition(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNosuidOptionOnTmpPartition(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNosuidOptionOnVarTmpPartition(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNosuidOptionOnVarTmpPartition(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNoexecOptionOnVarTmpPartition(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoexecOptionOnVarTmpPartition(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNoexecOptionOnDevShmPartition(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoexecOptionOnDevShmPartition(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_noexec, &reason, log));
@@ -1274,7 +1274,7 @@ static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(OSCONFIG_LOG_H
     return reason;
 }
 
-static char* AuditEnsureInetdNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureInetdNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_inetd, &reason, log));
@@ -1282,49 +1282,49 @@ static char* AuditEnsureInetdNotInstalled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureXinetdNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureXinetdNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_xinetd, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureAllTelnetdPackagesUninstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAllTelnetdPackagesUninstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_allTelnetd, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureRshServerNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRshServerNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_rshServer, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNisNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNisNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_nis, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureTftpdNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureTftpdNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_tftpHpa, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureReadaheadFedoraNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureReadaheadFedoraNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_readAheadFedora, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureBluetoothHiddNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureBluetoothHiddNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_bluetooth, &reason, log));
@@ -1332,56 +1332,56 @@ static char* AuditEnsureBluetoothHiddNotInstalled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureIsdnUtilsBaseNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureIsdnUtilsBaseNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_isdnUtilsBase, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureIsdnUtilsKdumpToolsNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureIsdnUtilsKdumpToolsNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_kdumpTools, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureIscDhcpdServerNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureIscDhcpdServerNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_iscDhcpServer, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSendmailNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSendmailNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_sendmail, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSldapdNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSldapdNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_slapd, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureBind9NotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureBind9NotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_bind9, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureDovecotCoreNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDovecotCoreNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_dovecotCore, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureAuditdInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAuditdInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_audit, &reason, log));
@@ -1391,14 +1391,14 @@ static char* AuditEnsureAuditdInstalled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckAllEtcPasswdGroupsExistInEtcGroup(&reason, log);
     return reason;
 }
 
-static char* AuditEnsureNoDuplicateUidsExist(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoDuplicateUidsExist(OsConfigLogHandle log)
 {
     char* reason = NULL;
     char* updatedReason = NULL;
@@ -1413,7 +1413,7 @@ static char* AuditEnsureNoDuplicateUidsExist(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureNoDuplicateGidsExist(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoDuplicateGidsExist(OsConfigLogHandle log)
 {
     char* reason = NULL;
     char* updatedReason = NULL;
@@ -1428,7 +1428,7 @@ static char* AuditEnsureNoDuplicateGidsExist(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureNoDuplicateUserNamesExist(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoDuplicateUserNamesExist(OsConfigLogHandle log)
 {
     char* reason = NULL;
     char* updatedReason = NULL;
@@ -1443,7 +1443,7 @@ static char* AuditEnsureNoDuplicateUserNamesExist(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureNoDuplicateGroupsExist(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoDuplicateGroupsExist(OsConfigLogHandle log)
 {
     char* reason = NULL;
     char* updatedReason = NULL;
@@ -1458,63 +1458,63 @@ static char* AuditEnsureNoDuplicateGroupsExist(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureShadowGroupIsEmpty(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureShadowGroupIsEmpty(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckShadowGroupIsEmpty(&reason, log);
     return reason;
 }
 
-static char* AuditEnsureRootGroupExists(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRootGroupExists(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckRootGroupExists(&reason, log);
     return reason;
 }
 
-static char* AuditEnsureAllAccountsHavePasswords(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAllAccountsHavePasswords(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckAllUsersHavePasswordsSet(&reason, log);
     return reason;
 }
 
-static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckRootIsOnlyUidZeroAccount(&reason, log);
     return reason;
 }
 
-static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckNoLegacyPlusEntriesInFile(g_etcPasswd, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNoLegacyPlusEntriesInEtcShadow(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoLegacyPlusEntriesInEtcShadow(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckNoLegacyPlusEntriesInFile(g_etcShadow, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNoLegacyPlusEntriesInEtcGroup(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoLegacyPlusEntriesInEtcGroup(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckNoLegacyPlusEntriesInFile(g_etcGroup, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureDefaultRootAccountGroupIsGidZero(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDefaultRootAccountGroupIsGidZero(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckDefaultRootAccountGroupIsGidZero(&reason, log);
     return reason;
 }
 
-static char* AuditEnsureRootIsOnlyUidZeroAccount(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckRootGroupExists(&reason, log));
@@ -1522,21 +1522,21 @@ static char* AuditEnsureRootIsOnlyUidZeroAccount(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureAllUsersHomeDirectoriesExist(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAllUsersHomeDirectoriesExist(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckAllUsersHomeDirectoriesExist(&reason, log);
     return reason;
 }
 
-static char* AuditEnsureUsersOwnTheirHomeDirectories(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureUsersOwnTheirHomeDirectories(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckUsersOwnTheirHomeDirectories(&reason, log);
     return reason;
 }
 
-static char* AuditEnsureRestrictedUserHomeDirectories(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRestrictedUserHomeDirectories(OsConfigLogHandle log)
 {
     int* modes = NULL;
     int numberOfModes = 0;
@@ -1557,7 +1557,7 @@ static char* AuditEnsureRestrictedUserHomeDirectories(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePasswordHashingAlgorithm(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePasswordHashingAlgorithm(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPasswordHashingAlgorithm((unsigned int)atoi(g_desiredEnsurePasswordHashingAlgorithm ?
@@ -1565,7 +1565,7 @@ static char* AuditEnsurePasswordHashingAlgorithm(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureMinDaysBetweenPasswordChanges(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureMinDaysBetweenPasswordChanges(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckMinDaysBetweenPasswordChanges(atoi(g_desiredEnsureMinDaysBetweenPasswordChanges ?
@@ -1573,7 +1573,7 @@ static char* AuditEnsureMinDaysBetweenPasswordChanges(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureInactivePasswordLockPeriod(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureInactivePasswordLockPeriod(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckLockoutAfterInactivityLessThan(atoi(g_desiredEnsureInactivePasswordLockPeriod ?
@@ -1582,7 +1582,7 @@ static char* AuditEnsureInactivePasswordLockPeriod(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureMaxDaysBetweenPasswordChanges(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureMaxDaysBetweenPasswordChanges(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckMaxDaysBetweenPasswordChanges(atoi(g_desiredEnsureMaxDaysBetweenPasswordChanges ?
@@ -1590,7 +1590,7 @@ static char* AuditEnsureMaxDaysBetweenPasswordChanges(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePasswordExpiration(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePasswordExpiration(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPasswordExpirationLessThan(atol(g_desiredEnsurePasswordExpiration ?
@@ -1598,7 +1598,7 @@ static char* AuditEnsurePasswordExpiration(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePasswordExpirationWarning(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePasswordExpirationWarning(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPasswordExpirationWarning(atol(g_desiredEnsurePasswordExpirationWarning ?
@@ -1606,35 +1606,35 @@ static char* AuditEnsurePasswordExpirationWarning(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureSystemAccountsAreNonLogin(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSystemAccountsAreNonLogin(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckSystemAccountsAreNonLogin(&reason, log);
     return reason;
 }
 
-static char* AuditEnsureAuthenticationRequiredForSingleUserMode(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAuthenticationRequiredForSingleUserMode(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckRootPasswordForSingleUserMode(&reason, log);
     return reason;
 }
 
-static char* AuditEnsurePrelinkIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePrelinkIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_prelink, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureTalkClientIsNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureTalkClientIsNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_talk, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureDotDoesNotAppearInRootsPath(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDotDoesNotAppearInRootsPath(OsConfigLogHandle log)
 {
     const char* path = "PATH";
     const char* dot = ".";
@@ -1648,7 +1648,7 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureCronServiceIsEnabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureCronServiceIsEnabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_cron, &reason, log)) && CheckDaemonActive(g_cron, &reason, log)) ? 0 : ENOENT);
@@ -1656,7 +1656,7 @@ static char* AuditEnsureCronServiceIsEnabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(OsConfigLogHandle log)
 {
     char* reason = NULL;
     if (0 == CheckFileExists(g_etcIssueNet, &reason, log))
@@ -1674,7 +1674,7 @@ static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(OSCONFIG_LOG_HANDLE
     return reason;
 }
 
-static char* AuditEnsureLocalLoginWarningBannerIsConfigured(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureLocalLoginWarningBannerIsConfigured(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssue, "\\m", &reason, log));
@@ -1684,21 +1684,21 @@ static char* AuditEnsureLocalLoginWarningBannerIsConfigured(OSCONFIG_LOG_HANDLE 
     return reason;
 }
 
-static char* AuditEnsureAuditdServiceIsRunning(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAuditdServiceIsRunning(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckDaemonActive(g_auditd, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSuRestrictedToRootGroup(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSuRestrictedToRootGroup(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckTextIsFoundInFile("/etc/pam.d/su", "use_uid", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureDefaultUmaskForAllUsers(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDefaultUmaskForAllUsers(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckLoginUmask(g_desiredEnsureDefaultUmaskForAllUsers ?
@@ -1706,21 +1706,21 @@ static char* AuditEnsureDefaultUmaskForAllUsers(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureAutomountingDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAutomountingDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckDaemonNotActive(g_autofs, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureKernelCompiledFromApprovedSources(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureKernelCompiledFromApprovedSources(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckOsAndKernelMatchDistro(&reason, log);
     return reason;
 }
 
-static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(OsConfigLogHandle log)
 {
     const char* readIpTables = "iptables -S";
     char* reason = NULL;
@@ -1740,7 +1740,7 @@ static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePacketRedirectSendingIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePacketRedirectSendingIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.send_redirects = 0", &reason, log));
@@ -1748,7 +1748,7 @@ static char* AuditEnsurePacketRedirectSendingIsDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureIcmpRedirectsIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureIcmpRedirectsIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.accept_redirects = 0", &reason, log));
@@ -1760,7 +1760,7 @@ static char* AuditEnsureIcmpRedirectsIsDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureSourceRoutedPacketsIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSourceRoutedPacketsIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, log));
@@ -1768,7 +1768,7 @@ static char* AuditEnsureSourceRoutedPacketsIsDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(OsConfigLogHandle log)
 {
     char* reason = 0;
     RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/accept_source_route", '#', "0", &reason, log));
@@ -1776,21 +1776,21 @@ static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(OSCONFIG_LOG_HAND
     return reason;
 }
 
-static char* AuditEnsureIgnoringBogusIcmpBroadcastResponses(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureIgnoringBogusIcmpBroadcastResponses(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureIgnoringIcmpEchoPingsToMulticast(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureIgnoringIcmpEchoPingsToMulticast(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureMartianPacketLoggingIsEnabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureMartianPacketLoggingIsEnabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.log_martians = 1", &reason, log));
@@ -1798,7 +1798,7 @@ static char* AuditEnsureMartianPacketLoggingIsEnabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureReversePathSourceValidationIsEnabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureReversePathSourceValidationIsEnabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "2", &reason, log));
@@ -1806,14 +1806,14 @@ static char* AuditEnsureReversePathSourceValidationIsEnabled(OSCONFIG_LOG_HANDLE
     return reason;
 }
 
-static char* AuditEnsureTcpSynCookiesAreEnabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureTcpSynCookiesAreEnabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSystemNotActingAsNetworkSniffer(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSystemNotActingAsNetworkSniffer(OsConfigLogHandle log)
 {
     const char* command = "ip address";
     const char* text = "PROMISC";
@@ -1824,14 +1824,14 @@ static char* AuditEnsureSystemNotActingAsNetworkSniffer(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureAllWirelessInterfacesAreDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAllWirelessInterfacesAreDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckAllWirelessInterfacesAreDisabled(&reason, log);
     return reason;
 }
 
-static char* AuditEnsureIpv6ProtocolIsEnabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureIpv6ProtocolIsEnabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.disable_ipv6 = 0", &reason, log));
@@ -1839,35 +1839,35 @@ static char* AuditEnsureIpv6ProtocolIsEnabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureDccpIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDccpIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckTextFoundInFolder(g_etcModProbeD, "install dccp /bin/true", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSctpIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSctpIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckTextFoundInFolder(g_etcModProbeD, "install sctp /bin/true", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureDisabledSupportForRds(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDisabledSupportForRds(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckTextFoundInFolder(g_etcModProbeD, "install rds /bin/true", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureTipcIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureTipcIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckTextFoundInFolder(g_etcModProbeD, "install tipc /bin/true", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureZeroconfNetworkingIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureZeroconfNetworkingIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_avahiDaemon, &reason, log) ? 0 : ENOENT);
@@ -1879,7 +1879,7 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnBootloaderConfig(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePermissionsOnBootloaderConfig(OsConfigLogHandle log)
 {
     const char* value = g_desiredEnsurePermissionsOnBootloaderConfig ?
         g_desiredEnsurePermissionsOnBootloaderConfig : g_defaultEnsurePermissionsOnBootloaderConfig;
@@ -1892,7 +1892,7 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePasswordReuseIsLimited(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePasswordReuseIsLimited(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckEnsurePasswordReuseIsLimited(atoi(g_desiredEnsurePasswordReuseIsLimited ?
@@ -1900,14 +1900,14 @@ static char* AuditEnsurePasswordReuseIsLimited(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckTextFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureCoreDumpsAreRestricted(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureCoreDumpsAreRestricted(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcSecurityLimitsConf, '#', g_hardCoreZero, &reason, log));
@@ -1915,7 +1915,7 @@ static char* AuditEnsureCoreDumpsAreRestricted(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePasswordCreationRequirements(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePasswordCreationRequirements(OsConfigLogHandle log)
 {
     int* values = NULL;
     int numberOfValues = 0;
@@ -1936,7 +1936,7 @@ static char* AuditEnsurePasswordCreationRequirements(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureLockoutForFailedPasswordAttempts(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
 {
     const char* pamFailLockSo = "pam_faillock.so";
     const char* pamTally2So = "pam_tally2.so";
@@ -1957,42 +1957,42 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(OSCONFIG_LOG_HANDLE log
     return reason;
 }
 
-static char* AuditEnsureDisabledInstallationOfCramfsFileSystem(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDisabledInstallationOfCramfsFileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckTextFoundInFolder(g_etcModProbeD, "install cramfs", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureDisabledInstallationOfFreevxfsFileSystem(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDisabledInstallationOfFreevxfsFileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckTextFoundInFolder(g_etcModProbeD, "install freevxfs", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureDisabledInstallationOfHfsFileSystem(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDisabledInstallationOfHfsFileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckTextFoundInFolder(g_etcModProbeD, "install hfs", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureDisabledInstallationOfHfsplusFileSystem(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDisabledInstallationOfHfsplusFileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckTextFoundInFolder(g_etcModProbeD, "install hfsplus", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureDisabledInstallationOfJffs2FileSystem(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDisabledInstallationOfJffs2FileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckTextFoundInFolder(g_etcModProbeD, "install jffs2", &reason, log);
     return reason;
 }
 
-static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     if (0 == CheckSmallFileContainsText("/proc/sys/kernel/randomize_va_space", "2", &reason, log))
@@ -2003,7 +2003,7 @@ static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(OSCONFIG_LOG_HANDLE 
     return reason;
 }
 
-static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OsConfigLogHandle log)
 {
     const char* password = "password";
     char* reason = NULL;
@@ -2015,7 +2015,7 @@ static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OSCONFIG_LOG
     return reason;
 }
 
-static char* AuditEnsureLoggingIsConfigured(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureLoggingIsConfigured(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_systemd, &reason, log));
@@ -2026,7 +2026,7 @@ static char* AuditEnsureLoggingIsConfigured(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureSyslogPackageIsInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSyslogPackageIsInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     if (0 == CheckPackageInstalled(g_systemd, &reason, log))
@@ -2038,7 +2038,7 @@ static char* AuditEnsureSyslogPackageIsInstalled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_systemd, &reason, log));
@@ -2046,7 +2046,7 @@ static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(OSCONFIG_LOG_H
     return reason;
 }
 
-static char* AuditEnsureALoggingServiceIsEnabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureALoggingServiceIsEnabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     if (0 == CheckPackageNotInstalled(g_systemd, &reason, log))
@@ -2058,7 +2058,7 @@ static char* AuditEnsureALoggingServiceIsEnabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(OsConfigLogHandle log)
 {
     int* modes = NULL;
     int numberOfModes = 0;
@@ -2079,7 +2079,7 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(OSCONFIG_LOG_HANDLE
     return reason;
 }
 
-static char* AuditEnsureLoggerConfigurationFilesAreRestricted(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureLoggerConfigurationFilesAreRestricted(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcRsyslogConf, 0, 0, 0640, &reason, log));
@@ -2087,7 +2087,7 @@ static char* AuditEnsureLoggerConfigurationFilesAreRestricted(OSCONFIG_LOG_HANDL
     return reason;
 }
 
-static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(OsConfigLogHandle log)
 {
     const char* fileGroup = "$FileGroup adm";
     char* reason = NULL;
@@ -2096,7 +2096,7 @@ static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(OSCONFIG_LOG_HANDLE
     return reason;
 }
 
-static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(OsConfigLogHandle log)
 {
     const char* fileOwner = "$FileOwner syslog";
     char* reason = NULL;
@@ -2105,7 +2105,7 @@ static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(OSCONFIG_LOG_HAND
     return reason;
 }
 
-static char* AuditEnsureRsyslogNotAcceptingRemoteMessages(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRsyslogNotAcceptingRemoteMessages(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "$ModLoad imudp", &reason, log));
@@ -2113,7 +2113,7 @@ static char* AuditEnsureRsyslogNotAcceptingRemoteMessages(OSCONFIG_LOG_HANDLE lo
     return reason;
 }
 
-static char* AuditEnsureSyslogRotaterServiceIsEnabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSyslogRotaterServiceIsEnabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_logrotate, &reason, log));
@@ -2125,7 +2125,7 @@ static char* AuditEnsureSyslogRotaterServiceIsEnabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureTelnetServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureTelnetServiceIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_telnet, &reason, log) ? 0 : ENOENT);
@@ -2133,7 +2133,7 @@ static char* AuditEnsureTelnetServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureRcprshServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRcprshServiceIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rcpSocket, &reason, log) ? 0 : ENOENT);
@@ -2141,7 +2141,7 @@ static char* AuditEnsureRcprshServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureTftpServiceisDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureTftpServiceisDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_tftpHpa, &reason, log) ? 0 : ENOENT);
@@ -2149,7 +2149,7 @@ static char* AuditEnsureTftpServiceisDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcCronDeny, &reason, log) ? 0 : ENOENT);
@@ -2161,161 +2161,161 @@ static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(OSCONFIG_LOG_HANDLE 
     return reason;
 }
 
-static char* AuditEnsureSshPortIsConfigured(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSshPortIsConfigured(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureSshPortIsConfiguredObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSshBestPracticeProtocol(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSshBestPracticeProtocol(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureSshBestPracticeProtocolObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSshBestPracticeIgnoreRhosts(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSshBestPracticeIgnoreRhosts(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureSshBestPracticeIgnoreRhostsObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSshLogLevelIsSet(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSshLogLevelIsSet(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureSshLogLevelIsSetObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSshMaxAuthTriesIsSet(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSshMaxAuthTriesIsSet(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureSshMaxAuthTriesIsSetObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureAllowUsersIsConfigured(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAllowUsersIsConfigured(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureAllowUsersIsConfiguredObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureDenyUsersIsConfigured(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDenyUsersIsConfigured(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureDenyUsersIsConfiguredObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureAllowGroupsIsConfigured(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAllowGroupsIsConfigured(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureAllowGroupsIsConfiguredObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureDenyGroupsConfigured(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureDenyGroupsConfigured(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureDenyGroupsConfiguredObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureSshHostbasedAuthenticationIsDisabledObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSshPermitRootLoginIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSshPermitRootLoginIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureSshPermitRootLoginIsDisabledObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSshClientIntervalCountMaxIsConfigured(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSshClientIntervalCountMaxIsConfigured(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureSshClientIntervalCountMaxIsConfiguredObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSshClientAliveIntervalIsConfigured(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSshClientAliveIntervalIsConfigured(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureSshClientAliveIntervalIsConfiguredObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSshLoginGraceTimeIsSet(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSshLoginGraceTimeIsSet(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureSshLoginGraceTimeIsSetObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureSshWarningBannerIsEnabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSshWarningBannerIsEnabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureSshWarningBannerIsEnabledObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureAppropriateCiphersForSsh(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAppropriateCiphersForSsh(OsConfigLogHandle log)
 {
     char* reason = NULL;
     ProcessSshAuditCheck(g_auditEnsureAppropriateCiphersForSshObject, NULL, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureAvahiDaemonServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureAvahiDaemonServiceIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckDaemonNotActive(g_avahiDaemon, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureCupsServiceisDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureCupsServiceisDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckDaemonNotActive(g_cups, &reason, log);
     return reason;
 }
 
-static char* AuditEnsurePostfixPackageIsUninstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePostfixPackageIsUninstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckPackageNotInstalled(g_postfix, &reason, log);
     return reason;
 }
 
-static char* AuditEnsurePostfixNetworkListeningIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePostfixNetworkListeningIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     if (0 == CheckFileExists(g_etcPostfixMainCf, &reason, log))
@@ -2325,7 +2325,7 @@ static char* AuditEnsurePostfixNetworkListeningIsDisabled(OSCONFIG_LOG_HANDLE lo
     return reason;
 }
 
-static char* AuditEnsureRpcgssdServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRpcgssdServiceIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcgssd, &reason, log) ? 0 : ENOENT);
@@ -2333,7 +2333,7 @@ static char* AuditEnsureRpcgssdServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureRpcidmapdServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRpcidmapdServiceIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcidmapd, &reason, log) ? 0 : ENOENT);
@@ -2341,7 +2341,7 @@ static char* AuditEnsureRpcidmapdServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsurePortmapServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsurePortmapServiceIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcbindSocket, &reason, log) ? 0 : ENOENT);
@@ -2349,14 +2349,14 @@ static char* AuditEnsurePortmapServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureNetworkFileSystemServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNetworkFileSystemServiceIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckDaemonNotActive(g_nfsServer, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureRpcsvcgssdServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRpcsvcgssdServiceIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_needSvcgssd, &reason, log));
@@ -2364,28 +2364,28 @@ static char* AuditEnsureRpcsvcgssdServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureSnmpServerIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSnmpServerIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckDaemonNotActive(g_snmpd, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureRsynServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRsynServiceIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckDaemonNotActive(g_rsync, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNisServerIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNisServerIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckDaemonNotActive(g_ypserv, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureRshClientNotInstalled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRshClientNotInstalled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_rsh, &reason, log));
@@ -2393,7 +2393,7 @@ static char* AuditEnsureRshClientNotInstalled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureSmbWithSambaIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureSmbWithSambaIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     if (IsDaemonActive(g_smbd, log))
@@ -2409,7 +2409,7 @@ static char* AuditEnsureSmbWithSambaIsDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(OsConfigLogHandle log)
 {
     int* modes = NULL;
     int numberOfModes = 0;
@@ -2431,28 +2431,28 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(OSCONFIG_LOG_HAND
     return reason;
 }
 
-static char* AuditEnsureNoUsersHaveDotForwardFiles(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoUsersHaveDotForwardFiles(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNoUsersHaveDotNetrcFiles(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoUsersHaveDotNetrcFiles(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureNoUsersHaveDotRhostsFiles(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureNoUsersHaveDotRhostsFiles(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, &reason, log);
     return reason;
 }
 
-static char* AuditEnsureRloginServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureRloginServiceIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rlogin, &reason, log) ? 0 : ENOENT);
@@ -2463,7 +2463,7 @@ static char* AuditEnsureRloginServiceIsDisabled(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static char* AuditEnsureUnnecessaryAccountsAreRemoved(OSCONFIG_LOG_HANDLE log)
+static char* AuditEnsureUnnecessaryAccountsAreRemoved(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckUserAccountsNotFound(g_desiredEnsureUnnecessaryAccountsAreRemoved ?
@@ -2471,102 +2471,102 @@ static char* AuditEnsureUnnecessaryAccountsAreRemoved(OSCONFIG_LOG_HANDLE log)
     return reason;
 }
 
-static int InitEnsurePermissionsOnEtcSshSshdConfig(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsurePermissionsOnEtcSshSshdConfig(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsurePermissionsOnEtcSshSshdConfigObject, value, log);
 }
 
-static int InitEnsureSshPortIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureSshPortIsConfigured(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureSshPortIsConfiguredObject, value, log);
 }
 
-static int InitEnsureSshBestPracticeProtocol(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureSshBestPracticeProtocol(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureSshBestPracticeProtocolObject, value, log);
 }
 
-static int InitEnsureSshBestPracticeIgnoreRhosts(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureSshBestPracticeIgnoreRhosts(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureSshBestPracticeIgnoreRhostsObject, value, log);
 }
 
-static int InitEnsureSshLogLevelIsSet(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureSshLogLevelIsSet(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureSshLogLevelIsSetObject, value, log);
 }
 
-static int InitEnsureSshMaxAuthTriesIsSet(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureSshMaxAuthTriesIsSet(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureSshMaxAuthTriesIsSetObject, value, log);
 }
 
-static int InitEnsureAllowUsersIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureAllowUsersIsConfigured(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureAllowUsersIsConfiguredObject, value, log);
 }
 
-static int InitEnsureDenyUsersIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureDenyUsersIsConfigured(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureDenyUsersIsConfiguredObject, value, log);
 }
 
-static int InitEnsureAllowGroupsIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureAllowGroupsIsConfigured(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureAllowGroupsIsConfiguredObject, value, log);
 }
 
-static int InitEnsureDenyGroupsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureDenyGroupsConfigured(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureDenyGroupsConfiguredObject, value, log);
 }
 
-static int InitEnsureSshHostbasedAuthenticationIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureSshHostbasedAuthenticationIsDisabled(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureSshHostbasedAuthenticationIsDisabledObject, value, log);
 }
 
-static int InitEnsureSshPermitRootLoginIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureSshPermitRootLoginIsDisabled(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureSshPermitRootLoginIsDisabledObject, value, log);
 }
 
-static int InitEnsureSshPermitEmptyPasswordsIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureSshPermitEmptyPasswordsIsDisabled(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureSshPermitEmptyPasswordsIsDisabledObject, value, log);
 }
 
-static int InitEnsureSshClientIntervalCountMaxIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureSshClientIntervalCountMaxIsConfigured(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureSshClientIntervalCountMaxIsConfiguredObject, value, log);
 }
 
-static int InitEnsureSshClientAliveIntervalIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureSshClientAliveIntervalIsConfigured(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureSshClientAliveIntervalIsConfiguredObject, value, log);
 }
 
-static int InitEnsureSshLoginGraceTimeIsSet(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureSshLoginGraceTimeIsSet(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureSshLoginGraceTimeIsSetObject, value, log);
 }
 
-static int InitEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject, value, log);
 }
 
-static int InitEnsureSshWarningBannerIsEnabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureSshWarningBannerIsEnabled(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureSshWarningBannerIsEnabledObject, value, log);
 }
 
-static int InitEnsureUsersCannotSetSshEnvironmentOptions(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureUsersCannotSetSshEnvironmentOptions(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureUsersCannotSetSshEnvironmentOptionsObject, value, log);
 }
 
-static int InitEnsureAppropriateCiphersForSsh(char* value, OSCONFIG_LOG_HANDLE log)
+static int InitEnsureAppropriateCiphersForSsh(char* value, OsConfigLogHandle log)
 {
     return InitializeSshAuditCheck(g_initEnsureAppropriateCiphersForSshObject, value, log);
 }
@@ -2757,231 +2757,231 @@ static int InitEnsureDefaultDenyFirewallPolicyIsSet(char* value)
     return ReplaceString(&g_desiredEnsureDefaultDenyFirewallPolicyIsSet, value, g_defaultEnsureDefaultDenyFirewallPolicyIsSet);
 }
 
-static int RemediateEnsurePermissionsOnEtcIssue(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcIssue(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcIssue(value);
     return SetFileAccess(g_etcIssue, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssue, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcIssueNet(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcIssueNet(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcIssueNet(value);
     return SetFileAccess(g_etcIssueNet, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssueNet, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcHostsAllow(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcHostsAllow(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcHostsAllow(value);
     return SetFileAccess(g_etcHostsAllow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsAllow, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcHostsDeny(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcHostsDeny(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcHostsDeny(value);
     return SetFileAccess(g_etcHostsDeny, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsDeny, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsurePermissionsOnEtcSshSshdConfigObject, value, NULL, log);
 };
 
-static int RemediateEnsurePermissionsOnEtcShadow(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcShadow(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcShadow(value);
     return SetFileAccess(g_etcShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadow, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcShadowDash(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcShadowDash(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcShadowDash(value);
     return SetFileAccess(g_etcShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadowDash, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcGShadow(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcGShadow(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcGShadow(value);
     return SetFileAccess(g_etcGShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadow, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcGShadowDash(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcGShadowDash(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcGShadowDash(value);
     return SetFileAccess(g_etcGShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcPasswd(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcPasswd(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcPasswd(value);
     return SetFileAccess(g_etcPasswd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswd, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcPasswdDash(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcPasswdDash(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcPasswdDash(value);
     return SetFileAccess(g_etcPasswdDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswdDash, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcGroup(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcGroup(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcGroup(value);
     return SetFileAccess(g_etcGroup, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroup, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcGroupDash(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcGroupDash(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcGroupDash(value);
     return SetFileAccess(g_etcGroupDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroupDash, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcAnacronTab(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcAnacronTab(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcAnacronTab(value);
     return SetFileAccess(g_etcAnacronTab, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcAnacronTab, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcCronD(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcCronD(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcCronD(value);
     return SetFileAccess(g_etcCronD, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronD, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcCronDaily(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcCronDaily(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcCronDaily(value);
     return SetFileAccess(g_etcCronDaily, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronDaily, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcCronHourly(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcCronHourly(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcCronHourly(value);
     return SetFileAccess(g_etcCronHourly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronHourly, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcCronMonthly(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcCronMonthly(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcCronMonthly(value);
     return SetFileAccess(g_etcCronMonthly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronMonthly, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcCronWeekly(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcCronWeekly(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcCronWeekly(value);
     return SetFileAccess(g_etcCronWeekly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronWeekly, NULL, 8), log);
 };
 
-static int RemediateEnsurePermissionsOnEtcMotd(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnEtcMotd(char* value, OsConfigLogHandle log)
 {
     InitEnsurePermissionsOnEtcMotd(value);
     return SetFileAccess(g_etcMotd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcMotd, NULL, 8), log);
 };
 
-static int RemediateEnsureInetdNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureInetdNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == UninstallPackage(g_inetd, log)) &&
         (0 == UninstallPackage(g_inetUtilsInetd, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureXinetdNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureXinetdNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_xinetd, log);
 }
 
-static int RemediateEnsureRshServerNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRshServerNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_rshServer, log);
 }
 
-static int RemediateEnsureNisNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNisNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_nis, log);
 }
 
-static int RemediateEnsureTftpdNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureTftpdNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_tftpHpa, log);
 }
 
-static int RemediateEnsureReadaheadFedoraNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureReadaheadFedoraNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_readAheadFedora, log);
 }
 
-static int RemediateEnsureBluetoothHiddNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureBluetoothHiddNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_bluetooth, log);
     return UninstallPackage(g_bluetooth, log);
 }
 
-static int RemediateEnsureIsdnUtilsBaseNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureIsdnUtilsBaseNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_isdnUtilsBase, log);
 }
 
-static int RemediateEnsureIsdnUtilsKdumpToolsNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureIsdnUtilsKdumpToolsNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_kdumpTools, log);
 }
 
-static int RemediateEnsureIscDhcpdServerNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureIscDhcpdServerNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_iscDhcpServer, log);
 }
 
-static int RemediateEnsureSendmailNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSendmailNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_sendmail, log);
 }
 
-static int RemediateEnsureSldapdNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSldapdNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_slapd, log);
 }
 
-static int RemediateEnsureBind9NotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureBind9NotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_bind9, log);
 }
 
-static int RemediateEnsureDovecotCoreNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDovecotCoreNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_dovecotCore, log);
 }
 
-static int RemediateEnsureAuditdInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAuditdInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) ||
         (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsurePrelinkIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePrelinkIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_prelink, log);
 }
 
-static int RemediateEnsureTalkClientIsNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureTalkClientIsNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_talk, log);
 }
 
-static int RemediateEnsureCronServiceIsEnabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureCronServiceIsEnabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
 
@@ -2989,7 +2989,7 @@ static int RemediateEnsureCronServiceIsEnabled(char* value, OSCONFIG_LOG_HANDLE 
         (((0 == InstallPackage(g_cronie, log)) && EnableAndStartDaemon(g_crond, log)))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureAuditdServiceIsRunning(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAuditdServiceIsRunning(char* value, OsConfigLogHandle log)
 {
     int status = 0;
     UNUSED(value);
@@ -3007,133 +3007,133 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, OSCONFIG_LOG_HANDL
     return status;
 }
 
-static int RemediateEnsureKernelSupportForCpuNx(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureKernelSupportForCpuNx(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     OsConfigLogInfo(log, "A CPU that supports the NX (no-execute) bit technology is necessary, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureNodevOptionOnHomePartition(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNodevOptionOnHomePartition(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetFileSystemMountingOption(g_home, NULL, g_nodev, log);
 }
 
-static int RemediateEnsureNodevOptionOnTmpPartition(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNodevOptionOnTmpPartition(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetFileSystemMountingOption(g_tmp, NULL, g_nodev, log);
 }
 
-static int RemediateEnsureNodevOptionOnVarTmpPartition(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNodevOptionOnVarTmpPartition(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetFileSystemMountingOption(g_varTmp, NULL, g_nodev, log);
 }
 
-static int RemediateEnsureNosuidOptionOnTmpPartition(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNosuidOptionOnTmpPartition(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetFileSystemMountingOption(g_tmp, NULL, g_nosuid, log);
 }
 
-static int RemediateEnsureNosuidOptionOnVarTmpPartition(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNosuidOptionOnVarTmpPartition(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetFileSystemMountingOption(g_varTmp, NULL, g_nosuid, log);
 }
 
-static int RemediateEnsureNoexecOptionOnVarTmpPartition(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoexecOptionOnVarTmpPartition(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetFileSystemMountingOption(g_varTmp, NULL, g_noexec, log);
 }
 
-static int RemediateEnsureNoexecOptionOnDevShmPartition(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoexecOptionOnDevShmPartition(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetFileSystemMountingOption(g_devShm, NULL, g_noexec, log);
 }
 
-static int RemediateEnsureNodevOptionEnabledForAllRemovableMedia(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNodevOptionEnabledForAllRemovableMedia(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetFileSystemMountingOption(g_media, NULL, g_nodev, log);
 }
 
-static int RemediateEnsureNoexecOptionEnabledForAllRemovableMedia(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoexecOptionEnabledForAllRemovableMedia(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetFileSystemMountingOption(g_media, NULL, g_noexec, log);
 }
 
-static int RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetFileSystemMountingOption(g_media, NULL, g_nosuid, log);
 }
 
-static int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == SetFileSystemMountingOption(g_nfs, NULL, g_nosuid, log)) &&
         (0 == SetFileSystemMountingOption(g_nfs, NULL, g_noexec, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureAllTelnetdPackagesUninstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAllTelnetdPackagesUninstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_allTelnetd, log);
 }
 
-static int RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetAllEtcPasswdGroupsToExistInEtcGroup(log);
 }
 
-static int RemediateEnsureNoDuplicateUidsExist(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoDuplicateUidsExist(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     OsConfigLogInfo(log, "Any duplicate UIDs must be manually removed, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureNoDuplicateGidsExist(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoDuplicateGidsExist(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     OsConfigLogInfo(log, "Any duplicate GIDs must be manually removed, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureNoDuplicateUserNamesExist(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoDuplicateUserNamesExist(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     OsConfigLogInfo(log, "Any duplicate usernames must be manually removed, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureNoDuplicateGroupsExist(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoDuplicateGroupsExist(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     OsConfigLogInfo(log, "Any duplicate groups must be manually removed, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureShadowGroupIsEmpty(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureShadowGroupIsEmpty(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetShadowGroupEmpty(log);
 }
 
-static int RemediateEnsureRootGroupExists(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRootGroupExists(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return RepairRootGroup(log);
 }
 
-static int RemediateEnsureAllAccountsHavePasswords(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAllAccountsHavePasswords(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     // We cannot automatically add passwords for user accounts that can login and do not have passwords set.
@@ -3142,55 +3142,55 @@ static int RemediateEnsureAllAccountsHavePasswords(char* value, OSCONFIG_LOG_HAN
     return RemoveUsersWithoutPasswords(log);
 }
 
-static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetRootIsOnlyUidZeroAccount(log);
 }
 
-static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ReplaceMarkedLinesInFile(g_etcPasswd, "+", NULL, '#', true, log);
 }
 
-static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ReplaceMarkedLinesInFile(g_etcShadow, "+", NULL, '#', true, log);
 }
 
-static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ReplaceMarkedLinesInFile(g_etcGroup, "+", NULL, '#', true, log);
 }
 
-static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetDefaultRootAccountGroupIsGidZero(log);
 }
 
-static int RemediateEnsureRootIsOnlyUidZeroAccount(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRootIsOnlyUidZeroAccount(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetRootIsOnlyUidZeroAccount(log);
 }
 
-static int RemediateEnsureAllUsersHomeDirectoriesExist(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAllUsersHomeDirectoriesExist(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetUserHomeDirectories(log);
 }
 
-static int RemediateEnsureUsersOwnTheirHomeDirectories(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureUsersOwnTheirHomeDirectories(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetUserHomeDirectories(log);
 }
 
-static int RemediateEnsureRestrictedUserHomeDirectories(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRestrictedUserHomeDirectories(char* value, OsConfigLogHandle log)
 {
     int* modes = NULL;
     int numberOfModes = 0;
@@ -3207,31 +3207,31 @@ static int RemediateEnsureRestrictedUserHomeDirectories(char* value, OSCONFIG_LO
     return status;
 }
 
-static int RemediateEnsurePasswordHashingAlgorithm(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePasswordHashingAlgorithm(char* value, OsConfigLogHandle log)
 {
     InitEnsurePasswordHashingAlgorithm(value);
     return SetPasswordHashingAlgorithm((unsigned int)atoi(g_desiredEnsurePasswordHashingAlgorithm), log);
 }
 
-static int RemediateEnsureMinDaysBetweenPasswordChanges(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureMinDaysBetweenPasswordChanges(char* value, OsConfigLogHandle log)
 {
     InitEnsureMinDaysBetweenPasswordChanges(value);
     return SetMinDaysBetweenPasswordChanges(atol(g_desiredEnsureMinDaysBetweenPasswordChanges), log);
 }
 
-static int RemediateEnsureInactivePasswordLockPeriod(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureInactivePasswordLockPeriod(char* value, OsConfigLogHandle log)
 {
     InitEnsureInactivePasswordLockPeriod(value);
     return SetLockoutAfterInactivityLessThan(atol(g_desiredEnsureInactivePasswordLockPeriod), log);
 }
 
-static int RemediateEnsureMaxDaysBetweenPasswordChanges(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureMaxDaysBetweenPasswordChanges(char* value, OsConfigLogHandle log)
 {
     InitEnsureMaxDaysBetweenPasswordChanges(value);
     return SetMaxDaysBetweenPasswordChanges(atol(g_desiredEnsureMaxDaysBetweenPasswordChanges), log);
 }
 
-static int RemediateEnsurePasswordExpiration(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePasswordExpiration(char* value, OsConfigLogHandle log)
 {
     InitEnsurePasswordExpiration(value);
     return ((0 == EnsureUsersHaveDatesOfLastPasswordChanges(log)) &&
@@ -3239,19 +3239,19 @@ static int RemediateEnsurePasswordExpiration(char* value, OSCONFIG_LOG_HANDLE lo
         (0 == CheckPasswordExpirationLessThan(atol(g_desiredEnsurePasswordExpiration), NULL, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsurePasswordExpirationWarning(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePasswordExpirationWarning(char* value, OsConfigLogHandle log)
 {
     InitEnsurePasswordExpirationWarning(value);
     return SetPasswordExpirationWarning(atol(g_desiredEnsurePasswordExpirationWarning), log);
 }
 
-static int RemediateEnsureSystemAccountsAreNonLogin(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSystemAccountsAreNonLogin(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetSystemAccountsNonLogin(log);
 }
 
-static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     OsConfigLogInfo(log, "For single user mode the root user account must have a password set. "
@@ -3259,13 +3259,13 @@ static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, O
     return 0;
 }
 
-static int RemediateEnsureDotDoesNotAppearInRootsPath(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDotDoesNotAppearInRootsPath(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return RemoveDotsFromPath(log);
 }
 
-static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, OsConfigLogHandle log)
 {
     const char* escapes = "mrsv";
     unsigned int numEscapes = 4;
@@ -3278,7 +3278,7 @@ static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, OSCO
     return status;
 }
 
-static int RemediateEnsureLocalLoginWarningBannerIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureLocalLoginWarningBannerIsConfigured(char* value, OsConfigLogHandle log)
 {
     const char* escapes = "mrsv";
     unsigned int numEscapes = 4;
@@ -3286,34 +3286,34 @@ static int RemediateEnsureLocalLoginWarningBannerIsConfigured(char* value, OSCON
     return RemoveEscapeSequencesFromFile(g_etcIssue, escapes, numEscapes, ' ', log);
 }
 
-static int RemediateEnsureSuRestrictedToRootGroup(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSuRestrictedToRootGroup(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return RestrictSuToRootGroup(log);
 }
 
-static int RemediateEnsureDefaultUmaskForAllUsers(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDefaultUmaskForAllUsers(char* value, OsConfigLogHandle log)
 {
     const char* umask = "UMASK";
     InitEnsureDefaultUmaskForAllUsers(value);
     return SetEtcLoginDefValue(umask, g_desiredEnsureDefaultUmaskForAllUsers, log);
 }
 
-static int RemediateEnsureAutomountingDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAutomountingDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_autofs, log);
     return CheckDaemonNotActive(g_autofs, NULL, log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     OsConfigLogInfo(log, "Automatic remediation is not possible");
     return 0;
 }
 
-static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, OsConfigLogHandle log)
 {
     int status = 0;
     UNUSED(value);
@@ -3331,7 +3331,7 @@ static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, OSCONFIG_L
     return status;
 }
 
-static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.send_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
@@ -3340,7 +3340,7 @@ static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, OSCONFIG_
         (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.send_redirects", "net.ipv4.conf.default.send_redirects = 0\n", '#', true, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
@@ -3357,33 +3357,33 @@ static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, OSCONFIG_LOG_HAND
         (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.secure_redirects", "net.ipv4.conf.all.secure_redirects = 0\n", '#', true, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSourceRoutedPacketsIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSourceRoutedPacketsIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log) &&
         SavePayloadToFile("/proc/sys/net/ipv6/conf/all/accept_source_route", "0", 1, log)) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return (SavePayloadToFile("/proc/sys/net/ipv4/conf/default/accept_source_route", "0", 1, log) &&
         SavePayloadToFile("/proc/sys/net/ipv6/conf/default/accept_source_route", "0", 1, log)) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureIgnoringBogusIcmpBroadcastResponses(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureIgnoringBogusIcmpBroadcastResponses(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SavePayloadToFile("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", "1", 1, log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureIgnoringIcmpEchoPingsToMulticast(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureIgnoringIcmpEchoPingsToMulticast(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SavePayloadToFile("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", "1", 1, log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.log_martians=1", true, false, 0, 0, NULL, NULL, log)) &&
@@ -3392,33 +3392,33 @@ static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, OSCONFIG_LO
         (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.log_martians", "net.ipv4.conf.default.log_martians = 1\n", '#', true, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureReversePathSourceValidationIsEnabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureReversePathSourceValidationIsEnabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/rp_filter", "2", 1, log) &&
         SavePayloadToFile("/proc/sys/net/ipv4/conf/default/rp_filter", "2", 1, log)) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureTcpSynCookiesAreEnabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureTcpSynCookiesAreEnabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SavePayloadToFile("/proc/sys/net/ipv4/tcp_syncookies", "1", 1, log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSystemNotActingAsNetworkSniffer(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSystemNotActingAsNetworkSniffer(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, "PROMISC", NULL, '#', true, log)) &&
         (0 == ReplaceMarkedLinesInFile(g_etcRcLocal, "PROMISC", NULL, '#', true, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureAllWirelessInterfacesAreDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAllWirelessInterfacesAreDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return DisableAllWirelessInterfaces(log);
 }
 
-static int RemediateEnsureIpv6ProtocolIsEnabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureIpv6ProtocolIsEnabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.default.disable_ipv6=0", true, false, 0, 0, NULL, NULL, log)) &&
@@ -3427,7 +3427,7 @@ static int RemediateEnsureIpv6ProtocolIsEnabled(char* value, OSCONFIG_LOG_HANDLE
         (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.all.disable_ipv6", "net.ipv6.conf.all.disable_ipv6 = 0\n", '#', true, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureDccpIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDccpIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/dccp.conf";
@@ -3435,7 +3435,7 @@ static int RemediateEnsureDccpIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
     return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSctpIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSctpIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/sctp.conf";
@@ -3443,7 +3443,7 @@ static int RemediateEnsureSctpIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
     return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureDisabledSupportForRds(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDisabledSupportForRds(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/rds.conf";
@@ -3451,7 +3451,7 @@ static int RemediateEnsureDisabledSupportForRds(char* value, OSCONFIG_LOG_HANDLE
     return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureTipcIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureTipcIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/tipc.conf";
@@ -3459,7 +3459,7 @@ static int RemediateEnsureTipcIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
     return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, OsConfigLogHandle log)
 {
     int status = 0;
     UNUSED(value);
@@ -3477,7 +3477,7 @@ static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, OSCONFIG_LOG
     return status;
 }
 
-static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, OsConfigLogHandle log)
 {
     unsigned int mode = 0;
     InitEnsurePermissionsOnBootloaderConfig(value);
@@ -3488,13 +3488,13 @@ static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, OSCONFIG_LO
         (FileExists(g_bootGrub2GrubCfg) && (0 == SetFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, log)))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsurePasswordReuseIsLimited(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePasswordReuseIsLimited(char* value, OsConfigLogHandle log)
 {
     InitEnsurePasswordReuseIsLimited(value);
     return SetEnsurePasswordReuseIsLimited(atoi(g_desiredEnsurePasswordReuseIsLimited), log);
 }
 
-static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/usb-storage.conf";
@@ -3502,7 +3502,7 @@ static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, OSC
     return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureCoreDumpsAreRestricted(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureCoreDumpsAreRestricted(char* value, OsConfigLogHandle log)
 {
     int status = 0;
     UNUSED(value);
@@ -3520,7 +3520,7 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, OSCONFIG_LOG_HANDL
     return status;
 }
 
-static int RemediateEnsurePasswordCreationRequirements(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePasswordCreationRequirements(char* value, OsConfigLogHandle log)
 {
     int* values = NULL;
     int numberOfValues = 0;
@@ -3542,13 +3542,13 @@ static int RemediateEnsurePasswordCreationRequirements(char* value, OSCONFIG_LOG
     return status;
 }
 
-static int RemediateEnsureLockoutForFailedPasswordAttempts(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureLockoutForFailedPasswordAttempts(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetLockoutForFailedPasswordAttempts(log);
 }
 
-static int RemediateEnsureDisabledInstallationOfCramfsFileSystem(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDisabledInstallationOfCramfsFileSystem(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/cramfs.conf";
@@ -3556,7 +3556,7 @@ static int RemediateEnsureDisabledInstallationOfCramfsFileSystem(char* value, OS
     return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureDisabledInstallationOfFreevxfsFileSystem(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDisabledInstallationOfFreevxfsFileSystem(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/freevxfs.conf";
@@ -3564,7 +3564,7 @@ static int RemediateEnsureDisabledInstallationOfFreevxfsFileSystem(char* value, 
     return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureDisabledInstallationOfHfsFileSystem(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDisabledInstallationOfHfsFileSystem(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/hfs.conf";
@@ -3572,7 +3572,7 @@ static int RemediateEnsureDisabledInstallationOfHfsFileSystem(char* value, OSCON
     return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureDisabledInstallationOfHfsplusFileSystem(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDisabledInstallationOfHfsplusFileSystem(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/hfsplus.conf";
@@ -3580,7 +3580,7 @@ static int RemediateEnsureDisabledInstallationOfHfsplusFileSystem(char* value, O
     return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureDisabledInstallationOfJffs2FileSystem(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDisabledInstallationOfJffs2FileSystem(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/jffs2.conf";
@@ -3588,21 +3588,21 @@ static int RemediateEnsureDisabledInstallationOfJffs2FileSystem(char* value, OSC
     return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureVirtualMemoryRandomizationIsEnabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureVirtualMemoryRandomizationIsEnabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return EnableVirtualMemoryRandomization(log);
     return 0;
 }
 
-static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     OsConfigLogInfo(log, "Manually set a boot loader password for GRUB, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureLoggingIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureLoggingIsConfigured(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return (((0 == InstallPackage(g_systemd, log) &&
@@ -3613,7 +3613,7 @@ static int RemediateEnsureLoggingIsConfigured(char* value, OSCONFIG_LOG_HANDLE l
         (((0 == CheckPackageInstalled(g_syslogNg, NULL, log)) && EnableAndStartDaemon(g_syslogNg, log))))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSyslogPackageIsInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSyslogPackageIsInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == InstallPackage(g_systemd, log) &&
@@ -3621,14 +3621,14 @@ static int RemediateEnsureSyslogPackageIsInstalled(char* value, OSCONFIG_LOG_HAN
         ((0 == InstallPackage(g_syslogNg, log)))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSystemdJournaldServicePersistsLogMessages(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSystemdJournaldServicePersistsLogMessages(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == InstallPackage(g_systemd, log)) &&
         (0 == SetDirectoryAccess(g_varLogJournal, 0, -1, g_varLogJournalMode, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureALoggingServiceIsEnabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureALoggingServiceIsEnabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((((0 == InstallPackage(g_systemd, log)) && EnableAndStartDaemon(g_systemdJournald, log)) &&
@@ -3637,7 +3637,7 @@ static int RemediateEnsureALoggingServiceIsEnabled(char* value, OSCONFIG_LOG_HAN
         (((0 == InstallPackage(g_syslogNg, log)) && EnableAndStartDaemon(g_syslogNg, log)))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OsConfigLogHandle log)
 {
     const char* formatTemplate = "0%03d";
     int* modes = NULL;
@@ -3674,33 +3674,33 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OSCO
     return status;
 }
 
-static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == SetFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 0640, log)) &&
         (0 == SetFileAccess(g_etcRsyslogConf, 0, 0, 0640, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetEtcConfValue(g_etcRsyslogConf, "$FileGroup", "adm", log);
 }
 
-static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return SetEtcConfValue(g_etcRsyslogConf, "$FileOwner", "syslog", log);
 }
 
-static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == ReplaceMarkedLinesInFile(g_etcRsyslogConf, "$ModLoad imudp", NULL, '#', true, log)) &&
         (0 == ReplaceMarkedLinesInFile(g_etcRsyslogConf, "$ModLoad imtcp", NULL, '#', true, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, OsConfigLogHandle log)
 {
     int status = ENOENT;
     UNUSED(value);
@@ -3715,7 +3715,7 @@ static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, OSCONFIG_LO
     return status;
 }
 
-static int RemediateEnsureTelnetServiceIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureTelnetServiceIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_telnet, log);
@@ -3723,7 +3723,7 @@ static int RemediateEnsureTelnetServiceIsDisabled(char* value, OSCONFIG_LOG_HAND
         (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_telnet, NULL, '#', true, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureRcprshServiceIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRcprshServiceIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_rcpSocket, log);
@@ -3731,7 +3731,7 @@ static int RemediateEnsureRcprshServiceIsDisabled(char* value, OSCONFIG_LOG_HAND
     return (CheckDaemonNotActive(g_rcpSocket, NULL, log) && CheckDaemonNotActive(g_rshSocket, NULL, log)) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureTftpServiceisDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureTftpServiceisDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_tftpHpa, log);
@@ -3739,7 +3739,7 @@ static int RemediateEnsureTftpServiceisDisabled(char* value, OSCONFIG_LOG_HANDLE
         (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_tftp, NULL, '#', true, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, OsConfigLogHandle log)
 {
     const char* payload = "root\n";
     UNUSED(value);
@@ -3753,109 +3753,109 @@ static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, OSCON
         (0 == SetFileAccess(g_etcAtAllow, 0, 0, 0600, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSshPortIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSshPortIsConfigured(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshPortIsConfiguredObject, value, NULL, log);
 }
 
-static int RemediateEnsureSshBestPracticeProtocol(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSshBestPracticeProtocol(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshBestPracticeProtocolObject, value, NULL, log);
 }
 
-static int RemediateEnsureSshBestPracticeIgnoreRhosts(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSshBestPracticeIgnoreRhosts(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshBestPracticeIgnoreRhostsObject, value, NULL, log);
 }
 
-static int RemediateEnsureSshLogLevelIsSet(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSshLogLevelIsSet(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshLogLevelIsSetObject, value, NULL, log);
 }
 
-static int RemediateEnsureSshMaxAuthTriesIsSet(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSshMaxAuthTriesIsSet(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshMaxAuthTriesIsSetObject, value, NULL, log);
 }
 
-static int RemediateEnsureAllowUsersIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAllowUsersIsConfigured(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureAllowUsersIsConfiguredObject, value, NULL, log);
 }
 
-static int RemediateEnsureDenyUsersIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDenyUsersIsConfigured(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureDenyUsersIsConfiguredObject, value, NULL, log);
 }
 
-static int RemediateEnsureAllowGroupsIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAllowGroupsIsConfigured(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureAllowGroupsIsConfiguredObject, value, NULL, log);
 }
 
-static int RemediateEnsureDenyGroupsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureDenyGroupsConfigured(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureDenyGroupsConfiguredObject, value, NULL, log);
 }
 
-static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject, value, NULL, log);
 }
 
-static int RemediateEnsureSshPermitRootLoginIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSshPermitRootLoginIsDisabled(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshPermitRootLoginIsDisabledObject, value, NULL, log);
 }
 
-static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject, value, NULL, log);
 }
 
-static int RemediateEnsureSshClientIntervalCountMaxIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSshClientIntervalCountMaxIsConfigured(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshClientIntervalCountMaxIsConfiguredObject, value, NULL, log);
 }
 
-static int RemediateEnsureSshClientAliveIntervalIsConfigured(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSshClientAliveIntervalIsConfigured(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshClientAliveIntervalIsConfiguredObject, value, NULL, log);
 }
 
-static int RemediateEnsureSshLoginGraceTimeIsSet(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSshLoginGraceTimeIsSet(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshLoginGraceTimeIsSetObject, value, NULL, log);
 }
 
-static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject, value, NULL, log);
 }
 
-static int RemediateEnsureSshWarningBannerIsEnabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSshWarningBannerIsEnabled(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureSshWarningBannerIsEnabledObject, value, NULL, log);
 }
 
-static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject, value, NULL, log);
 }
 
-static int RemediateEnsureAppropriateCiphersForSsh(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAppropriateCiphersForSsh(char* value, OsConfigLogHandle log)
 {
     return ProcessSshAuditCheck(g_remediateEnsureAppropriateCiphersForSshObject, value, NULL, log);
 }
 
-static int RemediateEnsureAvahiDaemonServiceIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureAvahiDaemonServiceIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_avahiDaemon, log);
     return CheckDaemonNotActive(g_avahiDaemon, NULL, log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureCupsServiceisDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureCupsServiceisDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_cups, log);
@@ -3863,13 +3863,13 @@ static int RemediateEnsureCupsServiceisDisabled(char* value, OSCONFIG_LOG_HANDLE
     return CheckDaemonNotActive(g_cups, NULL, log) ? 0 : ENOENT;
 }
 
-static int RemediateEnsurePostfixPackageIsUninstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePostfixPackageIsUninstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return UninstallPackage(g_postfix, log);
 }
 
-static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return DisablePostfixNetworkListening(log);
@@ -3882,7 +3882,7 @@ static int CheckAndFreeReason(char *reason)
     return ret;
 }
 
-static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_rpcgssd, log);
@@ -3890,7 +3890,7 @@ static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, OSCONFIG_LOG_HAN
     return CheckAndFreeReason(AuditEnsureRpcgssdServiceIsDisabled(log));
 }
 
-static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_rpcidmapd, log);
@@ -3898,7 +3898,7 @@ static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, OSCONFIG_LOG_H
     return CheckAndFreeReason(AuditEnsureRpcidmapdServiceIsDisabled(log));
 }
 
-static int RemediateEnsurePortmapServiceIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsurePortmapServiceIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     if (CheckDaemonActive(g_rpcbind, NULL, log))
@@ -3918,14 +3918,14 @@ static int RemediateEnsurePortmapServiceIsDisabled(char* value, OSCONFIG_LOG_HAN
     return (CheckDaemonNotActive(g_rpcbindSocket, NULL, log) && CheckDaemonNotActive(g_rpcbind, NULL, log)) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_nfsServer, log);
     return CheckAndFreeReason(AuditEnsureNetworkFileSystemServiceIsDisabled(log));
 }
 
-static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     int status = 0;
@@ -3937,35 +3937,35 @@ static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value, OSCONFIG_LOG_
     return ((0 == status) && (false == IsDaemonActive(g_rpcSvcgssd, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSnmpServerIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSnmpServerIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_snmpd, log);
     return CheckAndFreeReason(AuditEnsureSnmpServerIsDisabled(log));
 }
 
-static int RemediateEnsureRsynServiceIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRsynServiceIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_rsync, log);
     return CheckAndFreeReason(AuditEnsureRsynServiceIsDisabled(log));
 }
 
-static int RemediateEnsureNisServerIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNisServerIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_ypserv, log);
     return CheckAndFreeReason(AuditEnsureNisServerIsDisabled(log));
 }
 
-static int RemediateEnsureRshClientNotInstalled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRshClientNotInstalled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return ((0 == UninstallPackage(g_rsh, log)) &&
         (0 == UninstallPackage(g_rshClient, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSmbWithSambaIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureSmbWithSambaIsDisabled(char* value, OsConfigLogHandle log)
 {
     const char* command = "sed -i '/^\\[global\\]/a min protocol = SMB2' /etc/samba/smb.conf";
     const char* smb1 = "SMB1";
@@ -3993,7 +3993,7 @@ static int RemediateEnsureSmbWithSambaIsDisabled(char* value, OSCONFIG_LOG_HANDL
     return status;
 }
 
-static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, OsConfigLogHandle log)
 {
     int* modes = NULL;
     int numberOfModes = 0;
@@ -4010,25 +4010,25 @@ static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, OS
     return status;
 }
 
-static int RemediateEnsureNoUsersHaveDotForwardFiles(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoUsersHaveDotForwardFiles(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return CheckOrEnsureUsersDontHaveDotFiles(g_forward, true, NULL, log);
 }
 
-static int RemediateEnsureNoUsersHaveDotNetrcFiles(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoUsersHaveDotNetrcFiles(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, true, NULL, log);
 }
 
-static int RemediateEnsureNoUsersHaveDotRhostsFiles(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureNoUsersHaveDotRhostsFiles(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, true, NULL, log);
 }
 
-static int RemediateEnsureRloginServiceIsDisabled(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureRloginServiceIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
     StopAndDisableDaemon(g_rlogin, log);
@@ -4041,17 +4041,17 @@ static int RemediateEnsureRloginServiceIsDisabled(char* value, OSCONFIG_LOG_HAND
         (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_login, NULL, '#', true, log))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, OSCONFIG_LOG_HANDLE log)
+static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, OsConfigLogHandle log)
 {
     InitEnsureUnnecessaryAccountsAreRemoved(value);
     return RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, true, log);
 }
 
-int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OSCONFIG_LOG_HANDLE log)
+int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log)
 {
     JSON_Value* jsonValue = NULL;
     char* serializedValue = NULL;
-    PERF_CLOCK perfClock = {{0, 0}, {0, 0}};
+    PerfClock perfClock = {{0, 0}, {0, 0}};
     int status = 0;
     char* result = NULL;
 
@@ -4827,13 +4827,13 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     return status;
 }
 
-int AsbMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OSCONFIG_LOG_HANDLE log)
+int AsbMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     const char* init = "init";
     JSON_Value* jsonValue = NULL;
     char* jsonString = NULL;
     char* payloadString = NULL;
-    PERF_CLOCK perfClock = {{0, 0}, {0, 0}};
+    PerfClock perfClock = {{0, 0}, {0, 0}};
     int status = 0;
 
     // No payload is accepted for now, this may change once the complete Azure Security Baseline is implemented

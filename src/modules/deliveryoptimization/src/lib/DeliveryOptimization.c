@@ -46,9 +46,9 @@ static const char* g_deliveryOptimizationConfigFile = NULL;
 static const char* g_deliveryOptimizationLogFile = "/var/log/osconfig_deliveryoptimization.log";
 static const char* g_deliveryOptimizationRolledLogFile = "/var/log/osconfig_deliveryoptimization.bak";
 
-static OSCONFIG_LOG_HANDLE g_log = NULL;
+static OsConfigLogHandle g_log = NULL;
 
-static OSCONFIG_LOG_HANDLE DeliveryOptimizationGetLog()
+static OsConfigLogHandle DeliveryOptimizationGetLog()
 {
     return g_log;
 }

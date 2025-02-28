@@ -17,8 +17,8 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif
 
-typedef struct OSCONFIG_LOG OSCONFIG_LOG;
-typedef OSCONFIG_LOG* OSCONFIG_LOG_HANDLE;
+typedef struct OsConfigLog OsConfigLog;
+typedef OsConfigLog* OsConfigLogHandle;
 
 #ifdef __cplusplus
 extern "C"
@@ -41,15 +41,15 @@ enum LoggingLevel
 };
 typedef enum LoggingLevel LoggingLevel;
 
-OSCONFIG_LOG_HANDLE OpenLog(const char* logFileName, const char* bakLogFileName);
-void CloseLog(OSCONFIG_LOG_HANDLE* log);
+OsConfigLogHandle OpenLog(const char* logFileName, const char* bakLogFileName);
+void CloseLog(OsConfigLogHandle* log);
 
 bool IsDebugLoggingEnabled(void);
 void SetDebugLogging(bool fullLogging);
 
-FILE* GetLogFile(OSCONFIG_LOG_HANDLE log);
+FILE* GetLogFile(OsConfigLogHandle log);
 char* GetFormattedTime(void);
-void TrimLog(OSCONFIG_LOG_HANDLE log);
+void TrimLog(OsConfigLogHandle log);
 bool IsDaemon(void);
 
 #define __PREFIX_TEMPLATE__ "[%s][%s][%s:%d] "

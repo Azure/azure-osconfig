@@ -21,7 +21,7 @@ enum PasswordEncryption
 };
 typedef enum PasswordEncryption PasswordEncryption;
 
-typedef struct SIMPLIFIED_USER
+typedef struct SimplifiedUser
 {
     char* username;
     uid_t userId;
@@ -55,72 +55,72 @@ typedef struct SIMPLIFIED_USER
 
     // Date when user account expires (measured in days since 1970-01-01 00:00:00 +0000 UTC)
     long expirationDate;
-} SIMPLIFIED_USER;
+} SimplifiedUser;
 
-typedef struct SIMPLIFIED_GROUP
+typedef struct SimplifiedGroup
 {
     char* groupName;
     gid_t groupId;
     bool hasUsers;
-} SIMPLIFIED_GROUP;
+} SimplifiedGroup;
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, char** reason, OSCONFIG_LOG_HANDLE log);
-void FreeUsersList(SIMPLIFIED_USER** source, unsigned int size);
+int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason, OsConfigLogHandle log);
+void FreeUsersList(SimplifiedUser** source, unsigned int size);
 
-int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, char** reason, OSCONFIG_LOG_HANDLE log);
-int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, char** reason, OSCONFIG_LOG_HANDLE log);
-void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size);
+int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsigned int* size, char** reason, OsConfigLogHandle log);
+int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** reason, OsConfigLogHandle log);
+void FreeGroupList(SimplifiedGroup** groupList, unsigned int size);
 
-int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OSCONFIG_LOG_HANDLE log);
-int SetAllEtcPasswdGroupsToExistInEtcGroup(OSCONFIG_LOG_HANDLE log);
-int CheckNoDuplicateUidsExist(char** reason, OSCONFIG_LOG_HANDLE log);
-int CheckNoDuplicateGidsExist(char** reason, OSCONFIG_LOG_HANDLE log);
-int CheckNoDuplicateUserNamesExist(char** reason, OSCONFIG_LOG_HANDLE log);
-int CheckNoDuplicateGroupNamesExist(char** reason, OSCONFIG_LOG_HANDLE log);
-int CheckShadowGroupIsEmpty(char** reason, OSCONFIG_LOG_HANDLE log);
-int SetShadowGroupEmpty(OSCONFIG_LOG_HANDLE log);
-int CheckRootGroupExists(char** reason, OSCONFIG_LOG_HANDLE log);
-int RepairRootGroup(OSCONFIG_LOG_HANDLE log);
-int CheckRootIsOnlyUidZeroAccount(char** reason, OSCONFIG_LOG_HANDLE log);
-int SetRootIsOnlyUidZeroAccount(OSCONFIG_LOG_HANDLE log);
-int CheckAllUsersHavePasswordsSet(char** reason, OSCONFIG_LOG_HANDLE log);
-int RemoveUsersWithoutPasswords(OSCONFIG_LOG_HANDLE log);
-int RemoveUser(SIMPLIFIED_USER* user, bool removeHomeDir, OSCONFIG_LOG_HANDLE log);
-int RemoveGroup(SIMPLIFIED_GROUP* group, bool removeHomeDirs, OSCONFIG_LOG_HANDLE log);
-int CheckDefaultRootAccountGroupIsGidZero(char** reason, OSCONFIG_LOG_HANDLE log);
-int SetDefaultRootAccountGroupIsGidZero(OSCONFIG_LOG_HANDLE log);
-int CheckAllUsersHomeDirectoriesExist(char** reason, OSCONFIG_LOG_HANDLE log);
-int CheckUsersOwnTheirHomeDirectories(char** reason, OSCONFIG_LOG_HANDLE log);
-int SetUserHomeDirectories(OSCONFIG_LOG_HANDLE log);
-int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, char** reason, OSCONFIG_LOG_HANDLE log);
-int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, unsigned int modeForRoot, unsigned int modeForOthers, OSCONFIG_LOG_HANDLE log);
-int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, OSCONFIG_LOG_HANDLE log);
-int SetPasswordHashingAlgorithm(unsigned int algorithm, OSCONFIG_LOG_HANDLE log);
-int CheckMinDaysBetweenPasswordChanges(long days, char** reason, OSCONFIG_LOG_HANDLE log);
-int SetMinDaysBetweenPasswordChanges(long days, OSCONFIG_LOG_HANDLE log);
-int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OSCONFIG_LOG_HANDLE log);
-int SetMaxDaysBetweenPasswordChanges(long days, OSCONFIG_LOG_HANDLE log);
-int EnsureUsersHaveDatesOfLastPasswordChanges(OSCONFIG_LOG_HANDLE log);
-int CheckPasswordExpirationLessThan(long days, char** reason, OSCONFIG_LOG_HANDLE log);
-int CheckPasswordExpirationWarning(long days, char** reason, OSCONFIG_LOG_HANDLE log);
-int SetPasswordExpirationWarning(long days, OSCONFIG_LOG_HANDLE log);
-int CheckUsersRecordedPasswordChangeDates(char** reason, OSCONFIG_LOG_HANDLE log);
-int CheckLockoutAfterInactivityLessThan(long days, char** reason, OSCONFIG_LOG_HANDLE log);
-int SetLockoutAfterInactivityLessThan(long days, OSCONFIG_LOG_HANDLE log);
-int CheckSystemAccountsAreNonLogin(char** reason, OSCONFIG_LOG_HANDLE log);
-int SetSystemAccountsNonLogin(OSCONFIG_LOG_HANDLE log);
-int CheckRootPasswordForSingleUserMode(char** reason, OSCONFIG_LOG_HANDLE log);
-int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, char** reason, OSCONFIG_LOG_HANDLE log);
-int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, OSCONFIG_LOG_HANDLE log);
-int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, OSCONFIG_LOG_HANDLE log);
-int CheckUserAccountsNotFound(const char* names, char** reason, OSCONFIG_LOG_HANDLE log);
-int RemoveUserAccounts(const char* names, bool removeHomeDirs, OSCONFIG_LOG_HANDLE log);
-int RestrictSuToRootGroup(OSCONFIG_LOG_HANDLE log);
+int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log);
+int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log);
+int CheckNoDuplicateUidsExist(char** reason, OsConfigLogHandle log);
+int CheckNoDuplicateGidsExist(char** reason, OsConfigLogHandle log);
+int CheckNoDuplicateUserNamesExist(char** reason, OsConfigLogHandle log);
+int CheckNoDuplicateGroupNamesExist(char** reason, OsConfigLogHandle log);
+int CheckShadowGroupIsEmpty(char** reason, OsConfigLogHandle log);
+int SetShadowGroupEmpty(OsConfigLogHandle log);
+int CheckRootGroupExists(char** reason, OsConfigLogHandle log);
+int RepairRootGroup(OsConfigLogHandle log);
+int CheckRootIsOnlyUidZeroAccount(char** reason, OsConfigLogHandle log);
+int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log);
+int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log);
+int RemoveUsersWithoutPasswords(OsConfigLogHandle log);
+int RemoveUser(SimplifiedUser* user, bool removeHomeDir, OsConfigLogHandle log);
+int RemoveGroup(SimplifiedGroup* group, bool removeHomeDirs, OsConfigLogHandle log);
+int CheckDefaultRootAccountGroupIsGidZero(char** reason, OsConfigLogHandle log);
+int SetDefaultRootAccountGroupIsGidZero(OsConfigLogHandle log);
+int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log);
+int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log);
+int SetUserHomeDirectories(OsConfigLogHandle log);
+int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, char** reason, OsConfigLogHandle log);
+int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, unsigned int modeForRoot, unsigned int modeForOthers, OsConfigLogHandle log);
+int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, OsConfigLogHandle log);
+int SetPasswordHashingAlgorithm(unsigned int algorithm, OsConfigLogHandle log);
+int CheckMinDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHandle log);
+int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log);
+int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHandle log);
+int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log);
+int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log);
+int CheckPasswordExpirationLessThan(long days, char** reason, OsConfigLogHandle log);
+int CheckPasswordExpirationWarning(long days, char** reason, OsConfigLogHandle log);
+int SetPasswordExpirationWarning(long days, OsConfigLogHandle log);
+int CheckUsersRecordedPasswordChangeDates(char** reason, OsConfigLogHandle log);
+int CheckLockoutAfterInactivityLessThan(long days, char** reason, OsConfigLogHandle log);
+int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log);
+int CheckSystemAccountsAreNonLogin(char** reason, OsConfigLogHandle log);
+int SetSystemAccountsNonLogin(OsConfigLogHandle log);
+int CheckRootPasswordForSingleUserMode(char** reason, OsConfigLogHandle log);
+int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, char** reason, OsConfigLogHandle log);
+int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, OsConfigLogHandle log);
+int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, OsConfigLogHandle log);
+int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandle log);
+int RemoveUserAccounts(const char* names, bool removeHomeDirs, OsConfigLogHandle log);
+int RestrictSuToRootGroup(OsConfigLogHandle log);
 
 #ifdef __cplusplus
 }

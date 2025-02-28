@@ -16,7 +16,7 @@
 
 static LoggingLevel g_loggingLevel = LoggingLevelInformational;
 
-struct OSCONFIG_LOG
+struct OsConfigLog
 {
     FILE* log;
     const char* logFileName;
@@ -39,9 +39,9 @@ static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
     return chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 }
 
-OSCONFIG_LOG_HANDLE OpenLog(const char* logFileName, const char* bakLogFileName)
+OsConfigLogHandle OpenLog(const char* logFileName, const char* bakLogFileName)
 {
-    OSCONFIG_LOG* newLog = (OSCONFIG_LOG*)malloc(sizeof(OSCONFIG_LOG));
+    OsConfigLog* newLog = (OsConfigLog*)malloc(sizeof(OsConfigLog));
     if (NULL == newLog)
     {
         return NULL;
@@ -66,27 +66,27 @@ OSCONFIG_LOG_HANDLE OpenLog(const char* logFileName, const char* bakLogFileName)
     return newLog;
 }
 
-void CloseLog(OSCONFIG_LOG_HANDLE* log)
+void CloseLog(OsConfigLogHandle* log)
 {
     if ((NULL == log) || (NULL == (*log)))
     {
         return;
     }
 
-    OSCONFIG_LOG* logToClose = *log;
+    OsConfigLog* logToClose = *log;
 
     if (NULL != logToClose->log)
     {
         fclose(logToClose->log);
     }
 
-    memset(logToClose, 0, sizeof(OSCONFIG_LOG));
+    memset(logToClose, 0, sizeof(OsConfigLog));
 
     free(logToClose);
     *log = NULL;
 }
 
-FILE* GetLogFile(OSCONFIG_LOG_HANDLE log)
+FILE* GetLogFile(OsConfigLogHandle log)
 {
     return log ? log->log : NULL;
 }
@@ -105,7 +105,7 @@ char* GetFormattedTime(void)
 }
 
 // Checks and rolls the log over if larger than MAX_LOG_SIZE
-void TrimLog(OSCONFIG_LOG_HANDLE log)
+void TrimLog(OsConfigLogHandle log)
 {
     int fileSize = 0;
     int savedErrno = errno;

@@ -3,7 +3,7 @@
 
 #include "Internal.h"
 
-char* LoadStringFromFile(const char* fileName, bool stopAtEol, OSCONFIG_LOG_HANDLE log)
+char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log)
 {
     const int initialSize = 1024;
     int currentSize = 0;
@@ -65,7 +65,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, OSCONFIG_LOG_HAND
     return string;
 }
 
-static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OSCONFIG_LOG_HANDLE log)
+static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     FILE* file = NULL;
     int i = 0;
@@ -113,12 +113,12 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
     return result;
 }
 
-bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OSCONFIG_LOG_HANDLE log)
+bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     return SaveToFile(fileName, "w", payload, payloadSizeBytes, log);
 }
 
-bool FileEndsInEol(const char* fileName, OSCONFIG_LOG_HANDLE log)
+bool FileEndsInEol(const char* fileName, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     FILE* file = NULL;
@@ -159,7 +159,7 @@ bool FileEndsInEol(const char* fileName, OSCONFIG_LOG_HANDLE log)
     return result;
 }
 
-bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OSCONFIG_LOG_HANDLE log)
+bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     bool result = false;
 
@@ -186,7 +186,7 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
     return result;
 }
 
-static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OSCONFIG_LOG_HANDLE log)
+static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig%u";
     char* fileDirectory = NULL;
@@ -283,17 +283,17 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     return result;
 }
 
-bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OSCONFIG_LOG_HANDLE log)
+bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     return InternalSecureSaveToFile(fileName, "w", payload, payloadSizeBytes, log);
 }
 
-bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OSCONFIG_LOG_HANDLE log)
+bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     return InternalSecureSaveToFile(fileName, "a", payload, payloadSizeBytes, log);
 }
 
-bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool preserveAccess, OSCONFIG_LOG_HANDLE log)
+bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool preserveAccess, OsConfigLogHandle log)
 {
     char* fileContents = NULL;
     char* newFileName = NULL;
@@ -338,7 +338,7 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool prese
     return result;
 }
 
-bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, bool preserveAccess, OSCONFIG_LOG_HANDLE log)
+bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, bool preserveAccess, OsConfigLogHandle log)
 {
     char* contents = NULL;
     bool result = false;
@@ -385,7 +385,7 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
     return chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 }
 
-static bool IsATrueFileOrDirectory(bool directory, const char* name, OSCONFIG_LOG_HANDLE log)
+static bool IsATrueFileOrDirectory(bool directory, const char* name, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     int format = 0;
@@ -460,12 +460,12 @@ static bool IsATrueFileOrDirectory(bool directory, const char* name, OSCONFIG_LO
     return result;
 }
 
-bool IsAFile(const char* fileName, OSCONFIG_LOG_HANDLE log)
+bool IsAFile(const char* fileName, OsConfigLogHandle log)
 {
     return IsATrueFileOrDirectory(false, fileName, log);
 }
 
-bool IsADirectory(const char* fileName, OSCONFIG_LOG_HANDLE log)
+bool IsADirectory(const char* fileName, OsConfigLogHandle log)
 {
     return IsATrueFileOrDirectory(true, fileName, log);
 }
@@ -489,7 +489,7 @@ bool DirectoryExists(const char* fileName)
     return result;
 }
 
-int CheckFileExists(const char* fileName, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckFileExists(const char* fileName, char** reason, OsConfigLogHandle log)
 {
     int status = 0;
 
@@ -508,7 +508,7 @@ int CheckFileExists(const char* fileName, char** reason, OSCONFIG_LOG_HANDLE log
     return status;
 }
 
-int CheckFileNotFound(const char* fileName, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckFileNotFound(const char* fileName, char** reason, OsConfigLogHandle log)
 {
     int status = 0;
 
@@ -527,7 +527,7 @@ int CheckFileNotFound(const char* fileName, char** reason, OSCONFIG_LOG_HANDLE l
     return status;
 }
 
-static bool LockUnlockFile(FILE* file, bool lock, OSCONFIG_LOG_HANDLE log)
+static bool LockUnlockFile(FILE* file, bool lock, OsConfigLogHandle log)
 {
     int fileDescriptor = -1;
     int lockResult = -1;
@@ -550,17 +550,17 @@ static bool LockUnlockFile(FILE* file, bool lock, OSCONFIG_LOG_HANDLE log)
     return (0 == lockResult) ? true : false;
 }
 
-bool LockFile(FILE* file, OSCONFIG_LOG_HANDLE log)
+bool LockFile(FILE* file, OsConfigLogHandle log)
 {
     return LockUnlockFile(file, true, log);
 }
 
-bool UnlockFile(FILE* file, OSCONFIG_LOG_HANDLE log)
+bool UnlockFile(FILE* file, OsConfigLogHandle log)
 {
     return LockUnlockFile(file, false, log);
 }
 
-static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, OSCONFIG_LOG_HANDLE log)
+static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0;
@@ -645,7 +645,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     return result;
 }
 
-static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OSCONFIG_LOG_HANDLE log)
+static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
     int result = ENOENT;
 
@@ -694,22 +694,22 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
     return result;
 }
 
-int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
     return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, reason, log);
 }
 
-int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OSCONFIG_LOG_HANDLE log)
+int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
     return SetAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, OsConfigLogHandle log)
 {
     return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, reason, log);
 }
 
-int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OSCONFIG_LOG_HANDLE log)
+int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
     return SetAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
@@ -759,7 +759,7 @@ bool CharacterFoundInFile(const char* fileName, char what)
     return (GetNumberOfCharacterInstancesInFile(fileName, what) > 0) ? true : false;
 }
 
-int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, OsConfigLogHandle log)
 {
     int status = 0;
 
@@ -778,7 +778,7 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, OSCONFIG
     return status;
 }
 
-static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OSCONFIG_LOG_HANDLE log)
+static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log)
 {
     struct stat statStruct = { 0 };
     int status = ENOENT;
@@ -814,17 +814,17 @@ static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, 
     return status;
 }
 
-int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OSCONFIG_LOG_HANDLE log)
+int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log)
 {
     return GetAccess(false, name, ownerId, groupId, mode, log);
 }
 
-int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OSCONFIG_LOG_HANDLE log)
+int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log)
 {
     return GetAccess(true, name, ownerId, groupId, mode, log);
 }
 
-static int RestoreSelinuxContext(const char* target, OSCONFIG_LOG_HANDLE log)
+static int RestoreSelinuxContext(const char* target, OsConfigLogHandle log)
 {
     char* restoreCommand = NULL;
     char* textResult = NULL;
@@ -851,7 +851,7 @@ static int RestoreSelinuxContext(const char* target, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int RenameFile(const char* original, const char* target, OSCONFIG_LOG_HANDLE log)
+int RenameFile(const char* original, const char* target, OsConfigLogHandle log)
 {
     int status = 0;
 
@@ -882,7 +882,7 @@ int RenameFile(const char* original, const char* target, OSCONFIG_LOG_HANDLE log
     return status;
 }
 
-int RenameFileWithOwnerAndAccess(const char* original, const char* target, OSCONFIG_LOG_HANDLE log)
+int RenameFileWithOwnerAndAccess(const char* original, const char* target, OsConfigLogHandle log)
 {
     unsigned int ownerId = 0;
     unsigned int groupId = 0;
@@ -940,7 +940,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, OSCON
     return status;
 }
 
-int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, OSCONFIG_LOG_HANDLE log)
+int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, OsConfigLogHandle log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.ReplacingLines%u";
     char* tempFileName = NULL;
@@ -1100,7 +1100,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     return status;
 }
 
-int FindTextInFile(const char* fileName, const char* text, OSCONFIG_LOG_HANDLE log)
+int FindTextInFile(const char* fileName, const char* text, OsConfigLogHandle log)
 {
     char* contents = NULL;
     int status = 0;
@@ -1140,7 +1140,7 @@ int FindTextInFile(const char* fileName, const char* text, OSCONFIG_LOG_HANDLE l
     return status;
 }
 
-int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1164,7 +1164,7 @@ int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason
     return result;
 }
 
-int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1200,7 +1200,7 @@ static bool IsValidCommentCharacter(char c)
     return (('#' == c) || ('/' == c) || ('*' == c) || (';' == c) || ('!' == c)) ? true : false;
 }
 
-int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, OsConfigLogHandle log)
 {
     const char* commandTemplate = "grep -v '^%c' %s | grep %s";
 
@@ -1268,7 +1268,7 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
     return status;
 }
 
-int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char* text, bool strictCompare, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char* text, bool strictCompare, char** reason, OsConfigLogHandle log)
 {
     const char* commandTemplate = "printenv %s";
     char* command = NULL;
@@ -1350,7 +1350,7 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
     return status;
 }
 
-int CheckSmallFileContainsText(const char* fileName, const char* text, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckSmallFileContainsText(const char* fileName, const char* text, char** reason, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     char* contents = NULL;
@@ -1390,7 +1390,7 @@ int CheckSmallFileContainsText(const char* fileName, const char* text, char** re
     return status;
 }
 
-int FindTextInFolder(const char* directory, const char* text, OSCONFIG_LOG_HANDLE log)
+int FindTextInFolder(const char* directory, const char* text, OsConfigLogHandle log)
 {
     const char* pathTemplate = "%s/%s";
 
@@ -1443,7 +1443,7 @@ int FindTextInFolder(const char* directory, const char* text, OSCONFIG_LOG_HANDL
     return status;
 }
 
-int CheckTextNotFoundInFolder(const char* directory, const char* text, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckTextNotFoundInFolder(const char* directory, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1461,7 +1461,7 @@ int CheckTextNotFoundInFolder(const char* directory, const char* text, char** re
     return result;
 }
 
-int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1477,7 +1477,7 @@ int CheckTextFoundInFolder(const char* directory, const char* text, char** reaso
     return result;
 }
 
-static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OSCONFIG_LOG_HANDLE log)
+static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log)
 {
     char* contents = NULL;
     char* found = NULL;
@@ -1558,7 +1558,7 @@ static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, 
     return status;
 }
 
-int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1589,7 +1589,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
     return result;
 }
 
-int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1615,7 +1615,7 @@ int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const 
     return result;
 }
 
-static int FindTextInCommandOutput(const char* command, const char* text, OSCONFIG_LOG_HANDLE log)
+static int FindTextInCommandOutput(const char* command, const char* text, OsConfigLogHandle log)
 {
     char* results = NULL;
     int status = 0;
@@ -1648,7 +1648,7 @@ static int FindTextInCommandOutput(const char* command, const char* text, OSCONF
     return status;
 }
 
-int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1668,7 +1668,7 @@ int CheckTextFoundInCommandOutput(const char* command, const char* text, char** 
     return result;
 }
 
-int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1690,7 +1690,7 @@ int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char
     return result;
 }
 
-char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, OSCONFIG_LOG_HANDLE log)
+char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, OsConfigLogHandle log)
 {
     char* found = NULL;
     char* temp = NULL;
@@ -1727,7 +1727,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     return result;
 }
 
-int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, OSCONFIG_LOG_HANDLE log)
+int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, OsConfigLogHandle log)
 {
     char* stringValue = NULL;
     int value = INT_ENOENT;
@@ -1741,7 +1741,7 @@ int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char sepa
     return value;
 }
 
-char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, OSCONFIG_LOG_HANDLE log)
+char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, OsConfigLogHandle log)
 {
     char* contents = NULL;
     char* result = NULL;
@@ -1770,7 +1770,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
     return result;
 }
 
-int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, OSCONFIG_LOG_HANDLE log)
+int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, OsConfigLogHandle log)
 {
     char* contents = NULL;
     int result = INT_ENOENT;
@@ -1799,7 +1799,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
     return result;
 }
 
-int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, OsConfigLogHandle log)
 {
     int valueFromFile = INT_ENOENT;
     int i = 0;
@@ -1836,7 +1836,7 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
     return result;
 }
 
-int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, OsConfigLogHandle log)
 {
     int valueFromFile = INT_ENOENT;
     int result = ENOENT;
@@ -1861,7 +1861,7 @@ int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* 
     return result;
 }
 
-int SetEtcConfValue(const char* file, const char* name, const char* value, OSCONFIG_LOG_HANDLE log)
+int SetEtcConfValue(const char* file, const char* name, const char* value, OsConfigLogHandle log)
 {
     const char* newlineTemplate = "%s %s\n";
     char* newline = NULL;
@@ -1897,12 +1897,12 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, OSCON
     return status;
 }
 
-int SetEtcLoginDefValue(const char* name, const char* value, OSCONFIG_LOG_HANDLE log)
+int SetEtcLoginDefValue(const char* name, const char* value, OsConfigLogHandle log)
 {
     return SetEtcConfValue("/etc/login.defs", name, value, log);
 }
 
-int DisablePostfixNetworkListening(OSCONFIG_LOG_HANDLE log)
+int DisablePostfixNetworkListening(OsConfigLogHandle log)
 {
     const char* etcPostfix = "/etc/postfix/";
     const char* etcPostfixMainCf = "/etc/postfix/main.cf";

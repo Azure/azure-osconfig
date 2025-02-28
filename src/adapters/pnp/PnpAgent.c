@@ -26,7 +26,7 @@
 
 static int g_iotHubProtocol = PROTOCOL_AUTO;
 
-static REPORTED_PROPERTY* g_reportedProperties = NULL;
+static ReportedProperty* g_reportedProperties = NULL;
 static int g_numReportedProperties = 0;
 
 static unsigned int g_lastTime = 0;
@@ -85,7 +85,7 @@ static HTTP_PROXY_OPTIONS g_proxyOptions = {0};
 MPI_HANDLE g_mpiHandle = NULL;
 static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
 
-static OSCONFIG_LOG_HANDLE g_agentLog = NULL;
+static OsConfigLogHandle g_agentLog = NULL;
 
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_reportingInterval = DEFAULT_REPORTING_INTERVAL;
@@ -105,7 +105,7 @@ static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s "
     "\"product_vendor\"=\"%s\"&\"product_name\"=\"%s\")";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
 
-OSCONFIG_LOG_HANDLE GetLog()
+OsConfigLogHandle GetLog()
 {
     return g_agentLog;
 }

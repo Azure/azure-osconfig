@@ -33,7 +33,7 @@ static constexpr const char* cModuleInfo = "{\"Name\": \"Compliance\","
                                            "\"Lifetime\": 2,"
                                            "\"UserAccount\": 0}";
 
-Engine::Engine(OSCONFIG_LOG_HANDLE log) noexcept
+Engine::Engine(OsConfigLogHandle log) noexcept
     : mLog{log}
 {
 }
@@ -62,7 +62,7 @@ unsigned int Engine::getMaxPayloadSize() const noexcept
     return mMaxPayloadSize;
 }
 
-OSCONFIG_LOG_HANDLE Engine::log() const noexcept
+OsConfigLogHandle Engine::log() const noexcept
 {
     return mLog;
 }

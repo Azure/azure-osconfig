@@ -41,7 +41,7 @@ const std::string Sample::m_info = R""""({
     "Lifetime": 1,
     "UserAccount": 0})"""";
 
-OSCONFIG_LOG_HANDLE SampleLog::m_log = nullptr;
+OsConfigLogHandle SampleLog::m_log = nullptr;
 
 Sample::Sample(unsigned int maxPayloadSizeBytes) :
     m_stringValue(""),

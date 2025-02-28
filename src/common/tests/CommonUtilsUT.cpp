@@ -1306,7 +1306,7 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
           "\"ReportingIntervalSeconds\": 30"
         "}";
 
-    REPORTED_PROPERTY* reportedProperties = nullptr;
+    ReportedProperty* reportedProperties = nullptr;
 
     char* value = nullptr;
 
@@ -1443,10 +1443,10 @@ TEST_F(CommonUtilsTest, CharacterFoundInFile)
 
 TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
 
-    struct SIMPLIFIED_GROUP* groupList = NULL;
+    struct SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
 
     EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr, nullptr));
@@ -1475,7 +1475,7 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
 
 TEST_F(CommonUtilsTest, EnumerateAllGroups)
 {
-    SIMPLIFIED_GROUP* groupList = NULL;
+    SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
 
     EXPECT_EQ(0, EnumerateAllGroups(&groupList, &groupListSize, nullptr, nullptr));
@@ -2464,8 +2464,8 @@ TEST_F(CommonUtilsTest, IsValidDaemonName)
 
 TEST_F(CommonUtilsTest, StartStopPerfClock)
 {
-    PERF_CLOCK clock;
-    PERF_CLOCK another;
+    PerfClock clock;
+    PerfClock another;
     long microseconds = 0;
 
     EXPECT_EQ(EINVAL, StartPerfClock(nullptr, nullptr));
