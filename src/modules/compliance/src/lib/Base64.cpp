@@ -46,13 +46,14 @@ Result<std::string> Base64Decode(const std::string& input)
 {
     if (input.size() % 4 != 0)
     {
-        return Error("Invalid base64 length", EINVAL);
+        return Error("Invalid base64 length "  + std::to_string(input.size()), EINVAL);
     }
-    for (const char c : input)
+    for (size_t i = 0 ; i < input.size() ; i++)
     {
+        const char c = input[i];
         if (!IsBase64(c))
         {
-            return Error("Invalid base64 character", EINVAL);
+            return Error("Invalid base64 character  at " + std::to_string(i) + " char '" + c + "'", EINVAL);
         }
     }
 
