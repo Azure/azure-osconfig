@@ -66,10 +66,10 @@ private:
     unsigned int mMaxPayloadSize = 0;
     std::map<std::string, Procedure> mDatabase;
 
-    Result<JsonWrapper> decodeB64JSON(const char* input) const;
-    Optional<Error> setProcedure(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
-    Optional<Error> initAudit(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
-    Result<bool> executeRemediation(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
+    Result<JsonWrapper> decodeB64JSON(const std::string& input) const;
+    Optional<Error> setProcedure(const std::string& ruleName, const std::string& payload);
+    Optional<Error> initAudit(const std::string& ruleName, const std::string& payload);
+    Result<bool> executeRemediation(const std::string& ruleName, const std::string& payload);
 
 public:
     // Create engine with external log file
@@ -85,7 +85,7 @@ public:
     static const char* getModuleInfo() noexcept;
 
     Result<AuditResult> mmiGet(const char* objectName);
-    Result<bool> mmiSet(const char* objectName, const char* payload, const int payloadSizeBytes);
+    Result<bool> mmiSet(const char* objectName, const std::string& payload);
 };
 } // namespace compliance
 
