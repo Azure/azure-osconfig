@@ -41,9 +41,9 @@ static const char* g_adhsConfigFile = NULL;
 static const char* g_adhsLogFile = "/var/log/osconfig_adhs.log";
 static const char* g_adhsRolledLogFile = "/var/log/osconfig_adhs.bak";
 
-static OSCONFIG_LOG_HANDLE g_log = NULL;
+static OsConfigLogHandle g_log = NULL;
 
-static OSCONFIG_LOG_HANDLE AdhsGetLog()
+static OsConfigLogHandle AdhsGetLog()
 {
     return g_log;
 }

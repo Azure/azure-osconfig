@@ -61,7 +61,7 @@ public:
     };
 
 private:
-    OSCONFIG_LOG_HANDLE mLog = nullptr;
+    OsConfigLogHandle mLog = nullptr;
     bool mLocalLog = false;
     unsigned int mMaxPayloadSize = 0;
     std::map<std::string, Procedure> mDatabase;
@@ -73,14 +73,14 @@ private:
 
 public:
     // Create engine with external log file
-    Engine(OSCONFIG_LOG_HANDLE log) noexcept;
+    Engine(OsConfigLogHandle log) noexcept;
     // Create engine with locally initialized log file
     Engine() noexcept;
     ~Engine();
 
     void setMaxPayloadSize(unsigned int value) noexcept;
     unsigned int getMaxPayloadSize() const noexcept;
-    OSCONFIG_LOG_HANDLE log() const noexcept;
+    OsConfigLogHandle log() const noexcept;
 
     static const char* getModuleInfo() noexcept;
 

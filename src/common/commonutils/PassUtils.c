@@ -9,7 +9,7 @@ static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
 static const char* g_pamUnixSo = "pam_unix.so";
 static const char* g_remember = "remember";
 
-static char* FindPamModule(const char* pamModule, OSCONFIG_LOG_HANDLE log)
+static char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
 {
     const char* paths[] = {
         "/usr/lib/x86_64-linux-gnu/security/%s",
@@ -59,7 +59,7 @@ static char* FindPamModule(const char* pamModule, OSCONFIG_LOG_HANDLE log)
     return result;
 }
 
-int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHandle log)
 {
     int status = ENOENT;
     char* pamModule = NULL;
@@ -94,7 +94,7 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OSCONFIG_LOG_
     return status;
 }
 
-static void EnsurePamModulePackagesAreInstalled(OSCONFIG_LOG_HANDLE log)
+static void EnsurePamModulePackagesAreInstalled(OsConfigLogHandle log)
 {
     const char* pamPackages[] = {"pam", "libpam-modules", "pam_pwquality", "libpam-pwquality", "libpam-cracklib"};
     int numPamPackages = ARRAY_SIZE(pamPackages);
@@ -106,7 +106,7 @@ static void EnsurePamModulePackagesAreInstalled(OSCONFIG_LOG_HANDLE log)
     }
 }
 
-int SetEnsurePasswordReuseIsLimited(int remember, OSCONFIG_LOG_HANDLE log)
+int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log)
 {
     // This configuration line is used in the PAM (Pluggable Authentication Module) configuration
     // to set the number of previous passwords to remember in order to prevent password reuse.
@@ -169,7 +169,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, OsConfigLogHandle log)
 {
     const char* auth = "auth";
     const char* required = "required";
@@ -281,7 +281,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     return status;
 }
 
-int SetLockoutForFailedPasswordAttempts(OSCONFIG_LOG_HANDLE log)
+int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
 {
     // These configuration lines are used in the PAM (Pluggable Authentication Module) settings to count
     // number of attempted accesses and lock user accounts after a specified number of failed login attempts.
@@ -390,7 +390,7 @@ int SetLockoutForFailedPasswordAttempts(OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OSCONFIG_LOG_HANDLE log)
+static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
     const char* pamPwQualitySo = "pam_pwquality.so";
     const char* pamCrackLibSo = "pam_cracklib.so";
@@ -564,7 +564,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
     return status;
 }
 
-static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* option, const char* fileName, char separator, char comment, int desired, char** reason, OSCONFIG_LOG_HANDLE log)
+static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* option, const char* fileName, char separator, char comment, int desired, char** reason, OsConfigLogHandle log)
 {
     int value = INT_ENOENT;
     int status = ENOENT;
@@ -606,7 +606,7 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
     return status;
 }
 
-static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OSCONFIG_LOG_HANDLE log)
+static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
     FILE* fileHandle = NULL;
     char* line = NULL;
@@ -696,7 +696,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
     return status;
 }
 
-int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
     int status = ENOENT;
 
@@ -717,13 +717,13 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     return status;
 }
 
-typedef struct PASSWORD_CREATION_REQUIREMENTS
+typedef struct PasswordCreationRequirements
 {
     const char* name;
     int value;
-} PASSWORD_CREATION_REQUIREMENTS;
+} PasswordCreationRequirements;
 
-int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, OSCONFIG_LOG_HANDLE log)
+int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, OsConfigLogHandle log)
 {
     // These lines are used for password creation requirements configuration.
     //
@@ -760,7 +760,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     const char* etcSecurityPwQualityConfLineTemplate = "%s = %d\n";
     const char* pamPwQualitySo = "pam_pwquality.so";
     const char* pamCrackLibSo = "pam_cracklib.so";
-    PASSWORD_CREATION_REQUIREMENTS entries[] = {{"retry", 0}, {"minlen", 0}, {"minclass", 0}, {"dcredit", 0}, {"ucredit", 0}, {"ocredit", 0}, {"lcredit", 0}};
+    PasswordCreationRequirements entries[] = {{"retry", 0}, {"minlen", 0}, {"minclass", 0}, {"dcredit", 0}, {"ucredit", 0}, {"ocredit", 0}, {"lcredit", 0}};
     int numEntries = ARRAY_SIZE(entries);
     bool pamPwQualitySoExists = false;
     bool pamCrackLibSoExists = false;

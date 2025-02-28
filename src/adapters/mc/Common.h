@@ -50,6 +50,6 @@
     LogWithMiContext(context, miResult, log, FORMAT, ##__VA_ARGS__);\
 }\
 
-OSCONFIG_LOG_HANDLE GetLog(void);
+OsConfigLogHandle GetLog(void);
 
 #endif

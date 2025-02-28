@@ -9,10 +9,10 @@ extern "C"
 {
 #endif
 
-int InitializeSshAudit(OSCONFIG_LOG_HANDLE log);
-int InitializeSshAuditCheck(const char* name, char* value, OSCONFIG_LOG_HANDLE log);
-int ProcessSshAuditCheck(const char* name, char* value, char** reason, OSCONFIG_LOG_HANDLE log);
-void SshAuditCleanup(OSCONFIG_LOG_HANDLE log);
+int InitializeSshAudit(OsConfigLogHandle log);
+int InitializeSshAuditCheck(const char* name, char* value, OsConfigLogHandle log);
+int ProcessSshAuditCheck(const char* name, char* value, char** reason, OsConfigLogHandle log);
+void SshAuditCleanup(OsConfigLogHandle log);
 
 #ifdef __cplusplus
 }

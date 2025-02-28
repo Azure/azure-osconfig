@@ -46,7 +46,7 @@ static const char* g_deviceInfoModuleInfo = "{\"Name\": \"DeviceInfo\","
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-static OSCONFIG_LOG_HANDLE g_log = NULL;
+static OsConfigLogHandle g_log = NULL;
 
 static char* g_osName = NULL;
 static char* g_osVersion = NULL;
@@ -72,7 +72,7 @@ static int g_referenceCount = 0;
 
 static unsigned int g_maxPayloadSizeBytes = 0;
 
-static OSCONFIG_LOG_HANDLE DeviceInfoGetLog(void)
+static OsConfigLogHandle DeviceInfoGetLog(void)
 {
     return g_log;
 }

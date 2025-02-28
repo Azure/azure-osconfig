@@ -24,7 +24,7 @@
 class FirewallLog
 {
 public:
-    static OSCONFIG_LOG_HANDLE Get()
+    static OsConfigLogHandle Get()
     {
         return m_logHandle;
     }
@@ -38,7 +38,7 @@ public:
     }
 
 private:
-    static OSCONFIG_LOG_HANDLE m_logHandle;
+    static OsConfigLogHandle m_logHandle;
 };
 
 class StringEnum

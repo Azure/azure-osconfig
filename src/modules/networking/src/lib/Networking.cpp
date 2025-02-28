@@ -96,7 +96,7 @@ const unsigned int g_twoDotsSize = strlen(g_twoDots);
 const unsigned int g_templateWithDotsSize = strlen(g_templateWithDots);
 const unsigned int g_templateSize = (g_templateWithDotsSize > (g_numFields * g_twoDotsSize)) ? (g_templateWithDotsSize - (g_numFields * g_twoDotsSize)) : 0;
 
-OSCONFIG_LOG_HANDLE NetworkingLog::m_logNetworking = nullptr;
+OsConfigLogHandle NetworkingLog::m_logNetworking = nullptr;
 
 NetworkingObject::NetworkingObject(unsigned int maxPayloadSizeBytes)
 {

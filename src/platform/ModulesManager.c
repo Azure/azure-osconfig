@@ -40,9 +40,9 @@ static MODULE* g_modules = NULL;
 static REPORTED_OBJECT* g_reported = NULL;
 static int g_reportedTotal = 0;
 
-OSCONFIG_LOG_HANDLE g_platformLog = NULL;
+OsConfigLogHandle g_platformLog = NULL;
 
-OSCONFIG_LOG_HANDLE GetPlatformLog(void)
+OsConfigLogHandle GetPlatformLog(void)
 {
     return g_platformLog;
 }

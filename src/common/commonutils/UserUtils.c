@@ -18,7 +18,7 @@ static const char* g_etcShadowDash = "/etc/shadow-";
 
 static const char* g_noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", "" };
 
-static void ResetUserEntry(SIMPLIFIED_USER* target)
+static void ResetUserEntry(SimplifiedUser* target)
 {
     if (NULL != target)
     {
@@ -43,7 +43,7 @@ static void ResetUserEntry(SIMPLIFIED_USER* target)
     }
 }
 
-void FreeUsersList(SIMPLIFIED_USER** source, unsigned int size)
+void FreeUsersList(SimplifiedUser** source, unsigned int size)
 {
     unsigned int i = 0;
 
@@ -58,7 +58,7 @@ void FreeUsersList(SIMPLIFIED_USER** source, unsigned int size)
     }
 }
 
-static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, OSCONFIG_LOG_HANDLE log)
+static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsConfigLogHandle log)
 {
     int status = 0;
     size_t length = 0;
@@ -167,7 +167,7 @@ static char* EncryptionName(int type)
     return name;
 }
 
-static bool IsUserNonLogin(SIMPLIFIED_USER* user)
+static bool IsUserNonLogin(SimplifiedUser* user)
 {
     int index = ARRAY_SIZE(g_noLoginShell);
     bool noLogin = false;
@@ -189,7 +189,7 @@ static bool IsUserNonLogin(SIMPLIFIED_USER* user)
     return noLogin;
 }
 
-static int SetUserNonLogin(SIMPLIFIED_USER* user, OSCONFIG_LOG_HANDLE log)
+static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
 {
     const char* commandTemplate = "usermod -s %s %s";
     char* command = NULL;
@@ -244,7 +244,7 @@ static int SetUserNonLogin(SIMPLIFIED_USER* user, OSCONFIG_LOG_HANDLE log)
     return result;
 }
 
-static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, OSCONFIG_LOG_HANDLE log)
+static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
 {
     struct spwd* shadowEntry = NULL;
     char control = 0;
@@ -341,7 +341,7 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, OSCONFIG_LOG_HANDLE log
     return status;
 }
 
-int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, char** reason, OSCONFIG_LOG_HANDLE log)
+int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason, OsConfigLogHandle log)
 {
     const char* passwdFile = "/etc/passwd";
 
@@ -361,7 +361,7 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, char** reason
 
     if (0 != (*size = GetNumberOfLinesInFile(passwdFile)))
     {
-        listSize = (*size) * sizeof(SIMPLIFIED_USER);
+        listSize = (*size) * sizeof(SimplifiedUser);
         if (NULL != (*userList = malloc(listSize)))
         {
             memset(*userList, 0, listSize);
@@ -419,7 +419,7 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, char** reason
     return status;
 }
 
-void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size)
+void FreeGroupList(SimplifiedGroup** groupList, unsigned int size)
 {
     unsigned int i = 0;
 
@@ -434,7 +434,7 @@ void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size)
     }
 }
 
-int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, char** reason, OSCONFIG_LOG_HANDLE log)
+int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsigned int* size, char** reason, OsConfigLogHandle log)
 {
     gid_t* groupIds = NULL;
     int numberOfGroups = MAX_GROUPS_USER_CAN_BE_IN;
@@ -497,7 +497,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     {
         OsConfigLogDebug(log, "EnumerateUserGroups: user '%s' (%u) is in %d group%s", user->username, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
 
-        if (NULL == (*groupList = malloc(sizeof(SIMPLIFIED_GROUP) * numberOfGroups)))
+        if (NULL == (*groupList = malloc(sizeof(SimplifiedGroup) * numberOfGroups)))
         {
             OsConfigLogError(log, "EnumerateUserGroups: out of memory");
             status = ENOMEM;
@@ -549,7 +549,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     return status;
 }
 
-int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, char** reason, OSCONFIG_LOG_HANDLE log)
+int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** reason, OsConfigLogHandle log)
 {
     const char* groupFile = "/etc/group";
     struct group* groupEntry = NULL;
@@ -569,7 +569,7 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, char** 
 
     if (0 != (*size = GetNumberOfLinesInFile(groupFile)))
     {
-        listSize = (*size) * sizeof(SIMPLIFIED_GROUP);
+        listSize = (*size) * sizeof(SimplifiedGroup);
         if (NULL != (*groupList = malloc(listSize)))
         {
             memset(*groupList, 0, listSize);
@@ -629,13 +629,13 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, char** 
     return status;
 }
 
-int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
-    struct SIMPLIFIED_GROUP* userGroupList = NULL;
+    struct SimplifiedGroup* userGroupList = NULL;
     unsigned int userGroupListSize = 0;
-    struct SIMPLIFIED_GROUP* groupList = NULL;
+    struct SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0, j = 0, k = 0;
     bool found = false;
@@ -691,15 +691,15 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OSCONFIG_LOG_HANDLE lo
     return status;
 }
 
-int SetAllEtcPasswdGroupsToExistInEtcGroup(OSCONFIG_LOG_HANDLE log)
+int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
 {
     const char* commandTemplate = "gpasswd -d %u %u";
     char* command = NULL;
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
-    struct SIMPLIFIED_GROUP* userGroupList = NULL;
+    struct SimplifiedGroup* userGroupList = NULL;
     unsigned int userGroupListSize = 0;
-    struct SIMPLIFIED_GROUP* groupList = NULL;
+    struct SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0, j = 0, k = 0;
     bool found = false;
@@ -776,9 +776,9 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckNoDuplicateUidsExist(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckNoDuplicateUidsExist(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
     unsigned int i = 0, j = 0;
     unsigned int hits = 0;
@@ -819,7 +819,7 @@ int CheckNoDuplicateUidsExist(char** reason, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int RemoveUser(SIMPLIFIED_USER* user, bool removeHome, OSCONFIG_LOG_HANDLE log)
+int RemoveUser(SimplifiedUser* user, bool removeHome, OsConfigLogHandle log)
 {
     const char* commandTemplate = "userdel %s %s";
     char* command = NULL;
@@ -867,9 +867,9 @@ int RemoveUser(SIMPLIFIED_USER* user, bool removeHome, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckNoDuplicateGidsExist(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckNoDuplicateGidsExist(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_GROUP* groupList = NULL;
+    SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0, j = 0;
     unsigned int hits = 0;
@@ -910,11 +910,11 @@ int CheckNoDuplicateGidsExist(char** reason, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int RemoveGroup(SIMPLIFIED_GROUP* group, bool removeHomeDirs, OSCONFIG_LOG_HANDLE log)
+int RemoveGroup(SimplifiedGroup* group, bool removeHomeDirs, OsConfigLogHandle log)
 {
     const char* commandTemplate = "groupdel -f %s";
     char* command = NULL;
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
     unsigned int i = 0;
     int status = 0;
@@ -973,9 +973,9 @@ int RemoveGroup(SIMPLIFIED_GROUP* group, bool removeHomeDirs, OSCONFIG_LOG_HANDL
     return status;
 }
 
-int CheckNoDuplicateUserNamesExist(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckNoDuplicateUserNamesExist(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
     unsigned int i = 0, j = 0;
     unsigned int hits = 0;
@@ -1016,9 +1016,9 @@ int CheckNoDuplicateUserNamesExist(char** reason, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckNoDuplicateGroupNamesExist(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckNoDuplicateGroupNamesExist(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_GROUP* groupList = NULL;
+    SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0, j = 0;
     unsigned int hits = 0;
@@ -1059,9 +1059,9 @@ int CheckNoDuplicateGroupNamesExist(char** reason, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckShadowGroupIsEmpty(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckShadowGroupIsEmpty(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_GROUP* groupList = NULL;
+    SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;
     bool found = false;
@@ -1092,13 +1092,13 @@ int CheckShadowGroupIsEmpty(char** reason, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int SetShadowGroupEmpty(OSCONFIG_LOG_HANDLE log)
+int SetShadowGroupEmpty(OsConfigLogHandle log)
 {
     const char* commandTemplate = "gpasswd -d %s %s";
     char* command = NULL;
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
-    struct SIMPLIFIED_GROUP* userGroupList = NULL;
+    struct SimplifiedGroup* userGroupList = NULL;
     unsigned int userGroupListSize = 0;
     unsigned int i = 0, j = 0;
     int status = 0, _status = 0;
@@ -1158,9 +1158,9 @@ int SetShadowGroupEmpty(OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckRootGroupExists(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckRootGroupExists(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_GROUP* groupList = NULL;
+    SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;
     bool found = false;
@@ -1192,12 +1192,12 @@ int CheckRootGroupExists(char** reason, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int RepairRootGroup(OSCONFIG_LOG_HANDLE log)
+int RepairRootGroup(OsConfigLogHandle log)
 {
     const char* etcGroup = "/etc/group";
     const char* rootLine = "root:x:0:\n";
     const char* tempFileName = "/etc/~group";
-    SIMPLIFIED_GROUP* groupList = NULL;
+    SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;
     bool found = false;
@@ -1295,9 +1295,9 @@ int RepairRootGroup(OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckAllUsersHavePasswordsSet(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
@@ -1347,9 +1347,9 @@ int CheckAllUsersHavePasswordsSet(char** reason, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int RemoveUsersWithoutPasswords(OSCONFIG_LOG_HANDLE log)
+int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
@@ -1405,9 +1405,9 @@ int RemoveUsersWithoutPasswords(OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckRootIsOnlyUidZeroAccount(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckRootIsOnlyUidZeroAccount(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
@@ -1437,9 +1437,9 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int SetRootIsOnlyUidZeroAccount(OSCONFIG_LOG_HANDLE log)
+int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
@@ -1470,9 +1470,9 @@ int SetRootIsOnlyUidZeroAccount(OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckDefaultRootAccountGroupIsGidZero(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckDefaultRootAccountGroupIsGidZero(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
     unsigned int i = 0;
     int status = 0;
@@ -1503,7 +1503,7 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, OSCONFIG_LOG_HANDLE log
     return status;
 }
 
-int SetDefaultRootAccountGroupIsGidZero(OSCONFIG_LOG_HANDLE log)
+int SetDefaultRootAccountGroupIsGidZero(OsConfigLogHandle log)
 {
     int status = 0;
 
@@ -1515,9 +1515,9 @@ int SetDefaultRootAccountGroupIsGidZero(OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckAllUsersHomeDirectoriesExist(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
@@ -1551,9 +1551,9 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int SetUserHomeDirectories(OSCONFIG_LOG_HANDLE log)
+int SetUserHomeDirectories(OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     unsigned int defaultHomeDirAccess = 0750;
     int status = 0, _status = 0;
@@ -1615,7 +1615,7 @@ int SetUserHomeDirectories(OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-static int CheckHomeDirectoryOwnership(SIMPLIFIED_USER* user, OSCONFIG_LOG_HANDLE log)
+static int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     int status = 0;
@@ -1648,9 +1648,9 @@ static int CheckHomeDirectoryOwnership(SIMPLIFIED_USER* user, OSCONFIG_LOG_HANDL
     return status;
 }
 
-int CheckUsersOwnTheirHomeDirectories(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
@@ -1705,9 +1705,9 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     bool oneGoodMode = false;
     int status = 0;
@@ -1768,9 +1768,9 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
     return status;
 }
 
-int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, unsigned int modeForRoot, unsigned int modeForOthers, OSCONFIG_LOG_HANDLE log)
+int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, unsigned int modeForRoot, unsigned int modeForOthers, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     bool oneGoodMode = false;
     int status = 0, _status = 0;
@@ -1836,7 +1836,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
     return status;
 }
 
-int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, OsConfigLogHandle log)
 {
     const char* command = "cat /etc/login.defs | grep ENCRYPT_METHOD | grep ^[^#]";
     char* encryption = EncryptionName(algorithm);
@@ -1879,7 +1879,7 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, OSCONFI
     return status;
 }
 
-int SetPasswordHashingAlgorithm(unsigned int algorithm, OSCONFIG_LOG_HANDLE log)
+int SetPasswordHashingAlgorithm(unsigned int algorithm, OsConfigLogHandle log)
 {
     const char* encryptMethod = "ENCRYPT_METHOD";
     char* encryption = EncryptionName(algorithm);
@@ -1906,9 +1906,9 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckMinDaysBetweenPasswordChanges(long days, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckMinDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
     long etcLoginDefsDays = GetPassMinDays(log);
@@ -1976,11 +1976,11 @@ int CheckMinDaysBetweenPasswordChanges(long days, char** reason, OSCONFIG_LOG_HA
     return status;
 }
 
-int SetMinDaysBetweenPasswordChanges(long days, OSCONFIG_LOG_HANDLE log)
+int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
 {
     const char* commandTemplate = "chage -m %ld %s";
     char* command = NULL;
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
@@ -2047,9 +2047,9 @@ int SetMinDaysBetweenPasswordChanges(long days, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
     long etcLoginDefsDays = GetPassMaxDays(log);
@@ -2119,11 +2119,11 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OSCONFIG_LOG_HA
     return status;
 }
 
-int SetMaxDaysBetweenPasswordChanges(long days, OSCONFIG_LOG_HANDLE log)
+int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
 {
     const char* commandTemplate = "chage -M %ld %s";
     char* command = NULL;
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
@@ -2190,11 +2190,11 @@ int SetMaxDaysBetweenPasswordChanges(long days, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int EnsureUsersHaveDatesOfLastPasswordChanges(OSCONFIG_LOG_HANDLE log)
+int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log)
 {
     const char* commandTemplate = "chage -d %ld %s";
     char* command = NULL;
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
     time_t currentTime = 0;
@@ -2248,9 +2248,9 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckPasswordExpirationLessThan(long days, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckPasswordExpirationLessThan(long days, char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     time_t currentTime = 0;
     int status = 0;
@@ -2328,9 +2328,9 @@ int CheckPasswordExpirationLessThan(long days, char** reason, OSCONFIG_LOG_HANDL
     return status;
 }
 
-int CheckPasswordExpirationWarning(long days, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckPasswordExpirationWarning(long days, char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
     long etcLoginDefsDays = GetPassWarnAge(log);
@@ -2392,11 +2392,11 @@ int CheckPasswordExpirationWarning(long days, char** reason, OSCONFIG_LOG_HANDLE
     return status;
 }
 
-int SetPasswordExpirationWarning(long days, OSCONFIG_LOG_HANDLE log)
+int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
 {
     const char* commandTemplate = "chage -W %ld %s";
     char* command = NULL;
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
@@ -2463,9 +2463,9 @@ int SetPasswordExpirationWarning(long days, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckUsersRecordedPasswordChangeDates(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckUsersRecordedPasswordChangeDates(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     long timer = 0;
     int status = 0;
@@ -2518,9 +2518,9 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, OSCONFIG_LOG_HANDLE log
     return status;
 }
 
-int CheckLockoutAfterInactivityLessThan(long days, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckLockoutAfterInactivityLessThan(long days, char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
@@ -2554,11 +2554,11 @@ int CheckLockoutAfterInactivityLessThan(long days, char** reason, OSCONFIG_LOG_H
     return status;
 }
 
-int SetLockoutAfterInactivityLessThan(long days, OSCONFIG_LOG_HANDLE log)
+int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log)
 {
     const char* commandTemplate = "chage -I %ld %s";
     char* command = NULL;
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
@@ -2611,9 +2611,9 @@ int SetLockoutAfterInactivityLessThan(long days, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckSystemAccountsAreNonLogin(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckSystemAccountsAreNonLogin(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
@@ -2643,9 +2643,9 @@ int CheckSystemAccountsAreNonLogin(char** reason, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int SetSystemAccountsNonLogin(OSCONFIG_LOG_HANDLE log)
+int SetSystemAccountsNonLogin(OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
@@ -2683,9 +2683,9 @@ int SetSystemAccountsNonLogin(OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckRootPasswordForSingleUserMode(char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckRootPasswordForSingleUserMode(char** reason, OsConfigLogHandle log)
 {
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     bool usersWithPassword = false;
     bool rootHasPassword = false;
@@ -2748,11 +2748,11 @@ int CheckRootPasswordForSingleUserMode(char** reason, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, char** reason, OsConfigLogHandle log)
 {
     const char* templateDotPath = "%s/.%s";
 
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     size_t templateLength = 0, length = 0;
     char* dotPath = NULL;
@@ -2827,11 +2827,11 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
     return status;
 }
 
-int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, OsConfigLogHandle log)
 {
     const char* pathTemplate = "%s/%s";
 
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     DIR* home = NULL;
     struct dirent* entry = NULL;
@@ -2917,11 +2917,11 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
     return status;
 }
 
-int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, OSCONFIG_LOG_HANDLE log)
+int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, OsConfigLogHandle log)
 {
     const char* pathTemplate = "%s/%s";
 
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     DIR* home = NULL;
     struct dirent* entry = NULL;
@@ -3012,14 +3012,14 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
     return status;
 }
 
-int CheckUserAccountsNotFound(const char* names, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandle log)
 {
     const char* userTemplate = "%s:";
     size_t namesLength = 0;
     char* name = NULL;
     char* decoratedName = NULL;
-    SIMPLIFIED_USER* userList = NULL;
-    SIMPLIFIED_GROUP* groupList = NULL;
+    SimplifiedUser* userList = NULL;
+    SimplifiedGroup* groupList = NULL;
     unsigned int userListSize = 0, groupListSize = 0, i = 0, j = 0;
     bool found = false;
     int status = 0;
@@ -3140,13 +3140,13 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OSCONFIG_LOG_HAN
     return status;
 }
 
-int RemoveUserAccounts(const char* names, bool removeHomeDirs, OSCONFIG_LOG_HANDLE log)
+int RemoveUserAccounts(const char* names, bool removeHomeDirs, OsConfigLogHandle log)
 {
     const char* userTemplate = "%s:";
     size_t namesLength = 0;
     char* name = NULL;
     char* decoratedName = NULL;
-    SIMPLIFIED_USER* userList = NULL;
+    SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     bool userAccountsNotFound = false;
     int status = 0, _status = 0;
@@ -3271,7 +3271,7 @@ int RemoveUserAccounts(const char* names, bool removeHomeDirs, OSCONFIG_LOG_HAND
     return status;
 }
 
-int RestrictSuToRootGroup(OSCONFIG_LOG_HANDLE log)
+int RestrictSuToRootGroup(OsConfigLogHandle log)
 {
     const char* etcPamdSu = "/etc/pam.d/su";
     const char* suRestrictedToRootGroup = "auth required pam_wheel.so use_uid group=root";

@@ -9,9 +9,9 @@ extern "C"
 {
 #endif
 
-void InitializeWatcher(const char* jsonConfiguration, OSCONFIG_LOG_HANDLE log);
-void WatcherDoWork(OSCONFIG_LOG_HANDLE log);
-void WatcherCleanup(OSCONFIG_LOG_HANDLE log);
+void InitializeWatcher(const char* jsonConfiguration, OsConfigLogHandle log);
+void WatcherDoWork(OsConfigLogHandle log);
+void WatcherCleanup(OsConfigLogHandle log);
 bool IsWatcherActive(void);
 
 #ifdef __cplusplus

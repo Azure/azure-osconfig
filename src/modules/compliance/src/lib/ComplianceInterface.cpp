@@ -15,9 +15,9 @@
 
 using compliance::Engine;
 
-static OSCONFIG_LOG_HANDLE g_log = nullptr;
+static OsConfigLogHandle g_log = nullptr;
 
-void ComplianceInitialize(OSCONFIG_LOG_HANDLE log)
+void ComplianceInitialize(OsConfigLogHandle log)
 {
     UNUSED(log);
     g_log = log;

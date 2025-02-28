@@ -21,7 +21,7 @@
 
 static unsigned int g_lastTime = 0;
 
-extern OSCONFIG_LOG_HANDLE g_platformLog;
+extern OsConfigLogHandle g_platformLog;
 
 extern char g_mpiCall[MPI_CALL_MESSAGE_LENGTH];
 
