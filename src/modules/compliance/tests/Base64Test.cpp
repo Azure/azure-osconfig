@@ -59,3 +59,10 @@ TEST_F(Base64Test, InvalidThreePadding)
     ASSERT_EQ(result.error().message, "Invalid base64");
     ASSERT_EQ(result.error().code, EINVAL);
 }
+
+TEST_F(Base64Test, ValidBase64WithSpecials)
+{
+    Result<std::string> result = Base64Decode("SGVsbG8gV29ybGQgZm8/YmE+");
+    ASSERT_TRUE(result.has_value());
+    ASSERT_EQ(result.value(), "Hello World fo?ba>");
+}
