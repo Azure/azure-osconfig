@@ -95,6 +95,13 @@ TEST_F(ComplianceTest, ComplianceMmiSet_SetProcedure_1)
     ASSERT_EQ(MMI_OK, ComplianceMmiSet(mHandle, "Compliance", "procedureX", payload.c_str(), static_cast<int>(payload.size())));
 }
 
+TEST_F(ComplianceTest, ComplianceMmiSet_SetProcedure_2)
+{
+    auto procedurePayload =
+        std::string("\"eyJhdWRpdCI6eyJhbnlPZiI6W3sicW0/Ijp7fX1dfX0K\""); // '{"audit":{"anyOf":[{"qm?":{}}]}}' in base64, verify that '/' is properly de-escaped
+    ASSERT_EQ(MMI_OK, ComplianceMmiSet(mHandle, "Compliance", "procedureX", procedurePayload.c_str(), static_cast<int>(procedurePayload.size())));
+}
+
 TEST_F(ComplianceTest, ComplianceMmiGet_InvalidArguments_1)
 {
     char* payload = nullptr;
