@@ -3,7 +3,7 @@
 
 #include "Internal.h"
 
-int StartPerfClock(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log)
+int StartPerfClock(PerfClock* clock, OsConfigLogHandle log)
 {
     int status = EINVAL;
 
@@ -13,7 +13,7 @@ int StartPerfClock(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log)
         return status;
     }
 
-    memset(clock, 0, sizeof(PERF_CLOCK));
+    memset(clock, 0, sizeof(PerfClock));
 
     if (0 != (status = clock_gettime(CLOCK_MONOTONIC, &(clock->start))))
     {
@@ -23,7 +23,7 @@ int StartPerfClock(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int StopPerfClock(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log)
+int StopPerfClock(PerfClock* clock, OsConfigLogHandle log)
 {
     int status = EINVAL;
 
@@ -40,7 +40,7 @@ int StopPerfClock(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log)
             OsConfigLogError(log, "StopPerfClock: clock_gettime returned an earlier time than expected (%ld seconds earlier)",
                 clock->start.tv_sec - clock->stop.tv_sec);
 
-            memset(clock, 0, sizeof(PERF_CLOCK));
+            memset(clock, 0, sizeof(PerfClock));
 
             status = ENOENT;
         }
@@ -53,7 +53,7 @@ int StopPerfClock(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-long GetPerfClockTime(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log)
+long GetPerfClockTime(PerfClock* clock, OsConfigLogHandle log)
 {
     long seconds = 0;
     long nanoseconds = 0;
@@ -79,7 +79,7 @@ long GetPerfClockTime(PERF_CLOCK* clock, OSCONFIG_LOG_HANDLE log)
     return microseconds;
 }
 
-void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* objectName, int objectResult, long limit, OSCONFIG_LOG_HANDLE log)
+void LogPerfClock(PerfClock* clock, const char* componentName, const char* objectName, int objectResult, long limit, OsConfigLogHandle log)
 {
     long microseconds = -1;
 
@@ -120,7 +120,7 @@ void LogPerfClock(PERF_CLOCK* clock, const char* componentName, const char* obje
     }
 }
 
-void LogPerfClockTelemetry(PERF_CLOCK* clock, const char* targetName, const char* componentName, const char* objectName, int objectResult, OSCONFIG_LOG_HANDLE log)
+void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char* componentName, const char* objectName, int objectResult, OsConfigLogHandle log)
 {
     long microseconds = -1;
 

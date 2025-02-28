@@ -879,7 +879,7 @@ static int GetIotHubProtocolFromJsonConfig_target(const char* data, std::size_t 
 static int LoadReportedFromJsonConfig_target(const char* data, std::size_t size) noexcept
 {
     auto json = std::string(data, size);
-    REPORTED_PROPERTY* reported = nullptr;
+    ReportedProperty* reported = nullptr;
     LoadReportedFromJsonConfig(json.c_str(), &reported, nullptr);
     free(reported);
     return 0;

@@ -3,7 +3,7 @@
 
 #include "Internal.h"
 
-int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, OsConfigLogHandle log)
 {
     FILE* mountFileHandle = NULL;
     struct mntent* mountStruct = NULL;
@@ -113,7 +113,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     return status;
 }
 
-static int CopyMountTableFile(const char* source, const char* target, OSCONFIG_LOG_HANDLE log)
+static int CopyMountTableFile(const char* source, const char* target, OsConfigLogHandle log)
 {
     FILE* sourceHandle = NULL;
     FILE* targetHandle = NULL;
@@ -165,7 +165,7 @@ static int CopyMountTableFile(const char* source, const char* target, OSCONFIG_L
     return status;
 }
 
-static int LineAlreadyExistsInFile(const char* fileName, const char* text, OSCONFIG_LOG_HANDLE log)
+static int LineAlreadyExistsInFile(const char* fileName, const char* text, OsConfigLogHandle log)
 {
     char* contents = NULL;
     int status = 0;
@@ -196,7 +196,7 @@ static int LineAlreadyExistsInFile(const char* fileName, const char* text, OSCON
     return status;
 }
 
-int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, OSCONFIG_LOG_HANDLE log)
+int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log)
 {
     const char* fsMountTable = "/etc/fstab";
     const char* mountTable = "/etc/mtab";

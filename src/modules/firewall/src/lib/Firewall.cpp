@@ -46,7 +46,7 @@ const char g_targetDrop[] = "DROP";
 const char g_chainInput[] = "INPUT";
 const char g_chainOutput[] = "OUTPUT";
 
-OSCONFIG_LOG_HANDLE FirewallLog::m_logHandle = nullptr;
+OsConfigLogHandle FirewallLog::m_logHandle = nullptr;
 
 int FirewallModuleBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {

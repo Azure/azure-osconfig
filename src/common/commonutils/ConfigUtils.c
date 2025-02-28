@@ -60,7 +60,7 @@ bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString)
     return IsOptionEnabledInJsonConfig(jsonString, IOT_HUB_MANAGEMENT);
 }
 
-static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue, OSCONFIG_LOG_HANDLE log)
+static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue, OsConfigLogHandle log)
 {
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
@@ -124,27 +124,27 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
     return valueToReturn;
 }
 
-int GetReportingIntervalFromJsonConfig(const char* jsonString, OSCONFIG_LOG_HANDLE log)
+int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(REPORTING_INTERVAL_SECONDS, jsonString, DEFAULT_REPORTING_INTERVAL, MIN_REPORTING_INTERVAL, MAX_REPORTING_INTERVAL, log);
 }
 
-int GetModelVersionFromJsonConfig(const char* jsonString, OSCONFIG_LOG_HANDLE log)
+int GetModelVersionFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(MODEL_VERSION_NAME, jsonString, DEFAULT_DEVICE_MODEL_ID, MIN_DEVICE_MODEL_ID, MAX_DEVICE_MODEL_ID, log);
 }
 
-int GetLocalManagementFromJsonConfig(const char* jsonString, OSCONFIG_LOG_HANDLE log)
+int GetLocalManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1, log);
 }
 
-int GetIotHubProtocolFromJsonConfig(const char* jsonString, OSCONFIG_LOG_HANDLE log)
+int GetIotHubProtocolFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(PROTOCOL, jsonString, PROTOCOL_AUTO, PROTOCOL_AUTO, PROTOCOL_MQTT_WS, log);
 }
 
-int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** reportedProperties, OSCONFIG_LOG_HANDLE log)
+int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** reportedProperties, OsConfigLogHandle log)
 {
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
@@ -179,8 +179,8 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
 
                     if (numReported > 0)
                     {
-                        bufferSize = numReported * sizeof(REPORTED_PROPERTY);
-                        *reportedProperties = (REPORTED_PROPERTY*)malloc(bufferSize);
+                        bufferSize = numReported * sizeof(ReportedProperty);
+                        *reportedProperties = (ReportedProperty*)malloc(bufferSize);
                         if (NULL != *reportedProperties)
                         {
                             memset(*reportedProperties, 0, bufferSize);
@@ -247,7 +247,7 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
     return numReportedProperties;
 }
 
-static char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, OSCONFIG_LOG_HANDLE log)
+static char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, OsConfigLogHandle log)
 {
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
@@ -308,17 +308,17 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
     return buffer;
 }
 
-int GetGitManagementFromJsonConfig(const char* jsonString, OSCONFIG_LOG_HANDLE log)
+int GetGitManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(GIT_MANAGEMENT, jsonString, 0, 0, 1, log);
 }
 
-char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, OSCONFIG_LOG_HANDLE log)
+char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetStringFromJsonConfig(GIT_REPOSITORY_URL, jsonString, log);
 }
 
-char* GetGitBranchFromJsonConfig(const char* jsonString, OSCONFIG_LOG_HANDLE log)
+char* GetGitBranchFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetStringFromJsonConfig(GIT_BRANCH, jsonString, log);
 }

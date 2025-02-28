@@ -9,13 +9,13 @@ extern "C"
 {
 #endif
 
-int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OSCONFIG_LOG_HANDLE log);
+int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log);
 
-void AsbInitialize(OSCONFIG_LOG_HANDLE log);
-void AsbShutdown(OSCONFIG_LOG_HANDLE log);
+void AsbInitialize(OsConfigLogHandle log);
+void AsbShutdown(OsConfigLogHandle log);
 
-int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OSCONFIG_LOG_HANDLE log);
-int AsbMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OSCONFIG_LOG_HANDLE log);
+int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log);
+int AsbMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
 
 #ifdef __cplusplus
 }

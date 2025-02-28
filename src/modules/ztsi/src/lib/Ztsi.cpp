@@ -169,7 +169,7 @@ bool IsValidClientName(const char* name)
     return isValid;
 }
 
-OSCONFIG_LOG_HANDLE ZtsiLog::m_log = nullptr;
+OsConfigLogHandle ZtsiLog::m_log = nullptr;
 
 Ztsi::Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes)
 {

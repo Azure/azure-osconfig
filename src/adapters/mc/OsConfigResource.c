@@ -35,12 +35,12 @@ static unsigned int g_reportedMpiResult = 0;
 
 MPI_HANDLE g_mpiHandle = NULL;
 
-static OSCONFIG_LOG_HANDLE g_log = NULL;
+static OsConfigLogHandle g_log = NULL;
 
 static const char* g_osconfig = "osconfig";
 static const char* g_mpiServer = "osconfig-platform";
 
-OSCONFIG_LOG_HANDLE GetLog(void)
+OsConfigLogHandle GetLog(void)
 {
     if (NULL == g_log)
     {

@@ -57,7 +57,7 @@ static const char* g_configurationModuleInfo = "{\"Name\": \"Configuration\","
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-static OSCONFIG_LOG_HANDLE g_log = NULL;
+static OsConfigLogHandle g_log = NULL;
 
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_refreshInterval = DEFAULT_REPORTING_INTERVAL;
@@ -75,7 +75,7 @@ static int g_referenceCount = 0;
 #endif
 static unsigned int g_maxPayloadSizeBytes = 0;
 
-static OSCONFIG_LOG_HANDLE ConfigurationGetLog(void)
+static OsConfigLogHandle ConfigurationGetLog(void)
 {
     return g_log;
 }

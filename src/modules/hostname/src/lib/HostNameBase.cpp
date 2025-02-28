@@ -62,7 +62,7 @@ constexpr const char* g_trimDefault = " \n\r\"\';";
 constexpr const char g_splitDefault = '\n';
 constexpr const char g_splitCustom = ';';
 
-OSCONFIG_LOG_HANDLE HostNameLog::m_logHostName = nullptr;
+OsConfigLogHandle HostNameLog::m_logHostName = nullptr;
 
 HostNameBase::HostNameBase(size_t maxPayloadSizeBytes) : m_maxPayloadSizeBytes(maxPayloadSizeBytes)
 {

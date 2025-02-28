@@ -53,7 +53,7 @@ constexpr const char g_moduleInfo[] = R""""({
 using StateComponent = ExecutionState::StateComponent;
 using SubstateComponent = ExecutionState::SubstateComponent;
 
-OSCONFIG_LOG_HANDLE PmcLog::m_log = nullptr;
+OsConfigLogHandle PmcLog::m_log = nullptr;
 
 PmcBase::PmcBase(unsigned int maxPayloadSizeBytes, const char* sourcesDirectory)
 {

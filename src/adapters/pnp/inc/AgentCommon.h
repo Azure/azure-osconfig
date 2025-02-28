@@ -51,6 +51,6 @@
 // Max number of bytes allowed to go through to Twins (4KB)
 #define OSCONFIG_MAX_PAYLOAD 4096
 
-OSCONFIG_LOG_HANDLE GetLog();
+OsConfigLogHandle GetLog();
 
 #endif // AGENTCOMMON_H

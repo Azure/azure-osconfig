@@ -33,7 +33,7 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-static OSCONFIG_LOG_HANDLE g_log = NULL;
+static OsConfigLogHandle g_log = NULL;
 
 #if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
 static atomic_int g_referenceCount = 0;
@@ -43,7 +43,7 @@ static int g_referenceCount = 0;
 
 static unsigned int g_maxPayloadSizeBytes = 0;
 
-static OSCONFIG_LOG_HANDLE SecurityBaselineGetLog(void)
+static OsConfigLogHandle SecurityBaselineGetLog(void)
 {
     return g_log;
 }

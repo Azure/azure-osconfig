@@ -13,7 +13,7 @@ extern "C"
 {
 #endif
 
-void ComplianceInitialize(OSCONFIG_LOG_HANDLE);
+void ComplianceInitialize(OsConfigLogHandle);
 void ComplianceShutdown();
 
 MMI_HANDLE ComplianceMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes);

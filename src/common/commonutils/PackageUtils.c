@@ -21,7 +21,7 @@ static bool g_aptGetUpdateExecuted = false;
 static bool g_zypperRefreshExecuted = false;
 static bool g_zypperRefreshServicesExecuted = false;
 
-int IsPresent(const char* what, OSCONFIG_LOG_HANDLE log)
+int IsPresent(const char* what, OsConfigLogHandle log)
 {
     const char* commandTemplate = "command -v %s";
     char* command = NULL;
@@ -51,7 +51,7 @@ int IsPresent(const char* what, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-static void CheckPackageManagersPresence(OSCONFIG_LOG_HANDLE log)
+static void CheckPackageManagersPresence(OsConfigLogHandle log)
 {
     if (false == g_checkedPackageManagersPresence)
     {
@@ -65,7 +65,7 @@ static void CheckPackageManagersPresence(OSCONFIG_LOG_HANDLE log)
     }
 }
 
-static int CheckOrInstallPackage(const char* commandTemplate, const char* packageManager, const char* packageName, OSCONFIG_LOG_HANDLE log)
+static int CheckOrInstallPackage(const char* commandTemplate, const char* packageManager, const char* packageName, OsConfigLogHandle log)
 {
     char* command = NULL;
     int status = ENOENT;
@@ -91,7 +91,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     return status;
 }
 
-int IsPackageInstalled(const char* packageName, OSCONFIG_LOG_HANDLE log)
+int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
     const char* commandTemplateDpkg = "%s -l %s | grep ^ii";
     const char* commandTemplateYumDnf = "%s list installed %s";
@@ -139,7 +139,7 @@ static bool WildcardsPresent(const char* packageName)
     return (packageName ? (strstr(packageName, "*") || strstr(packageName, "^")) : false);
 }
 
-int CheckPackageInstalled(const char* packageName, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckPackageInstalled(const char* packageName, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -159,7 +159,7 @@ int CheckPackageInstalled(const char* packageName, char** reason, OSCONFIG_LOG_H
     return result;
 }
 
-int CheckPackageNotInstalled(const char* packageName, char** reason, OSCONFIG_LOG_HANDLE log)
+int CheckPackageNotInstalled(const char* packageName, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -181,7 +181,7 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, OSCONFIG_LO
     return result;
 }
 
-static int ExecuteSimplePackageCommand(const char* command, bool* executed, OSCONFIG_LOG_HANDLE log)
+static int ExecuteSimplePackageCommand(const char* command, bool* executed, OsConfigLogHandle log)
 {
     int status = 0;
 
@@ -210,22 +210,22 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, OSCO
     return status;
 }
 
-static int ExecuteAptGetUpdate(OSCONFIG_LOG_HANDLE log)
+static int ExecuteAptGetUpdate(OsConfigLogHandle log)
 {
     return ExecuteSimplePackageCommand("apt-get update", &g_aptGetUpdateExecuted, log);
 }
 
-static int ExecuteZypperRefresh(OSCONFIG_LOG_HANDLE log)
+static int ExecuteZypperRefresh(OsConfigLogHandle log)
 {
     return ExecuteSimplePackageCommand("zypper refresh", &g_zypperRefreshExecuted, log);
 }
 
-static int ExecuteZypperRefreshServices(OSCONFIG_LOG_HANDLE log)
+static int ExecuteZypperRefreshServices(OsConfigLogHandle log)
 {
     return ExecuteSimplePackageCommand("zypper refresh --services", &g_zypperRefreshServicesExecuted, log);
 }
 
-int InstallOrUpdatePackage(const char* packageName, OSCONFIG_LOG_HANDLE log)
+int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log)
 {
     const char* commandTemplate = "%s install -y %s";
     int status = ENOENT;
@@ -273,7 +273,7 @@ int InstallOrUpdatePackage(const char* packageName, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int InstallPackage(const char* packageName, OSCONFIG_LOG_HANDLE log)
+int InstallPackage(const char* packageName, OsConfigLogHandle log)
 {
     int status = ENOENT;
 
@@ -290,7 +290,7 @@ int InstallPackage(const char* packageName, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-int UninstallPackage(const char* packageName, OSCONFIG_LOG_HANDLE log)
+int UninstallPackage(const char* packageName, OsConfigLogHandle log)
 {
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
     const char* commandTemplateZypper = "%s remove -y --force %s";

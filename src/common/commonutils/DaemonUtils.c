@@ -34,7 +34,7 @@ bool IsValidDaemonName(const char *name)
     return result;
 }
 
-static int ExecuteSystemctlCommand(const char* command, const char* daemonName, OSCONFIG_LOG_HANDLE log)
+static int ExecuteSystemctlCommand(const char* command, const char* daemonName, OsConfigLogHandle log)
 {
     const char* commandTemplate = "systemctl %s %s";
     char* formattedCommand = NULL;
@@ -61,12 +61,12 @@ static int ExecuteSystemctlCommand(const char* command, const char* daemonName, 
     return result;
 }
 
-bool IsDaemonActive(const char* daemonName, OSCONFIG_LOG_HANDLE log)
+bool IsDaemonActive(const char* daemonName, OsConfigLogHandle log)
 {
     return (IsValidDaemonName(daemonName) && (0 == ExecuteSystemctlCommand("is-active", daemonName, log))) ? true : false;
 }
 
-bool CheckDaemonActive(const char* daemonName, char** reason, OSCONFIG_LOG_HANDLE log)
+bool CheckDaemonActive(const char* daemonName, char** reason, OsConfigLogHandle log)
 {
     bool result = false;
 
@@ -84,7 +84,7 @@ bool CheckDaemonActive(const char* daemonName, char** reason, OSCONFIG_LOG_HANDL
     return result;
 }
 
-bool CheckDaemonNotActive(const char* daemonName, char** reason, OSCONFIG_LOG_HANDLE log)
+bool CheckDaemonNotActive(const char* daemonName, char** reason, OsConfigLogHandle log)
 {
     bool result = false;
 
@@ -104,7 +104,7 @@ bool CheckDaemonNotActive(const char* daemonName, char** reason, OSCONFIG_LOG_HA
     return result;
 }
 
-static bool CommandDaemon(const char* command, const char* daemonName, OSCONFIG_LOG_HANDLE log)
+static bool CommandDaemon(const char* command, const char* daemonName, OsConfigLogHandle log)
 {
     int result = 0;
     bool status = true;
@@ -128,17 +128,17 @@ static bool CommandDaemon(const char* command, const char* daemonName, OSCONFIG_
     return status;
 }
 
-bool EnableDaemon(const char* daemonName, OSCONFIG_LOG_HANDLE log)
+bool EnableDaemon(const char* daemonName, OsConfigLogHandle log)
 {
     return CommandDaemon("enable", daemonName, log);
 }
 
-bool StartDaemon(const char* daemonName, OSCONFIG_LOG_HANDLE log)
+bool StartDaemon(const char* daemonName, OsConfigLogHandle log)
 {
     return CommandDaemon("start", daemonName, log);
 }
 
-bool EnableAndStartDaemon(const char* daemonName, OSCONFIG_LOG_HANDLE log)
+bool EnableAndStartDaemon(const char* daemonName, OsConfigLogHandle log)
 {
     bool status = true;
 
@@ -163,17 +163,17 @@ bool EnableAndStartDaemon(const char* daemonName, OSCONFIG_LOG_HANDLE log)
     return status;
 }
 
-bool StopDaemon(const char* daemonName, OSCONFIG_LOG_HANDLE log)
+bool StopDaemon(const char* daemonName, OsConfigLogHandle log)
 {
     return CommandDaemon("stop", daemonName, log);
 }
 
-bool DisableDaemon(const char* daemonName, OSCONFIG_LOG_HANDLE log)
+bool DisableDaemon(const char* daemonName, OsConfigLogHandle log)
 {
     return CommandDaemon("disable", daemonName, log);
 }
 
-void StopAndDisableDaemon(const char* daemonName, OSCONFIG_LOG_HANDLE log)
+void StopAndDisableDaemon(const char* daemonName, OsConfigLogHandle log)
 {
     if (true == StopDaemon(daemonName, log))
     {
@@ -181,12 +181,12 @@ void StopAndDisableDaemon(const char* daemonName, OSCONFIG_LOG_HANDLE log)
     }
 }
 
-bool RestartDaemon(const char* daemonName, OSCONFIG_LOG_HANDLE log)
+bool RestartDaemon(const char* daemonName, OsConfigLogHandle log)
 {
     return CommandDaemon("restart", daemonName, log);
 }
 
-bool MaskDaemon(const char* daemonName, OSCONFIG_LOG_HANDLE log)
+bool MaskDaemon(const char* daemonName, OsConfigLogHandle log)
 {
     return CommandDaemon("mask", daemonName, log);
 }
