@@ -22,12 +22,6 @@ Optional<Error> Procedure::updateUserParameters(const std::string& input)
 
     while (std::getline(stream, token, ' '))
     {
-        // In the non-NRP scenario the token is delimited by double quotes
-        if (token.size() >= 2 && token.front() == '"' && token.back() == '"')
-        {
-            token = token.substr(1, token.size() - 2);
-        }
-
         size_t pos = token.find('=');
         if (pos == std::string::npos)
         {
