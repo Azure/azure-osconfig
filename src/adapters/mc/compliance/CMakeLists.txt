@@ -24,14 +24,14 @@ target_link_libraries(OsConfigResourceCompliance
         compliancelib)
 
 add_custom_target(stage_create_compliance_shell_zip
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/ComplianceShell
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/ComplianceShell.metaconfig.json" ${PROJECT_BINARY_DIR}/ComplianceShell/
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/ComplianceShell.mof" ${PROJECT_BINARY_DIR}/ComplianceShell
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceCompliance> ${PROJECT_BINARY_DIR}/ComplianceShell/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/ComplianceShell.metaconfig.json" ${PROJECT_BINARY_DIR}/Staging/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/ComplianceShell.mof" ${PROJECT_BINARY_DIR}/Staging
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceCompliance> ${PROJECT_BINARY_DIR}/Staging/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
     DEPENDS OsConfigResourceCompliance ComplianceShell.mof)
 
 add_custom_target(create_compliance_shell_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/ComplianceShell.zip
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/ComplianceShell.zip" --format=zip .
     DEPENDS stage_create_compliance_shell_zip
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/ComplianceShell/)
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/Staging/)
