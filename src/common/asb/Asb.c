@@ -658,7 +658,7 @@ OsConfigLogHandle GetPerfLog(void)
     return g_perfLog;
 }
 
-OSCONFIG_LOG_HANDLE GetTelemetryLog(void)
+OsConfigLogHandle GetTelemetryLog(void)
 {
     return g_telemetryLog;
 }
