@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <cstring>
 #include <exception>
+#include <parson.h>
 
 using compliance::Engine;
 
@@ -127,7 +128,15 @@ int ComplianceMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
 
     try
     {
-        auto result = engine.mmiSet(objectName, payload, payloadSizeBytes);
+        std::string payloadStr(payload, payloadSizeBytes);
+        JSON_Value* object = json_parse_string(payloadStr.c_str());
+        if (NULL == object || JSONString != json_value_get_type(object))
+        {
+            OsConfigLogError(engine.log(), "ComplianceMmiSet failed: Failed to parse JSON string");
+            return EINVAL;
+        }
+        std::string realPayload = json_value_get_string(object);
+        auto result = engine.mmiSet(objectName, realPayload);
         if (!result.has_value())
         {
             OsConfigLogError(engine.log(), "ComplianceMmiSet failed: %s", result.error().message.c_str());
