@@ -41,11 +41,21 @@ enum LoggingLevel
 };
 typedef enum LoggingLevel LoggingLevel;
 
+enum TelemetryLevel
+{
+    NoTelemetry = 0,
+    RulesTelemetry = 1
+};
+typedef enum TelemetryLevel TelemetryLevel;
+
 OsConfigLogHandle OpenLog(const char* logFileName, const char* bakLogFileName);
 void CloseLog(OsConfigLogHandle* log);
 
 bool IsDebugLoggingEnabled(void);
 void SetDebugLogging(bool fullLogging);
+
+TelemetryLevel GetTelemetryLevel(void);
+void SetTelemetryLevel(TelemetryLevel level);
 
 FILE* GetLogFile(OsConfigLogHandle log);
 char* GetFormattedTime(void);
@@ -60,6 +70,14 @@ bool IsDaemon(void);
     fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
 }\
 
+#define __PREFIX_TELEMETRY_TEMPLATE__ "{\"DateTime\":\"%s\","
+#define __LOG_TELEMETRY__(log, label, format, ...) printf(__PREFIX_TELEMETRY_TEMPLATE__ format "\n", GetFormattedTime(), ## __VA_ARGS__)
+#define __LOG_TELEMETRY_TO_FILE__(log, label, format, ...) {\
+    TrimLog(log); \
+    fprintf(GetLogFile(log), __PREFIX_TELEMETRY_TEMPLATE__ format "\n", GetFormattedTime(), ## __VA_ARGS__); \
+}\
+
+
 #define __INFO__ "INFO"
 #define __ERROR__ "ERROR"
 #define __DEBUG__ "DEBUG"
@@ -67,10 +85,12 @@ bool IsDaemon(void);
 #define OSCONFIG_LOG_INFO(log, format, ...) __LOG__(log, __INFO__, format, ## __VA_ARGS__)
 #define OSCONFIG_LOG_ERROR(log, format, ...) __LOG__(log, __ERROR__, format, ## __VA_ARGS__)
 #define OSCONFIG_LOG_DEBUG(log, format, ...) __LOG__(log, __DEBUG__, format, ## __VA_ARGS__)
+#define OSCONFIG_LOG_TELEMETRY(log, format, ...) __LOG_TELEMETRY__(log, format, ## __VA_ARGS__)
 
 #define OSCONFIG_FILE_LOG_INFO(log, format, ...) __LOG_TO_FILE__(log, __INFO__, format, ## __VA_ARGS__)
 #define OSCONFIG_FILE_LOG_ERROR(log, format, ...) __LOG_TO_FILE__(log, __ERROR__, format, ## __VA_ARGS__)
 #define OSCONFIG_FILE_LOG_DEBUG(log, format, ...) __LOG_TO_FILE__(log, __DEBUG__, format, ## __VA_ARGS__)
+#define OSCONFIG_FILE_LOG_TELEMETRY(log, format, ...) __LOG_TELEMETRY_TO_FILE__(log, format, ## __VA_ARGS__)
 
 #define OsConfigLogInfo(log, FORMAT, ...) {\
     if (NULL != GetLogFile(log)) {\
@@ -100,6 +120,18 @@ bool IsDaemon(void);
         }\
         if (false == IsDaemon()) {\
             OSCONFIG_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
+        }\
+    }\
+}\
+
+#define OsConfigLogTelemetry(log, FORMAT, ...) {\
+    if (NoTelemetry < GetTelemetryLevel()) {\
+        if (NULL != GetLogFile(log)) {\
+            OSCONFIG_FILE_LOG_TELEMETRY(log, FORMAT, ##__VA_ARGS__);\
+            fflush(GetLogFile(log));\
+        }\
+        if (false == IsDaemon()) {\
+            OSCONFIG_LOG_TELEMETRY(log, FORMAT, ##__VA_ARGS__);\
         }\
     }\
 }\
