@@ -888,7 +888,7 @@ void AsbInitialize(OsConfigLogHandle log)
     unsigned short freeMemoryPercentage = 0;
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
-    
+
     // Temporary
     SetTelemetryLevel(RulesTelemetry);
 
@@ -1039,7 +1039,7 @@ void AsbShutdown(OsConfigLogHandle log)
     }
 
     CloseLog(&g_perfLog);
-    
+
     // When done, allow others access to read the performance log
     SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);
     SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 0644, NULL);
@@ -4850,7 +4850,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
-        
+
         if (NoTelemetry < GetTelemetryLevel())
         {
             LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
@@ -5829,7 +5829,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         if (0 != strncmp(objectName, init, strlen(init)))
         {
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
-            
+
             if (NoTelemetry < GetTelemetryLevel())
             {
                 LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
