@@ -18,6 +18,9 @@
 #define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_asb_perf.bak"
 
+#define TELEMETRY_FILE "/var/log/osconfig_asb_telemetry.log"
+#define ROLLED_TELEMETRY_FILE "/var/log/osconfig_asb_telemetry.bak"
+
 #define RETURN_REASON_IF_ZERO(call) {\
     if (0 == (call)) {\
         return reason;\
@@ -645,11 +648,19 @@ static const long g_maxRemediateTime = 55000000;
 // Maximum baseline run times: 30 minutes
 static const long g_maxTotalTime = 1800000000;
 
+static char* g_prettyName = NULL;
+
 static OsConfigLogHandle g_perfLog = NULL;
+static OsConfigLogHandle g_telemetryLog = NULL;
 
 OsConfigLogHandle GetPerfLog(void)
 {
     return g_perfLog;
+}
+
+OsConfigLogHandle GetTelemetryLog(void)
+{
+    return g_telemetryLog;
 }
 
 typedef struct BaselineRule
@@ -870,7 +881,6 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
 
 void AsbInitialize(OsConfigLogHandle log)
 {
-    char* prettyName = NULL;
     char* kernelVersion = NULL;
     char* cpuModel = NULL;
     long totalMemory = 0;
@@ -879,11 +889,19 @@ void AsbInitialize(OsConfigLogHandle log)
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
 
+    // Temporary
+    SetTelemetryLevel(RulesTelemetry);
+
+    if (NoTelemetry < GetTelemetryLevel())
+    {
+        g_telemetryLog = OpenLog(TELEMETRY_FILE, ROLLED_TELEMETRY_FILE);
+    }
+
     StartPerfClock(&g_perfClock, GetPerfLog());
 
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
-    if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
+    if (NULL != (cpuModel = GetCpuModel(log)))
     {
         OsConfigLogInfo(log, "AsbInitialize: CPU model: %s", cpuModel);
     }
@@ -947,9 +965,9 @@ void AsbInitialize(OsConfigLogHandle log)
 
     kernelVersion = GetOsKernelVersion(log);
 
-    if (NULL != (prettyName = GetOsPrettyName(log)))
+    if (NULL != (g_prettyName = GetOsPrettyName(log)))
     {
-        OsConfigLogInfo(log, "AsbInitialize: running on '%s' ('%s')", prettyName, kernelVersion);
+        OsConfigLogInfo(log, "AsbInitialize: running on '%s' ('%s')", g_prettyName, kernelVersion);
     }
     else
     {
@@ -966,7 +984,6 @@ void AsbInitialize(OsConfigLogHandle log)
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
     }
 
-    FREE_MEMORY(prettyName);
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(cpuModel);
 
@@ -1012,6 +1029,8 @@ void AsbShutdown(OsConfigLogHandle log)
     FREE_MEMORY(g_desiredEnsureUnnecessaryAccountsAreRemoved);
     FREE_MEMORY(g_desiredEnsureDefaultDenyFirewallPolicyIsSet);
 
+    FREE_MEMORY(g_prettyName);
+
     SshAuditCleanup(log);
 
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
@@ -1024,6 +1043,15 @@ void AsbShutdown(OsConfigLogHandle log)
     // When done, allow others access to read the performance log
     SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);
     SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 0644, NULL);
+
+    if (NoTelemetry < GetTelemetryLevel())
+    {
+        CloseLog(&g_telemetryLog);
+
+        // And also for the telemetry log if applicable
+        SetFileAccess(TELEMETRY_FILE, 0, 0, 0644, NULL);
+        SetFileAccess(ROLLED_TELEMETRY_FILE, 0, 0, 0644, NULL);
+    }
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(OsConfigLogHandle log)
@@ -4822,6 +4850,11 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
+
+        if (NoTelemetry < GetTelemetryLevel())
+        {
+            LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
+        }
     }
 
     return status;
@@ -5796,6 +5829,11 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         if (0 != strncmp(objectName, init, strlen(init)))
         {
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
+
+            if (NoTelemetry < GetTelemetryLevel())
+            {
+                LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
+            }
         }
     }
 

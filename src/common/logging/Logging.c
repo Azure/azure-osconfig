@@ -15,6 +15,7 @@
 #define MAX_LOG_TRIM 1000
 
 static LoggingLevel g_loggingLevel = LoggingLevelInformational;
+static TelemetryLevel g_telemetryLevel = NoTelemetry;
 
 struct OsConfigLog
 {
@@ -32,6 +33,16 @@ void SetDebugLogging(bool fullLogging)
 bool IsDebugLoggingEnabled(void)
 {
     return (LoggingLevelDebug == g_loggingLevel) ? true : false;
+}
+
+TelemetryLevel GetTelemetryLevel(void)
+{
+    return g_telemetryLevel;
+}
+
+void SetTelemetryLevel(TelemetryLevel level)
+{
+    g_telemetryLevel = level;
 }
 
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
