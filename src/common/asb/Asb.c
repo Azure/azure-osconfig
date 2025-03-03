@@ -650,7 +650,9 @@ static const long g_maxTotalTime = 1800000000;
 
 static char* g_prettyName = NULL;
 
-TelemetryLevel g_telemetryLevel = NoTelemetry;
+static TelemetryLevel g_telemetryLevel = NoTelemetry;
+
+static bool g_auditOnly = true;
 
 static OsConfigLogHandle g_perfLog = NULL;
 static OsConfigLogHandle g_telemetryLog = NULL;
@@ -1041,7 +1043,7 @@ void AsbShutdown(OsConfigLogHandle log)
 
         if (NoTelemetry < g_telemetryLevel)
         {
-            LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, NULL, 0, GetTelemetryLog());
+            LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, g_auditOnly ? "Audit-only" : "Automatic remediation", -999, GetTelemetryLog());
         }
     }
 
@@ -4886,6 +4888,8 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     }
 
     StartPerfClock(&perfClock, GetPerfLog());
+
+    g_auditOnly = false;
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
