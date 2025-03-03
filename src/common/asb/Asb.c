@@ -643,13 +643,14 @@ static PerfClock g_perfClock = {{0, 0}, {0, 0}};
 // Expected time limits under ideal conditions
 // Maximum per-rule audit time: 5 seconds
 static const long g_maxAuditTime = 5000000;
-// Maximum ASB rule remediation time: 55 seconds
-static const long g_maxRemediateTime = 55000000;
+// Maximum ASB rule remediation time: 99 seconds
+static const long g_maxRemediateTime = 99000000;
 // Maximum baseline run times: 30 minutes
 static const long g_maxTotalTime = 1800000000;
 
 static char* g_prettyName = NULL;
 
+// Temporary hard-coded, normal default here must be NoTelemetry 
 static TelemetryLevel g_telemetryLevel = RulesTelemetry; //NoTelemetry;
 
 static bool g_auditOnly = true;
@@ -893,6 +894,7 @@ void AsbInitialize(OsConfigLogHandle log)
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
 
+    // Temporary until we'll read this from osconfig.json (as local override) and from policy paramater (add it to the Baseline interface) 
     SetTelemetryLevel(g_telemetryLevel);
 
     if (NoTelemetry < g_telemetryLevel)

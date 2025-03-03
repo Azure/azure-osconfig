@@ -81,8 +81,6 @@ bool IsDaemon(void);
     fprintf(GetLogFile(log), __PREFIX_TELEMETRY_TEMPLATE__ format "}\n", GetFormattedTime(), ## __VA_ARGS__); \
 }\
 
-
-
 #define __INFO__ "INFO"
 #define __ERROR__ "ERROR"
 #define __DEBUG__ "DEBUG"
