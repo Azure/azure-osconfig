@@ -893,7 +893,7 @@ void AsbInitialize(OsConfigLogHandle log)
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
 
-    g_telemetryLevel = GetTelemetryLevel();
+    SetTelemetryLevel(g_telemetryLevel);
 
     if (NoTelemetry < g_telemetryLevel)
     {
