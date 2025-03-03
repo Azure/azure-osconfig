@@ -650,7 +650,7 @@ static const long g_maxTotalTime = 1800000000;
 
 static char* g_prettyName = NULL;
 
-static TelemetryLevel g_telemetryLevel = FailuresTelemetry; //NoTelemetry;
+static TelemetryLevel g_telemetryLevel = SessionsTelemetry; //NoTelemetry;
 
 static bool g_auditOnly = true;
 
@@ -893,7 +893,9 @@ void AsbInitialize(OsConfigLogHandle log)
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
 
-    if (NoTelemetry < (g_telemetryLevel = GetTelemetryLevel()))
+    g_telemetryLevel = GetTelemetryLevel();
+
+    if (NoTelemetry < g_telemetryLevel)
     {
         g_telemetryLog = OpenLog(TELEMETRY_FILE, ROLLED_TELEMETRY_FILE);
     }
@@ -4857,7 +4859,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
 
-        if ((status && (SessionsTelemetry < g_telemetryLevel)) || (FailuresTelemetry < g_telemetryLevel))
+        if ((status && (FailuresTelemetry =< g_telemetryLevel)) || ((0 == status) && (RulesTelemetry =< g_telemetryLevel)))
         {
             LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
         }
@@ -5838,7 +5840,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
 
-            if ((status && (SessionsTelemetry < g_telemetryLevel)) || (FailuresTelemetry < g_telemetryLevel))
+            if ((status && (FailuresTelemetry =< g_telemetryLevel)) || ((0 == status) && (RulesTelemetry = < g_telemetryLevel)))
             {
                 LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
             }
