@@ -44,7 +44,9 @@ typedef enum LoggingLevel LoggingLevel;
 enum TelemetryLevel
 {
     NoTelemetry = 0,
-    RulesTelemetry = 1
+    SessionsTelemetry = 1,
+    FailuresTelemetry = 2,
+    RulesTelemetry = 3
 };
 typedef enum TelemetryLevel TelemetryLevel;
 
@@ -71,7 +73,7 @@ bool IsDaemon(void);
 }\
 
 #define __PREFIX_TELEMETRY_TEMPLATE__ "{\"DateTime\":\"%s\""
-#define __LOG_TELEMETRY__(log, format, ...) printf(__PREFIX_TELEMETRY_TEMPLATE__ format "\n", GetFormattedTime(), ## __VA_ARGS__)
+#define __LOG_TELEMETRY__(log, format, ...) printf(__PREFIX_TELEMETRY_TEMPLATE__ format "}\n", GetFormattedTime(), ## __VA_ARGS__)
 #define __LOG_TELEMETRY_TO_FILE__(log, format, ...) {\
     TrimLog(log); \
     fprintf(GetLogFile(log), __PREFIX_TELEMETRY_TEMPLATE__ format "\n", GetFormattedTime(), ## __VA_ARGS__); \

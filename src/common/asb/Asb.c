@@ -650,6 +650,8 @@ static const long g_maxTotalTime = 1800000000;
 
 static char* g_prettyName = NULL;
 
+TelemetryLevel g_telemetryLevel = NoTelemetry;
+
 static OsConfigLogHandle g_perfLog = NULL;
 static OsConfigLogHandle g_telemetryLog = NULL;
 
@@ -892,7 +894,9 @@ void AsbInitialize(OsConfigLogHandle log)
     // Temporary
     SetTelemetryLevel(RulesTelemetry);
 
-    if (NoTelemetry < GetTelemetryLevel())
+    g_telemetryLevel = GetTelemetryLevel();
+
+    if (NoTelemetry < g_telemetryLevel)
     {
         g_telemetryLog = OpenLog(TELEMETRY_FILE, ROLLED_TELEMETRY_FILE);
     }
@@ -1033,6 +1037,12 @@ void AsbShutdown(OsConfigLogHandle log)
 
     SshAuditCleanup(log);
 
+    if (NoTelemetry < g_telemetryLevel)
+    {
+        LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, NULL, 0, GetTelemetryLog());
+    }
+
+
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
@@ -1044,7 +1054,7 @@ void AsbShutdown(OsConfigLogHandle log)
     SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);
     SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 0644, NULL);
 
-    if (NoTelemetry < GetTelemetryLevel())
+    if (NoTelemetry < g_telemetryLevel)
     {
         CloseLog(&g_telemetryLog);
 
@@ -4851,7 +4861,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
 
-        if (NoTelemetry < GetTelemetryLevel())
+        if (SessionsTelemetry < g_telemetryLevel)
         {
             LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
         }
@@ -5830,7 +5840,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         {
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
 
-            if (NoTelemetry < GetTelemetryLevel())
+            if (SessionsTelemetry < g_telemetryLevel)
             {
                 LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
             }
