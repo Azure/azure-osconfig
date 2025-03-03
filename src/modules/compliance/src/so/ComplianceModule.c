@@ -4,6 +4,7 @@
 #include <Mmi.h>
 #include "ComplianceInterface.h"
 #include <stddef.h>
+#include <assert.h>
 
 static OsConfigLogHandle gLog = NULL;
 static const char* gLogFile = "/var/log/osconfig_compliance.log";
@@ -12,12 +13,7 @@ static const char* gRolledLogFile = "/var/log/osconfig_compliance.bak";
 void __attribute__((constructor)) InitModule(void)
 {
     gLog = OpenLog(gLogFile, gRolledLogFile);
-    if (NULL == gLog)
-    {
-        OsConfigLogError(NULL, "Failed to open log file");
-        return;
-    }
-
+    assert(NULL != gLog);
     ComplianceInitialize(gLog);
 }
 
