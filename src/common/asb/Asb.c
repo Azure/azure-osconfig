@@ -995,9 +995,9 @@ void AsbInitialize(OsConfigLogHandle log)
 
 void AsbShutdown(OsConfigLogHandle log)
 {
-    const char* auditOnly = "audit-only"; 
+    const char* auditOnly = "audit-only";
     const char* automaticRemediation = "automatic remediation";
-    
+
     OsConfigLogInfo(log, "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
 
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
@@ -5839,8 +5839,8 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         // Ignore the successful init* objects and focus on remediate* ones
         if (0 != strncmp(objectName, init, strlen(init)))
         {
-            g_auditOnly = false;    
-            
+            g_auditOnly = false;
+
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
 
             if ((status && (FailuresTelemetry <= g_telemetryLevel)) || ((0 == status) && (RulesTelemetry <= g_telemetryLevel)))

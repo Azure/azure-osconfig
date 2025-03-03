@@ -134,11 +134,11 @@ void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char*
 
     if (SESSIONS_TELEMETRY_MARKER == objectResult)
     {
-        OsConfigLogTelemetry(log, ",\"TargetName\":\"%s\",\"BaselineName\":\"%s\",\"Mode\":\"%s\",\"Seconds\":\"%.02f\"", 
+        OsConfigLogTelemetry(log, ",\"TargetName\":\"%s\",\"BaselineName\":\"%s\",\"Mode\":\"%s\",\"Seconds\":\"%.02f\"",
             targetName, componentName, objectName, microseconds / 1000000.0);
     }
     else
-    {   
+    {
         OsConfigLogTelemetry(log, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Microseconds\":\"%ld\"",
             targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
     }
