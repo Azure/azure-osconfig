@@ -650,7 +650,7 @@ static const long g_maxTotalTime = 1800000000;
 
 static char* g_prettyName = NULL;
 
-static TelemetryLevel g_telemetryLevel = FailuresTelemetry; //NoTelemetry;
+static TelemetryLevel g_telemetryLevel = RulesTelemetry; //NoTelemetry;
 
 static bool g_auditOnly = true;
 
