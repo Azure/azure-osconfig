@@ -154,7 +154,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_1)
     auto result = evaluator1.ExecuteAudit();
     ASSERT_TRUE(result);
     EXPECT_EQ(result.value().status, Status::Compliant);
-    EXPECT_TRUE(result.value().payload.find("\"PASS") == 0);
+    EXPECT_TRUE(result.value().payload.find("PASS") == 0);
 }
 
 TEST_F(EvaluatorTest, ExecuteAudit_2)
@@ -178,7 +178,7 @@ TEST_F(EvaluatorTest, ExecuteAudit_3)
     auto result = evaluator1.ExecuteAudit();
     ASSERT_TRUE(result);
     EXPECT_EQ(result.value().status, Status::Compliant);
-    EXPECT_TRUE(result.value().payload.find("\"PASS") == 0);
+    EXPECT_TRUE(result.value().payload.find("PASS") == 0);
 }
 
 TEST_F(EvaluatorTest, ExecuteAudit_4)

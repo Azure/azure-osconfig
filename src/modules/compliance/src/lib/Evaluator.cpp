@@ -3,6 +3,7 @@
 
 #include "Evaluator.h"
 
+#include "JsonWrapper.h"
 #include "Logging.h"
 #include "Result.h"
 
@@ -23,15 +24,14 @@ Result<AuditResult> Evaluator::ExecuteAudit()
         OsConfigLogError(mLog, "Evaluation failed: %s", result.error().message.c_str());
         return result.error();
     }
-
-    std::string vlog = mLogstream.str().substr(0, cLogstreamMaxSize - (1 + strlen("PASS") + strlen("\"\"")));
+    std::string vlog;
     if (result.value() == Status::Compliant)
     {
-        vlog = "\"PASS" + vlog + "\"";
+        vlog = "PASS" + mLogstream.str();
     }
     else
     {
-        vlog = "\"" + vlog + "\"";
+        vlog = mLogstream.str();
     }
     return AuditResult{result.value(), vlog};
 }

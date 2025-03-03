@@ -16,8 +16,9 @@
 #include <parson.h>
 
 using compliance::Engine;
-using compliance::Status;
+using compliance::JSONFromString;
 using compliance::parseJSON;
+using compliance::Status;
 
 static OsConfigLogHandle g_log = nullptr;
 
@@ -95,13 +96,18 @@ int ComplianceMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
             return result.error().code;
         }
 
-        *payload = strndup(result.value().payload.c_str(), result.value().payload.size());
-        if (NULL == *payload)
+        auto json = JSONFromString(result.value().payload.c_str());
+        if (NULL == json)
         {
-            OsConfigLogError(engine.log(), "ComplianceMmiGet: failed to allocate memory for payload");
+            OsConfigLogError(engine.log(), "ComplianceMmiGet failed: Failed to create JSON object from string");
             return ENOMEM;
         }
-        *payloadSizeBytes = result.value().payload.size();
+        else if (NULL == (*payload = json_serialize_to_string(json.get())))
+        {
+            OsConfigLogError(engine.log(), "ComplianceMmiGet failed: Failed to serialize JSON object");
+            return ENOMEM;
+        }
+        *payloadSizeBytes = strlen(*payload);
         OsConfigLogInfo(engine.log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
         return MMI_OK;
     }

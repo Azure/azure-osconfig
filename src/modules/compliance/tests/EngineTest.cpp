@@ -200,7 +200,7 @@ TEST_F(ComplianceEngineTest, MmiSet_initAudit_1)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJwYXJhbWV0ZXJzIjp7IksiOiJ2In19"; // '{"audit":{}, "parameters":{"K":"v"}}' in base64
     auto result = mEngine.mmiSet("procedureX", payload);
-    ASSERT_TRUE(result && result.value() == Status::Complianit);
+    ASSERT_TRUE(result && result.value() == Status::Compliant);
 
     payload = "K=V";
     result = mEngine.mmiSet("initX", payload);
