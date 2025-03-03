@@ -5,6 +5,7 @@
 
 #include "CommonUtils.h"
 #include "Engine.h"
+#include "JsonWrapper.h"
 #include "Logging.h"
 #include "Mmi.h"
 
@@ -16,6 +17,7 @@
 
 using compliance::Engine;
 using compliance::Status;
+using compliance::parseJSON;
 
 static OsConfigLogHandle g_log = nullptr;
 
@@ -135,13 +137,13 @@ int ComplianceMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
     try
     {
         std::string payloadStr(payload, payloadSizeBytes);
-        JSON_Value* object = json_parse_string(payloadStr.c_str());
-        if (NULL == object || JSONString != json_value_get_type(object))
+        auto object = parseJSON(payloadStr.c_str());
+        if (NULL == object || JSONString != json_value_get_type(object.get()))
         {
             OsConfigLogError(engine.log(), "ComplianceMmiSet failed: Failed to parse JSON string");
             return EINVAL;
         }
-        std::string realPayload = json_value_get_string(object);
+        std::string realPayload = json_value_get_string(object.get());
         auto result = engine.mmiSet(objectName, realPayload);
         if (!result.has_value())
         {
