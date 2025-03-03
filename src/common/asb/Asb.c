@@ -650,7 +650,7 @@ static const long g_maxTotalTime = 1800000000;
 
 static char* g_prettyName = NULL;
 
-// Temporary hard-coded, normal default here must be NoTelemetry 
+// Temporary hard-coded, normal default here must be NoTelemetry
 static TelemetryLevel g_telemetryLevel = RulesTelemetry; //NoTelemetry;
 
 static bool g_auditOnly = true;
@@ -894,7 +894,7 @@ void AsbInitialize(OsConfigLogHandle log)
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
 
-    // Temporary until we'll read this from osconfig.json (as local override) and from policy paramater (add it to the Baseline interface) 
+    // Temporary until we'll read this from osconfig.json (as local override) and from policy paramater (add it to the Baseline interface)
     SetTelemetryLevel(g_telemetryLevel);
 
     if (NoTelemetry < g_telemetryLevel)
