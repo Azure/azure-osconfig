@@ -1043,7 +1043,7 @@ void AsbShutdown(OsConfigLogHandle log)
 
         if (NoTelemetry < g_telemetryLevel)
         {
-            LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, g_auditOnly ? "Audit-only" : "Automatic remediation", -999, GetTelemetryLog());
+            LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, g_auditOnly ? "Audit-only" : "Automatic remediation", SESSIONS_TELEMETRY_MARKER, GetTelemetryLog());
         }
     }
 
