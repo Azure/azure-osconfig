@@ -26,10 +26,15 @@ static Result<bool> auditSuccess(std::map<std::string, std::string>, std::ostrin
 
 class ComplianceEngineTest : public ::testing::Test
 {
+public:
+    ComplianceEngineTest()
+        : mEngine(nullptr)
+    {
+    }
+
 protected:
     Engine mEngine;
     std::map<std::string, std::pair<action_func_t, action_func_t>> mProcedureMap;
-    // std::map<std::string, std::string> mParameters;
 
     void SetUp() override
     {
@@ -38,7 +43,6 @@ protected:
             {"failure", {auditFailure, auditFailure}},
             {"NoAudit", {nullptr, auditSuccess}},
         };
-        // mEngine.setProcedureMap(mProcedureMap);
     }
 };
 

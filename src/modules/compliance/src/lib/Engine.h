@@ -62,7 +62,6 @@ public:
 
 private:
     OsConfigLogHandle mLog = nullptr;
-    bool mLocalLog = false;
     unsigned int mMaxPayloadSize = 0;
     std::map<std::string, Procedure> mDatabase;
 
@@ -72,11 +71,8 @@ private:
     Result<bool> executeRemediation(const std::string& ruleName, const char* payload, const int payloadSizeBytes);
 
 public:
-    // Create engine with external log file
-    Engine(OsConfigLogHandle log) noexcept;
-    // Create engine with locally initialized log file
-    Engine() noexcept;
-    ~Engine();
+    explicit Engine(OsConfigLogHandle log) noexcept;
+    ~Engine() = default;
 
     void setMaxPayloadSize(unsigned int value) noexcept;
     unsigned int getMaxPayloadSize() const noexcept;

@@ -21,8 +21,6 @@
 
 namespace compliance
 {
-static constexpr const char* cLogFile = "/var/log/osconfig_compliance.log";
-static constexpr const char* cRolledLogFile = "/var/log/osconfig_compliance.bak";
 static constexpr const char* cModuleInfo = "{\"Name\": \"Compliance\","
                                            "\"Description\": \"Provides functionality to audit and remediate Security Baseline policies on device\","
                                            "\"Manufacturer\": \"Microsoft\","
@@ -36,20 +34,6 @@ static constexpr const char* cModuleInfo = "{\"Name\": \"Compliance\","
 Engine::Engine(OsConfigLogHandle log) noexcept
     : mLog{log}
 {
-}
-
-Engine::Engine() noexcept
-    : mLog{OpenLog(cLogFile, cRolledLogFile)},
-      mLocalLog{true}
-{
-}
-
-Engine::~Engine()
-{
-    if (mLocalLog)
-    {
-        CloseLog(&mLog);
-    }
 }
 
 void Engine::setMaxPayloadSize(unsigned int value) noexcept
