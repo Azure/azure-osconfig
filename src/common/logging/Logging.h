@@ -76,7 +76,7 @@ bool IsDaemon(void);
 #define __LOG_TELEMETRY__(log, format, ...) printf(__PREFIX_TELEMETRY_TEMPLATE__ format "}\n", GetFormattedTime(), ## __VA_ARGS__)
 #define __LOG_TELEMETRY_TO_FILE__(log, format, ...) {\
     TrimLog(log); \
-    fprintf(GetLogFile(log), __PREFIX_TELEMETRY_TEMPLATE__ format "\n", GetFormattedTime(), ## __VA_ARGS__); \
+    fprintf(GetLogFile(log), __PREFIX_TELEMETRY_TEMPLATE__ format "}\n", GetFormattedTime(), ## __VA_ARGS__); \
 }\
 
 #define __INFO__ "INFO"
