@@ -4889,8 +4889,6 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
 
     StartPerfClock(&perfClock, GetPerfLog());
 
-    g_auditOnly = false;
-
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
         OsConfigLogError(log, "AsbMmiSet called for an unsupported component name (%s)", componentName);
@@ -5841,6 +5839,8 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         // Ignore the successful init* objects and focus on remediate* ones
         if (0 != strncmp(objectName, init, strlen(init)))
         {
+            g_auditOnly = false;    
+            
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
 
             if (SessionsTelemetry < g_telemetryLevel)
