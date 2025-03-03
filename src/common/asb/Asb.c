@@ -650,7 +650,7 @@ static const long g_maxTotalTime = 1800000000;
 
 static char* g_prettyName = NULL;
 
-static TelemetryLevel g_telemetryLevel = SessionsTelemetry; //NoTelemetry;
+static TelemetryLevel g_telemetryLevel = FailuresTelemetry; //NoTelemetry;
 
 static bool g_auditOnly = true;
 
@@ -995,7 +995,10 @@ void AsbInitialize(OsConfigLogHandle log)
 
 void AsbShutdown(OsConfigLogHandle log)
 {
-    OsConfigLogInfo(log, "%s shutting down", g_asbName);
+    const char* auditOnly = "audit-only"; 
+    const char* automaticRemediation = "automatic remediation";
+    
+    OsConfigLogInfo(log, "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
 
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
@@ -1040,7 +1043,7 @@ void AsbShutdown(OsConfigLogHandle log)
 
         if (NoTelemetry < g_telemetryLevel)
         {
-            LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, g_auditOnly ? "Audit-only" : "Automatic remediation", SESSIONS_TELEMETRY_MARKER, GetTelemetryLog());
+            LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, SESSIONS_TELEMETRY_MARKER, GetTelemetryLog());
         }
     }
 
