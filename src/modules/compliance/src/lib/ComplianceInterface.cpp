@@ -14,6 +14,7 @@
 #include <exception>
 
 using compliance::Engine;
+using compliance::Status;
 
 static OsConfigLogHandle g_log = nullptr;
 
@@ -91,8 +92,16 @@ int ComplianceMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
             return result.error().code;
         }
 
-        *payload = strdup(result.value().payload);
-        *payloadSizeBytes = result.value().payloadSize;
+        auto payloadLength = result.value().payload.size();
+        *payload = (char*)malloc(payloadLength);
+        if (NULL == *payload)
+        {
+            OsConfigLogError(engine.log(), "ComplianceMmiGet: failed to allocate memory for payload");
+            return ENOMEM;
+        }
+
+        memcpy(*payload, result.value().payload.c_str(), payloadLength);
+        *payloadSizeBytes = payloadLength;
         OsConfigLogInfo(engine.log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
         return MMI_OK;
     }
@@ -135,7 +144,7 @@ int ComplianceMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
         }
 
         OsConfigLogInfo(engine.log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload,
-            payloadSizeBytes, result.value() ? "true" : "false");
+            payloadSizeBytes, result.value() == Status::Compliant ? "compliant" : "non-compliant");
         return MMI_OK;
     }
     catch (const std::exception& e)

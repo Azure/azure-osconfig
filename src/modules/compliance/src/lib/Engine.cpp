@@ -72,7 +72,7 @@ const char* Engine::getModuleInfo() noexcept
     return cModuleInfo;
 }
 
-Result<Engine::AuditResult> Engine::mmiGet(const char* objectName)
+Result<AuditResult> Engine::mmiGet(const char* objectName)
 {
     if (nullptr == objectName)
     {
@@ -80,7 +80,6 @@ Result<Engine::AuditResult> Engine::mmiGet(const char* objectName)
     }
 
     OsConfigLogInfo(log(), "Engine::mmiGet(%s)", objectName);
-    auto result = AuditResult();
     auto ruleName = std::string(objectName);
     constexpr const char* auditPrefix = "audit";
     if (ruleName.find(auditPrefix) != 0)
@@ -106,14 +105,7 @@ Result<Engine::AuditResult> Engine::mmiGet(const char* objectName)
     }
 
     Evaluator evaluator(procedure.audit(), procedure.parameters(), log());
-    auto rc = evaluator.ExecuteAudit(&result.payload, &result.payloadSize);
-    if (!rc.has_value())
-    {
-        return rc.error();
-    }
-
-    result.result = rc.value();
-    return Result<AuditResult>(std::move(result));
+    return evaluator.ExecuteAudit();
 }
 
 Result<JsonWrapper> Engine::decodeB64JSON(const char* input) const
@@ -253,7 +245,7 @@ Optional<Error> Engine::initAudit(const std::string& ruleName, const char* paylo
     return Optional<Error>();
 }
 
-Result<bool> Engine::executeRemediation(const std::string& ruleName, const char* payload, const int payloadSizeBytes)
+Result<Status> Engine::executeRemediation(const std::string& ruleName, const char* payload, const int payloadSizeBytes)
 {
     if (ruleName.empty())
     {
@@ -281,7 +273,7 @@ Result<bool> Engine::executeRemediation(const std::string& ruleName, const char*
     return evaluator.ExecuteRemediation();
 }
 
-Result<bool> Engine::mmiSet(const char* objectName, const char* payload, const int payloadSizeBytes)
+Result<Status> Engine::mmiSet(const char* objectName, const char* payload, const int payloadSizeBytes)
 {
     if (nullptr == objectName)
     {
@@ -308,7 +300,7 @@ Result<bool> Engine::mmiSet(const char* objectName, const char* payload, const i
             return error.value();
         }
 
-        return true;
+        return Status::Compliant;
     }
 
     if (ruleName.find(initPrefix) == 0)
@@ -320,7 +312,7 @@ Result<bool> Engine::mmiSet(const char* objectName, const char* payload, const i
             return error.value();
         }
 
-        return true;
+        return Status::Compliant;
     }
 
     if (ruleName.find(remediatePrefix) == 0)
