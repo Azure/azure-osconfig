@@ -1033,20 +1033,19 @@ void AsbShutdown(OsConfigLogHandle log)
     FREE_MEMORY(g_desiredEnsureUnnecessaryAccountsAreRemoved);
     FREE_MEMORY(g_desiredEnsureDefaultDenyFirewallPolicyIsSet);
 
-    FREE_MEMORY(g_prettyName);
-
     SshAuditCleanup(log);
-
-    if (NoTelemetry < g_telemetryLevel)
-    {
-        LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, NULL, 0, GetTelemetryLog());
-    }
-
 
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
+
+        if (NoTelemetry < g_telemetryLevel)
+        {
+            LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, NULL, 0, GetTelemetryLog());
+        }
     }
+
+    FREE_MEMORY(g_prettyName);
 
     CloseLog(&g_perfLog);
 
