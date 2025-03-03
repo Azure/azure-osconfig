@@ -92,16 +92,13 @@ int ComplianceMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
             return result.error().code;
         }
 
-        auto payloadLength = result.value().payload.size();
-        *payload = (char*)malloc(payloadLength);
+        *payload = strndup(result.value().payload.c_str(), result.value().payload.size());
         if (NULL == *payload)
         {
             OsConfigLogError(engine.log(), "ComplianceMmiGet: failed to allocate memory for payload");
             return ENOMEM;
         }
-
-        memcpy(*payload, result.value().payload.c_str(), payloadLength);
-        *payloadSizeBytes = payloadLength;
+        *payloadSizeBytes = result.value().payload.size();
         OsConfigLogInfo(engine.log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
         return MMI_OK;
     }
