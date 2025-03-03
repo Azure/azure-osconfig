@@ -134,8 +134,7 @@ void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char*
 
     if (NULL == objectName)
     {
-        OsConfigLogTelemetry(log, ",\"TargetName\":\"%s\",\"BaselineName\":\"%s\",\"Seconds\":\"%.02f\"",
-            targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds / 1000000.0);
+        OsConfigLogTelemetry(log, ",\"TargetName\":\"%s\",\"BaselineName\":\"%s\",\"Seconds\":\"%.02f\"", targetName, componentName, microseconds / 1000000.0);
     }
     else
     {   
