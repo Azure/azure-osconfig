@@ -890,7 +890,7 @@ void AsbInitialize(OsConfigLogHandle log)
         FREE_MEMORY(jsonConfiguration);
     }
 
-    RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
+    RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
 
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
