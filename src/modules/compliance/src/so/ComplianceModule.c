@@ -4,15 +4,23 @@
 #include <Mmi.h>
 #include "ComplianceInterface.h"
 #include <stddef.h>
+#include <assert.h>
+
+static OsConfigLogHandle gLog = NULL;
+static const char* gLogFile = "/var/log/osconfig_compliance.log";
+static const char* gRolledLogFile = "/var/log/osconfig_compliance.bak";
 
 void __attribute__((constructor)) InitModule(void)
 {
-    ComplianceInitialize(NULL);
+    gLog = OpenLog(gLogFile, gRolledLogFile);
+    assert(NULL != gLog);
+    ComplianceInitialize(gLog);
 }
 
 void __attribute__((destructor)) DestroyModule(void)
 {
-    ComplianceShutdown(NULL);
+    CloseLog(&gLog);
+    ComplianceShutdown();
 }
 
 int MmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
