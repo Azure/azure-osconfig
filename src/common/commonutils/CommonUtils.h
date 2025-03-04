@@ -224,6 +224,7 @@ typedef struct ReportedProperty
 
 bool IsDebugLoggingEnabledInJsonConfig(const char* jsonString);
 bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString);
+int GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetModelVersionFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetLocalManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log);

@@ -1095,7 +1095,7 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "IsDaemonActive.", IsDaemonActive_target },
     { "RepairBrokenEolCharactersIfAny.", RepairBrokenEolCharactersIfAny_target },
     { "RemoveEscapeSequencesFromFile.", RemoveEscapeSequencesFromFile_target },
-    { "IsCommandLoggingEnabledInJsonConfig.", IsCommandLoggingEnabledInJsonConfig_target },
+    { "GetLoggingLevelFromJsonConfig.", GetLoggingLevelFromJsonConfig_target },
     { "IsDebugLoggingEnabledInJsonConfig.", IsDebugLoggingEnabledInJsonConfig_target },
     { "IsIotHubManagementEnabledInJsonConfig.", IsIotHubManagementEnabledInJsonConfig_target },
     { "GetReportingIntervalFromJsonConfig.", GetReportingIntervalFromJsonConfig_target },
