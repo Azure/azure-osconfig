@@ -34,6 +34,8 @@ static const char* g_asbName = "Azure Security Baseline for Linux";
 
 static const char* g_securityBaselineComponentName = "SecurityBaseline";
 
+static const char* g_configurationFile = "/etc/osconfig/osconfig.json";
+
 // Audit
 static const char* g_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
 static const char* g_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
@@ -870,6 +872,7 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
 
 void AsbInitialize(OsConfigLogHandle log)
 {
+    char* jsonConfiguration = NULL;
     char* prettyName = NULL;
     char* kernelVersion = NULL;
     char* cpuModel = NULL;
@@ -881,10 +884,20 @@ void AsbInitialize(OsConfigLogHandle log)
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
-    // Temporary
-    SetLoggingLevel(LoggingLevelDebug);
+    if (NULL != (jsonConfiguration = LoadStringFromFile(g_configurationFile, false, log)))
+    {
+        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, log));
+        FREE_MEMORY(jsonConfiguration);
+    }
+
+    RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
 
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
+
+    if (IsDebugLoggingEnabled())
+    {
+        OsConfigLogInfo(GetPlatformLog(), "WARNING: debug logging is enabled. To disable debug logging, set 'LoggingLevel' to 6 in '%s'", g_configurationFile);
+    }
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
