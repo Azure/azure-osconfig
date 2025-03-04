@@ -159,27 +159,6 @@ static void PlatformDoWork(void)
     }
 }
 
-static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* loggingSetting)
-{
-    bool result = false;
-    JSON_Value* rootValue = NULL;
-    JSON_Object* rootObject = NULL;
-
-    if (NULL != jsonString)
-    {
-        if (NULL != (rootValue = json_parse_string(jsonString)))
-        {
-            if (NULL != (rootObject = json_value_get_object(rootValue)))
-            {
-                result = (0 == (int)json_object_get_number(rootObject, loggingSetting)) ? false : true;
-            }
-            json_value_free(rootValue);
-        }
-    }
-
-    return result;
-}
-
 int main(int argc, char* argv[])
 {
     UNUSED(argc);
