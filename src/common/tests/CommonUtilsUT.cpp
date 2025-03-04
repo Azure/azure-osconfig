@@ -1311,7 +1311,6 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     char* value = nullptr;
 
     EXPECT_EQ(6, GetLoggingLevelFromJsonConfig(configuration, nullptr));
-    EXPECT_FALSE(IsDebugLoggingEnabledInJsonConfig(configuration));
     EXPECT_EQ(30, GetReportingIntervalFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(11, GetModelVersionFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(2, GetIotHubProtocolFromJsonConfig(configuration, nullptr));

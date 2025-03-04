@@ -516,7 +516,7 @@ int main(int argc, char *argv[])
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        SetLoggingLevel(IsDebugLoggingEnabledInJsonConfig(jsonConfiguration) ? LoggingLevelDebug : LoggingLevelInformational);
+        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetLog()));
         FREE_MEMORY(jsonConfiguration);
     }
 

@@ -131,11 +131,6 @@ int GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
     return GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
 }
 
-bool IsDebugLoggingEnabledInJsonConfig(const char* jsonString)
-{
-    return (LoggingLevelDebug == GetLoggingLevelFromJsonConfig()) ? true : false;
-}
-
 int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(REPORTING_INTERVAL_SECONDS, jsonString, DEFAULT_REPORTING_INTERVAL, MIN_REPORTING_INTERVAL, MAX_REPORTING_INTERVAL, log);

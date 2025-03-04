@@ -841,13 +841,6 @@ static int GetLogingLevelFromJsonConfig_target(const char* data, std::size_t siz
     return 0;
 }
 
-static int IsDebugLoggingEnabledInJsonConfig_target(const char* data, std::size_t size) noexcept
-{
-    auto json = std::string(data, size);
-    IsDebugLoggingEnabledInJsonConfig(json.c_str());
-    return 0;
-}
-
 static int IsIotHubManagementEnabledInJsonConfig_target(const char* data, std::size_t size) noexcept
 {
     auto json = std::string(data, size);
@@ -1103,7 +1096,6 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "RepairBrokenEolCharactersIfAny.", RepairBrokenEolCharactersIfAny_target },
     { "RemoveEscapeSequencesFromFile.", RemoveEscapeSequencesFromFile_target },
     { "GetLoggingLevelFromJsonConfig.", GetLoggingLevelFromJsonConfig_target },
-    { "IsDebugLoggingEnabledInJsonConfig.", IsDebugLoggingEnabledInJsonConfig_target },
     { "IsIotHubManagementEnabledInJsonConfig.", IsIotHubManagementEnabledInJsonConfig_target },
     { "GetReportingIntervalFromJsonConfig.", GetReportingIntervalFromJsonConfig_target },
     { "GetModelVersionFromJsonConfig.", GetModelVersionFromJsonConfig_target },

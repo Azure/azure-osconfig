@@ -180,11 +180,6 @@ static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* log
     return result;
 }
 
-bool IsDebugLoggingEnabledInJsonConfig(const char* jsonString)
-{
-    return IsLoggingEnabledInJsonConfig(jsonString, DEBUG_LOGGING);
-}
-
 int main(int argc, char* argv[])
 {
     UNUSED(argc);
@@ -196,7 +191,7 @@ int main(int argc, char* argv[])
     char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetPlatformLog());
     if (NULL != jsonConfiguration)
     {
-        SetLoggingLevel(IsDebugLoggingEnabledInJsonConfig(jsonConfiguration) ? LoggingLevelDebug : LoggingLevelInformational);
+        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetPlatformLog()));
         FREE_MEMORY(jsonConfiguration);
     }
 
