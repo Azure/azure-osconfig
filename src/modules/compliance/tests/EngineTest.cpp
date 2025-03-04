@@ -13,6 +13,7 @@ using compliance::Engine;
 using compliance::Error;
 using compliance::JsonWrapper;
 using compliance::Result;
+using compliance::Status;
 
 static Result<bool> auditFailure(std::map<std::string, std::string>, std::ostringstream&)
 {
@@ -179,7 +180,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_1)
     std::string payload = "eyJhdWRpdCI6e319"; // '{"audit":{}}' in base64
     auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
     ASSERT_TRUE(result);
-    EXPECT_TRUE(result.value());
+    EXPECT_EQ(result.value(), Status::Compliant);
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_2)
@@ -187,7 +188,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_2)
     std::string payload = "eyJhdWRpdCI6e30sICJyZW1lZGlhdGUiOnt9fQ=="; // '{"audit":{}, "remediate":{}}' in base64
     auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
     ASSERT_TRUE(result);
-    EXPECT_TRUE(result.value());
+    EXPECT_EQ(result.value(), Status::Compliant);
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_initAudit_InvalidArgument_1)
@@ -208,7 +209,7 @@ TEST_F(ComplianceEngineTest, MmiSet_initAudit_InvalidArgument_3)
 {
     std::string payload = "eyJhdWRpdCI6e319"; // '{"audit":{}}' in base64
     auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
-    ASSERT_TRUE(result && result.value());
+    ASSERT_TRUE(result && result.value() == Status::Compliant);
 
     payload = "K=V";
     result = mEngine.mmiSet("initX", payload.c_str(), static_cast<int>(payload.size()));
@@ -220,12 +221,12 @@ TEST_F(ComplianceEngineTest, MmiSet_initAudit_1)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJwYXJhbWV0ZXJzIjp7IksiOiJ2In19"; // '{"audit":{}, "parameters":{"K":"v"}}' in base64
     auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
-    ASSERT_TRUE(result && result.value());
+    ASSERT_TRUE(result && result.value() == Status::Compliant);
 
     payload = "K=V";
     result = mEngine.mmiSet("initX", payload.c_str(), static_cast<int>(payload.size()));
     ASSERT_TRUE(result);
-    EXPECT_TRUE(result.value());
+    EXPECT_EQ(result.value(), Status::Compliant);
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_InvalidArgument_1)
@@ -246,7 +247,7 @@ TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_InvalidArgument_3)
 {
     std::string payload = "eyJhdWRpdCI6e319"; // '{"audit":{}}' in base64
     auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
-    ASSERT_TRUE(result && result.value());
+    ASSERT_TRUE(result && result.value() == Status::Compliant);
 
     result = mEngine.mmiSet("remediateX", "", 0);
     ASSERT_FALSE(result);
@@ -257,7 +258,7 @@ TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_InvalidArgument_4)
 {
     std::string payload = "eyJhdWRpdCI6e30sInJlbWVkaWF0ZSI6e319"; // '{"audit":{},"remediate":{}}' in base64
     auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
-    ASSERT_TRUE(result && result.value());
+    ASSERT_TRUE(result && result.value() == Status::Compliant);
 
     payload = "K=V";
     result = mEngine.mmiSet("remediateX", payload.c_str(), static_cast<int>(payload.size()));
@@ -286,7 +287,7 @@ TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_2)
     // Result is reported by the Evaluator class
     auto result = mEngine.mmiSet("remediateX", "", 0);
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.value(), true);
+    EXPECT_EQ(result.value(), Status::Compliant);
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_3)
@@ -298,7 +299,7 @@ TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_3)
     // Result is reported by the Evaluator class
     auto result = mEngine.mmiSet("remediateX", "", 0);
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.value(), false);
+    EXPECT_EQ(result.value(), Status::NonCompliant);
 }
 
 TEST_F(ComplianceEngineTest, MmiGet_1)
@@ -322,7 +323,7 @@ TEST_F(ComplianceEngineTest, MmiGet_2)
     // Result is reported by the Evaluator class
     auto result = mEngine.mmiGet("auditX");
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.value().result, true);
+    EXPECT_EQ(result.value().status, Status::Compliant);
 }
 
 TEST_F(ComplianceEngineTest, MmiGet_3)
@@ -334,5 +335,5 @@ TEST_F(ComplianceEngineTest, MmiGet_3)
     // Result is reported by the Evaluator class
     auto result = mEngine.mmiGet("auditX");
     ASSERT_TRUE(result);
-    EXPECT_EQ(result.value().result, false);
+    EXPECT_EQ(result.value().status, Status::NonCompliant);
 }

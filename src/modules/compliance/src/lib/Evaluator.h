@@ -5,6 +5,7 @@
 #define COMPLIANCE_EVALUATOR_H
 
 #include "Logging.h"
+#include "MmiResults.h"
 #include "Result.h"
 
 #include <map>
@@ -36,8 +37,8 @@ public:
     Evaluator& operator=(const Evaluator&) = delete;
     Evaluator& operator=(Evaluator&&) = delete;
 
-    Result<bool> ExecuteAudit(char** payload, int* payloadSizeBytes);
-    Result<bool> ExecuteRemediation();
+    Result<AuditResult> ExecuteAudit();
+    Result<Status> ExecuteRemediation();
 
     void setProcedureMap(ProcedureMap procedureMap);
 
@@ -47,7 +48,7 @@ private:
         Audit,
         Remediate
     };
-    Result<bool> EvaluateProcedure(const struct json_object_t* json, const Action action);
+    Result<Status> EvaluateProcedure(const struct json_object_t* json, const Action action);
     const struct json_object_t* mJson;
     const ParameterMap& mParameters;
     std::ostringstream mLogstream;

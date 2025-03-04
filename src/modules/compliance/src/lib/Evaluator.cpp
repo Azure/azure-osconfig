@@ -15,15 +15,8 @@
 
 namespace compliance
 {
-
-Result<bool> Evaluator::ExecuteAudit(char** payload, int* payloadSizeBytes)
+Result<AuditResult> Evaluator::ExecuteAudit()
 {
-    if ((nullptr == payload) || (nullptr == payloadSizeBytes))
-    {
-        OsConfigLogError(mLog, "Invalid argument: payload or payloadSizeBytes is null");
-        return Error("Payload or payloadSizeBytes is null");
-    }
-
     auto result = EvaluateProcedure(mJson, Action::Audit);
     if (!result.has_value())
     {
@@ -32,7 +25,7 @@ Result<bool> Evaluator::ExecuteAudit(char** payload, int* payloadSizeBytes)
     }
 
     std::string vlog = mLogstream.str().substr(0, cLogstreamMaxSize - (1 + strlen("PASS") + strlen("\"\"")));
-    if (result.value() == true)
+    if (result.value() == Status::Compliant)
     {
         vlog = "\"PASS" + vlog + "\"";
     }
@@ -40,12 +33,10 @@ Result<bool> Evaluator::ExecuteAudit(char** payload, int* payloadSizeBytes)
     {
         vlog = "\"" + vlog + "\"";
     }
-    *payload = strdup(vlog.c_str());
-    *payloadSizeBytes = static_cast<int>(vlog.size());
-    return result;
+    return AuditResult{result.value(), vlog};
 }
 
-Result<bool> Evaluator::ExecuteRemediation()
+Result<Status> Evaluator::ExecuteRemediation()
 {
     auto result = EvaluateProcedure(mJson, Action::Remediate);
     if (!result.has_value())
@@ -62,7 +53,7 @@ void Evaluator::setProcedureMap(ProcedureMap procedureMap)
     mProcedureMap = std::move(procedureMap);
 }
 
-Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action action)
+Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action action)
 {
     if (nullptr == json)
     {
@@ -98,7 +89,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
                 mLogstream << "] == FAILURE }";
                 return result;
             }
-            if (result.value() == false)
+            if (result.value() == Status::NonCompliant)
             {
                 if (i < count - 1)
                 {
@@ -108,11 +99,11 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
             else
             {
                 mLogstream << "] == TRUE }";
-                return true;
+                return Status::Compliant;
             }
         }
         mLogstream << "] == FALSE }";
-        return false;
+        return Status::NonCompliant;
     }
     else if (!strcmp(name, "allOf"))
     {
@@ -134,7 +125,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
                 mLogstream << "] == FAILURE }";
                 return result;
             }
-            if (result.value() == true)
+            if (result.value() == Status::Compliant)
             {
                 if (i < count - 1)
                 {
@@ -144,11 +135,11 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
             else
             {
                 mLogstream << "] == FALSE }";
-                return false;
+                return Status::NonCompliant;
             }
         }
         mLogstream << "] == TRUE }";
-        return true;
+        return Status::Compliant;
     }
     else if (!strcmp(name, "not"))
     {
@@ -165,15 +156,15 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
             mLogstream << "] == FAILURE }";
             return result;
         }
-        if (result.value() == true)
+        if (result.value() == Status::Compliant)
         {
             mLogstream << "] == FALSE }";
-            return false;
+            return Status::NonCompliant;
         }
         else
         {
             mLogstream << "] == TRUE }";
-            return true;
+            return Status::Compliant;
         }
     }
     else
@@ -244,8 +235,10 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         if (!result.has_value())
         {
             mLogstream << "FAILURE";
+            return {result.error()};
         }
-        else if (result.value() == true)
+
+        if (result.value() == true)
         {
             mLogstream << "TRUE";
         }
@@ -253,7 +246,8 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         {
             mLogstream << "FALSE";
         }
-        return result;
+
+        return result.value() ? Status::Compliant : Status::NonCompliant;
     }
     return Error("Unreachable"); // unreachable
 }

@@ -155,6 +155,7 @@ TEST_F(ComplianceTest, ComplianceMmiGet_2)
     int payloadSizeBytes = 0;
     ASSERT_EQ(MMI_OK, ComplianceMmiGet(mHandle, "Compliance", "auditX", &payload, &payloadSizeBytes));
     ASSERT_NE(payload, nullptr);
+    ASSERT_TRUE(payloadSizeBytes >= 5);
     EXPECT_EQ(0, strncmp(payload, "\"PASS", 5));
     free(payload);
 }
