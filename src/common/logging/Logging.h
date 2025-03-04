@@ -44,8 +44,9 @@ typedef enum LoggingLevel LoggingLevel;
 OsConfigLogHandle OpenLog(const char* logFileName, const char* bakLogFileName);
 void CloseLog(OsConfigLogHandle* log);
 
+void SetLoggingLevel(LoggingLevel level);
+LoggingLevel GetLoggingLevel(void);
 bool IsDebugLoggingEnabled(void);
-void SetDebugLogging(bool fullLogging);
 
 FILE* GetLogFile(OsConfigLogHandle log);
 char* GetFormattedTime(void);

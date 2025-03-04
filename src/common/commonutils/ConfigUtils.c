@@ -29,6 +29,13 @@
 #define MIN_DEVICE_MODEL_ID 7
 #define MAX_DEVICE_MODEL_ID 999
 
+#define LOGGING_LEVEL "LoggingLevel"
+// Informational
+#define MIN_LOGGING_LEVEL 6
+#define DEFAULT_LOGGING_LEVEL MIN_LOGGING_LEVEL
+// Debug
+#define MAX_LOGGING_LEVEL 7
+
 static bool IsOptionEnabledInJsonConfig(const char* jsonString, const char* setting)
 {
     bool result = false;
@@ -48,11 +55,6 @@ static bool IsOptionEnabledInJsonConfig(const char* jsonString, const char* sett
     }
 
     return result;
-}
-
-bool IsDebugLoggingEnabledInJsonConfig(const char* jsonString)
-{
-    return IsOptionEnabledInJsonConfig(jsonString, DEBUG_LOGGING);
 }
 
 bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString)
@@ -122,6 +124,16 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
     }
 
     return valueToReturn;
+}
+
+int GetLoggingLevelFromJsonConfig(const char* jsonString)
+{
+    return GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
+}
+
+bool IsDebugLoggingEnabledInJsonConfig(const char* jsonString)
+{
+    return (LoggingLevelDebug == GetLoggingLevelFromJsonConfig()) ? true : false;
 }
 
 int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log)

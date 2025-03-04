@@ -10,11 +10,8 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <limits.h>
 #include "Logging.h"
-
-#define MAX_LOG_TRIM 1000
-
-static LoggingLevel g_loggingLevel = LoggingLevelInformational;
 
 struct OsConfigLog
 {
@@ -24,9 +21,16 @@ struct OsConfigLog
     unsigned int trimLogCount;
 };
 
-void SetDebugLogging(bool fullLogging)
+static LoggingLevel g_loggingLevel = LoggingLevelInformational;
+
+void SetLoggingLevel(LoggingLevel level)
 {
-    g_loggingLevel = fullLogging ? LoggingLevelDebug : LoggingLevelInformational;
+    g_loggingLevel = (level > LoggingLevelNotice) ? level : LoggingLevelInformational;
+}
+
+LoggingLevel GetLoggingLevel(void)
+{
+    return g_loggingLevel;
 }
 
 bool IsDebugLoggingEnabled(void)
@@ -104,9 +108,13 @@ char* GetFormattedTime(void)
     return g_logTime;
 }
 
-// Checks and rolls the log over if larger than MAX_LOG_SIZE
+// Checks and rolls the log over if larger than maximum size
 void TrimLog(OsConfigLogHandle log)
 {
+    // Try to increase the maximum debug log size 5 times
+    int maxLogSize = IsDebugLoggingEnabled() ? ((MAX_LOG_SIZE < (INT_MAX / 5)) ? (MAX_LOG_SIZE * 5) : INT_MAX) : MAX_LOG_SIZE;
+    int maxLogTrim = 1000;
+
     int fileSize = 0;
     int savedErrno = errno;
 
@@ -115,8 +123,8 @@ void TrimLog(OsConfigLogHandle log)
         return;
     }
 
-    // Loop incrementing the trim log counter from 0 to MAX_LOG_TRIM
-    log->trimLogCount = (log->trimLogCount < MAX_LOG_TRIM) ? (log->trimLogCount + 1) : 1;
+    // Loop incrementing the trim log counter from 0 to maxLogTrim
+    log->trimLogCount = (log->trimLogCount < maxLogTrim) ? (log->trimLogCount + 1) : 1;
 
     // Check every 10 calls:
     if (0 == (log->trimLogCount % 10))
@@ -124,7 +132,7 @@ void TrimLog(OsConfigLogHandle log)
         // In append mode the file pointer will always be at end of file:
         fileSize = ftell(log->log);
 
-        if ((fileSize >= MAX_LOG_SIZE) || (-1 == fileSize))
+        if ((fileSize >= maxLogSize) || (-1 == fileSize))
         {
             fclose(log->log);
 
