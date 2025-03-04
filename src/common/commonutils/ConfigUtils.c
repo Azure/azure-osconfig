@@ -126,7 +126,7 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
     return valueToReturn;
 }
 
-int GetLoggingLevelFromJsonConfig(const char* jsonString)
+int GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
 }
