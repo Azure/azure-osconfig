@@ -890,6 +890,9 @@ void AsbInitialize(OsConfigLogHandle log)
         FREE_MEMORY(jsonConfiguration);
     }
 
+    // Temporary
+    SetLoggingLevel(LoggingLevelDebug);
+
     RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
 
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
