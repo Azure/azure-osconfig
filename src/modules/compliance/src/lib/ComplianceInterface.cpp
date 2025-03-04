@@ -5,6 +5,7 @@
 
 #include "CommonUtils.h"
 #include "Engine.h"
+#include "JsonWrapper.h"
 #include "Logging.h"
 #include "Mmi.h"
 
@@ -12,8 +13,11 @@
 #include <cstddef>
 #include <cstring>
 #include <exception>
+#include <parson.h>
 
 using compliance::Engine;
+using compliance::JSONFromString;
+using compliance::parseJSON;
 using compliance::Status;
 
 static OsConfigLogHandle g_log = nullptr;
@@ -92,13 +96,18 @@ int ComplianceMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
             return result.error().code;
         }
 
-        *payload = strndup(result.value().payload.c_str(), result.value().payload.size());
-        if (NULL == *payload)
+        auto json = JSONFromString(result.value().payload.c_str());
+        if (NULL == json)
         {
-            OsConfigLogError(engine.log(), "ComplianceMmiGet: failed to allocate memory for payload");
+            OsConfigLogError(engine.log(), "ComplianceMmiGet failed: Failed to create JSON object from string");
             return ENOMEM;
         }
-        *payloadSizeBytes = result.value().payload.size();
+        else if (NULL == (*payload = json_serialize_to_string(json.get())))
+        {
+            OsConfigLogError(engine.log(), "ComplianceMmiGet failed: Failed to serialize JSON object");
+            return ENOMEM;
+        }
+        *payloadSizeBytes = strlen(*payload);
         OsConfigLogInfo(engine.log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
         return MMI_OK;
     }
@@ -133,7 +142,15 @@ int ComplianceMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
 
     try
     {
-        auto result = engine.mmiSet(objectName, payload, payloadSizeBytes);
+        std::string payloadStr(payload, payloadSizeBytes);
+        auto object = parseJSON(payloadStr.c_str());
+        if (NULL == object || JSONString != json_value_get_type(object.get()))
+        {
+            OsConfigLogError(engine.log(), "ComplianceMmiSet failed: Failed to parse JSON string");
+            return EINVAL;
+        }
+        std::string realPayload = json_value_get_string(object.get());
+        auto result = engine.mmiSet(objectName, realPayload);
         if (!result.has_value())
         {
             OsConfigLogError(engine.log(), "ComplianceMmiSet failed: %s", result.error().message.c_str());

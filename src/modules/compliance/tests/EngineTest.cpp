@@ -83,42 +83,21 @@ TEST_F(ComplianceEngineTest, MmiGet_InvalidArgument_5)
 
 TEST_F(ComplianceEngineTest, MmiSet_InvalidArgument_1)
 {
-    auto result = mEngine.mmiSet(nullptr, "", 0);
+    auto result = mEngine.mmiSet(nullptr, "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Invalid argument"));
-}
-
-TEST_F(ComplianceEngineTest, MmiSet_InvalidArgument_2)
-{
-    auto result = mEngine.mmiSet("", nullptr, 0);
-    ASSERT_FALSE(result);
-    EXPECT_EQ(result.error().message, std::string("Invalid argument"));
-}
-
-TEST_F(ComplianceEngineTest, MmiSet_InvalidArgument_3)
-{
-    auto result = mEngine.mmiSet("", "", -1);
-    ASSERT_FALSE(result);
-    EXPECT_EQ(result.error().message, std::string("Invalid argument"));
-}
-
-TEST_F(ComplianceEngineTest, MmiSet_InvalidArgument_4)
-{
-    auto result = mEngine.mmiSet("", "", 0);
-    ASSERT_FALSE(result);
-    EXPECT_EQ(result.error().message, std::string("Invalid object name"));
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_InvalidArgument_5)
 {
-    auto result = mEngine.mmiSet("procedure", "", 0);
+    auto result = mEngine.mmiSet("procedure", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Rule name is empty"));
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_1)
 {
-    auto result = mEngine.mmiSet("procedureX", "", 0);
+    auto result = mEngine.mmiSet("procedureX", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Failed to parse JSON"));
 }
@@ -126,7 +105,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_1)
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_2)
 {
     std::string payload = "dGVzdA=="; // 'test' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Failed to parse JSON"));
 }
@@ -134,7 +113,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_2)
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_3)
 {
     std::string payload = "e30="; // '{}' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Missing 'audit' object"));
 }
@@ -142,7 +121,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_3)
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_4)
 {
     std::string payload = "W10="; // '[]' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Failed to parse JSON object"));
 }
@@ -150,7 +129,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_4)
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_5)
 {
     std::string payload = "eyJhdWRpdCI6W119"; // '{"audit":[]}' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("The 'audit' value is not an object"));
 }
@@ -158,7 +137,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_5)
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_6)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJwYXJhbWV0ZXJzIjoxMjN9"; // '{"audit":{}, "parameters":123}' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("The 'parameters' value is not an object"));
 }
@@ -166,7 +145,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_6)
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_7)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJwYXJhbWV0ZXJzIjp7IksiOnt9fX0="; // '{"audit":{}, "parameters":{"K":{}}}' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Failed to get parameter name and value"));
 }
@@ -174,7 +153,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_7)
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_8)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJyZW1lZGlhdGUiOltdfQ=="; // '{"audit":{}, "remediate":[]}' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("The 'remediate' value is not an object"));
 }
@@ -182,7 +161,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_8)
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_1)
 {
     std::string payload = "eyJhdWRpdCI6e319"; // '{"audit":{}}' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_TRUE(result);
     EXPECT_EQ(result.value(), Status::Compliant);
 }
@@ -190,21 +169,21 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_1)
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_2)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJyZW1lZGlhdGUiOnt9fQ=="; // '{"audit":{}, "remediate":{}}' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_TRUE(result);
     EXPECT_EQ(result.value(), Status::Compliant);
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_initAudit_InvalidArgument_1)
 {
-    auto result = mEngine.mmiSet("initX", "", 0);
+    auto result = mEngine.mmiSet("initX", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Out-of-order operation: procedure must be set first"));
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_initAudit_InvalidArgument_2)
 {
-    auto result = mEngine.mmiSet("init", "", 0);
+    auto result = mEngine.mmiSet("init", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Rule name is empty"));
 }
@@ -212,11 +191,11 @@ TEST_F(ComplianceEngineTest, MmiSet_initAudit_InvalidArgument_2)
 TEST_F(ComplianceEngineTest, MmiSet_initAudit_InvalidArgument_3)
 {
     std::string payload = "eyJhdWRpdCI6e319"; // '{"audit":{}}' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_TRUE(result && result.value() == Status::Compliant);
 
     payload = "K=V";
-    result = mEngine.mmiSet("initX", payload.c_str(), static_cast<int>(payload.size()));
+    result = mEngine.mmiSet("initX", payload);
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("User parameter 'K' not found"));
 }
@@ -224,25 +203,25 @@ TEST_F(ComplianceEngineTest, MmiSet_initAudit_InvalidArgument_3)
 TEST_F(ComplianceEngineTest, MmiSet_initAudit_1)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJwYXJhbWV0ZXJzIjp7IksiOiJ2In19"; // '{"audit":{}, "parameters":{"K":"v"}}' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_TRUE(result && result.value() == Status::Compliant);
 
     payload = "K=V";
-    result = mEngine.mmiSet("initX", payload.c_str(), static_cast<int>(payload.size()));
+    result = mEngine.mmiSet("initX", payload);
     ASSERT_TRUE(result);
     EXPECT_EQ(result.value(), Status::Compliant);
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_InvalidArgument_1)
 {
-    auto result = mEngine.mmiSet("remediateX", "", 0);
+    auto result = mEngine.mmiSet("remediateX", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Out-of-order operation: procedure must be set first"));
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_InvalidArgument_2)
 {
-    auto result = mEngine.mmiSet("remediate", "", 0);
+    auto result = mEngine.mmiSet("remediate", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Rule name is empty"));
 }
@@ -250,10 +229,10 @@ TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_InvalidArgument_2)
 TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_InvalidArgument_3)
 {
     std::string payload = "eyJhdWRpdCI6e319"; // '{"audit":{}}' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_TRUE(result && result.value() == Status::Compliant);
 
-    result = mEngine.mmiSet("remediateX", "", 0);
+    result = mEngine.mmiSet("remediateX", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Failed to get 'remediate' object"));
 }
@@ -261,11 +240,11 @@ TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_InvalidArgument_3)
 TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_InvalidArgument_4)
 {
     std::string payload = "eyJhdWRpdCI6e30sInJlbWVkaWF0ZSI6e319"; // '{"audit":{},"remediate":{}}' in base64
-    auto result = mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size()));
+    auto result = mEngine.mmiSet("procedureX", payload);
     ASSERT_TRUE(result && result.value() == Status::Compliant);
 
     payload = "K=V";
-    result = mEngine.mmiSet("remediateX", payload.c_str(), static_cast<int>(payload.size()));
+    result = mEngine.mmiSet("remediateX", payload);
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("User parameter 'K' not found"));
 }
@@ -274,10 +253,10 @@ TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_1)
 {
     // '{"audit":{},"remediate":{"X":{}},"parameters":{"K":"v"}}' in base64
     std::string payload = "eyJhdWRpdCI6e30sInJlbWVkaWF0ZSI6eyJYIjp7fX0sInBhcmFtZXRlcnMiOnsiSyI6InYifX0=";
-    ASSERT_TRUE(mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size())));
+    ASSERT_TRUE(mEngine.mmiSet("procedureX", payload));
 
     // Result is reported by the Evaluator class
-    auto result = mEngine.mmiSet("remediateX", "", 0);
+    auto result = mEngine.mmiSet("remediateX", "");
     ASSERT_FALSE(result);
     EXPECT_EQ(result.error().message, std::string("Unknown function"));
 }
@@ -286,10 +265,10 @@ TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_2)
 {
     // '{"audit":{},"remediate":{"allOf":[]}}' in base64
     std::string payload = "eyJhdWRpdCI6e30sInJlbWVkaWF0ZSI6eyJhbGxPZiI6W119fQ==";
-    ASSERT_TRUE(mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size())));
+    ASSERT_TRUE(mEngine.mmiSet("procedureX", payload));
 
     // Result is reported by the Evaluator class
-    auto result = mEngine.mmiSet("remediateX", "", 0);
+    auto result = mEngine.mmiSet("remediateX", "");
     ASSERT_TRUE(result);
     EXPECT_EQ(result.value(), Status::Compliant);
 }
@@ -298,10 +277,10 @@ TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_3)
 {
     // '{"audit":{},"remediate":{"anyOf":[]}}' in base64
     std::string payload = "eyJhdWRpdCI6e30sInJlbWVkaWF0ZSI6eyJhbnlPZiI6W119fQ==";
-    ASSERT_TRUE(mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size())));
+    ASSERT_TRUE(mEngine.mmiSet("procedureX", payload));
 
     // Result is reported by the Evaluator class
-    auto result = mEngine.mmiSet("remediateX", "", 0);
+    auto result = mEngine.mmiSet("remediateX", "");
     ASSERT_TRUE(result);
     EXPECT_EQ(result.value(), Status::NonCompliant);
 }
@@ -310,7 +289,7 @@ TEST_F(ComplianceEngineTest, MmiGet_1)
 {
     // '{"audit":{"X":{}}}' in base64
     std::string payload = "eyJhdWRpdCI6eyJYIjp7fX19";
-    ASSERT_TRUE(mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size())));
+    ASSERT_TRUE(mEngine.mmiSet("procedureX", payload));
 
     // Result is reported by the Evaluator class
     auto result = mEngine.mmiGet("auditX");
@@ -322,7 +301,7 @@ TEST_F(ComplianceEngineTest, MmiGet_2)
 {
     // '{"audit":{"allOf":[]}}' in base64
     std::string payload = "eyJhdWRpdCI6eyJhbGxPZiI6W119fQ==";
-    ASSERT_TRUE(mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size())));
+    ASSERT_TRUE(mEngine.mmiSet("procedureX", payload));
 
     // Result is reported by the Evaluator class
     auto result = mEngine.mmiGet("auditX");
@@ -334,7 +313,7 @@ TEST_F(ComplianceEngineTest, MmiGet_3)
 {
     // '{"audit":{"anyOf":[]}}' in base64
     std::string payload = "eyJhdWRpdCI6eyJhbnlPZiI6W119fQ==";
-    ASSERT_TRUE(mEngine.mmiSet("procedureX", payload.c_str(), static_cast<int>(payload.size())));
+    ASSERT_TRUE(mEngine.mmiSet("procedureX", payload));
 
     // Result is reported by the Evaluator class
     auto result = mEngine.mmiGet("auditX");
