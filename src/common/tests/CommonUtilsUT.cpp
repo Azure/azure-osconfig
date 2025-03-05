@@ -1320,13 +1320,13 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     EXPECT_EQ(1, GetLocalManagementFromJsonConfig(configuration, nullptr));
 
     EXPECT_EQ(6, GetLoggingLevelFromJsonConfig(configuration, nullptr));
-    
+
     // The value of 1073741825 is too big, shall be changed to 1073741824
     EXPECT_EQ(1050123, GetMaxLogSizeFromJsonConfig(configuration, nullptr));
-    
+
     // The value 0 is too small, shall be changed to 1
     EXPECT_EQ(1, GetMaxLogSizeDebugMultiplierFromJsonConfig(configuration, nullptr));
-    
+
     EXPECT_EQ(2, LoadReportedFromJsonConfig(configuration, &reportedProperties, nullptr));
     EXPECT_STREQ("DeviceInfo", reportedProperties[0].componentName);
     EXPECT_STREQ("osName", reportedProperties[0].propertyName);
