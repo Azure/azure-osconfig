@@ -80,7 +80,8 @@ bool IsDaemon(void);
 #define OSCONFIG_FILE_LOG_ERROR(log, format, ...) OSCONFIG_FILE_LOG(log, __ERROR__, format,  ## __VA_ARGS__)
 
 #define OsConfigLog(log, level, FORMAT, ...) {\
-    if (level <= (GetLoggingLevel())) {\
+    LoggingLevel current = GetLoggingLevel();\
+    if (level <= current) {\
         if (NULL != GetLogFile(log)) {\
             OSCONFIG_FILE_LOG(log, level, FORMAT, ##__VA_ARGS__);\
             fflush(GetLogFile(log));\
