@@ -48,6 +48,7 @@ void SetMaxLogSize(unsigned int value);
 unsigned int GetMaxLogSizeDebugMultiplier(void);
 void SetMaxLogSizeDebugMultiplier(unsigned int value);
 
+char* GetLoggingLevelName(LoggingLevel level);
 FILE* GetLogFile(OsConfigLogHandle log);
 char* GetFormattedTime(void);
 void TrimLog(OsConfigLogHandle log);
@@ -70,25 +71,6 @@ bool IsDaemon(void);
 #define __INFO__ "INFO"
 #define __DEBUG__ "DEBUG"
 
-#define GetLoggingLevelName(level) {\
-    if (LoggingLevelEmergency == level)\
-        return __EMERGENCY__;\
-    else if (LoggingLevelAlert == level)\
-        return __ALERT__;\
-    else if (LoggingLevelCritical == level)\
-        return __CRITICAL__;\
-    else if (LoggingLevelError == level)\
-        return __ERROR__;\
-    else if (LoggingLevelWarning == level)\
-        return __WARNING__;\
-    else if (LoggingLevelNotice == level)\
-        return __NOTICE__;\
-    else if (LoggingLevelInformational == level)\
-        return __INFO__;\
-    else
-        return __DEBUG__;\
-}\
-
 #define OSCONFIG_LOG(log, level, format, ...) __LOG__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
 #define OSCONFIG_LOG_INFO(log, format, ...) OSCONFIG_LOG(log, __INFO__, format,  ## __VA_ARGS__)
 #define OSCONFIG_LOG_ERROR(log, format, ...) OSCONFIG_LOG(log, __ERROR__, format,  ## __VA_ARGS__)
@@ -100,11 +82,11 @@ bool IsDaemon(void);
 #define OsConfigLog(log, level, FORMAT, ...) {\
     if (GetLoggingLevel() >= level) {\
         if (NULL != GetLogFile(log)) {\
-            OSCONFIG_FILE_LOG(log, level, FORMAT, ##__VA_ARGS__);\
+            OSCONFIG_FILE_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
             fflush(GetLogFile(log));\
         }\
         if (false == IsDaemon()) {\
-            OSCONFIG_LOG(log, level, FORMAT, ##__VA_ARGS__);\
+            OSCONFIG_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
         }\
     }\
 }\

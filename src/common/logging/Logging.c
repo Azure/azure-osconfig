@@ -29,6 +29,32 @@ static LoggingLevel g_loggingLevel = LoggingLevelInformational;
 static unsigned int g_maxLogSize = 1048576;
 static unsigned int g_maxLogSizeDebugMultiplier = 5;
 
+char* GetLoggingLevelName(LoggingLevel level)
+{
+    char* result = __DEBUG__;
+    switch (level) 
+    {
+        case LoggingLevelEmergency:
+            result = __EMERGENCY__;
+        case LoggingLevelAlert:
+            result = __ALERT__;
+        case LoggingLevelCritical:
+            result = __CRITICAL__;
+        case LoggingLevelError:
+            result = __ERROR__;
+        case LoggingLevelWarning:
+            result = __WARNING__;
+        case LoggingLevelNotice:
+            result = __NOTICE__;
+        case LoggingLevelInformational:
+            result = __INFO__;
+        case LoggingLevelDebug:
+        default:
+            result = __DEBUG__;
+    }
+    return result;
+}
+
 void SetLoggingLevel(LoggingLevel level)
 {
     g_loggingLevel = (level > LoggingLevelNotice) ? level : LoggingLevelInformational;
