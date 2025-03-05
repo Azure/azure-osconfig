@@ -103,11 +103,11 @@ bool IsDaemon(void);
 #define OsConfigLog(log, level, FORMAT, ...) {\
     if (GetLoggingLevel() >= level) {\
         if (NULL != GetLogFile(log)) {\
-            OSCONFIG_FILE_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
+            OSCONFIG_FILE_LOG(log, level, FORMAT, ##__VA_ARGS__);\
             fflush(GetLogFile(log));\
         }\
         if (false == IsDaemon()) {\
-            OSCONFIG_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
+            OSCONFIG_LOG(log, level, FORMAT, ##__VA_ARGS__);\
         }\
     }\
 }\
