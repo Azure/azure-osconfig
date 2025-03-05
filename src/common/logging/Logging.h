@@ -46,7 +46,7 @@ bool IsDebugLoggingEnabled(void);
 unsigned int GetMaxLogSize(void);
 void SetMaxLogSize(unsigned int value);
 unsigned int GetMaxLogSizeDebugMultiplier(void);
-void SetMaxLogSizeMultiplier(unsigned int value);
+void SetMaxLogSizeDebugMultiplier(unsigned int value);
 
 FILE* GetLogFile(OsConfigLogHandle log);
 char* GetFormattedTime(void);

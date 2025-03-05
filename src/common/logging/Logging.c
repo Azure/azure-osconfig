@@ -59,7 +59,7 @@ unsigned int GetMaxLogSizeDebugMultiplier(void)
     return g_maxLogSizeDebugMultiplier;
 }
 
-void SetMaxLogSizeMultiplier(unsigned int value)
+void SetMaxLogSizeDebugMultiplier(unsigned int value)
 {
     g_maxLogSizeDebugMultiplier = value;
 }
