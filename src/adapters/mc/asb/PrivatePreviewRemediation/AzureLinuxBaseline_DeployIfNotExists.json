@@ -281,7 +281,7 @@
             "/providers/Microsoft.Authorization/roleDefinitions/088ab73d-1256-47ae-bea9-9de8e7131f31"
           ],
           "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
-          "name": "[concat('AzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
+          "name": "[concat('SetAzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
           "existenceCondition": {
             "allOf": [
               {
@@ -304,7 +304,7 @@
                   "value": "[field('type')]"
                 },
                 "assignmentName": {
-                  "value": "[concat('AzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
+                  "value": "[concat('SetAzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
                 }
               },
               "template": {
@@ -333,8 +333,8 @@
                     "location": "[parameters('location')]",
                     "properties": {
                       "guestConfiguration": {
-                        "name": "AzureLinuxBaseline",
-                        "version": "1.*",
+                        "name": "SetAzureLinuxBaseline",
+                        "version": "1.0.0-preview",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -347,8 +347,8 @@
                     "location": "[parameters('location')]",
                     "properties": {
                       "guestConfiguration": {
-                        "name": "AzureLinuxBaseline",
-                        "version": "1.*",
+                        "name": "SetAzureLinuxBaseline",
+                        "version": "1.0.0-preview",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -361,8 +361,8 @@
                     "location": "[parameters('location')]",
                     "properties": {
                       "guestConfiguration": {
-                        "name": "AzureLinuxBaseline",
-                        "version": "1.*",
+                        "name": "SetAzureLinuxBaseline",
+                        "version": "1.0.0-preview",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
