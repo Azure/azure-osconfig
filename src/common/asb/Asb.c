@@ -890,7 +890,7 @@ void AsbInitialize(OsConfigLogHandle log)
         {
             SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, log));
             SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, log));
-            SetMaxLogSizeDebugMultiplier(GetMaxLogSizeFromJsonConfigDebugMultiplier(jsonConfiguration, log));
+            SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, log));
             FREE_MEMORY(jsonConfiguration);
         }
     }

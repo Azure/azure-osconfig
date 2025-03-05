@@ -518,7 +518,7 @@ int main(int argc, char *argv[])
     {
         SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetLog()));
         SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetLog()));
-        SetMaxLogSizeDebugMultiplier(GetMaxLogSizeFromJsonConfigDebugMultiplier(jsonConfiguration, GetLog()));
+        SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, GetLog()));
         FREE_MEMORY(jsonConfiguration);
     }
 
