@@ -1002,11 +1002,8 @@ static int ComplianceEvaluateAudit_target(const char* data, std::size_t size) no
     };
     evaluator.setProcedureMap(std::move(procedureMap));
 
-    char* payload = nullptr;
-    int payloadSize = 0;
-    evaluator.ExecuteAudit(&payload, &payloadSize);
+    evaluator.ExecuteAudit();
     json_value_free(json);
-    free(payload);
     return c_valid_input;
 }
 
@@ -1095,7 +1092,6 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "IsDaemonActive.", IsDaemonActive_target },
     { "RepairBrokenEolCharactersIfAny.", RepairBrokenEolCharactersIfAny_target },
     { "RemoveEscapeSequencesFromFile.", RemoveEscapeSequencesFromFile_target },
-    { "IsCommandLoggingEnabledInJsonConfig.", IsCommandLoggingEnabledInJsonConfig_target },
     { "IsDebugLoggingEnabledInJsonConfig.", IsDebugLoggingEnabledInJsonConfig_target },
     { "IsIotHubManagementEnabledInJsonConfig.", IsIotHubManagementEnabledInJsonConfig_target },
     { "GetReportingIntervalFromJsonConfig.", GetReportingIntervalFromJsonConfig_target },
