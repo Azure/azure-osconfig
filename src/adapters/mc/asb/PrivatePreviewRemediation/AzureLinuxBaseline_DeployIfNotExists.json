@@ -11,8 +11,8 @@
         "Microsoft.GuestConfiguration"
       ],
       "guestConfiguration": {
-        "name": "AzureLinuxBaseline",
-        "version": "1.*"
+        "name": "SetAzureLinuxBaseline",
+        "version": "1.0.0-preview"
       }
     },
     "parameters": {
