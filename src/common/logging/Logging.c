@@ -13,6 +13,8 @@
 #include <limits.h>
 #include "Logging.h"
 
+#define TIME_FORMAT_STRING_LENGTH 20
+
 struct OsConfigLog
 {
     FILE* log;
@@ -22,6 +24,10 @@ struct OsConfigLog
 };
 
 static LoggingLevel g_loggingLevel = LoggingLevelInformational;
+
+// Default maximum log size (1,048,576 is 1024 * 1024 aka 1MB)
+static unsigned int g_maxLogSize = 1048576;
+static unsigned int g_maxLogSizeDebugMultiplier = 5;
 
 void SetLoggingLevel(LoggingLevel level)
 {
@@ -36,6 +42,26 @@ LoggingLevel GetLoggingLevel(void)
 bool IsDebugLoggingEnabled(void)
 {
     return (LoggingLevelDebug == g_loggingLevel) ? true : false;
+}
+
+unsigned int GetMaxLogSize(void)
+{
+    return g_maxLogSize;
+}
+
+void SetMaxLogSize(unsigned int value)
+{
+    g_maxLogSize = value;
+}
+
+unsigned int GetMaxLogSizeDebugMultiplier(void)
+{
+    return g_maxLogSizeMultiplier;
+}
+
+void SetMaxLogSizeMultiplier(unsigned int value)
+{
+    g_maxLogSizeMultiplier = value;
 }
 
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
@@ -111,8 +137,8 @@ char* GetFormattedTime(void)
 // Checks and rolls the log over if larger than maximum size
 void TrimLog(OsConfigLogHandle log)
 {
+    unsigned int maxLogSize = IsDebugLoggingEnabled() ? ((g_maxLogSize < (INT_MAX / 5)) ? (g_maxLogSize * 5) : INT_MAX) : g_maxLogSize;
     unsigned int maxLogTrim = 1000;
-    int maxLogSize = IsDebugLoggingEnabled() ? ((MAX_LOG_SIZE < (INT_MAX / 5)) ? (MAX_LOG_SIZE * 5) : INT_MAX) : MAX_LOG_SIZE;
     int fileSize = 0;
     int savedErrno = errno;
 

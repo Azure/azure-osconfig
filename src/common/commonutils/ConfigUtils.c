@@ -14,27 +14,31 @@
 #define REPORTED_SETTING_NAME "ObjectName"
 #define MODEL_VERSION_NAME "ModelVersion"
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
-
 #define IOT_HUB_MANAGEMENT "IotHubManagement"
 #define LOCAL_MANAGEMENT "LocalManagement"
-
-#define DEBUG_LOGGING "DebugLogging"
-
 #define PROTOCOL "IotHubProtocol"
-
 #define GIT_MANAGEMENT "GitManagement"
 #define GIT_REPOSITORY_URL "GitRepositoryUrl"
 #define GIT_BRANCH "GitBranch"
+#define LOGGING_LEVEL "LoggingLevel"
+#define MAX_LOG_SIZE "MaxLogSize"
+#define MAX_LOG_SIZE_DEBUG_MULTIPLIER "MaxLogSizeDebugMultiplier"
 
 #define MIN_DEVICE_MODEL_ID 7
 #define MAX_DEVICE_MODEL_ID 999
 
-#define LOGGING_LEVEL "LoggingLevel"
 // Informational
 #define MIN_LOGGING_LEVEL 6
 #define DEFAULT_LOGGING_LEVEL MIN_LOGGING_LEVEL
 // Debug
 #define MAX_LOGGING_LEVEL 7
+
+#define MIN_MAX_LOG_SIZE 1024
+#define MIN_MAX_LOG_SIZE_DEBUG_MULTIPLIER 1
+#define MAX_MAX_LOG_SIZE 1073741824
+#define MAX_MAX_LOG_SIZE_DEBUG_MULTIPLIER 10
+#define DEFAULT_MAX_LOG_SIZE 1048576
+#define DEFAULT_MAX_LOG_SIZE_DEBUG_MULTIPLIER 5
 
 static bool IsOptionEnabledInJsonConfig(const char* jsonString, const char* setting)
 {
@@ -76,7 +80,7 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
 
     if (minValue >= maxValue)
     {
-        OsConfigLogDebug(log, "GetIntegerFromJsonConfig: bad min (%d) and/or max (%d) values for %s, using default (%d)", minValue, maxValue, valueName, defaultValue);
+        OsConfigLogDebug(log, "GetIntegerFromJsonConfig: bad min (%d) and/or max (%d) values for '%s', using default (%d)", minValue, maxValue, valueName, defaultValue);
         return valueToReturn;
     }
 
@@ -90,37 +94,37 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
                 if (0 == valueToReturn)
                 {
                     valueToReturn = defaultValue;
-                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: %s value not found or 0, using default (%d)", valueName, defaultValue);
+                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: '%s' value not found or 0, using default (%d)", valueName, defaultValue);
                 }
                 else if (valueToReturn < minValue)
                 {
-                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: %s value %d too small, using minimum (%d)", valueName, valueToReturn, minValue);
+                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: '%s' value %d too small, using minimum (%d)", valueName, valueToReturn, minValue);
                     valueToReturn = minValue;
                 }
                 else if (valueToReturn > maxValue)
                 {
-                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: %s value %d too big, using maximum (%d)", valueName, valueToReturn, maxValue);
+                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: '%s' value %d too big, using maximum (%d)", valueName, valueToReturn, maxValue);
                     valueToReturn = maxValue;
                 }
                 else
                 {
-                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: %s: %d", valueName, valueToReturn);
+                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: '%s': %d", valueName, valueToReturn);
                 }
             }
             else
             {
-                OsConfigLogDebug(log, "GetIntegerFromJsonConfig: json_value_get_object(root) failed, using default (%d) for %s", defaultValue, valueName);
+                OsConfigLogDebug(log, "GetIntegerFromJsonConfig: json_value_get_object(root) failed, using default (%d) for '%s'", defaultValue, valueName);
             }
             json_value_free(rootValue);
         }
         else
         {
-            OsConfigLogDebug(log, "GetIntegerFromJsonConfig: json_parse_string failed, using default (%d) for %s", defaultValue, valueName);
+            OsConfigLogDebug(log, "GetIntegerFromJsonConfig: json_parse_string failed, using default (%d) for '%s'", defaultValue, valueName);
         }
     }
     else
     {
-        OsConfigLogDebug(log, "GetIntegerFromJsonConfig: no configuration data, using default (%d) for %s", defaultValue, valueName);
+        OsConfigLogDebug(log, "GetIntegerFromJsonConfig: no configuration data, using default (%d) for '%s'", defaultValue, valueName);
     }
 
     return valueToReturn;
@@ -129,6 +133,16 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
 int GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
+}
+
+int GetMaxLogSizeFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
+{
+    return GetIntegerFromJsonConfig(MAX_LOG_SIZE, jsonString, DEFAULT_MAX_LOG_SIZE, MIN_MAX_LOG_SIZE, MAX_MAX_LOG_SIZE, log);
+}
+
+int GetMaxLogSizeDebugMultiplierFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
+{
+    return GetIntegerFromJsonConfig(MAX_LOG_SIZE_DEBUG_MULTIPLIER, jsonString, DEFAULT_MAX_LOG_SIZE_DEBUG_MULTIPLIER, MIN_MAX_LOG_SIZE_DEBUG_MULTIPLIER, MAX_MAX_LOG_SIZE_DEBUG_MULTIPLIER, log);
 }
 
 int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log)

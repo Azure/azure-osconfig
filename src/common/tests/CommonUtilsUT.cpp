@@ -1291,6 +1291,8 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
           "\"GitBranch\": \"foo/test\","
           "\"LocalManagement\": 3,"
           "\"LoggingLevel\": 6,"
+          "\"MaxLogSize\": 1073741825,"
+          "\"MaxLogSizeDebugMultiplier\": 0,"
           "\"ModelVersion\": 11,"
           "\"IotHubProtocol\": 2,"
           "\"Reported\": ["
@@ -1310,7 +1312,6 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
     char* value = nullptr;
 
-    EXPECT_EQ(6, GetLoggingLevelFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(30, GetReportingIntervalFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(11, GetModelVersionFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(2, GetIotHubProtocolFromJsonConfig(configuration, nullptr));
@@ -1318,6 +1319,14 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     // The value of 3 is too big, shall be changed to 1
     EXPECT_EQ(1, GetLocalManagementFromJsonConfig(configuration, nullptr));
 
+    EXPECT_EQ(6, GetLoggingLevelFromJsonConfig(configuration, nullptr));
+    
+    // The value of 1073741825 is too big, shall be changed to 1073741824
+    EXPECT_EQ(1050123, GetMaxLogSizeFromJsonConfig(configuration, nullptr));
+    
+    // The value 0 is too small, shall be changed to 1
+    EXPECT_EQ(1, GetMaxLogSizeDebugMultiplierFromJsonConfig(configuration, nullptr));
+    
     EXPECT_EQ(2, LoadReportedFromJsonConfig(configuration, &reportedProperties, nullptr));
     EXPECT_STREQ("DeviceInfo", reportedProperties[0].componentName);
     EXPECT_STREQ("osName", reportedProperties[0].propertyName);

@@ -884,10 +884,15 @@ void AsbInitialize(OsConfigLogHandle log)
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
-    if (NULL != (jsonConfiguration = LoadStringFromFile(g_configurationFile, false, log)))
+    if (FileExists(g_configurationFile))
     {
-        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, log));
-        FREE_MEMORY(jsonConfiguration);
+        if (NULL != (jsonConfiguration = LoadStringFromFile(g_configurationFile, false, log)))
+        {
+            SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, log));
+            SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, log));
+            SetMaxLogSizeDebugMultiplier(GetMaxLogSizeFromJsonConfigDebugMultiplier(jsonConfiguration, log));
+            FREE_MEMORY(jsonConfiguration);
+        }
     }
 
     // Temporary

@@ -171,6 +171,8 @@ int main(int argc, char* argv[])
     if (NULL != jsonConfiguration)
     {
         SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetPlatformLog()));
+        SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetPlatformLog()));
+        SetMaxLogSizeDebugMultiplier(GetMaxLogSizeFromJsonConfigDebugMultiplier(jsonConfiguration, GetPlatformLog()));
         FREE_MEMORY(jsonConfiguration);
     }
 

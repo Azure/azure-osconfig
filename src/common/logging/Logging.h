@@ -8,17 +8,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-// Maximum log size (1,024,000 is 1MB aka 1024 * 1000), increase or decrease as needed
-#define MAX_LOG_SIZE 1024000
-
-#define TIME_FORMAT_STRING_LENGTH 20
-
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif
-
-typedef struct OsConfigLog OsConfigLog;
-typedef OsConfigLog* OsConfigLogHandle;
 
 #ifdef __cplusplus
 extern "C"
@@ -27,7 +19,7 @@ extern "C"
 
 // Matching the severity values in RFC 5424. Currently we only use 2 values from this enumeration:
 // - LoggingLevelInformational (6) uses [INFO] and [ERROR] labels and is always enabled by default
-// - LoggingLevelDebug (7) is optional, uses the [DEBUG] label, and is managed via the 'DebugLogging' entry in the osconfig.json configuration
+// - LoggingLevelDebug (7) is optional, uses the [DEBUG] label, and can be configured via osconfig.json
 enum LoggingLevel
 {
     LoggingLevelEmergency = 0,
@@ -41,12 +33,20 @@ enum LoggingLevel
 };
 typedef enum LoggingLevel LoggingLevel;
 
+typedef struct OsConfigLog OsConfigLog;
+typedef OsConfigLog* OsConfigLogHandle;
+
 OsConfigLogHandle OpenLog(const char* logFileName, const char* bakLogFileName);
 void CloseLog(OsConfigLogHandle* log);
 
 void SetLoggingLevel(LoggingLevel level);
 LoggingLevel GetLoggingLevel(void);
 bool IsDebugLoggingEnabled(void);
+
+unsigned int GetMaxLogSize(void);
+void SetMaxLogSize(unsigned int value);
+unsigned int GetMaxLogSizeDebugMultiplier(void);
+void SetMaxLogSizeMultiplier(unsigned int value);
 
 FILE* GetLogFile(OsConfigLogHandle log);
 char* GetFormattedTime(void);
