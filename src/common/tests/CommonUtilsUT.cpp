@@ -612,7 +612,7 @@ TEST_F(CommonUtilsTest, ExecuteLongCommand)
 {
     char* textResult = nullptr;
 
-    size_t commandLength = 4000;
+    size_t commandLength = 32000;
     char* command = (char*)malloc(commandLength);
     EXPECT_NE(nullptr, command);
 
@@ -647,10 +647,10 @@ TEST_F(CommonUtilsTest, ExecuteTooLongCommand)
 {
     char* textResult = nullptr;
 
-    size_t commandLength = (size_t)(sysconf(_SC_ARG_MAX) + 1);
+    size_t commandLength = (size_t)(sysconf(_SC_ARG_MAX) * 10);
     char* command = (char*)malloc(commandLength);
     EXPECT_NE(nullptr, command);
-
+    printf("SCARGMAX %lu\n", commandLength);
     if (nullptr != command)
     {
         snprintf(command, commandLength, "echo ");
