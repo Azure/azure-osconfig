@@ -56,12 +56,12 @@ void SetMaxLogSize(unsigned int value)
 
 unsigned int GetMaxLogSizeDebugMultiplier(void)
 {
-    return g_maxLogSizeMultiplier;
+    return g_maxLogSizeDebugMultiplier;
 }
 
 void SetMaxLogSizeMultiplier(unsigned int value)
 {
-    g_maxLogSizeMultiplier = value;
+    g_maxLogSizeDebugMultiplier = value;
 }
 
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
