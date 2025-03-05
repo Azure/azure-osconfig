@@ -139,7 +139,7 @@ void TrimLog(OsConfigLogHandle log)
 {
     unsigned int maxLogSize = IsDebugLoggingEnabled() ? ((g_maxLogSize < (INT_MAX / 5)) ? (g_maxLogSize * 5) : INT_MAX) : g_maxLogSize;
     unsigned int maxLogTrim = 1000;
-    int fileSize = 0;
+    unsigned int fileSize = 0;
     int savedErrno = errno;
 
     if (NULL == log)
@@ -154,7 +154,7 @@ void TrimLog(OsConfigLogHandle log)
     if (0 == (log->trimLogCount % 10))
     {
         // In append mode the file pointer will always be at end of file:
-        fileSize = ftell(log->log);
+        fileSize = (unsigned int)ftell(log->log);
 
         if ((fileSize >= maxLogSize) || (-1 == fileSize))
         {
