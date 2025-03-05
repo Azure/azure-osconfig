@@ -41,6 +41,7 @@ void CloseLog(OsConfigLogHandle* log);
 
 void SetLoggingLevel(LoggingLevel level);
 LoggingLevel GetLoggingLevel(void);
+char* GetLoggingLevelName(LoggingLevel level);
 bool IsDebugLoggingEnabled(void);
 
 unsigned int GetMaxLogSize(void);
@@ -48,7 +49,6 @@ void SetMaxLogSize(unsigned int value);
 unsigned int GetMaxLogSizeDebugMultiplier(void);
 void SetMaxLogSizeDebugMultiplier(unsigned int value);
 
-char* GetLoggingLevelName(LoggingLevel level);
 FILE* GetLogFile(OsConfigLogHandle log);
 char* GetFormattedTime(void);
 void TrimLog(OsConfigLogHandle log);
@@ -72,12 +72,12 @@ bool IsDaemon(void);
 #define __DEBUG__ "DEBUG"
 
 #define OSCONFIG_LOG(log, level, format, ...) __LOG__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
-#define OSCONFIG_LOG_INFO(log, format, ...) OSCONFIG_LOG(log, __INFO__, format,  ## __VA_ARGS__)
-#define OSCONFIG_LOG_ERROR(log, format, ...) OSCONFIG_LOG(log, __ERROR__, format,  ## __VA_ARGS__)
+#define OSCONFIG_LOG_INFO(log, format, ...) OSCONFIG_LOG(log, LoggingLevelInformational, format,  ## __VA_ARGS__)
+#define OSCONFIG_LOG_ERROR(log, format, ...) OSCONFIG_LOG(log, LoggingLevelError, format,  ## __VA_ARGS__)
 
 #define OSCONFIG_FILE_LOG(log, level, format, ...) __LOG_TO_FILE__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
-#define OSCONFIG_FILE_LOG_INFO(log, format, ...) OSCONFIG_FILE_LOG(log, __INFO__, format,  ## __VA_ARGS__)
-#define OSCONFIG_FILE_LOG_ERROR(log, format, ...) OSCONFIG_FILE_LOG(log, __ERROR__, format,  ## __VA_ARGS__)
+#define OSCONFIG_FILE_LOG_INFO(log, format, ...) OSCONFIG_FILE_LOG(log, LoggingLevelInformational, format,  ## __VA_ARGS__)
+#define OSCONFIG_FILE_LOG_ERROR(log, format, ...) OSCONFIG_FILE_LOG(log, LoggingLevelError, format,  ## __VA_ARGS__)
 
 #define OsConfigLog(log, level, FORMAT, ...) {\
     if (level <= GetLoggingLevel()) {\
