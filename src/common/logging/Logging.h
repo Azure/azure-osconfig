@@ -71,25 +71,22 @@ bool IsDaemon(void);
 #define __DEBUG__ "DEBUG"
 
 #define GetLoggingLevelName(level) {\
-    switch (level) {\
-        case LoggingLevelEmergency:\
-            return __EMERGENCY__;\
-        case LoggingLevelAlert:\
-            return __ALERT__;\
-        case LoggingLevelCritical:\
-            return __CRITICAL__;\
-        case LoggingLevelError:\
-            return __ERROR__;\
-        case LoggingLevelWarning:\
-            return __WARNING__;\
-        case LoggingLevelNotice:\
-            return __NOTICE__;\
-        case LoggingLevelInformational:\
-            return __INFO__;\
-        case LoggingLevelDebug:\
-        default:\
-            return __DEBUG__;\
-    }\
+    if (LoggingLevelEmergency == level)\
+        return __EMERGENCY__;\
+    else if (LoggingLevelAlert == level)\
+        return __ALERT__;\
+    else if (LoggingLevelCritical == level)\
+        return __CRITICAL__;\
+    else if (LoggingLevelError == level)\
+        return __ERROR__;\
+    else if LoggingLevelWarning == level)\
+        return __WARNING__;\
+    else if LoggingLevelNotice == level)\
+        return __NOTICE__;\
+    else if LoggingLevelInformational == level)\
+        return __INFO__;\
+    else
+        return __DEBUG__;\
 }\
 
 #define OSCONFIG_LOG(log, level, format, ...) __LOG__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
