@@ -38,7 +38,7 @@ static const char* g_notice = "NOTICE";
 static const char* g_info = "INFO";
 static const char* g_debug = "DEBUG";
 
-char* GetLoggingLevelName(LoggingLevel level)
+const char* GetLoggingLevelName(LoggingLevel level)
 {
     char* result = __DEBUG__;
     

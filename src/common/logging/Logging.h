@@ -41,8 +41,8 @@ void CloseLog(OsConfigLogHandle* log);
 
 void SetLoggingLevel(LoggingLevel level);
 LoggingLevel GetLoggingLevel(void);
-char* GetLoggingLevelName(LoggingLevel level);
 bool IsDebugLoggingEnabled(void);
+const char* GetLoggingLevelName(LoggingLevel level);
 
 unsigned int GetMaxLogSize(void);
 void SetMaxLogSize(unsigned int value);
