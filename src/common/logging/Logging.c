@@ -40,7 +40,7 @@ static const char* g_debug = "DEBUG";
 
 const char* GetLoggingLevelName(LoggingLevel level)
 {
-    char* result = __DEBUG__;
+    const char* result = g_debug;
     
     switch (level) 
     {
