@@ -133,7 +133,7 @@ int AdhsMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloa
         status = ENOMEM;
     }
 
-    OsConfigLogDebug(AdhsGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    OsConfigLog(AdhsGetLog(), LoggingLevelDebug, "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     return status;
 }
@@ -267,7 +267,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
         }
     }
 
-    OsConfigLogDebug(AdhsGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    OsConfigLog(AdhsGetLog(), LoggingLevelDebug, "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     FREE_MEMORY(fileContent);
 

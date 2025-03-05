@@ -325,8 +325,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
             OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
             OsConfigLogInfo(log, "HTTP proxy port: %d", *proxyPort);
 
-            OsConfigLogDebug(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
-            OsConfigLogDebug(log, "HTTP proxy password: %s (%d)", *proxyPassword, passwordLength);
+            OsConfigLog(log, LoggingLevelDebug, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
+            OsConfigLog(log, LoggingLevelDebug, "HTTP proxy password: %s (%d)", *proxyPassword, passwordLength);
 
             FREE_MEMORY(port);
 

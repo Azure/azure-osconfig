@@ -61,40 +61,47 @@ bool IsDaemon(void);
     fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
 }\
 
-#define __INFO__ "INFO"
+#define __EMERGENCY__ "EMERGENCY"
+#define __ALERT__ "ALERT"
+#define __CRITICAL__ "CRITICAL"
 #define __ERROR__ "ERROR"
+#define __WARNING__ "WARNING"
+#define __NOTICE__ "NOTICE"
+#define __INFO__ "INFO"
 #define __DEBUG__ "DEBUG"
 
-#define OSCONFIG_LOG_INFO(log, format, ...) __LOG__(log, __INFO__, format, ## __VA_ARGS__)
-#define OSCONFIG_LOG_ERROR(log, format, ...) __LOG__(log, __ERROR__, format, ## __VA_ARGS__)
-#define OSCONFIG_LOG_DEBUG(log, format, ...) __LOG__(log, __DEBUG__, format, ## __VA_ARGS__)
-
-#define OSCONFIG_FILE_LOG_INFO(log, format, ...) __LOG_TO_FILE__(log, __INFO__, format, ## __VA_ARGS__)
-#define OSCONFIG_FILE_LOG_ERROR(log, format, ...) __LOG_TO_FILE__(log, __ERROR__, format, ## __VA_ARGS__)
-#define OSCONFIG_FILE_LOG_DEBUG(log, format, ...) __LOG_TO_FILE__(log, __DEBUG__, format, ## __VA_ARGS__)
-
-#define OsConfigLogInfo(log, FORMAT, ...) {\
-    if (NULL != GetLogFile(log)) {\
-        OSCONFIG_FILE_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
-        fflush(GetLogFile(log));\
-    }\
-    if ((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) {\
-        OSCONFIG_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
-    }\
-}\
-
-#define OsConfigLogError(log, FORMAT, ...) {\
-    if (NULL != GetLogFile(log)) {\
-        OSCONFIG_FILE_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
-        fflush(GetLogFile(log));\
-    }\
-    if ((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) {\
-        OSCONFIG_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
+#define GetLoggingLevelName(level) {\
+    switch (level) {\
+        case LoggingLevelEmergency:\
+            return __EMERGENCY__;\
+        case LoggingLevelAlert:\
+            return __ALERT__;\
+        case LoggingLevelCritical:\
+            return __CRITICAL__;\
+        case LoggingLevelError:\
+            return __ERROR__;\
+        case LoggingLevelWarning:\
+            return __WARNING__;\
+        case LoggingLevelNotice:\
+            return __NOTICE__;\
+        case LoggingLevelInformational:\
+            return __INFO__;\
+        case LoggingLevelDebug:\
+        default:\
+            return __DEBUG__;\
     }\
 }\
 
-#define OsConfigLogDebug(log, FORMAT, ...) {\
-    if (true == IsDebugLoggingEnabled()) {\
+#define OSCONFIG_LOG(log, level, format, ...) __LOG__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
+#define OSCONFIG_LOG_INFO(log, format, ...) OSCONFIG_LOG(log, __INFO__, format,  ## __VA_ARGS__)
+#define OSCONFIG_LOG_ERROR(log, format, ...) OSCONFIG_LOG(log, __ERROR__, format,  ## __VA_ARGS__)
+
+#define OSCONFIG_FILE_LOG(log, level, format, ...) __LOG_TO_FILE__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
+#define OSCONFIG_FILE_LOG_INFO(log, format, ...) OSCONFIG_FILE_LOG(log, __INFO__, format,  ## __VA_ARGS__)
+#define OSCONFIG_FILE_LOG_ERROR(log, format, ...) OSCONFIG_FILE_LOG(log, __ERROR__, format,  ## __VA_ARGS__)
+
+#define OsConfigLog(log, level, FORMAT, ...) {\
+    if (GetLoggingLevel() >= level) {\
         if (NULL != GetLogFile(log)) {\
             OSCONFIG_FILE_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
             fflush(GetLogFile(log));\
@@ -104,6 +111,9 @@ bool IsDaemon(void);
         }\
     }\
 }\
+
+#define OsConfigLogInfo(log, FORMAT, ...) OsConfigLog(log, __INFO__, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogError(log, FORMAT, ...)  OsConfigLog(log, __ERROR__, FORMAT, ## __VA_ARGS__)
 
 #define LogAssert(log, CONDITION) {\
     if (!(CONDITION)) {\

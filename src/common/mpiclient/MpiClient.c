@@ -114,7 +114,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         }
         else
         {
-            OsConfigLogDebug(log, "CallMpi(%s): sent to '%s' '%s' (%d bytes)", name, mpiSocket, data, actualDataSize);
+            OsConfigLog(log, LoggingLevelDebug, "CallMpi(%s): sent to '%s' '%s' (%d bytes)", name, mpiSocket, data, actualDataSize);
         }
     }
 
@@ -153,7 +153,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         close(socketHandle);
     }
 
-    OsConfigLogDebug(log, "CallMpi(name: '%s', request: '%s', response: '%s', response size: %d bytes) to socket '%s' returned %d", name, request, *response, *responseSize, mpiSocket, status);
+    OsConfigLog(log, LoggingLevelDebug, "CallMpi(name: '%s', request: '%s', response: '%s', response size: %d bytes) to socket '%s' returned %d", name, request, *response, *responseSize, mpiSocket, status);
 
     return status;
 }
@@ -328,7 +328,7 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
 
     if (IsDebugLoggingEnabled())
     {
-        OsConfigLogDebug(log, "CallMpiSet(%p, %s, %s, %.*s, %d bytes) returned %d", g_mpiHandle, componentName, propertyName, payloadSizeBytes, payload, payloadSizeBytes, status);
+        OsConfigLog(log, LoggingLevelDebug, "CallMpiSet(%p, %s, %s, %.*s, %d bytes) returned %d", g_mpiHandle, componentName, propertyName, payloadSizeBytes, payload, payloadSizeBytes, status);
     }
     else
     {
@@ -407,7 +407,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
         *payloadSizeBytes = 0;
     }
 
-    OsConfigLogDebug(log, "CallMpiGet(%p, %s, %s, %.*s, %d bytes): %d", g_mpiHandle, componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    OsConfigLog(log, LoggingLevelDebug, "CallMpiGet(%p, %s, %s, %.*s, %d bytes): %d", g_mpiHandle, componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     return status;
 };
@@ -463,7 +463,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes,
 
     if (IsDebugLoggingEnabled())
     {
-        OsConfigLogDebug(log, "CallMpiSetDesired(%p, %.*s, %d bytes) returned %d", g_mpiHandle, payloadSizeBytes, payload, payloadSizeBytes, status);
+        OsConfigLog(log, LoggingLevelDebug, "CallMpiSetDesired(%p, %.*s, %d bytes) returned %d", g_mpiHandle, payloadSizeBytes, payload, payloadSizeBytes, status);
     }
     else
     {
@@ -543,7 +543,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfig
         *payloadSizeBytes = 0;
     }
 
-    OsConfigLogDebug(log, "CallMpiGetReported(%p, %.*s, %d bytes): %d", g_mpiHandle, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    OsConfigLog(log, LoggingLevelDebug, "CallMpiGetReported(%p, %.*s, %d bytes): %d", g_mpiHandle, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     return status;
 }

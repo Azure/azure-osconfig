@@ -242,7 +242,7 @@ static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, cons
 
     if (0 == error)
     {
-        OsConfigLogDebug(log, "Watcher: successfully refreshed the Git clone at %s for branch %s", gitClonePath, gitBranch);
+        OsConfigLog(log, LoggingLevelDebug, "Watcher: successfully refreshed the Git clone at %s for branch %s", gitClonePath, gitBranch);
     }
 
     return error;

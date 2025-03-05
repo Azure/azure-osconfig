@@ -391,7 +391,7 @@ static void ModuleTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsig
 
     if (IsDebugLoggingEnabled())
     {
-        OsConfigLogDebug(GetLog(), "ModuleTwinCallback: received %.*s (%d bytes)", (int)size, payload, (int)size);
+        OsConfigLog(GetLog(), LoggingLevelDebug, "ModuleTwinCallback: received %.*s (%d bytes)", (int)size, payload, (int)size);
     }
     else
     {
@@ -521,7 +521,7 @@ void IotHubDoWork(void)
 
 static void ReadReportedStateCallback(int statusCode, void* userContextCallback)
 {
-    OsConfigLogDebug(GetLog(), "Report for %s complete with status %u", userContextCallback ? (char*)userContextCallback : "all properties", statusCode);
+    OsConfigLog(GetLog(), LoggingLevelDebug, "Report for %s complete with status %u", userContextCallback ? (char*)userContextCallback : "all properties", statusCode);
 }
 
 IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const char* propertyName, size_t* lastPayloadHash)
@@ -581,7 +581,7 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
             {
                 result = IoTHubDeviceClient_LL_SendReportedState(g_moduleHandle, (const unsigned char*)decoratedPayload, decoratedLength, ReadReportedStateCallback, (void*)propertyName);
 
-                OsConfigLogDebug(GetLog(), "%s.%s: reported %.*s (%d bytes), result: %d", componentName, propertyName, decoratedLength, decoratedPayload, decoratedLength, result);
+                OsConfigLog(GetLog(), LoggingLevelDebug, "%s.%s: reported %.*s (%d bytes), result: %d", componentName, propertyName, decoratedLength, decoratedPayload, decoratedLength, result);
 
                 if (IOTHUB_CLIENT_OK != result)
                 {
@@ -640,7 +640,7 @@ IOTHUB_CLIENT_RESULT UpdatePropertyFromIotHub(const char* componentName, const c
     {
         valueLength = strlen(serializedValue);
 
-        OsConfigLogDebug(GetLog(), "%s.%s: received %.*s (%d bytes)", componentName, propertyName, valueLength, serializedValue, valueLength);
+        OsConfigLog(GetLog(), LoggingLevelDebug, "%s.%s: received %.*s (%d bytes)", componentName, propertyName, valueLength, serializedValue, valueLength);
 
         mpiResult = CallMpiSet(componentName, propertyName, serializedValue, valueLength, GetLog());
         if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
@@ -671,7 +671,7 @@ IOTHUB_CLIENT_RESULT UpdatePropertyFromIotHub(const char* componentName, const c
 
 static void AckReportedStateCallback(int statusCode, void* userContextCallback)
 {
-    OsConfigLogDebug(GetLog(), "Property update acknowledgement complete with status %u", statusCode);
+    OsConfigLog(GetLog(), LoggingLevelDebug, "Property update acknowledgement complete with status %u", statusCode);
     UNUSED(userContextCallback);
 }
 
@@ -700,7 +700,7 @@ IOTHUB_CLIENT_RESULT AckPropertyUpdateToIotHub(const char* componentName, const 
 
         result = IoTHubDeviceClient_LL_SendReportedState(g_moduleHandle, (const unsigned char*)ackBuffer, ackValueLength, AckReportedStateCallback, NULL);
 
-        OsConfigLogDebug(GetLog(), "%s.%s: acknowledged %.*s (%d bytes), result: %d", componentName, propertyName, ackValueLength, ackBuffer, ackValueLength, result);
+        OsConfigLog(GetLog(), LoggingLevelDebug, "%s.%s: acknowledged %.*s (%d bytes), result: %d", componentName, propertyName, ackValueLength, ackBuffer, ackValueLength, result);
 
         if (IOTHUB_CLIENT_OK != result)
         {
