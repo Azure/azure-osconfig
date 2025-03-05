@@ -41,8 +41,8 @@ static const char* g_debug = "DEBUG";
 const char* GetLoggingLevelName(LoggingLevel level)
 {
     const char* result = g_debug;
-    
-    switch (level) 
+
+    switch (level)
     {
         case LoggingLevelEmergency:
             result = g_emergency;
