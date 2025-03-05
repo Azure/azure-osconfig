@@ -29,6 +29,15 @@ static LoggingLevel g_loggingLevel = LoggingLevelInformational;
 static unsigned int g_maxLogSize = 1048576;
 static unsigned int g_maxLogSizeDebugMultiplier = 5;
 
+static const char* g_emergency = "EMERGENCY";
+static const char* g_alert = "ALERT";
+static const char* g_critical = "CRITICAL";
+static const char* g_error = "ERROR";
+static const char* g_warning = "WARNING";
+static const char* g_notice = "NOTICE";
+static const char* g_info = "INFO";
+static const char* g_debug = "DEBUG";
+
 char* GetLoggingLevelName(LoggingLevel level)
 {
     char* result = __DEBUG__;
@@ -36,36 +45,36 @@ char* GetLoggingLevelName(LoggingLevel level)
     switch (level) 
     {
         case LoggingLevelEmergency:
-            result = __EMERGENCY__;
+            result = g_emergency;
             break;
 
         case LoggingLevelAlert:
-            result = __ALERT__;
+            result = g_alert;
             break;
 
         case LoggingLevelCritical:
-            result = __CRITICAL__;
+            result = g_critical;
             break;
 
         case LoggingLevelError:
-            result = __ERROR__;
+            result = g_error;
             break;
 
         case LoggingLevelWarning:
-            result = __WARNING__;
+            result = g_warning;
             break;
 
         case LoggingLevelNotice:
-            result = __NOTICE__;
+            result = g_notice;
             break;
 
         case LoggingLevelInformational:
-            result = __INFO__;
+            result = g_info;
             break;
 
         case LoggingLevelDebug:
         default:
-            result = __DEBUG__;
+            result = g_debug;
     }
 
     return result;

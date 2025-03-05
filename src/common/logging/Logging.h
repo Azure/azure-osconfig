@@ -62,15 +62,6 @@ bool IsDaemon(void);
     fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
 }\
 
-#define __EMERGENCY__ "EMERGENCY"
-#define __ALERT__ "ALERT"
-#define __CRITICAL__ "CRITICAL"
-#define __ERROR__ "ERROR"
-#define __WARNING__ "WARNING"
-#define __NOTICE__ "NOTICE"
-#define __INFO__ "INFO"
-#define __DEBUG__ "DEBUG"
-
 #define OSCONFIG_LOG(log, level, format, ...) __LOG__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
 #define OSCONFIG_LOG_INFO(log, format, ...) OSCONFIG_LOG(log, LoggingLevelInformational, format,  ## __VA_ARGS__)
 #define OSCONFIG_LOG_ERROR(log, format, ...) OSCONFIG_LOG(log, LoggingLevelError, format,  ## __VA_ARGS__)

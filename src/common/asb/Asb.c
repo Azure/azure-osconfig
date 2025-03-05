@@ -998,7 +998,7 @@ void AsbShutdown(OsConfigLogHandle log)
 {
     OsConfigLogInfo(log, "%s shutting down", g_asbName);
 
-    OsConfigLog(log, LoggingLevelEmergency, "BUMMER %s", "You are bummed"); //////////test
+    OsConfigLog(log, LoggingLevelEmergency, "BUMMER %s", "You are bummed"); //////////////////////////////////////
 
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
