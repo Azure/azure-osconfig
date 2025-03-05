@@ -79,11 +79,11 @@ bool IsDaemon(void);
         return __CRITICAL__;\
     else if (LoggingLevelError == level)\
         return __ERROR__;\
-    else if LoggingLevelWarning == level)\
+    else if (LoggingLevelWarning == level)\
         return __WARNING__;\
-    else if LoggingLevelNotice == level)\
+    else if (LoggingLevelNotice == level)\
         return __NOTICE__;\
-    else if LoggingLevelInformational == level)\
+    else if (LoggingLevelInformational == level)\
         return __INFO__;\
     else
         return __DEBUG__;\
