@@ -144,7 +144,7 @@ char* GetOsName(OsConfigLogHandle log)
         }
     }
 
-    OsConfigLog(log, Debu"OS name: '%s'", textResult);
+    OsConfigLog(log, LoggingLevelDebug, "OS name: '%s'", textResult);
 
     return textResult;
 }
