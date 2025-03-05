@@ -895,9 +895,6 @@ void AsbInitialize(OsConfigLogHandle log)
         }
     }
 
-    // Temporary
-    SetLoggingLevel(LoggingLevelDebug);
-
     RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
 
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
