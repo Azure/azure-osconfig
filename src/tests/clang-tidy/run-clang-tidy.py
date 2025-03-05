@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
+import sys, os
 import subprocess
 import platform
 
@@ -19,7 +19,10 @@ def main():
         "-Isrc/modules/compliance/src/lib",
     ]
 
-    command = ["clang-tidy", "--fix"] + sys.argv[1:] + ["--"] + post_args
+
+    prefix = os.environ.get('CLANG_PREFIX')
+    command = [prefix + '/' + "clang-tidy", "--fix"] + sys.argv[1:] + ["--"] + post_args
+    print(' '.join(c for c in command))
     subprocess.run(command)
 
 if __name__ == '__main__':
