@@ -32,26 +32,42 @@ static unsigned int g_maxLogSizeDebugMultiplier = 5;
 char* GetLoggingLevelName(LoggingLevel level)
 {
     char* result = __DEBUG__;
+    
     switch (level) 
     {
         case LoggingLevelEmergency:
             result = __EMERGENCY__;
+            break;
+
         case LoggingLevelAlert:
             result = __ALERT__;
+            break;
+
         case LoggingLevelCritical:
             result = __CRITICAL__;
+            break;
+
         case LoggingLevelError:
             result = __ERROR__;
+            break;
+
         case LoggingLevelWarning:
             result = __WARNING__;
+            break;
+
         case LoggingLevelNotice:
             result = __NOTICE__;
+            break;
+
         case LoggingLevelInformational:
             result = __INFO__;
+            break;
+
         case LoggingLevelDebug:
         default:
             result = __DEBUG__;
     }
+
     return result;
 }
 
