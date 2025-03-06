@@ -1,6 +1,6 @@
 {
   "properties": {
-    "displayName": "Audit and configure Azure security baseline for Linux (powered by OSConfig)",
+    "displayName": "Configures Azure security baseline for Linux (powered by OSConfig)",
     "policyType": "Custom",
     "mode": "Indexed",
     "description": "This policy audits and configures the Azure security baseline on Linux machines (Azure VMs and Arc-enabled machines). For more information, see https://aka.ms/azsecbaselinelinuxdocs",
