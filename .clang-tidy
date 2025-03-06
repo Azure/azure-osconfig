@@ -9,7 +9,6 @@ Checks: >-
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-pro-type-vararg,
   -cppcoreguidelines-no-malloc,
-  -cppcoreguidelines-non-private-member-variables-in-classes
 WarningsAsErrors: ''
 
 CheckOptions:
