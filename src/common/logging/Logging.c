@@ -23,7 +23,7 @@ struct OsConfigLog
     unsigned int trimLogCount;
 };
 
-static LoggingLevel g_loggingLevel = LoggingLevelDebug; //(temporary) LoggingLevelInformational;
+static LoggingLevel g_loggingLevel = LoggingLevelInformational;
 
 // Default maximum log size (1,048,576 is 1024 * 1024 aka 1MB)
 static unsigned int g_maxLogSize = 1048576;

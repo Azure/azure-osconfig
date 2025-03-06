@@ -880,6 +880,9 @@ void AsbInitialize(OsConfigLogHandle log)
     long freeMemory = 0;
     unsigned short freeMemoryPercentage = 0;
 
+    // Temporary
+    SetLoggingLevel(LoggingLevelDebug);
+
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
 
     StartPerfClock(&g_perfClock, GetPerfLog());
