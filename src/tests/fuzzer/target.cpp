@@ -975,72 +975,6 @@ static Optional<std::map<std::string, std::string>> parseComplianceParams(const 
     return result;
 }
 
-static int ComplianceEvaluateAudit_target(const char* data, std::size_t size) noexcept
-{
-    auto parameters = parseComplianceParams(g_context.ExtractVariant(data, size));
-    if (!parameters)
-    {
-        return c_skip_input;
-    }
-
-    auto body = std::string(data, size);
-    auto* json = json_parse_string(body.c_str());
-    if (nullptr == json)
-    {
-        return c_skip_input;
-    }
-
-    Evaluator evaluator(json_value_get_object(json), parameters.value(), nullptr);
-
-    std::map<std::string, std::pair<action_func_t, action_func_t>> procedureMap = {
-        { "remediationFailure", { nullptr, complianceFailure } },
-        { "remediationSuccess", { nullptr, complianceSuccess } },
-        { "auditFailure", { complianceFailure, nullptr } },
-        { "auditSuccess", { complianceSuccess, nullptr } },
-        { "auditParametrized", { complianceParametrized, nullptr } },
-        { "remediationParametrized", { nullptr, complianceParametrized } }
-    };
-    evaluator.setProcedureMap(std::move(procedureMap));
-
-    char* payload = nullptr;
-    int payloadSize = 0;
-    evaluator.ExecuteAudit(&payload, &payloadSize);
-    json_value_free(json);
-    free(payload);
-    return c_valid_input;
-}
-
-static int ComplianceEvaluateRemediation_target(const char* data, std::size_t size) noexcept
-{
-    auto parameters = parseComplianceParams(g_context.ExtractVariant(data, size));
-    if (!parameters)
-    {
-        return c_skip_input;
-    }
-
-    auto* json = json_parse_string(std::string(data, size).c_str());
-    if (nullptr == json)
-    {
-        return c_skip_input;
-    }
-
-    Evaluator evaluator(json_value_get_object(json), parameters.value(), nullptr);
-
-    std::map<std::string, std::pair<action_func_t, action_func_t>> procedureMap = {
-        { "remediationFailure", { nullptr, complianceFailure } },
-        { "remediationSuccess", { nullptr, complianceSuccess } },
-        { "auditFailure", { complianceFailure, nullptr } },
-        { "auditSuccess", { complianceSuccess, nullptr } },
-        { "auditParametrized", { complianceParametrized, nullptr } },
-        { "remediationParametrized", { nullptr, complianceParametrized } }
-    };
-    evaluator.setProcedureMap(std::move(procedureMap));
-
-    evaluator.ExecuteRemediation();
-    json_value_free(json);
-    return c_valid_input;
-}
-
 static int Base64Decode_target(const char* data, std::size_t size) noexcept
 {
     compliance::Base64Decode(std::string(data, size));
@@ -1095,7 +1029,6 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "IsDaemonActive.", IsDaemonActive_target },
     { "RepairBrokenEolCharactersIfAny.", RepairBrokenEolCharactersIfAny_target },
     { "RemoveEscapeSequencesFromFile.", RemoveEscapeSequencesFromFile_target },
-    { "IsCommandLoggingEnabledInJsonConfig.", IsCommandLoggingEnabledInJsonConfig_target },
     { "IsDebugLoggingEnabledInJsonConfig.", IsDebugLoggingEnabledInJsonConfig_target },
     { "IsIotHubManagementEnabledInJsonConfig.", IsIotHubManagementEnabledInJsonConfig_target },
     { "GetReportingIntervalFromJsonConfig.", GetReportingIntervalFromJsonConfig_target },
@@ -1108,8 +1041,6 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "GetGitBranchFromJsonConfig.", GetGitBranchFromJsonConfig_target },
     { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
-    { "ComplianceEvaluateAudit.", ComplianceEvaluateAudit_target },
-    { "ComplianceEvaluateRemediation.", ComplianceEvaluateRemediation_target },
     { "Base64Decode.", Base64Decode_target },
 };
 
