@@ -834,7 +834,7 @@ static int RemoveEscapeSequencesFromFile_target(const char* data, std::size_t si
     return 0;
 }
 
-static int GetLogingLevelFromJsonConfig_target(const char* data, std::size_t size) noexcept
+static int GetLoggingLevelFromJsonConfig_target(const char* data, std::size_t size) noexcept
 {
     auto json = std::string(data, size);
     GetLoggingLevelFromJsonConfig(json.c_str(), nullptr);
