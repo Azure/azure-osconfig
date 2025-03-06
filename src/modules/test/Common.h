@@ -23,8 +23,8 @@
 #include <Mmi.h>
 #include <version.h>
 
-#define LOG_INFO(format, ...) OSCONFIG_LOG_INFO(NULL, format, ##__VA_ARGS__)
-#define LOG_ERROR(format, ...) OSCONFIG_LOG_ERROR(NULL, format, ##__VA_ARGS__)
+#define LOG_INFO(format, ...) OsConfigLogInfo(NULL, format, ##__VA_ARGS__)
+#define LOG_ERROR(format, ...) OsConfigLogError(NULL, format, ##__VA_ARGS__)
 #define LOG_TRACE(format, ...) printf(format "\n", ## __VA_ARGS__)
 
 #endif // MODULE_TEST_COMMON_H
