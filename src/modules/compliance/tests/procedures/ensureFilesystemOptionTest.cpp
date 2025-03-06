@@ -64,8 +64,8 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionSuccess)
 
     std::ostringstream logstream;
     Result<bool> result = Audit_ensureFilesystemOption(args, logstream);
-    ASSERT_TRUE(result.has_value());
-    ASSERT_TRUE(result.value());
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_TRUE(result.Value());
 }
 
 TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionMissing)
@@ -80,8 +80,8 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionMissing)
 
     std::ostringstream logstream;
     Result<bool> result = Audit_ensureFilesystemOption(args, logstream);
-    ASSERT_TRUE(result.has_value());
-    ASSERT_FALSE(result.value());
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_FALSE(result.Value());
 }
 
 TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionForbidden)
@@ -96,8 +96,8 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionForbidden)
 
     std::ostringstream logstream;
     Result<bool> result = Audit_ensureFilesystemOption(args, logstream);
-    ASSERT_TRUE(result.has_value());
-    ASSERT_FALSE(result.value());
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_FALSE(result.Value());
 }
 
 TEST_F(EnsureFilesystemOptionTest, RemediateEnsureFilesystemOption)
@@ -113,8 +113,8 @@ TEST_F(EnsureFilesystemOptionTest, RemediateEnsureFilesystemOption)
 
     std::ostringstream logstream;
     Result<bool> result = Remediate_ensureFilesystemOption(args, logstream);
-    ASSERT_TRUE(result.has_value());
-    ASSERT_TRUE(result.value());
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_TRUE(result.Value());
 
     std::ifstream fstab(fstabFile);
     std::string fstabContents;
