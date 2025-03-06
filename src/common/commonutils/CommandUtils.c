@@ -49,7 +49,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
 
     if ((timeoutSeconds > 0) || (NULL != callback))
     {
-        OsConfigLog(log, LoggingLevelDebug, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation on %s thread",
+        OsConfigLogDebug(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation on %s thread",
             command, timeout, (NULL == callback) ? " no " : " ", mainProcessThread ? "main process" : "worker");
 
         // Fork an intermediate process to act as the parent for two more forked processes:
@@ -127,13 +127,13 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             status = NormalizeStatus(status);
             if (childProcess == workerProcess)
             {
-                OsConfigLog(log, LoggingLevelDebug, "Command execution returning %d", status);
+                OsConfigLogDebug(log, "Command execution returning %d", status);
                 KillProcess(timerProcess);
             }
             else
             {
                 // Timer process is done, kill the timed out worker process
-                OsConfigLog(log, LoggingLevelDebug, "Command timed out or it was canceled, command process killed (%d)", status);
+                OsConfigLogDebug(log, "Command timed out or it was canceled, command process killed (%d)", status);
                 KillProcess(workerProcess);
             }
 
@@ -154,7 +154,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     }
     else
     {
-        OsConfigLog(log, LoggingLevelDebug, "SystemCommand: executing command '%s' without timeout or cancelation on %s thread", command, mainProcessThread ? "main process" : "worker");
+        OsConfigLogDebug(log, "SystemCommand: executing command '%s' without timeout or cancelation on %s thread", command, mainProcessThread ? "main process" : "worker");
         if (0 == (workerProcess = fork()))
         {
             // Worker process
@@ -175,7 +175,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     }
 
     status = NormalizeStatus(status);
-    OsConfigLog(log, LoggingLevelDebug, "SystemCommand: command '%s' returning %d", command, status);
+    OsConfigLogDebug(log, "SystemCommand: command '%s' returning %d", command, status);
 
     return status;
 }
@@ -201,7 +201,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
     if ((NULL == command) || (0 == system(NULL)))
     {
-        OsConfigLog(log, LoggingLevelDebug, "Cannot run command '%s'", command);
+        OsConfigLogDebug(log, "Cannot run command '%s'", command);
         return -1;
     }
 
@@ -216,7 +216,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     maximumCommandLine = (size_t)sysconf(_SC_ARG_MAX);
     if (commandLineLength > maximumCommandLine)
     {
-        OsConfigLog(log, LoggingLevelDebug, "Cannot run command '%s', command too long (%u), ARG_MAX: %u", command, (unsigned)commandLineLength, (unsigned)maximumCommandLine);
+        OsConfigLogDebug(log, "Cannot run command '%s', command too long (%u), ARG_MAX: %u", command, (unsigned)commandLineLength, (unsigned)maximumCommandLine);
         return E2BIG;
     }
 
@@ -287,10 +287,10 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
     remove(commandTextResultFile);
 
-    OsConfigLog(log, LoggingLevelDebug, "Context: '%p'", context);
-    OsConfigLog(log, LoggingLevelDebug, "Command: '%s'", command);
-    OsConfigLog(log, LoggingLevelDebug, "Status: %d (errno: %d)", status, errno);
-    OsConfigLog(log, LoggingLevelDebug, "Text result: '%s'", (NULL != textResult && NULL != *textResult) ? (*textResult) : "");
+    OsConfigLogDebug(log, "Context: '%p'", context);
+    OsConfigLogDebug(log, "Command: '%s'", command);
+    OsConfigLogDebug(log, "Status: %d (errno: %d)", status, errno);
+    OsConfigLogDebug(log, "Text result: '%s'", (NULL != textResult && NULL != *textResult) ? (*textResult) : "");
 
     return status;
 }

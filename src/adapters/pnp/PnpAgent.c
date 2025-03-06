@@ -540,7 +540,7 @@ int main(int argc, char *argv[])
 
     if (IsDebugLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "WARNING: debug logging is enabled. To disable debug logging, edit '%s' and restart OSConfig", CONFIG_FILE);
+        OsConfigLogWarning(log, "Debug logging is enabled. To disable debug logging, set 'LoggingLevel' to 6 in '%s' and restart OSConfig", CONFIG_FILE);
     }
 
     // Load remaining configuration
@@ -590,7 +590,7 @@ int main(int argc, char *argv[])
         memcpy(g_productInfo, encodedProductInfo, sizeof(g_productInfo) - 1);
     }
 
-    OsConfigLog(GetLog(), LoggingLevelDebug, "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
+    OsConfigLogDebug(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
 
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);

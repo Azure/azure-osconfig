@@ -33,7 +33,7 @@ int MmiGetInfo(
         {
             if (IsDebugLoggingEnabled())
             {
-                OsConfigLog(SampleLog::Get(), LoggingLevelDebug, "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+                OsConfigLogDebug(SampleLog::Get(), "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
             else
             {
@@ -124,7 +124,7 @@ int MmiSet(
     {
         if (MMI_OK == status)
         {
-            OsConfigLog(SampleLog::Get(), LoggingLevelDebug, "MmiSet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
+            OsConfigLogDebug(SampleLog::Get(), "MmiSet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
         }
         else
         {
@@ -170,7 +170,7 @@ int MmiGet(
         {
             if (MMI_OK == status)
             {
-                OsConfigLog(SampleLog::Get(), LoggingLevelDebug, "MmiGet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+                OsConfigLogDebug(SampleLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
             else
             {

@@ -352,7 +352,7 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
         status = ENOMEM;
     }
 
-    OsConfigLog(ConfigurationGetLog(), LoggingLevelDebug, "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    OsConfigLogDebug(ConfigurationGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     return status;
 }
@@ -477,7 +477,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         }
     }
 
-    OsConfigLog(ConfigurationGetLog(), LoggingLevelDebug, "MmiGet(%p, %s, %s, '%.*s', %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    OsConfigLogDebug(ConfigurationGetLog(), "MmiGet(%p, %s, %s, '%.*s', %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     if (NULL != serializedValue)
     {
@@ -629,7 +629,7 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
 
     if (IsDebugLoggingEnabled())
     {
-        OsConfigLog(ConfigurationGetLog(), LoggingLevelDebug, "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
+        OsConfigLogDebug(ConfigurationGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
     }
     else
     {

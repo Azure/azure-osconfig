@@ -17,9 +17,9 @@ extern "C"
 {
 #endif
 
-// Matching the severity values in RFC 5424. Currently we only use 2 values from this enumeration:
-// - LoggingLevelInformational (6) uses [INFO] and [ERROR] labels and is always enabled by default
-// - LoggingLevelDebug (7) is optional, uses the [DEBUG] label, and can be configured via osconfig.json
+// The logging level values in this enumeration match the severity values in RFC 5424.
+// LoggingLevelInformational (6) is by default and always enabled.
+// LoggingLevelDebug (7) is optional and disabled by default.
 enum LoggingLevel
 {
     LoggingLevelEmergency = 0,
@@ -70,6 +70,7 @@ bool IsDaemon(void);
 #define OSCONFIG_FILE_LOG_INFO(log, format, ...) OSCONFIG_FILE_LOG(log, LoggingLevelInformational, format,  ## __VA_ARGS__)
 #define OSCONFIG_FILE_LOG_ERROR(log, format, ...) OSCONFIG_FILE_LOG(log, LoggingLevelError, format,  ## __VA_ARGS__)
 
+// Universal macro that can log at any of the 7 levels:
 #define OsConfigLog(log, level, FORMAT, ...) {\
     if (level <= GetLoggingLevel()) {\
         if (NULL != GetLogFile(log)) {\
@@ -82,9 +83,17 @@ bool IsDaemon(void);
     }\
 }\
 
-#define OsConfigLogInfo(log, FORMAT, ...) OsConfigLog(log, LoggingLevelInformational, FORMAT, ## __VA_ARGS__)
+// Shortcuts that directly log at the respective level:
+#define OsConfigLogEmergency(log, FORMAT, ...) OsConfigLog(log, LoggingLevelEmergency, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogAlert(log, FORMAT, ...) OsConfigLog(log, LoggingLevelAlert, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogCritical(log, FORMAT, ...) OsConfigLog(log, LoggingLevelCritical, FORMAT, ## __VA_ARGS__)
 #define OsConfigLogError(log, FORMAT, ...)  OsConfigLog(log, LoggingLevelError, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogWarning(log, FORMAT, ...) OsConfigLog(log, LoggingLevelWarning, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogNotice(log, FORMAT, ...) OsConfigLog(log, LoggingLevelNotice, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogInfo(log, FORMAT, ...) OsConfigLog(log, LoggingLevelInformational, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogDebug(log, FORMAT, ...) OsConfigLog(log, LoggingLevelDebug, FORMAT, ## __VA_ARGS__)
 
+// For debug builds
 #define LogAssert(log, CONDITION) {\
     if (!(CONDITION)) {\
         OsConfigLogError(log, "Assert in %s", __func__);\

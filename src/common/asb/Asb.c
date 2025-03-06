@@ -901,7 +901,7 @@ void AsbInitialize(OsConfigLogHandle log)
 
     if (IsDebugLoggingEnabled())
     {
-        OsConfigLogInfo(log, "WARNING: debug logging is enabled. To disable debug logging, set 'LoggingLevel' to 6 in '%s'", g_configurationFile);
+        OsConfigLogWarning(log, "Debug logging is enabled. To disable debug logging, set 'LoggingLevel' to 6 in '%s'", g_configurationFile);
     }
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))

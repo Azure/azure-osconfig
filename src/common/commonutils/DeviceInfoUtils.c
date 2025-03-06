@@ -112,7 +112,7 @@ char* GetOsPrettyName(OsConfigLogHandle log)
         FREE_MEMORY(textResult);
     }
 
-    OsConfigLog(log, LoggingLevelDebug, "OS pretty name: '%s'", textResult);
+    OsConfigLogDebug(log, "OS pretty name: '%s'", textResult);
 
     return textResult;
 }
@@ -144,7 +144,7 @@ char* GetOsName(OsConfigLogHandle log)
         }
     }
 
-    OsConfigLog(log, LoggingLevelDebug, "OS name: '%s'", textResult);
+    OsConfigLogDebug(log, "OS name: '%s'", textResult);
 
     return textResult;
 }
@@ -167,7 +167,7 @@ char* GetOsVersion(OsConfigLogHandle log)
         FREE_MEMORY(textResult);
     }
 
-    OsConfigLog(log, LoggingLevelDebug, "OS version: '%s'", textResult);
+    OsConfigLogDebug(log, "OS version: '%s'", textResult);
 
     return textResult;
 }
@@ -225,7 +225,7 @@ char* GetOsKernelName(OsConfigLogHandle log)
 {
     static char* osKernelNameCommand = "uname -s";
     char* textResult = GetAnotherOsProperty(osKernelNameCommand, log);
-    OsConfigLog(log, LoggingLevelDebug, "Kernel name: '%s'", textResult);
+    OsConfigLogDebug(log, "Kernel name: '%s'", textResult);
     return textResult;
 }
 
@@ -233,7 +233,7 @@ char* GetOsKernelRelease(OsConfigLogHandle log)
 {
     static char* osKernelReleaseCommand = "uname -r";
     char* textResult = GetAnotherOsProperty(osKernelReleaseCommand, log);
-    OsConfigLog(log, LoggingLevelDebug, "Kernel release: '%s'", textResult);
+    OsConfigLogDebug(log, "Kernel release: '%s'", textResult);
     return textResult;
 }
 
@@ -241,7 +241,7 @@ char* GetOsKernelVersion(OsConfigLogHandle log)
 {
     static char* osKernelVersionCommand = "uname -v";
     char* textResult = GetAnotherOsProperty(osKernelVersionCommand, log);
-    OsConfigLog(log, LoggingLevelDebug, "Kernel version: '%s'", textResult);
+    OsConfigLogDebug(log, "Kernel version: '%s'", textResult);
     return textResult;
 }
 
@@ -249,7 +249,7 @@ char* GetCpuType(OsConfigLogHandle log)
 {
     const char* osCpuTypeCommand = "lscpu | grep Architecture:";
     char* textResult = GetHardwareProperty(osCpuTypeCommand, false, log);
-    OsConfigLog(log, LoggingLevelDebug, "CPU type: '%s'", textResult);
+    OsConfigLogDebug(log, "CPU type: '%s'", textResult);
     return textResult;
 }
 
@@ -257,7 +257,7 @@ char* GetCpuVendor(OsConfigLogHandle log)
 {
     const char* osCpuVendorCommand = "grep 'vendor_id' /proc/cpuinfo | uniq";
     char* textResult = GetHardwareProperty(osCpuVendorCommand, false, log);
-    OsConfigLog(log, LoggingLevelDebug, "CPU vendor id: '%s'", textResult);
+    OsConfigLogDebug(log, "CPU vendor id: '%s'", textResult);
     return textResult;
 }
 
@@ -265,7 +265,7 @@ char* GetCpuModel(OsConfigLogHandle log)
 {
     const char* osCpuModelCommand = "grep 'model name' /proc/cpuinfo | uniq";
     char* textResult = GetHardwareProperty(osCpuModelCommand, false, log);
-    OsConfigLog(log, LoggingLevelDebug, "CPU model: '%s'", textResult);
+    OsConfigLogDebug(log, "CPU model: '%s'", textResult);
     return textResult;
 }
 
@@ -280,7 +280,7 @@ unsigned int GetNumberOfCpuCores(OsConfigLogHandle log)
         numberOfCores = atoi(textResult);
     }
 
-    OsConfigLog(log, LoggingLevelDebug, "Number of CPU cores: %u ('%s')", numberOfCores, textResult);
+    OsConfigLogDebug(log, "Number of CPU cores: %u ('%s')", numberOfCores, textResult);
 
     FREE_MEMORY(textResult);
 
@@ -291,7 +291,7 @@ char* GetCpuFlags(OsConfigLogHandle log)
 {
     const char* osCpuFlagsCommand = "lscpu | grep \"Flags:\"";
     char* textResult = GetHardwareProperty(osCpuFlagsCommand, false, log);
-    OsConfigLog(log, LoggingLevelDebug, "CPU flags: '%s'", textResult);
+    OsConfigLogDebug(log, "CPU flags: '%s'", textResult);
     return textResult;
 }
 
@@ -329,7 +329,7 @@ long GetTotalMemory(OsConfigLogHandle log)
         FREE_MEMORY(textResult);
     }
 
-    OsConfigLog(log, LoggingLevelDebug, "Total memory: %lu kB", totalMemory);
+    OsConfigLogDebug(log, "Total memory: %lu kB", totalMemory);
 
     return totalMemory;
 }
@@ -346,7 +346,7 @@ long GetFreeMemory(OsConfigLogHandle log)
         FREE_MEMORY(textResult);
     }
 
-    OsConfigLog(log, LoggingLevelDebug, "Free memory: %lu kB", freeMemory);
+    OsConfigLogDebug(log, "Free memory: %lu kB", freeMemory);
 
     return freeMemory;
 }
@@ -363,7 +363,7 @@ char* GetProductName(OsConfigLogHandle log)
         textResult = GetHardwareProperty(osProductNameAlternateCommand, false, log);
     }
 
-    OsConfigLog(log, LoggingLevelDebug, "Product name: '%s'", textResult);
+    OsConfigLogDebug(log, "Product name: '%s'", textResult);
 
     return textResult;
 }
@@ -380,7 +380,7 @@ char* GetProductVendor(OsConfigLogHandle log)
         textResult = GetHardwareProperty(osProductVendorAlternateCommand, false, log);
     }
 
-    OsConfigLog(log, LoggingLevelDebug, "Product vendor: '%s'", textResult);
+    OsConfigLogDebug(log, "Product vendor: '%s'", textResult);
 
     return textResult;
 }
@@ -397,7 +397,7 @@ char* GetProductVersion(OsConfigLogHandle log)
         textResult = GetHardwareProperty(osProductVersionAlternateCommand, false, log);
     }
 
-    OsConfigLog(log, LoggingLevelDebug, "Product version: '%s'", textResult);
+    OsConfigLogDebug(log, "Product version: '%s'", textResult);
 
     return textResult;
 }
@@ -406,7 +406,7 @@ char* GetSystemCapabilities(OsConfigLogHandle log)
 {
     const char* osSystemCapabilitiesCommand = "lshw -c system | grep -m 1 \"capabilities:\"";
     char* textResult = GetHardwareProperty(osSystemCapabilitiesCommand, false, log);
-    OsConfigLog(log, LoggingLevelDebug, "Product capabilities: '%s'", textResult);
+    OsConfigLogDebug(log, "Product capabilities: '%s'", textResult);
     return textResult;
 }
 
@@ -414,7 +414,7 @@ char* GetSystemConfiguration(OsConfigLogHandle log)
 {
     const char* osSystemConfigurationCommand = "lshw -c system | grep -m 1 \"configuration:\"";
     char* textResult = GetHardwareProperty(osSystemConfigurationCommand, false, log);
-    OsConfigLog(log, LoggingLevelDebug, "Product configuration: '%s'", textResult);
+    OsConfigLogDebug(log, "Product configuration: '%s'", textResult);
     return textResult;
 }
 
@@ -472,7 +472,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
         result = DuplicateString("<null>");
     }
 
-    OsConfigLog(log, LoggingLevelDebug, "'%s': '%s'", name, result);
+    OsConfigLogDebug(log, "'%s': '%s'", name, result);
 
     return result;
 }
@@ -610,7 +610,7 @@ char* GetLoginUmask(char** reason, OsConfigLogHandle log)
         FREE_MEMORY(result);
     }
 
-    OsConfigLog(log, LoggingLevelDebug, "UMASK: '%s'", result);
+    OsConfigLogDebug(log, "UMASK: '%s'", result);
 
     return result;
 }
@@ -691,7 +691,7 @@ static long GetPasswordDays(const char* name, OsConfigLogHandle log)
         FREE_MEMORY(command);
     }
 
-    OsConfigLog(log, LoggingLevelDebug, "%s: %ld", name, days);
+    OsConfigLogDebug(log, "%s: %ld", name, days);
 
     return days;
 }

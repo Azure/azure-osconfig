@@ -173,7 +173,7 @@ int DeviceInfoMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* 
         status = ENOMEM;
     }
 
-    OsConfigLog(DeviceInfoGetLog(), LoggingLevelDebug, "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    OsConfigLogDebug(DeviceInfoGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     return status;
 }
@@ -314,7 +314,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         }
     }
 
-    OsConfigLog(DeviceInfoGetLog(), LoggingLevelDebug, "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    OsConfigLogDebug(DeviceInfoGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     return status;
 }
