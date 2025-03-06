@@ -185,7 +185,7 @@ int main(int argc, char* argv[])
 
     if (IsDebugLoggingEnabled())
     {
-        OsConfigLogWarning(log, "Debug logging is enabled. To disable debug logging, set 'LoggingLevel' to 6 in '%s' and restart OSConfig", CONFIG_FILE);
+        OsConfigLogWarning(GetPlatformLog(), "Debug logging is enabled. To disable debug logging, set 'LoggingLevel' to 6 in '%s' and restart OSConfig", CONFIG_FILE);
     }
 
     for (int i = 0; i < stopSignalsCount; i++)
