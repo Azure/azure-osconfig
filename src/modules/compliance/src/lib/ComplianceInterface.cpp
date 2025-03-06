@@ -20,7 +20,10 @@ using compliance::JSONFromString;
 using compliance::ParseJson;
 using compliance::Status;
 
-static OsConfigLogHandle g_log = nullptr;
+namespace
+{
+OsConfigLogHandle g_log = nullptr;
+}
 
 void ComplianceInitialize(OsConfigLogHandle log)
 {
@@ -107,7 +110,7 @@ int ComplianceMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
             OsConfigLogError(engine.Log(), "ComplianceMmiGet failed: Failed to serialize JSON object");
             return ENOMEM;
         }
-        *payloadSizeBytes = strlen(*payload);
+        *payloadSizeBytes = static_cast<int>(strlen(*payload));
         OsConfigLogInfo(engine.Log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
         return MMI_OK;
     }
