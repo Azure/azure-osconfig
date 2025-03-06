@@ -23,7 +23,7 @@ def main():
     prefix = os.environ.get('CLANG_PREFIX') or ''
     if prefix and prefix[-1] != os.sep:
         prefix = prefix + os.sep
-    command = [prefix  + "clang-tidy", "--fix"] + sys.argv[1:] + ["--"] + post_args
+    command = [prefix  + "clang-tidy", "--fix", "--header-filter=src/modules/compliance/*"] + sys.argv[1:] + ["--"] + post_args
     print(' '.join(c for c in command))
     subprocess.run(command)
 

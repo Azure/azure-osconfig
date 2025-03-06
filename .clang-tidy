@@ -9,6 +9,8 @@ Checks: >-
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-pro-type-vararg,
   -cppcoreguidelines-no-malloc,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
 WarningsAsErrors: ''
 
 CheckOptions:
