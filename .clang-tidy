@@ -16,6 +16,7 @@ Checks: >-
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -bugprone-assignment-in-if-condition,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-type-member-init,
 WarningsAsErrors: ''
 
 CheckOptions:

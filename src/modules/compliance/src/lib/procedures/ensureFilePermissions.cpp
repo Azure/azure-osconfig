@@ -14,7 +14,7 @@ namespace compliance
 
 AUDIT_FN(ensureFilePermissions)
 {
-    struct stat statbuf = {};
+    struct stat statbuf;
     if (args.find("filename") == args.end())
     {
         return Error("No filename provided");
@@ -110,7 +110,7 @@ REMEDIATE_FN(ensureFilePermissions)
         return Error("No filename provided");
     }
 
-    struct stat statbuf = {};
+    struct stat statbuf;
     if (stat(args["filename"].c_str(), &statbuf) < 0)
     {
         logstream << "ERROR: Stat error " << strerror(errno);
