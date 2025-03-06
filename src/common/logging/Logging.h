@@ -63,18 +63,13 @@ bool IsDaemon(void);
 }\
 
 #define OSCONFIG_LOG(log, level, format, ...) __LOG__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
-#define OSCONFIG_LOG_INFO(log, format, ...) OSCONFIG_LOG(log, LoggingLevelInformational, format,  ## __VA_ARGS__)
-#define OSCONFIG_LOG_ERROR(log, format, ...) OSCONFIG_LOG(log, LoggingLevelError, format,  ## __VA_ARGS__)
-
-#define OSCONFIG_FILE_LOG(log, level, format, ...) __LOG_TO_FILE__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
-#define OSCONFIG_FILE_LOG_INFO(log, format, ...) OSCONFIG_FILE_LOG(log, LoggingLevelInformational, format,  ## __VA_ARGS__)
-#define OSCONFIG_FILE_LOG_ERROR(log, format, ...) OSCONFIG_FILE_LOG(log, LoggingLevelError, format,  ## __VA_ARGS__)
+#define OSCONFIG_LOG_TO_FILE(log, level, format, ...) __LOG_TO_FILE__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
 
 // Universal macro that can log at any of the 7 levels:
 #define OsConfigLog(log, level, FORMAT, ...) {\
     if (level <= GetLoggingLevel()) {\
         if (NULL != GetLogFile(log)) {\
-            OSCONFIG_FILE_LOG(log, level, FORMAT, ##__VA_ARGS__);\
+            OSCONFIG_LOG_TO_FILE(log, level, FORMAT, ##__VA_ARGS__);\
             fflush(GetLogFile(log));\
         }\
         if (false == IsDaemon()) {\
