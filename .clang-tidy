@@ -11,6 +11,10 @@ Checks: >-
   -cppcoreguidelines-no-malloc,
   -cppcoreguidelines-pro-type-union-access,
   -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -bugprone-assignment-in-if-condition,
 WarningsAsErrors: ''
 
 CheckOptions:
@@ -20,3 +24,5 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.MethodCase
     value: CamelCase
+  - key: cppcoreguidelines-avoid-non-const-global-variables.AllowInternalLinkage
+    value: true
