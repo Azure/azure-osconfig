@@ -1,17 +1,17 @@
 {
   "properties": {
-    "displayName": "Configure Azure security baseline for Linux (powered by OSConfig)",
+    "displayName": "Configures Azure security baseline for Linux (powered by OSConfig)",
     "policyType": "Custom",
     "mode": "Indexed",
-    "description": "This policy configures the Azure security baseline on Linux machines (Azure VMs and Arc-enabled machines). For more information, see https://aka.ms/azsecbaselinelinuxdocs",
+    "description": "This policy audits and configures the Azure security baseline on Linux machines (Azure VMs and Arc-enabled machines). For more information, see https://aka.ms/azsecbaselinelinuxdocs",
     "metadata": {
       "category": "Guest Configuration",
-      "version": "1.0.0.0",
+      "version": "1.0.0-preview",
       "requiredProviders": [
         "Microsoft.GuestConfiguration"
       ],
       "guestConfiguration": {
-        "name": "AzureLinuxBaseline",
+        "name": "SetAzureLinuxBaseline",
         "version": "1.*"
       }
     },
@@ -281,7 +281,7 @@
             "/providers/Microsoft.Authorization/roleDefinitions/088ab73d-1256-47ae-bea9-9de8e7131f31"
           ],
           "type": "Microsoft.GuestConfiguration/guestConfigurationAssignments",
-          "name": "[concat('AzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
+          "name": "[concat('SetAzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]",
           "existenceCondition": {
             "allOf": [
               {
@@ -304,7 +304,7 @@
                   "value": "[field('type')]"
                 },
                 "assignmentName": {
-                  "value": "[concat('AzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
+                  "value": "[concat('SetAzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
                 }
               },
               "template": {
@@ -333,7 +333,7 @@
                     "location": "[parameters('location')]",
                     "properties": {
                       "guestConfiguration": {
-                        "name": "AzureLinuxBaseline",
+                        "name": "SetAzureLinuxBaseline",
                         "version": "1.*",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
@@ -347,7 +347,7 @@
                     "location": "[parameters('location')]",
                     "properties": {
                       "guestConfiguration": {
-                        "name": "AzureLinuxBaseline",
+                        "name": "SetAzureLinuxBaseline",
                         "version": "1.*",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
@@ -361,7 +361,7 @@
                     "location": "[parameters('location')]",
                     "properties": {
                       "guestConfiguration": {
-                        "name": "AzureLinuxBaseline",
+                        "name": "SetAzureLinuxBaseline",
                         "version": "1.*",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
