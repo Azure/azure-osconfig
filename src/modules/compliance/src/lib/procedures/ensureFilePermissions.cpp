@@ -14,7 +14,7 @@ namespace compliance
 
 AUDIT_FN(ensureFilePermissions)
 {
-    struct stat statbuf;
+    struct stat statbuf = {};
     if (args.find("filename") == args.end())
     {
         return Error("No filename provided");
@@ -73,7 +73,7 @@ AUDIT_FN(ensureFilePermissions)
     bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
-        char* endptr;
+        char* endptr = nullptr;
         perms = strtol(args["permissions"].c_str(), &endptr, 8);
         if ('\0' != *endptr)
         {
@@ -84,7 +84,7 @@ AUDIT_FN(ensureFilePermissions)
     }
     if (args.find("mask") != args.end())
     {
-        char* endptr;
+        char* endptr = nullptr;
         mask = strtol(args["mask"].c_str(), &endptr, 8);
         if ('\0' != *endptr)
         {
@@ -110,7 +110,7 @@ REMEDIATE_FN(ensureFilePermissions)
         return Error("No filename provided");
     }
 
-    struct stat statbuf;
+    struct stat statbuf = {};
     if (stat(args["filename"].c_str(), &statbuf) < 0)
     {
         logstream << "ERROR: Stat error " << strerror(errno);
@@ -181,7 +181,7 @@ REMEDIATE_FN(ensureFilePermissions)
     bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
-        char* endptr;
+        char* endptr = nullptr;
         perms = strtol(args["permissions"].c_str(), &endptr, 8);
         if ('\0' != *endptr)
         {
@@ -192,7 +192,7 @@ REMEDIATE_FN(ensureFilePermissions)
     }
     if (args.find("mask") != args.end())
     {
-        char* endptr;
+        char* endptr = nullptr;
         mask = strtol(args["mask"].c_str(), &endptr, 8);
         if ('\0' != *endptr)
         {

@@ -467,7 +467,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_6)
 
 TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_7)
 {
-    mParameters = { {"placeholder", "success"} };
+    mParameters = {{"placeholder", "success"}};
     auto json = compliance::ParseJson("{\"anyOf\":[{\"remediationParametrized\":{\"result\":\"$placeholder\"}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
