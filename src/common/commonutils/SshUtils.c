@@ -826,7 +826,7 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
         {
             if (0 != (status = SetFileAccess(g_sshBannerFile, 0, 0, desiredBannerFileAccess, log)))
             {
-                OsConfigLogInfo(log, "SetSshWarningBanner: failed to set desired access %u on banner file %s (%d)", desiredBannerFileAccess, g_sshBannerFile, status);
+                OsConfigLogInfo(log, "SetSshWarningBanner: failed to set desired access %03o on banner file %s (%d)", desiredBannerFileAccess, g_sshBannerFile, status);
             }
         }
         else
