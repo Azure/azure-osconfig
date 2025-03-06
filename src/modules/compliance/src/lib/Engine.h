@@ -35,6 +35,10 @@ private:
 public:
     explicit Engine(OsConfigLogHandle log) noexcept;
     ~Engine() = default;
+    Engine(const Engine&) = delete;
+    Engine& operator=(const Engine&) = delete;
+    Engine(Engine&&) = delete;
+    Engine& operator=(Engine&&) = delete;
 
     void SetMaxPayloadSize(unsigned int value) noexcept;
     unsigned int GetMaxPayloadSize() const noexcept;

@@ -61,7 +61,7 @@ Result<std::string> Base64Decode(const std::string& input)
 
     for (size_t i = 0; i < input.size(); i += 4)
     {
-        char enc[4];
+        char enc[4] = {0};
 
         int j = 0;
         for (j = 0; j < 4; j++)
