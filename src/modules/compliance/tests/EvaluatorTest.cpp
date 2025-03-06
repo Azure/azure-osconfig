@@ -15,58 +15,10 @@ using compliance::JsonWrapper;
 using compliance::Result;
 using compliance::Status;
 
-static Result<bool> remediationFailure(std::map<std::string, std::string>, std::ostringstream&)
-{
-    return false;
-}
-
-static Result<bool> remediationSuccess(std::map<std::string, std::string>, std::ostringstream&)
-{
-    return true;
-}
-
-static Result<bool> auditFailure(std::map<std::string, std::string>, std::ostringstream&)
-{
-    return false;
-}
-
-static Result<bool> auditSuccess(std::map<std::string, std::string>, std::ostringstream&)
-{
-    return true;
-}
-
-static Result<bool> remediationParametrized(std::map<std::string, std::string> arguments, std::ostringstream&)
-{
-    auto it = arguments.find("result");
-    if (it == arguments.end())
-    {
-        return Error("Missing 'result' parameter");
-    }
-
-    if (it->second == "success")
-    {
-        return true;
-    }
-    else if (it->second == "failure")
-    {
-        return false;
-    }
-
-    return Error("Invalid 'result' parameter");
-}
-
 class EvaluatorTest : public ::testing::Test
 {
 protected:
-    std::map<std::string, std::pair<action_func_t, action_func_t>> mProcedureMap;
     std::map<std::string, std::string> mParameters;
-
-    void SetUp() override
-    {
-        mProcedureMap = {{"auditSuccess", {auditSuccess, nullptr}}, {"auditFailure", {auditFailure, nullptr}},
-            {"remediationSuccess", {nullptr, remediationSuccess}}, {"remediationFailure", {nullptr, remediationFailure}},
-            {"remediationParametrized", {nullptr, remediationParametrized}}};
-    }
 };
 
 TEST_F(EvaluatorTest, Contructor)
@@ -173,7 +125,6 @@ TEST_F(EvaluatorTest, ExecuteAudit_3)
     auto json = compliance::parseJSON("{\"allOf\":[{\"auditSuccess\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteAudit();
     ASSERT_TRUE(result);
@@ -186,7 +137,6 @@ TEST_F(EvaluatorTest, ExecuteAudit_4)
     auto json = compliance::parseJSON("{\"allOf\":[{\"auditFailure\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteAudit();
     ASSERT_TRUE(result);
@@ -198,7 +148,6 @@ TEST_F(EvaluatorTest, ExecuteAudit_5)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"auditFailure\":{}}, {\"auditSuccess\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteAudit();
     ASSERT_TRUE(result);
@@ -210,7 +159,6 @@ TEST_F(EvaluatorTest, ExecuteAudit_6)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"auditSuccess\":{}}, {\"auditFailure\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteAudit();
     ASSERT_TRUE(result);
@@ -222,7 +170,6 @@ TEST_F(EvaluatorTest, ExecuteAudit_7)
     auto json = compliance::parseJSON("{\"allOf\":[{\"auditFailure\":{}}, {\"auditSuccess\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteAudit();
     ASSERT_TRUE(result);
@@ -234,7 +181,6 @@ TEST_F(EvaluatorTest, ExecuteAudit_8)
     auto json = compliance::parseJSON("{\"allOf\":[{\"auditSuccess\":{}}, {\"auditFailure\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteAudit();
     ASSERT_TRUE(result);
@@ -246,7 +192,6 @@ TEST_F(EvaluatorTest, ExecuteAudit_9)
     auto json = compliance::parseJSON("{\"not\":{\"auditSuccess\":{}}}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteAudit();
     ASSERT_TRUE(result);
@@ -258,7 +203,6 @@ TEST_F(EvaluatorTest, ExecuteAudit_10)
     auto json = compliance::parseJSON("{\"not\":{\"auditFailure\":{}}}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteAudit();
     ASSERT_TRUE(result);
@@ -270,7 +214,6 @@ TEST_F(EvaluatorTest, ExecuteAudit_11)
     auto json = compliance::parseJSON("{\"not\":{\"not\":{\"auditFailure\":{}}}}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteAudit();
     ASSERT_TRUE(result);
@@ -315,7 +258,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_3)
     auto json = compliance::parseJSON("{\"allOf\":[{\"remediationSuccess\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -327,7 +269,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_4)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationSuccess\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -339,7 +280,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_5)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationFailure\":{}}, {\"remediationSuccess\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -351,7 +291,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_6)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationSuccess\":{}}, {\"remediationFailure\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -363,7 +302,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_7)
     auto json = compliance::parseJSON("{\"allOf\":[{\"remediationFailure\":{}}, {\"remediationSuccess\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -375,7 +313,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_8)
     auto json = compliance::parseJSON("{\"allOf\":[{\"remediationSuccess\":{}}, {\"remediationFailure\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -387,7 +324,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_9)
     auto json = compliance::parseJSON("{\"not\":{\"remediationSuccess\":{}}}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_FALSE(result);
@@ -398,7 +334,6 @@ TEST_F(EvaluatorTest, ExecuteAudit_ProcedureMising_1)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationSuccess\":{}}, {\"auditFailure\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteAudit();
     ASSERT_FALSE(result);
@@ -409,7 +344,6 @@ TEST_F(EvaluatorTest, ExecuteAudit_ProcedureMising_2)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"auditFailure\":{}}, {\"remediationSuccess\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteAudit();
     ASSERT_FALSE(result);
@@ -420,7 +354,6 @@ TEST_F(EvaluatorTest, ExecuteAudit_ProcedureMising_3)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"auditSuccess\":{}}, {\"remediationSuccess\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteAudit();
     ASSERT_TRUE(result);
@@ -432,7 +365,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_ProcedureMising_1)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"foo\":{}}, {\"remediationFailure\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_FALSE(result);
@@ -443,7 +375,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_ProcedureMising_2)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationSuccess\":{}}, {\"foo\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -455,7 +386,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_AuditFallback_1)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationFailure\":{}}, {\"auditSuccess\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -467,7 +397,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_AuditFallback_2)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationFailure\":{}}, {\"auditFailure\":{}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -479,7 +408,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_1)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationParametrized\":{\"foo\":\"bar\"}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_FALSE(result);
@@ -491,7 +419,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_2)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationParametrized\":{\"result\":\"bar\"}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_FALSE(result);
@@ -502,7 +429,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_3)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationParametrized\":{\"result\":\"success\"}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -514,7 +440,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_4)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationParametrized\":{\"result\":\"failure\"}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -526,7 +451,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_5)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationParametrized\":{\"result\":123}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_FALSE(result);
@@ -539,7 +463,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_6)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationParametrized\":{\"result\":\"$placeholder\"}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);
@@ -552,7 +475,6 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_7)
     auto json = compliance::parseJSON("{\"anyOf\":[{\"remediationParametrized\":{\"result\":\"$placeholder\"}}]}");
     ASSERT_TRUE(json.get());
     Evaluator evaluator1(json_value_get_object(json.get()), mParameters, nullptr);
-    evaluator1.setProcedureMap(mProcedureMap);
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_TRUE(result);

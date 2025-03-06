@@ -1016,11 +1016,8 @@ static int ComplianceEvaluateAudit_target(const char* data, std::size_t size) no
     };
     evaluator.setProcedureMap(std::move(procedureMap));
 
-    char* payload = nullptr;
-    int payloadSize = 0;
-    evaluator.ExecuteAudit(&payload, &payloadSize);
+    evaluator.ExecuteAudit();
     json_value_free(json);
-    free(payload);
     return c_valid_input;
 }
 
