@@ -21,6 +21,7 @@ public:
     {
         mValue.reset(new T(std::move(value)));
     }
+    ~Optional() = default;
 
     Optional(const Optional& other)
     {
