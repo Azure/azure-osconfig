@@ -33,9 +33,7 @@ static Result<std::map<std::string, FstabEntry>> ParseFstab(const std::string& f
         return Error("Failed to open file " + filePath + " with error " + strerror(errno));
     }
 
-    std::string line;
     int lineno = 0;
-
     while (!feof(file))
     {
         lineno++;

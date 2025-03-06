@@ -15,6 +15,7 @@ Checks: >-
   -bugprone-easily-swappable-parameters,
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -bugprone-assignment-in-if-condition,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
 WarningsAsErrors: ''
 
 CheckOptions:
