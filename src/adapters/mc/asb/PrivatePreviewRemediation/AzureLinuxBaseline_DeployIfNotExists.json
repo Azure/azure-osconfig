@@ -1,9 +1,9 @@
 {
   "properties": {
-    "displayName": "Configure Azure security baseline for Linux (powered by OSConfig)",
+    "displayName": "Audit and configure Azure security baseline for Linux (powered by OSConfig)",
     "policyType": "Custom",
     "mode": "Indexed",
-    "description": "This policy configures the Azure security baseline on Linux machines (Azure VMs and Arc-enabled machines). For more information, see https://aka.ms/azsecbaselinelinuxdocs",
+    "description": "This policy audits and configures the Azure security baseline on Linux machines (Azure VMs and Arc-enabled machines). For more information, see https://aka.ms/azsecbaselinelinuxdocs",
     "metadata": {
       "category": "Guest Configuration",
       "version": "1.0.0.0",
@@ -12,7 +12,7 @@
       ],
       "guestConfiguration": {
         "name": "SetAzureLinuxBaseline",
-        "version": "1.0.0-preview"
+        "version": "1.*"
       }
     },
     "parameters": {
@@ -334,7 +334,7 @@
                     "properties": {
                       "guestConfiguration": {
                         "name": "SetAzureLinuxBaseline",
-                        "version": "1.0.0-preview",
+                        "version": "1.*",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -348,7 +348,7 @@
                     "properties": {
                       "guestConfiguration": {
                         "name": "SetAzureLinuxBaseline",
-                        "version": "1.0.0-preview",
+                        "version": "1.*",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -362,7 +362,7 @@
                     "properties": {
                       "guestConfiguration": {
                         "name": "SetAzureLinuxBaseline",
-                        "version": "1.0.0-preview",
+                        "version": "1.*",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
