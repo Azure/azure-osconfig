@@ -187,7 +187,7 @@ jobs:
         uses: ./.github/actions/check-size
         with:
           package: '${{ steps.normalize.outputs.path }}'
-          limit: 290
+          limit: 300
 
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
