@@ -142,6 +142,7 @@ int ComplianceMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
 
     try
     {
+        OsConfigLogInfo(engine.log(), "MmiSet(%p, %s, %s, %.*s, %d)", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes);
         std::string payloadStr(payload, payloadSizeBytes);
         auto object = parseJSON(payloadStr.c_str());
         if (NULL == object || JSONString != json_value_get_type(object.get()))

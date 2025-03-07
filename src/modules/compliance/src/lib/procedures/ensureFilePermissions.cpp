@@ -11,6 +11,10 @@
 
 namespace compliance
 {
+namespace
+{
+const mode_t supportedMask = 0x1FF;
+} // anonymous namespace
 
 AUDIT_FN(ensureFilePermissions)
 {
@@ -19,6 +23,11 @@ AUDIT_FN(ensureFilePermissions)
     {
         return Error("No filename provided");
     }
+    if (args.find("permissions") != args.end() && args.find("mask") != args.end())
+    {
+        return Error("Cannot specify both permissions and mask");
+    }
+
     logstream << "ensureFilePermissions for '" << args["filename"] << "' ";
 
     if (0 != stat(args["filename"].c_str(), &statbuf))
@@ -37,7 +46,7 @@ AUDIT_FN(ensureFilePermissions)
         }
         if (args["user"] != pwd->pw_name)
         {
-            logstream << "Invalid user - is " << pwd->pw_name << " should be " << args["user"];
+            logstream << "Invalid user - is '" << pwd->pw_name << "' should be '" << args["user"] << "'";
             return false;
         }
     }
@@ -63,42 +72,42 @@ AUDIT_FN(ensureFilePermissions)
         }
         if (!groupOk)
         {
-            logstream << "Invalid group - is '" << grp->gr_name << "' should be '" << args["group"] << "' ";
+            logstream << "Invalid group - is '" << grp->gr_name << "' should be '" << args["group"] << "'";
             return false;
         }
     }
 
-    unsigned short perms = 0xFFF;
-    unsigned short mask = 0xFFF;
-    bool has_perms_or_mask = false;
+    const mode_t supportedMask = 0x1FF;
     if (args.find("permissions") != args.end())
     {
         char* endptr;
-        perms = strtol(args["permissions"].c_str(), &endptr, 8);
-        if ('\0' != *endptr)
+        mode_t perms = strtol(args["permissions"].c_str(), &endptr, 8);
+        if (('\0' != *endptr) || ((perms & supportedMask) != perms))
         {
-            logstream << "Invalid permissions: " << args["permissions"];
+            return Error("Invalid permissions parameter");
+        }
+        if (perms != (statbuf.st_mode & supportedMask))
+        {
+            logstream << "Invalid permissions - are " << std::oct << (statbuf.st_mode & supportedMask) << " should be " << std::oct << perms << std::dec;
             return false;
         }
-        has_perms_or_mask = true;
     }
     if (args.find("mask") != args.end())
     {
         char* endptr;
-        mask = strtol(args["mask"].c_str(), &endptr, 8);
-        if ('\0' != *endptr)
+        mode_t mask = strtol(args["mask"].c_str(), &endptr, 8);
+        if (('\0' != *endptr) || ((mask & supportedMask) != mask))
         {
-            logstream << "Invalid permissions mask: " << args["mask"];
+            return Error("Invalid mask parameter");
+        }
+        if (((statbuf.st_mode & supportedMask) & mask) != 0)
+        {
+            logstream << "Invalid permissions - are " << std::oct << (statbuf.st_mode & supportedMask) << " should be " << std::oct
+                      << ((statbuf.st_mode & supportedMask) & (~mask)) << " with mask " << std::oct << mask << std::dec;
             return false;
         }
-        has_perms_or_mask = true;
     }
-    if (has_perms_or_mask && ((perms & mask) != (statbuf.st_mode & mask)))
-    {
-        logstream << "Invalid permissions - are " << std::oct << statbuf.st_mode << " should be " << std::oct << perms << " with mask " << std::oct
-                  << mask << std::dec;
-        return false;
-    }
+
     return true;
 }
 
@@ -108,6 +117,10 @@ REMEDIATE_FN(ensureFilePermissions)
     {
         logstream << "ERROR: No filename provided";
         return Error("No filename provided");
+    }
+    if (args.find("permissions") != args.end() && args.find("mask") != args.end())
+    {
+        return Error("Cannot specify both permissions and mask");
     }
 
     struct stat statbuf;
@@ -126,7 +139,7 @@ REMEDIATE_FN(ensureFilePermissions)
         if (pwd == nullptr)
         {
             logstream << "ERROR: No user with name " << args["user"];
-            return Error("No user with name " + args["user"]);
+            return false;
         }
         uid = pwd->pw_uid;
         owner_changed = true;
@@ -161,7 +174,7 @@ REMEDIATE_FN(ensureFilePermissions)
             if (grp == nullptr)
             {
                 logstream << "ERROR: No group with name " << args["group"];
-                return Error("No group with name " + args["group"]);
+                return false;
             }
             gid = grp->gr_gid;
             owner_changed = true;
@@ -172,42 +185,44 @@ REMEDIATE_FN(ensureFilePermissions)
         if (0 != chown(args["filename"].c_str(), uid, gid))
         {
             logstream << "ERROR: Chown error " << strerror(errno);
-            return Error("Chown error");
+            return Error("Chown error", errno);
         }
     }
 
-    unsigned short perms = 0xFFF;
-    unsigned short mask = 0xFFF;
-    bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
         char* endptr;
-        perms = strtol(args["permissions"].c_str(), &endptr, 8);
-        if ('\0' != *endptr)
+        const mode_t perms = strtol(args["permissions"].c_str(), &endptr, 8);
+        if (('\0' != *endptr) || ((perms & supportedMask) != perms))
         {
             logstream << "ERROR: Invalid permissions: " << args["permissions"];
             return Error("Invalid permissions: " + args["permissions"]);
         }
-        has_perms_or_mask = true;
+        if (perms != (statbuf.st_mode & supportedMask))
+        {
+            if (chmod(args["filename"].c_str(), perms) < 0)
+            {
+                logstream << "ERROR: Chmod error " << strerror(errno);
+                return false;
+            }
+        }
     }
     if (args.find("mask") != args.end())
     {
         char* endptr;
-        mask = strtol(args["mask"].c_str(), &endptr, 8);
-        if ('\0' != *endptr)
+        const mode_t mask = strtol(args["mask"].c_str(), &endptr, 8);
+        if (('\0' != *endptr) || ((mask & supportedMask) != mask))
         {
             logstream << "ERROR: Invalid permissions mask: " << args["mask"];
             return Error("Invalid permissions mask: " + args["mask"]);
         }
-        has_perms_or_mask = true;
-    }
-    unsigned short new_perms = (statbuf.st_mode & ~mask) | (perms & mask);
-    if (has_perms_or_mask && (new_perms != statbuf.st_mode))
-    {
-        if (chmod(args["filename"].c_str(), new_perms) < 0)
+        if (((statbuf.st_mode & supportedMask) & mask) != 0)
         {
-            logstream << "ERROR: Chmod error";
-            return Error("Chmod error");
+            if (chmod(args["filename"].c_str(), statbuf.st_mode & (~mask)) < 0)
+            {
+                logstream << "ERROR: Chmod error " << strerror(errno);
+                return false;
+            }
         }
     }
 
