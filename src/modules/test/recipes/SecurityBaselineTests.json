@@ -1219,16 +1219,6 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureAuditdInstalled"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureAuditdServiceIsRunning"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureSnmpServerIsDisabled"
   },
   {
@@ -2387,16 +2377,6 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureAuditdInstalled"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureAuditdServiceIsRunning"
   },
   {
     "ObjectType": "Reported",
