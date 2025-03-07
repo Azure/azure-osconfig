@@ -1,0 +1,53 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "compliance.so"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureEmptyAuditAnyOf",
+    "Payload": {
+      "audit": {
+        "anyOf": []
+      },
+      "parameters": {}
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEmptyAuditAnyOf",
+    "Payload": "{ anyOf: [] == FALSE }"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureEmptyAuditAllOf",
+    "Payload": {
+      "audit": {
+        "allOf": []
+      },
+      "parameters": {}
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEmptyAuditAllOf",
+    "Payload": "PASS{ allOf: [] == TRUE }",
+    "ExpectedResult": 0
+  },
+
+
+
+  {
+    "Action": "UnloadModule"
+  }
+]

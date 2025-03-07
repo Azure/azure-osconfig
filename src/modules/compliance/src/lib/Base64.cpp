@@ -6,7 +6,6 @@
 #include "Result.h"
 
 #include <string>
-
 namespace compliance
 {
 static inline char Base64Char(const unsigned char c)

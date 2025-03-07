@@ -50,9 +50,12 @@ jobs:
         working-directory: ${{ steps.download.outputs.download-path }}/modules/test
         run: |
           sudo chmod +x ./moduletest
+          sudo cat /etc/passwd
+          sudo cat /etc/sudoers
+          id
 
           result=0
-          recipes=$(ls -d ../../src/modules/test/recipes/*.json)
+          recipes=$(find ../../src/modules/test/recipes/ -name "*.json")
 
           for recipe in $recipes; do
             if [ ! -f ../../src/tests/e2e-test-recipes/$(basename $recipe) ]; then
@@ -68,6 +71,9 @@ jobs:
               echo failed
               result=1
               echo "::warning file=$name.log::Error(s) in module-test for '$name'"
+              cat /etc/passwd
+              cat /etc/sudoers
+              id
             fi
 
             echo "$output"

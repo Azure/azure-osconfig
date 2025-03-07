@@ -121,6 +121,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
 
     if (0 != status)
     {
+        OsConfigLogError(log, "CopyUserEntry: failed to copy user entry for '%s' (uid: %u, gid: %u)", source->pw_name, source->pw_uid, source->pw_gid);
         ResetUserEntry(destination);
     }
 
@@ -358,6 +359,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
 
     if (0 != (*size = GetNumberOfLinesInFile(passwdFile)))
     {
+        OsConfigLogInfo(log, "EnumerateUsers: %u lines in '%s'", *size, passwdFile);
         listSize = (*size) * sizeof(SimplifiedUser);
         if (NULL != (*userList = malloc(listSize)))
         {
@@ -367,6 +369,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
 
             while ((NULL != (userEntry = getpwent())) && (i < *size))
             {
+                OsConfigLogInfo(log, "EnumerateUsers: user %u: '%s' (%u, %u) in '%s'", i, userEntry->pw_name, userEntry->pw_uid, userEntry->pw_gid, passwdFile);
                 if (0 != (status = CopyUserEntry(&((*userList)[i]), userEntry, log)))
                 {
                     OsConfigLogError(log, "EnumerateUsers: failed making copy of user entry (%d)", status);
@@ -833,6 +836,8 @@ int RemoveUser(SimplifiedUser* user, bool removeHome, OsConfigLogHandle log)
         return EPERM;
     }
 
+    OsConfigLogError(log, "RemoveUser: attempting to delete user '%s' (%u, %u) with home directory '%s'",
+        user->username, user->userId, user->groupId, user->home);
     if (NULL != (command = FormatAllocateString(commandTemplate, removeHome ? "-f -r" : "-f", user->username)))
     {
         if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))

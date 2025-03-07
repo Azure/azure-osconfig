@@ -1023,6 +1023,8 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                                 status = (0 == errno) ? EPERM : errno;
                                 OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: cannot write to temporary file '%s' (%d)", tempFileName, status);
                             }
+                        } else {
+                            OsConfigLogInfo(log, "Skipping line: %s", line);
                         }
 
                         memset(line, 0, lineMax + 1);
@@ -1074,6 +1076,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 
     if (0 == status)
     {
+        OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: replacing '%s' with '%s' in '%s'", marker, newline, fileName);
         if (preserveAccess)
         {
             if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, fileName, log)))

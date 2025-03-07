@@ -1,0 +1,319 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "compliance.so"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "ensureFilePermissions": {
+          "filename": "/tmp/testfile",
+          "permissions": "$PERMISSIONS",
+          "user": "$USER",
+          "group": "$GROUP"
+        }
+      },
+      "remediate": {
+        "ensureFilePermissions": {
+          "filename": "/tmp/testfile",
+          "permissions": "$PERMISSIONS",
+          "user": "$USER",
+          "group": "$GROUP"
+        }
+      },
+      "parameters": {
+        "PERMISSIONS": "644",
+        "USER": "root",
+        "GROUP": "root"
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile' Stat error 'No such file or directory' } == FALSE"
+  },
+  {
+    "RunCommand": "touch /tmp/testfile && chmod 777 /tmp/testfile && chown root:root /tmp/testfile"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PERMISSIONS=777 USER=root GROUP=root"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile'  } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateTest",
+    "Payload": "PERMISSIONS=777 USER=root GROUP=root"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile'  } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PERMISSIONS=644 USER=root GROUP=root"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile' Invalid permissions - are 777 should be 644 } == FALSE"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateTest",
+    "Payload": ""
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile'  } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PERMISSIONS=777 USER=foo GROUP=root"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile' Invalid user - is 'root' should be 'foo' } == FALSE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PERMISSIONS=777 USER=root GROUP=bar"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile' Invalid group - is 'root' should be 'bar' } == FALSE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "ensureFilePermissions": {
+          "filename": "/tmp/testfile",
+          "user": "$USER",
+          "group": "$GROUP",
+          "mask": "$MASK"
+        }
+      },
+      "remediate": {
+        "ensureFilePermissions": {
+          "filename": "/tmp/testfile",
+          "user": "$USER",
+          "group": "$GROUP",
+          "mask": "$MASK"
+        }
+      },
+      "parameters": {
+        "USER": "root",
+        "GROUP": "root",
+        "MASK": "777"
+      }
+    }
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "MASK=000 USER=root GROUP=root"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile'  } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "MASK=177 USER=root GROUP=root"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid permissions - are 644 should be 600 with mask 177 } == FALSE"
+  },
+
+
+
+  {
+    "RunCommand": "touch /tmp/testfile && chmod 400 /tmp/testfile && chown root:root /tmp/testfile"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile'  } == TRUE"
+  },
+
+
+
+  {
+    "RunCommand": "touch /tmp/testfile && chmod 777 /tmp/testfile && chown root:root /tmp/testfile"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "MASK=177 USER=root GROUP=root"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid permissions - are 777 should be 600 with mask 177 } == FALSE"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateTest",
+    "Payload": "MASK=177 USER=root GROUP=root"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile'  } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateTest",
+    "Payload": "MASK=177 USER=foo GROUP=root"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid user - is 'root' should be 'foo' } == FALSE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateTest",
+    "Payload": "MASK=177 USER=root GROUP=bar"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid group - is 'root' should be 'bar' } == FALSE"
+  },
+
+
+
+  {
+    "RunCommand": "groupadd bar && useradd -g bar foo && touch /tmp/testfile && chmod 777 /tmp/testfile && chown root:root /tmp/testfile"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateTest",
+    "Payload": "MASK=177 USER=root GROUP=bar"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile'  } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "MASK=177 USER=foo GROUP=bar"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid user - is 'root' should be 'foo' } == FALSE"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateTest",
+    "Payload": "MASK=177 USER=foo GROUP=bar"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile'  } == TRUE"
+  },
+
+
+  {
+    "RunCommand": "rm -f /tmp/testfile"
+  },
+  {
+    "RunCommand": "userdel foo"
+  },
+  {
+    "RunCommand": "groupdel bar"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]

@@ -45,6 +45,8 @@ Result<Status> Evaluator::ExecuteRemediation()
         return result.error();
     }
 
+    OsConfigLogInfo(mLog, "Remediation result: %s", result.value() == Status::Compliant ? "Compliant" : "Non-compliant");
+    OsConfigLogInfo(mLog, "Remediation log: %s", mLogstream.str().c_str());
     return result;
 }
 
