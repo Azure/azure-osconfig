@@ -140,7 +140,7 @@ bool StartDaemon(const char* daemonName, OsConfigLogHandle log)
 
 bool EnableAndStartDaemon(const char* daemonName, OsConfigLogHandle log)
 {
-    bool status = true;
+    bool status = false;
 
     if (false == IsValidDaemonName(daemonName))
     {
@@ -148,16 +148,28 @@ bool EnableAndStartDaemon(const char* daemonName, OsConfigLogHandle log)
         return false;
     }
 
-    if (false == IsDaemonActive(daemonName, log))
+    if (false == EnableDaemon(daemonName, log))
     {
-        if (EnableDaemon(daemonName, log) && StartDaemon(daemonName, log))
-        {
-            status = true;
-        }
+        OsConfigLogError(log, "EnableAndStartDaemon: failed to enable service '%s'", daemonName);
     }
     else
     {
-        OsConfigLogInfo(log, "Service '%s' is already running", daemonName);
+        if (false == IsDaemonActive(daemonName, log))
+        {
+            if (false == StartDaemon(daemonName, log))
+            {
+                OsConfigLogError(log, "EnableAndStartDaemon: failed to start service '%s'", daemonName);
+            }
+            else
+            {
+                status = true;
+            }
+        }
+        else
+        {
+            OsConfigLogInfo(log, "Service '%s' is already running", daemonName);
+            status = true;
+        }
     }
 
     return status;
