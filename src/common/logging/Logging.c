@@ -188,7 +188,7 @@ char* GetFormattedTime(void)
 // Checks and rolls the log over if larger than maximum size
 void TrimLog(OsConfigLogHandle log)
 {
-    unsigned int maxLogSize = IsDebugLoggingEnabled() ? ((g_maxLogSize < (INT_MAX / 5)) ? (g_maxLogSize * 5) : INT_MAX) : g_maxLogSize;
+    unsigned int maxLogSize = IsDebugLoggingEnabled() ? ((g_maxLogSize < (UINT_MAX / 5)) ? (g_maxLogSize * 5) : UINT_MAX) : g_maxLogSize;
     unsigned int maxLogTrim = 1000;
     long fileSize = 0;
     int savedErrno = errno;

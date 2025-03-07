@@ -893,9 +893,9 @@ void AsbInitialize(OsConfigLogHandle log)
             SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, log));
             FREE_MEMORY(jsonConfiguration);
         }
-    }
 
-    RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
+        RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
+    }
 
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 

@@ -150,9 +150,9 @@ This interval is used for RC/DC, GitOps DC, and IoT Hub processing.
 
 Debug logging means that OSConfig will log all input and output from and to all management authority channels, as well as all input and output from system commands executed by Agent, Platform and Modules.
 
-Generally it is not recommended to run OSConfig with full debug logging enabled.
+Generally it is not recommended to run OSConfig with debug logging enabled.
 
-To enable full debug logging, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "LoggingLevel" to a value 7:
+To enable debug logging, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "LoggingLevel" to a value 7:
 
 ```json
 {
