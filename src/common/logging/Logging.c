@@ -207,7 +207,7 @@ void TrimLog(OsConfigLogHandle log)
         // In append mode the file pointer will always be at end of file:
         fileSize = ftell(log->log);
 
-        if (((fileSize >= (long)maxLogSize) || (-1 == fileSize))
+        if ((fileSize >= (long)maxLogSize) || (-1 == fileSize))
         {
             fclose(log->log);
 
