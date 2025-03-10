@@ -24,6 +24,18 @@ struct OsConfigLog
     unsigned int trimLogCount;
 };
 
+static bool g_consoleLoggingEnabled = true;
+
+bool IsConsoleLoggingEnabled(void)
+{
+    return g_consoleLoggingEnabled;
+}
+
+void SetConsoleLoggingEnabled(bool enabledOrDisabled)
+{
+    g_consoleLoggingEnabled = enabledOrDisabled;
+}
+
 void SetDebugLogging(bool fullLogging)
 {
     g_loggingLevel = fullLogging ? LoggingLevelDebug : LoggingLevelInformational;

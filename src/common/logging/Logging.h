@@ -47,6 +47,9 @@ void CloseLog(OsConfigLogHandle* log);
 bool IsDebugLoggingEnabled(void);
 void SetDebugLogging(bool fullLogging);
 
+bool IsConsoleLoggingEnabled(void);
+void SetConsoleLoggingEnabled(bool enabledOrDisabled);
+
 FILE* GetLogFile(OsConfigLogHandle log);
 char* GetFormattedTime(void);
 void TrimLog(OsConfigLogHandle log);
@@ -77,7 +80,7 @@ bool IsDaemon(void);
         OSCONFIG_FILE_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
         fflush(GetLogFile(log));\
     }\
-    if ((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) {\
+    if (((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) && (true == IsConsoleLoggingEnabled())) {\
         OSCONFIG_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
     }\
 }\
@@ -87,7 +90,7 @@ bool IsDaemon(void);
         OSCONFIG_FILE_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
         fflush(GetLogFile(log));\
     }\
-    if ((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) {\
+    if (((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) && (true == IsConsoleLoggingEnabled())) {\
         OSCONFIG_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
     }\
 }\
@@ -98,7 +101,7 @@ bool IsDaemon(void);
             OSCONFIG_FILE_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
             fflush(GetLogFile(log));\
         }\
-        if (false == IsDaemon()) {\
+        if ((false == IsDaemon()) && (true == IsConsoleLoggingEnabled())) {\
             OSCONFIG_LOG_DEBUG(log, FORMAT, ##__VA_ARGS__);\
         }\
     }\
