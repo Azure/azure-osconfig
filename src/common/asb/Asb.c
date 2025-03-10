@@ -883,6 +883,8 @@ void AsbInitialize(OsConfigLogHandle log)
 
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
+    OsConfigLogInfo(log, "AsbInitialize: console logging is %s", IsConsoleLoggingEnabled() ? "enabled" : "disabled");
+
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
         OsConfigLogInfo(log, "AsbInitialize: CPU model: %s", cpuModel);
