@@ -171,6 +171,8 @@ void MI_CALL OsConfigResource_Load(
     
     AsbInitialize(GetLog());
 
+    SetConsoleLoggingEnabled(false);
+
     LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d)", getpid());
 
     MI_Context_PostResult(context, MI_RESULT_OK);
@@ -1260,4 +1262,3 @@ Exit:
 
     MI_Context_PostResult(context, miResult);
 }
-

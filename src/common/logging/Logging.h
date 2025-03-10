@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
@@ -28,6 +29,9 @@ void CloseLog(OSCONFIG_LOG_HANDLE* log);
 void SetFullLogging(bool fullLogging);
 bool IsFullLoggingEnabled(void);
 
+bool IsConsoleLoggingEnabled(void);
+void SetConsoleLoggingEnabled(bool enabledOrDisabled);
+
 FILE* GetLogFile(OSCONFIG_LOG_HANDLE log);
 char* GetFormattedTime();
 void TrimLog(OSCONFIG_LOG_HANDLE log);
@@ -53,7 +57,7 @@ bool IsDaemon(void);
         OSCONFIG_FILE_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
         fflush(GetLogFile(log));\
     }\
-    if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
+    if (((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) && (true == IsConsoleLoggingEnabled())) {\
         OSCONFIG_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
     }\
 }\
@@ -63,7 +67,7 @@ bool IsDaemon(void);
         OSCONFIG_FILE_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
         fflush(GetLogFile(log));\
     }\
-    if ((false == IsDaemon()) || (false == IsFullLoggingEnabled())) {\
+    if (((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) && (true == IsConsoleLoggingEnabled())) {\
         OSCONFIG_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
     }\
 }\

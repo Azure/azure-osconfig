@@ -24,6 +24,18 @@ typedef struct OSCONFIG_LOG
     unsigned int trimLogCount;
 } OSCONFIG_LOG;
 
+static bool g_consoleLoggingEnabled = true;
+
+bool IsConsoleLoggingEnabled(void)
+{
+    return g_consoleLoggingEnabled;
+}
+
+void SetConsoleLoggingEnabled(bool enabledOrDisabled)
+{
+    g_consoleLoggingEnabled = enabledOrDisabled;
+}
+
 void SetFullLogging(bool fullLogging)
 {
     g_fullLoggingEnabled = fullLogging;
@@ -105,45 +117,47 @@ char* GetFormattedTime()
 }
 
 // Checks and rolls the log over if larger than MAX_LOG_SIZE
-void TrimLog(OSCONFIG_LOG_HANDLE log)
+void TrimLog(OsConfigLogHandle log)
 {
-    OSCONFIG_LOG* whatLog = NULL;
     int fileSize = 0;
+    int savedErrno = errno;
 
-    if ((NULL == log) || (NULL == (whatLog = (OSCONFIG_LOG*)log)))
+    if (NULL == log)
     {
         return;
     }
 
     // Loop incrementing the trim log counter from 0 to MAX_LOG_TRIM
-    whatLog->trimLogCount = (whatLog->trimLogCount < MAX_LOG_TRIM) ? (whatLog->trimLogCount + 1) : 1;
+    log->trimLogCount = (log->trimLogCount < MAX_LOG_TRIM) ? (log->trimLogCount + 1) : 1;
 
     // Check every 10 calls:
-    if (0 == (whatLog->trimLogCount % 10))
+    if (0 == (log->trimLogCount % 10))
     {
         // In append mode the file pointer will always be at end of file:
-        fileSize = ftell(whatLog->log);
-        
+        fileSize = ftell(log->log);
+
         if ((fileSize >= MAX_LOG_SIZE) || (-1 == fileSize))
         {
-            fclose(whatLog->log);
+            fclose(log->log);
 
             // Rename the log in place to make a backup copy, overwriting previous copy if any:
-            if ((NULL == whatLog->backLogFileName) || (0 != rename(whatLog->logFileName, whatLog->backLogFileName)))
+            if ((NULL == log->backLogFileName) || (0 != rename(log->logFileName, log->backLogFileName)))
             {
                 // If the log could not be renamed, empty it:
-                whatLog->log = fopen(whatLog->logFileName, "w");
-                fclose(whatLog->log);
+                log->log = fopen(log->logFileName, "w");
+                fclose(log->log);
             }
 
             // Reopen the log in append mode:
-            whatLog->log = fopen(whatLog->logFileName, "a");
-            
+            log->log = fopen(log->logFileName, "a");
+
             // Reapply restrictions once the file is recreated (also for backup, if any):
-            RestrictAccessToRootOnly(whatLog->logFileName);
-            RestrictAccessToRootOnly(whatLog->backLogFileName);
+            RestrictFileAccessToCurrentAccountOnly(log->logFileName);
+            RestrictFileAccessToCurrentAccountOnly(log->backLogFileName);
         }
     }
+
+    errno = savedErrno;
 }
 
 bool IsDaemon()
