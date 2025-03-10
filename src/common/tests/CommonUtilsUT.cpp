@@ -2508,3 +2508,59 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     clock.stop.tv_nsec = 18649;
     EXPECT_EQ(76, GetPerfClockTime(&clock, nullptr));
 }
+
+TEST_F(CommonUtilsTest, LoggingOptions)
+{
+    LoggingLevel level = LoggingLevelEmergency;
+    unsigned int i = 0;
+
+    SetLoggingLevel(LoggingLevelDebug);
+    EXPECT_TRUE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelDebug, level = GetLoggingLevel());
+    EXPECT_STREQ("DEBUG", GetLoggingLevelName(level));
+    
+    SetLoggingLevel(LoggingLevelInformational);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelEmergency);
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+    
+    SetLoggingLevel(LoggingLevelAlert);
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelCritical);
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelError);
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelWarning);
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelNotice);
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+
+    for (i = 0; i < MAX_UINT; i++)
+    {
+        SetMaxLogSize(i);
+        EXPECT_EQ(i, GetMaxLogSize());
+
+        SetMaxLogSizeDebugMultiplier(i);
+        EXPECT_EQ(i, GetMaxLogSizeDebugMultiplier());
+    }
+    
+    SetConsoleLoggingEnabled(true);
+    EXPECT_TRUE(IsConsoleLoggingEnabled());
+    SetConsoleLoggingEnabled(false);
+    EXPECT_FALSE(IsConsoleLoggingEnabled());
+
+    EXPECT_FALSE(IsDaemon());
+}
