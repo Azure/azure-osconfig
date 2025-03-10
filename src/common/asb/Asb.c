@@ -901,7 +901,7 @@ void AsbInitialize(OsConfigLogHandle log)
 
     if (IsConsoleLoggingEnabled())
     {
-        OsConfigLogWarning(log, "AsbInitialize: console logging is enabled. If the log rotator is not enabled this may result in a fill-up of the local storage space");
+        OsConfigLogWarning(log, "AsbInitialize: console logging is enabled. If the syslog rotation is not enabled this may result in a fill-up of the local storage space");
     }
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
