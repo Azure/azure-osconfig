@@ -72,7 +72,7 @@ bool IsDaemon(void);
             fflush(GetLogFile(log));\
         }\
         if ((false == IsDaemon()) && (true == IsConsoleLoggingEnabled())) {\
-            OSCONFIG_LOG(log, FORMAT, ##__VA_ARGS__);\
+            OSCONFIG_LOG(log, level, FORMAT, ##__VA_ARGS__);\
         }\
     }\
 }\
