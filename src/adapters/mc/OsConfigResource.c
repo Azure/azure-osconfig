@@ -176,6 +176,8 @@ void MI_CALL OsConfigResource_Load(
         g_mpiHandle = NULL;
     }
 
+    SetConsoleLoggingEnabled(false);
+
     BaselineInitialize(GetLog());
 
     LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d)", getpid());

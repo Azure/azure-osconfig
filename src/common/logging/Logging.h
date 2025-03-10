@@ -38,17 +38,16 @@ typedef OsConfigLog* OsConfigLogHandle;
 
 OsConfigLogHandle OpenLog(const char* logFileName, const char* bakLogFileName);
 void CloseLog(OsConfigLogHandle* log);
-
 void SetLoggingLevel(LoggingLevel level);
 LoggingLevel GetLoggingLevel(void);
 bool IsDebugLoggingEnabled(void);
 const char* GetLoggingLevelName(LoggingLevel level);
-
 unsigned int GetMaxLogSize(void);
 void SetMaxLogSize(unsigned int value);
 unsigned int GetMaxLogSizeDebugMultiplier(void);
 void SetMaxLogSizeDebugMultiplier(unsigned int value);
-
+bool IsConsoleLoggingEnabled(void);
+void SetConsoleLoggingEnabled(bool enabledOrDisabled);
 FILE* GetLogFile(OsConfigLogHandle log);
 char* GetFormattedTime(void);
 void TrimLog(OsConfigLogHandle log);
@@ -72,8 +71,8 @@ bool IsDaemon(void);
             OSCONFIG_LOG_TO_FILE(log, level, FORMAT, ##__VA_ARGS__);\
             fflush(GetLogFile(log));\
         }\
-        if (false == IsDaemon()) {\
-            OSCONFIG_LOG(log, level, FORMAT, ##__VA_ARGS__);\
+        if ((false == IsDaemon()) && (true == IsConsoleLoggingEnabled())) {\
+            OSCONFIG_LOG(log, FORMAT, ##__VA_ARGS__);\
         }\
     }\
 }\

@@ -38,6 +38,18 @@ static const char* g_notice = "NOTICE";
 static const char* g_info = "INFO";
 static const char* g_debug = "DEBUG";
 
+static bool g_consoleLoggingEnabled = true;
+
+bool IsConsoleLoggingEnabled(void)
+{
+    return g_consoleLoggingEnabled;
+}
+
+void SetConsoleLoggingEnabled(bool enabledOrDisabled)
+{
+    g_consoleLoggingEnabled = enabledOrDisabled;
+}
+
 const char* GetLoggingLevelName(LoggingLevel level)
 {
     const char* result = g_debug;

@@ -899,12 +899,12 @@ void AsbInitialize(OsConfigLogHandle log)
 
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
-    if (IsDebugLoggingEnabled())
+    if (IsConsoleLoggingEnabled())
     {
-        OsConfigLogWarning(log, "Debug logging is enabled. To disable debug logging, set 'LoggingLevel' to 6 in '%s'", g_configurationFile);
+        OsConfigLogWarning(log, "AsbInitialize: console logging is enabled. If the log rotator is not enabled this may result in a fill-up of the local storage space");
     }
 
-    if (NULL != (cpuModel = GetCpuModel(log)))
+    if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
         OsConfigLogInfo(log, "AsbInitialize: CPU model: %s", cpuModel);
     }

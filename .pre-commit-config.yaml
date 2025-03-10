@@ -11,16 +11,8 @@ repos:
             devops/docker/.*/Dockerfile
             )$
     - id: trailing-whitespace
-      exclude: |
-         (?x)(
-          ^devops/docker/.*/Dockerfile$
-         )
     - id: mixed-line-ending
       args: ['--fix', 'lf']
-      exclude: |
-         (?x)(
-          ^devops/docker/.*/Dockerfile$
-         )
       files: |
          (?x)(
           .*\.c|
