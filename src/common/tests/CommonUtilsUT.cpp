@@ -2514,7 +2514,7 @@ TEST_F(CommonUtilsTest, LoggingOptions)
 {
     const char* info = "INFO";
     const char* debug = "DEBUG";
-    
+
     LoggingLevel level = LoggingLevelEmergency;
     unsigned int i = 0;
     unsigned int maxLogSize = 0;
