@@ -90,7 +90,7 @@ static char* LoadConfigurationFromFile(const char* fileName)
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_refreshInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_localManagementEnabled = (GetLocalManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
-        g_debugLoggingEnabled = IsDebugLoggingEnabledInJsonConfig(jsonConfiguration);
+        g_debugLoggingEnabled = (LoggingLevelDebug == GetLoggingLevelFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
         g_iotHubManagementEnabled = IsIotHubManagementEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());

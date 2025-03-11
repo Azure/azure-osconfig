@@ -34,6 +34,8 @@ static const char* g_asbName = "Azure Security Baseline for Linux";
 
 static const char* g_securityBaselineComponentName = "SecurityBaseline";
 
+static const char* g_configurationFile = "/etc/osconfig/osconfig.json";
+
 // Audit
 static const char* g_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
 static const char* g_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
@@ -640,8 +642,8 @@ static PerfClock g_perfClock = {{0, 0}, {0, 0}};
 // Expected time limits under ideal conditions
 // Maximum per-rule audit time: 5 seconds
 static const long g_maxAuditTime = 5000000;
-// Maximum ASB rule remediation time: 55 seconds
-static const long g_maxRemediateTime = 55000000;
+// Maximum ASB rule remediation time: 99 seconds
+static const long g_maxRemediateTime = 99000000;
 // Maximum baseline run times: 30 minutes
 static const long g_maxTotalTime = 1800000000;
 
@@ -870,6 +872,7 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
 
 void AsbInitialize(OsConfigLogHandle log)
 {
+    char* jsonConfiguration = NULL;
     char* prettyName = NULL;
     char* kernelVersion = NULL;
     char* cpuModel = NULL;
@@ -881,9 +884,25 @@ void AsbInitialize(OsConfigLogHandle log)
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
+    if (FileExists(g_configurationFile))
+    {
+        if (NULL != (jsonConfiguration = LoadStringFromFile(g_configurationFile, false, log)))
+        {
+            SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, log));
+            SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, log));
+            SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, log));
+            FREE_MEMORY(jsonConfiguration);
+        }
+
+        RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
+    }
+
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
-    OsConfigLogInfo(log, "AsbInitialize: console logging is %s", IsConsoleLoggingEnabled() ? "enabled" : "disabled");
+    if (IsConsoleLoggingEnabled())
+    {
+        OsConfigLogWarning(log, "AsbInitialize: console logging is enabled. If the syslog rotation is not enabled this may result in a fill-up of the local storage space");
+    }
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {

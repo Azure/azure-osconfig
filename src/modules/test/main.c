@@ -848,7 +848,7 @@ int main(int argc, char const* argv[])
         else if (strcmp(argv[i], "--verbose") == 0)
         {
             g_verbose = true;
-            SetDebugLogging(true);
+            SetLoggingLevel(LoggingLevelDebug);
         }
         else if (strcmp(argv[i], "--help") == 0)
         {

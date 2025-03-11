@@ -9,6 +9,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <gtest/gtest.h>
 #include <CommonUtils.h>
 #include <UserUtils.h>
@@ -1286,11 +1287,13 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 {
     const char* configuration =
         "{"
-          "\"DebugLogging\": 1,"
           "\"GitManagement\": 1,"
           "\"GitRepositoryUrl\": \"https://USERNAME:PASSWORD@github.com/Azure/azure-osconfig\","
           "\"GitBranch\": \"foo/test\","
           "\"LocalManagement\": 3,"
+          "\"LoggingLevel\": 6,"
+          "\"MaxLogSize\": 1073741825,"
+          "\"MaxLogSizeDebugMultiplier\": 0,"
           "\"ModelVersion\": 11,"
           "\"IotHubProtocol\": 2,"
           "\"Reported\": ["
@@ -1310,13 +1313,20 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
     char* value = nullptr;
 
-    EXPECT_TRUE(IsDebugLoggingEnabledInJsonConfig(configuration));
     EXPECT_EQ(30, GetReportingIntervalFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(11, GetModelVersionFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(2, GetIotHubProtocolFromJsonConfig(configuration, nullptr));
 
     // The value of 3 is too big, shall be changed to 1
     EXPECT_EQ(1, GetLocalManagementFromJsonConfig(configuration, nullptr));
+
+    EXPECT_EQ(6, GetLoggingLevelFromJsonConfig(configuration, nullptr));
+
+    // The value of 1073741825 is too big, shall be changed to 1073741824 (default)
+    EXPECT_EQ(1073741824, GetMaxLogSizeFromJsonConfig(configuration, nullptr));
+
+    // The value 0 is too small, shall be changed to 5 (default)
+    EXPECT_EQ(5, GetMaxLogSizeDebugMultiplierFromJsonConfig(configuration, nullptr));
 
     EXPECT_EQ(2, LoadReportedFromJsonConfig(configuration, &reportedProperties, nullptr));
     EXPECT_STREQ("DeviceInfo", reportedProperties[0].componentName);
@@ -2498,4 +2508,66 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     clock.stop.tv_sec = 54218;
     clock.stop.tv_nsec = 18649;
     EXPECT_EQ(76, GetPerfClockTime(&clock, nullptr));
+}
+
+TEST_F(CommonUtilsTest, LoggingOptions)
+{
+    const char* info = "INFO";
+    const char* debug = "DEBUG";
+
+    LoggingLevel level = LoggingLevelEmergency;
+    unsigned int i = 0;
+    unsigned int maxLogSize = 0;
+
+    SetLoggingLevel(LoggingLevelDebug);
+    EXPECT_TRUE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelDebug, level = GetLoggingLevel());
+    EXPECT_STREQ(debug, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelInformational);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelEmergency);
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelAlert);
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelCritical);
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelError);
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelWarning);
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelNotice);
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
+
+    for (i = 0; i < 100; i++)
+    {
+        maxLogSize = (unsigned int)rand();
+
+        SetMaxLogSize(maxLogSize);
+        EXPECT_EQ(maxLogSize, GetMaxLogSize());
+
+        SetMaxLogSizeDebugMultiplier(i);
+        EXPECT_EQ(i, GetMaxLogSizeDebugMultiplier());
+    }
+
+    SetConsoleLoggingEnabled(true);
+    EXPECT_TRUE(IsConsoleLoggingEnabled());
+    SetConsoleLoggingEnabled(false);
+    EXPECT_FALSE(IsConsoleLoggingEnabled());
+
+    EXPECT_FALSE(IsDaemon());
 }

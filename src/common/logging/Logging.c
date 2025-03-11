@@ -10,11 +10,10 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <limits.h>
 #include "Logging.h"
 
-#define MAX_LOG_TRIM 1000
-
-static LoggingLevel g_loggingLevel = LoggingLevelInformational;
+#define TIME_FORMAT_STRING_LENGTH 20
 
 struct OsConfigLog
 {
@@ -23,6 +22,21 @@ struct OsConfigLog
     const char* backLogFileName;
     unsigned int trimLogCount;
 };
+
+static LoggingLevel g_loggingLevel = LoggingLevelInformational;
+
+// Default maximum log size (1,048,576 is 1024 * 1024 aka 1MB)
+static unsigned int g_maxLogSize = 1048576;
+static unsigned int g_maxLogSizeDebugMultiplier = 5;
+
+static const char* g_emergency = "EMERGENCY";
+static const char* g_alert = "ALERT";
+static const char* g_critical = "CRITICAL";
+static const char* g_error = "ERROR";
+static const char* g_warning = "WARNING";
+static const char* g_notice = "NOTICE";
+static const char* g_info = "INFO";
+static const char* g_debug = "DEBUG";
 
 static bool g_consoleLoggingEnabled = true;
 
@@ -36,14 +50,81 @@ void SetConsoleLoggingEnabled(bool enabledOrDisabled)
     g_consoleLoggingEnabled = enabledOrDisabled;
 }
 
-void SetDebugLogging(bool fullLogging)
+const char* GetLoggingLevelName(LoggingLevel level)
 {
-    g_loggingLevel = fullLogging ? LoggingLevelDebug : LoggingLevelInformational;
+    const char* result = g_debug;
+
+    switch (level)
+    {
+        case LoggingLevelEmergency:
+            result = g_emergency;
+            break;
+
+        case LoggingLevelAlert:
+            result = g_alert;
+            break;
+
+        case LoggingLevelCritical:
+            result = g_critical;
+            break;
+
+        case LoggingLevelError:
+            result = g_error;
+            break;
+
+        case LoggingLevelWarning:
+            result = g_warning;
+            break;
+
+        case LoggingLevelNotice:
+            result = g_notice;
+            break;
+
+        case LoggingLevelInformational:
+            result = g_info;
+            break;
+
+        case LoggingLevelDebug:
+        default:
+            result = g_debug;
+    }
+
+    return result;
+}
+
+void SetLoggingLevel(LoggingLevel level)
+{
+    g_loggingLevel = (level > LoggingLevelNotice) ? level : LoggingLevelInformational;
+}
+
+LoggingLevel GetLoggingLevel(void)
+{
+    return g_loggingLevel;
 }
 
 bool IsDebugLoggingEnabled(void)
 {
     return (LoggingLevelDebug == g_loggingLevel) ? true : false;
+}
+
+unsigned int GetMaxLogSize(void)
+{
+    return g_maxLogSize;
+}
+
+void SetMaxLogSize(unsigned int value)
+{
+    g_maxLogSize = value;
+}
+
+unsigned int GetMaxLogSizeDebugMultiplier(void)
+{
+    return g_maxLogSizeDebugMultiplier;
+}
+
+void SetMaxLogSizeDebugMultiplier(unsigned int value)
+{
+    g_maxLogSizeDebugMultiplier = value;
 }
 
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
@@ -116,10 +197,12 @@ char* GetFormattedTime(void)
     return g_logTime;
 }
 
-// Checks and rolls the log over if larger than MAX_LOG_SIZE
+// Checks and rolls the log over if larger than maximum size
 void TrimLog(OsConfigLogHandle log)
 {
-    int fileSize = 0;
+    unsigned int maxLogSize = IsDebugLoggingEnabled() ? ((g_maxLogSize < (UINT_MAX / 5)) ? (g_maxLogSize * 5) : UINT_MAX) : g_maxLogSize;
+    unsigned int maxLogTrim = 1000;
+    long fileSize = 0;
     int savedErrno = errno;
 
     if (NULL == log)
@@ -127,8 +210,8 @@ void TrimLog(OsConfigLogHandle log)
         return;
     }
 
-    // Loop incrementing the trim log counter from 0 to MAX_LOG_TRIM
-    log->trimLogCount = (log->trimLogCount < MAX_LOG_TRIM) ? (log->trimLogCount + 1) : 1;
+    // Loop incrementing the trim log counter from 0 to maxLogTrim
+    log->trimLogCount = (log->trimLogCount < maxLogTrim) ? (log->trimLogCount + 1) : 1;
 
     // Check every 10 calls:
     if (0 == (log->trimLogCount % 10))
@@ -136,7 +219,7 @@ void TrimLog(OsConfigLogHandle log)
         // In append mode the file pointer will always be at end of file:
         fileSize = ftell(log->log);
 
-        if ((fileSize >= MAX_LOG_SIZE) || (-1 == fileSize))
+        if ((fileSize >= (long)maxLogSize) || (-1 == fileSize))
         {
             fclose(log->log);
 
