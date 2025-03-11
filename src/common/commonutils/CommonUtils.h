@@ -222,8 +222,10 @@ typedef struct ReportedProperty
     size_t lastPayloadHash;
 } ReportedProperty;
 
-bool IsDebugLoggingEnabledInJsonConfig(const char* jsonString);
 bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString);
+int GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
+int GetMaxLogSizeFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
+int GetMaxLogSizeDebugMultiplierFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetModelVersionFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetLocalManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log);

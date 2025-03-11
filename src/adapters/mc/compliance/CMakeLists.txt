@@ -35,3 +35,5 @@ add_custom_target(create_compliance_shell_zip ALL
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/ComplianceShell.zip" --format=zip .
     DEPENDS stage_create_compliance_shell_zip
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/Staging/)
+
+add_subdirectory(example)

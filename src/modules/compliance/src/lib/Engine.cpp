@@ -21,8 +21,6 @@
 
 namespace compliance
 {
-static constexpr const char* cLogFile = "/var/log/osconfig_compliance.log";
-static constexpr const char* cRolledLogFile = "/var/log/osconfig_compliance.bak";
 static constexpr const char* cModuleInfo = "{\"Name\": \"Compliance\","
                                            "\"Description\": \"Provides functionality to audit and remediate Security Baseline policies on device\","
                                            "\"Manufacturer\": \"Microsoft\","
@@ -36,20 +34,6 @@ static constexpr const char* cModuleInfo = "{\"Name\": \"Compliance\","
 Engine::Engine(OsConfigLogHandle log) noexcept
     : mLog{log}
 {
-}
-
-Engine::Engine() noexcept
-    : mLog{OpenLog(cLogFile, cRolledLogFile)},
-      mLocalLog{true}
-{
-}
-
-Engine::~Engine()
-{
-    if (mLocalLog)
-    {
-        CloseLog(&mLog);
-    }
 }
 
 void Engine::setMaxPayloadSize(unsigned int value) noexcept
@@ -72,7 +56,7 @@ const char* Engine::getModuleInfo() noexcept
     return cModuleInfo;
 }
 
-Result<Engine::AuditResult> Engine::mmiGet(const char* objectName)
+Result<AuditResult> Engine::mmiGet(const char* objectName)
 {
     if (nullptr == objectName)
     {
@@ -80,7 +64,6 @@ Result<Engine::AuditResult> Engine::mmiGet(const char* objectName)
     }
 
     OsConfigLogInfo(log(), "Engine::mmiGet(%s)", objectName);
-    auto result = AuditResult();
     auto ruleName = std::string(objectName);
     constexpr const char* auditPrefix = "audit";
     if (ruleName.find(auditPrefix) != 0)
@@ -106,28 +89,12 @@ Result<Engine::AuditResult> Engine::mmiGet(const char* objectName)
     }
 
     Evaluator evaluator(procedure.audit(), procedure.parameters(), log());
-    auto rc = evaluator.ExecuteAudit(&result.payload, &result.payloadSize);
-    if (!rc.has_value())
-    {
-        return rc.error();
-    }
-
-    result.result = rc.value();
-    return Result<AuditResult>(std::move(result));
+    return evaluator.ExecuteAudit();
 }
 
-Result<JsonWrapper> Engine::decodeB64JSON(const char* input) const
+Result<JsonWrapper> Engine::decodeB64JSON(const std::string& input) const
 {
-    if (nullptr == input)
-    {
-        return Error("Input is null", EINVAL);
-    }
-    std::string inputStr(input);
-    if ((inputStr.length() > 2) && (inputStr[0] == '"') && (inputStr[inputStr.length() - 1] == '"'))
-    {
-        inputStr = inputStr.substr(1, inputStr.length() - 2);
-    }
-    auto decodedString = Base64Decode(inputStr);
+    auto decodedString = Base64Decode(input);
     if (!decodedString.has_value())
     {
         return decodedString.error();
@@ -141,7 +108,7 @@ Result<JsonWrapper> Engine::decodeB64JSON(const char* input) const
     return JsonWrapper(result);
 }
 
-Optional<Error> Engine::setProcedure(const std::string& ruleName, const char* payload, const int payloadSizeBytes)
+Optional<Error> Engine::setProcedure(const std::string& ruleName, const std::string& payload)
 {
     if (ruleName.empty())
     {
@@ -149,7 +116,7 @@ Optional<Error> Engine::setProcedure(const std::string& ruleName, const char* pa
     }
 
     mDatabase.erase(ruleName);
-    auto ruleJSON = decodeB64JSON(std::string(payload, payloadSizeBytes).c_str());
+    auto ruleJSON = decodeB64JSON(payload);
     if (!ruleJSON.has_value())
     {
         return ruleJSON.error();
@@ -231,7 +198,7 @@ Optional<Error> Engine::setProcedure(const std::string& ruleName, const char* pa
     return Optional<Error>();
 }
 
-Optional<Error> Engine::initAudit(const std::string& ruleName, const char* payload, const int payloadSizeBytes)
+Optional<Error> Engine::initAudit(const std::string& ruleName, const std::string& payload)
 {
     if (ruleName.empty())
     {
@@ -244,7 +211,7 @@ Optional<Error> Engine::initAudit(const std::string& ruleName, const char* paylo
         return Error("Out-of-order operation: procedure must be set first", EINVAL);
     }
 
-    auto error = it->second.updateUserParameters(std::string(payload, payloadSizeBytes));
+    auto error = it->second.updateUserParameters(payload);
     if (error)
     {
         return error.value();
@@ -253,7 +220,7 @@ Optional<Error> Engine::initAudit(const std::string& ruleName, const char* paylo
     return Optional<Error>();
 }
 
-Result<bool> Engine::executeRemediation(const std::string& ruleName, const char* payload, const int payloadSizeBytes)
+Result<Status> Engine::executeRemediation(const std::string& ruleName, const std::string& payload)
 {
     if (ruleName.empty())
     {
@@ -271,7 +238,7 @@ Result<bool> Engine::executeRemediation(const std::string& ruleName, const char*
         return Error("Failed to get 'remediate' object");
     }
 
-    auto error = procedure.updateUserParameters(std::string(payload, payloadSizeBytes));
+    auto error = procedure.updateUserParameters(payload);
     if (error)
     {
         return error.value();
@@ -281,7 +248,7 @@ Result<bool> Engine::executeRemediation(const std::string& ruleName, const char*
     return evaluator.ExecuteRemediation();
 }
 
-Result<bool> Engine::mmiSet(const char* objectName, const char* payload, const int payloadSizeBytes)
+Result<Status> Engine::mmiSet(const char* objectName, const std::string& payload)
 {
     if (nullptr == objectName)
     {
@@ -289,43 +256,37 @@ Result<bool> Engine::mmiSet(const char* objectName, const char* payload, const i
         return Error("Invalid argument", EINVAL);
     }
 
-    if ((nullptr == payload) || (payloadSizeBytes < 0))
-    {
-        OsConfigLogError(log(), "Invalid argument: payload is null or payloadSizeBytes is <= 0");
-        return Error("Invalid argument", EINVAL);
-    }
-
-    OsConfigLogInfo(log(), "Engine::mmiSet(%s, %.*s)", objectName, payloadSizeBytes, payload);
+    OsConfigLogInfo(log(), "Engine::mmiSet(%s, %s)", objectName, payload.c_str());
     constexpr const char* remediatePrefix = "remediate";
     constexpr const char* initPrefix = "init";
     constexpr const char* procedurePrefix = "procedure";
     auto ruleName = std::string(objectName);
     if (ruleName.find(procedurePrefix) == 0)
     {
-        auto error = setProcedure(ruleName.substr(strlen(procedurePrefix)), payload, payloadSizeBytes);
+        auto error = setProcedure(ruleName.substr(strlen(procedurePrefix)), payload);
         if (error)
         {
             return error.value();
         }
 
-        return true;
+        return Status::Compliant;
     }
 
     if (ruleName.find(initPrefix) == 0)
     {
-        auto error = initAudit(ruleName.substr(strlen(initPrefix)), payload, payloadSizeBytes);
+        auto error = initAudit(ruleName.substr(strlen(initPrefix)), payload);
         if (error)
         {
             OsConfigLogInfo(log(), "Failed to init audit: %s", error->message.c_str());
             return error.value();
         }
 
-        return true;
+        return Status::Compliant;
     }
 
     if (ruleName.find(remediatePrefix) == 0)
     {
-        return executeRemediation(ruleName.substr(strlen(remediatePrefix)), payload, payloadSizeBytes);
+        return executeRemediation(ruleName.substr(strlen(remediatePrefix)), payload);
     }
 
     OsConfigLogError(log(), "Invalid object name: Must start with %s, %s or %s prefix", initPrefix, procedurePrefix, remediatePrefix);

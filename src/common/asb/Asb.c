@@ -37,6 +37,8 @@ static const char* g_asbName = "Azure Security Baseline for Linux";
 
 static const char* g_securityBaselineComponentName = "SecurityBaseline";
 
+static const char* g_configurationFile = "/etc/osconfig/osconfig.json";
+
 // Audit
 static const char* g_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
 static const char* g_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
@@ -904,9 +906,29 @@ void AsbInitialize(OsConfigLogHandle log)
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
+    if (FileExists(g_configurationFile))
+    {
+        if (NULL != (jsonConfiguration = LoadStringFromFile(g_configurationFile, false, log)))
+        {
+            SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, log));
+            SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, log));
+            SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, log));
+            FREE_MEMORY(jsonConfiguration);
+        }
+
+        RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
+    }
+
+    if (IsConsoleLoggingEnabled())
+    {
+        OsConfigLogWarning(log, "AsbInitialize: console logging is enabled. If the syslog rotation is not enabled this may result in a fill-up of the local storage space");
+    }
+
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
     if (NULL != (cpuModel = GetCpuModel(log)))
+
+    if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
         OsConfigLogInfo(log, "AsbInitialize: CPU model: %s", cpuModel);
     }

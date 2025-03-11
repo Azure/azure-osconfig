@@ -6,6 +6,9 @@ project(compliancetests)
 include(CTest)
 find_package(GTest REQUIRED)
 
+# Temporary solution, until we stabilize the list of procedures.
+FILE(GLOB PROCEDURES procedures/*.cpp)
+
 add_executable(compliancetests
     Base64Test.cpp
     ComplianceTest.cpp
@@ -13,8 +16,11 @@ add_executable(compliancetests
     EvaluatorTest.cpp
     OptionalTest.cpp
     ResultTest.cpp
+    Base64Test.cpp
+    ${PROCEDURES}
 )
-
+# for ProcedureMap.h
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/../src/lib)
 target_link_libraries(compliancetests gtest gtest_main pthread compliancelib logging commonutils parsonlib)
 
 gtest_discover_tests(compliancetests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

@@ -55,44 +55,51 @@ TEST_F(ComplianceTest, ComplianceMmiGetInfo_1)
 
 TEST_F(ComplianceTest, ComplianceMmiSet_InvalidArguments_1)
 {
-    auto payload = std::string("eyJhdWRpdCI6eyJhbnlPZiI6W119fQ=="); // {"audit":{"anyOf":[]}} in base64
+    auto payload = std::string("\"eyJhdWRpdCI6eyJhbnlPZiI6W119fQ=="); // {"audit":{"anyOf":[]}} in base64
     ASSERT_NE(MMI_OK, ComplianceMmiSet(nullptr, "Compliance", "procedureX", payload.c_str(), static_cast<int>(payload.size())));
 }
 
 TEST_F(ComplianceTest, ComplianceMmiSet_InvalidArguments_2)
 {
-    auto payload = std::string("eyJhdWRpdCI6eyJhbnlPZiI6W119fQ=="); // {"audit":{"anyOf":[]}} in base64
+    auto payload = std::string("\"eyJhdWRpdCI6eyJhbnlPZiI6W119fQ==\""); // {"audit":{"anyOf":[]}} in base64
     ASSERT_NE(MMI_OK, ComplianceMmiSet(mHandle, nullptr, "procedureX", payload.c_str(), static_cast<int>(payload.size())));
 }
 
 TEST_F(ComplianceTest, ComplianceMmiSet_InvalidArguments_3)
 {
-    auto payload = std::string("eyJhdWRpdCI6eyJhbnlPZiI6W119fQ=="); // {"audit":{"anyOf":[]}} in base64
+    auto payload = std::string("\"eyJhdWRpdCI6eyJhbnlPZiI6W119fQ==\""); // {"audit":{"anyOf":[]}} in base64
     ASSERT_NE(MMI_OK, ComplianceMmiSet(mHandle, "wrong module name", "procedureX", payload.c_str(), static_cast<int>(payload.size())));
 }
 
 TEST_F(ComplianceTest, ComplianceMmiSet_InvalidArguments_4)
 {
-    auto payload = std::string("eyJhdWRpdCI6eyJhbnlPZiI6W119fQ=="); // {"audit":{"anyOf":[]}} in base64
+    auto payload = std::string("\"eyJhdWRpdCI6eyJhbnlPZiI6W119fQ==\""); // {"audit":{"anyOf":[]}} in base64
     ASSERT_NE(MMI_OK, ComplianceMmiSet(mHandle, "Compliance", nullptr, payload.c_str(), static_cast<int>(payload.size())));
 }
 
 TEST_F(ComplianceTest, ComplianceMmiSet_InvalidArguments_5)
 {
-    auto payload = std::string("eyJhdWRpdCI6eyJhbnlPZiI6W119fQ=="); // {"audit":{"anyOf":[]}} in base64
+    auto payload = std::string("\"eyJhdWRpdCI6eyJhbnlPZiI6W119fQ==\""); // {"audit":{"anyOf":[]}} in base64
     ASSERT_NE(MMI_OK, ComplianceMmiSet(mHandle, "Compliance", "procedureX", nullptr, static_cast<int>(payload.size())));
 }
 
 TEST_F(ComplianceTest, ComplianceMmiSet_InvalidArguments_6)
 {
-    auto payload = std::string("eyJhdWRpdCI6eyJhbnlPZiI6W119fQ=="); // {"audit":{"anyOf":[]}} in base64
+    auto payload = std::string("\"eyJhdWRpdCI6eyJhbnlPZiI6W119fQ==\""); // {"audit":{"anyOf":[]}} in base64
     ASSERT_NE(MMI_OK, ComplianceMmiSet(mHandle, "Compliance", "procedureX", payload.c_str(), -1));
 }
 
 TEST_F(ComplianceTest, ComplianceMmiSet_SetProcedure_1)
 {
-    auto payload = std::string("eyJhdWRpdCI6eyJhbnlPZiI6W119fQ=="); // {"audit":{"anyOf":[]}} in base64
+    auto payload = std::string("\"eyJhdWRpdCI6eyJhbnlPZiI6W119fQ==\""); // {"audit":{"anyOf":[]}} in base64
     ASSERT_EQ(MMI_OK, ComplianceMmiSet(mHandle, "Compliance", "procedureX", payload.c_str(), static_cast<int>(payload.size())));
+}
+
+TEST_F(ComplianceTest, ComplianceMmiSet_SetProcedure_2)
+{
+    auto procedurePayload =
+        std::string("\"eyJhdWRpdCI6eyJhbnlPZiI6W3sicW0/Ijp7fX1dfX0K\""); // '{"audit":{"anyOf":[{"qm?":{}}]}}' in base64, verify that '/' is properly de-escaped
+    ASSERT_EQ(MMI_OK, ComplianceMmiSet(mHandle, "Compliance", "procedureX", procedurePayload.c_str(), static_cast<int>(procedurePayload.size())));
 }
 
 TEST_F(ComplianceTest, ComplianceMmiGet_InvalidArguments_1)
@@ -137,7 +144,7 @@ TEST_F(ComplianceTest, ComplianceMmiGet_InvalidArguments_6)
 
 TEST_F(ComplianceTest, ComplianceMmiGet_1)
 {
-    auto procedurePayload = std::string("eyJhdWRpdCI6eyJhbnlPZiI6W119fQ=="); // {"audit":{"anyOf":[]}} in base64
+    auto procedurePayload = std::string("\"eyJhdWRpdCI6eyJhbnlPZiI6W119fQ==\""); // {"audit":{"anyOf":[]}} in base64
     ASSERT_EQ(MMI_OK, ComplianceMmiSet(mHandle, "Compliance", "procedureX", procedurePayload.c_str(), static_cast<int>(procedurePayload.size())));
     char* payload = nullptr;
     int payloadSizeBytes = 0;
@@ -149,12 +156,13 @@ TEST_F(ComplianceTest, ComplianceMmiGet_1)
 
 TEST_F(ComplianceTest, ComplianceMmiGet_2)
 {
-    auto procedurePayload = std::string("eyJhdWRpdCI6eyJhbGxPZiI6W119fQ=="); // {"audit":{"allOf":[]}} in base64
+    auto procedurePayload = std::string("\"eyJhdWRpdCI6eyJhbGxPZiI6W119fQ==\""); // {"audit":{"allOf":[]}} in base64
     ASSERT_EQ(MMI_OK, ComplianceMmiSet(mHandle, "Compliance", "procedureX", procedurePayload.c_str(), static_cast<int>(procedurePayload.size())));
     char* payload = nullptr;
     int payloadSizeBytes = 0;
     ASSERT_EQ(MMI_OK, ComplianceMmiGet(mHandle, "Compliance", "auditX", &payload, &payloadSizeBytes));
     ASSERT_NE(payload, nullptr);
+    ASSERT_TRUE(payloadSizeBytes >= 5);
     EXPECT_EQ(0, strncmp(payload, "\"PASS", 5));
     free(payload);
 }

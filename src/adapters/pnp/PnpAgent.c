@@ -516,7 +516,9 @@ int main(int argc, char *argv[])
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        SetDebugLogging(IsDebugLoggingEnabledInJsonConfig(jsonConfiguration));
+        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetLog()));
+        SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetLog()));
+        SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, GetLog()));
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -538,7 +540,7 @@ int main(int argc, char *argv[])
 
     if (IsDebugLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "WARNING: debug logging is enabled. To disable debug logging, edit '%s' and restart OSConfig", CONFIG_FILE);
+        OsConfigLogWarning(GetLog(), "Debug logging is enabled. To disable debug logging, set 'LoggingLevel' to 6 in '%s' and restart OSConfig", CONFIG_FILE);
     }
 
     // Load remaining configuration

@@ -3,6 +3,7 @@
 
 #include "Evaluator.h"
 
+#include "JsonWrapper.h"
 #include "Logging.h"
 #include "Result.h"
 
@@ -15,37 +16,27 @@
 
 namespace compliance
 {
-
-Result<bool> Evaluator::ExecuteAudit(char** payload, int* payloadSizeBytes)
+Result<AuditResult> Evaluator::ExecuteAudit()
 {
-    if ((nullptr == payload) || (nullptr == payloadSizeBytes))
-    {
-        OsConfigLogError(mLog, "Invalid argument: payload or payloadSizeBytes is null");
-        return Error("Payload or payloadSizeBytes is null");
-    }
-
     auto result = EvaluateProcedure(mJson, Action::Audit);
     if (!result.has_value())
     {
         OsConfigLogError(mLog, "Evaluation failed: %s", result.error().message.c_str());
         return result.error();
     }
-
-    std::string vlog = mLogstream.str().substr(0, cLogstreamMaxSize - (1 + strlen("PASS") + strlen("\"\"")));
-    if (result.value() == true)
+    std::string vlog;
+    if (result.value() == Status::Compliant)
     {
-        vlog = "\"PASS" + vlog + "\"";
+        vlog = "PASS" + mLogstream.str();
     }
     else
     {
-        vlog = "\"" + vlog + "\"";
+        vlog = mLogstream.str();
     }
-    *payload = strdup(vlog.c_str());
-    *payloadSizeBytes = static_cast<int>(vlog.size());
-    return result;
+    return AuditResult{result.value(), vlog};
 }
 
-Result<bool> Evaluator::ExecuteRemediation()
+Result<Status> Evaluator::ExecuteRemediation()
 {
     auto result = EvaluateProcedure(mJson, Action::Remediate);
     if (!result.has_value())
@@ -57,12 +48,7 @@ Result<bool> Evaluator::ExecuteRemediation()
     return result;
 }
 
-void Evaluator::setProcedureMap(ProcedureMap procedureMap)
-{
-    mProcedureMap = std::move(procedureMap);
-}
-
-Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action action)
+Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action action)
 {
     if (nullptr == json)
     {
@@ -98,7 +84,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
                 mLogstream << "] == FAILURE }";
                 return result;
             }
-            if (result.value() == false)
+            if (result.value() == Status::NonCompliant)
             {
                 if (i < count - 1)
                 {
@@ -108,11 +94,11 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
             else
             {
                 mLogstream << "] == TRUE }";
-                return true;
+                return Status::Compliant;
             }
         }
         mLogstream << "] == FALSE }";
-        return false;
+        return Status::NonCompliant;
     }
     else if (!strcmp(name, "allOf"))
     {
@@ -134,7 +120,7 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
                 mLogstream << "] == FAILURE }";
                 return result;
             }
-            if (result.value() == true)
+            if (result.value() == Status::Compliant)
             {
                 if (i < count - 1)
                 {
@@ -144,11 +130,11 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
             else
             {
                 mLogstream << "] == FALSE }";
-                return false;
+                return Status::NonCompliant;
             }
         }
         mLogstream << "] == TRUE }";
-        return true;
+        return Status::Compliant;
     }
     else if (!strcmp(name, "not"))
     {
@@ -165,15 +151,15 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
             mLogstream << "] == FAILURE }";
             return result;
         }
-        if (result.value() == true)
+        if (result.value() == Status::Compliant)
         {
             mLogstream << "] == FALSE }";
-            return false;
+            return Status::NonCompliant;
         }
         else
         {
             mLogstream << "] == TRUE }";
-            return true;
+            return Status::Compliant;
         }
     }
     else
@@ -193,8 +179,8 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
             JSON_Value* val = json_object_get_value_at(args_object, i);
             if (json_value_get_type(val) != JSONString)
             {
-                mLogstream << "ERROR: Argument type is not a string";
-                OsConfigLogError(mLog, "Argument type is not a string");
+                mLogstream << "ERROR: Argument type is not a string '" << key << "' ";
+                OsConfigLogError(mLog, "Argument type is not a string for a key '%s'", key);
                 return Error("Argument type is not a string");
             }
             arguments[key] = json_value_get_string(val);
@@ -244,8 +230,10 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         if (!result.has_value())
         {
             mLogstream << "FAILURE";
+            return {result.error()};
         }
-        else if (result.value() == true)
+
+        if (result.value() == true)
         {
             mLogstream << "TRUE";
         }
@@ -253,7 +241,8 @@ Result<bool> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action 
         {
             mLogstream << "FALSE";
         }
-        return result;
+
+        return result.value() ? Status::Compliant : Status::NonCompliant;
     }
     return Error("Unreachable"); // unreachable
 }
