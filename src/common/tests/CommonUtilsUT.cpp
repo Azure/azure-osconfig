@@ -2512,6 +2512,9 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
 
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
+    const char* info = "INFO";
+    const char* debug = "DEBUG";
+    
     LoggingLevel level = LoggingLevelEmergency;
     unsigned int i = 0;
     unsigned int maxLogSize = 0;
@@ -2519,36 +2522,36 @@ TEST_F(CommonUtilsTest, LoggingOptions)
     SetLoggingLevel(LoggingLevelDebug);
     EXPECT_TRUE(IsDebugLoggingEnabled());
     EXPECT_EQ(LoggingLevelDebug, level = GetLoggingLevel());
-    EXPECT_STREQ("DEBUG", GetLoggingLevelName(level));
+    EXPECT_STREQ(debug, GetLoggingLevelName(level));
 
     SetLoggingLevel(LoggingLevelInformational);
     EXPECT_FALSE(IsDebugLoggingEnabled());
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
 
     SetLoggingLevel(LoggingLevelEmergency);
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
 
     SetLoggingLevel(LoggingLevelAlert);
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
 
     SetLoggingLevel(LoggingLevelCritical);
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
 
     SetLoggingLevel(LoggingLevelError);
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
 
     SetLoggingLevel(LoggingLevelWarning);
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
 
     SetLoggingLevel(LoggingLevelNotice);
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ("INFO", GetLoggingLevelName(level));
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
 
     for (i = 0; i < 100; i++)
     {
