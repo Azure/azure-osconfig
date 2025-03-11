@@ -159,32 +159,6 @@ static void PlatformDoWork(void)
     }
 }
 
-static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* loggingSetting)
-{
-    bool result = false;
-    JSON_Value* rootValue = NULL;
-    JSON_Object* rootObject = NULL;
-
-    if (NULL != jsonString)
-    {
-        if (NULL != (rootValue = json_parse_string(jsonString)))
-        {
-            if (NULL != (rootObject = json_value_get_object(rootValue)))
-            {
-                result = (0 == (int)json_object_get_number(rootObject, loggingSetting)) ? false : true;
-            }
-            json_value_free(rootValue);
-        }
-    }
-
-    return result;
-}
-
-bool IsDebugLoggingEnabledInJsonConfig(const char* jsonString)
-{
-    return IsLoggingEnabledInJsonConfig(jsonString, DEBUG_LOGGING);
-}
-
 int main(int argc, char* argv[])
 {
     UNUSED(argc);
@@ -196,7 +170,9 @@ int main(int argc, char* argv[])
     char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetPlatformLog());
     if (NULL != jsonConfiguration)
     {
-        SetDebugLogging(IsDebugLoggingEnabledInJsonConfig(jsonConfiguration));
+        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetPlatformLog()));
+        SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetPlatformLog()));
+        SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, GetPlatformLog()));
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -209,7 +185,7 @@ int main(int argc, char* argv[])
 
     if (IsDebugLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "WARNING: debug logging is enabled. To disable debug logging, edit '%s' and restart OSConfig", CONFIG_FILE);
+        OsConfigLogWarning(GetPlatformLog(), "Debug logging is enabled. To disable debug logging, set 'LoggingLevel' to 6 in '%s' and restart OSConfig", CONFIG_FILE);
     }
 
     for (int i = 0; i < stopSignalsCount; i++)
