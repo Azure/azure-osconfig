@@ -4887,7 +4887,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
 
-        if ((status && (FailuresTelemetry <= g_telemetryLevel)) || ((0 == status) && (RulesTelemetry <= g_telemetryLevel)))
+        if (((0 != status) && (FailuresTelemetry <= g_telemetryLevel)) || ((0 == status) && (RulesTelemetry <= g_telemetryLevel)))
         {
             LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
         }
@@ -5868,7 +5868,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
 
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
 
-            if ((status && (FailuresTelemetry <= g_telemetryLevel)) || ((0 == status) && (RulesTelemetry <= g_telemetryLevel)))
+            if (((0 != status) && (FailuresTelemetry <= g_telemetryLevel)) || ((0 == status) && (RulesTelemetry <= g_telemetryLevel)))
             {
                 LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
             }
