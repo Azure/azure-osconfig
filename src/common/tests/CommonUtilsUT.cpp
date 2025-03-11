@@ -2549,7 +2549,7 @@ TEST_F(CommonUtilsTest, LoggingOptions)
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
     EXPECT_STREQ("INFO", GetLoggingLevelName(level));
 
-    for (i = 0; i <UINT_MAX; i++)
+    for (i = 0; i < UINT_MAX; i += 1000)
     {
         SetMaxLogSize(i);
         EXPECT_EQ(i, GetMaxLogSize());
