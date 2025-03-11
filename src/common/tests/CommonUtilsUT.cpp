@@ -2518,7 +2518,7 @@ TEST_F(CommonUtilsTest, LoggingOptions)
     EXPECT_TRUE(IsDebugLoggingEnabled());
     EXPECT_EQ(LoggingLevelDebug, level = GetLoggingLevel());
     EXPECT_STREQ("DEBUG", GetLoggingLevelName(level));
-    
+
     SetLoggingLevel(LoggingLevelInformational);
     EXPECT_FALSE(IsDebugLoggingEnabled());
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
@@ -2527,7 +2527,7 @@ TEST_F(CommonUtilsTest, LoggingOptions)
     SetLoggingLevel(LoggingLevelEmergency);
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
     EXPECT_STREQ("INFO", GetLoggingLevelName(level));
-    
+
     SetLoggingLevel(LoggingLevelAlert);
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
     EXPECT_STREQ("INFO", GetLoggingLevelName(level));
@@ -2556,7 +2556,7 @@ TEST_F(CommonUtilsTest, LoggingOptions)
         SetMaxLogSizeDebugMultiplier(i);
         EXPECT_EQ(i, GetMaxLogSizeDebugMultiplier());
     }
-    
+
     SetConsoleLoggingEnabled(true);
     EXPECT_TRUE(IsConsoleLoggingEnabled());
     SetConsoleLoggingEnabled(false);
