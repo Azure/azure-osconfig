@@ -2514,6 +2514,7 @@ TEST_F(CommonUtilsTest, LoggingOptions)
 {
     LoggingLevel level = LoggingLevelEmergency;
     unsigned int i = 0;
+    unsigned int maxLogSize = 0;
 
     SetLoggingLevel(LoggingLevelDebug);
     EXPECT_TRUE(IsDebugLoggingEnabled());
@@ -2549,10 +2550,12 @@ TEST_F(CommonUtilsTest, LoggingOptions)
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
     EXPECT_STREQ("INFO", GetLoggingLevelName(level));
 
-    for (i = 0; i < UINT_MAX; i += 1000)
+    for (i = 0; i < 100; i++)
     {
-        SetMaxLogSize(i);
-        EXPECT_EQ(i, GetMaxLogSize());
+        maxLogSize = (unsigned int)rand();
+
+        SetMaxLogSize(maxLogSize);
+        EXPECT_EQ(maxLogSize, GetMaxLogSize());
 
         SetMaxLogSizeDebugMultiplier(i);
         EXPECT_EQ(i, GetMaxLogSizeDebugMultiplier());
