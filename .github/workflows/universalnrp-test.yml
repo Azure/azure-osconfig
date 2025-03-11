@@ -183,7 +183,7 @@ jobs:
               Write-Host "Renaming $($_.Name) to $name.zip"
               Rename-Item -Path $_.Name -NewName "$name.zip"
           }
-      
+
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
         run: |

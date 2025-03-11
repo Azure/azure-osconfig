@@ -168,6 +168,8 @@ void MI_CALL OsConfigResource_Load(
         CallMpiClose(g_mpiHandle, GetLog());
         g_mpiHandle = NULL;
     }
+
+    SetConsoleLoggingEnabled(false);
     
     AsbInitialize(GetLog());
 
@@ -1260,4 +1262,3 @@ Exit:
 
     MI_Context_PostResult(context, miResult);
 }
-
