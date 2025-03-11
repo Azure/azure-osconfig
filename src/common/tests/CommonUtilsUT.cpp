@@ -9,6 +9,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <gtest/gtest.h>
 #include <CommonUtils.h>
 #include <UserUtils.h>
