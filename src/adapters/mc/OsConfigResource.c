@@ -168,10 +168,10 @@ void MI_CALL OsConfigResource_Load(
         CallMpiClose(g_mpiHandle, GetLog());
         g_mpiHandle = NULL;
     }
-    
-    AsbInitialize(GetLog());
 
     SetConsoleLoggingEnabled(false);
+    
+    AsbInitialize(GetLog());
 
     LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d)", getpid());
 
