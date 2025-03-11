@@ -888,6 +888,7 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
 
 void AsbInitialize(OsConfigLogHandle log)
 {
+    char* jsonConfiguration = NULL;
     char* kernelVersion = NULL;
     char* cpuModel = NULL;
     long totalMemory = 0;
