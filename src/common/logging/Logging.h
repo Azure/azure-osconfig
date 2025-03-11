@@ -56,7 +56,7 @@ bool IsDaemon(void);
         OSCONFIG_FILE_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
         fflush(GetLogFile(log));\
     }\
-    if (((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) && (true == IsConsoleLoggingEnabled())) {\
+    if (((false == IsDaemon()) || (false == IsFullLoggingEnabled())) && (true == IsConsoleLoggingEnabled())) {\
         OSCONFIG_LOG_INFO(log, FORMAT, ##__VA_ARGS__);\
     }\
 }\
@@ -66,7 +66,7 @@ bool IsDaemon(void);
         OSCONFIG_FILE_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
         fflush(GetLogFile(log));\
     }\
-    if (((false == IsDaemon()) || (false == IsDebugLoggingEnabled())) && (true == IsConsoleLoggingEnabled())) {\
+    if (((false == IsDaemon()) || (false == IsFullLoggingEnabled())) && (true == IsConsoleLoggingEnabled())) {\
         OSCONFIG_LOG_ERROR(log, FORMAT, ##__VA_ARGS__);\
     }\
 }\

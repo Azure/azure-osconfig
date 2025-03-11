@@ -849,28 +849,8 @@ void AsbInitialize(void* log)
 {
     char* prettyName = NULL;
     char* kernelVersion = NULL;
-    char* cpuModel = NULL;
-    long totalMemory = 0;
-    long freeMemory = 0;
-    unsigned short freeMemoryPercentage = 0;
-
-    OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
     OsConfigLogInfo(log, "AsbInitialize: console logging is %s", IsConsoleLoggingEnabled() ? "enabled" : "disabled");
-
-    if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
-    {
-        OsConfigLogInfo(log, "AsbInitialize: CPU model: %s", cpuModel);
-    }
-
-    OsConfigLogInfo(log, "AsbInitialize: CPU cores: %u", GetNumberOfCpuCores(log));
-
-    totalMemory = GetTotalMemory(log);
-    OsConfigLogInfo(log, "AsbInitialize: total memory: %lu kB", totalMemory);
-
-    freeMemory = GetFreeMemory(log);
-    freeMemoryPercentage = (freeMemory * 100) / totalMemory;
-    OsConfigLogInfo(log, "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
     InitializeSshAudit(log);
 

@@ -117,47 +117,45 @@ char* GetFormattedTime()
 }
 
 // Checks and rolls the log over if larger than MAX_LOG_SIZE
-void TrimLog(OsConfigLogHandle log)
+void TrimLog(OSCONFIG_LOG_HANDLE log)
 {
+    OSCONFIG_LOG* whatLog = NULL;
     int fileSize = 0;
-    int savedErrno = errno;
 
-    if (NULL == log)
+    if ((NULL == log) || (NULL == (whatLog = (OSCONFIG_LOG*)log)))
     {
         return;
     }
 
     // Loop incrementing the trim log counter from 0 to MAX_LOG_TRIM
-    log->trimLogCount = (log->trimLogCount < MAX_LOG_TRIM) ? (log->trimLogCount + 1) : 1;
+    whatLog->trimLogCount = (whatLog->trimLogCount < MAX_LOG_TRIM) ? (whatLog->trimLogCount + 1) : 1;
 
     // Check every 10 calls:
-    if (0 == (log->trimLogCount % 10))
+    if (0 == (whatLog->trimLogCount % 10))
     {
         // In append mode the file pointer will always be at end of file:
-        fileSize = ftell(log->log);
+        fileSize = ftell(whatLog->log);
 
         if ((fileSize >= MAX_LOG_SIZE) || (-1 == fileSize))
         {
-            fclose(log->log);
+            fclose(whatLog->log);
 
             // Rename the log in place to make a backup copy, overwriting previous copy if any:
-            if ((NULL == log->backLogFileName) || (0 != rename(log->logFileName, log->backLogFileName)))
+            if ((NULL == whatLog->backLogFileName) || (0 != rename(whatLog->logFileName, whatLog->backLogFileName)))
             {
                 // If the log could not be renamed, empty it:
-                log->log = fopen(log->logFileName, "w");
-                fclose(log->log);
+                whatLog->log = fopen(whatLog->logFileName, "w");
+                fclose(whatLog->log);
             }
 
             // Reopen the log in append mode:
-            log->log = fopen(log->logFileName, "a");
+            whatLog->log = fopen(whatLog->logFileName, "a");
 
             // Reapply restrictions once the file is recreated (also for backup, if any):
-            RestrictFileAccessToCurrentAccountOnly(log->logFileName);
-            RestrictFileAccessToCurrentAccountOnly(log->backLogFileName);
+            RestrictAccessToRootOnly(whatLog->logFileName);
+            RestrictAccessToRootOnly(whatLog->backLogFileName);
         }
     }
-
-    errno = savedErrno;
 }
 
 bool IsDaemon()
