@@ -18,19 +18,20 @@ runs:
     - name: Wait for packages installed by azsec
       run: |
         source /etc/os-release
-        if [[ "$ID" == "ubuntu" ]] || [[ "$ID" == "debian" ]]; then
-          until dpkg -l azsec-bpftrace 2>/dev/null | grep -q '^ii'; do
-            echo "Waiting for azsec-bpftrace to be installed..."
-            sleep 5
-          done
-        elif [[ "$ID" == "mariner" ]]; then
-          until rpm -q azsec-bpftrace &>/dev/null; do
-            echo "Waiting for azsec-bpftrace to be installed..."
-            sleep 5
-          done
-          until rpm -q KeysInUse-OpenSSL &>/dev/null; do
-            echo "Waiting for azsec-bpftrace to be installed..."
-            sleep 5
-          done
-        fi
+        for i in $(seq 1 60); do
+          if [[ "$ID" != "ubuntu" ]] && [[ "$ID" != "debian" ]] && [[ "$ID" != "mariner" ]]; then
+            break
+          fi
+          if [[ "$ID" == "ubuntu" ]] || [[ "$ID" == "debian" ]]; then
+            if dpkg -l azsec-bpftrace 2>/dev/null | grep -q '^ii'; then
+              break
+            fi
+          elif [[ "$ID" == "mariner" ]]; then
+            if rpm -q azsec-bpftrace &>/dev/null && rpm -q KeysInUse-OpenSSL &>/dev/null; then
+              break
+            fi
+          fi
+          echo "Waiting for required packages to be installed..."
+          sleep 5
+        done
       shell: bash
