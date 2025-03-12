@@ -63,8 +63,6 @@ void __attribute__((constructor)) Initialize()
     g_expectedObjectValue = DuplicateString(g_passValue);
     g_desiredObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectValue = DuplicateString(g_failValue);
-
-    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library loaded by host process %d", getpid());
 }
 
 void __attribute__((destructor)) Destroy()
