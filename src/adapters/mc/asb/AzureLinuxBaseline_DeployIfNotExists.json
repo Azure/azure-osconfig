@@ -1,9 +1,9 @@
 {
   "properties": {
-    "displayName": "Audit Azure security baseline for Linux (powered by OSConfig)",
+    "displayName": "Audit and configure Azure security baseline for Linux (powered by OSConfig)",
     "policyType": "Custom",
     "mode": "Indexed",
-    "description": "This demo policy audits (and can also optionally configure) the Azure security baseline for Linux",
+    "description": "This policy audits and configures the Azure security baseline on Linux machines (Azure VMs and Arc-enabled machines). For more information, see https://aka.ms/azsecbaselinelinuxdocs",
     "metadata": {
       "category": "Guest Configuration",
       "version": "1.0.0",
@@ -15,7 +15,7 @@
         "version": "1.0.0",
         "contentType": "Custom",
         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-        "contentHash": "2EE557B1F9843F2FDD4ACF29563B51A9D1D7EF7721C73D920AEF2C412A1E2499"
+        "contentHash": "4E6BF9AC06618C97EFE07B7A01A2DFAA009130D1FC9E9628F9A38C7765C881A6"
       }
     },
     "parameters": {
@@ -341,7 +341,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "2EE557B1F9843F2FDD4ACF29563B51A9D1D7EF7721C73D920AEF2C412A1E2499",
+                        "contentHash": "4E6BF9AC06618C97EFE07B7A01A2DFAA009130D1FC9E9628F9A38C7765C881A6",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -358,7 +358,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "2EE557B1F9843F2FDD4ACF29563B51A9D1D7EF7721C73D920AEF2C412A1E2499",
+                        "contentHash": "4E6BF9AC06618C97EFE07B7A01A2DFAA009130D1FC9E9628F9A38C7765C881A6",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -375,7 +375,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "2EE557B1F9843F2FDD4ACF29563B51A9D1D7EF7721C73D920AEF2C412A1E2499",
+                        "contentHash": "4E6BF9AC06618C97EFE07B7A01A2DFAA009130D1FC9E9628F9A38C7765C881A6",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
