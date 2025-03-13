@@ -32,6 +32,7 @@ public:
           mLog(log)
     {
     }
+    ~Evaluator() = default;
     Evaluator(const Evaluator&) = delete;
     Evaluator(Evaluator&&) = delete;
     Evaluator& operator=(const Evaluator&) = delete;

@@ -33,6 +33,19 @@ repos:
          .*\.cmd|
          .*\.csrpoj
          )$
+  - repo: local
+    hooks:
+      - id: clang-tidy
+        name: Run clang-tidy
+        types_or: [c++]
+        entry: src/tests/clang-tidy/run-clang-tidy.py
+        language: python
+        additional_dependencies: [clang-tidy]
+        files: |
+          (?x)(
+          ^src/modules/compliance/src/.*\.h$|
+          ^src/modules/compliance/src/.*\.cpp$
+            )
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v14.0.6
     hooks:

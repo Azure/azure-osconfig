@@ -66,7 +66,7 @@ class Result
     union Pointer
     {
         T* value;
-        Error* error;
+        compliance::Error* error;
     };
 
     enum class Tag
@@ -85,10 +85,10 @@ public:
         mPointer.value = new T(std::move(value));
     }
 
-    Result(Error error)
+    Result(compliance::Error error)
         : mTag(Tag::Error)
     {
-        mPointer.error = new Error(std::move(error));
+        mPointer.error = new compliance::Error(std::move(error));
     }
 
     Result(const Result& other)
@@ -100,7 +100,7 @@ public:
         }
         else
         {
-            mPointer.error = new Error(*other.mPointer.error);
+            mPointer.error = new compliance::Error(*other.mPointer.error);
         }
     }
 
@@ -195,17 +195,17 @@ public:
         return *this;
     }
 
-    bool has_value() const noexcept
+    bool HasValue() const noexcept
     {
         return mTag == Tag::Value;
     }
 
     operator bool() const noexcept
     {
-        return has_value();
+        return HasValue();
     }
 
-    T value_or(T default_value) const& noexcept(noexcept_copyable<T>())
+    T ValueOr(T default_value) const& noexcept(NoexceptCopyable<T>())
     {
         if (mTag == Tag::Error)
         {
@@ -215,7 +215,7 @@ public:
         return *mPointer.value;
     }
 
-    T value_or(T default_value) && noexcept(noexcept_copyable<T>())
+    T ValueOr(T default_value) && noexcept(NoexceptCopyable<T>())
     {
         if (mTag == Tag::Error)
         {
@@ -225,17 +225,17 @@ public:
         return std::move(*mPointer.value);
     }
 
-    const T& value() const& noexcept(noexcept_copyable<T>())
+    const T& Value() const& noexcept(NoexceptCopyable<T>())
     {
         return *mPointer.value;
     }
 
-    T value() && noexcept(noexcept_movable<T>())
+    T Value() && noexcept(NoexceptMovable<T>())
     {
         return std::move(*mPointer.value);
     }
 
-    T& value() &
+    T& Value() &
     {
         return *mPointer.value;
     }
@@ -250,17 +250,17 @@ public:
         return mPointer.value;
     }
 
-    const Error& error() const&
+    const compliance::Error& Error() const&
     {
         return *mPointer.error;
     }
 
-    Error error() &&
+    compliance::Error Error() &&
     {
         return std::move(*mPointer.error);
     }
 
-    Error& error() &
+    compliance::Error& Error() &
     {
         return *mPointer.error;
     }

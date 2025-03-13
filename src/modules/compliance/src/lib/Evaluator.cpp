@@ -19,13 +19,13 @@ namespace compliance
 Result<AuditResult> Evaluator::ExecuteAudit()
 {
     auto result = EvaluateProcedure(mJson, Action::Audit);
-    if (!result.has_value())
+    if (!result.HasValue())
     {
-        OsConfigLogError(mLog, "Evaluation failed: %s", result.error().message.c_str());
-        return result.error();
+        OsConfigLogError(mLog, "Evaluation failed: %s", result.Error().message.c_str());
+        return result.Error();
     }
     std::string vlog;
-    if (result.value() == Status::Compliant)
+    if (result.Value() == Status::Compliant)
     {
         vlog = "PASS" + mLogstream.str();
     }
@@ -33,16 +33,16 @@ Result<AuditResult> Evaluator::ExecuteAudit()
     {
         vlog = mLogstream.str();
     }
-    return AuditResult{result.value(), vlog};
+    return AuditResult{result.Value(), vlog};
 }
 
 Result<Status> Evaluator::ExecuteRemediation()
 {
     auto result = EvaluateProcedure(mJson, Action::Remediate);
-    if (!result.has_value())
+    if (!result.HasValue())
     {
-        OsConfigLogError(mLog, "Evaluation failed: %s", result.error().message.c_str());
-        return result.error();
+        OsConfigLogError(mLog, "Evaluation failed: %s", result.Error().message.c_str());
+        return result.Error();
     }
 
     return result;
@@ -79,12 +79,12 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
         {
             JSON_Object* subObject = json_array_get_object(array, i);
             auto result = EvaluateProcedure(subObject, action);
-            if (!result.has_value())
+            if (!result.HasValue())
             {
                 mLogstream << "] == FAILURE }";
                 return result;
             }
-            if (result.value() == Status::NonCompliant)
+            if (result.Value() == Status::NonCompliant)
             {
                 if (i < count - 1)
                 {
@@ -115,12 +115,12 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
         {
             auto subObject = json_array_get_object(array, i);
             auto result = EvaluateProcedure(subObject, action);
-            if (!result.has_value())
+            if (!result.HasValue())
             {
                 mLogstream << "] == FAILURE }";
                 return result;
             }
-            if (result.value() == Status::Compliant)
+            if (result.Value() == Status::Compliant)
             {
                 if (i < count - 1)
                 {
@@ -146,12 +146,12 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
         mLogstream << "{ not: ";
         // NOT can be only used as an audit!
         auto result = EvaluateProcedure(json_value_get_object(value), Action::Audit);
-        if (!result.has_value())
+        if (!result.HasValue())
         {
             mLogstream << "] == FAILURE }";
             return result;
         }
-        if (result.value() == Status::Compliant)
+        if (result.Value() == Status::Compliant)
         {
             mLogstream << "] == FALSE }";
             return Status::NonCompliant;
@@ -204,7 +204,7 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
             OsConfigLogError(mLog, "Unknown function '%s'", name);
             return Error("Unknown function");
         }
-        action_func_t fn;
+        action_func_t fn = nullptr;
         if (action == Action::Remediate)
         {
             fn = procedure->second.second;
@@ -227,13 +227,13 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
         mLogstream << "{ " << name << ": ";
         auto result = fn(arguments, mLogstream);
         mLogstream << " } == ";
-        if (!result.has_value())
+        if (!result.HasValue())
         {
             mLogstream << "FAILURE";
-            return {result.error()};
+            return {result.Error()};
         }
 
-        if (result.value() == true)
+        if (result.Value() == true)
         {
             mLogstream << "TRUE";
         }
@@ -242,7 +242,7 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
             mLogstream << "FALSE";
         }
 
-        return result.value() ? Status::Compliant : Status::NonCompliant;
+        return result.Value() ? Status::Compliant : Status::NonCompliant;
     }
     return Error("Unreachable"); // unreachable
 }

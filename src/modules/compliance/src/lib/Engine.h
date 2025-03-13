@@ -27,23 +27,27 @@ private:
     unsigned int mMaxPayloadSize = 0;
     std::map<std::string, Procedure> mDatabase;
 
-    Result<JsonWrapper> decodeB64JSON(const std::string& input) const;
-    Optional<Error> setProcedure(const std::string& ruleName, const std::string& payload);
-    Optional<Error> initAudit(const std::string& ruleName, const std::string& payload);
-    Result<Status> executeRemediation(const std::string& ruleName, const std::string& payload);
+    Result<JsonWrapper> DecodeB64Json(const std::string& input) const;
+    Optional<Error> SetProcedure(const std::string& ruleName, const std::string& payload);
+    Optional<Error> InitAudit(const std::string& ruleName, const std::string& payload);
+    Result<Status> ExecuteRemediation(const std::string& ruleName, const std::string& payload);
 
 public:
     explicit Engine(OsConfigLogHandle log) noexcept;
     ~Engine() = default;
+    Engine(const Engine&) = delete;
+    Engine& operator=(const Engine&) = delete;
+    Engine(Engine&&) = delete;
+    Engine& operator=(Engine&&) = delete;
 
-    void setMaxPayloadSize(unsigned int value) noexcept;
-    unsigned int getMaxPayloadSize() const noexcept;
-    OsConfigLogHandle log() const noexcept;
+    void SetMaxPayloadSize(unsigned int value) noexcept;
+    unsigned int GetMaxPayloadSize() const noexcept;
+    OsConfigLogHandle Log() const noexcept;
 
-    static const char* getModuleInfo() noexcept;
+    static const char* GetModuleInfo() noexcept;
 
-    Result<AuditResult> mmiGet(const char* objectName);
-    Result<Status> mmiSet(const char* objectName, const std::string& payload);
+    Result<AuditResult> MmiGet(const char* objectName);
+    Result<Status> MmiSet(const char* objectName, const std::string& payload);
 };
 } // namespace compliance
 

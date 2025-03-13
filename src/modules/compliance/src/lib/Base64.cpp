@@ -11,25 +11,26 @@ namespace compliance
 {
 static inline char Base64Char(const unsigned char c)
 {
+    int cc = c;
     if (c >= 'A' && c <= 'Z')
     {
-        return c - 'A';
+        return (char)(cc - 'A');
     }
     else if (c >= 'a' && c <= 'z')
     {
-        return c - 'a' + 26;
+        return (char)(cc - 'a' + 26);
     }
     else if (c >= '0' && c <= '9')
     {
-        return c - '0' + 52;
+        return (char)(c - '0' + 52);
     }
     else if (c == '+')
     {
-        return 62;
+        return (char)62;
     }
     else if (c == '/')
     {
-        return 63;
+        return (char)63;
     }
     else
     {
@@ -61,7 +62,7 @@ Result<std::string> Base64Decode(const std::string& input)
 
     for (size_t i = 0; i < input.size(); i += 4)
     {
-        unsigned char enc[4];
+        char enc[4] = {0};
 
         int j = 0;
         for (j = 0; j < 4; j++)
@@ -75,18 +76,18 @@ Result<std::string> Base64Decode(const std::string& input)
 
         if (j == 4)
         {
-            ret += (enc[0] << 2) | (enc[1] >> 4);
-            ret += ((enc[1] & 0x0f) << 4) | (enc[2] >> 2);
-            ret += ((enc[2] & 0x03) << 6) | enc[3];
+            ret += (char)((enc[0] << 2) | (enc[1] >> 4));
+            ret += (char)(((enc[1] & (char)0x0f) << 4) | (enc[2] >> 2));
+            ret += (char)(((enc[2] & (char)0x03) << 6) | enc[3]);
         }
         else if (j == 3)
         {
-            ret += (enc[0] << 2) | (enc[1] >> 4);
-            ret += ((enc[1] & 0x0f) << 4) | (enc[2] >> 2);
+            ret += (char)((enc[0] << 2) | (enc[1] >> 4));
+            ret += (char)(((enc[1] & (char)0x0f) << 4) | (enc[2] >> 2));
         }
         else if (j == 2)
         {
-            ret += (enc[0] << 2) | (enc[1] >> 4);
+            ret += (char)((enc[0] << 2) | (enc[1] >> 4));
         }
         else
         {

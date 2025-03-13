@@ -19,9 +19,9 @@ struct FstabEntry
     std::string device;
     std::string filesystem;
     std::vector<std::string> options;
-    int dump;
-    int pass;
-    int lineno;
+    int dump{};
+    int pass{};
+    int lineno{};
 };
 
 static Result<std::map<std::string, FstabEntry>> ParseFstab(const std::string& filePath)
@@ -33,13 +33,11 @@ static Result<std::map<std::string, FstabEntry>> ParseFstab(const std::string& f
         return Error("Failed to open file " + filePath + " with error " + strerror(errno));
     }
 
-    std::string line;
     int lineno = 0;
-
     while (!feof(file))
     {
         lineno++;
-        char b;
+        char b = 0;
         if (fread(&b, 1, 1, file) != 1)
         {
             break;
@@ -123,15 +121,15 @@ AUDIT_FN(ensureFilesystemOption)
         mtab = args["test_mtab"];
     }
     auto fstabEntries = ParseFstab(fstab);
-    if (!fstabEntries.has_value())
+    if (!fstabEntries.HasValue())
     {
-        return fstabEntries.error();
+        return fstabEntries.Error();
     }
 
     auto mtabEntries = ParseFstab(mtab);
-    if (!mtabEntries.has_value())
+    if (!mtabEntries.HasValue())
     {
-        return mtabEntries.error();
+        return mtabEntries.Error();
     }
 
     std::set<std::string> optionsSet, optionsNotSet;
@@ -157,7 +155,7 @@ AUDIT_FN(ensureFilesystemOption)
     if (fstabEntries->find(mountpoint) != fstabEntries->end())
     {
         logstream << "Checking fstab :";
-        if (!CheckOptions(fstabEntries.value()[mountpoint].options, optionsSet, optionsNotSet, logstream))
+        if (!CheckOptions(fstabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, logstream))
         {
             return false;
         }
@@ -166,7 +164,7 @@ AUDIT_FN(ensureFilesystemOption)
     if (mtabEntries->find(mountpoint) != mtabEntries->end())
     {
         logstream << "Checking mtab: ";
-        if (!CheckOptions(mtabEntries.value()[mountpoint].options, optionsSet, optionsNotSet, logstream))
+        if (!CheckOptions(mtabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, logstream))
         {
             return false;
         }
@@ -199,15 +197,15 @@ REMEDIATE_FN(ensureFilesystemOption)
     }
 
     auto fstabEntries = ParseFstab(fstab);
-    if (!fstabEntries.has_value())
+    if (!fstabEntries.HasValue())
     {
-        return fstabEntries.error();
+        return fstabEntries.Error();
     }
 
     auto mtabEntries = ParseFstab(mtab);
-    if (!mtabEntries.has_value())
+    if (!mtabEntries.HasValue())
     {
-        return mtabEntries.error();
+        return mtabEntries.Error();
     }
 
     std::set<std::string> optionsSet, optionsNotSet;
@@ -232,9 +230,9 @@ REMEDIATE_FN(ensureFilesystemOption)
 
     if (fstabEntries->find(mountpoint) != fstabEntries->end())
     {
-        if (!CheckOptions(fstabEntries.value()[mountpoint].options, optionsSet, optionsNotSet, logstream))
+        if (!CheckOptions(fstabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, logstream))
         {
-            auto& entry = fstabEntries.value()[mountpoint];
+            auto& entry = fstabEntries.Value()[mountpoint];
             std::ifstream file(fstab);
             std::ofstream tempFile(fstab + ".tmp");
             std::string line;
@@ -294,7 +292,7 @@ REMEDIATE_FN(ensureFilesystemOption)
 
     if (mtabEntries->find(mountpoint) != mtabEntries->end())
     {
-        if (!CheckOptions(mtabEntries.value()[mountpoint].options, optionsSet, optionsNotSet, logstream))
+        if (!CheckOptions(mtabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, logstream))
         {
             std::string command = mount + " -o remount " + mountpoint;
             logstream << "Remounting " << mountpoint << "; ";
