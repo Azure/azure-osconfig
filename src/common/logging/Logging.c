@@ -40,6 +40,8 @@ static const char* g_debug = "DEBUG";
 
 static bool g_consoleLoggingEnabled = true;
 
+static TelemetryLevel g_telemetryLevel = NoTelemetry;
+
 bool IsConsoleLoggingEnabled(void)
 {
     return IsDaemon() ? false : g_consoleLoggingEnabled;
@@ -125,6 +127,16 @@ unsigned int GetMaxLogSizeDebugMultiplier(void)
 void SetMaxLogSizeDebugMultiplier(unsigned int value)
 {
     g_maxLogSizeDebugMultiplier = value;
+}
+
+TelemetryLevel GetTelemetryLevel(void)
+{
+    return g_telemetryLevel;
+}
+
+void SetTelemetryLevel(TelemetryLevel level)
+{
+    g_telemetryLevel = level;
 }
 
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
