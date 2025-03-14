@@ -171,18 +171,7 @@ bool ParseTestStep(const JSON_Object* object, TEST_STEP* test)
 
         if (NULL != (payload = json_object_get_value(object, RECIPE_PAYLOAD)))
         {
-            if(json_value_get_type(payload) == JSONObject)
-            {
-                char* tempPayload = json_serialize_to_string(payload);
-                JSON_Value* tempJson = json_value_init_string(tempPayload);
-                free(tempPayload);
-                test->payload = json_serialize_to_string(tempJson);
-                json_value_free(tempJson);
-            }
-            else
-            {
-                test->payload = json_serialize_to_string(payload);
-            }
+            test->payload = json_serialize_to_string(payload);
         }
         else if (NULL != (json = json_object_get_string(object, RECIPE_JSON)))
         {
@@ -495,6 +484,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                 }
                 else if (0 == json_value_equals(expectedJsonValue, actualJsonValue))
                 {
+                    LOG_INFO("types: '%d' and '%d' are equal", json_value_get_type(expectedJsonValue), json_value_get_type(actualJsonValue));
                     LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'",
                         json_serialize_to_string(expectedJsonValue), json_serialize_to_string(actualJsonValue));
                     result = EFAULT;
