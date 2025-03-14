@@ -1023,6 +1023,8 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                                 status = (0 == errno) ? EPERM : errno;
                                 OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: cannot write to temporary file '%s' (%d)", tempFileName, status);
                             }
+                        } else {
+                            OsConfigLogInfo(log, "Skipping line: %s", line);
                         }
 
                         memset(line, 0, lineMax + 1);

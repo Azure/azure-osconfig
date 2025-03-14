@@ -3237,6 +3237,7 @@ int RemoveUserAccounts(const char* names, bool removeHomeDirs, OsConfigLogHandle
                 }
                 else
                 {
+                    OsConfigLogInfo(log, "RemoveUserAccounts: removing user account '%s' from '%s' and '%s'", name, g_etcPasswd, g_etcShadow);
                     if (false == userAccountsNotFound)
                     {
                         if (0 == FindTextInFile(g_etcPasswd, decoratedName, log))
