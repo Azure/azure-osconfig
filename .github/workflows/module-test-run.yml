@@ -50,6 +50,7 @@ jobs:
         working-directory: ${{ steps.download.outputs.download-path }}/modules/test
         run: |
           sudo chmod +x ./moduletest
+          sudo cat /etc/passwd
           sudo cat /etc/sudoers
           id
 
@@ -71,6 +72,8 @@ jobs:
               result=1
               echo "::warning file=$name.log::Error(s) in module-test for '$name'"
               cat /etc/passwd
+              cat /etc/sudoers
+              id
             fi
 
             echo "$output"
