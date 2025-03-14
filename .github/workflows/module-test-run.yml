@@ -50,6 +50,8 @@ jobs:
         working-directory: ${{ steps.download.outputs.download-path }}/modules/test
         run: |
           sudo chmod +x ./moduletest
+          sudo cat /etc/sudoers
+          id
 
           result=0
           recipes=$(find ../../src/modules/test/recipes/ -name "*.json")
@@ -68,6 +70,7 @@ jobs:
               echo failed
               result=1
               echo "::warning file=$name.log::Error(s) in module-test for '$name'"
+              cat /etc/passwd
             fi
 
             echo "$output"
