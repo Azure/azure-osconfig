@@ -70,6 +70,12 @@ else()
     set(CMAKE_PROJECT_VERSION_TWEAK "${_timestamp}")
 endif()
 
+execute_process(COMMAND git rev-parse --short HEAD
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    OUTPUT_VARIABLE GIT_COMMIT_ID
+    ERROR_QUIET
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 set(OsConfigProjectName "osconfig")
 set(OsConfigProjectLongName "Azure OSConfig")
 set(OsConfigProjectDescription "Azure OSConfig is a modular security configuration stack for Linux Edge devices that supports multi-authority device management over Azure, GitOps, as well as local management.")
@@ -78,6 +84,7 @@ set(OsConfigProjectEmail "osconfigcore@microsoft.com")
 set(OsConfigProjectUrl "https://github.com/Azure/azure-osconfig/")
 set(OsConfigHashAlgorithm "SHA256")
 set(OsConfigVersionString ${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}.${CMAKE_PROJECT_VERSION_TWEAK})
+set(OsConfigVersionStringFull "${OsConfigVersionString}-g${GIT_COMMIT_ID}")
 set(OsConfigRootBinaryDir ${CMAKE_BINARY_DIR})
 
 message(STATUS "${OsConfigProjectName} v${OsConfigVersionString}")
