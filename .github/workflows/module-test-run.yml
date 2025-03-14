@@ -49,7 +49,8 @@ jobs:
       - name: Run moduletest
         working-directory: ${{ steps.download.outputs.download-path }}/modules/test
         run: |
-          sudo chmod +x ./moduletest
+          sudo su -
+          chmod +x ./moduletest
 
           result=0
           recipes=$(find ../../src/modules/test/recipes/ -name "*.json")
@@ -62,7 +63,7 @@ jobs:
 
             echo -n "testing $name ... "
 
-            if output=$(sudo ./moduletest $recipe --bin ../bin); then
+            if output=$(./moduletest $recipe --bin ../bin); then
               echo passed
             else
               echo failed
