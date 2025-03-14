@@ -836,6 +836,8 @@ int RemoveUser(SimplifiedUser* user, bool removeHome, OsConfigLogHandle log)
         return EPERM;
     }
 
+    OsConfigLogError(log, "RemoveUser: attempting to delete user '%s' (%u, %u) with home directory '%s'",
+        user->username, user->userId, user->groupId, user->home);
     if (NULL != (command = FormatAllocateString(commandTemplate, removeHome ? "-f -r" : "-f", user->username)))
     {
         if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
