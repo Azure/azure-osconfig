@@ -124,6 +124,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
 
     if (0 != status)
     {
+        OsConfigLogError(log, "CopyUserEntry: failed to copy user entry for '%s' (uid: %u, gid: %u)", source->pw_name, source->pw_uid, source->pw_gid);
         ResetUserEntry(destination);
     }
 
@@ -361,6 +362,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
 
     if (0 != (*size = GetNumberOfLinesInFile(passwdFile)))
     {
+        OsConfigLogInfo(log, "EnumerateUsers: %u lines in '%s'", *size, passwdFile);
         listSize = (*size) * sizeof(SimplifiedUser);
         if (NULL != (*userList = malloc(listSize)))
         {
@@ -370,6 +372,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
 
             while ((NULL != (userEntry = getpwent())) && (i < *size))
             {
+                OsConfigLogInfo(log, "EnumerateUsers: user %u: '%s' (%u, %u) in '%s'", i, userEntry->pw_name, userEntry->pw_uid, userEntry->pw_gid, passwdFile);
                 if (0 != (status = CopyUserEntry(&((*userList)[i]), userEntry, log)))
                 {
                     OsConfigLogError(log, "EnumerateUsers: failed making copy of user entry (%d)", status);
@@ -932,6 +935,7 @@ int RemoveGroup(SimplifiedGroup* group, bool removeHomeDirs, OsConfigLogHandle l
         return EPERM;
     }
 
+    OsConfigLogError(log, "RemoveGroup: attempting to delete group '%s' (%u)", group->groupName, group->groupId);
     if (group->hasUsers)
     {
         OsConfigLogInfo(log, "RemoveGroup: attempting to delete a group that has users ('%s', %u)", group->groupName, group->groupId);

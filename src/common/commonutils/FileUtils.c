@@ -1074,6 +1074,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 
     if (0 == status)
     {
+        OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: replacing '%s' with '%s' in '%s'", marker, newline, fileName);
         if (preserveAccess)
         {
             if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, fileName, log)))
