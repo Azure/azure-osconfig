@@ -119,7 +119,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
 int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, OsConfigLogHandle log);
 int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, OsConfigLogHandle log);
 int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandle log);
-int RemoveUserAccounts(const char* names, bool removeHomeDirs, OsConfigLogHandle log);
+int RemoveUserAccounts(const char* names, OsConfigLogHandle log);
 int RestrictSuToRootGroup(OsConfigLogHandle log);
 
 #ifdef __cplusplus
