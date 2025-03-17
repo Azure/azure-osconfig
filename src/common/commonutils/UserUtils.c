@@ -3195,6 +3195,12 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
         char* token = NULL;
         for (token = strtok(usernames, ","); token != NULL; token = strtok(NULL, ","))
         {
+            // Skip root user
+            if (pw->pw_uid == 0)
+            {
+                continue;
+            }
+
             if (0 == strcmp(pw->pw_name, token))
             {
                 if ((0 != (_status = RemoveUser2(pw->pw_name, log))) && (0 == status))
