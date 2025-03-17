@@ -11,7 +11,6 @@
 
 static const char* g_root = "root";
 static const char* g_shadow = "shadow";
-static const char* g_etcShadow = "/etc/shadow";
 static const char* g_etcPasswd = "/etc/passwd";
 
 static const char* g_noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", "" };
@@ -2981,15 +2980,10 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
 int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandle log)
 {
-    const char* userTemplate = "%s:";
-    size_t namesLength = 0;
     char* name = NULL;
-    char* decoratedName = NULL;
-    SimplifiedUser* userList = NULL;
-    SimplifiedGroup* groupList = NULL;
-    unsigned int userListSize = 0, groupListSize = 0, i = 0, j = 0;
     bool found = false;
     int status = 0;
+    struct passwd* pw;
 
     if (NULL == names)
     {
@@ -2997,98 +2991,48 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
         return EINVAL;
     }
 
-    namesLength = strlen(names);
-
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    setpwent();
+    for (errno = 0, pw = getpwent(); pw != NULL; errno = 0, pw = getpwent())
     {
-        for (i = 0; i < userListSize; i++)
+        char* usernames = NULL;
+        char* token = NULL;
+
+        usernames = strdup(names);
+        if (NULL == usernames)
         {
-            for (j = 0; j < namesLength; j++)
+            OsConfigLogError(log, "CheckUserAccountsNotFound: failed to duplicate string");
+            status = ENOMEM;
+            break;
+        }
+
+        OsConfigLogInfo(log, "CheckUserAccountsNotFound: checking user '%s' (%u, %u) against '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, usernames);
+        for (token = strtok(usernames, ","); token != NULL; token = strtok(NULL, ","))
+        {
+            OsConfigLogInfo(log, "CheckUserAccountsNotFound: checking user '%s' (%u, %u) against '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, token);
+
+            if (0 == strcmp(pw->pw_name, token))
             {
-                if (NULL == (name = DuplicateString(&(names[j]))))
+                OsConfigLogInfo(log, "CheckUserAccountsNotFound: user '%s' found with id %u, gid %u, home '%s'",
+                    pw->pw_name, pw->pw_uid, pw->pw_gid, pw->pw_dir);
+
+                if (DirectoryExists(pw->pw_dir))
                 {
-                    OsConfigLogError(log, "CheckUserAccountsNotFound: failed to duplicate string");
-                    status = ENOMEM;
-                    break;
-                }
-                else
-                {
-                    TruncateAtFirst(name, ',');
-
-                    if (0 == strcmp(userList[i].username, name))
-                    {
-                        EnumerateUserGroups(&userList[i], &groupList, &groupListSize, reason, log);
-                        FreeGroupList(&groupList, groupListSize);
-
-                        OsConfigLogInfo(log, "CheckUserAccountsNotFound: user '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
-                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
-
-                        if (DirectoryExists(userList[i].home))
-                        {
-                            OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user '%s' exists ('%s')", name, userList[i].home);
-                        }
-
-                        OsConfigCaptureReason(reason, "User '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
-                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
-
-                        found = true;
-                    }
+                    OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user '%s' exists ('%s')", name, pw->pw_dir);
                 }
 
-                j += strlen(name);
-                FREE_MEMORY(name);
+                OsConfigCaptureReason(reason, "User '%s' found with id %u, gid %u, home '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, pw->pw_dir);
+                found = true;
             }
         }
+
+        FREE_MEMORY(usernames);
     }
-
-    FreeUsersList(&userList, userListSize);
-
-    if ((false == found) && (0 == status))
+    if (status == 0 && 0 != errno)
     {
-        OsConfigLogInfo(log, "CheckUserAccountsNotFound: none of the requested user accounts ('%s') were found in the users database", names);
+        status = errno;
+        OsConfigLogError(log, "CheckUserAccountsNotFound: getpwent() failed with error %d", status);
     }
-
-    if (0 == status)
-    {
-        for (j = 0; j < namesLength; j++)
-        {
-            if (NULL == (name = DuplicateString(&(names[j]))))
-            {
-                OsConfigLogError(log, "CheckUserAccountsNotFound: failed to duplicate string");
-                status = ENOMEM;
-                break;
-            }
-            else
-            {
-                TruncateAtFirst(name, ',');
-
-                if (NULL == (decoratedName = FormatAllocateString(userTemplate, name)))
-                {
-                    OsConfigLogError(log, "CheckUserAccountsNotFound: out of memory, unable to check for user '%s' presence in '%s' andr '%s'",
-                        name, g_etcPasswd, g_etcShadow);
-                }
-                else
-                {
-                    if (0 == FindTextInFile(g_etcPasswd, decoratedName, log))
-                    {
-                        OsConfigCaptureReason(reason, "Account '%s' found mentioned in '%s'", name, g_etcPasswd);
-                        found = true;
-                    }
-
-                    if (0 == FindTextInFile(g_etcShadow, decoratedName, log))
-                    {
-                        OsConfigCaptureReason(reason, "Account '%s' found mentioned in '%s'", name, g_etcShadow);
-                        found = true;
-                    }
-
-                    FREE_MEMORY(decoratedName);
-                }
-
-                j += strlen(name);
-                FREE_MEMORY(name);
-            }
-        }
-    }
+    endpwent();
 
     if (found)
     {
