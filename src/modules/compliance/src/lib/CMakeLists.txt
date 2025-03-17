@@ -4,7 +4,22 @@
 project(compliancelib)
 
 # Temporary solution, until we stabilize the list of procedures.
-FILE(GLOB PROCEDURES procedures/*.cpp)
+file(GLOB PROCEDURES procedures/*.cpp)
+file(GLOB SCHEMAS procedures/*.schema.json)
+
+add_custom_target(complianceschema_prep
+	SOURCES ${SCHEMAS}
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/schema
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/schema/procedures
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/payload.schema.json ${CMAKE_CURRENT_BINARY_DIR}/schema
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SCHEMAS} ${CMAKE_CURRENT_BINARY_DIR}/schema/procedures)
+
+add_custom_target(complianceschema
+	BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/ComplianceSchema.zip
+	COMMAND ${CMAKE_COMMAND} -E tar "cvf" ${CMAKE_CURRENT_BINARY_DIR}/ComplianceSchema.zip . --format=zip
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/schema
+	DEPENDS complianceschema_prep)
+set_property(TARGET complianceschema PROPERTY OUTPUT ComplianceSchema.zip)
 
 add_library(compliancelib STATIC
     ComplianceInterface.cpp
