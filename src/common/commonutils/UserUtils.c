@@ -3174,7 +3174,6 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
 {
     int status = 0, _status = 0;
     struct passwd* pw;
-    char* usernames = NULL;
 
     if (NULL == names)
     {
@@ -3182,17 +3181,20 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
         return EINVAL;
     }
 
-    usernames = strdup(names);
-    if(NULL == usernames)
-    {
-        OsConfigLogError(log, "RemoveUserAccounts: failed to duplicate string");
-        return ENOMEM;
-    }
-
     setpwent();
     for (errno = 0, pw = getpwent(); pw != NULL; errno = 0, pw = getpwent())
     {
+        char* usernames = NULL;
         char* token = NULL;
+
+        usernames = strdup(names);
+        if (NULL == usernames)
+        {
+            OsConfigLogError(log, "RemoveUserAccounts: failed to duplicate string");
+            status = ENOMEM;
+            break;
+        }
+
         for (token = strtok(usernames, ","); token != NULL; token = strtok(NULL, ","))
         {
             // Skip root user
@@ -3209,6 +3211,8 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
                 }
             }
         }
+
+        FREE_MEMORY(usernames);
     }
     if (status == 0 && 0 != errno)
     {
@@ -3216,7 +3220,6 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
         OsConfigLogError(log, "RemoveUserAccounts: getpwent() failed with error %d", status);
     }
     endpwent();
-    FREE_MEMORY(usernames);
 
     if (0 != status)
     {
