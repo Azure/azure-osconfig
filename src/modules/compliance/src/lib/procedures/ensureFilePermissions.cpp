@@ -77,35 +77,36 @@ AUDIT_FN(ensureFilePermissions)
         }
     }
 
-    const mode_t supportedMask = 0x1FF;
+    mode_t perms = 0x0;
+    mode_t mask = 0x1FF;
+    bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
         char* endptr;
-        mode_t perms = strtol(args["permissions"].c_str(), &endptr, 8);
+        perms = strtol(args["permissions"].c_str(), &endptr, 8);
         if (('\0' != *endptr) || ((perms & supportedMask) != perms))
         {
             return Error("Invalid permissions parameter");
         }
-        if (perms != (statbuf.st_mode & supportedMask))
-        {
-            logstream << "Invalid permissions - are " << std::oct << (statbuf.st_mode & supportedMask) << " should be " << std::oct << perms << std::dec;
-            return false;
-        }
+        has_perms_or_mask = true;
     }
+
     if (args.find("mask") != args.end())
     {
         char* endptr;
-        mode_t mask = strtol(args["mask"].c_str(), &endptr, 8);
+        mask = strtol(args["mask"].c_str(), &endptr, 8);
         if (('\0' != *endptr) || ((mask & supportedMask) != mask))
         {
             return Error("Invalid mask parameter");
         }
-        if (((statbuf.st_mode & supportedMask) & mask) != 0)
-        {
-            logstream << "Invalid permissions - are " << std::oct << (statbuf.st_mode & supportedMask) << " should be " << std::oct
-                      << ((statbuf.st_mode & supportedMask) & (~mask)) << " with mask " << std::oct << mask << std::dec;
-            return false;
-        }
+        mask &= supportedMask;
+        has_perms_or_mask = true;
+    }
+    if (has_perms_or_mask && ((perms & mask) != (statbuf.st_mode & mask)))
+    {
+        logstream << "Invalid permissions - are " << std::oct << (statbuf.st_mode & supportedMask) << " should be " << std::oct << perms
+                  << " with mask " << std::oct << mask << std::dec;
+        return false;
     }
 
     return true;
@@ -189,43 +190,42 @@ REMEDIATE_FN(ensureFilePermissions)
         }
     }
 
+    mode_t perms = 0x1FF;
+    mode_t mask = 0x1FF;
+    bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
         char* endptr;
-        const mode_t perms = strtol(args["permissions"].c_str(), &endptr, 8);
+        perms = strtol(args["permissions"].c_str(), &endptr, 8);
         if (('\0' != *endptr) || ((perms & supportedMask) != perms))
         {
             logstream << "ERROR: Invalid permissions: " << args["permissions"];
             return Error("Invalid permissions: " + args["permissions"]);
         }
-        if (perms != (statbuf.st_mode & supportedMask))
-        {
-            if (chmod(args["filename"].c_str(), perms) < 0)
-            {
-                logstream << "ERROR: Chmod error " << strerror(errno);
-                return false;
-            }
-        }
+        has_perms_or_mask = true;
     }
     if (args.find("mask") != args.end())
     {
         char* endptr;
-        const mode_t mask = strtol(args["mask"].c_str(), &endptr, 8);
+        mask = strtol(args["mask"].c_str(), &endptr, 8);
         if (('\0' != *endptr) || ((mask & supportedMask) != mask))
         {
             logstream << "ERROR: Invalid permissions mask: " << args["mask"];
             return Error("Invalid permissions mask: " + args["mask"]);
         }
-        if (((statbuf.st_mode & supportedMask) & mask) != 0)
-        {
-            if (chmod(args["filename"].c_str(), statbuf.st_mode & (~mask)) < 0)
-            {
-                logstream << "ERROR: Chmod error " << strerror(errno);
-                return false;
-            }
-        }
+        has_perms_or_mask = true;
     }
 
+    unsigned short new_perms = (statbuf.st_mode & ~mask) | (perms & mask);
+    OsConfigLogInfo(NULL, "Setting permissions to %o, current: %o, perms: %o, mask: %o", new_perms, statbuf.st_mode, perms, mask);
+    if (has_perms_or_mask && (new_perms != statbuf.st_mode))
+    {
+        if (chmod(args["filename"].c_str(), new_perms) < 0)
+        {
+            logstream << "ERROR: Chmod error";
+            return Error("Chmod error");
+        }
+    }
     return true;
 }
 } // namespace compliance

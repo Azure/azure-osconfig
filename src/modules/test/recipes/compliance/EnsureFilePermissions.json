@@ -83,7 +83,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile' Invalid permissions - are 777 should be 644 } == FALSE"
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile' Invalid permissions - are 777 should be 644 with mask 777 } == FALSE"
   },
   {
     "ObjectType": "Desired",

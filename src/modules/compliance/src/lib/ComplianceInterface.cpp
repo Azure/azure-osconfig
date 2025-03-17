@@ -158,9 +158,9 @@ int ComplianceMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
         {
             char* tmp = json_serialize_to_string(object.get());
             realPayload = tmp;
-            // json_free_serialized_string(tmp);
+            json_free_serialized_string(tmp);
         }
-        auto result = engine.mmiSet(objectName, realPayload);
+        auto result = engine.mmiSet(objectName, std::move(realPayload));
         if (!result.has_value())
         {
             OsConfigLogError(engine.log(), "ComplianceMmiSet failed: %s", result.error().message.c_str());
