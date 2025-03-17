@@ -3004,13 +3004,12 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
             break;
         }
 
-        OsConfigLogInfo(log, "CheckUserAccountsNotFound: checking user '%s' (%u, %u) against '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, usernames);
         for (token = strtok(usernames, ","); token != NULL; token = strtok(NULL, ","))
         {
-            OsConfigLogInfo(log, "CheckUserAccountsNotFound: checking user '%s' (%u, %u) against '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, token);
-
             if (0 != strcmp(pw->pw_name, token))
+            {
                 continue;
+            }
             OsConfigLogInfo(log, "CheckUserAccountsNotFound: user '%s' found with id %u, gid %u, home '%s'",
                 pw->pw_name, pw->pw_uid, pw->pw_gid, pw->pw_dir);
 
@@ -3025,7 +3024,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
 
         FREE_MEMORY(usernames);
     }
-    if (status == 0 && 0 != errno)
+    if ((0 == status) && (0 != errno))
     {
         status = errno;
         OsConfigLogError(log, "CheckUserAccountsNotFound: getpwent() failed with error %d", status);
@@ -3074,10 +3073,8 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
             break;
         }
 
-        OsConfigLogInfo(log, "RemoveUserAccounts: checking user '%s' (%u, %u) against '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, usernames);
         for (token = strtok(usernames, ","); token != NULL; token = strtok(NULL, ","))
         {
-            OsConfigLogInfo(log, "RemoveUserAccounts: checking user '%s' (%u, %u) against '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, token);
             // Skip root user
             if (pw->pw_uid == 0)
             {
