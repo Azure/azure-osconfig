@@ -3132,8 +3132,10 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
             break;
         }
 
+        OsConfigLogInfo(log, "RemoveUserAccounts: checking user '%s' (%u, %u) against '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, usernames);
         for (token = strtok(usernames, ","); token != NULL; token = strtok(NULL, ","))
         {
+            OsConfigLogInfo(log, "RemoveUserAccounts: checking user '%s' (%u, %u) against '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, token);
             // Skip root user
             if (pw->pw_uid == 0)
             {
