@@ -2980,7 +2980,6 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
 int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandle log)
 {
-    char* name = NULL;
     bool found = false;
     int status = 0;
     struct passwd* pw;
@@ -3010,19 +3009,18 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
         {
             OsConfigLogInfo(log, "CheckUserAccountsNotFound: checking user '%s' (%u, %u) against '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, token);
 
-            if (0 == strcmp(pw->pw_name, token))
+            if (0 != strcmp(pw->pw_name, token))
+                continue;
+            OsConfigLogInfo(log, "CheckUserAccountsNotFound: user '%s' found with id %u, gid %u, home '%s'",
+                pw->pw_name, pw->pw_uid, pw->pw_gid, pw->pw_dir);
+
+            if (DirectoryExists(pw->pw_dir))
             {
-                OsConfigLogInfo(log, "CheckUserAccountsNotFound: user '%s' found with id %u, gid %u, home '%s'",
-                    pw->pw_name, pw->pw_uid, pw->pw_gid, pw->pw_dir);
-
-                if (DirectoryExists(pw->pw_dir))
-                {
-                    OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user '%s' exists ('%s')", name, pw->pw_dir);
-                }
-
-                OsConfigCaptureReason(reason, "User '%s' found with id %u, gid %u, home '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, pw->pw_dir);
-                found = true;
+                OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user '%s' exists ('%s')", pw->pw_name, pw->pw_dir);
             }
+
+            OsConfigCaptureReason(reason, "User '%s' found with id %u, gid %u, home '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, pw->pw_dir);
+            found = true;
         }
 
         FREE_MEMORY(usernames);
