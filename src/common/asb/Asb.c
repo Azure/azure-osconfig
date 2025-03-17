@@ -4065,7 +4065,7 @@ static int RemediateEnsureRloginServiceIsDisabled(char* value, OsConfigLogHandle
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, OsConfigLogHandle log)
 {
     InitEnsureUnnecessaryAccountsAreRemoved(value);
-    return RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, true, log);
+    return RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log);
 }
 
 int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log)
