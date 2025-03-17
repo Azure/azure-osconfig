@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "auditFailure"
+          ],
+          "properties": {
+            "auditFailure": {
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "auditSuccess"
+          ],
+          "properties": {
+            "auditSuccess": {
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "remediationSuccess"
+          ],
+          "properties": {
+            "remediationSuccess": {
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "remediationFailure"
+          ],
+          "properties": {
+            "remediationFailure": {
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "remediationParametrized"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "packageInstalled": {
+              "type": "object",
+              "required": [
+                "result"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "result": {
+                  "type": "string",
+                  "description": "Expected remediation result - success or failure"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

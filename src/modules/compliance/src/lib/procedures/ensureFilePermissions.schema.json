@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "ensureFilePermissions"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ensureFilePermissions": {
+              "type": "object",
+              "required": [
+                "filename",
+                "user",
+                "group",
+                "permissions"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "filename": {
+                  "type": "string",
+                  "description": "Path to the file"
+                },
+                "user": {
+                  "type": "string",
+                  "description": "Required owner of the file"
+                },
+                "group": {
+                  "type": "string",
+                  "description": "Required group of the file"
+                },
+                "permissions": {
+                  "type": "string",
+                  "pattern": "^[0-7]{3,4}$",
+                  "description": "Required octal permissions of the file"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "ensureFilePermissions"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ensureFilePermissions": {
+              "type": "object",
+              "required": [
+                "filename",
+                "user",
+                "group",
+                "permissions"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "filename": {
+                  "type": "string",
+                  "description": "Path to the file"
+                },
+                "user": {
+                  "type": "string",
+                  "description": "Required owner of the file"
+                },
+                "group": {
+                  "type": "string",
+                  "description": "Required group of the file"
+                },
+                "permissions": {
+                  "type": "string",
+                  "pattern": "^[0-7]{3,4}$",
+                  "description": "Required octal permissions of the file"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
