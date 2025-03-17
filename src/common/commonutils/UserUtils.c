@@ -13,8 +13,6 @@ static const char* g_root = "root";
 static const char* g_shadow = "shadow";
 static const char* g_etcShadow = "/etc/shadow";
 static const char* g_etcPasswd = "/etc/passwd";
-static const char* g_etcPasswdDash = "/etc/passwd-";
-static const char* g_etcShadowDash = "/etc/shadow-";
 
 static const char* g_noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", "" };
 
@@ -862,6 +860,38 @@ int RemoveUser(SimplifiedUser* user, bool removeHome, OsConfigLogHandle log)
     {
         OsConfigLogError(log, "RemoveUser: out of memory");
         status = ENOMEM;
+    }
+
+    return status;
+}
+
+int RemoveUser2(const char* username, OsConfigLogHandle log)
+{
+    const char* commandTemplate = "userdel -f %s";
+    char command[64] = { 0 };
+    int status = 0;
+    int commandLen = 0;
+
+    if (NULL == username)
+    {
+        OsConfigLogError(log, "RemoveUser: invalid argument");
+        return EINVAL;
+    }
+
+    commandLen = snprintf(command, sizeof(command), commandTemplate, username);
+    if((int)sizeof(command) <= commandLen || 0 > commandLen)
+    {
+        OsConfigLogError(log, "RemoveUser: command buffer too small");
+        return ENOMEM;
+    }
+
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "RemoveUser: removed user '%s'", username);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "RemoveUser: cannot remove user '%s' (%d)", username, status);
     }
 
     return status;
@@ -3140,16 +3170,11 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
     return status;
 }
 
-int RemoveUserAccounts(const char* names, bool removeHomeDirs, OsConfigLogHandle log)
+int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
 {
-    const char* userTemplate = "%s:";
-    size_t namesLength = 0;
-    char* name = NULL;
-    char* decoratedName = NULL;
-    SimplifiedUser* userList = NULL;
-    unsigned int userListSize = 0, i = 0, j = 0;
-    bool userAccountsNotFound = false;
     int status = 0, _status = 0;
+    struct passwd* pw;
+    char* usernames = NULL;
 
     if (NULL == names)
     {
@@ -3157,117 +3182,43 @@ int RemoveUserAccounts(const char* names, bool removeHomeDirs, OsConfigLogHandle
         return EINVAL;
     }
 
-    if (0 == (status = CheckUserAccountsNotFound(names, NULL, log)))
+    usernames = strdup(names);
+    if(NULL == usernames)
     {
-        OsConfigLogInfo(log, "RemoveUserAccounts: user accounts '%s' are not found in the users database", names);
-        userAccountsNotFound = true;
+        OsConfigLogError(log, "RemoveUserAccounts: failed to duplicate string");
+        return ENOMEM;
     }
-    else if (EEXIST != status)
+
+    setpwent();
+    for (errno = 0, pw = getpwent(); pw != NULL; errno = 0, pw = getpwent())
     {
-        OsConfigLogInfo(log, "RemoveUserAccounts: CheckUserAccountsNotFound('%s') returned %d", names, status);
+        char* token = NULL;
+        for (token = strtok(usernames, ","); token != NULL; token = strtok(NULL, ","))
+        {
+            if (0 == strcmp(pw->pw_name, token))
+            {
+                if ((0 != (_status = RemoveUser2(pw->pw_name, log))) && (0 == status))
+                {
+                    status = _status;
+                }
+            }
+        }
+    }
+    if (status == 0 && 0 != errno)
+    {
+        status = errno;
+        OsConfigLogError(log, "RemoveUserAccounts: getpwent() failed with error %d", status);
+    }
+    endpwent();
+    FREE_MEMORY(usernames);
+
+    if (0 != status)
+    {
+        OsConfigLogError(log, "RemoveUserAccounts: failed to remove user accounts '%s' from '%s'", names, g_etcPasswd);
         return status;
     }
 
-    namesLength = strlen(names);
-
-    if (false == userAccountsNotFound)
-    {
-        if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
-        {
-            for (i = 0; i < userListSize; i++)
-            {
-                for (j = 0; j < namesLength; j++)
-                {
-                    if (NULL == (name = DuplicateString(&(names[j]))))
-                    {
-                        OsConfigLogError(log, "RemoveUserAccounts: failed to duplicate string");
-                        status = ENOMEM;
-                        break;
-                    }
-                    else
-                    {
-                        TruncateAtFirst(name, ',');
-
-                        if (0 == strcmp(userList[i].username, name))
-                        {
-                            if ((0 != (_status = RemoveUser(&(userList[i]), removeHomeDirs, log))) && (0 == status))
-                            {
-                                status = _status;
-                            }
-                        }
-
-                        j += strlen(name);
-                        FREE_MEMORY(name);
-                    }
-                }
-
-                if (0 != status)
-                {
-                    break;
-                }
-            }
-        }
-
-        FreeUsersList(&userList, userListSize);
-    }
-
-    if (0 == status)
-    {
-        for (j = 0; j < namesLength; j++)
-        {
-            if (NULL == (name = DuplicateString(&(names[j]))))
-            {
-                OsConfigLogError(log, "RemoveUserAccounts: failed to duplicate string");
-                status = ENOMEM;
-                break;
-            }
-            else
-            {
-                TruncateAtFirst(name, ',');
-
-                if (NULL == (decoratedName = FormatAllocateString(userTemplate, name)))
-                {
-                    OsConfigLogError(log, "RemoveUserAccounts: out of memory");
-                }
-                else
-                {
-                    if (false == userAccountsNotFound)
-                    {
-                        if (0 == FindTextInFile(g_etcPasswd, decoratedName, log))
-                        {
-                            ReplaceMarkedLinesInFile(g_etcPasswd, decoratedName, NULL, '#', true, log);
-                        }
-
-                        if (0 == FindTextInFile(g_etcShadow, decoratedName, log))
-                        {
-                            ReplaceMarkedLinesInFile(g_etcShadow, decoratedName, NULL, '#', true, log);
-                        }
-                    }
-
-                    if (0 == FindTextInFile(g_etcPasswdDash, decoratedName, log))
-                    {
-                        ReplaceMarkedLinesInFile(g_etcPasswdDash, decoratedName, NULL, '#', true, log);
-                    }
-
-                    if (0 == FindTextInFile(g_etcShadowDash, decoratedName, log))
-                    {
-                        ReplaceMarkedLinesInFile(g_etcShadowDash, decoratedName, NULL, '#', true, log);
-                    }
-
-                    FREE_MEMORY(decoratedName);
-                }
-
-                j += strlen(name);
-                FREE_MEMORY(name);
-            }
-        }
-    }
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "RemoveUserAccounts: the specified user accounts '%s' either do not appear or were completely removed from this system", names);
-    }
-
+    OsConfigLogInfo(log, "RemoveUserAccounts: the specified user accounts '%s' either do not appear or were completely removed from this system", names);
     return status;
 }
 
