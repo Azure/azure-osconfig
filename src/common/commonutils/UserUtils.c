@@ -940,69 +940,6 @@ int CheckNoDuplicateGidsExist(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int RemoveGroup(SimplifiedGroup* group, bool removeHomeDirs, OsConfigLogHandle log)
-{
-    const char* commandTemplate = "groupdel -f %s";
-    char* command = NULL;
-    SimplifiedUser* userList = NULL;
-    unsigned int userListSize = 0;
-    unsigned int i = 0;
-    int status = 0;
-
-    if (NULL == group)
-    {
-        OsConfigLogError(log, "RemoveGroup: invalid argument");
-        return EINVAL;
-    }
-    else if (0 == strcmp(g_root, group->groupName))
-    {
-        OsConfigLogInfo(log, "RemoveGroup: cannot remove root group");
-        return EPERM;
-    }
-
-    if (group->hasUsers)
-    {
-        OsConfigLogInfo(log, "RemoveGroup: attempting to delete a group that has users ('%s', %u)", group->groupName, group->groupId);
-
-        // Check if this group is the primary group of any existing user
-        if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
-        {
-            for (i = 0; i < userListSize; i++)
-            {
-                if (userList[i].groupId == group->groupId)
-                {
-                    OsConfigLogInfo(log, "RemoveGroup: group '%s' (%u) is primary group of user '%s' (%u), try first to delete this user account",
-                        group->groupName, group->groupId, userList[i].username, userList[i].userId);
-                    RemoveUser(&(userList[i]), removeHomeDirs, log);
-                }
-            }
-        }
-
-        FreeUsersList(&userList, userListSize);
-    }
-
-    if (NULL != (command = FormatAllocateString(commandTemplate, group->groupName)))
-    {
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-        {
-            OsConfigLogInfo(log, "RemoveGroup: removed group '%s' (%u)", group->groupName, group->groupId);
-        }
-        else
-        {
-            OsConfigLogInfo(log, "RemoveGroup: cannot remove group '%s' (%u) (%d)", group->groupName, group->groupId, status);
-        }
-
-        FREE_MEMORY(command);
-    }
-    else
-    {
-        OsConfigLogError(log, "RemoveGroup: out of memory");
-        status = ENOMEM;
-    }
-
-    return status;
-}
-
 int CheckNoDuplicateUserNamesExist(char** reason, OsConfigLogHandle log)
 {
     SimplifiedUser* userList = NULL;

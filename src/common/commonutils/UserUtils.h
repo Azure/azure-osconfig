@@ -92,7 +92,6 @@ int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log);
 int RemoveUsersWithoutPasswords(OsConfigLogHandle log);
 int RemoveUser(SimplifiedUser* user, bool removeHomeDir, OsConfigLogHandle log);
 int RemoveUser2(const char* username, OsConfigLogHandle log);
-int RemoveGroup(SimplifiedGroup* group, bool removeHomeDirs, OsConfigLogHandle log);
 int CheckDefaultRootAccountGroupIsGidZero(char** reason, OsConfigLogHandle log);
 int SetDefaultRootAccountGroupIsGidZero(OsConfigLogHandle log);
 int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log);
