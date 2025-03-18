@@ -19,20 +19,31 @@ using regex = std::regex;
 
 #include <memory>
 #include <regex.h>
+#include <regex>
 #include <string>
 namespace RegexLibcWrapper
 {
 class Regex
 {
+    int ConvertFlags(std::regex_constants::syntax_option_type options)
+    {
+        int flags = 0;
+        if (options & std::regex_constants::icase)
+            flags |= REG_ICASE;
+        if (options & std::regex_constants::extended)
+            flags |= REG_EXTENDED;
+        return flags;
+    }
+
 public:
     Regex() = default;
     Regex(const Regex&) = delete;
     Regex(Regex&&) noexcept = default;
     Regex& operator=(Regex&&) noexcept = default;
-    Regex(const std::string& r)
+    Regex(const std::string& r, std::regex_constants::syntax_option_type options = std::regex_constants::extended)
     {
         this->preg = std::unique_ptr<regex_t>(new (regex_t));
-        int v = regcomp(this->preg.get(), r.c_str(), REG_EXTENDED);
+        int v = regcomp(this->preg.get(), r.c_str(), ConvertFlags(options));
         if (0 != v)
         {
             throw std::runtime_error("Invalid regex");
@@ -40,7 +51,8 @@ public:
     }
     std::unique_ptr<regex_t> preg;
 };
-bool regexSearch(const std::string& s, const Regex& r)
+
+inline bool regexSearch(const std::string& s, const Regex& r)
 {
     return (0 == regexec(r.preg.get(), s.c_str(), 0, NULL, 0));
 }
