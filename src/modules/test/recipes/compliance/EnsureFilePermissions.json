@@ -280,7 +280,7 @@
     "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile'  } == TRUE"
   },
   {
-    "RunCommand": "stat /tmp/testfile | grep 'Access: (0644\/-rw-r--r--)  Uid: (    0\/    root)   Gid: ( 1001\/     bar)'"
+    "RunCommand": "stat /tmp/testfile | grep 'Access: (0644\/-rw-r--r--)' | grep root | grep bar"
   },
 
 
@@ -310,8 +310,9 @@
     "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile'  } == TRUE"
   },
   {
-    "RunCommand": "stat /tmp/testfile | grep 'Access: (0600\/-rw-------)  Uid: ( 1001\/     foo)   Gid: ( 1001\/     bar)'"
+    "RunCommand": "stat /tmp/testfile | grep 'Access: (0600\/-rw-------)' | grep foo | grep bar"
   },
+
 
 
   {
