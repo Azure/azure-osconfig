@@ -317,7 +317,6 @@ int UninstallPackage(const char* packageName, OsConfigLogHandle log)
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
     const char* commandTemplateZypper = "%s remove -y --force %s";
     const char* commandTemplateTdnfDnfYum = "%s remove -y --force --cacheonly %s";
-    const char* commandTemplateAllElse = "%s remove -y %s";
 
     int status = ENOENT;
 
