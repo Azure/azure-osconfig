@@ -320,7 +320,7 @@ int UninstallPackage(const char* packageName, OsConfigLogHandle log)
     tdnf clean all: Cleans up temporary files, data, and metadata3.
     tdnf check-update: Checks for updates to packages and refreshes the cache3.
     */
-    
+
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
     const char* commandTemplateZypper = "%s remove -y --force %s";
     const char* commandTemplateTdnf = "%s remove -y --force --nocache %s";
