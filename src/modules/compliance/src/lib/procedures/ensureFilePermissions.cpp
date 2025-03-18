@@ -3,6 +3,7 @@
 #include <Evaluator.h>
 #include <errno.h>
 #include <grp.h>
+#include <iomanip>
 #include <pwd.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -74,7 +75,7 @@ AUDIT_FN(ensureFilePermissions)
     }
 
     mode_t perms = 0x0;
-    mode_t mask = 0x0;
+    mode_t mask = 0xFFF;
     bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
@@ -95,17 +96,19 @@ AUDIT_FN(ensureFilePermissions)
         {
             return Error("Invalid mask parameter");
         }
-        if (perms & mask)
+        if (perms & (~mask))
         {
-            return Error("Permissions and mask overlap");
+            return Error("Permissions must not have bits set that are not set in the mask");
         }
 
         has_perms_or_mask = true;
     }
-    if (has_perms_or_mask && ((statbuf.st_mode & mask) || (statbuf.st_mode & perms) != perms))
+    if (has_perms_or_mask && ((statbuf.st_mode & mask) != (perms & mask)))
     {
-        logstream << "Invalid permissions - are " << std::oct << (statbuf.st_mode & supportedMask) << " should be " << std::oct
-                  << (statbuf.st_mode & (~mask) & supportedMask) << " with mask " << std::oct << mask << std::dec;
+        auto currentPerms = statbuf.st_mode & supportedMask;
+        auto expectedPerms = ((statbuf.st_mode & ~mask) | (perms & mask)) & supportedMask;
+        logstream << "Invalid permissions - are " << std::setw(4) << std::setfill('0') << std::oct << currentPerms << " should be " << std::setw(4)
+                  << std::setfill('0') << std::oct << expectedPerms << " with mask " << std::setw(4) << std::setfill('0') << std::oct << mask << std::dec;
         return false;
     }
 
@@ -187,7 +190,7 @@ REMEDIATE_FN(ensureFilePermissions)
     }
 
     mode_t perms = 0x0;
-    mode_t mask = 0x0;
+    mode_t mask = 0xFFF;
     bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
@@ -209,16 +212,18 @@ REMEDIATE_FN(ensureFilePermissions)
             logstream << "ERROR: Invalid permissions mask: " << args["mask"];
             return Error("Invalid permissions mask: " + args["mask"]);
         }
-        if (perms & mask)
+        if (perms & (~mask))
         {
-            return Error("Permissions and mask overlap");
+            return Error("Permissions must not have bits set that are not set in the mask");
         }
         has_perms_or_mask = true;
     }
 
     unsigned short new_perms = (statbuf.st_mode & ~mask) | perms;
+    OsConfigLogInfo(NULL, "Setting permissions to %o, mask: %o, perms: %o, current: %o", new_perms, mask, perms, statbuf.st_mode);
     if (has_perms_or_mask && (new_perms != statbuf.st_mode))
     {
+        OsConfigLogInfo(NULL, "Setting permissions to %o", new_perms);
         if (chmod(args["filename"].c_str(), new_perms) < 0)
         {
             logstream << "ERROR: Chmod error";

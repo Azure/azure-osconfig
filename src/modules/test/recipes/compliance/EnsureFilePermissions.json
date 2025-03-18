@@ -70,9 +70,14 @@
     "ObjectName": "auditTest",
     "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile'  } == TRUE"
   },
+  {
+    "RunCommand": "stat /tmp/testfile | grep 'Access: (0777\/-rwxrwxrwx)'"
+  },
 
 
-
+  {
+    "RunCommand": "touch /tmp/testfile && chmod 777 /tmp/testfile && chown root:root /tmp/testfile"
+  },
   {
     "ObjectType": "Desired",
     "ComponentName": "Compliance",
@@ -83,7 +88,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile'  } == TRUE"
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid permissions - are 0777 should be 0644 with mask 7777 } == FALSE"
   },
   {
     "ObjectType": "Desired",
@@ -101,6 +106,9 @@
 
 
   {
+    "RunCommand": "touch /tmp/testfile && chmod 777 /tmp/testfile && chown root:root /tmp/testfile"
+  },
+  {
     "ObjectType": "Desired",
     "ComponentName": "Compliance",
     "ObjectName": "initTest",
@@ -112,9 +120,6 @@
     "ObjectName": "auditTest",
     "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile' Invalid user - is 'root' should be 'foo' } == FALSE"
   },
-
-
-
   {
     "ObjectType": "Desired",
     "ComponentName": "Compliance",
@@ -170,9 +175,6 @@
     "ObjectName": "auditTest",
     "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile'  } == TRUE"
   },
-
-
-
   {
     "ObjectType": "Desired",
     "ComponentName": "Compliance",
@@ -183,7 +185,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid permissions - are 777 should be 600 with mask 177 } == FALSE"
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid permissions - are 0777 should be 0600 with mask 0177 } == FALSE"
   },
 
 
@@ -213,7 +215,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid permissions - are 777 should be 600 with mask 177 } == FALSE"
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid permissions - are 0777 should be 0600 with mask 0177 } == FALSE"
   },
   {
     "ObjectType": "Desired",
@@ -227,7 +229,9 @@
     "ObjectName": "auditTest",
     "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile'  } == TRUE"
   },
-
+  {
+    "RunCommand": "stat /tmp/testfile | grep 'Access: (0600\/-rw-------)'"
+  },
 
 
   {
@@ -267,13 +271,16 @@
     "ObjectType": "Desired",
     "ComponentName": "Compliance",
     "ObjectName": "remediateTest",
-    "Payload": "MASK=177 USER=root GROUP=bar"
+    "Payload": "MASK=133 USER=root GROUP=bar"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
     "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile'  } == TRUE"
+  },
+  {
+    "RunCommand": "stat /tmp/testfile | grep 'Access: (0644\/-rw-r--r--)  Uid: (    0\/    root)   Gid: ( 1001\/     bar)'"
   },
 
 
@@ -302,6 +309,133 @@
     "ObjectName": "auditTest",
     "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile'  } == TRUE"
   },
+  {
+    "RunCommand": "stat /tmp/testfile | grep 'Access: (0600\/-rw-------)  Uid: ( 1001\/     foo)   Gid: ( 1001\/     bar)'"
+  },
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "ensureFilePermissions": {
+          "filename": "/tmp/testfile",
+          "user": "$USER",
+          "permissions": "$PERMISSIONS",
+          "group": "$GROUP",
+          "mask": "$MASK"
+        }
+      },
+      "remediate": {
+        "ensureFilePermissions": {
+          "filename": "/tmp/testfile",
+          "user": "$USER",
+          "permissions": "$PERMISSIONS",
+          "group": "$GROUP",
+          "mask": "$MASK"
+        }
+      },
+      "parameters": {
+        "USER": "root",
+        "GROUP": "root",
+        "PERMISSIONS": "000",
+        "MASK": "777"
+      }
+    }
+  },
+  {
+    "RunCommand": "touch /tmp/testfile && chmod 777 /tmp/testfile && chown root:root /tmp/testfile"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid permissions - are 0777 should be 0000 with mask 0777 } == FALSE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PERMISSIONS=777"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile'  } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PERMISSIONS=100 MASK=100"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile'  } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PERMISSIONS=333 MASK=777"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid permissions - are 0777 should be 0333 with mask 0777 } == FALSE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateTest",
+    "Payload": "PERMISSIONS=333 MASK=777"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile'  } == TRUE"
+  },
+  {
+    "RunCommand": "stat /tmp/testfile | grep 'Access: (0333\/--wx-wx-wx)'"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateTest",
+    "Payload": "PERMISSIONS=1000 MASK=1000"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile'  } == TRUE"
+  },
+  {
+    "RunCommand": "stat /tmp/testfile | grep 'Access: (1333\/--wx-wx-wt)'"
+  },
+
 
 
   {
