@@ -83,7 +83,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp/testfile' Invalid permissions - are 777 should be 644 with mask 777 } == FALSE"
+    "Payload": "PASS{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile'  } == TRUE"
   },
   {
     "ObjectType": "Desired",
@@ -183,7 +183,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid permissions - are 644 should be 600 with mask 177 } == FALSE"
+    "Payload": "{ ensureFilePermissions: ensureFilePermissions for '\/tmp\/testfile' Invalid permissions - are 777 should be 600 with mask 177 } == FALSE"
   },
 
 

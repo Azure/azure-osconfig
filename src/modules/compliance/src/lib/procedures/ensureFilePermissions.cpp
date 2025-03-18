@@ -23,10 +23,6 @@ AUDIT_FN(ensureFilePermissions)
     {
         return Error("No filename provided");
     }
-    if (args.find("permissions") != args.end() && args.find("mask") != args.end())
-    {
-        return Error("Cannot specify both permissions and mask");
-    }
 
     logstream << "ensureFilePermissions for '" << args["filename"] << "' ";
 
@@ -78,7 +74,7 @@ AUDIT_FN(ensureFilePermissions)
     }
 
     mode_t perms = 0x0;
-    mode_t mask = 0x1FF;
+    mode_t mask = 0x0;
     bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
@@ -99,13 +95,17 @@ AUDIT_FN(ensureFilePermissions)
         {
             return Error("Invalid mask parameter");
         }
-        mask &= supportedMask;
+        if (perms & mask)
+        {
+            return Error("Permissions and mask overlap");
+        }
+
         has_perms_or_mask = true;
     }
-    if (has_perms_or_mask && ((perms & mask) != (statbuf.st_mode & mask)))
+    if (has_perms_or_mask && ((statbuf.st_mode & mask) || (statbuf.st_mode & perms) != perms))
     {
-        logstream << "Invalid permissions - are " << std::oct << (statbuf.st_mode & supportedMask) << " should be " << std::oct << perms
-                  << " with mask " << std::oct << mask << std::dec;
+        logstream << "Invalid permissions - are " << std::oct << (statbuf.st_mode & supportedMask) << " should be " << std::oct
+                  << (statbuf.st_mode & (~mask) & supportedMask) << " with mask " << std::oct << mask << std::dec;
         return false;
     }
 
@@ -118,10 +118,6 @@ REMEDIATE_FN(ensureFilePermissions)
     {
         logstream << "ERROR: No filename provided";
         return Error("No filename provided");
-    }
-    if (args.find("permissions") != args.end() && args.find("mask") != args.end())
-    {
-        return Error("Cannot specify both permissions and mask");
     }
 
     struct stat statbuf;
@@ -190,8 +186,8 @@ REMEDIATE_FN(ensureFilePermissions)
         }
     }
 
-    mode_t perms = 0x1FF;
-    mode_t mask = 0x1FF;
+    mode_t perms = 0x0;
+    mode_t mask = 0x0;
     bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
@@ -213,11 +209,14 @@ REMEDIATE_FN(ensureFilePermissions)
             logstream << "ERROR: Invalid permissions mask: " << args["mask"];
             return Error("Invalid permissions mask: " + args["mask"]);
         }
+        if (perms & mask)
+        {
+            return Error("Permissions and mask overlap");
+        }
         has_perms_or_mask = true;
     }
 
-    unsigned short new_perms = (statbuf.st_mode & ~mask) | (perms & mask);
-    OsConfigLogInfo(NULL, "Setting permissions to %o, current: %o, perms: %o, mask: %o", new_perms, statbuf.st_mode, perms, mask);
+    unsigned short new_perms = (statbuf.st_mode & ~mask) | perms;
     if (has_perms_or_mask && (new_perms != statbuf.st_mode))
     {
         if (chmod(args["filename"].c_str(), new_perms) < 0)
