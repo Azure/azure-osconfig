@@ -13,7 +13,7 @@ namespace compliance
 {
 namespace
 {
-const mode_t supportedMask = 0x1FF;
+const mode_t supportedMask = 0xFFF;
 } // anonymous namespace
 
 AUDIT_FN(ensureFilePermissions)
