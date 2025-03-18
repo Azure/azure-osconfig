@@ -314,16 +314,9 @@ int InstallPackage(const char* packageName, OsConfigLogHandle log)
 
 int UninstallPackage(const char* packageName, OsConfigLogHandle log)
 {
-    /*
-    Here are some commands to help you manage the tdnf cache:
-
-    tdnf clean all: Cleans up temporary files, data, and metadata3.
-    tdnf check-update: Checks for updates to packages and refreshes the cache3.
-    */
-
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
     const char* commandTemplateZypper = "%s remove -y --force %s";
-    const char* commandTemplateTdnf = "%s remove -y --force --nocache %s";
+    const char* commandTemplateTdnfDnfYum = "%s remove -y --force --cacheonly %s";
     const char* commandTemplateAllElse = "%s remove -y %s";
 
     int status = ENOENT;
@@ -339,15 +332,18 @@ int UninstallPackage(const char* packageName, OsConfigLogHandle log)
         }
         else if (g_tdnfIsPresent)
         {
-            status = CheckOrInstallPackage(commandTemplateTdnf, g_tdnf, packageName, log);
+            ExecuteTdnfCheckUpdate(log);
+            status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_tdnf, packageName, log);
         }
         else if (g_dnfIsPresent)
         {
-            status = CheckOrInstallPackage(commandTemplateAllElse, g_dnf, packageName, log);
+            ExecuteDnfCheckUpdate(log);
+            status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_dnf, packageName, log);
         }
         else if (g_yumIsPresent)
         {
-            status = CheckOrInstallPackage(commandTemplateAllElse, g_yum, packageName, log);
+            ExecuteYumCheckUpdate(log);
+            status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_yum, packageName, log);
         }
         else if (g_zypperIsPresent)
         {
