@@ -1,0 +1,131 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "compliance.so"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "textfileContains": {
+          "filePath": "$PATH",
+          "matchOperation": "$OPERATION",
+          "matchPattern": "$PATTERN"
+        }
+      },
+      "parameters": {
+        "OPERATION": "pattern match",
+        "PATTERN": ".*",
+        "PATH": "/tmp/testfile"
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ textfileContains: pattern '.*' found in '\/tmp\/testfile' } == TRUE"
+  },
+  {
+    "RunCommand": "echo foo > /tmp/testfile"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ textfileContains: pattern '.*' found in '\/tmp\/testfile' } == TRUE"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATTERN=foo"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ textfileContains: pattern 'foo' found in '\/tmp\/testfile' } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATTERN=f.*o"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ textfileContains: pattern 'f.*o' found in '\/tmp\/testfile' } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATTERN=f.*O"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ textfileContains: pattern 'f.*O' not found in '\/tmp\/testfile' } == FALSE"
+  },
+
+
+
+  {
+    "RunCommand": "echo foooOx > /tmp/testfile"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ textfileContains: pattern 'f.*O' found in '\/tmp\/testfile' } == TRUE"
+  },
+
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATH=/etc/passwd PATTERN=^root:x:[0-9]+:[0-9]+"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ textfileContains: pattern '^root:x:[0-9]+:[0-9]+' found in '\/etc\/passwd' } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATH=/etc/passwd PATTERN=^root:x:[0-9]+:[0-9]+$"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ textfileContains: pattern '^root:x:[0-9]+:[0-9]+$' not found in '\/etc\/passwd' } == FALSE"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]
