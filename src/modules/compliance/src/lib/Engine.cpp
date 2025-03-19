@@ -21,15 +21,16 @@
 
 namespace compliance
 {
-static constexpr const char* cModuleInfo = "{\"Name\": \"Compliance\","
-                                           "\"Description\": \"Provides functionality to audit and remediate Security Baseline policies on device\","
-                                           "\"Manufacturer\": \"Microsoft\","
-                                           "\"VersionMajor\": 2,"
-                                           "\"VersionMinor\": 0,"
-                                           "\"VersionInfo\": \"Dilithium\","
-                                           "\"Components\": [\"Compliance\"],"
-                                           "\"Lifetime\": 2,"
-                                           "\"UserAccount\": 0}";
+static constexpr const char* cModuleInfo =
+    "{\"Name\": \"Compliance\","
+    "\"Description\": \"Provides functionality to audit and remediate Security Baseline policies on device\","
+    "\"Manufacturer\": \"Microsoft\","
+    "\"VersionMajor\": 0,"
+    "\"VersionMinor\": 0,"
+    "\"VersionInfo\": \"\","
+    "\"Components\": [\"Compliance\"],"
+    "\"Lifetime\": 2,"
+    "\"UserAccount\": 0}";
 
 Engine::Engine(OsConfigLogHandle log) noexcept
     : mLog{log}
