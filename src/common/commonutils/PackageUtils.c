@@ -228,17 +228,17 @@ static int ExecuteZypperRefreshServices(void* log)
     return ExecuteSimplePackageCommand("zypper refresh --services", &g_zypperRefreshServicesExecuted, log);
 }
 
-static int ExecuteTdnfCheckUpdate(OsConfigLogHandle log)
+static int ExecuteTdnfCheckUpdate(void* log)
 {
     return ExecuteSimplePackageCommand("tdnf check-update", &g_tdnfCheckUpdateExecuted, log);
 }
 
-static int ExecuteDnfCheckUpdate(OsConfigLogHandle log)
+static int ExecuteDnfCheckUpdate(void* log)
 {
     return ExecuteSimplePackageCommand("dnf check-update", &g_dnfCheckUpdateExecuted, log);
 }
 
-static int ExecuteYumCheckUpdate(OsConfigLogHandle log)
+static int ExecuteYumCheckUpdate(void* log)
 {
     return ExecuteSimplePackageCommand("yum check-update", &g_yumCheckUpdateExecuted, log);
 }
