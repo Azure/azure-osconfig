@@ -31,7 +31,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     }
     if (strlen(command) > (size_t)sysconf(_SC_ARG_MAX))
     {
-        OsConfigLogError(log, "Command too long: %.100s...", command);
+        OsConfigLogError(log, "Command '%.40s...' is too long, %lu characters (maximum %lu characters)", command, strlen(command), (size_t)sysconf(_SC_ARG_MAX));
         return E2BIG;
     }
 
