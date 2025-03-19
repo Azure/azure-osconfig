@@ -3495,7 +3495,9 @@ static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, OsConfigLogH
         {
             if (FileExists(g_etcSysconfigNetwork) && IsAFile(g_etcSysconfigNetwork, log) && IsDaemonActive(g_legacyNetworkService, log))
             {
-                status = ReplaceMarkedLinesInFile(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', true, log);
+                // cloud-init regenerates the config file on every boot, and discards any changes before its header.
+                // So we need to add the NOZEROCONF line to the top of the file.
+                status = ReplaceMarkedLinesInFilePrepend(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', true, log);
             }
         }
     }

@@ -92,6 +92,7 @@ unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
 int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, OsConfigLogHandle log);
 int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, OsConfigLogHandle log);
+int ReplaceMarkedLinesInFilePrepend(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, OsConfigLogHandle log);
 int FindTextInFile(const char* fileName, const char* text, OsConfigLogHandle log);
 int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, OsConfigLogHandle log);
 int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, OsConfigLogHandle log);
