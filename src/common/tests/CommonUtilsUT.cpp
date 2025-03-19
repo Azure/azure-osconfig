@@ -547,6 +547,8 @@ TEST_F(CommonUtilsTest, CancelCommand)
 {
     char* textResult = nullptr;
 
+    ::numberOfTimes = 0;
+
     EXPECT_EQ(ECANCELED, ExecuteCommand(nullptr, "sleep 20", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
     FREE_MEMORY(textResult);
@@ -582,6 +584,8 @@ TEST_F(CommonUtilsTest, CancelCommandWithContext)
     CallbackContext context;
 
     char* textResult = nullptr;
+
+    ::numberOfTimes = 0;
 
     EXPECT_EQ(ECANCELED, ExecuteCommand((void*)(&context), "sleep 30", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
