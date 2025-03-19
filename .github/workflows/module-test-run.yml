@@ -52,7 +52,7 @@ jobs:
           sudo chmod +x ./moduletest
 
           result=0
-          recipes=$(ls -d ../../src/modules/test/recipes/*.json)
+          recipes=$(find ../../src/modules/test/recipes/ -name "*.json")
 
           for recipe in $recipes; do
             if [ ! -f ../../src/tests/e2e-test-recipes/$(basename $recipe) ]; then
