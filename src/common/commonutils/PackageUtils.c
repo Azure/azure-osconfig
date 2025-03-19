@@ -243,7 +243,7 @@ static int ExecuteYumCheckUpdate(OsConfigLogHandle log)
     return ExecuteSimplePackageCommand("yum check-update", &g_yumCheckUpdateExecuted, log);
 }
 
-int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log)
+int InstallOrUpdatePackage(const char* packageName, void* log)
 {
     const char* commandTemplate = "%s install -y %s";
     const char* commandTemplateTdnfDnfYum = "%s install -y --cacheonly %s";
