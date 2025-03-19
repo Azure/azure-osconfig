@@ -2062,7 +2062,7 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_NE(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
 }
 
-TEST_F(CommonUtilsTest, CheckPackageManagerNotThrottling
+TEST_F(CommonUtilsTest, CheckPackageManagerNotThrottling)
 {
     for (int i = 0; i < 10000; i++)
     {
