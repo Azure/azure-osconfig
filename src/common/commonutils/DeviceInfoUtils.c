@@ -796,7 +796,7 @@ bool IsCurrentOs(const char* name, OsConfigLogHandle log)
     return result;
 }
 
-bool IsRedHatBased(OsConfigLogHandle log)
+static bool IsRedHatBasedInternal(OsConfigLogHandle log)
 {
     const char* distros[] = {"Red Hat", "CentOS", "AlmaLinux", "Rocky Linux", "Oracle Linux"};
     int numDistros = ARRAY_SIZE(distros);
@@ -838,6 +838,18 @@ bool IsRedHatBased(OsConfigLogHandle log)
     FREE_MEMORY(prettyName);
 
     return result;
+}
+
+bool IsRedHatBased(OsConfigLogHandle log)
+{
+    static bool firstTime = true;
+    static bool redHatBased = false;
+    if (firstTime)
+    {
+        redHatBased = IsRedHatBasedInternal(log);
+        firstTime = false;
+    }
+    return redHatBased;
 }
 
 int EnableVirtualMemoryRandomization(OsConfigLogHandle log)
