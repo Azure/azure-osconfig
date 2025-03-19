@@ -20,6 +20,9 @@ static bool g_zypperIsPresent = false;
 static bool g_aptGetUpdateExecuted = false;
 static bool g_zypperRefreshExecuted = false;
 static bool g_zypperRefreshServicesExecuted = false;
+static bool g_tdnfCheckUpdateExecuted = false;
+static bool g_dnfCheckUpdateExecuted = false;
+static bool g_yumCheckUpdateExecuted = false;
 
 int IsPresent(const char* what, OsConfigLogHandle log)
 {
@@ -94,7 +97,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
 int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
     const char* commandTemplateDpkg = "%s -l %s | grep ^ii";
-    const char* commandTemplateYumDnf = "%s list installed %s";
+    const char* commandTemplateYumDnf = "%s list installed  --cacheonly %s";
     const char* commandTemplateRedHat = "%s list installed %s --disableplugin subscription-manager";
     const char* commandTemplateZypper = "%s se -x %s";
     int status = ENOENT;
@@ -225,9 +228,25 @@ static int ExecuteZypperRefreshServices(OsConfigLogHandle log)
     return ExecuteSimplePackageCommand("zypper refresh --services", &g_zypperRefreshServicesExecuted, log);
 }
 
+static int ExecuteTdnfCheckUpdate(OsConfigLogHandle log)
+{
+    return ExecuteSimplePackageCommand("tdnf check-update", &g_tdnfCheckUpdateExecuted, log);
+}
+
+static int ExecuteDnfCheckUpdate(OsConfigLogHandle log)
+{
+    return ExecuteSimplePackageCommand("dnf check-update", &g_dnfCheckUpdateExecuted, log);
+}
+
+static int ExecuteYumCheckUpdate(OsConfigLogHandle log)
+{
+    return ExecuteSimplePackageCommand("yum check-update", &g_yumCheckUpdateExecuted, log);
+}
+
 int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log)
 {
     const char* commandTemplate = "%s install -y %s";
+    const char* commandTemplateTdnfDnfYum = "%s install -y --cacheonly %s";
     int status = ENOENT;
 
     CheckPackageManagersPresence(log);
@@ -239,15 +258,18 @@ int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log)
     }
     else if (g_tdnfIsPresent)
     {
-        status = CheckOrInstallPackage(commandTemplate, g_tdnf, packageName, log);
+        ExecuteTdnfCheckUpdate(log);
+        status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_tdnf, packageName, log);
     }
     else if (g_dnfIsPresent)
     {
-        status = CheckOrInstallPackage(commandTemplate, g_dnf, packageName, log);
+        ExecuteDnfCheckUpdate(log);
+        status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_dnf, packageName, log);
     }
     else if (g_yumIsPresent)
     {
-        status = CheckOrInstallPackage(commandTemplate, g_yum, packageName, log);
+        ExecuteYumCheckUpdate(log);
+        status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_yum, packageName, log);
     }
     else if (g_zypperIsPresent)
     {
@@ -294,7 +316,7 @@ int UninstallPackage(const char* packageName, OsConfigLogHandle log)
 {
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
     const char* commandTemplateZypper = "%s remove -y --force %s";
-    const char* commandTemplateAllElse = "%s remove -y %s";
+    const char* commandTemplateTdnfDnfYum = "%s remove -y --force --cacheonly %s";
 
     int status = ENOENT;
 
@@ -309,15 +331,18 @@ int UninstallPackage(const char* packageName, OsConfigLogHandle log)
         }
         else if (g_tdnfIsPresent)
         {
-            status = CheckOrInstallPackage(commandTemplateAllElse, g_tdnf, packageName, log);
+            ExecuteTdnfCheckUpdate(log);
+            status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_tdnf, packageName, log);
         }
         else if (g_dnfIsPresent)
         {
-            status = CheckOrInstallPackage(commandTemplateAllElse, g_dnf, packageName, log);
+            ExecuteDnfCheckUpdate(log);
+            status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_dnf, packageName, log);
         }
         else if (g_yumIsPresent)
         {
-            status = CheckOrInstallPackage(commandTemplateAllElse, g_yum, packageName, log);
+            ExecuteYumCheckUpdate(log);
+            status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_yum, packageName, log);
         }
         else if (g_zypperIsPresent)
         {
