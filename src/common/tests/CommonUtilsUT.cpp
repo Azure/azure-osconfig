@@ -2064,7 +2064,7 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 
 TEST_F(CommonUtilsTest, CheckPackageManagerNotThrottling)
 {
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 100; i++)
     {
         EXPECT_NE(429, IsPackageInstalled("gcc", nullptr));
         EXPECT_NE(429, CheckPackageInstalled("gcc", nullptr, nullptr));
