@@ -2067,7 +2067,7 @@ TEST_F(CommonUtilsTest, CheckPackageManagerNotThrottling)
     for (int i = 0; i < 10000; i++)
     {
         EXPECT_NE(429, IsPackageInstalled("gcc", nullptr));
-        EXPECT_EQ(429, CheckPackageInstalled("gcc", nullptr, nullptr));
+        EXPECT_NE(429, CheckPackageInstalled("gcc", nullptr, nullptr));
         EXPECT_NE(429, CheckPackageNotInstalled("gcc", nullptr, nullptr));
     }
 }
