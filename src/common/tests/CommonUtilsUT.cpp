@@ -2053,6 +2053,16 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_NE(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
 }
 
+TEST_F(CommonUtilsTest, CheckPackageManagerNotThrottling)
+{
+    for (int i = 0; i < 100; i++)
+    {
+        EXPECT_NE(429, IsPackageInstalled("gcc", nullptr));
+        EXPECT_NE(429, CheckPackageInstalled("gcc", nullptr, nullptr));
+        EXPECT_NE(429, CheckPackageNotInstalled("gcc", nullptr, nullptr));
+    }
+}
+
 TEST_F(CommonUtilsTest, IsCurrentOs)
 {
     char* name = NULL;
