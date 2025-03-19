@@ -11,7 +11,13 @@
           "properties": {
             "auditFailure": {
               "type": "object",
-              "additionalProperties": false
+              "additionalProperties": false,
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "message to be logged"
+                }
+              }
             }
           },
           "additionalProperties": false
@@ -24,7 +30,13 @@
           "properties": {
             "auditSuccess": {
               "type": "object",
-              "additionalProperties": false
+              "additionalProperties": false,
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "message to be logged"
+                }
+              }
             }
           },
           "additionalProperties": false
@@ -41,7 +53,13 @@
           "properties": {
             "remediationSuccess": {
               "type": "object",
-              "additionalProperties": false
+              "additionalProperties": false,
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "message to be logged"
+                }
+              }
             }
           },
           "additionalProperties": false
@@ -54,7 +72,13 @@
           "properties": {
             "remediationFailure": {
               "type": "object",
-              "additionalProperties": false
+              "additionalProperties": false,
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "message to be logged"
+                }
+              }
             }
           },
           "additionalProperties": false
