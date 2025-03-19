@@ -8,29 +8,41 @@ namespace compliance
 {
 REMEDIATE_FN(remediationFailure)
 {
-    UNUSED(args);
-    UNUSED(logstream);
+    auto it = args.find("message");
+    if (it != args.end())
+    {
+        logstream << "remediationFailure: " << it->second;
+    }
     return false;
 }
 
 REMEDIATE_FN(remediationSuccess)
 {
-    UNUSED(args);
-    UNUSED(logstream);
+    auto it = args.find("message");
+    if (it != args.end())
+    {
+        logstream << "remediationSuccess: " << it->second;
+    }
     return true;
 }
 
 AUDIT_FN(auditFailure)
 {
-    UNUSED(args);
-    UNUSED(logstream);
+    auto it = args.find("message");
+    if (it != args.end())
+    {
+        logstream << "auditFailure: " << it->second;
+    }
     return false;
 }
 
 AUDIT_FN(auditSuccess)
 {
-    UNUSED(args);
-    UNUSED(logstream);
+    auto it = args.find("message");
+    if (it != args.end())
+    {
+        logstream << "auditSuccess: " << it->second;
+    }
     return true;
 }
 

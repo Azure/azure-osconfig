@@ -1,0 +1,164 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "audit"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the compliance check"
+    },
+    "audit": {
+      "$ref": "#/definitions/auditDefinition",
+      "description": "Checks to determine compliance status"
+    },
+    "remediate": {
+      "$ref": "#/definitions/remediationDefinition",
+      "description": "Actions to take to remediate non-compliance"
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "definitions": {
+    "auditDefinition": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "anyOf"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "anyOf": {
+              "type": "array",
+              "minItems": 0,
+              "items": {
+                "$ref": "#/definitions/auditDefinition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "allOf"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "allOf": {
+              "type": "array",
+              "minItems": 0,
+              "items": {
+                "$ref": "#/definitions/auditDefinition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "not"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "$ref": "#/definitions/auditDefinition"
+            }
+          }
+        },
+        {
+          "$ref": "#/definitions/auditProcedure"
+        }
+      ]
+    },
+    "remediationDefinition": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "anyOf"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "anyOf": {
+              "type": "array",
+              "minItems": 0,
+              "items": {
+                "$ref": "#/definitions/remediationDefinition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "allOf"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "allOf": {
+              "type": "array",
+              "minItems": 0,
+              "items": {
+                "$ref": "#/definitions/remediationDefinition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "not"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "$ref": "#/definitions/auditDefinition"
+            }
+          }
+        },
+        {
+          "$ref": "#/definitions/remediationProcedure"
+        }
+      ]
+    },
+    "auditProcedure": {
+      "anyOf": [
+        {
+          "$ref": "procedures/ensureFilePermissions.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/ensureFilesystemOption.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/packageInstalled.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/testingProcedures.schema.json#/definitions/audit"
+        }
+      ]
+    },
+    "remediationProcedure": {
+      "anyOf": [
+        {
+          "$ref": "procedures/ensureFilePermissions.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/ensureFilesystemOption.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/packageInstalled.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/testingProcedures.schema.json#/definitions/remediation"
+        }
+      ]
+    }
+  }
+}
