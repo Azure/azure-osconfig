@@ -816,55 +816,7 @@ int CheckNoDuplicateUidsExist(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int RemoveUser(SimplifiedUser* user, bool removeHome, OsConfigLogHandle log)
-{
-    const char* commandTemplate = "userdel %s %s";
-    char* command = NULL;
-    int status = 0, _status = 0;
-
-    if (NULL == user)
-    {
-        OsConfigLogError(log, "RemoveUser: invalid argument");
-        return EINVAL;
-    }
-    else if (0 == user->userId)
-    {
-        OsConfigLogInfo(log, "RemoveUser: cannot remove user with uid 0 ('%s' %u, %u)", user->username, user->userId, user->groupId);
-        return EPERM;
-    }
-
-    if (NULL != (command = FormatAllocateString(commandTemplate, removeHome ? "-f -r" : "-f", user->username)))
-    {
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-        {
-            OsConfigLogInfo(log, "RemoveUser: removed user '%s' (%u, %u, '%s')", user->username, user->userId, user->groupId, user->home);
-
-            if (DirectoryExists(user->home))
-            {
-                OsConfigLogInfo(log, "RemoveUser: home directory of user '%s' remains ('%s') and needs to be manually deleted", user->username, user->home);
-            }
-            else
-            {
-                OsConfigLogInfo(log, "RemoveUser: home directory of user '%s' successfully removed ('%s')", user->username, user->home);
-            }
-        }
-        else
-        {
-            OsConfigLogInfo(log, "RemoveUser: cannot remove user '%s' (%u, %u) (%d)", user->username, user->userId, user->groupId, _status);
-        }
-
-        FREE_MEMORY(command);
-    }
-    else
-    {
-        OsConfigLogError(log, "RemoveUser: out of memory");
-        status = ENOMEM;
-    }
-
-    return status;
-}
-
-int RemoveUser2(const char* username, OsConfigLogHandle log)
+static int RemoveUser(const char* username, OsConfigLogHandle log)
 {
     const char* commandTemplate = "userdel -f %s";
     char command[64] = { 0 };
@@ -1353,7 +1305,7 @@ int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
                     OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: the root account's password must be manually fixed");
                     status = EPERM;
                 }
-                else if ((0 != (_status = RemoveUser(&(userList[i]), false, log))) && (0 == status))
+                else if ((0 != (_status = RemoveUser(userList[i].username, log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -1418,7 +1370,7 @@ int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
                 OsConfigLogInfo(log, "SetRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
                     userList[i].username, userList[i].userId, userList[i].groupId);
 
-                if ((0 != (_status = RemoveUser(&(userList[i]), false, log))) && (0 == status))
+                if ((0 != (_status = RemoveUser(userList[i].username, log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -2627,7 +2579,7 @@ int SetSystemAccountsNonLogin(OsConfigLogHandle log)
                 // If the account is not already true non-login, try to make it non-login and if that does not work, remove the account
                 if (0 != (_status = SetUserNonLogin(&(userList[i]), log)))
                 {
-                    _status = RemoveUser(&(userList[i]), false, log);
+                    _status = RemoveUser(userList[i].username, log);
                 }
 
                 // Do not overwrite a previous non zero status value if any
@@ -3083,7 +3035,7 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
 
             if (0 == strcmp(pw->pw_name, token))
             {
-                if ((0 != (_status = RemoveUser2(pw->pw_name, log))) && (0 == status))
+                if ((0 != (_status = RemoveUser(pw->pw_name, log))) && (0 == status))
                 {
                     status = _status;
                 }
