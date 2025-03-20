@@ -38,9 +38,11 @@ typedef enum LoggingLevel LoggingLevel;
 enum TelemetryLevel
 {
     NoTelemetry = 0,
-    SessionsTelemetry = 1,
+    BasicTelemetry = 1,
     FailuresTelemetry = 2,
-    RulesTelemetry = 3
+    RulesTelemetry = 3,
+    AssertsTelemetry = 4,
+    AllTelemetry = 5
 };
 typedef enum TelemetryLevel TelemetryLevel;
 
@@ -118,7 +120,7 @@ void SetTelemetryLevel(TelemetryLevel level);
             OSCONFIG_FILE_LOG_TELEMETRY(log, FORMAT, ##__VA_ARGS__);\
             fflush(GetLogFile(log));\
         }\
-        if (false == IsDaemon()) {\
+        if (IsConsoleLoggingEnabled()) {\
             OSCONFIG_LOG_TELEMETRY(log, FORMAT, ##__VA_ARGS__);\
         }\
     }\
