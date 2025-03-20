@@ -99,7 +99,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_1)
 {
     auto result = mEngine.MmiSet("procedureX", "");
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.Error().message, std::string("Failed to parse JSON"));
+    EXPECT_EQ(result.Error().message, std::string("Failed to parse JSON object"));
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_2)
@@ -107,7 +107,7 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_2)
     std::string payload = "dGVzdA=="; // 'test' in base64
     auto result = mEngine.MmiSet("procedureX", payload);
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.Error().message, std::string("Failed to parse JSON"));
+    EXPECT_EQ(result.Error().message, std::string("Failed to parse JSON object"));
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_InvalidArgument_3)
@@ -169,6 +169,22 @@ TEST_F(ComplianceEngineTest, MmiSet_setProcedure_1)
 TEST_F(ComplianceEngineTest, MmiSet_setProcedure_2)
 {
     std::string payload = "eyJhdWRpdCI6e30sICJyZW1lZGlhdGUiOnt9fQ=="; // '{"audit":{}, "remediate":{}}' in base64
+    auto result = mEngine.MmiSet("procedureX", payload);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_setProcedure_3)
+{
+    std::string payload = R"({"audit":{}, "remediate":{}})";
+    auto result = mEngine.MmiSet("procedureX", payload);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_setProcedure_4)
+{
+    std::string payload = R"({ "audit": { } })";
     auto result = mEngine.MmiSet("procedureX", payload);
     ASSERT_TRUE(result);
     EXPECT_EQ(result.Value(), Status::Compliant);
