@@ -940,7 +940,8 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, OsCon
     return status;
 }
 
-int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, OsConfigLogHandle log)
+static int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess,
+    bool prepend, OsConfigLogHandle log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.ReplacingLines%u";
     char* tempFileName = NULL;
@@ -987,6 +988,17 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
             {
                 if (NULL != (tempHandle = fdopen(tempDescriptor, "w")))
                 {
+                    // Write the new line to the beginning of the file if prepend is requested
+                    if (prepend && newline && (newlineLength > 0))
+                    {
+                        if (EOF == fputs(newline, tempHandle))
+                        {
+                            status = (0 == errno) ? EPERM : errno;
+                            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: cannot write prepended line to temporary file '%s' (%d)", tempFileName, status);
+                        }
+                        replacedLine = true;
+                    }
+
                     while (NULL != fgets(line, lineMax + 1, fileHandle))
                     {
                         if (NULL != strstr(line, marker))
@@ -1061,7 +1073,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 
     FREE_MEMORY(line);
 
-    if ((0 == status) && (false == replacedLine) && (NULL != newline))
+    if ((0 == status) && (false == replacedLine) && (NULL != newline) && !prepend)
     {
         OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: line '%s' did not replace any '%s' line, to be appended at end of '%s'",
             newline, marker, fileName);
@@ -1098,6 +1110,15 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
     OsConfigLogInfo(log, "ReplaceMarkedLinesInFile('%s', '%s') returning %d", fileName, marker, status);
 
     return status;
+}
+
+int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, OsConfigLogHandle log)
+{
+    return ReplaceMarkedLinesInFileInternal(fileName, marker, newline, commentCharacter, preserveAccess, false, log);
+}
+int ReplaceMarkedLinesInFilePrepend(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, OsConfigLogHandle log)
+{
+    return ReplaceMarkedLinesInFileInternal(fileName, marker, newline, commentCharacter, preserveAccess, true, log);
 }
 
 int FindTextInFile(const char* fileName, const char* text, OsConfigLogHandle log)

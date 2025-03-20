@@ -2330,6 +2330,153 @@ TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
+TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFilePrepend)
+{
+    // File contents with NOZEROCONF already present
+    const char* inFileWithNozeroconf =
+        "# Created by cloud-init automatically, do not edit.\n"
+        "#\n"
+        "NETWORKING=yes\n"
+        "NETWORKING_IPV6=yes\n"
+        "IPV6_AUTOCONF=no\n"
+        "NOZEROCONF=yes\n";
+
+    // File contents with NOZEROCONF commented out
+    const char* inFileWithCommentedNozeroconf =
+        "# Created by cloud-init automatically, do not edit.\n"
+        "#\n"
+        "NETWORKING=yes\n"
+        "NETWORKING_IPV6=yes\n"
+        "IPV6_AUTOCONF=no\n"
+        "# NOZEROCONF=yes\n";
+
+    // File contents without NOZEROCONF at all
+    const char* inFileWithoutNozeroconf =
+        "# Created by cloud-init automatically, do not edit.\n"
+        "#\n"
+        "NETWORKING=yes\n"
+        "NETWORKING_IPV6=yes\n"
+        "IPV6_AUTOCONF=no\n";
+
+    const char* marker = "NOZEROCONF";
+    const char* newline = "NOZEROCONF=yes\n";
+
+    // Expected output when prepend=true and NOZEROCONF isn't in the file
+    const char* outFilePrependNoMatch =
+        "NOZEROCONF=yes\n"
+        "# Created by cloud-init automatically, do not edit.\n"
+        "#\n"
+        "NETWORKING=yes\n"
+        "NETWORKING_IPV6=yes\n"
+        "IPV6_AUTOCONF=no\n";
+
+    // Expected output when prepend=true and NOZEROCONF is already in the file
+    // The existing line should be removed and new one prepended
+    const char* outFilePrependWithMatch =
+        "NOZEROCONF=yes\n"
+        "# Created by cloud-init automatically, do not edit.\n"
+        "#\n"
+        "NETWORKING=yes\n"
+        "NETWORKING_IPV6=yes\n"
+        "IPV6_AUTOCONF=no\n";
+
+    // Expected output when prepend=true and NOZEROCONF is commented out
+    // The commented line should be kept and new one prepended
+    const char* outFilePrependWithCommentedMatch =
+        "NOZEROCONF=yes\n"
+        "# Created by cloud-init automatically, do not edit.\n"
+        "#\n"
+        "NETWORKING=yes\n"
+        "NETWORKING_IPV6=yes\n"
+        "IPV6_AUTOCONF=no\n"
+        "# NOZEROCONF=yes\n";
+
+    // Expected output when prepend=false and NOZEROCONF is in the file
+    // The existing line should be replaced in-place
+    const char* outFileReplaceInPlace =
+        "# Created by cloud-init automatically, do not edit.\n"
+        "#\n"
+        "NETWORKING=yes\n"
+        "NETWORKING_IPV6=yes\n"
+        "IPV6_AUTOCONF=no\n"
+        "NOZEROCONF=yes\n";
+
+    // Expected output when prepend=false and NOZEROCONF isn't in the file
+    // The line should be appended at the end
+    const char* outFileAppendAtEnd =
+        "# Created by cloud-init automatically, do not edit.\n"
+        "#\n"
+        "NETWORKING=yes\n"
+        "NETWORKING_IPV6=yes\n"
+        "IPV6_AUTOCONF=no\n"
+        "NOZEROCONF=yes\n";
+
+    char* contents = nullptr;
+
+    // Test 1: prepend=true with no matching line in the file
+    EXPECT_TRUE(CreateTestFile(m_path, inFileWithoutNozeroconf));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFilePrepend(m_path, marker, newline, '#', true, nullptr));
+    EXPECT_STREQ(outFilePrependNoMatch, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+
+    // Test 2: prepend=true with matching line already in the file
+    EXPECT_TRUE(CreateTestFile(m_path, inFileWithNozeroconf));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFilePrepend(m_path, marker, newline, '#', true, nullptr));
+    EXPECT_STREQ(outFilePrependWithMatch, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+
+    // Test 3: prepend=true with commented matching line in the file
+    EXPECT_TRUE(CreateTestFile(m_path, inFileWithCommentedNozeroconf));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFilePrepend(m_path, marker, newline, '#', true, nullptr));
+    EXPECT_STREQ(outFilePrependWithCommentedMatch, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+
+    // Test 4: prepend=false with matching line already in the file
+    EXPECT_TRUE(CreateTestFile(m_path, inFileWithNozeroconf));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker, newline, '#', true, nullptr));
+    EXPECT_STREQ(outFileReplaceInPlace, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+
+    // Test 5: prepend=false with no matching line in the file
+    EXPECT_TRUE(CreateTestFile(m_path, inFileWithoutNozeroconf));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFile(m_path, marker, newline, '#', true, nullptr));
+    EXPECT_STREQ(outFileAppendAtEnd, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+
+    // Test 6: File with multiple NOZEROCONF entries - non-commented ones should be removed
+    const char* inFileWithMultipleNozeroconf =
+        "# Config file with multiple entries\n"
+        "NOZEROCONF=no\n"
+        "# Created by cloud-init automatically, do not edit.\n"
+        "#\n"
+        "NETWORKING=yes\n"
+        "NETWORKING_IPV6=yes\n"
+        "# NOZEROCONF=maybe\n"
+        "IPV6_AUTOCONF=no\n"
+        "NOZEROCONF=old\n";
+
+    const char* outFilePrependMultipleMatches =
+        "NOZEROCONF=yes\n"
+        "# Config file with multiple entries\n"
+        "# Created by cloud-init automatically, do not edit.\n"
+        "#\n"
+        "NETWORKING=yes\n"
+        "NETWORKING_IPV6=yes\n"
+        "# NOZEROCONF=maybe\n"
+        "IPV6_AUTOCONF=no\n";
+
+    EXPECT_TRUE(CreateTestFile(m_path, inFileWithMultipleNozeroconf));
+    EXPECT_EQ(0, ReplaceMarkedLinesInFilePrepend(m_path, marker, newline, '#', true, nullptr));
+    EXPECT_STREQ(outFilePrependMultipleMatches, contents = LoadStringFromFile(m_path, false, nullptr));
+    FREE_MEMORY(contents);
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
 TEST_F(CommonUtilsTest, RemoveCharacterFromString)
 {
     char* value = NULL;
