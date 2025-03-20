@@ -79,31 +79,6 @@ void SetTelemetryLevel(TelemetryLevel level);
 #define OSCONFIG_LOG(log, level, format, ...) __LOG__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
 #define OSCONFIG_LOG_TO_FILE(log, level, format, ...) __LOG_TO_FILE__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
 
-// Universal macro that can log at any of the 7 levels:
-#define OsConfigLog(log, level, FORMAT, ...) {\
-    if (level <= GetLoggingLevel()) {\
-        if (NULL != GetLogFile(log)) {\
-            OSCONFIG_LOG_TO_FILE(log, level, FORMAT, ##__VA_ARGS__);\
-            fflush(GetLogFile(log));\
-        }\
-        if (IsConsoleLoggingEnabled()) {\
-            OSCONFIG_LOG(log, level, FORMAT, ##__VA_ARGS__);\
-        }\
-    }\
-}\
-
-// Shortcuts that directly log at the respective level:
-#define OsConfigLogEmergency(log, FORMAT, ...) OsConfigLog(log, LoggingLevelEmergency, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogAlert(log, FORMAT, ...) OsConfigLog(log, LoggingLevelAlert, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogCritical(log, FORMAT, ...) OsConfigLog(log, LoggingLevelCritical, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogError(log, FORMAT, ...)  OsConfigLog(log, LoggingLevelError, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogWarning(log, FORMAT, ...) OsConfigLog(log, LoggingLevelWarning, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogNotice(log, FORMAT, ...) OsConfigLog(log, LoggingLevelNotice, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogInfo(log, FORMAT, ...) OsConfigLog(log, LoggingLevelInformational, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogDebug(log, FORMAT, ...) OsConfigLog(log, LoggingLevelDebug, FORMAT, ## __VA_ARGS__)
-
-// Telemetry logging
-
 #define __PREFIX_TELEMETRY_TEMPLATE__ "{\"DateTime\":\"%s\""
 #define __LOG_TELEMETRY__(log, format, ...) printf(__PREFIX_TELEMETRY_TEMPLATE__ format "}\n", GetFormattedTime(), ## __VA_ARGS__)
 #define __LOG_TELEMETRY_TO_FILE__(log, format, ...) {\
@@ -125,6 +100,32 @@ void SetTelemetryLevel(TelemetryLevel level);
         }\
     }\
 }\
+
+// Universal macro that can log at any of the 7 levels:
+#define OsConfigLog(log, level, FORMAT, ...) {\
+    if (level <= GetLoggingLevel()) {\
+        if (AllTelemetry <= GetTelemetryLevel()) {\    
+            OsConfigLogTelemetry(log, FORMAT, ##__VA_ARGS__);\
+        }\
+        if (NULL != GetLogFile(log)) {\
+            OSCONFIG_LOG_TO_FILE(log, level, FORMAT, ##__VA_ARGS__);\
+            fflush(GetLogFile(log));\
+        }\
+        if (IsConsoleLoggingEnabled()) {\
+            OSCONFIG_LOG(log, level, FORMAT, ##__VA_ARGS__);\
+        }\
+    }\
+}\
+
+// Shortcuts that directly log at the respective level:
+#define OsConfigLogEmergency(log, FORMAT, ...) OsConfigLog(log, LoggingLevelEmergency, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogAlert(log, FORMAT, ...) OsConfigLog(log, LoggingLevelAlert, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogCritical(log, FORMAT, ...) OsConfigLog(log, LoggingLevelCritical, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogError(log, FORMAT, ...)  OsConfigLog(log, LoggingLevelError, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogWarning(log, FORMAT, ...) OsConfigLog(log, LoggingLevelWarning, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogNotice(log, FORMAT, ...) OsConfigLog(log, LoggingLevelNotice, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogInfo(log, FORMAT, ...) OsConfigLog(log, LoggingLevelInformational, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogDebug(log, FORMAT, ...) OsConfigLog(log, LoggingLevelDebug, FORMAT, ## __VA_ARGS__)
 
 // For debug builds
 #define LogAssert(log, CONDITION) {\
