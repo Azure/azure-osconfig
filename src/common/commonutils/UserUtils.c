@@ -816,10 +816,10 @@ int CheckNoDuplicateUidsExist(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-static int RemoveUser(const char* username, OsConfigLogHandle log)
+static int RemoveUser(const char* username, const uid_t uid, const gid_t gid, const char* home, OsConfigLogHandle log)
 {
     const char* commandTemplate = "userdel -f %s";
-    char command[64] = { 0 };
+    char command[64] = {0};
     int status = 0;
     int commandLen = 0;
 
@@ -830,7 +830,7 @@ static int RemoveUser(const char* username, OsConfigLogHandle log)
     }
 
     commandLen = snprintf(command, sizeof(command), commandTemplate, username);
-    if((int)sizeof(command) <= commandLen || 0 > commandLen)
+    if(((int)sizeof(command) <= commandLen) || (0 > commandLen))
     {
         OsConfigLogError(log, "RemoveUser: command buffer too small");
         return ENOMEM;
@@ -838,11 +838,15 @@ static int RemoveUser(const char* username, OsConfigLogHandle log)
 
     if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
     {
-        OsConfigLogInfo(log, "RemoveUser: removed user '%s'", username);
+        OsConfigLogInfo(log, "RemoveUser: removed user '%s' (%u, %u, '%s')", username, uid, gid, home);
+        if (DirectoryExists(home))
+        {
+            OsConfigLogWarning(log, "RemoveUser: home directory of user '%s' remains ('%s') and needs to be manually deleted", username, home);
+        }
     }
     else
     {
-        OsConfigLogInfo(log, "RemoveUser: cannot remove user '%s' (%d)", username, status);
+        OsConfigLogInfo(log, "RemoveUser: cannot remove user '%s' (%u, %u) (%d)", username, uid, gid, status);
     }
 
     return status;
@@ -1305,7 +1309,7 @@ int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
                     OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: the root account's password must be manually fixed");
                     status = EPERM;
                 }
-                else if ((0 != (_status = RemoveUser(userList[i].username, log))) && (0 == status))
+                else if ((0 != (_status = RemoveUser(userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -1370,7 +1374,7 @@ int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
                 OsConfigLogInfo(log, "SetRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
                     userList[i].username, userList[i].userId, userList[i].groupId);
 
-                if ((0 != (_status = RemoveUser(userList[i].username, log))) && (0 == status))
+                if ((0 != (_status = RemoveUser(userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -2579,7 +2583,7 @@ int SetSystemAccountsNonLogin(OsConfigLogHandle log)
                 // If the account is not already true non-login, try to make it non-login and if that does not work, remove the account
                 if (0 != (_status = SetUserNonLogin(&(userList[i]), log)))
                 {
-                    _status = RemoveUser(userList[i].username, log);
+                    _status = RemoveUser(userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, log);
                 }
 
                 // Do not overwrite a previous non zero status value if any
@@ -2934,7 +2938,9 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
 {
     bool found = false;
     int status = 0;
-    struct passwd* pw;
+    char* usernames = NULL;
+    char* token = NULL;
+    struct passwd* pw = NULL;
 
     if (NULL == names)
     {
@@ -2945,9 +2951,6 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
     setpwent();
     for (errno = 0, pw = getpwent(); pw != NULL; errno = 0, pw = getpwent())
     {
-        char* usernames = NULL;
-        char* token = NULL;
-
         usernames = strdup(names);
         if (NULL == usernames)
         {
@@ -2967,7 +2970,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
 
             if (DirectoryExists(pw->pw_dir))
             {
-                OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user '%s' exists ('%s')", pw->pw_name, pw->pw_dir);
+                OsConfigLogWarning(log, "CheckUserAccountsNotFound: home directory of user '%s' exists ('%s')", pw->pw_name, pw->pw_dir);
             }
 
             OsConfigCaptureReason(reason, "User '%s' found with id %u, gid %u, home '%s'", pw->pw_name, pw->pw_uid, pw->pw_gid, pw->pw_dir);
@@ -3003,6 +3006,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
 int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
 {
     int status = 0, _status = 0;
+    char* usernames = NULL;
+    char* token = NULL;
     struct passwd* pw;
 
     if (NULL == names)
@@ -3014,9 +3019,6 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
     setpwent();
     for (errno = 0, pw = getpwent(); pw != NULL; errno = 0, pw = getpwent())
     {
-        char* usernames = NULL;
-        char* token = NULL;
-
         usernames = strdup(names);
         if (NULL == usernames)
         {
@@ -3027,15 +3029,17 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
 
         for (token = strtok(usernames, ","); token != NULL; token = strtok(NULL, ","))
         {
-            // Skip root user
-            if (pw->pw_uid == 0)
-            {
-                continue;
-            }
-
             if (0 == strcmp(pw->pw_name, token))
             {
-                if ((0 != (_status = RemoveUser(pw->pw_name, log))) && (0 == status))
+                // Skip root user
+                if (0 == pw->pw_uid)
+                {
+                    OsConfigLogError(log, "RemoveUser: cannot remove user with uid 0 ('%s' %u, %u)", pw->pw_name, pw->pw_uid, pw->pw_gid);
+                    status = EPERM;
+                    break;
+                }
+
+                if ((0 != (_status = RemoveUser(pw->pw_name, pw->pw_uid, pw->pw_gid, pw->pw_dir, log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -3044,7 +3048,7 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
 
         FREE_MEMORY(usernames);
     }
-    if (status == 0 && 0 != errno)
+    if ((0 == status) && (0 != errno))
     {
         status = errno;
         OsConfigLogError(log, "RemoveUserAccounts: getpwent() failed with error %d", status);
