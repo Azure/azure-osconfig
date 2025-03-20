@@ -491,8 +491,19 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
             }
             else
             {
-                LOG_ERROR("Assertion failed, expected: '%s', actual: (null)", test->payload);
-                result = EFAULT;
+                if (NULL == (expectedJsonValue = json_parse_string(test->payload)))
+                {
+                    LOG_ERROR("Assertion failed, expected: '%s', actual: (null)", test->payload);
+                    result = EFAULT;
+                }
+                else
+                {
+                    if (json_value_get_type(expectedJsonValue) != JSONNull)
+                    {
+                        LOG_ERROR("Assertion failed, expected: '%s', actual: (null)", test->payload);
+                        result = EFAULT;
+                    }
+                }
             }
         }
 

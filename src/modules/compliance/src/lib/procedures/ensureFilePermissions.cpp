@@ -3,6 +3,7 @@
 #include <Evaluator.h>
 #include <errno.h>
 #include <grp.h>
+#include <iomanip>
 #include <pwd.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -11,6 +12,10 @@
 
 namespace compliance
 {
+namespace
+{
+const mode_t supportedMask = 0xFFF;
+} // anonymous namespace
 
 AUDIT_FN(ensureFilePermissions)
 {
@@ -19,6 +24,7 @@ AUDIT_FN(ensureFilePermissions)
     {
         return Error("No filename provided");
     }
+
     logstream << "ensureFilePermissions for '" << args["filename"] << "' ";
 
     if (0 != stat(args["filename"].c_str(), &statbuf))
@@ -37,7 +43,7 @@ AUDIT_FN(ensureFilePermissions)
         }
         if (args["user"] != pwd->pw_name)
         {
-            logstream << "Invalid user - is " << pwd->pw_name << " should be " << args["user"];
+            logstream << "Invalid user - is '" << pwd->pw_name << "' should be '" << args["user"] << "'";
             return false;
         }
     }
@@ -63,42 +69,49 @@ AUDIT_FN(ensureFilePermissions)
         }
         if (!groupOk)
         {
-            logstream << "Invalid group - is '" << grp->gr_name << "' should be '" << args["group"] << "' ";
+            logstream << "Invalid group - is '" << grp->gr_name << "' should be '" << args["group"] << "'";
             return false;
         }
     }
 
-    unsigned short perms = 0xFFF;
-    unsigned short mask = 0xFFF;
+    mode_t perms = 0x0;
+    mode_t mask = 0xFFF;
     bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
         char* endptr;
         perms = strtol(args["permissions"].c_str(), &endptr, 8);
-        if ('\0' != *endptr)
+        if (('\0' != *endptr) || ((perms & supportedMask) != perms))
         {
-            logstream << "Invalid permissions: " << args["permissions"];
-            return false;
+            return Error("Invalid permissions parameter");
         }
         has_perms_or_mask = true;
     }
+
     if (args.find("mask") != args.end())
     {
         char* endptr;
         mask = strtol(args["mask"].c_str(), &endptr, 8);
-        if ('\0' != *endptr)
+        if (('\0' != *endptr) || ((mask & supportedMask) != mask))
         {
-            logstream << "Invalid permissions mask: " << args["mask"];
-            return false;
+            return Error("Invalid mask parameter");
         }
+        if (perms & (~mask))
+        {
+            return Error("Permissions must not have bits set that are not set in the mask");
+        }
+
         has_perms_or_mask = true;
     }
-    if (has_perms_or_mask && ((perms & mask) != (statbuf.st_mode & mask)))
+    if (has_perms_or_mask && ((statbuf.st_mode & mask) != (perms & mask)))
     {
-        logstream << "Invalid permissions - are " << std::oct << statbuf.st_mode << " should be " << std::oct << perms << " with mask " << std::oct
-                  << mask << std::dec;
+        auto currentPerms = statbuf.st_mode & supportedMask;
+        auto expectedPerms = ((statbuf.st_mode & ~mask) | (perms & mask)) & supportedMask;
+        logstream << "Invalid permissions - are " << std::setw(4) << std::setfill('0') << std::oct << currentPerms << " should be " << std::setw(4)
+                  << std::setfill('0') << std::oct << expectedPerms << " with mask " << std::setw(4) << std::setfill('0') << std::oct << mask << std::dec;
         return false;
     }
+
     return true;
 }
 
@@ -126,7 +139,7 @@ REMEDIATE_FN(ensureFilePermissions)
         if (pwd == nullptr)
         {
             logstream << "ERROR: No user with name " << args["user"];
-            return Error("No user with name " + args["user"]);
+            return false;
         }
         uid = pwd->pw_uid;
         owner_changed = true;
@@ -161,7 +174,7 @@ REMEDIATE_FN(ensureFilePermissions)
             if (grp == nullptr)
             {
                 logstream << "ERROR: No group with name " << args["group"];
-                return Error("No group with name " + args["group"]);
+                return false;
             }
             gid = grp->gr_gid;
             owner_changed = true;
@@ -172,18 +185,18 @@ REMEDIATE_FN(ensureFilePermissions)
         if (0 != chown(args["filename"].c_str(), uid, gid))
         {
             logstream << "ERROR: Chown error " << strerror(errno);
-            return Error("Chown error");
+            return Error("Chown error", errno);
         }
     }
 
-    unsigned short perms = 0xFFF;
-    unsigned short mask = 0xFFF;
+    mode_t perms = 0x0;
+    mode_t mask = 0xFFF;
     bool has_perms_or_mask = false;
     if (args.find("permissions") != args.end())
     {
         char* endptr;
         perms = strtol(args["permissions"].c_str(), &endptr, 8);
-        if ('\0' != *endptr)
+        if (('\0' != *endptr) || ((perms & supportedMask) != perms))
         {
             logstream << "ERROR: Invalid permissions: " << args["permissions"];
             return Error("Invalid permissions: " + args["permissions"]);
@@ -194,23 +207,29 @@ REMEDIATE_FN(ensureFilePermissions)
     {
         char* endptr;
         mask = strtol(args["mask"].c_str(), &endptr, 8);
-        if ('\0' != *endptr)
+        if (('\0' != *endptr) || ((mask & supportedMask) != mask))
         {
             logstream << "ERROR: Invalid permissions mask: " << args["mask"];
             return Error("Invalid permissions mask: " + args["mask"]);
         }
+        if (perms & (~mask))
+        {
+            return Error("Permissions must not have bits set that are not set in the mask");
+        }
         has_perms_or_mask = true;
     }
-    unsigned short new_perms = (statbuf.st_mode & ~mask) | (perms & mask);
+
+    unsigned short new_perms = (statbuf.st_mode & ~mask) | perms;
+    OsConfigLogInfo(NULL, "Setting permissions to %o, mask: %o, perms: %o, current: %o", new_perms, mask, perms, statbuf.st_mode);
     if (has_perms_or_mask && (new_perms != statbuf.st_mode))
     {
+        OsConfigLogInfo(NULL, "Setting permissions to %o", new_perms);
         if (chmod(args["filename"].c_str(), new_perms) < 0)
         {
             logstream << "ERROR: Chmod error";
             return Error("Chmod error");
         }
     }
-
     return true;
 }
 } // namespace compliance
