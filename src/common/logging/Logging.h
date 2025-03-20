@@ -84,7 +84,7 @@ void SetTelemetryLevel(TelemetryLevel level);
             OSCONFIG_LOG_TO_FILE(log, level, FORMAT, ##__VA_ARGS__);\
             fflush(GetLogFile(log));\
         }\
-        if ((false == IsDaemon()) && (true == IsConsoleLoggingEnabled())) {\
+        if (IsConsoleLoggingEnabled()) {\
             OSCONFIG_LOG(log, level, FORMAT, ##__VA_ARGS__);\
         }\
     }\

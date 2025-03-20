@@ -3,6 +3,7 @@
 
 #include "Common.h"
 #include "Baseline.h"
+#include <version.h>
 
 // The log file for the NRP
 #define LOG_FILE "/var/log/osconfig_nrp.log"
@@ -40,6 +41,8 @@ static OsConfigLogHandle g_log = NULL;
 static const char* g_osconfig = "osconfig";
 static const char* g_mpiServer = "osconfig-platform";
 
+static const char version[] __attribute__((section(".version.info"))) = OSCONFIG_VERSION;
+
 OsConfigLogHandle GetLog(void)
 {
     if (NULL == g_log)
@@ -63,8 +66,6 @@ void __attribute__((constructor)) Initialize()
     g_expectedObjectValue = DuplicateString(g_passValue);
     g_desiredObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectValue = DuplicateString(g_failValue);
-
-    OsConfigLogInfo(GetLog(), "[OsConfigResource] SO library loaded by host process %d", getpid());
 }
 
 void __attribute__((destructor)) Destroy()
@@ -181,6 +182,7 @@ void MI_CALL OsConfigResource_Load(
     BaselineInitialize(GetLog());
 
     LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d)", getpid());
+    LogInfo(context, GetLog(), "[OsConfigResource] Version: %s", version);
 
     MI_Context_PostResult(context, MI_RESULT_OK);
 }

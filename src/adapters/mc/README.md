@@ -138,6 +138,18 @@ $x.resources[0].properties
 ```
 In addition to the MC traces written to the the PowerShell console, you can also see the NRP's own log at `/var/log/osconfig_mc_nrp.log`.
 
+### 4.4. Validating NRP version
+
+The version and git commit of the repository at the time that the NRP binary was built is stored in the `.version.info` ELF section of `libOsConfigResource.so`.
+To view it, run the following command:
+
+```bash
+$ readelf -p .version.info libOsConfigResource.so
+
+String dump of section '.version.info':
+  [     0]  1.0.5.20250314-g32f48703
+```
+
 ## 5. Onboarding a device to Arc
 
 1. Go to Azure Portal | Azure Arc | Add your infrastructure for free | Add your existing server | Generate script.

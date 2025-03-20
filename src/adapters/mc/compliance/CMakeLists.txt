@@ -28,7 +28,8 @@ add_custom_target(stage_create_compliance_shell_zip
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/ComplianceShell.metaconfig.json" ${PROJECT_BINARY_DIR}/Staging/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/ComplianceShell.mof" ${PROJECT_BINARY_DIR}/Staging
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceCompliance> ${PROJECT_BINARY_DIR}/Staging/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
-    DEPENDS OsConfigResourceCompliance ComplianceShell.mof)
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_PROPERTY:complianceschema,BINARY_DIR>/$<TARGET_PROPERTY:complianceschema,OUTPUT> ${PROJECT_BINARY_DIR}/Staging/
+    DEPENDS OsConfigResourceCompliance ComplianceShell.mof complianceschema)
 
 add_custom_target(create_compliance_shell_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/ComplianceShell.zip

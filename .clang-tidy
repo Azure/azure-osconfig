@@ -1,0 +1,30 @@
+Checks: >-
+  -*,
+  readability-identifier-naming,
+  cppcoreguidelines-*,
+  bugprone-*,
+
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-no-malloc,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -bugprone-assignment-in-if-condition,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-type-member-init,
+WarningsAsErrors: ''
+
+CheckOptions:
+  - key: readability-identifier-naming.FunctionCase
+    value: CamelCase
+  - key: readability-identifier-naming.ClassMethodCase
+    value: CamelCase
+  - key: readability-identifier-naming.MethodCase
+    value: CamelCase
+  - key: cppcoreguidelines-avoid-non-const-global-variables.AllowInternalLinkage
+    value: true

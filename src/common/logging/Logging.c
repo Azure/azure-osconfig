@@ -44,7 +44,7 @@ static TelemetryLevel g_telemetryLevel = NoTelemetry;
 
 bool IsConsoleLoggingEnabled(void)
 {
-    return g_consoleLoggingEnabled;
+    return IsDaemon() ? false : g_consoleLoggingEnabled;
 }
 
 void SetConsoleLoggingEnabled(bool enabledOrDisabled)

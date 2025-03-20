@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -54,7 +55,6 @@ int RenameFile(const char* original, const char* target, OsConfigLogHandle log);
 
 typedef int(*CommandCallback)(void* context);
 
-// If called from the main process thread the timeoutSeconds and callback arguments are ignored
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, OsConfigLogHandle log);
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
@@ -92,6 +92,7 @@ unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
 int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, OsConfigLogHandle log);
 int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, OsConfigLogHandle log);
+int ReplaceMarkedLinesInFilePrepend(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, OsConfigLogHandle log);
 int FindTextInFile(const char* fileName, const char* text, OsConfigLogHandle log);
 int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, OsConfigLogHandle log);
 int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, OsConfigLogHandle log);

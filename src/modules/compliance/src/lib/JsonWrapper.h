@@ -16,7 +16,7 @@ struct JsonWrapperDeleter
 };
 using JsonWrapper = std::unique_ptr<json_value_t, JsonWrapperDeleter>;
 
-JsonWrapper parseJSON(const char* input);
+JsonWrapper ParseJson(const char* input);
 JsonWrapper JSONFromString(const char* input);
 } // namespace compliance
 
