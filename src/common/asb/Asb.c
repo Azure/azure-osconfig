@@ -562,6 +562,7 @@ static const char* g_nfsIdmapd = "nfs-idmapd";
 static const char* g_rpcbind = "rpcbind";
 static const char* g_rpcbindSocket = "rpcbind.socket";
 static const char* g_nfsServer = "nfs-server";
+static const char* g_legacyNetworkService = "network.service";
 static const char* g_snmpd = "snmpd";
 static const char* g_rsync = "rsync";
 static const char* g_ypserv = "ypserv";
@@ -1895,6 +1896,9 @@ static char* AuditEnsureZeroconfNetworkingIsDisabled(OsConfigLogHandle log)
     RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', g_ipv4ll, &reason, log));
     if (FileExists(g_etcSysconfigNetwork) && IsAFile(g_etcSysconfigNetwork, log))
     {
+        // NOZEROCONF is only processed when legacy network-scripts are in use.
+        // If network.service is not active, then we should return early.
+        RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_legacyNetworkService, &reason, log));
         CheckLineFoundNotCommentedOut(g_etcSysconfigNetwork, '#', "NOZEROCONF=yes", &reason, log);
     }
     return reason;
@@ -3489,9 +3493,11 @@ static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, OsConfigLogH
     {
         if (0 == (status = ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, g_ipv4ll, NULL, '#', true, log)))
         {
-            if (FileExists(g_etcSysconfigNetwork) && IsAFile(g_etcSysconfigNetwork, log))
+            if (FileExists(g_etcSysconfigNetwork) && IsAFile(g_etcSysconfigNetwork, log) && IsDaemonActive(g_legacyNetworkService, log))
             {
-                status = ReplaceMarkedLinesInFile(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', true, log);
+                // cloud-init regenerates the config file on every boot, and discards any changes before its header.
+                // So we need to add the NOZEROCONF line to the top of the file.
+                status = ReplaceMarkedLinesInFilePrepend(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', true, log);
             }
         }
     }

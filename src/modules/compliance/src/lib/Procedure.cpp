@@ -10,12 +10,12 @@
 
 namespace compliance
 {
-void Procedure::setParameter(const std::string& key, std::string value)
+void Procedure::SetParameter(const std::string& key, std::string value)
 {
     mParameters[key] = std::move(value);
 }
 
-Optional<Error> Procedure::updateUserParameters(const std::string& input)
+Optional<Error> Procedure::UpdateUserParameters(const std::string& input)
 {
     std::istringstream stream(input);
     std::string token;
@@ -65,7 +65,7 @@ Optional<Error> Procedure::updateUserParameters(const std::string& input)
     return Optional<Error>();
 }
 
-Optional<Error> Procedure::setAudit(const json_value_t* rule)
+Optional<Error> Procedure::SetAudit(const json_value_t* rule)
 {
     if (mAuditRule != nullptr)
     {
@@ -76,7 +76,7 @@ Optional<Error> Procedure::setAudit(const json_value_t* rule)
     return Optional<Error>();
 }
 
-const JSON_Object* Procedure::audit() const noexcept
+const JSON_Object* Procedure::Audit() const noexcept
 {
     if (mAuditRule == nullptr)
     {
@@ -85,7 +85,7 @@ const JSON_Object* Procedure::audit() const noexcept
     return json_value_get_object(mAuditRule.get());
 }
 
-Optional<Error> Procedure::setRemediation(const json_value_t* rule)
+Optional<Error> Procedure::SetRemediation(const json_value_t* rule)
 {
     if (mRemediationRule != nullptr)
     {
@@ -96,7 +96,7 @@ Optional<Error> Procedure::setRemediation(const json_value_t* rule)
     return Optional<Error>();
 }
 
-const JSON_Object* Procedure::remediation() const noexcept
+const JSON_Object* Procedure::Remediation() const noexcept
 {
     if (mRemediationRule == nullptr)
     {

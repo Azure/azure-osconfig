@@ -3,296 +3,245 @@
 
 #include "Internal.h"
 
-static void KillProcess(pid_t processId)
+#include <sys/select.h>
+
+static long MonotonicTime()
 {
-    fflush(NULL);
-    if (processId > 0)
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0)
     {
-        kill(processId, SIGKILL);
+        return (long)(ts.tv_sec);
     }
+    return -1;
 }
 
-static int NormalizeStatus(int status)
+#define BUFFER_SIZE 1024
+
+int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds,
+    char** textResult, CommandCallback callback, OsConfigLogHandle log)
 {
-    int newStatus = status;
-    if ((ETIME != newStatus) && (ECANCELED != newStatus))
+    int workerPid = -1;
+    int pipefd[2] = {0};
+    long startTime = 0;
+
+    if (NULL == command)
     {
-        if (WIFEXITED(newStatus))
-        {
-            newStatus = WEXITSTATUS(newStatus);
-        }
-        else
-        {
-            newStatus = errno ? errno : -1;
-        }
-    }
-    return newStatus;
-}
-
-static int SystemCommand(void* context, const char* command, int timeoutSeconds, CommandCallback callback, OsConfigLogHandle log)
-{
-    const int callbackIntervalSeconds = 5; //seconds
-    const int defaultCommandTimeout = 60; //seconds
-
-    pid_t intermediateProcess = -1;
-    pid_t workerProcess = -1;
-    pid_t timerProcess = -1;
-    pid_t childProcess = -1;
-    int status = -1;
-    int intermediateStatus = -1;
-    int totalWaitSeconds = 0;
-    int timeout = (timeoutSeconds > 0) ? timeoutSeconds : defaultCommandTimeout;
-
-    bool mainProcessThread = (bool)(getpid() == gettid());
-
-    fflush(NULL);
-
-    if ((timeoutSeconds > 0) || (NULL != callback))
-    {
-        OsConfigLogDebug(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation on %s thread",
-            command, timeout, (NULL == callback) ? " no " : " ", mainProcessThread ? "main process" : "worker");
-
-        // Fork an intermediate process to act as the parent for two more forked processes:
-        // one to actually execute the system command and the other to sleep and act as a timer.
-        // Whichever of these two children processes finishes first, that causes the other to be killed.
-        // The intermediate process exists as a parent for these (instead of the current process being
-        // the parent) to avoid collision with any other children processes.
-
-        if (0 == (intermediateProcess = fork()))
-        {
-            // Intermediate process
-
-            if (0 == (workerProcess = fork()))
-            {
-                // Worker process
-                status = execl("/bin/sh", "sh", "-c", command, (char*)NULL);
-                _exit(status);
-            }
-            else if (workerProcess < 0)
-            {
-                // Intermediate process
-                OsConfigLogError(log, "Failed forking process to execute command (errno: %d, '%s')", errno, strerror(errno));
-                status = -1;
-
-                // Kill the timer process if created and wait on it before exiting otherwise timer becomes a zombie process
-                if (timerProcess > 0)
-                {
-                    KillProcess(timerProcess);
-                    waitpid(timerProcess, &intermediateStatus, 0);
-                }
-                _exit(status);
-            }
-
-            if (0 == (timerProcess = fork()))
-            {
-                // Timer process
-                status = ETIME;
-                if (NULL == callback)
-                {
-                    sleep(timeout);
-                }
-                else
-                {
-                    while (totalWaitSeconds < timeout)
-                    {
-                        // If the callback returns non zero, cancel the command
-                        if (0 != callback(context))
-                        {
-                            status = ECANCELED;
-                            break;
-                        }
-                        sleep(callbackIntervalSeconds);
-                        totalWaitSeconds += callbackIntervalSeconds;
-                    }
-                }
-                _exit(status);
-            }
-            else if (timerProcess < 0)
-            {
-                // Intermediate process
-                OsConfigLogError(log, "Failed forking timer process (errno: %d, '%s')", errno, strerror(errno));
-                status = -1;
-
-                // Kill the worker process if created and wait on it before exiting otherwise worker becomes a zombie process
-                if (workerProcess > 0)
-                {
-                    KillProcess(workerProcess);
-                    waitpid(workerProcess, &intermediateStatus, 0);
-                }
-                _exit(status);
-            }
-
-            // Wait on the child process (worker or timer) that finishes first
-            childProcess = waitpid(0, &status, 0);
-            status = NormalizeStatus(status);
-            if (childProcess == workerProcess)
-            {
-                OsConfigLogDebug(log, "Command execution returning %d", status);
-                KillProcess(timerProcess);
-            }
-            else
-            {
-                // Timer process is done, kill the timed out worker process
-                OsConfigLogDebug(log, "Command timed out or it was canceled, command process killed (%d)", status);
-                KillProcess(workerProcess);
-            }
-
-            // Wait on the remaining child (either worker or timer) and exit (the intermediate process)
-            waitpid(0, &intermediateStatus, 0);
-            _exit(status);
-        }
-        else if (intermediateProcess > 0)
-        {
-            // Wait on the intermediate process to finish
-            waitpid(intermediateProcess, &status, 0);
-        }
-        else
-        {
-            status = -1;
-            OsConfigLogError(log, "Failed forking intermediate process (errno: %d, '%s')", errno, strerror(errno));
-        }
-    }
-    else
-    {
-        OsConfigLogDebug(log, "SystemCommand: executing command '%s' without timeout or cancelation on %s thread", command, mainProcessThread ? "main process" : "worker");
-        if (0 == (workerProcess = fork()))
-        {
-            // Worker process
-            status = execl("/bin/sh", "sh", "-c", command, (char*)NULL);
-            _exit(status);
-        }
-        else if (workerProcess > 0)
-        {
-            // Wait on the worker process to terminate
-            waitpid(workerProcess, &status, 0);
-        }
-        else
-        {
-            // If our fork fails, try system(), if that also fails then the call fails
-            OsConfigLogError(log, "Failed forking process to execute command (errno: %d, '%s'), attempting system", errno, strerror(errno));
-            status = system(command);
-        }
-    }
-
-    status = NormalizeStatus(status);
-    OsConfigLogDebug(log, "SystemCommand: command '%s' returning %d", command, status);
-
-    return status;
-}
-
-#define MAX_COMMAND_RESULT_FILE_NAME 100
-
-int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, OsConfigLogHandle log)
-{
-    const char commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
-    const char commandSeparator[] = " > ";
-    const char commandTerminator[] = " 2>&1";
-
-    int status = -1;
-    FILE* resultsFile = NULL;
-    int fileSize = 0;
-    int next = 0;
-    int i = 0;
-    char* commandLine = NULL;
-    size_t commandLineLength = 0;
-    size_t maximumCommandLine = 0;
-    char commandTextResultFile[MAX_COMMAND_RESULT_FILE_NAME] = {0};
-    bool wrappedCommand = false;
-
-    if ((NULL == command) || (0 == system(NULL)))
-    {
-        OsConfigLogDebug(log, "Cannot run command '%s'", command);
+        OsConfigLogDebug(log, "Command cannot be NULL");
         return -1;
     }
-
-    commandLineLength = strlen(command);
-    wrappedCommand = (('(' == command[0]) || (')' == command[commandLineLength]));
-
-    // Append a random number to the results file to prevent parallel commands overwriting each other results
-    snprintf(commandTextResultFile, sizeof(commandTextResultFile), commandTextResultFileTemplate, rand());
-
-    commandLineLength += strlen(commandSeparator) + strlen(commandTextResultFile) + strlen(commandTerminator) + (wrappedCommand ? 0 : 2) + 1;
-
-    maximumCommandLine = (size_t)sysconf(_SC_ARG_MAX);
-    if (commandLineLength > maximumCommandLine)
+    if (strlen(command) > (size_t)sysconf(_SC_ARG_MAX))
     {
-        OsConfigLogDebug(log, "Cannot run command '%s', command too long (%u), ARG_MAX: %u", command, (unsigned)commandLineLength, (unsigned)maximumCommandLine);
+        OsConfigLogError(log, "Command '%.40s...' is too long, %lu characters (maximum %lu characters)", command, strlen(command), (size_t)sysconf(_SC_ARG_MAX));
         return E2BIG;
     }
 
-    commandLine = (char*)malloc(commandLineLength);
-    if (NULL == commandLine)
+    // Create a pipe, then fork. Forked process duplicates the write pipe end to stdout and stderr,
+    // then execs the shell with the given command. The main process uses select() with a timeout.
+    // to read from the pipe, and keep track of both command  timeout and callbacks. The read loop
+    // ends when the read() returns EOF or when the command times out or the callback returns a non-zero value.
+    // The read loop also replaces the EOL characters with spaces if requested, and replaces all special
+    // characters with spaces if requested. The output is returned in the textResult buffer, which is
+    // allocated by this function. The caller is responsible for freeing the buffer when done.
+
+    startTime = MonotonicTime();
+    if (startTime < 0)
     {
-        OsConfigLogError(log, "Cannot run command '%s', cannot allocate %u bytes for command, out of memory", command, (unsigned)commandLineLength);
-        return ENOMEM;
+        OsConfigLogError(log, "Cannot get time for command '%s', clock_gettime() failed with %d (%s)", command, errno, strerror(errno));
+        return errno;
     }
 
-    snprintf(commandLine, commandLineLength, wrappedCommand ? "%s%s%s%s" : "(%s)%s%s%s", command, commandSeparator, commandTextResultFile, commandTerminator);
-
-    // Execute the command with the requested timeout: error ETIME (62) means the command timed out
-    status = SystemCommand(context, commandLine, timeoutSeconds, callback, log);
-
-    free(commandLine);
-
-    // Read the text result from the output of the command, if any, whether command succeeded or failed
-    if (NULL != textResult)
+    if (0 != pipe(pipefd))
     {
-        *textResult = NULL;
-        resultsFile = fopen(commandTextResultFile, "r");
-        if (resultsFile)
+        OsConfigLogError(log, "Cannot create pipe for command '%s', pipe() failed with %d (%s)", command, errno, strerror(errno));
+        return errno;
+    }
+
+    workerPid = fork();
+    if (workerPid < 0)
+    {
+        OsConfigLogError(log, "Cannot fork for command '%s', fork() failed with %d (%s)", command, errno, strerror(errno));
+        close(pipefd[0]);
+        close(pipefd[1]);
+        return errno;
+    }
+
+    if (0 == workerPid)
+    {
+        // Child process
+        close(pipefd[0]);
+        if (STDOUT_FILENO != dup2(pipefd[1], STDOUT_FILENO))
         {
-            fseek(resultsFile, 0, SEEK_END);
-            fileSize = ftell(resultsFile);
-            fseek(resultsFile, 0, SEEK_SET);
+            exit(errno);
+        }
+        if (STDERR_FILENO != dup2(pipefd[1], STDERR_FILENO))
+        {
+            exit(errno);
+        }
+        execl("/bin/sh", "sh", "-c", command, (char*)NULL);
+        // If execl() fails, exit with the error code
+        exit(errno);
+    }
+    else
+    {
+        // Main process
+        const int defaultCommandTimeout = 60;  // seconds
+        const int callbackIntervalSeconds = 5; // seconds
+        long lastCallbackTime = 0;
+        int status = -1;
+        int childStatus = 0;
+        unsigned int outputBufferPos = 0;
+        unsigned int outputBufferSize = 0;
 
-            if (fileSize > 0)
+        close(pipefd[1]);
+
+        if ((NULL != callback) && (timeoutSeconds == 0))
+        {
+            timeoutSeconds = defaultCommandTimeout;
+        }
+
+        for (;;)
+        {
+            const struct timeval selectInterval = {0, 100 * 1000}; // 100 ms, accuracy of timeouts.
+            struct timeval tv;
+            int bytesRead = 0;
+            int inputBufferPos = 0;
+            long currentTime = 0;
+            char buffer[BUFFER_SIZE] = {0};
+            fd_set fdset;
+            int ret = 0;
+            char* tmp = NULL;
+
+            FD_ZERO(&fdset);
+            FD_SET(pipefd[0], &fdset);
+
+            tv = selectInterval;
+            ret = select(pipefd[0] + 1, &fdset, NULL, NULL, &tv);
+            if (ret < 0)
             {
-                // Truncate to desired maximum, if any
-                if ((maxTextResultBytes > 0) && (((size_t)fileSize + 1) > maxTextResultBytes))
+                if (EINTR == errno)
                 {
-                    fileSize = (maxTextResultBytes > 1) ? (maxTextResultBytes - 1) : 0;
+                    continue;
                 }
-
-                *textResult = (char*)malloc(fileSize + 1);
-                if (NULL != *textResult)
-                {
-                    memset(*textResult, 0, fileSize + 1);
-                    for (i = 0; i < fileSize; i++)
-                    {
-                        next = fgetc(resultsFile);
-
-                        if (EOF == next)
-                        {
-                            break;
-                        }
-
-                        // Copy the data. Following characters are replaced with spaces:
-                        // all special characters from 0x00 to 0x1F except 0x0A (LF) when replaceEol is false
-                        // plus 0x22 (") and 0x5C (\) characters that break the JSON envelope when forJson is true
-                        if ((replaceEol && (EOL == next)) || ((next < 0x20) && (EOL != next)) || (0x7F == next) || (forJson && (('"' == next) || ('\\' == next))))
-                        {
-                            (*textResult)[i] = ' ';
-                        }
-                        else
-                        {
-                            (*textResult)[i] = (char)next;
-                        }
-                    }
-                }
+                OsConfigLogError(log, "Error doing select for command '%s', select() failed with %d (%s)", command, errno, strerror(errno));
+                status = errno;
+                break;
             }
 
-            fclose(resultsFile);
+            currentTime = MonotonicTime();
+            if (currentTime < 0)
+            {
+                OsConfigLogError(log, "Error getting time for command '%s', clock_gettime() failed with %d (%s)", command, errno, strerror(errno));
+                status = errno;
+                break;
+            }
+            if ((timeoutSeconds > 0) && (currentTime - startTime >= timeoutSeconds))
+            {
+                OsConfigLogError(log, "Timeout reading from pipe for command '%s', %d seconds", command, (int)(currentTime - startTime));
+                status = ETIME;
+                break;
+            }
+            if ((NULL != callback) && (currentTime - lastCallbackTime >= callbackIntervalSeconds))
+            {
+                if (0 != callback(context))
+                {
+                    OsConfigLogError(log, "Canceled reading from pipe for command '%s'", command);
+                    status = ECANCELED;
+                    break;
+                }
+                lastCallbackTime = currentTime;
+            }
+
+            if (!FD_ISSET(pipefd[0], &fdset))
+            {
+                // It was a timeout, nothing to read, loop.
+                continue;
+            }
+
+            bytesRead = read(pipefd[0], buffer, BUFFER_SIZE);
+            if (bytesRead == 0)
+            {
+                // Child closed the pipe, we are done.
+                status = 0;
+                break;
+            }
+            if (bytesRead < 0)
+            {
+                if (EINTR == errno)
+                {
+                    continue;
+                }
+                OsConfigLogError(log, "Error reading from pipe for command '%s', read() failed with %d (%s)", command, errno, strerror(errno));
+                status = errno;
+                break;
+            }
+
+            if (((maxTextResultBytes > 0) && (outputBufferPos == maxTextResultBytes)) || textResult == NULL)
+            {
+                // We don't want any more data, loop to read the rest of the output.
+                continue;
+            }
+
+            outputBufferSize = bytesRead + outputBufferPos;
+            if ((maxTextResultBytes > 0) && (outputBufferSize > maxTextResultBytes - 1))
+            {
+                outputBufferSize = maxTextResultBytes - 1;
+            }
+
+            tmp = realloc(*textResult, outputBufferSize + 1);
+            if (NULL == tmp)
+            {
+                OsConfigLogError(log, "Cannot allocate buffer for command '%s'", command);
+                status = ENOMEM;
+                FREE_MEMORY(*textResult);
+                break;
+            }
+            *textResult = tmp;
+
+            for (inputBufferPos = 0; (inputBufferPos < bytesRead) && (outputBufferPos < outputBufferSize); inputBufferPos++, outputBufferPos++)
+            {
+                // Copy the data. Following characters are replaced with spaces:
+                // all special characters from 0x00 to 0x1F except 0x0A (LF) when replaceEol is false
+                // plus 0x22 (") and 0x5C (\) characters that break the JSON envelope when forJson is true
+                const char c = buffer[inputBufferPos];
+                if ((replaceEol && (EOL == c)) || ((c < 0x20) && (EOL != c)) || (0x7F == c) || (forJson && (('"' == c) || ('\\' == c))))
+                {
+                    (*textResult)[outputBufferPos] = ' ';
+                }
+                else
+                {
+                    (*textResult)[outputBufferPos] = c;
+                }
+            }
         }
+
+        if ((NULL != textResult) && (NULL != *textResult))
+        {
+            (*textResult)[outputBufferPos] = '\0';
+        }
+
+        close(pipefd[0]);
+        kill(workerPid, SIGKILL);
+        waitpid(workerPid, &childStatus, 0);
+        if (status == 0)
+        {
+            // The command was successful, but we need to check the child process status.
+            if (WIFEXITED(childStatus))
+            {
+                status = WEXITSTATUS(childStatus);
+            }
+            else
+            {
+                status = childStatus;
+            }
+        }
+
+        OsConfigLogDebug(log, "Context: '%p'", context);
+        OsConfigLogDebug(log, "Command: '%s'", command);
+        OsConfigLogDebug(log, "Status: %d (errno: %d)", status, errno);
+        OsConfigLogDebug(log, "Text result: '%s'", (NULL != textResult && NULL != *textResult) ? (*textResult) : "");
+
+        return status;
     }
-
-    remove(commandTextResultFile);
-
-    OsConfigLogDebug(log, "Context: '%p'", context);
-    OsConfigLogDebug(log, "Command: '%s'", command);
-    OsConfigLogDebug(log, "Status: %d (errno: %d)", status, errno);
-    OsConfigLogDebug(log, "Text result: '%s'", (NULL != textResult && NULL != *textResult) ? (*textResult) : "");
-
-    return status;
 }
 
 char* HashCommand(const char* source, OsConfigLogHandle log)
