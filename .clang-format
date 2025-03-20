@@ -13,6 +13,7 @@ AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
+AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: true
