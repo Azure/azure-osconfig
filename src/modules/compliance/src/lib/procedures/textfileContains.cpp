@@ -36,24 +36,24 @@ AUDIT_FN(textfileContains)
         return false;
     }
 
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-
     if (matchOperation == "pattern match")
     {
         try
         {
-            std::regex regex(pattern, std::regex_constants::extended);
-            if (std::regex_search(buffer.str(), std::move(regex)))
+            std::regex regex(pattern, std::regex_constants::ECMAScript);
+
+            std::string line;
+            while (std::getline(file, line))
             {
-                logstream << "pattern '" << std::move(pattern) << "' found in '" << path << "'";
-                return true;
+                if (std::regex_search(line, regex))
+                {
+                    logstream << "pattern '" << std::move(pattern) << "' found in '" << path << "'";
+                    return true;
+                }
             }
-            else
-            {
-                logstream << "pattern '" << std::move(pattern) << "' not found in '" << path << "'";
-                return false;
-            }
+
+            logstream << "pattern '" << std::move(pattern) << "' not found in '" << path << "'";
+            return false;
         }
         catch (const std::exception& e)
         {
