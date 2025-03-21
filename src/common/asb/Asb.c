@@ -933,7 +933,6 @@ void AsbInitialize(OsConfigLogHandle log)
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
         OsConfigLogInfo(log, "AsbInitialize: CPU model: %s", cpuModel);
-        OsConfigLogTraceLineTelemetry(GetTelemetryLog(), "AsbInitialize: CPU model: %s", cpuModel); //temporary test that we can emit telemetry at maximum level
     }
 
     OsConfigLogInfo(log, "AsbInitialize: CPU cores: %u", GetNumberOfCpuCores(log));
@@ -1013,6 +1012,8 @@ void AsbInitialize(OsConfigLogHandle log)
     {
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
     }
+
+    OsConfigLogTraceTelemetry(GetTelemetryLog(), g_prettyName, "CPU model: %s", cpuModel); //temporary test that we can emit telemetry at maximum level
 
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(cpuModel);

@@ -67,18 +67,16 @@ void TrimLog(OsConfigLogHandle log);
 bool IsDaemon(void);
 TelemetryLevel GetTelemetryLevel(void);
 void SetTelemetryLevel(TelemetryLevel level);
-void OsConfigLogTraceLineTelemetry(OsConfigLogHandle log, const char* format, ...);
+void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* targetName, const char* format, ...);
 
 // Telemetry macros:
 
 #define __PREFIX_TELEMETRY_TEMPLATE__ "{\"DateTime\":\"%s\""
-#define __LOG_TELEMETRY__(log, format, ...) printf(__PREFIX_TELEMETRY_TEMPLATE__ format "}\n", GetFormattedTime(), ## __VA_ARGS__)
 #define __LOG_TELEMETRY_TO_FILE__(log, format, ...) {\
     TrimLog(log); \
     fprintf(GetLogFile(log), __PREFIX_TELEMETRY_TEMPLATE__ format "}\n", GetFormattedTime(), ## __VA_ARGS__); \
 }\
 
-#define OSCONFIG_LOG_TELEMETRY(log, format, ...) __LOG_TELEMETRY__(log, format, ## __VA_ARGS__)
 #define OSCONFIG_FILE_LOG_TELEMETRY(log, format, ...) __LOG_TELEMETRY_TO_FILE__(log, format, ## __VA_ARGS__)
 
 // Universal telemetry macro that can log telemetry at any level
@@ -87,9 +85,6 @@ void OsConfigLogTraceLineTelemetry(OsConfigLogHandle log, const char* format, ..
         if (NULL != GetLogFile(log)) {\
             OSCONFIG_FILE_LOG_TELEMETRY(log, FORMAT, ##__VA_ARGS__);\
             fflush(GetLogFile(log));\
-        }\
-        if (IsConsoleLoggingEnabled()) {\
-            OSCONFIG_LOG_TELEMETRY(log, FORMAT, ##__VA_ARGS__);\
         }\
     }\
 }\
