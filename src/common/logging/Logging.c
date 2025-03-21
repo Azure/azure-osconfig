@@ -258,3 +258,8 @@ bool IsDaemon()
 {
     return (1 == getppid());
 }
+
+void LogTelemetry(const char* message, OsConfigLogHandle log)
+{
+    OsConfigLogTelemetry(log, ",\"Message\":\"%s\"", message);
+}

@@ -1066,11 +1066,7 @@ void AsbShutdown(OsConfigLogHandle log)
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
-
-        if (NoTelemetry < g_telemetryLevel)
-        {
-            LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, SESSIONS_TELEMETRY_MARKER, GetTelemetryLog());
-        }
+        LogPerfClockTelemetry(&g_perfClock, BasicTelemetry, g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, SESSIONS_TELEMETRY_MARKER, GetTelemetryLog());
     }
 
     FREE_MEMORY(g_prettyName);
@@ -4892,11 +4888,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
-
-        if (((0 != status) && (FailuresTelemetry <= g_telemetryLevel)) || ((0 == status) && (RulesTelemetry <= g_telemetryLevel)))
-        {
-            LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
-        }
+        LogPerfClockTelemetry(&perfClock, status ? RulesTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, GetTelemetryLog());
     }
 
     return status;
@@ -5873,11 +5865,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             g_auditOnly = false;
 
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
-
-            if (((0 != status) && (FailuresTelemetry <= g_telemetryLevel)) || ((0 == status) && (RulesTelemetry <= g_telemetryLevel)))
-            {
-                LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, GetTelemetryLog());
-            }
+            LogPerfClockTelemetry(&perfClock, status ? RulesTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, GetTelemetryLog());
         }
     }
 
