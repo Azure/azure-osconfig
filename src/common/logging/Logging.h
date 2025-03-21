@@ -42,7 +42,7 @@ enum TelemetryLevel
     FailuresTelemetry = 2,
     RulesTelemetry = 3,
     AssertsTelemetry = 4,
-    AllTelemetry = 5
+    AllTelemetry = 5 //TraceLoggingTelemetry?
 };
 typedef enum TelemetryLevel TelemetryLevel;
 
@@ -116,7 +116,7 @@ void OsConfigLogTraceLineTelemetry(OsConfigLogHandle log, const char* format, ..
 
 // Universal macro that can log at any of the 7 levels:
 #define OsConfigLog(log, level, FORMAT, ...) {\
-    OsConfigLogTraceLineTelemetry(log, FORMAT, ##__VA_ARGS__); \
+    OsConfigLogTraceLineTelemetry(log, FORMAT, ##__VA_ARGS__);\
     if (level <= GetLoggingLevel()) {\
         if (NULL != GetLogFile(log)) {\
             OSCONFIG_LOG_TO_FILE(log, level, FORMAT, ##__VA_ARGS__);\
