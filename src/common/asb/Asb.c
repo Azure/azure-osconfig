@@ -933,7 +933,7 @@ void AsbInitialize(OsConfigLogHandle log)
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
         OsConfigLogInfo(log, "AsbInitialize: CPU model: %s", cpuModel);
-        OsConfigLogTraceLineTelemetry("AsbInitialize: CPU model: %s", cpuModel); //temporary test that we can emit telemetry at maximum level
+        OsConfigLogTraceLineTelemetry(GetTelemetryLog(), "AsbInitialize: CPU model: %s", cpuModel); //temporary test that we can emit telemetry at maximum level
     }
 
     OsConfigLogInfo(log, "AsbInitialize: CPU cores: %u", GetNumberOfCpuCores(log));
