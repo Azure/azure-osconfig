@@ -67,6 +67,7 @@ void TrimLog(OsConfigLogHandle log);
 bool IsDaemon(void);
 TelemetryLevel GetTelemetryLevel(void);
 void SetTelemetryLevel(TelemetryLevel level);
+void OsConfigLogTraceLineTelemetry(OsConfigLogHandle log, const char* format, ...);
 
 // Telemetry macros:
 
@@ -115,7 +116,7 @@ void SetTelemetryLevel(TelemetryLevel level);
 
 // Universal macro that can log at any of the 7 levels:
 #define OsConfigLog(log, level, FORMAT, ...) {\
-    OsConfigLogAllTelemetry(log, FORMAT, ##__VA_ARGS__);\
+    OsConfigLogTraceLineTelemetry(log, FORMAT, ##__VA_ARGS__); \
     if (level <= GetLoggingLevel()) {\
         if (NULL != GetLogFile(log)) {\
             OSCONFIG_LOG_TO_FILE(log, level, FORMAT, ##__VA_ARGS__);\
