@@ -260,7 +260,7 @@ bool IsDaemon()
     return (1 == getppid());
 }
 
-void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* targetName, const char* format, ...)
+void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* format, ...)
 {
     char* buffer = NULL;
     int formatResult = 0;
@@ -273,7 +273,6 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* targetName, co
 
     va_list arguments;
     va_start(arguments, format);
-    // snprintf returns the required buffer size, excluding the null terminator
     sizeOfBuffer = vsnprintf(NULL, 0, format, arguments);
     va_end(arguments);
 
@@ -287,7 +286,7 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* targetName, co
 
             if (formatResult > 0)
             {
-                OsConfigLogAllTelemetry(log, ",\"TargetName\":\"%s\",\"Message\":\"%s\"", targetName, buffer);
+                OsConfigLogAllTelemetry(log, ",\"Trace\":\"%s\"", targetName, buffer);
             }
 
             free(buffer);

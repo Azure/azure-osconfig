@@ -67,7 +67,7 @@ void TrimLog(OsConfigLogHandle log);
 bool IsDaemon(void);
 TelemetryLevel GetTelemetryLevel(void);
 void SetTelemetryLevel(TelemetryLevel level);
-void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* targetName, const char* format, ...);
+void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* format, ...);
 
 // Telemetry macros:
 
@@ -138,6 +138,12 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* targetName, co
         OsConfigLogError(log, "Assert in %s", __func__);\
         assert(CONDITION);\
     }\
+}\
+
+// Macro that logs and also emits telemetry with the same content
+#define OsConfigLogWithTelemetry(log, logLevel, telemetryLog, telemetryLevel, FORMAT, ...) {\
+    OsConfigLog(log, logLevel, FORMAT, ## __VA_ARGS__);\
+    OsConfigLogTelemetry(telemetryLog, telemetryLevel, FORMAT, ## __VA_ARGS__);\
 }\
 
 #ifdef __cplusplus

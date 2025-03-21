@@ -1013,8 +1013,6 @@ void AsbInitialize(OsConfigLogHandle log)
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
     }
 
-    OsConfigLogTraceTelemetry(GetTelemetryLog(), g_prettyName, "CPU model: %s", cpuModel); //temporary test that we can emit telemetry at maximum level
-
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(cpuModel);
 
@@ -1027,6 +1025,8 @@ void AsbShutdown(OsConfigLogHandle log)
     const char* automaticRemediation = "automatic remediation";
 
     OsConfigLogInfo(log, "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
+
+    OsConfigLogWithTelemetry(log, LoggingLevelInformational, GetTelemetryLog(), AllTelemetry, "*** %s shutting down (%s) ***", g_asbName, g_auditOnly ? auditOnly : automaticRemediation); //temporary test
 
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
