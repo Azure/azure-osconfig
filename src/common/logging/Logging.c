@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdarg.h>
 #include <string.h>
 #include <assert.h>
 #include <time.h>
@@ -24,6 +25,9 @@ struct OsConfigLog
 };
 
 static LoggingLevel g_loggingLevel = LoggingLevelInformational;
+static TelemetryLevel g_telemetryLevel = NoTelemetry;
+
+static bool g_consoleLoggingEnabled = true;
 
 // Default maximum log size (1,048,576 is 1024 * 1024 aka 1MB)
 static unsigned int g_maxLogSize = 1048576;
@@ -37,8 +41,6 @@ static const char* g_warning = "WARNING";
 static const char* g_notice = "NOTICE";
 static const char* g_info = "INFO";
 static const char* g_debug = "DEBUG";
-
-static bool g_consoleLoggingEnabled = true;
 
 bool IsConsoleLoggingEnabled(void)
 {
@@ -125,6 +127,16 @@ unsigned int GetMaxLogSizeDebugMultiplier(void)
 void SetMaxLogSizeDebugMultiplier(unsigned int value)
 {
     g_maxLogSizeDebugMultiplier = value;
+}
+
+TelemetryLevel GetTelemetryLevel(void)
+{
+    return g_telemetryLevel;
+}
+
+void SetTelemetryLevel(TelemetryLevel level)
+{
+    g_telemetryLevel = level;
 }
 
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
@@ -246,4 +258,38 @@ void TrimLog(OsConfigLogHandle log)
 bool IsDaemon()
 {
     return (1 == getppid());
+}
+
+void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* format, ...)
+{
+    char* buffer = NULL;
+    int formatResult = 0;
+    int sizeOfBuffer = 0;
+
+    if (NULL == format)
+    {
+        return;
+    }
+
+    va_list arguments;
+    va_start(arguments, format);
+    sizeOfBuffer = vsnprintf(NULL, 0, format, arguments);
+    va_end(arguments);
+
+    if (sizeOfBuffer >= 0)
+    {
+        if (NULL != (buffer = malloc((size_t)sizeOfBuffer + 1)))
+        {
+            va_start(arguments, format);
+            formatResult = vsnprintf(buffer, sizeOfBuffer + 1, format, arguments);
+            va_end(arguments);
+
+            if (formatResult > 0)
+            {
+                OsConfigLogDebugTelemetry(log, ",\"Trace\":\"%s\"", buffer);
+            }
+
+            free(buffer);
+        }
+    }
 }

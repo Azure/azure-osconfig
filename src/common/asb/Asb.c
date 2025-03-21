@@ -18,6 +18,9 @@
 #define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_asb_perf.bak"
 
+#define TELEMETRY_FILE "/var/log/osconfig_asb_telemetry.log"
+#define ROLLED_TELEMETRY_FILE "/var/log/osconfig_asb_telemetry.bak"
+
 #define RETURN_REASON_IF_ZERO(call) {\
     if (0 == (call)) {\
         return reason;\
@@ -648,11 +651,24 @@ static const long g_maxRemediateTime = 99000000;
 // Maximum baseline run times: 30 minutes
 static const long g_maxTotalTime = 1800000000;
 
+static char* g_prettyName = NULL;
+
+// Temporary hard-coded, normal default here must be NoTelemetry
+static TelemetryLevel g_telemetryLevel = DebugTelemetry; //NoTelemetry;
+
+static bool g_auditOnly = true;
+
 static OsConfigLogHandle g_perfLog = NULL;
+static OsConfigLogHandle g_telemetryLog = NULL;
 
 OsConfigLogHandle GetPerfLog(void)
 {
     return g_perfLog;
+}
+
+OsConfigLogHandle GetTelemetryLog(void)
+{
+    return g_telemetryLog;
 }
 
 typedef struct BaselineRule
@@ -874,7 +890,6 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
 void AsbInitialize(OsConfigLogHandle log)
 {
     char* jsonConfiguration = NULL;
-    char* prettyName = NULL;
     char* kernelVersion = NULL;
     char* cpuModel = NULL;
     long totalMemory = 0;
@@ -882,6 +897,14 @@ void AsbInitialize(OsConfigLogHandle log)
     unsigned short freeMemoryPercentage = 0;
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
+
+    // Temporary until we'll read this from osconfig.json (as local override) and from policy paramater (add it to the Baseline interface)
+    SetTelemetryLevel(g_telemetryLevel);
+
+    if (NoTelemetry < g_telemetryLevel)
+    {
+        g_telemetryLog = OpenLog(TELEMETRY_FILE, ROLLED_TELEMETRY_FILE);
+    }
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
@@ -898,12 +921,14 @@ void AsbInitialize(OsConfigLogHandle log)
         RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
     }
 
-    OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
-
     if (IsConsoleLoggingEnabled())
     {
         OsConfigLogWarning(log, "AsbInitialize: console logging is enabled. If the syslog rotation is not enabled this may result in a fill-up of the local storage space");
     }
+
+    OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
+
+    if (NULL != (cpuModel = GetCpuModel(log)))
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
@@ -969,9 +994,9 @@ void AsbInitialize(OsConfigLogHandle log)
 
     kernelVersion = GetOsKernelVersion(log);
 
-    if (NULL != (prettyName = GetOsPrettyName(log)))
+    if (NULL != (g_prettyName = GetOsPrettyName(log)))
     {
-        OsConfigLogInfo(log, "AsbInitialize: running on '%s' ('%s')", prettyName, kernelVersion);
+        OsConfigLogInfo(log, "AsbInitialize: running on '%s' ('%s')", g_prettyName, kernelVersion);
     }
     else
     {
@@ -988,7 +1013,6 @@ void AsbInitialize(OsConfigLogHandle log)
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
     }
 
-    FREE_MEMORY(prettyName);
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(cpuModel);
 
@@ -997,7 +1021,15 @@ void AsbInitialize(OsConfigLogHandle log)
 
 void AsbShutdown(OsConfigLogHandle log)
 {
-    OsConfigLogInfo(log, "%s shutting down", g_asbName);
+    const char* auditOnly = "audit-only";
+    const char* automaticRemediation = "automatic remediation";
+
+    OsConfigLogInfo(log, "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
+
+    // Temporary tests:
+    OsConfigLogWithTelemetry(log, LoggingLevelInformational, GetTelemetryLog(), "*** Dual log and telemetry test *** %s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
+    OsConfigLogWithTelemetry(log, LoggingLevelWarning, GetTelemetryLog(), "*** a sample constant warning ***");
+    OsConfigLogWithTelemetry(log, LoggingLevelEmergency, GetTelemetryLog(), "###  %s shutting down (%s) ###", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
 
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
@@ -1039,13 +1071,25 @@ void AsbShutdown(OsConfigLogHandle log)
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
+        LogPerfClockTelemetry(&g_perfClock, BasicTelemetry, g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, SESSIONS_TELEMETRY_MARKER, NULL, GetTelemetryLog());
     }
+
+    FREE_MEMORY(g_prettyName);
 
     CloseLog(&g_perfLog);
 
     // When done, allow others access to read the performance log
     SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);
     SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 0644, NULL);
+
+    if (NoTelemetry < g_telemetryLevel)
+    {
+        CloseLog(&g_telemetryLog);
+
+        // And also for the telemetry log if applicable
+        SetFileAccess(TELEMETRY_FILE, 0, 0, 0644, NULL);
+        SetFileAccess(ROLLED_TELEMETRY_FILE, 0, 0, 0644, NULL);
+    }
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(OsConfigLogHandle log)
@@ -4849,6 +4893,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
+        LogPerfClockTelemetry(&perfClock, status ? AllTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, *payload, GetTelemetryLog());
     }
 
     return status;
@@ -5822,7 +5867,10 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         // Ignore the successful init* objects and focus on remediate* ones
         if (0 != strncmp(objectName, init, strlen(init)))
         {
+            g_auditOnly = false;
+
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
+            LogPerfClockTelemetry(&perfClock, status ? AllTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, "\"none\"", GetTelemetryLog());
         }
     }
 

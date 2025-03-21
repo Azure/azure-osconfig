@@ -61,6 +61,7 @@ char* FormatAllocateString(const char* format, ...)
             }
         }
     }
+
     return stringToReturn;
 }
 

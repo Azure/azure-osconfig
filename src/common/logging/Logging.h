@@ -12,6 +12,8 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif
 
+#define SESSIONS_TELEMETRY_MARKER -9999
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -33,6 +35,20 @@ enum LoggingLevel
 };
 typedef enum LoggingLevel LoggingLevel;
 
+// The telemetry level values control the amount of telemetry issued by the client.
+// As the level value increases, the amount of emitted telemetry increases.
+// NoTelemetry (0) is default.
+enum TelemetryLevel
+{
+    NoTelemetry = 0,
+    CrashTelemetry = 1,
+    BasicTelemetry = 1,
+    FailuresTelemetry = 2,
+    AllTelemetry = 3,
+    DebugTelemetry = 5
+};
+typedef enum TelemetryLevel TelemetryLevel;
+
 typedef struct OsConfigLog OsConfigLog;
 typedef OsConfigLog* OsConfigLogHandle;
 
@@ -52,12 +68,44 @@ FILE* GetLogFile(OsConfigLogHandle log);
 char* GetFormattedTime(void);
 void TrimLog(OsConfigLogHandle log);
 bool IsDaemon(void);
+TelemetryLevel GetTelemetryLevel(void);
+void SetTelemetryLevel(TelemetryLevel level);
+void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* format, ...);
+
+// Telemetry macros:
+
+#define __PREFIX_TELEMETRY_TEMPLATE__ "{\"DateTime\":\"%s\""
+#define __LOG_TELEMETRY_TO_FILE__(log, format, ...) {\
+    TrimLog(log); \
+    fprintf(GetLogFile(log), __PREFIX_TELEMETRY_TEMPLATE__ format "}\n", GetFormattedTime(), ## __VA_ARGS__); \
+}\
+
+#define OSCONFIG_FILE_LOG_TELEMETRY(log, format, ...) __LOG_TELEMETRY_TO_FILE__(log, format, ## __VA_ARGS__)
+
+// Universal telemetry macro that can log telemetry at any level
+#define OsConfigLogTelemetry(log, level, FORMAT, ...) {\
+    if (level <= GetTelemetryLevel()) {\
+        if (NULL != GetLogFile(log)) {\
+            OSCONFIG_FILE_LOG_TELEMETRY(log, FORMAT, ##__VA_ARGS__);\
+            fflush(GetLogFile(log));\
+        }\
+    }\
+}\
+
+// Shortcuts that directly log telemetry at the respective level:
+#define OsConfigLogCrashTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, CrashTelemetry, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogBasicTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, BasicTelemetry, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogFailuresTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, FailuresTelemetry, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogAllTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, AllTelemetry, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogDebugTelemetry(log, FORMAT, ...)  OsConfigLogTelemetry(log, DebugTelemetry, FORMAT, ## __VA_ARGS__)
+
+// Logging macros:
 
 #define __PREFIX_TEMPLATE__ "[%s][%s][%s:%d] "
 #define __SHORT_FILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define __LOG__(log, label, format, ...) printf(__PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__)
 #define __LOG_TO_FILE__(log, label, format, ...) {\
-    TrimLog(log);\
+    TrimLog(log); \
     fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
 }\
 
@@ -93,6 +141,12 @@ bool IsDaemon(void);
         OsConfigLogError(log, "Assert in %s", __func__);\
         assert(CONDITION);\
     }\
+}\
+
+// Macro that logs and also emits a telemetry line with a message containing the same logged trace content
+#define OsConfigLogWithTelemetry(log, level, telemetryLog, FORMAT, ...) {\
+    OsConfigLog(log, level, FORMAT, ## __VA_ARGS__);\
+    OsConfigLogTraceTelemetry(telemetryLog, FORMAT, ## __VA_ARGS__); \
 }\
 
 #ifdef __cplusplus
