@@ -5866,7 +5866,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             g_auditOnly = false;
 
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
-            LogPerfClockTelemetry(&perfClock, status ? RulesTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, NULL, GetTelemetryLog());
+            LogPerfClockTelemetry(&perfClock, status ? RulesTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, "\"none\"", GetTelemetryLog());
         }
     }
 
