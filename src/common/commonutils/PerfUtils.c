@@ -120,7 +120,7 @@ void LogPerfClock(PerfClock* clock, const char* componentName, const char* objec
     }
 }
 
-void LogPerfClockTelemetry(PerfClock* clock, TelemetryLevel level, const char* targetName, const char* componentName, const char* objectName, int objectResult, OsConfigLogHandle log)
+void LogPerfClockTelemetry(PerfClock* clock, TelemetryLevel level, const char* targetName, const char* componentName, const char* objectName, int objectResult, const char* reason, OsConfigLogHandle log)
 {
     long microseconds = -1;
 
@@ -139,7 +139,7 @@ void LogPerfClockTelemetry(PerfClock* clock, TelemetryLevel level, const char* t
     }
     else
     {
-        OsConfigLogTelemetry(log, level, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Microseconds\":\"%ld\"",
-            targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
+        OsConfigLogTelemetry(log, level, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Reason\":\"%s\",\"Microseconds\":\"%ld\"",
+            targetName, componentName, objectName, strerror(objectResult), objectResult, reason, microseconds);
     }
 }

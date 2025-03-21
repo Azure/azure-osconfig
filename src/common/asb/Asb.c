@@ -933,6 +933,7 @@ void AsbInitialize(OsConfigLogHandle log)
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
         OsConfigLogInfo(log, "AsbInitialize: CPU model: %s", cpuModel);
+        OsConfigLogTraceLineTelemetry("AsbInitialize: CPU model: %s", cpuModel); //temporary test that we can emit telemetry at maximum level
     }
 
     OsConfigLogInfo(log, "AsbInitialize: CPU cores: %u", GetNumberOfCpuCores(log));
@@ -1066,7 +1067,7 @@ void AsbShutdown(OsConfigLogHandle log)
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
-        LogPerfClockTelemetry(&g_perfClock, BasicTelemetry, g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, SESSIONS_TELEMETRY_MARKER, GetTelemetryLog());
+        LogPerfClockTelemetry(&g_perfClock, BasicTelemetry, g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, SESSIONS_TELEMETRY_MARKER, NULL, GetTelemetryLog());
     }
 
     FREE_MEMORY(g_prettyName);
@@ -4888,7 +4889,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
-        LogPerfClockTelemetry(&perfClock, status ? RulesTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, GetTelemetryLog());
+        LogPerfClockTelemetry(&perfClock, status ? RulesTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, *payload, GetTelemetryLog());
     }
 
     return status;
@@ -5865,7 +5866,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             g_auditOnly = false;
 
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
-            LogPerfClockTelemetry(&perfClock, status ? RulesTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, GetTelemetryLog());
+            LogPerfClockTelemetry(&perfClock, status ? RulesTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, NULL, GetTelemetryLog());
         }
     }
 
