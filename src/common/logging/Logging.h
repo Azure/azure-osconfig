@@ -139,7 +139,6 @@ void SetTelemetryLevel(TelemetryLevel level);
 // For debug builds
 #define LogAssert(log, CONDITION) {\
     if (!(CONDITION)) {\
-        OsConfigLogAssertsTelemetry("Assert in %s", __func__);\
         OsConfigLogError(log, "Assert in %s", __func__);\
         assert(CONDITION);\
     }\
