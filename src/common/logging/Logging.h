@@ -140,10 +140,10 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* format, ...);
     }\
 }\
 
-// Macro that logs and also emits telemetry with the same content
-#define OsConfigLogWithTelemetry(log, logLevel, telemetryLog, telemetryLevel, FORMAT, ...) {\
+// Macro that logs and also emits a telemetry line with a message containing the logged trace content
+#define OsConfigLogWithTelemetry(log, logLevel, telemetryLog, FORMAT, ...) {\
     OsConfigLog(log, logLevel, FORMAT, ## __VA_ARGS__);\
-    OsConfigLogTelemetry(telemetryLog, telemetryLevel, FORMAT, ## __VA_ARGS__);\
+    OsConfigLogTraceTelemetry(telemetryLog, AllTelemetry, FORMAT, ## __VA_ARGS__); \
 }\
 
 #ifdef __cplusplus
