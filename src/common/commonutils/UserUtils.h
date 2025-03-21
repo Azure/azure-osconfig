@@ -90,8 +90,6 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, OsConfigLogHandle log);
 int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log);
 int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log);
 int RemoveUsersWithoutPasswords(OsConfigLogHandle log);
-int RemoveUser(SimplifiedUser* user, bool removeHomeDir, OsConfigLogHandle log);
-int RemoveGroup(SimplifiedGroup* group, bool removeHomeDirs, OsConfigLogHandle log);
 int CheckDefaultRootAccountGroupIsGidZero(char** reason, OsConfigLogHandle log);
 int SetDefaultRootAccountGroupIsGidZero(OsConfigLogHandle log);
 int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log);
@@ -119,7 +117,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
 int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, OsConfigLogHandle log);
 int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, OsConfigLogHandle log);
 int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandle log);
-int RemoveUserAccounts(const char* names, bool removeHomeDirs, OsConfigLogHandle log);
+int RemoveUserAccounts(const char* names, OsConfigLogHandle log);
 int RestrictSuToRootGroup(OsConfigLogHandle log);
 
 #ifdef __cplusplus
