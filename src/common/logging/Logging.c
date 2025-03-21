@@ -290,7 +290,7 @@ void OsConfigLogTraceLineTelemetry(OsConfigLogHandle log, const char* format, ..
                 OsConfigLogAllTelemetry(log, ",\"Message\":\"%s\"", buffer);
             }
 
-            FREE_MEMORY(buffer);
+            free(buffer);
         }
     }
 }
