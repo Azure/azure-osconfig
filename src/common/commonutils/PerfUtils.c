@@ -139,7 +139,8 @@ void LogPerfClockTelemetry(PerfClock* clock, TelemetryLevel level, const char* t
     }
     else
     {
-        OsConfigLogTelemetry(log, level, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Reason\":\"%s\",\"Microseconds\":\"%ld\"",
+        // The reason, when present, is already in JSON format
+        OsConfigLogTelemetry(log, level, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Reason\":%s,\"Microseconds\":\"%ld\"",
             targetName, componentName, objectName, strerror(objectResult), objectResult, reason, microseconds);
     }
 }
