@@ -285,14 +285,9 @@ void OsConfigLogTraceLineTelemetry(OsConfigLogHandle log, const char* format, ..
             formatResult = vsnprintf(buffer, sizeOfBuffer + 1, format, arguments);
             va_end(arguments);
 
-            if (0 == formatResult)
+            if (formatResult > 0)
             {
-                printf("Preparing to emit telemetry for: '%s'\n", buffer);
                 OsConfigLogAllTelemetry(log, ",\"Message\":\"%s\"", buffer);
-            }
-            else
-            {
-                printf("vsnprintf failed with %d\n", formatResult);
             }
 
             free(buffer);
