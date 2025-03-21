@@ -35,14 +35,17 @@ enum LoggingLevel
 };
 typedef enum LoggingLevel LoggingLevel;
 
+// The telemetry level values control the amount of telemetry issued by the client.
+// As the level value increases, the amount of emitted telemetry increases.
+// NoTelemetry (0) is default.
 enum TelemetryLevel
 {
     NoTelemetry = 0,
+    CrashTelemetry = 1,
     BasicTelemetry = 1,
     FailuresTelemetry = 2,
-    RulesTelemetry = 3,
-    AssertsTelemetry = 4,
-    AllTelemetry = 5 //TraceLoggingTelemetry?
+    AllTelemetry = 3,
+    DebugTelemetry = 5
 };
 typedef enum TelemetryLevel TelemetryLevel;
 
@@ -90,11 +93,11 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* format, ...);
 }\
 
 // Shortcuts that directly log telemetry at the respective level:
+#define OsConfigLogCrashTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, CrashTelemetry, FORMAT, ## __VA_ARGS__)
 #define OsConfigLogBasicTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, BasicTelemetry, FORMAT, ## __VA_ARGS__)
 #define OsConfigLogFailuresTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, FailuresTelemetry, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogRulesTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, RulesTelemetry, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogAssertsTelemetry(log, FORMAT, ...)  OsConfigLogTelemetry(log, AssertsTelemetry, FORMAT, ## __VA_ARGS__)
 #define OsConfigLogAllTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, AllTelemetry, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogDebugTelemetry(log, FORMAT, ...)  OsConfigLogTelemetry(log, DebugTelemetry, FORMAT, ## __VA_ARGS__)
 
 // Logging macros:
 

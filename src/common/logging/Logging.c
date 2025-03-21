@@ -286,7 +286,7 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* format, ...)
 
             if (formatResult > 0)
             {
-                OsConfigLogAllTelemetry(log, ",\"Trace\":\"%s\"", buffer);
+                OsConfigLogDebugTelemetry(log, ",\"Trace\":\"%s\"", buffer);
             }
 
             free(buffer);

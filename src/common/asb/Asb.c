@@ -654,7 +654,7 @@ static const long g_maxTotalTime = 1800000000;
 static char* g_prettyName = NULL;
 
 // Temporary hard-coded, normal default here must be NoTelemetry
-static TelemetryLevel g_telemetryLevel = AllTelemetry; //NoTelemetry;
+static TelemetryLevel g_telemetryLevel = DebugTelemetry; //NoTelemetry;
 
 static bool g_auditOnly = true;
 
@@ -1026,8 +1026,11 @@ void AsbShutdown(OsConfigLogHandle log)
 
     OsConfigLogInfo(log, "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
 
-    OsConfigLogWithTelemetry(log, LoggingLevelInformational, GetTelemetryLog(), "*** Dual log and telemetry test *** %s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation); //temporary test
-
+    // Temporary tests:
+    OsConfigLogWithTelemetry(log, LoggingLevelInformational, GetTelemetryLog(), "*** Dual log and telemetry test *** %s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation); 
+    OsConfigLogWithTelemetry(log, LoggingLevelWarning, GetTelemetryLog(), "*** a sample constant warning ***");
+    OsConfigLogWithTelemetry(log, LoggingLevelLoggingLevelEmergency, GetTelemetryLog(), "###  %s shutting down (%s) ###", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
+    
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcHostsAllow);
@@ -4890,7 +4893,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
-        LogPerfClockTelemetry(&perfClock, status ? RulesTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, *payload, GetTelemetryLog());
+        LogPerfClockTelemetry(&perfClock, status ? AllTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, *payload, GetTelemetryLog());
     }
 
     return status;
@@ -5867,7 +5870,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             g_auditOnly = false;
 
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
-            LogPerfClockTelemetry(&perfClock, status ? RulesTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, "\"none\"", GetTelemetryLog());
+            LogPerfClockTelemetry(&perfClock, status ? AllTelemetry : FailuresTelemetry, g_prettyName, componentName, objectName, status, "\"none\"", GetTelemetryLog());
         }
     }
 
