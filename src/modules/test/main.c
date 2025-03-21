@@ -319,7 +319,7 @@ int ParseRecipe(const char* path, STEP** steps, int* numSteps)
     JSON_Array* stepArray = NULL;
     JSON_Object* stepObject = NULL;
 
-    if (NULL == (rootValue = json_parse_file(path)))
+    if (NULL == (rootValue = json_parse_file_with_comments(path)))
     {
         LOG_ERROR("Failed to parse test definition file: %s", path);
         status = EINVAL;
