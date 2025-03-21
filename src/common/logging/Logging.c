@@ -291,7 +291,7 @@ void OsConfigLogTraceLineTelemetry(OsConfigLogHandle log, const char* format, ..
             }
             else
             {
-                OsConfigLogEmergency(log, "vsnprintf failed with %d", formatResult)
+                OsConfigLogEmergency(log, "vsnprintf failed with %d", formatResult);
             }
 
             free(buffer);
