@@ -94,11 +94,11 @@ void SetTelemetryLevel(TelemetryLevel level);
 }\
 
 // Shortcuts that directly log telemetry at the respective level:
-#define OsConfigLogBasicTelemetry(log, FORMAT, ...) OsConfigLog(log, BasicTelemetry, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogFailuresTelemetry(log, FORMAT, ...) OsConfigLog(log, FailuresTelemetry, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogRulesTelemetry(log, FORMAT, ...) OsConfigLog(log, RulesTelemetry, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogAssertsTelemetry(log, FORMAT, ...)  OsConfigLog(log, AssertsTelemetry, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogAllTelemetry(log, FORMAT, ...) OsConfigLog(log, AllTelemetry, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogBasicTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, BasicTelemetry, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogFailuresTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, FailuresTelemetry, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogRulesTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, RulesTelemetry, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogAssertsTelemetry(log, FORMAT, ...)  OsConfigLogTelemetry(log, AssertsTelemetry, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogAllTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, AllTelemetry, FORMAT, ## __VA_ARGS__)
 
 // Logging macros:
 
