@@ -285,7 +285,7 @@ void OsConfigLogTraceLineTelemetry(OsConfigLogHandle log, const char* format, ..
             formatResult = vsnprintf(buffer, sizeOfBuffer + 1, format, arguments);
             va_end(arguments);
 
-            if ((0 == formatResult) && (formatResult =< sizeOfBuffer))
+            if (0 == formatResult)
             {
                 OsConfigLogAllTelemetry(log, ",\"Message\":\"%s\"", buffer);
             }
