@@ -115,7 +115,7 @@ void SetTelemetryLevel(TelemetryLevel level);
 
 // Universal macro that can log at any of the 7 levels:
 #define OsConfigLog(log, level, FORMAT, ...) {\
-    OsConfigLogAllTelemetry(FORMAT, ##__VA_ARGS__);\
+    OsConfigLogAllTelemetry(log, FORMAT, ##__VA_ARGS__);\
     if (level <= GetLoggingLevel()) {\
         if (NULL != GetLogFile(log)) {\
             OSCONFIG_LOG_TO_FILE(log, level, FORMAT, ##__VA_ARGS__);\
