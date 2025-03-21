@@ -287,35 +287,10 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* targetName, co
 
             if (formatResult > 0)
             {
-                OsConfigLogAllTelemetry(log, ",\"TargetName\":\"%s\",\"Message\":\"%s\"", buffer);
+                OsConfigLogAllTelemetry(log, ",\"TargetName\":\"%s\",\"Message\":\"%s\"", targetName, buffer);
             }
 
             free(buffer);
         }
-    }
-}
-
-void LogPerfClockTelemetry(PerfClock* clock, TelemetryLevel level, const char* targetName, const char* componentName, const char* objectName, int objectResult, const char* reason, OsConfigLogHandle log)
-{
-    long microseconds = -1;
-
-    if (NULL == clock)
-    {
-        OsConfigLogError(log, "LogPerfClockTelemetry called with an invalid clock argument");
-        return;
-    }
-
-    microseconds = GetPerfClockTime(clock, log);
-
-    if (SESSIONS_TELEMETRY_MARKER == objectResult)
-    {
-        OsConfigLogTelemetry(log, level, ",\"TargetName\":\"%s\",\"BaselineName\":\"%s\",\"Mode\":\"%s\",\"Seconds\":\"%.02f\"",
-            targetName, componentName, objectName, microseconds / 1000000.0);
-    }
-    else
-    {
-        // The reason, when present, is already in JSON format
-        OsConfigLogTelemetry(log, level, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Reason\":%s,\"Microseconds\":\"%ld\"",
-            targetName, componentName, objectName, strerror(objectResult), objectResult, reason, microseconds);
     }
 }
