@@ -1029,7 +1029,7 @@ void AsbShutdown(OsConfigLogHandle log)
     // Temporary tests:
     OsConfigLogWithTelemetry(log, LoggingLevelInformational, GetTelemetryLog(), "*** Dual log and telemetry test *** %s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation); 
     OsConfigLogWithTelemetry(log, LoggingLevelWarning, GetTelemetryLog(), "*** a sample constant warning ***");
-    OsConfigLogWithTelemetry(log, LoggingLevelLoggingLevelEmergency, GetTelemetryLog(), "###  %s shutting down (%s) ###", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
+    OsConfigLogWithTelemetry(log, LoggingLevelEmergency, GetTelemetryLog(), "###  %s shutting down (%s) ###", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
     
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
