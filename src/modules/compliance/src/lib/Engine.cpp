@@ -119,7 +119,13 @@ Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::str
     auto ruleJSON = DecodeB64Json(payload);
     if (!ruleJSON.HasValue())
     {
-        return ruleJSON.Error();
+        // Fall back to plain JSON, both formats are supported
+        ruleJSON = compliance::ParseJson(payload.c_str());
+        if (!ruleJSON.HasValue())
+        {
+            OsConfigLogError(Log(), "Failed to parse JSON: %s", ruleJSON.Error().message.c_str());
+            return ruleJSON.Error();
+        }
     }
 
     auto object = json_value_get_object(ruleJSON.Value().get());

@@ -147,13 +147,23 @@ int ComplianceMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
     {
         std::string payloadStr(payload, payloadSizeBytes);
         auto object = ParseJson(payloadStr.c_str());
-        if (NULL == object || JSONString != json_value_get_type(object.get()))
+        if (NULL == object || (JSONString != json_value_get_type(object.get()) && JSONObject != json_value_get_type(object.get())))
         {
             OsConfigLogError(engine.Log(), "ComplianceMmiSet failed: Failed to parse JSON string");
             return EINVAL;
         }
-        std::string realPayload = json_value_get_string(object.get());
-        auto result = engine.MmiSet(objectName, realPayload);
+        std::string realPayload;
+        if (json_value_get_type(object.get()) == JSONString)
+        {
+            realPayload = json_value_get_string(object.get());
+        }
+        else if (json_value_get_type(object.get()) == JSONObject)
+        {
+            char* tmp = json_serialize_to_string(object.get());
+            realPayload = tmp;
+            json_free_serialized_string(tmp);
+        }
+        auto result = engine.MmiSet(objectName, std::move(realPayload));
         if (!result.HasValue())
         {
             OsConfigLogError(engine.Log(), "ComplianceMmiSet failed: %s", result.Error().message.c_str());
