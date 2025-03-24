@@ -41,11 +41,10 @@ typedef enum LoggingLevel LoggingLevel;
 enum TelemetryLevel
 {
     NoTelemetry = 0,
-    CrashTelemetry = 1,
     BasicTelemetry = 1,
     FailuresTelemetry = 2,
     AllTelemetry = 3,
-    DebugTelemetry = 5
+    DebugTelemetry = 4
 };
 typedef enum TelemetryLevel TelemetryLevel;
 
