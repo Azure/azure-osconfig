@@ -18,17 +18,18 @@ void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char*
 
     if ((BasicTelemetry <= telemetryLevel) && (SESSIONS_TELEMETRY_MARKER == objectResult))
     {
-        OsConfigLogTelemetry(log, BasicTelemetry, ",\"TargetName\":\"%s\",\"BaselineName\":\"%s\",\"Mode\":\"%s\",\"Seconds\":\"%.02f\"", targetName, componentName, objectName, microseconds / 1000000.0);
+        OsConfigLogTelemetry(log, BasicTelemetry, ",\"TargetName\":\"%s\",\"BaselineName\":\"%s\",\"Mode\":\"%s\",\"Seconds\":\"%.02f\"",
+            targetName, componentName, objectName, microseconds / 1000000.0);
     }
     else if (DebugTelemetry > telemetryLevel)
     {
-        OsConfigLogTelemetry(log, ((0 != objectResult) ? FailuresTelemetry : AllTelemetry), 
-            ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Microseconds\":\"%ld\"", 
+        OsConfigLogTelemetry(log, ((0 != objectResult) ? FailuresTelemetry : AllTelemetry),
+            ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Microseconds\":\"%ld\"",
             targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
     }
     else if ((DebugTelemetry <= telemetryLevel) && (NULL != reason))
     {
-        OsConfigLogTelemetry(log, DebugTelemetry, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Reason\":%s,\"Microseconds\":\"%ld\"", 
+        OsConfigLogTelemetry(log, DebugTelemetry, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Reason\":%s,\"Microseconds\":\"%ld\"",
             targetName, componentName, objectName, strerror(objectResult), objectResult, reason, microseconds);
     }
 }
