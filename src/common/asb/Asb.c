@@ -654,7 +654,7 @@ static const long g_maxTotalTime = 1800000000;
 static char* g_prettyName = NULL;
 
 // Temporary hard-coded, normal default here must be NoTelemetry
-static TelemetryLevel g_telemetryLevel = BasicTelemetry; //NoTelemetry;
+static TelemetryLevel g_telemetryLevel = DebugTelemetry; //NoTelemetry;
 
 static bool g_auditOnly = true;
 
