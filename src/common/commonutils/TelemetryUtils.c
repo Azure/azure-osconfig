@@ -22,7 +22,7 @@ void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char*
     }
     else if (DebugTelemetry > telemetryLevel)
     {
-        OsConfigLogTelemetry(log, objectResult ? FailuresTelemetry : AllTelemetry, 
+        OsConfigLogTelemetry(log, ((0 != objectResult) ? FailuresTelemetry : AllTelemetry), 
             ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Microseconds\":\"%ld\"", 
             targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
     }
