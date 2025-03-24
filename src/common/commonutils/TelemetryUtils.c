@@ -20,7 +20,7 @@ void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char*
 
     microseconds = GetPerfClockTime(clock, log);
 
-    if ((BasicTelemetry =< telemetryLevel) && (SESSIONS_TELEMETRY_MARKER == objectResult))
+    if ((BasicTelemetry <= telemetryLevel) && (SESSIONS_TELEMETRY_MARKER == objectResult))
     {
         OsConfigLogTelemetry(log, BasicTelemetry, basicTelemetryTemplate, targetName, componentName, objectName, microseconds / 1000000.0);
     }
@@ -28,7 +28,7 @@ void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char*
     {
         OsConfigLogTelemetry(log, objectResult ? FailuresTelemetry : AllTelemetry, failuresOrAllTelemetryTemplate, targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
     }
-    else if (DebugTelemetry =< telemetryLevel)
+    else if ((DebugTelemetry <= telemetryLevel) && (NULL != reason))
     {
         OsConfigLogTelemetry(log, DebugTelemetry, debugTelemetryTemplate, targetName, componentName, objectName, strerror(objectResult), objectResult, reason, microseconds);
     }
