@@ -13,12 +13,13 @@ add_library(commonutils STATIC
     OtherUtils.c
     PackageUtils.c
     PassUtils.c
+    PerfUtils.c
     ProxyUtils.c
     SocketUtils.c
     SshUtils.c
     UrlUtils.c
     UserUtils.c
-    PerfUtils.c)
+    TelemetryUtils.c)
 
 target_include_directories(commonutils
     PUBLIC
