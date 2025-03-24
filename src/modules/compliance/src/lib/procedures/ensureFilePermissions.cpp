@@ -68,9 +68,10 @@ AUDIT_FN(ensureFilePermissions)
         }
     }
 
-    unsigned short perms = 0xFFF;
-    unsigned short mask = 0xFFF;
-    bool has_perms_or_mask = false;
+    bool has_permissions = false;
+    bool has_mask = false;
+    unsigned short perms = 0;
+    unsigned short mask = 0;
     if (args.find("permissions") != args.end())
     {
         char* endptr = nullptr;
@@ -80,7 +81,7 @@ AUDIT_FN(ensureFilePermissions)
             logstream << "Invalid permissions: " << args["permissions"];
             return false;
         }
-        has_perms_or_mask = true;
+        has_permissions = true;
     }
     if (args.find("mask") != args.end())
     {
@@ -91,12 +92,21 @@ AUDIT_FN(ensureFilePermissions)
             logstream << "Invalid permissions mask: " << args["mask"];
             return false;
         }
-        has_perms_or_mask = true;
+        has_mask = true;
     }
-    if (has_perms_or_mask && ((perms & mask) != (statbuf.st_mode & mask)))
+    if ((has_permissions && has_mask) && (0 != (perms & mask)))
     {
-        logstream << "Invalid permissions - are " << std::oct << statbuf.st_mode << " should be " << std::oct << perms << " with mask " << std::oct
-                  << mask << std::dec;
+        logstream << "ERROR: Invalid permissions and mask - same bits set in both";
+        return Error("Invalid permissions and mask - same bits set in both");
+    }
+    if (has_permissions && (perms != (statbuf.st_mode & perms)))
+    {
+        logstream << "Invalid permissions - are " << std::oct << statbuf.st_mode << " should be at least " << std::oct << perms;
+        return false;
+    }
+    if (has_mask && (0 != (statbuf.st_mode & mask)))
+    {
+        logstream << "Invalid permissions - are " << std::oct << statbuf.st_mode << " while " << std::oct << mask << " should not be set";
         return false;
     }
     return true;
@@ -176,9 +186,11 @@ REMEDIATE_FN(ensureFilePermissions)
         }
     }
 
-    unsigned short perms = 0xFFF;
-    unsigned short mask = 0xFFF;
-    bool has_perms_or_mask = false;
+    bool has_permissions = false;
+    bool has_mask = false;
+    unsigned short perms = 0;
+    unsigned short mask = 0;
+    unsigned short new_perms = statbuf.st_mode;
     if (args.find("permissions") != args.end())
     {
         char* endptr = nullptr;
@@ -188,7 +200,8 @@ REMEDIATE_FN(ensureFilePermissions)
             logstream << "ERROR: Invalid permissions: " << args["permissions"];
             return Error("Invalid permissions: " + args["permissions"]);
         }
-        has_perms_or_mask = true;
+        new_perms |= perms;
+        has_permissions = true;
     }
     if (args.find("mask") != args.end())
     {
@@ -199,10 +212,16 @@ REMEDIATE_FN(ensureFilePermissions)
             logstream << "ERROR: Invalid permissions mask: " << args["mask"];
             return Error("Invalid permissions mask: " + args["mask"]);
         }
-        has_perms_or_mask = true;
+        new_perms &= ~mask;
+        has_mask = true;
     }
-    unsigned short new_perms = (statbuf.st_mode & ~mask) | (perms & mask);
-    if (has_perms_or_mask && (new_perms != statbuf.st_mode))
+    // Sanity check - we can't have bits set in the mask and permissions at the same time.
+    if ((has_permissions && has_mask) && (0 != (perms & mask)))
+    {
+        logstream << "ERROR: Invalid permissions and mask - same bits set in both";
+        return Error("Invalid permissions and mask - same bits set in both");
+    }
+    if (new_perms != statbuf.st_mode)
     {
         if (chmod(args["filename"].c_str(), new_perms) < 0)
         {
