@@ -10,7 +10,7 @@ void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char*
     const char* debugTelemetryTemplate = ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Reason\":%s,\"Microseconds\":\"%ld\"";
 
     long microseconds = -1;
-    long telemetryLevel = GetTelemetryLevel();
+    TelemetryLevel telemetryLevel = GetTelemetryLevel();
 
     if (NULL == clock)
     {
