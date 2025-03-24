@@ -1,0 +1,89 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "compliance.so"
+  },
+
+
+  // Create a test user which has shadow as primary group
+  {
+    "RunCommand": "useradd -g shadow securitybaselinetest && id securitybaselinetest"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "allOf": [
+          {
+            "ensureNoUserHasPrimaryShadowGroup": {}
+          }
+        ]
+      },
+      "remediate": {
+        "allOf": [
+          {
+            "ensureNoUserHasPrimaryShadowGroup": {}
+          }
+        ]
+      }
+    }
+  },
+
+
+  // Audit must fail as the user has shadow as primary group
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ allOf: [{ ensureNoUserHasPrimaryShadowGroup: User's 'securitybaselinetest' primary group is 'shadow' } == FALSE] == FALSE }"
+  },
+
+
+
+  // Re-create the test user, but this time with default primary group
+  {
+    "RunCommand": "userdel securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "useradd securitybaselinetest && id securitybaselinetest"
+  },
+
+
+  // This is expected to pass as the user has default primary group
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ allOf: [{ ensureNoUserHasPrimaryShadowGroup: No user has 'shadow' as primary group } == TRUE] == TRUE }"
+  },
+
+
+
+  // Add the user to the supplementary shadow group
+  {
+    "RunCommand": "usermod -G shadow securitybaselinetest && id securitybaselinetest"
+  },
+
+
+  // This is expected to succeed as shadow is only a supplementary group for the test user
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ allOf: [{ ensureNoUserHasPrimaryShadowGroup: No user has 'shadow' as primary group } == TRUE] == TRUE }"
+  },
+
+
+  // Cleanup
+  {
+    "RunCommand": "userdel securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest || true"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]
