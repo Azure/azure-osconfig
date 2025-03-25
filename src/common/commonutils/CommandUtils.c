@@ -15,6 +15,45 @@ static long MonotonicTime()
     return -1;
 }
 
+#ifdef TEST_CODE
+struct MockCommand
+{
+    const char* expectedCommand;
+    bool matchPrefix;
+    const char* output;
+    int returnCode;
+    struct MockCommand* next;
+};
+
+static struct MockCommand* g_mockCommand;
+
+void AddMockCommand(const char* expectedCommand, bool matchPrefix, const char* output, int returnCode)
+{
+    struct MockCommand* mock = malloc(sizeof(struct MockCommand));
+    // Handling memory error in a brutal way as it's only for tests, not for production usage.
+    if (NULL == mock)
+    {
+        abort();
+    }
+    mock->expectedCommand = expectedCommand;
+    mock->matchPrefix = matchPrefix;
+    mock->output = output;
+    mock->returnCode = returnCode;
+    mock->next = g_mockCommand;
+    g_mockCommand = mock;
+}
+
+void CleanupMockCommands()
+{
+    while (NULL != g_mockCommand)
+    {
+	struct MockCommand* next = g_mockCommand->next;
+        free(g_mockCommand);
+        g_mockCommand = next;
+    }
+}
+#endif
+
 #define BUFFER_SIZE 1024
 
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds,
@@ -34,6 +73,24 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         OsConfigLogError(log, "Command '%.40s...' is too long, %lu characters (maximum %lu characters)", command, strlen(command), (size_t)sysconf(_SC_ARG_MAX));
         return E2BIG;
     }
+
+#ifdef TEST_CODE
+    // Allow mocked call for unit testing of things that execute commands.
+    struct MockCommand* mock = g_mockCommand;
+    while (NULL != mock) {
+        size_t stringLen = strlen(mock->expectedCommand);
+        if (!mock->matchPrefix && (strlen(command) > stringLen))
+        {
+            stringLen = strlen(command);
+        }
+        if (0 == strncmp(mock->expectedCommand, command, stringLen))
+        {
+            *textResult = DuplicateString(mock->output);
+            return mock->returnCode;
+        }
+	mock = mock->next;
+    }
+#endif
 
     // Create a pipe, then fork. Forked process duplicates the write pipe end to stdout and stderr,
     // then execs the shell with the given command. The main process uses select() with a timeout.
