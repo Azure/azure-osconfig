@@ -1,0 +1,84 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "compliance.so"
+  },
+  {
+    "RunCommand": "useradd securitybaselinetest && id securitybaselinetest"
+  },
+  {
+    "RunCommand": "groupadd securitybaselinetest2 && usermod -G securitybaselinetest2 securitybaselinetest && id securitybaselinetest"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
+    "Payload": {
+      "audit": {
+        "allOf": [
+          {
+            "ensureAllGroupsFromEtcPasswdExistInEtcGroup": {}
+          }
+        ]
+      }
+    }
+  },
+
+
+  // Initial state should be clean
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
+    "Payload": "PASS{ allOf: [{ ensureAllGroupsFromEtcPasswdExistInEtcGroup: All user groups in '\/etc\/passwd' exist in '\/etc\/group' } == TRUE] == TRUE }"
+  },
+
+
+
+  // Drop securitybaseletest2 user from /etc/group, this should remain successful because securitybaselinetest2
+  // is only a supplementary group for the securitybaselinetest user
+  {
+    "RunCommand": "sed -i '/securitybaselinetest2/d' /etc/group"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
+    "Payload": "PASS{ allOf: [{ ensureAllGroupsFromEtcPasswdExistInEtcGroup: All user groups in '\/etc\/passwd' exist in '\/etc\/group' } == TRUE] == TRUE }"
+  },
+
+
+
+  // Create a securitybaselinetest2 user and drop it from /etc/group, this should fail as securitybaselinetest2 is a primary group for the user
+  {
+    "RunCommand": "useradd securitybaselinetest2 && id securitybaselinetest2"
+  },
+  {
+    "RunCommand": "sed -i '/securitybaselinetest2/d' /etc/group"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
+    "Payload": "{ allOf: [{ ensureAllGroupsFromEtcPasswdExistInEtcGroup: User's 'securitybaselinetest2' group 1002 from \/etc\/passwd does not exist in \/etc\/group } == FALSE] == FALSE }"
+  },
+
+
+
+  // cleanup
+  {
+    "RunCommand": "userdel securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "userdel securitybaselinetest2 || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest2 || true"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]
