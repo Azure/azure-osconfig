@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <Mmi.h>
 #include "ComplianceInterface.h"
-#include <stddef.h>
+
+#include <Mmi.h>
 #include <assert.h>
+#include <stddef.h>
 
 static OsConfigLogHandle gLog = NULL;
 static const char* gLogFile = "/var/log/osconfig_compliance.log";
