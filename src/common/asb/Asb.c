@@ -903,7 +903,11 @@ void AsbInitialize(OsConfigLogHandle log)
 
     if (NoTelemetry < g_telemetryLevel)
     {
-        g_telemetryLog = OpenLog(TELEMETRY_FILE, ROLLED_TELEMETRY_FILE);
+        if (NULL == (g_telemetryLog = OpenLog(TELEMETRY_FILE, ROLLED_TELEMETRY_FILE)))
+        {
+            OsConfigLogWarning(log, "AsbInitialize: telemetry is enabled but could open the telemetry log '%s' (%d, %s), no telemetry will be logged during this session",
+                TELEMETRY_FILE, errno, strerror(errno));
+        }
     }
 
     StartPerfClock(&g_perfClock, GetPerfLog());
@@ -928,8 +932,6 @@ void AsbInitialize(OsConfigLogHandle log)
 
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
-    if (NULL != (cpuModel = GetCpuModel(log)))
-
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
         OsConfigLogInfo(log, "AsbInitialize: CPU model: %s", cpuModel);
@@ -943,6 +945,8 @@ void AsbInitialize(OsConfigLogHandle log)
     freeMemory = GetFreeMemory(log);
     freeMemoryPercentage = (freeMemory * 100) / totalMemory;
     OsConfigLogInfo(log, "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
+    // Temporary test:
+    OsConfigLogWithTelemetry(log, LoggingLevelInformational, GetTelemetryLog(), "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
     InitializeSshAudit(log);
 
@@ -1025,11 +1029,8 @@ void AsbShutdown(OsConfigLogHandle log)
     const char* automaticRemediation = "automatic remediation";
 
     OsConfigLogInfo(log, "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
-
-    // Temporary tests:
-    OsConfigLogWithTelemetry(log, LoggingLevelInformational, GetTelemetryLog(), "*** Dual log and telemetry test *** %s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
-    OsConfigLogWithTelemetry(log, LoggingLevelWarning, GetTelemetryLog(), "*** a sample constant warning ***");
-    OsConfigLogWithTelemetry(log, LoggingLevelEmergency, GetTelemetryLog(), "###  %s shutting down (%s) ###", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
+    // Temporary test:
+    OsConfigLogWithTelemetry(log, LoggingLevelInformational, GetTelemetryLog(), "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
 
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
