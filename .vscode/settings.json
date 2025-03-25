@@ -12,6 +12,8 @@
     // Use JSON with comments
     "files.associations": {
         "*.json": "jsonc",
-        "string": "cpp"
+        "string": "cpp",
+        "any": "cpp",
+        "optional": "cpp"
     }
 }
