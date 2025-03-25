@@ -1,0 +1,116 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "compliance.so"
+  },
+  {
+    "RunCommand": "useradd securitybaselinetest -K UID_MIN=8888 -K UID_MAX=8888 && id securitybaselinetest"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "allOf": [
+          {
+            "ensureNoDuplicateEntriesExist": {
+              "filename": "/etc/passwd",
+              "delimiter": ":",
+              "column": "2"
+            }
+          }
+        ]
+      }
+    }
+  },
+
+
+
+  // No duplicate entries, this should be PASS
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ allOf: [{ ensureNoDuplicateEntriesExist:  } == TRUE] == TRUE }"
+  },
+
+
+
+  // Duplicate the last entry, this should be reported as failure
+  {
+    "RunCommand": "echo $(tail -n 1 /etc/passwd) >> /etc/passwd"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ allOf: [{ ensureNoDuplicateEntriesExist: Duplicate entries found in \/etc\/passwd: [8888]  } == FALSE] == FALSE }"
+  },
+
+
+
+  // Restore the duplicated entry, this should be PASS again
+  {
+    "RunCommand": "sed -i '$d' /etc/passwd"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ allOf: [{ ensureNoDuplicateEntriesExist:  } == TRUE] == TRUE }"
+  },
+
+
+
+  // Test mupltiple duplicate entries
+  {
+    "RunCommand": "userdel securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "useradd securitybaselinetest -K UID_MIN=8888 -K UID_MAX=8888 && id securitybaselinetest"
+  },
+  {
+    "RunCommand": "echo $(tail -n 1 /etc/passwd) >> /etc/passwd"
+  },
+  {
+    "RunCommand": "useradd securitybaselinetest2 -K UID_MIN=8889 -K UID_MAX=8889 && id securitybaselinetest2"
+  },
+  {
+    "RunCommand": "echo $(tail -n 1 /etc/passwd) >> /etc/passwd"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ allOf: [{ ensureNoDuplicateEntriesExist: Duplicate entries found in \/etc\/passwd: [8888, 8889]  } == FALSE] == FALSE }"
+  },
+
+
+
+  // cleanup
+  {
+    "RunCommand": "sed -i '$d' /etc/passwd"
+  },
+  {
+    "RunCommand": "userdel securitybaselinetest2 || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest2 || true"
+  },
+  {
+    "RunCommand": "sed -i '$d' /etc/passwd"
+  },
+  {
+    "RunCommand": "userdel securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest || true"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]
