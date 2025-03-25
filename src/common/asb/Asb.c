@@ -654,7 +654,7 @@ static const long g_maxTotalTime = 1800000000;
 static char* g_prettyName = NULL;
 
 // Temporary hard-coded, normal default here must be NoTelemetry
-static TelemetryLevel g_telemetryLevel = AllTelemetry; //NoTelemetry;
+static TelemetryLevel g_telemetryLevel = DebugTelemetry; //NoTelemetry;
 
 static bool g_auditOnly = true;
 
@@ -944,9 +944,8 @@ void AsbInitialize(OsConfigLogHandle log)
 
     freeMemory = GetFreeMemory(log);
     freeMemoryPercentage = (freeMemory * 100) / totalMemory;
-    OsConfigLogInfo(log, "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
-    // Temporary test:
-    OsConfigLogWithTelemetry(log, LoggingLevelInformational, GetTelemetryLog(), "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
+    // This is an example of a trace that gets written to both current trace log and to the telemetry log when the Telemetry Level is set to DebugTelemetry (4)
+    OsConfigLogWithTelemetry(log, "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
     InitializeSshAudit(log);
 
@@ -1029,8 +1028,6 @@ void AsbShutdown(OsConfigLogHandle log)
     const char* automaticRemediation = "automatic remediation";
 
     OsConfigLogInfo(log, "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
-    // Temporary test:
-    OsConfigLogWithTelemetry(log, LoggingLevelInformational, GetTelemetryLog(), "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
 
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
