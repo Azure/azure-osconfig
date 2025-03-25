@@ -1204,18 +1204,18 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureRootIsOnlyUidZeroAccount"
   },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "games,test"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "games,test"
-  },
+  // {
+  //   "ObjectType": "Desired",
+  //   "ComponentName": "SecurityBaseline",
+  //   "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
+  //   "Payload": "games,test"
+  // },
+  // {
+  //   "ObjectType": "Desired",
+  //   "ComponentName": "SecurityBaseline",
+  //   "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
+  //   "Payload": "games,test"
+  // },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
@@ -2367,17 +2367,17 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureRootIsOnlyUidZeroAccount"
   },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "games,test"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
-  },
+  // {
+  //   "ObjectType": "Desired",
+  //   "ComponentName": "SecurityBaseline",
+  //   "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
+  //   "Payload": "games,test"
+  // },
+  // {
+  //   "ObjectType": "Reported",
+  //   "ComponentName": "SecurityBaseline",
+  //   "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
+  // },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
