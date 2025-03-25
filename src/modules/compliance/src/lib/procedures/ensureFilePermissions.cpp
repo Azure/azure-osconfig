@@ -27,7 +27,7 @@ AUDIT_FN(ensureFilePermissions)
         return false;
     }
 
-    if (args.find("user") != args.end())
+    if (args.find("owner") != args.end())
     {
         struct passwd* pwd = getpwuid(statbuf.st_uid);
         if (nullptr == pwd)
@@ -35,9 +35,9 @@ AUDIT_FN(ensureFilePermissions)
             logstream << "No user with uid " << statbuf.st_uid;
             return false;
         }
-        if (args["user"] != pwd->pw_name)
+        if (args["owner"] != pwd->pw_name)
         {
-            logstream << "Invalid user - is " << pwd->pw_name << " should be " << args["user"];
+            logstream << "Invalid owner - is " << pwd->pw_name << " should be " << args["owner"];
             return false;
         }
     }
@@ -130,13 +130,13 @@ REMEDIATE_FN(ensureFilePermissions)
     uid_t uid = statbuf.st_uid;
     gid_t gid = statbuf.st_gid;
     bool owner_changed = false;
-    if (args.find("user") != args.end())
+    if (args.find("owner") != args.end())
     {
-        struct passwd* pwd = getpwnam(args["user"].c_str());
+        struct passwd* pwd = getpwnam(args["owner"].c_str());
         if (pwd == nullptr)
         {
-            logstream << "ERROR: No user with name " << args["user"];
-            return Error("No user with name " + args["user"]);
+            logstream << "ERROR: No user with name " << args["owner"];
+            return false;
         }
         uid = pwd->pw_uid;
         owner_changed = true;

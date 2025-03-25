@@ -21,7 +21,7 @@
                   "type": "string",
                   "description": "Path to the file"
                 },
-                "user": {
+                "owner": {
                   "type": "string",
                   "description": "Required owner of the file"
                 },
