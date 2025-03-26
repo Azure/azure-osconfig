@@ -69,7 +69,7 @@ void TrimLog(OsConfigLogHandle log);
 bool IsDaemon(void);
 TelemetryLevel GetTelemetryLevel(void);
 void SetTelemetryLevel(TelemetryLevel level);
-void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* format, ...);
+void OsConfigLogTraceTelemetry(OsConfigLogHandle log, TelemetryLevel level, const char* format, ...);
 
 // Telemetry macros:
 
