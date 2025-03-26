@@ -2404,33 +2404,6 @@
     "ObjectName": "auditEnsureSmbWithSambaIsDisabled"
   },
   {
-    "RunCommand": "useradd securitybaselinetest && id securitybaselinetest"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "games,test"
-  },
-  {
-    "RunCommand": "id securitybaselinetest"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "securitybaselinetest"
-  },
-  {
-    "RunCommand": "! id securitybaselinetest"
-  },
-  {
-    "RunCommand": "userdel securitybaselinetest || true"
-  },
-  {
-    "RunCommand": "groupdel securitybaselinetest || true"
-  },
-  {
     "Action": "UnloadModule"
   }
 ]
