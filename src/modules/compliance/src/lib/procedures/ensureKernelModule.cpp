@@ -3,21 +3,21 @@
 
 #include <CommonUtils.h>
 #include <Evaluator.h>
+#include <Regex.h>
 #include <iostream>
-#include <regex>
 #include <string>
 
 namespace compliance
 {
 
 // TODO(wpk) std::regex::multiline is only supported in C++17.
-static bool MultilineRegexSearch(const std::string& str, const std::regex& pattern)
+static bool MultilineRegexSearch(const std::string& str, const regex& pattern)
 {
     std::istringstream oss(str);
     std::string line;
     while (std::getline(oss, line))
     {
-        if (std::regex_search(line, pattern))
+        if (regex_search(line, pattern))
         {
             return true;
         }
@@ -96,7 +96,7 @@ AUDIT_FN(ensureKernelModuleUnavailable)
         return true;
     }
 
-    std::regex lsmodRegex;
+    regex lsmodRegex;
     try
     {
         lsmodRegex = regex("^" + moduleName + "\\s+");
@@ -112,7 +112,7 @@ AUDIT_FN(ensureKernelModuleUnavailable)
         return false;
     }
 
-    std::regex modprobeBlacklistRegex;
+    regex modprobeBlacklistRegex;
     try
     {
         modprobeBlacklistRegex = regex("^blacklist\\s+" + moduleName + "$");
@@ -128,7 +128,7 @@ AUDIT_FN(ensureKernelModuleUnavailable)
         return false;
     }
 
-    std::regex modprobeInstallRegex;
+    regex modprobeInstallRegex;
     try
     {
         modprobeInstallRegex = regex("^install\\s+" + moduleName + "\\s+(/usr)?/bin/(true|false)");
