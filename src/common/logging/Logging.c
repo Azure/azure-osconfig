@@ -260,7 +260,7 @@ bool IsDaemon()
     return (1 == getppid());
 }
 
-void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* format, ...)
+void OsConfigLogTraceTelemetry(OsConfigLogHandle log, TelemetryLevel level, const char* format, ...)
 {
     char* buffer = NULL;
     int formatResult = 0;
@@ -286,7 +286,7 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, const char* format, ...)
 
             if (formatResult > 0)
             {
-                OsConfigLogDebugTelemetry(log, ",\"Trace\":\"%s\"", buffer);
+                OsConfigLogTelemetry(log, level, ",\"Trace\":\"%s\"", buffer);
             }
 
             free(buffer);
