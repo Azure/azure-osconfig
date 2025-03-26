@@ -944,8 +944,8 @@ void AsbInitialize(OsConfigLogHandle log)
 
     freeMemory = GetFreeMemory(log);
     freeMemoryPercentage = (freeMemory * 100) / totalMemory;
-    // This is an example of a trace that gets written to both current trace log and to the telemetry log when the Telemetry Level is set to DebugTelemetry (4)
-    OsConfigLogWithTelemetry(log, "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
+    // This is an example of a trace that gets written to both current trace log and to the telemetry log
+    OsConfigLogWithTelemetry(log, LoggingLevelInformational, GetTelemetryLog(), DebugTelemetry, "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
     InitializeSshAudit(log);
 
