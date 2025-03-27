@@ -18,7 +18,7 @@ void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char*
 
     if (OptionalTelemetry > telemetryLevel)
     {
-        if (SESSIONS_TELEMETRY_MARKER == objectResult))
+        if (SESSIONS_TELEMETRY_MARKER == objectResult)
         {
             OsConfigLogTelemetry(log, RequiredTelemetry, ",\"TargetName\":\"%s\",\"BaselineName\":\"%s\",\"Mode\":\"%s\",\"Seconds\":\"%.02f\"",
                 targetName, componentName, objectName, microseconds / 1000000.0);
