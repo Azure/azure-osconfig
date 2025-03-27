@@ -137,7 +137,7 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, TelemetryLevel level, cons
     }\
 }\
 
-// Macro that logs and also emits a telemetry line with a message containing the same logged trace content when OptionalTelemetry (4) is set
+// Macro that logs to both regular log and to telemetry log at the same time under the respective levels
 #define OsConfigLogWithTelemetry(log, level, telemetryLog, telemetryLevel, FORMAT, ...) {\
     OsConfigLog(log, level, FORMAT, ## __VA_ARGS__);\
     OsConfigLogTraceTelemetry(telemetryLog, telemetryLevel, FORMAT, ## __VA_ARGS__);\
