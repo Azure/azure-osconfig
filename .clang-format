@@ -52,7 +52,7 @@ FixNamespaceComments: true
 IndentCaseLabels: true
 IndentExternBlock: NoIndent
 IndentWidth: 4
-IndentPPDirectives: AfterHash
+IndentPPDirectives: None
 IndentWrappedFunctionNames: true
 KeepEmptyLinesAtTheStartOfBlocks: true
 MacroBlockBegin: ''
