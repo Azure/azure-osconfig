@@ -653,8 +653,7 @@ static const long g_maxTotalTime = 1800000000;
 
 static char* g_prettyName = NULL;
 
-// Temporary hard-coded, normal default here must be NoTelemetry
-static TelemetryLevel g_telemetryLevel = DebugTelemetry; //NoTelemetry;
+static TelemetryLevel g_telemetryLevel = RequiredTelemetry;
 
 static bool g_auditOnly = true;
 
@@ -5868,7 +5867,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             g_auditOnly = false;
 
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
-            LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, "\"none\"", GetTelemetryLog());
+            LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, NULL, GetTelemetryLog());
         }
     }
 

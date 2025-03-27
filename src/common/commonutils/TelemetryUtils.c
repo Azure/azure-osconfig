@@ -16,20 +16,22 @@ void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char*
 
     microseconds = GetPerfClockTime(clock, log);
 
-    if ((BasicTelemetry <= telemetryLevel) && (SESSIONS_TELEMETRY_MARKER == objectResult))
+    if (OptionalTelemetry > telemetryLevel)
     {
-        OsConfigLogTelemetry(log, BasicTelemetry, ",\"TargetName\":\"%s\",\"BaselineName\":\"%s\",\"Mode\":\"%s\",\"Seconds\":\"%.02f\"",
-            targetName, componentName, objectName, microseconds / 1000000.0);
+        if (SESSIONS_TELEMETRY_MARKER == objectResult))
+        {
+            OsConfigLogTelemetry(log, RequiredTelemetry, ",\"TargetName\":\"%s\",\"BaselineName\":\"%s\",\"Mode\":\"%s\",\"Seconds\":\"%.02f\"",
+                targetName, componentName, objectName, microseconds / 1000000.0);
+        }
+        else
+        {
+            OsConfigLogTelemetry(log, RequiredTelemetry, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Microseconds\":\"%ld\"",
+                targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
+        }
     }
-    else if (DebugTelemetry > telemetryLevel)
+    else if ((OptionalTelemetry <= telemetryLevel) && (NULL != reason))
     {
-        OsConfigLogTelemetry(log, ((0 != objectResult) ? FailuresTelemetry : AllTelemetry),
-            ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Microseconds\":\"%ld\"",
-            targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
-    }
-    else if ((DebugTelemetry <= telemetryLevel) && (NULL != reason))
-    {
-        OsConfigLogTelemetry(log, DebugTelemetry, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Reason\":%s,\"Microseconds\":\"%ld\"",
+        OsConfigLogTelemetry(log, OptionalTelemetry, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Reason\":%s,\"Microseconds\":\"%ld\"",
             targetName, componentName, objectName, strerror(objectResult), objectResult, reason, microseconds);
     }
 }

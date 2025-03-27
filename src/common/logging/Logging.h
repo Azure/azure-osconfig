@@ -37,14 +37,12 @@ typedef enum LoggingLevel LoggingLevel;
 
 // The telemetry level values control the amount of telemetry issued by the client.
 // As the level value increases, the amount of emitted telemetry increases.
-// NoTelemetry (0) is default.
+// RequiredTelemetry (1) is default.
 enum TelemetryLevel
 {
     NoTelemetry = 0,
-    BasicTelemetry = 1,
-    FailuresTelemetry = 2,
-    AllTelemetry = 3,
-    DebugTelemetry = 4
+    RequiredTelemetry = 1,
+    OptionalTelemetry = 2
 };
 typedef enum TelemetryLevel TelemetryLevel;
 
@@ -92,11 +90,8 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, TelemetryLevel level, cons
 }\
 
 // Shortcuts that directly log telemetry at the respective level:
-#define OsConfigLogCrashTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, CrashTelemetry, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogBasicTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, BasicTelemetry, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogFailuresTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, FailuresTelemetry, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogAllTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, AllTelemetry, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogDebugTelemetry(log, FORMAT, ...)  OsConfigLogTelemetry(log, DebugTelemetry, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogRequiredTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, RequiredTelemetry, FORMAT, ## __VA_ARGS__)
+#define OsConfigLogOptionalTelemetry(log, FORMAT, ...)  OsConfigLogTelemetry(log, OptionalTelemetry, FORMAT, ## __VA_ARGS__)
 
 // Logging macros:
 
@@ -142,7 +137,7 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, TelemetryLevel level, cons
     }\
 }\
 
-// Macro that logs and also emits a telemetry line with a message containing the same logged trace content when DebugTelemetry (4) is set
+// Macro that logs and also emits a telemetry line with a message containing the same logged trace content when OptionalTelemetry (4) is set
 #define OsConfigLogWithTelemetry(log, level, telemetryLog, telemetryLevel, FORMAT, ...) {\
     OsConfigLog(log, level, FORMAT, ## __VA_ARGS__);\
     OsConfigLogTraceTelemetry(telemetryLog, telemetryLevel, FORMAT, ## __VA_ARGS__);\
