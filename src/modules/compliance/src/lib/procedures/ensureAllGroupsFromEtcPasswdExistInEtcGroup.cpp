@@ -25,8 +25,9 @@ AUDIT_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
     }
     if (0 != errno)
     {
+        int status = errno;
         endgrent();
-        return Error("getgrent failed with errno: " + std::to_string(errno));
+        return Error(std::string("getgrent failed: ") + strerror(status), status);
     }
     endgrent();
 
@@ -44,7 +45,7 @@ AUDIT_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
     {
         int status = errno;
         endpwent();
-        return Error("getpwent failed with errno: " + std::to_string(status));
+        return Error(std::string("getpwent failed: ") + strerror(status), status);
     }
     endpwent();
 

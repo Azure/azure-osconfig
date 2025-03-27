@@ -30,7 +30,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
-    "Payload": "PASS{ allOf: [{ ensureAllGroupsFromEtcPasswdExistInEtcGroup: All user groups in '\/etc\/passwd' exist in '\/etc\/group' } == TRUE] == TRUE }"
+    "Payload": "PASS{ allOf: [{ ensureAllGroupsFromEtcPasswdExistInEtcGroup: All user groups from '\/etc\/passwd' exist in '\/etc\/group' } == TRUE] == TRUE }"
   },
 
 
@@ -44,7 +44,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
-    "Payload": "PASS{ allOf: [{ ensureAllGroupsFromEtcPasswdExistInEtcGroup: All user groups in '\/etc\/passwd' exist in '\/etc\/group' } == TRUE] == TRUE }"
+    "Payload": "PASS{ allOf: [{ ensureAllGroupsFromEtcPasswdExistInEtcGroup: All user groups from '\/etc\/passwd' exist in '\/etc\/group' } == TRUE] == TRUE }"
   },
 
 
