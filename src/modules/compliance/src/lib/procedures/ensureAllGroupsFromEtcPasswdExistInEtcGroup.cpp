@@ -42,8 +42,9 @@ AUDIT_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
     }
     if (0 != errno)
     {
+        int status = errno;
         endpwent();
-        return Error("getpwent failed with errno: " + std::to_string(errno));
+        return Error("getpwent failed with errno: " + std::to_string(status));
     }
     endpwent();
 
@@ -57,6 +58,12 @@ AUDIT_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
 REMEDIATE_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
 {
     UNUSED(args);
+    auto result = Audit_ensureAllGroupsFromEtcPasswdExistInEtcGroup(args, logstream);
+    if (result)
+    {
+        return true;
+    }
+
     logstream << "Manual remediation is required to ensure all groups from /etc/passwd exist in /etc/group";
     return false;
 }
