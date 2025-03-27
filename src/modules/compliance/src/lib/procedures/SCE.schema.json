@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "SCE"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "SCE": {
+              "type": "object",
+              "required": [
+                "scriptName"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "scriptName": {
+                  "type": "string",
+                  "description": "Script path"
+                },
+                "ENVIRONMENT": {
+                  "type": "string",
+                  "description": "Environment as passed to the SCE script"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "SCE"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "SCE": {
+              "type": "object",
+              "required": [
+                "scriptName"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "scriptName": {
+                  "type": "string",
+                  "description": "Script path"
+                },
+                "ENVIRONMENT": {
+                  "type": "string",
+                  "description": "Environment as passed to the SCE script"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
