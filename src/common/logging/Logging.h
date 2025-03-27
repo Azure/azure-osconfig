@@ -73,8 +73,8 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, TelemetryLevel level, cons
 
 #define __PREFIX_TELEMETRY_TEMPLATE__ "{\"DateTime\":\"%s\""
 #define __LOG_TELEMETRY_TO_FILE__(log, format, ...) {\
-    TrimLog(log); \
-    fprintf(GetLogFile(log), __PREFIX_TELEMETRY_TEMPLATE__ format "}\n", GetFormattedTime(), ## __VA_ARGS__); \
+    TrimLog(log);\
+    fprintf(GetLogFile(log), __PREFIX_TELEMETRY_TEMPLATE__ format "}\n", GetFormattedTime(), ## __VA_ARGS__);\
 }\
 
 #define OSCONFIG_FILE_LOG_TELEMETRY(log, format, ...) __LOG_TELEMETRY_TO_FILE__(log, format, ## __VA_ARGS__)
@@ -99,8 +99,8 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, TelemetryLevel level, cons
 #define __SHORT_FILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define __LOG__(log, label, format, ...) printf(__PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__)
 #define __LOG_TO_FILE__(log, label, format, ...) {\
-    TrimLog(log); \
-    fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
+    TrimLog(log);\
+    fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__);\
 }\
 
 #define OSCONFIG_LOG(log, level, format, ...) __LOG__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
