@@ -10,7 +10,7 @@
           ],
           "additionalProperties": false,
           "properties": {
-            "packageInstalled": {
+            "ensureFilesystemOption": {
               "type": "object",
               "required": [
                 "mountpoint"

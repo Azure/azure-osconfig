@@ -137,7 +137,13 @@
           "$ref": "procedures/ensureFilesystemOption.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/ensureKernelModule.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/packageInstalled.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/SCE.schema.json#/definitions/audit"
         },
         {
           "$ref": "procedures/testingProcedures.schema.json#/definitions/audit"
@@ -156,13 +162,22 @@
           "$ref": "procedures/ensureFilesystemOption.schema.json#/definitions/remediation"
         },
         {
+          "$ref": "procedures/ensureKernelModule.schema.json#/definitions/remediation"
+        },
+        {
           "$ref": "procedures/packageInstalled.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/SCE.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/testingProcedures.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/ensureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "#definitions/auditProcedure"
         }
       ]
     }
