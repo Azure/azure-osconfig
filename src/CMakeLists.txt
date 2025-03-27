@@ -108,6 +108,7 @@ set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
 
 if (BUILD_TESTS)
     enable_testing()
+    add_compile_options(-D TEST_CODE)
     set (GTEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/gtest-output)
 endif()
 
