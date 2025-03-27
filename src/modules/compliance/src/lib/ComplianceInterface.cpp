@@ -95,7 +95,7 @@ int ComplianceMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         auto result = engine.MmiGet(objectName);
         if (!result.HasValue())
         {
-            OsConfigLogError(engine.Log(), "ComplianceMmiGet failed: %s", result.Error().message.c_str());
+            OsConfigLogError(engine.Log(), "ComplianceMmiGet failed: %s (errno: %d)", result.Error().message.c_str(), result.Error().code);
             return result.Error().code;
         }
 
@@ -166,7 +166,7 @@ int ComplianceMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
         auto result = engine.MmiSet(objectName, std::move(realPayload));
         if (!result.HasValue())
         {
-            OsConfigLogError(engine.Log(), "ComplianceMmiSet failed: %s", result.Error().message.c_str());
+            OsConfigLogError(engine.Log(), "ComplianceMmiSet failed: %s (errno: %d)", result.Error().message.c_str(), result.Error().code);
             return result.Error().code;
         }
 

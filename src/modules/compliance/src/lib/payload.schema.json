@@ -141,6 +141,9 @@
         },
         {
           "$ref": "procedures/testingProcedures.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/ensureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/audit"
         }
       ]
     },
@@ -157,6 +160,9 @@
         },
         {
           "$ref": "procedures/testingProcedures.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/ensureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/remediation"
         }
       ]
     }
