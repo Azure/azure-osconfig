@@ -23,13 +23,12 @@ AUDIT_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
     {
         etcGroupGroups.insert(grp->gr_gid);
     }
-    if (0 != errno)
+    int status = errno;
+    endgrent();
+    if (0 != status)
     {
-        int status = errno;
-        endgrent();
         return Error(std::string("getgrent failed: ") + strerror(status), status);
     }
-    endgrent();
 
     setpwent();
     bool result = true;
@@ -41,13 +40,12 @@ AUDIT_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
             result = false;
         }
     }
+    status = errno;
+    endpwent();
     if (0 != errno)
     {
-        int status = errno;
-        endpwent();
         return Error(std::string("getpwent failed: ") + strerror(status), status);
     }
-    endpwent();
 
     if (result)
     {
