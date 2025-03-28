@@ -11,10 +11,6 @@
 
 static const char* g_root = "root";
 static const char* g_shadow = "shadow";
-static const char* g_etcShadow = "/etc/shadow";
-static const char* g_etcPasswd = "/etc/passwd";
-static const char* g_etcPasswdDash = "/etc/passwd-";
-static const char* g_etcShadowDash = "/etc/shadow-";
 
 static const char* g_noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", "" };
 
@@ -3014,10 +3010,8 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
 int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandle log)
 {
-    const char* userTemplate = "%s:";
     size_t namesLength = 0;
     char* name = NULL;
-    char* decoratedName = NULL;
     SimplifiedUser* userList = NULL;
     SimplifiedGroup* groupList = NULL;
     unsigned int userListSize = 0, groupListSize = 0, i = 0, j = 0;
@@ -3076,53 +3070,6 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
 
     FreeUsersList(&userList, userListSize);
 
-    if ((false == found) && (0 == status))
-    {
-        OsConfigLogInfo(log, "CheckUserAccountsNotFound: none of the requested user accounts ('%s') were found in the users database", names);
-    }
-
-    if (0 == status)
-    {
-        for (j = 0; j < namesLength; j++)
-        {
-            if (NULL == (name = DuplicateString(&(names[j]))))
-            {
-                OsConfigLogError(log, "CheckUserAccountsNotFound: failed to duplicate string");
-                status = ENOMEM;
-                break;
-            }
-            else
-            {
-                TruncateAtFirst(name, ',');
-
-                if (NULL == (decoratedName = FormatAllocateString(userTemplate, name)))
-                {
-                    OsConfigLogError(log, "CheckUserAccountsNotFound: out of memory, unable to check for user '%s' presence in '%s' andr '%s'",
-                        name, g_etcPasswd, g_etcShadow);
-                }
-                else
-                {
-                    if (0 == FindTextInFile(g_etcPasswd, decoratedName, log))
-                    {
-                        OsConfigCaptureReason(reason, "Account '%s' found mentioned in '%s'", name, g_etcPasswd);
-                        found = true;
-                    }
-
-                    if (0 == FindTextInFile(g_etcShadow, decoratedName, log))
-                    {
-                        OsConfigCaptureReason(reason, "Account '%s' found mentioned in '%s'", name, g_etcShadow);
-                        found = true;
-                    }
-
-                    FREE_MEMORY(decoratedName);
-                }
-
-                j += strlen(name);
-                FREE_MEMORY(name);
-            }
-        }
-    }
-
     if (found)
     {
         status = EEXIST;
@@ -3140,12 +3087,10 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
     return status;
 }
 
-int RemoveUserAccounts(const char* names, bool removeHomeDirs, OsConfigLogHandle log)
+int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
 {
-    const char* userTemplate = "%s:";
     size_t namesLength = 0;
     char* name = NULL;
-    char* decoratedName = NULL;
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     bool userAccountsNotFound = false;
@@ -3190,7 +3135,7 @@ int RemoveUserAccounts(const char* names, bool removeHomeDirs, OsConfigLogHandle
 
                         if (0 == strcmp(userList[i].username, name))
                         {
-                            if ((0 != (_status = RemoveUser(&(userList[i]), removeHomeDirs, log))) && (0 == status))
+                            if ((0 != (_status = RemoveUser(&(userList[i]), false, log))) && (0 == status))
                             {
                                 status = _status;
                             }
@@ -3209,58 +3154,6 @@ int RemoveUserAccounts(const char* names, bool removeHomeDirs, OsConfigLogHandle
         }
 
         FreeUsersList(&userList, userListSize);
-    }
-
-    if (0 == status)
-    {
-        for (j = 0; j < namesLength; j++)
-        {
-            if (NULL == (name = DuplicateString(&(names[j]))))
-            {
-                OsConfigLogError(log, "RemoveUserAccounts: failed to duplicate string");
-                status = ENOMEM;
-                break;
-            }
-            else
-            {
-                TruncateAtFirst(name, ',');
-
-                if (NULL == (decoratedName = FormatAllocateString(userTemplate, name)))
-                {
-                    OsConfigLogError(log, "RemoveUserAccounts: out of memory");
-                }
-                else
-                {
-                    if (false == userAccountsNotFound)
-                    {
-                        if (0 == FindTextInFile(g_etcPasswd, decoratedName, log))
-                        {
-                            ReplaceMarkedLinesInFile(g_etcPasswd, decoratedName, NULL, '#', true, log);
-                        }
-
-                        if (0 == FindTextInFile(g_etcShadow, decoratedName, log))
-                        {
-                            ReplaceMarkedLinesInFile(g_etcShadow, decoratedName, NULL, '#', true, log);
-                        }
-                    }
-
-                    if (0 == FindTextInFile(g_etcPasswdDash, decoratedName, log))
-                    {
-                        ReplaceMarkedLinesInFile(g_etcPasswdDash, decoratedName, NULL, '#', true, log);
-                    }
-
-                    if (0 == FindTextInFile(g_etcShadowDash, decoratedName, log))
-                    {
-                        ReplaceMarkedLinesInFile(g_etcShadowDash, decoratedName, NULL, '#', true, log);
-                    }
-
-                    FREE_MEMORY(decoratedName);
-                }
-
-                j += strlen(name);
-                FREE_MEMORY(name);
-            }
-        }
     }
 
     if (0 == status)
