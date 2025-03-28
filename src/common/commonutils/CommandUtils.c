@@ -52,12 +52,11 @@ void CleanupMockCommands()
         g_mockCommand = next;
     }
 }
-#endif
+#endif //#ifdef TEST_CODE
 
 #define BUFFER_SIZE 1024
 
-int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds,
-    char** textResult, CommandCallback callback, OsConfigLogHandle log)
+int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, OsConfigLogHandle log)
 {
     int workerPid = -1;
     int pipefd[2] = {0};
@@ -68,7 +67,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         OsConfigLogDebug(log, "Command cannot be NULL");
         return -1;
     }
-    if (strlen(command) > (size_t)sysconf(_SC_ARG_MAX))
+    else if (strlen(command) > (size_t)sysconf(_SC_ARG_MAX))
     {
         OsConfigLogError(log, "Command '%.40s...' is too long, %lu characters (maximum %lu characters)", command, strlen(command), (size_t)sysconf(_SC_ARG_MAX));
         return E2BIG;
@@ -77,20 +76,25 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 #ifdef TEST_CODE
     // Allow mocked call for unit testing of things that execute commands.
     struct MockCommand* mock = g_mockCommand;
-    while (NULL != mock) {
+    
+    while (NULL != mock) 
+    {
         size_t stringLen = strlen(mock->expectedCommand);
+        
         if (!mock->matchPrefix && (strlen(command) > stringLen))
         {
             stringLen = strlen(command);
         }
+        
         if (0 == strncmp(mock->expectedCommand, command, stringLen))
         {
             *textResult = DuplicateString(mock->output);
             return mock->returnCode;
         }
-	mock = mock->next;
+
+        mock = mock->next;
     }
-#endif
+#endif //#ifdef TEST_CODE
 
     // Create a pipe, then fork. Forked process duplicates the write pipe end to stdout and stderr,
     // then execs the shell with the given command. The main process uses select() with a timeout.
@@ -100,21 +104,19 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     // characters with spaces if requested. The output is returned in the textResult buffer, which is
     // allocated by this function. The caller is responsible for freeing the buffer when done.
 
-    startTime = MonotonicTime();
-    if (startTime < 0)
+    if ((startTime = MonotonicTime()) < 0)
     {
         OsConfigLogError(log, "Cannot get time for command '%s', clock_gettime() failed with %d (%s)", command, errno, strerror(errno));
         return errno;
     }
-
+    
     if (0 != pipe(pipefd))
     {
         OsConfigLogError(log, "Cannot create pipe for command '%s', pipe() failed with %d (%s)", command, errno, strerror(errno));
         return errno;
     }
 
-    workerPid = fork();
-    if (workerPid < 0)
+    if (0 > (workerPid = fork()))
     {
         OsConfigLogError(log, "Cannot fork for command '%s', fork() failed with %d (%s)", command, errno, strerror(errno));
         close(pipefd[0]);
@@ -126,15 +128,19 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     {
         // Child process
         close(pipefd[0]);
+
         if (STDOUT_FILENO != dup2(pipefd[1], STDOUT_FILENO))
         {
             exit(errno);
         }
+
         if (STDERR_FILENO != dup2(pipefd[1], STDERR_FILENO))
         {
             exit(errno);
         }
+
         execl("/bin/sh", "sh", "-c", command, (char*)NULL);
+        
         // If execl() fails, exit with the error code
         exit(errno);
     }
@@ -172,32 +178,41 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             FD_SET(pipefd[0], &fdset);
 
             tv = selectInterval;
-            ret = select(pipefd[0] + 1, &fdset, NULL, NULL, &tv);
-            if (ret < 0)
+
+            if (0 > (ret = select(pipefd[0] + 1, &fdset, NULL, NULL, &tv) < 0))
             {
                 if (EINTR == errno)
                 {
                     continue;
                 }
+
                 OsConfigLogError(log, "Error doing select for command '%s', select() failed with %d (%s)", command, errno, strerror(errno));
                 status = errno;
                 break;
             }
 
-            currentTime = MonotonicTime();
-            if (currentTime < 0)
+            if (0 > (currentTime = MonotonicTime()))
             {
                 OsConfigLogError(log, "Error getting time for command '%s', clock_gettime() failed with %d (%s)", command, errno, strerror(errno));
                 status = errno;
                 break;
             }
-            if ((timeoutSeconds > 0) && (currentTime - startTime >= timeoutSeconds))
+
+            if (currentTime < startTime)
+            {
+                OsConfigLogError(log, "Current time is earlier than start time, cannot continue");
+                status = errno ? errno : ENOENT;
+                break;
+            }
+
+            if ((timeoutSeconds > 0) && ((currentTime - startTime) >= timeoutSeconds))
             {
                 OsConfigLogError(log, "Timeout reading from pipe for command '%s', %d seconds", command, (int)(currentTime - startTime));
                 status = ETIME;
                 break;
             }
-            if ((NULL != callback) && (currentTime - lastCallbackTime >= callbackIntervalSeconds))
+
+            if ((NULL != callback) && ((currentTime - lastCallbackTime) >= callbackIntervalSeconds))
             {
                 if (0 != callback(context))
                 {
@@ -205,6 +220,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                     status = ECANCELED;
                     break;
                 }
+
                 lastCallbackTime = currentTime;
             }
 
@@ -214,25 +230,26 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                 continue;
             }
 
-            bytesRead = read(pipefd[0], buffer, BUFFER_SIZE);
-            if (bytesRead == 0)
+            if (0 == (bytesRead = read(pipefd[0], buffer, BUFFER_SIZE)))
             {
                 // Child closed the pipe, we are done.
                 status = 0;
                 break;
             }
+
             if (bytesRead < 0)
             {
                 if (EINTR == errno)
                 {
                     continue;
                 }
+            
                 OsConfigLogError(log, "Error reading from pipe for command '%s', read() failed with %d (%s)", command, errno, strerror(errno));
                 status = errno;
                 break;
             }
 
-            if (((maxTextResultBytes > 0) && (outputBufferPos == maxTextResultBytes)) || textResult == NULL)
+            if (((maxTextResultBytes > 0) && (outputBufferPos == maxTextResultBytes)) || (NULL == textResult))
             {
                 // We don't want any more data, loop to read the rest of the output.
                 continue;
@@ -244,14 +261,14 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                 outputBufferSize = maxTextResultBytes - 1;
             }
 
-            tmp = realloc(*textResult, outputBufferSize + 1);
-            if (NULL == tmp)
+            if (NULL == (tmp = realloc(*textResult, outputBufferSize + 1)))
             {
-                OsConfigLogError(log, "Cannot allocate buffer for command '%s'", command);
+                OsConfigLogError(log, "Cannot allocate %ld bytes as buffer for command '%s'", outputBufferSize + 1, command);
                 status = ENOMEM;
                 FREE_MEMORY(*textResult);
                 break;
             }
+            
             *textResult = tmp;
 
             for (inputBufferPos = 0; (inputBufferPos < bytesRead) && (outputBufferPos < outputBufferSize); inputBufferPos++, outputBufferPos++)
@@ -260,14 +277,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                 // all special characters from 0x00 to 0x1F except 0x0A (LF) when replaceEol is false
                 // plus 0x22 (") and 0x5C (\) characters that break the JSON envelope when forJson is true
                 const char c = buffer[inputBufferPos];
-                if ((replaceEol && (EOL == c)) || ((c < 0x20) && (EOL != c)) || (0x7F == c) || (forJson && (('"' == c) || ('\\' == c))))
-                {
-                    (*textResult)[outputBufferPos] = ' ';
-                }
-                else
-                {
-                    (*textResult)[outputBufferPos] = c;
-                }
+                (*textResult)[outputBufferPos] = ((replaceEol && (EOL == c)) || ((c < 0x20) && (EOL != c)) || (0x7F == c) || (forJson && (('"' == c) || ('\\' == c)))) ? ' ' : c;
             }
         }
 
@@ -279,17 +289,11 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         close(pipefd[0]);
         kill(workerPid, SIGKILL);
         waitpid(workerPid, &childStatus, 0);
-        if (status == 0)
+
+        if (0 == status)
         {
             // The command was successful, but we need to check the child process status.
-            if (WIFEXITED(childStatus))
-            {
-                status = WEXITSTATUS(childStatus);
-            }
-            else
-            {
-                status = childStatus;
-            }
+            status = WIFEXITED(childStatus) ? WEXITSTATUS(childStatus) : childStatus;
         }
 
         OsConfigLogDebug(log, "Context: '%p'", context);

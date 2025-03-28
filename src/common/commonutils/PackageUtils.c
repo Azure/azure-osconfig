@@ -10,6 +10,9 @@ static const char* g_dnf = "dnf";
 static const char* g_yum = "yum";
 static const char* g_zypper = "zypper";
 
+// 30 minutes
+static const unsigned int g_packageManagerTimeoutSeconds = 1800;
+
 static bool g_checkedPackageManagersPresence = false;
 static bool g_aptGetIsPresent = false;
 static bool g_dpkgIsPresent = false;
@@ -38,7 +41,7 @@ int IsPresent(const char* what, OsConfigLogHandle log)
 
     if (NULL != (command = FormatAllocateString(commandTemplate, what)))
     {
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
         {
             OsConfigLogInfo(log, "'%s' is locally present", what);
         }
@@ -85,7 +88,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
         return ENOMEM;
     }
 
-    status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
+    status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log);
 
     OsConfigLogInfo(log, "Package manager '%s' command '%s' returning %d (errno: %d)", packageManager, command, status, errno);
 
@@ -199,7 +202,7 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, OsCo
         return status;
     }
 
-    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
     {
         OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' was successful", command);
         *executed = true;
