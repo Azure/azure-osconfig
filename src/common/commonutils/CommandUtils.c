@@ -179,7 +179,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
             tv = selectInterval;
 
-            if (0 > (ret = select(pipefd[0] + 1, &fdset, NULL, NULL, &tv) < 0))
+            if (0 > (ret = select(pipefd[0] + 1, &fdset, NULL, NULL, &tv)))
             {
                 if (EINTR == errno)
                 {
