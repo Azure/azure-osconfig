@@ -57,10 +57,19 @@ jobs:
           for recipe in $recipes; do
             echo "testing $recipe"
             name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
-            module=$(cat $recipe | jq -r '.[0].Module')
-            echo "module: $module"
-            if [ ! -f ../bin/$module ]; then
-              echo "module $module not found"
+            modules=$(cat /tmp/test.json | grep '.so' | awk -F'"' '{print $4}')
+            skip=
+            for module in $modules; do
+              echo "module: $module"
+              if [ ! -f ../bin/$module ]; then
+                echo "module $module not found"
+                skip=1
+                break
+              fi
+            done
+
+            if [ $skip ]; then
+              echo "skipping $name"
               continue
             fi
 
