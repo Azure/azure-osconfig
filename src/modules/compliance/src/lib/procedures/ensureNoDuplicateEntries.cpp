@@ -21,25 +21,25 @@ AUDIT_FN(ensureNoDuplicateEntriesExist)
     auto it = args.find("filename");
     if (it == args.end())
     {
-        return Error("Missing 'filename' argument");
+        return Error("Missing 'filename' argument", EINVAL);
     }
     auto filename = std::move(it->second);
 
     it = args.find("delimiter");
     if (it == args.end())
     {
-        return Error("Missing 'delimiter' argument");
+        return Error("Missing 'delimiter' argument", EINVAL);
     }
     auto delimiter = std::move(it->second);
     if (delimiter.size() != 1)
     {
-        return Error("Delimiter must be a single character");
+        return Error("Delimiter must be a single character", EINVAL);
     }
 
     it = args.find("column");
     if (it == args.end())
     {
-        return Error("Missing 'column' argument");
+        return Error("Missing 'column' argument", EINVAL);
     }
 
     int column = 0;
@@ -53,7 +53,7 @@ AUDIT_FN(ensureNoDuplicateEntriesExist)
     }
     catch (const std::exception& e)
     {
-        return Error(std::string("Failed to parse 'column' argument: ") + e.what());
+        return Error(std::string("Failed to parse 'column' argument: ") + e.what(), EINVAL);
     }
 
     Optional<std::string> context;
@@ -69,7 +69,7 @@ AUDIT_FN(ensureNoDuplicateEntriesExist)
     std::ifstream file(filename);
     if (!file.is_open())
     {
-        return Error("Failed to open file: " + filename);
+        return Error("Failed to open file: " + filename, ENOENT);
     }
 
     while (std::getline(file, line))
@@ -80,7 +80,7 @@ AUDIT_FN(ensureNoDuplicateEntriesExist)
         {
             if (!std::getline(iss, token, delimiter[0]))
             {
-                return Error("Column index out of bounds");
+                return Error("Column index out of bounds", EINVAL);
             }
         }
 
