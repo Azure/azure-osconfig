@@ -76,16 +76,16 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 #ifdef TEST_CODE
     // Allow mocked call for unit testing of things that execute commands.
     struct MockCommand* mock = g_mockCommand;
-    
-    while (NULL != mock) 
+
+    while (NULL != mock)
     {
         size_t stringLen = strlen(mock->expectedCommand);
-        
+
         if (!mock->matchPrefix && (strlen(command) > stringLen))
         {
             stringLen = strlen(command);
         }
-        
+
         if (0 == strncmp(mock->expectedCommand, command, stringLen))
         {
             *textResult = DuplicateString(mock->output);
@@ -109,7 +109,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         OsConfigLogError(log, "Cannot get time for command '%s', clock_gettime() failed with %d (%s)", command, errno, strerror(errno));
         return errno;
     }
-    
+
     if (0 != pipe(pipefd))
     {
         OsConfigLogError(log, "Cannot create pipe for command '%s', pipe() failed with %d (%s)", command, errno, strerror(errno));
@@ -140,7 +140,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         }
 
         execl("/bin/sh", "sh", "-c", command, (char*)NULL);
-        
+
         // If execl() fails, exit with the error code
         exit(errno);
     }
@@ -243,7 +243,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                 {
                     continue;
                 }
-            
+
                 OsConfigLogError(log, "Error reading from pipe for command '%s', read() failed with %d (%s)", command, errno, strerror(errno));
                 status = errno;
                 break;
@@ -268,7 +268,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                 FREE_MEMORY(*textResult);
                 break;
             }
-            
+
             *textResult = tmp;
 
             for (inputBufferPos = 0; (inputBufferPos < bytesRead) && (outputBufferPos < outputBufferSize); inputBufferPos++, outputBufferPos++)
