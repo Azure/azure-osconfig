@@ -7,6 +7,7 @@ project(compliancelib)
 file(GLOB PROCEDURES procedures/*.cpp)
 file(GLOB SCHEMAS procedures/*.schema.json)
 
+
 add_custom_target(complianceschema_prep
 	SOURCES ${SCHEMAS}
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/schema
@@ -29,6 +30,7 @@ add_library(compliancelib STATIC
     Base64.cpp
     Engine.cpp
     Procedure.cpp
+    Regex.cpp
     ${PROCEDURES}
     )
 
@@ -44,6 +46,7 @@ target_link_libraries(compliancelib PRIVATE
     logging
     commonutils
     parsonlib
+    pcre2-8-static
     )
 
 target_include_directories(compliancelib PUBLIC

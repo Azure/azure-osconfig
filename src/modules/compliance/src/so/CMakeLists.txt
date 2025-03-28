@@ -3,6 +3,8 @@
 
 project(compliance)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+
 add_library(compliance SHARED ComplianceModule.c)
 target_link_libraries(compliance
     PRIVATE

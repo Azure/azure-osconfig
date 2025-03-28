@@ -11,13 +11,13 @@ namespace compliance
 {
 
 // TODO(wpk) std::regex::multiline is only supported in C++17.
-static bool MultilineRegexSearch(const std::string& str, const regex& pattern)
+static bool MultilineRegexSearch(const std::string& str, const Regex& pattern)
 {
     std::istringstream oss(str);
     std::string line;
     while (std::getline(oss, line))
     {
-        if (regex_search(line, pattern))
+        if (pattern.Match(line))
         {
             return true;
         }
@@ -96,48 +96,37 @@ AUDIT_FN(ensureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
         return true;
     }
 
-    regex lsmodRegex;
-    try
+    auto lsmodRegex = Regex::Compile("^" + moduleName + "\\s+");
+    if (!lsmodRegex.HasValue())
     {
-        lsmodRegex = regex("^" + moduleName + "\\s+");
-    }
-    catch (std::exception& e)
-    {
-        return Error(e.what());
+        return lsmodRegex.Error();
     }
 
-    if (MultilineRegexSearch(lsmodOutput, lsmodRegex))
+    if (MultilineRegexSearch(lsmodOutput, lsmodRegex.Value()))
     {
         logstream << "Module " << moduleName << " is loaded ";
         return false;
     }
 
-    regex modprobeBlacklistRegex;
-    try
+    auto modprobeBlacklistRegex = Regex::Compile("^blacklist\\s+" + moduleName + "$");
+    if (!modprobeBlacklistRegex.HasValue())
     {
-        modprobeBlacklistRegex = regex("^blacklist\\s+" + moduleName + "$");
-    }
-    catch (std::exception& e)
-    {
-        return Error(e.what());
+        return modprobeBlacklistRegex.Error();
     }
 
-    if (!MultilineRegexSearch(modprobeOutput, modprobeBlacklistRegex))
+    if (!MultilineRegexSearch(modprobeOutput, modprobeBlacklistRegex.Value()))
     {
         logstream << "Module " << moduleName << " is not blacklisted in modprobe configuration ";
         return false;
     }
 
-    regex modprobeInstallRegex;
-    try
+    auto modprobeInstallRegex = Regex::Compile("^install\\s+" + moduleName + "\\s+(/usr)?/bin/(true|false)");
+    if (!modprobeInstallRegex.HasValue())
     {
-        modprobeInstallRegex = regex("^install\\s+" + moduleName + "\\s+(/usr)?/bin/(true|false)");
+        return modprobeInstallRegex.Error();
     }
-    catch (std::exception& e)
-    {
-        return Error(e.what());
-    }
-    if (!MultilineRegexSearch(modprobeOutput, modprobeInstallRegex))
+
+    if (!MultilineRegexSearch(modprobeOutput, modprobeInstallRegex.Value()))
     {
         logstream << "Module " << moduleName << " is not masked in modprobe configuration ";
         return false;

@@ -42,7 +42,7 @@ static bool g_consoleLoggingEnabled = true;
 
 bool IsConsoleLoggingEnabled(void)
 {
-    return IsDaemon() ? false : g_consoleLoggingEnabled;
+    return true;
 }
 
 void SetConsoleLoggingEnabled(bool enabledOrDisabled)

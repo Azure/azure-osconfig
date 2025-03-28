@@ -17,6 +17,7 @@ add_executable(compliancetests
     OptionalTest.cpp
     ResultTest.cpp
     Base64Test.cpp
+    RegexTest.cpp
     ${PROCEDURES}
 )
 # for ProcedureMap.h
