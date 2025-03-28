@@ -65,7 +65,7 @@
                   "type": "string",
                   "description": "Path to the file"
                 },
-                "user": {
+                "owner": {
                   "type": "string",
                   "description": "Required owner of the file"
                 },
@@ -76,7 +76,7 @@
                 "permissions": {
                   "type": "string",
                   "pattern": "^[0-7]{3,4}$",
-                  "description": "Required octal permissions of the file - set bits"
+                  "description": "Required octal permissions of the file"
                 },
                 "mask": {
                   "type": "string",

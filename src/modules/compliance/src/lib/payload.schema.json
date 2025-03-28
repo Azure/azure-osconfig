@@ -131,6 +131,12 @@
     "auditProcedure": {
       "anyOf": [
         {
+          "$ref": "procedures/SCE.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/ensureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/ensureFilePermissions.schema.json#/definitions/audit"
         },
         {
@@ -140,27 +146,27 @@
           "$ref": "procedures/ensureKernelModule.schema.json#/definitions/audit"
         },
         {
-          "$ref": "procedures/packageInstalled.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/SCE.schema.json#/definitions/audit"
-        },
-        {
           "$ref": "procedures/ensureNoDuplicateEntriesExist.schema.json#/definitions/audit"
         },
         {
           "$ref": "procedures/ensureNoUserHasPrimaryShadowGroup.schema.json#/definitions/audit"
         },
         {
-          "$ref": "procedures/testingProcedures.schema.json#/definitions/audit"
+          "$ref": "procedures/packageInstalled.schema.json#/definitions/audit"
         },
         {
-          "$ref": "procedures/ensureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/audit"
+          "$ref": "procedures/testingProcedures.schema.json#/definitions/audit"
         }
       ]
     },
     "remediationProcedure": {
       "anyOf": [
+        {
+          "$ref": "procedures/SCE.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/ensureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/remediation"
+        },
         {
           "$ref": "procedures/ensureFilePermissions.schema.json#/definitions/remediation"
         },
@@ -171,22 +177,16 @@
           "$ref": "procedures/ensureKernelModule.schema.json#/definitions/remediation"
         },
         {
-          "$ref": "procedures/packageInstalled.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/SCE.schema.json#/definitions/remediation"
-        },
-        {
           "$ref": "procedures/ensureNoDuplicateEntriesExist.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/ensureNoUserHasPrimaryShadowGroup.schema.json#/definitions/remediation"
         },
         {
-          "$ref": "procedures/testingProcedures.schema.json#/definitions/remediation"
+          "$ref": "procedures/packageInstalled.schema.json#/definitions/remediation"
         },
         {
-          "$ref": "procedures/ensureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/remediation"
+          "$ref": "procedures/testingProcedures.schema.json#/definitions/remediation"
         },
         {
           "$ref": "#definitions/auditProcedure"

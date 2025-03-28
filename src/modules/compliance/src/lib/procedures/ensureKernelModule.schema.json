@@ -2,33 +2,33 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "audit": {
-    "anyOf": [
-      {
-      "type": "object",
-      "required": [
-        "ensureKernelModuleUnavailable"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "ensureKernelModuleUnavailable": {
-        "type": "object",
-        "required": [
-          "moduleName"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "moduleName": {
-          "type": "string",
-          "description": "Name of the kernel module"
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "ensureKernelModuleUnavailable"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ensureKernelModuleUnavailable": {
+              "type": "object",
+              "required": [
+                "moduleName"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "moduleName": {
+                  "type": "string",
+                  "description": "Name of the kernel module"
+                }
+              }
+            }
           }
         }
-        }
-      }
-      }
-    ]
+      ]
     },
     "remediation": {
-    "anyOf": []
+      "anyOf": []
     }
   }
-  }
+}

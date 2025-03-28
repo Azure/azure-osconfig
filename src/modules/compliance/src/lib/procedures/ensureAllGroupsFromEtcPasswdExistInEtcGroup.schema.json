@@ -12,6 +12,7 @@
           "properties": {
             "ensureAllGroupsFromEtcPasswdExistInEtcGroup": {
               "type": "object",
+              "required": [],
               "additionalProperties": false,
               "properties": {}
             }
@@ -30,6 +31,7 @@
           "properties": {
             "ensureAllGroupsFromEtcPasswdExistInEtcGroup": {
               "type": "object",
+              "required": [],
               "additionalProperties": false,
               "properties": {}
             }
