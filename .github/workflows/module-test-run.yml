@@ -57,7 +57,7 @@ jobs:
           for recipe in $recipes; do
             echo "testing $recipe"
             name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
-            modules=$(cat /tmp/test.json | grep '.so' | awk -F'"' '{print $4}')
+            modules=$(cat $recipe | grep '.so' | awk -F'"' '{print $4}')
             skip=
             for module in $modules; do
               echo "module: $module"
