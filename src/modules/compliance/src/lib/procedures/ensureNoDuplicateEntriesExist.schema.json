@@ -12,30 +12,9 @@
           "properties": {
             "ensureNoDuplicateEntriesExist": {
               "type": "object",
-              "required": [
-                "filename",
-                "delimiter",
-                "column"
-              ],
+              "required": [],
               "additionalProperties": false,
-              "properties": {
-                "filename": {
-                  "type": "string",
-                  "description": "Name of the file to check for duplicates"
-                },
-                "delimiter": {
-                  "type": "string",
-                  "description": "Delimiter used in the file"
-                },
-                "column": {
-                  "type": "integer",
-                  "description": "Column number to check for duplicates (0-based)"
-                },
-                "context": {
-                  "type": "string",
-                  "description": "Context in which the function is called, used in output messages"
-                }
-              }
+              "properties": {}
             }
           }
         }

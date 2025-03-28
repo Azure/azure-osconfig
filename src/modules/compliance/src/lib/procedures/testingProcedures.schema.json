@@ -8,9 +8,11 @@
           "required": [
             "auditFailure"
           ],
+          "additionalProperties": false,
           "properties": {
             "auditFailure": {
               "type": "object",
+              "required": [],
               "additionalProperties": false,
               "properties": {
                 "message": {
@@ -19,17 +21,18 @@
                 }
               }
             }
-          },
-          "additionalProperties": false
+          }
         },
         {
           "type": "object",
           "required": [
             "auditSuccess"
           ],
+          "additionalProperties": false,
           "properties": {
             "auditSuccess": {
               "type": "object",
+              "required": [],
               "additionalProperties": false,
               "properties": {
                 "message": {
@@ -38,8 +41,7 @@
                 }
               }
             }
-          },
-          "additionalProperties": false
+          }
         }
       ]
     },
@@ -48,11 +50,13 @@
         {
           "type": "object",
           "required": [
-            "remediationSuccess"
+            "remediationFailure"
           ],
+          "additionalProperties": false,
           "properties": {
-            "remediationSuccess": {
+            "remediationFailure": {
               "type": "object",
+              "required": [],
               "additionalProperties": false,
               "properties": {
                 "message": {
@@ -61,17 +65,18 @@
                 }
               }
             }
-          },
-          "additionalProperties": false
+          }
         },
         {
           "type": "object",
           "required": [
-            "remediationFailure"
+            "remediationSuccess"
           ],
+          "additionalProperties": false,
           "properties": {
-            "remediationFailure": {
+            "remediationSuccess": {
               "type": "object",
+              "required": [],
               "additionalProperties": false,
               "properties": {
                 "message": {
@@ -80,8 +85,7 @@
                 }
               }
             }
-          },
-          "additionalProperties": false
+          }
         },
         {
           "type": "object",
@@ -90,7 +94,7 @@
           ],
           "additionalProperties": false,
           "properties": {
-            "packageInstalled": {
+            "remediationParametrized": {
               "type": "object",
               "required": [
                 "result"

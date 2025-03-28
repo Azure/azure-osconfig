@@ -7,7 +7,7 @@
 namespace compliance
 {
 
-AUDIT_FN(packageInstalled)
+AUDIT_FN(packageInstalled, "packageName:Package name:M")
 {
     char* output = NULL;
     std::string cmdline = "dpkg -s ";

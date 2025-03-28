@@ -1,41 +1,43 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "definitions": {
-        "audit": {
-            "anyOf": [
-                {
-                    "type": "object",
-                    "required": [
-                        "ensureAllGroupsFromEtcPasswdExistInEtcGroup"
-                    ],
-                    "additionalProperties": false,
-                    "properties": {
-                        "ensureAllGroupsFromEtcPasswdExistInEtcGroup": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {}
-                        }
-                    }
-                }
-            ]
-        },
-        "remediation": {
-            "anyOf": [
-                {
-                    "type": "object",
-                    "required": [
-                        "ensureAllGroupsFromEtcPasswdExistInEtcGroup"
-                    ],
-                    "additionalProperties": false,
-                    "properties": {
-                        "ensureAllGroupsFromEtcPasswdExistInEtcGroup": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {}
-                        }
-                    }
-                }
-            ]
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "ensureAllGroupsFromEtcPasswdExistInEtcGroup"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ensureAllGroupsFromEtcPasswdExistInEtcGroup": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
         }
+      ]
+    },
+    "remediation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "ensureAllGroupsFromEtcPasswdExistInEtcGroup"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ensureAllGroupsFromEtcPasswdExistInEtcGroup": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        }
+      ]
     }
+  }
 }

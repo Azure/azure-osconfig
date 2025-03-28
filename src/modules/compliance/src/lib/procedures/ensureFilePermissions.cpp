@@ -12,7 +12,8 @@
 namespace compliance
 {
 
-AUDIT_FN(ensureFilePermissions)
+AUDIT_FN(ensureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
+    "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
     struct stat statbuf;
     if (args.find("filename") == args.end())
@@ -112,7 +113,8 @@ AUDIT_FN(ensureFilePermissions)
     return true;
 }
 
-REMEDIATE_FN(ensureFilePermissions)
+REMEDIATE_FN(ensureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
+    "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
     if (args.find("filename") == args.end())
     {
