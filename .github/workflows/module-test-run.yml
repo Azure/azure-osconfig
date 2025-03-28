@@ -55,9 +55,6 @@ jobs:
           recipes=$(find ../../src/modules/test/recipes/ -name "*.json")
 
           for recipe in $recipes; do
-            if [ ! -f ../../src/tests/e2e-test-recipes/$(basename $recipe) ]; then
-              continue
-            fi
             name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
 
             echo -n "testing $name ... "
