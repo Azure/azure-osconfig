@@ -263,7 +263,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
             if (NULL == (tmp = realloc(*textResult, outputBufferSize + 1)))
             {
-                OsConfigLogError(log, "Cannot allocate %ld bytes as buffer for command '%s'", outputBufferSize + 1, command);
+                OsConfigLogError(log, "Cannot allocate %d bytes as buffer for command '%s'", outputBufferSize + 1, command);
                 status = ENOMEM;
                 FREE_MEMORY(*textResult);
                 break;
