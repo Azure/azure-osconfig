@@ -57,7 +57,12 @@ jobs:
           for recipe in $recipes; do
             echo "testing $recipe"
             name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
-            modules=$(cat $recipe | grep '.so' | awk -F'"' '{print $4}')
+            modules=$(cat $recipe | grep '\.so' | awk -F'"' '{print $4}')
+            if [ ! $modules ]; then
+              echo "no modules found in $recipe"
+              continue
+            fi
+
             skip=
             for module in $modules; do
               echo "module: $module"
