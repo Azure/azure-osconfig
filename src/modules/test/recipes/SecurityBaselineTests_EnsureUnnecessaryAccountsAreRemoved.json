@@ -15,26 +15,18 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "games,test"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
-  },
-
-
-  // Test remediation
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
     "Payload": "games,test"
   },
   // The securitybaselinetest user should not be removed. Prior to PR #911, this would fail.
   {
     "RunCommand": "id securitybaselinetest"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
+    "Payload": "games,test"
   },
   {
     "ObjectType": "Reported",
