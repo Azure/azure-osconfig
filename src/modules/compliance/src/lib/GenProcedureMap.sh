@@ -20,18 +20,24 @@ for filepath in "$directory"/*.cpp; do
 
     while IFS= read -r line; do
         ((lineno++))
-        if [[ $line =~ AUDIT_FN\((.*)\) ]]; then
+        buffer="$line"
+        while [[ $buffer != *")" ]]; do
+            IFS= read -r next_line || break
+            ((lineno++))
+            buffer+="$next_line"
+        done
+        if [[ $buffer =~ AUDIT_FN\(([^,]+)(,.*)?\) ]]; then
             procedure_name=${BASH_REMATCH[1]}
             audit_loc_map[$procedure_name]="$filename:$lineno"
             audit_map[$procedure_name]="Audit_$procedure_name"
             if [[ ! " ${procedures[@]} " =~ " ${procedure_name} " ]]; then
                 procedures+=("$procedure_name")
             fi
-        elif [[ $line =~ REMEDIATE_FN\((.*)\) ]]; then
+        elif [[ $buffer =~ REMEDIATE_FN\(([^,]+)(,.*)?\) ]]; then
             procedure_name=${BASH_REMATCH[1]}
             remediate_loc_map[$procedure_name]="$filename:$lineno"
             remediate_map[$procedure_name]="Remediate_$procedure_name"
-	    if [[ ! " ${procedures[@]} " =~ " ${procedure_name} " ]]; then
+            if [[ ! " ${procedures[@]} " =~ " ${procedure_name} " ]]; then
                 procedures+=("$procedure_name")
             fi
         fi

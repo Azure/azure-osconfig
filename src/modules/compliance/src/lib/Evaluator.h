@@ -14,9 +14,25 @@
 
 struct json_object_t;
 
-#define AUDIT_FN(fn_name) ::compliance::Result<bool> Audit_##fn_name(std::map<std::string, std::string> args, std::ostringstream& logstream)
+// Audit and remediation functions are declared using following macros, respectively.
+// The first argument is the name of the procedure, eg ensureFilePermissions.
+// Following arguments define the parameters to the procedure, each parameters encoded as a string with fields
+// separated with ':' :
+// <name>:<description>:<flags>:<pattern>
+// All fields except for name are optional, can be left empty or ommited.
+// - description is a textual description to be put in schema
+// - flags - currently only one flag is supported, 'M' for mandatory parameters
+// - pattern is a regex to validate the value of the parameter.
+// examples:
+// "myParameter:This is my parameter"
+// "myOtherParameter:Another parameter, mandatory:M"
+// "yetanotherparameter:This one is validated::^[0-9]+$"
 
-#define REMEDIATE_FN(fn_name) ::compliance::Result<bool> Remediate_##fn_name(std::map<std::string, std::string> args, std::ostringstream& logstream)
+#define AUDIT_FN(fn_name, parameters...)                                                                                                               \
+    ::compliance::Result<bool> Audit_##fn_name(std::map<std::string, std::string> args, std::ostringstream& logstream)
+
+#define REMEDIATE_FN(fn_name, parameters...)                                                                                                           \
+    ::compliance::Result<bool> Remediate_##fn_name(std::map<std::string, std::string> args, std::ostringstream& logstream)
 
 namespace compliance
 {
