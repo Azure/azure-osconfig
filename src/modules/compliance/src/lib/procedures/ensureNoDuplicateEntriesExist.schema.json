@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "ensureNoDuplicateEntriesExist"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ensureNoDuplicateEntriesExist": {
+              "type": "object",
+              "required": [
+                "filename",
+                "delimiter",
+                "column"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "filename": {
+                  "type": "string",
+                  "description": "Name of the file to check for duplicates"
+                },
+                "delimiter": {
+                  "type": "string",
+                  "description": "Delimiter used in the file"
+                },
+                "column": {
+                  "type": "integer",
+                  "description": "Column number to check for duplicates (0-based)"
+                },
+                "context": {
+                  "type": "string",
+                  "description": "Context in which the function is called, used in output messages"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}
