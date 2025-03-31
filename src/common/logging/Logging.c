@@ -25,7 +25,6 @@ struct OsConfigLog
 };
 
 static LoggingLevel g_loggingLevel = LoggingLevelInformational;
-static TelemetryLevel g_telemetryLevel = NoTelemetry;
 
 static bool g_consoleLoggingEnabled = true;
 
@@ -127,16 +126,6 @@ unsigned int GetMaxLogSizeDebugMultiplier(void)
 void SetMaxLogSizeDebugMultiplier(unsigned int value)
 {
     g_maxLogSizeDebugMultiplier = value;
-}
-
-TelemetryLevel GetTelemetryLevel(void)
-{
-    return g_telemetryLevel;
-}
-
-void SetTelemetryLevel(TelemetryLevel level)
-{
-    g_telemetryLevel = level;
 }
 
 static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
