@@ -5,7 +5,6 @@
 
 void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char* componentName, const char* objectName, int objectResult, const char* reason, OsConfigLogHandle log)
 {
-    LogingLevel loggingLevel = GetLoggingLevel();
     long microseconds = -1;
 
     if (NULL == clock)
@@ -16,19 +15,16 @@ void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char*
 
     microseconds = GetPerfClockTime(clock, log);
 
-    if (LoggingLevelNotice > loggingLevel)
+    if (SESSIONS_TELEMETRY_MARKER == objectResult)
     {
-        if (SESSIONS_TELEMETRY_MARKER == objectResult)
-        {
-            OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f", targetName, componentName, objectName, microseconds / 1000000.0);
-        }
-        else
-        {
-            OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Microseconds: %ld",
-                targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
-        }
+        OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f", targetName, componentName, objectName, microseconds / 1000000.0);
     }
-    else if (NULL != reason)
+    else if (NULL == reason)
+    {
+        OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Microseconds: %ld",
+            targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
+    }
+    else
     {
         OsConfigLogNotice(log, "TargetName: '%s', ComponentName: '%s', ObjectName: '%s', ObjectResult: '%s (%d)', Reason: %s, Microseconds': %ld",
             targetName, componentName, objectName, strerror(objectResult), objectResult, reason, microseconds);
