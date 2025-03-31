@@ -910,9 +910,6 @@ void AsbInitialize(OsConfigLogHandle log)
         RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
     }
 
-    // Temporary
-    SetLoggingLevel(LoggingLevelCritical);
-
     if (IsConsoleLoggingEnabled())
     {
         OsConfigLogWarning(log, "AsbInitialize: console logging is enabled. If the syslog rotation is not enabled this may result in a fill-up of the local storage space");
