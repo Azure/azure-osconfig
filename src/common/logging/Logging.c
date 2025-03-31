@@ -26,8 +26,6 @@ struct OsConfigLog
 
 static LoggingLevel g_loggingLevel = LoggingLevelInformational;
 
-static bool g_consoleLoggingEnabled = true;
-
 // Default maximum log size (1,048,576 is 1024 * 1024 aka 1MB)
 static unsigned int g_maxLogSize = 1048576;
 static unsigned int g_maxLogSizeDebugMultiplier = 5;
@@ -40,6 +38,8 @@ static const char* g_warning = "WARNING";
 static const char* g_notice = "NOTICE";
 static const char* g_info = "INFO";
 static const char* g_debug = "DEBUG";
+
+static bool g_consoleLoggingEnabled = true;
 
 bool IsConsoleLoggingEnabled(void)
 {

@@ -18,9 +18,6 @@
 #define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_asb_perf.bak"
 
-#define TELEMETRY_FILE "/var/log/osconfig_asb_telemetry.log"
-#define ROLLED_TELEMETRY_FILE "/var/log/osconfig_asb_telemetry.bak"
-
 #define RETURN_REASON_IF_ZERO(call) {\
     if (0 == (call)) {\
         return reason;\
@@ -656,16 +653,10 @@ static char* g_prettyName = NULL;
 static bool g_auditOnly = true;
 
 static OsConfigLogHandle g_perfLog = NULL;
-static OsConfigLogHandle g_telemetryLog = NULL;
 
 OsConfigLogHandle GetPerfLog(void)
 {
     return g_perfLog;
-}
-
-OsConfigLogHandle GetTelemetryLog(void)
-{
-    return g_telemetryLog;
 }
 
 typedef struct BaselineRule
@@ -929,7 +920,6 @@ void AsbInitialize(OsConfigLogHandle log)
 
     freeMemory = GetFreeMemory(log);
     freeMemoryPercentage = (freeMemory * 100) / totalMemory;
-
     OsConfigLogInfo(log, "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
     InitializeSshAudit(log);
