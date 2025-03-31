@@ -56,7 +56,7 @@ jobs:
 
           for recipe in $recipes; do
             modules=$(cat $recipe | grep '\.so' | awk -F'"' '{print $4}')
-            if [ ! $modules ]; then
+            if [ -z "$modules" ]; then
               echo "no modules found in $recipe"
               continue
             fi
@@ -65,14 +65,14 @@ jobs:
             for module in $modules; do
               echo "module: $module"
               if [ ! -f ../bin/$module ]; then
-                echo "module $module not found in $recipe"
+                echo "module $module lodaed in recipe $recipe not found"
                 skip=1
                 break
               fi
             done
 
-            if [ $skip ]; then
-              echo "skipping $name"
+            if [ ! -z "$skip" ]; then
+              echo "skipping recipe $recipe"
               continue
             fi
 
