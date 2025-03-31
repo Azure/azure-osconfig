@@ -1,3 +1,7 @@
 [submodule "src/adapters/pnp/azure-iot-sdk-c"]
 	path = src/adapters/pnp/azure-iot-sdk-c
 	url = https://github.com/Azure/azure-iot-sdk-c
+[submodule "src/pcre2"]
+	path = src/pcre2
+	url = https://github.com/PCRE2Project/pcre2
+	branch = release/pcre2-10.45
