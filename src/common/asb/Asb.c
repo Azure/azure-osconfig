@@ -653,8 +653,6 @@ static const long g_maxTotalTime = 1800000000;
 
 static char* g_prettyName = NULL;
 
-static TelemetryLevel g_telemetryLevel = OptionalTelemetry; //RequiredTelemetry;
-
 static bool g_auditOnly = true;
 
 static OsConfigLogHandle g_perfLog = NULL;
@@ -897,18 +895,6 @@ void AsbInitialize(OsConfigLogHandle log)
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
 
-    // Temporary until we'll read this from osconfig.json (as local override) and from policy paramater (add it to the Baseline interface)
-    SetTelemetryLevel(g_telemetryLevel);
-
-    if (NoTelemetry < g_telemetryLevel)
-    {
-        if (NULL == (g_telemetryLog = OpenLog(TELEMETRY_FILE, ROLLED_TELEMETRY_FILE)))
-        {
-            OsConfigLogWarning(log, "AsbInitialize: telemetry is enabled but could open the telemetry log '%s' (%d, %s), no telemetry will be logged during this session",
-                TELEMETRY_FILE, errno, strerror(errno));
-        }
-    }
-
     StartPerfClock(&g_perfClock, GetPerfLog());
 
     if (FileExists(g_configurationFile))
@@ -923,6 +909,9 @@ void AsbInitialize(OsConfigLogHandle log)
 
         RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
     }
+
+    // Temporary
+    SetLoggingLevel(LoggingLevelCritical);
 
     if (IsConsoleLoggingEnabled())
     {
@@ -944,7 +933,7 @@ void AsbInitialize(OsConfigLogHandle log)
     freeMemory = GetFreeMemory(log);
     freeMemoryPercentage = (freeMemory * 100) / totalMemory;
     // This is an example of a trace that gets written to both current trace log and to the telemetry log
-    OsConfigLogWithTelemetry(log, LoggingLevelInformational, GetTelemetryLog(), OptionalTelemetry, "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
+    OsConfigLogWithTelemetry(log, LoggingLevelInformational, log, OptionalTelemetry, "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
     InitializeSshAudit(log);
 
@@ -1068,7 +1057,7 @@ void AsbShutdown(OsConfigLogHandle log)
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
-        LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, SESSIONS_TELEMETRY_MARKER, NULL, GetTelemetryLog());
+        LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, SESSIONS_TELEMETRY_MARKER, NULL, log);
     }
 
     FREE_MEMORY(g_prettyName);
@@ -1078,15 +1067,6 @@ void AsbShutdown(OsConfigLogHandle log)
     // When done, allow others access to read the performance log
     SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);
     SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 0644, NULL);
-
-    if (NoTelemetry < g_telemetryLevel)
-    {
-        CloseLog(&g_telemetryLog);
-
-        // And also for the telemetry log if applicable
-        SetFileAccess(TELEMETRY_FILE, 0, 0, 0644, NULL);
-        SetFileAccess(ROLLED_TELEMETRY_FILE, 0, 0, 0644, NULL);
-    }
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(OsConfigLogHandle log)
@@ -4890,7 +4870,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
-        LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, *payload, GetTelemetryLog());
+        LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, *payload, log);
     }
 
     return status;
@@ -5867,7 +5847,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             g_auditOnly = false;
 
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
-            LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, NULL, GetTelemetryLog());
+            LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, NULL, log);
         }
     }
 

@@ -22,6 +22,8 @@ extern "C"
 // The logging level values in this enumeration match the severity values in RFC 5424.
 // LoggingLevelInformational (6) is by default and always enabled.
 // LoggingLevelDebug (7) is optional and disabled by default.
+// LoggingLevelCritical (2) is used as a 'Required' telemetry level.
+// LoggingLevelNotice (5) is used as an 'Optional' telemetry level.
 enum LoggingLevel
 {
     LoggingLevelEmergency = 0,
@@ -34,17 +36,6 @@ enum LoggingLevel
     LoggingLevelDebug = 7
 };
 typedef enum LoggingLevel LoggingLevel;
-
-// The telemetry level values control the amount of telemetry issued by the client.
-// As the level value increases, the amount of emitted telemetry increases.
-// RequiredTelemetry (1) is default.
-enum TelemetryLevel
-{
-    NoTelemetry = 0,
-    RequiredTelemetry = 1,
-    OptionalTelemetry = 2
-};
-typedef enum TelemetryLevel TelemetryLevel;
 
 typedef struct OsConfigLog OsConfigLog;
 typedef OsConfigLog* OsConfigLogHandle;
@@ -65,35 +56,6 @@ FILE* GetLogFile(OsConfigLogHandle log);
 char* GetFormattedTime(void);
 void TrimLog(OsConfigLogHandle log);
 bool IsDaemon(void);
-TelemetryLevel GetTelemetryLevel(void);
-void SetTelemetryLevel(TelemetryLevel level);
-void OsConfigLogTraceTelemetry(OsConfigLogHandle log, TelemetryLevel level, const char* format, ...);
-
-// Telemetry macros:
-
-#define __PREFIX_TELEMETRY_TEMPLATE__ "{\"DateTime\":\"%s\""
-#define __LOG_TELEMETRY_TO_FILE__(log, format, ...) {\
-    TrimLog(log);\
-    fprintf(GetLogFile(log), __PREFIX_TELEMETRY_TEMPLATE__ format "}\n", GetFormattedTime(), ## __VA_ARGS__);\
-}\
-
-#define OSCONFIG_FILE_LOG_TELEMETRY(log, format, ...) __LOG_TELEMETRY_TO_FILE__(log, format, ## __VA_ARGS__)
-
-// Universal telemetry macro that can log telemetry at any level
-#define OsConfigLogTelemetry(log, level, FORMAT, ...) {\
-    if (level <= GetTelemetryLevel()) {\
-        if (NULL != GetLogFile(log)) {\
-            OSCONFIG_FILE_LOG_TELEMETRY(log, FORMAT, ##__VA_ARGS__);\
-            fflush(GetLogFile(log));\
-        }\
-    }\
-}\
-
-// Shortcuts that directly log telemetry at the respective level:
-#define OsConfigLogRequiredTelemetry(log, FORMAT, ...) OsConfigLogTelemetry(log, RequiredTelemetry, FORMAT, ## __VA_ARGS__)
-#define OsConfigLogOptionalTelemetry(log, FORMAT, ...)  OsConfigLogTelemetry(log, OptionalTelemetry, FORMAT, ## __VA_ARGS__)
-
-// Logging macros:
 
 #define __PREFIX_TEMPLATE__ "[%s][%s][%s:%d] "
 #define __SHORT_FILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
@@ -135,12 +97,6 @@ void OsConfigLogTraceTelemetry(OsConfigLogHandle log, TelemetryLevel level, cons
         OsConfigLogError(log, "Assert in %s", __func__);\
         assert(CONDITION);\
     }\
-}\
-
-// Macro that logs to both regular log and to telemetry log at the same time under the respective levels
-#define OsConfigLogWithTelemetry(log, level, telemetryLog, telemetryLevel, FORMAT, ...) {\
-    OsConfigLog(log, level, FORMAT, ## __VA_ARGS__);\
-    OsConfigLogTraceTelemetry(telemetryLog, telemetryLevel, FORMAT, ## __VA_ARGS__);\
 }\
 
 #ifdef __cplusplus

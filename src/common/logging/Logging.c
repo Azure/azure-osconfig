@@ -259,37 +259,3 @@ bool IsDaemon()
 {
     return (1 == getppid());
 }
-
-void OsConfigLogTraceTelemetry(OsConfigLogHandle log, TelemetryLevel level, const char* format, ...)
-{
-    char* buffer = NULL;
-    int formatResult = 0;
-    int sizeOfBuffer = 0;
-
-    if (NULL == format)
-    {
-        return;
-    }
-
-    va_list arguments;
-    va_start(arguments, format);
-    sizeOfBuffer = vsnprintf(NULL, 0, format, arguments);
-    va_end(arguments);
-
-    if (sizeOfBuffer >= 0)
-    {
-        if (NULL != (buffer = malloc((size_t)sizeOfBuffer + 1)))
-        {
-            va_start(arguments, format);
-            formatResult = vsnprintf(buffer, sizeOfBuffer + 1, format, arguments);
-            va_end(arguments);
-
-            if (formatResult > 0)
-            {
-                OsConfigLogTelemetry(log, level, ",\"Trace\":\"%s\"", buffer);
-            }
-
-            free(buffer);
-        }
-    }
-}

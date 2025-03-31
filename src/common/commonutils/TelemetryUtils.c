@@ -5,7 +5,7 @@
 
 void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char* componentName, const char* objectName, int objectResult, const char* reason, OsConfigLogHandle log)
 {
-    TelemetryLevel telemetryLevel = GetTelemetryLevel();
+    LogingLevel loggingLevel = GetLoggingLevel();
     long microseconds = -1;
 
     if (NULL == clock)
@@ -16,22 +16,21 @@ void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char*
 
     microseconds = GetPerfClockTime(clock, log);
 
-    if (OptionalTelemetry > telemetryLevel)
+    if (LoggingLevelNotice > loggingLevel)
     {
         if (SESSIONS_TELEMETRY_MARKER == objectResult)
         {
-            OsConfigLogTelemetry(log, RequiredTelemetry, ",\"TargetName\":\"%s\",\"BaselineName\":\"%s\",\"Mode\":\"%s\",\"Seconds\":\"%.02f\"",
-                targetName, componentName, objectName, microseconds / 1000000.0);
+            OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f", targetName, componentName, objectName, microseconds / 1000000.0);
         }
         else
         {
-            OsConfigLogTelemetry(log, RequiredTelemetry, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Microseconds\":\"%ld\"",
+            OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Microseconds: %ld",
                 targetName, componentName, objectName, strerror(objectResult), objectResult, microseconds);
         }
     }
-    else if ((OptionalTelemetry <= telemetryLevel) && (NULL != reason))
+    else if (NULL != reason)
     {
-        OsConfigLogTelemetry(log, OptionalTelemetry, ",\"TargetName\":\"%s\",\"ComponentName\":\"%s\",\"ObjectName\":\"%s\",\"ObjectResult\":\"%s (%d)\",\"Reason\":%s,\"Microseconds\":\"%ld\"",
+        OsConfigLogNotice(log, "TargetName: '%s', ComponentName: '%s', ObjectName: '%s', ObjectResult: '%s (%d)', Reason: %s, Microseconds': %ld",
             targetName, componentName, objectName, strerror(objectResult), objectResult, reason, microseconds);
     }
 }
