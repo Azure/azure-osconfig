@@ -26,7 +26,7 @@ void LogPerfClockTelemetry(PerfClock* clock, const char* targetName, const char*
     }
     else
     {
-        OsConfigLogNotice(log, "TargetName: '%s', ComponentName: '%s', ObjectName: '%s', ObjectResult: '%s (%d)', Reason: %s, Microseconds': %ld",
+        OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', ObjectName: '%s', ObjectResult: '%s (%d)', Reason: %s, Microseconds': %ld",
             targetName, componentName, objectName, strerror(objectResult), objectResult, reason, microseconds);
     }
 }

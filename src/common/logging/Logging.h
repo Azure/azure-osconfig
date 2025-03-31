@@ -22,8 +22,7 @@ extern "C"
 // The logging level values in this enumeration match the severity values in RFC 5424.
 // LoggingLevelInformational (6) is by default and always enabled.
 // LoggingLevelDebug (7) is optional and disabled by default.
-// LoggingLevelCritical (2) is used as a 'Required' telemetry level.
-// LoggingLevelNotice (5) is used as an 'Optional' telemetry level.
+// LoggingLevelCritical (2) is also used as source for telemetry events.
 enum LoggingLevel
 {
     LoggingLevelEmergency = 0,
