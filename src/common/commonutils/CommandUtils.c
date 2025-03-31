@@ -60,7 +60,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     char** textResult, CommandCallback callback, OsConfigLogHandle log)
 {
     int workerPid = -1;
-    int pipefd[2] = { 0 };
+    int pipefd[2] = {0};
     long startTime = 0;
 
     if (NULL == command)
@@ -158,12 +158,12 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
         for (;;)
         {
-            const struct timeval selectInterval = { 0, 100 * 1000 }; // 100 ms, accuracy of timeouts.
+            const struct timeval selectInterval = {0, 100 * 1000}; // 100 ms, accuracy of timeouts.
             struct timeval tv;
             int bytesRead = 0;
             int inputBufferPos = 0;
             long currentTime = 0;
-            char buffer[BUFFER_SIZE] = { 0 };
+            char buffer[BUFFER_SIZE] = {0};
             fd_set fdset;
             int ret = 0;
             char* tmp = NULL;
