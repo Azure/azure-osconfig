@@ -47,7 +47,7 @@ void CleanupMockCommands()
 {
     while (NULL != g_mockCommand)
     {
-        struct MockCommand* next = g_mockCommand->next;
+	struct MockCommand* next = g_mockCommand->next;
         free(g_mockCommand);
         g_mockCommand = next;
     }
@@ -88,7 +88,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             *textResult = DuplicateString(mock->output);
             return mock->returnCode;
         }
-        mock = mock->next;
+	mock = mock->next;
     }
 #endif
 
