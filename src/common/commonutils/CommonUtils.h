@@ -39,9 +39,6 @@
 //#define PROTOCOL_MQTT 1
 #define PROTOCOL_MQTT_WS 2
 
-// Special internal marker used by callers of LogPerfClockTelemetry for completion of a baseline session
-#define SESSIONS_TELEMETRY_MARKER -9999
-
 #ifdef __cplusplus
 extern "C"
 {

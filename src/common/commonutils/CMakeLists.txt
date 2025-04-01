@@ -18,8 +18,7 @@ add_library(commonutils STATIC
     SocketUtils.c
     SshUtils.c
     UrlUtils.c
-    UserUtils.c
-    TelemetryUtils.c)
+    UserUtils.c)
 
 target_include_directories(commonutils
     PUBLIC

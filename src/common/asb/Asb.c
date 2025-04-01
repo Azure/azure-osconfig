@@ -1044,7 +1044,10 @@ void AsbShutdown(OsConfigLogHandle log)
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
-        LogPerfClockTelemetry(&g_perfClock, g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, SESSIONS_TELEMETRY_MARKER, NULL, log);
+        
+        // For telemetry:
+        OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f",
+            g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(g_perfClock, log) / 1000000.0);
     }
 
     FREE_MEMORY(g_prettyName);
@@ -4857,7 +4860,10 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
-        LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, *payload, log);
+
+        // For telemetry:
+        OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Reason: '%.*s', Microseconds: %ld",
+            g_prettyName, componentName, objectName, strerror(status), status, *payloadSizeBytes, *payload, *payloadSizeBytes, GetPerfClockTime(perfClock, log));
     }
 
     return status;
@@ -5834,7 +5840,11 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             g_auditOnly = false;
 
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
-            LogPerfClockTelemetry(&perfClock, g_prettyName, componentName, objectName, status, NULL, log);
+            
+            // For telemetry:
+            OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Microseconds: %ld",
+                g_prettyName, componentName, objectName, strerror(status), status, GetPerfClockTime(perfClock, log));
+
         }
     }
 
