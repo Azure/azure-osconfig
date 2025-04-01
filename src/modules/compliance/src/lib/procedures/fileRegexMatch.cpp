@@ -154,14 +154,17 @@ AUDIT_FN(fileRegexMatch, "filename:Path to the file to check:M", "matchOperation
         return Error(std::string("Unsupported operation '") + matchOperation + std::string("'"), EINVAL);
     }
 
+    if (stateOperation.HasValue() && stateOperation.Value() != "pattern match")
+    {
+        return Error(std::string("Unsupported operation '") + stateOperation.Value() + std::string("'"), EINVAL);
+    }
+
     if (!statePattern.HasValue())
     {
         return SinglePatternMatchMode(file, matchPattern, syntaxOptions, logstream);
     }
     else
     {
-        // In state pattern mode, we check if the state pattern is present in the file.
-        // The function returns true if the state pattern matches any line in the file, false otherwise.
         return StatePatternMatchMode(file, matchPattern, statePattern.Value(), syntaxOptions, logstream);
     }
 }
