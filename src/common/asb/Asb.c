@@ -648,6 +648,10 @@ static const long g_maxRemediateTime = 99000000;
 // Maximum baseline run times: 30 minutes
 static const long g_maxTotalTime = 1800000000;
 
+static char* g_prettyName = NULL;
+
+static bool g_auditOnly = true;
+
 static OsConfigLogHandle g_perfLog = NULL;
 
 OsConfigLogHandle GetPerfLog(void)
@@ -874,7 +878,6 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
 void AsbInitialize(OsConfigLogHandle log)
 {
     char* jsonConfiguration = NULL;
-    char* prettyName = NULL;
     char* kernelVersion = NULL;
     char* cpuModel = NULL;
     long totalMemory = 0;
@@ -898,12 +901,12 @@ void AsbInitialize(OsConfigLogHandle log)
         RestrictFileAccessToCurrentAccountOnly(g_configurationFile);
     }
 
-    OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
-
     if (IsConsoleLoggingEnabled())
     {
         OsConfigLogWarning(log, "AsbInitialize: console logging is enabled. If the syslog rotation is not enabled this may result in a fill-up of the local storage space");
     }
+
+    OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
     {
@@ -969,9 +972,9 @@ void AsbInitialize(OsConfigLogHandle log)
 
     kernelVersion = GetOsKernelVersion(log);
 
-    if (NULL != (prettyName = GetOsPrettyName(log)))
+    if (NULL != (g_prettyName = GetOsPrettyName(log)))
     {
-        OsConfigLogInfo(log, "AsbInitialize: running on '%s' ('%s')", prettyName, kernelVersion);
+        OsConfigLogInfo(log, "AsbInitialize: running on '%s' ('%s')", g_prettyName, kernelVersion);
     }
     else
     {
@@ -988,7 +991,6 @@ void AsbInitialize(OsConfigLogHandle log)
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
     }
 
-    FREE_MEMORY(prettyName);
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(cpuModel);
 
@@ -997,7 +999,10 @@ void AsbInitialize(OsConfigLogHandle log)
 
 void AsbShutdown(OsConfigLogHandle log)
 {
-    OsConfigLogInfo(log, "%s shutting down", g_asbName);
+    const char* auditOnly = "audit-only";
+    const char* automaticRemediation = "automatic remediation";
+
+    OsConfigLogInfo(log, "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
 
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
@@ -1039,7 +1044,13 @@ void AsbShutdown(OsConfigLogHandle log)
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
+
+        // For telemetry:
+        OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f",
+            g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
     }
+
+    FREE_MEMORY(g_prettyName);
 
     CloseLog(&g_perfLog);
 
@@ -4849,6 +4860,10 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     if (0 == StopPerfClock(&perfClock, GetPerfLog()))
     {
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
+
+        // For telemetry:
+        OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Reason: '%.*s', Microseconds: %ld",
+            g_prettyName, componentName, objectName, strerror(status), status, *payloadSizeBytes, *payload, GetPerfClockTime(&perfClock, log));
     }
 
     return status;
@@ -5822,7 +5837,14 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         // Ignore the successful init* objects and focus on remediate* ones
         if (0 != strncmp(objectName, init, strlen(init)))
         {
+            g_auditOnly = false;
+
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
+
+            // For telemetry:
+            OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Microseconds: %ld",
+                g_prettyName, componentName, objectName, strerror(status), status, GetPerfClockTime(&perfClock, log));
+
         }
     }
 

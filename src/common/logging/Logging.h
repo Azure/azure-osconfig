@@ -20,6 +20,7 @@ extern "C"
 // The logging level values in this enumeration match the severity values in RFC 5424.
 // LoggingLevelInformational (6) is by default and always enabled.
 // LoggingLevelDebug (7) is optional and disabled by default.
+// LoggingLevelCritical (2) is also used as source for telemetry events.
 enum LoggingLevel
 {
     LoggingLevelEmergency = 0,
@@ -58,7 +59,7 @@ bool IsDaemon(void);
 #define __LOG__(log, label, format, ...) printf(__PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__)
 #define __LOG_TO_FILE__(log, label, format, ...) {\
     TrimLog(log);\
-    fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__); \
+    fprintf(GetLogFile(log), __PREFIX_TEMPLATE__ format "\n", GetFormattedTime(), label, __SHORT_FILE__, __LINE__, ## __VA_ARGS__);\
 }\
 
 #define OSCONFIG_LOG(log, level, format, ...) __LOG__(log, GetLoggingLevelName(level), format, ## __VA_ARGS__)
