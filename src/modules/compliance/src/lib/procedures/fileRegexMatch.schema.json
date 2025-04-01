@@ -39,7 +39,7 @@
                 },
                 "statePattern": {
                   "type": "string",
-                  "description": "The pattern to match against each line that matches the 'matchPattern'"
+                  "description": "The pattern to match against each line that matches the 'statePattern'"
                 },
                 "caseSensitive": {
                   "type": "string",

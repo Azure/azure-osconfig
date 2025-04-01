@@ -82,7 +82,7 @@ bool StatePatternMatchMode(std::ifstream& input, const std::string& matchPattern
 AUDIT_FN(fileRegexMatch, "filename:Path to the file to check:M", "matchOperation:Operation to perform on the file contents:M:^pattern match$",
     "matchPattern:The pattern to match against the file contents:M",
     "stateOperation:Operation to perform on each line that matches the 'matchPattern'::^pattern match$",
-    "statePattern:The pattern to match against each line that matches the 'matchPattern'",
+    "statePattern:The pattern to match against each line that matches the 'statePattern'",
     "caseSensitive:Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'::^true|false$")
 {
     auto it = args.find("filename");
