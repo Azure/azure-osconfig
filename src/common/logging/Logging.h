@@ -12,8 +12,6 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif
 
-#define SESSIONS_TELEMETRY_MARKER -9999
-
 #ifdef __cplusplus
 extern "C"
 {
