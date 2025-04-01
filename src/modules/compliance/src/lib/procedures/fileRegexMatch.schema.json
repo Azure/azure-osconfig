@@ -40,6 +40,11 @@
                 "statePattern": {
                   "type": "string",
                   "description": "The pattern to match against each line that matches the 'matchPattern'"
+                },
+                "caseSensitive": {
+                  "type": "string",
+                  "pattern": "^true|false$",
+                  "description": "Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'"
                 }
               }
             }

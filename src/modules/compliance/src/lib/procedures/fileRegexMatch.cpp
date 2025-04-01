@@ -40,9 +40,9 @@ bool SinglePatternMatchMode(std::ifstream& input, const std::string& matchPatter
     return false;
 }
 
-// In state-pattern match mode, we check each line of the input file if it matches the main pattern.
-// For each line that matches the main pattern, we check if the state pattern is present in that line.
-// The function returns true if the state pattern matches all the lines that match the main pattern, false otherwise.
+// In state-pattern match mode, we check each line of the input file if it matches the matchPattern regexp.
+// For each line that matches the main pattern, we check if statePattern regexp matches line matched by matchPattern.
+// The function returns true if the statePattern regexp matches all the lines that match the matchPattern regexp, false otherwise.
 bool StatePatternMatchMode(std::ifstream& input, const std::string& matchPattern, const std::string& statePattern,
     std::regex_constants::syntax_option_type syntaxOptions, std::ostringstream& logstream)
 {
@@ -82,7 +82,8 @@ bool StatePatternMatchMode(std::ifstream& input, const std::string& matchPattern
 AUDIT_FN(fileRegexMatch, "filename:Path to the file to check:M", "matchOperation:Operation to perform on the file contents:M:^pattern match$",
     "matchPattern:The pattern to match against the file contents:M",
     "stateOperation:Operation to perform on each line that matches the 'matchPattern'::^pattern match$",
-    "statePattern:The pattern to match against each line that matches the 'matchPattern'")
+    "statePattern:The pattern to match against each line that matches the 'matchPattern'",
+    "caseSensitive:Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'::^true|false$")
 {
     auto it = args.find("filename");
     if (it == args.end())
