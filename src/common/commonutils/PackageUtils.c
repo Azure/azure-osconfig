@@ -188,7 +188,6 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
     char* searchTarget = NULL;
     char* found = NULL;
-    size_t size = 0;
     int status = 0;
 
     if ((NULL == packageName) || (0 == strlen(packageName)))
@@ -207,12 +206,12 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 
     if (0 == status)
     {
-        if (NULL == (searchTarget = FormatAllocateString("\n%s", packageName)))
+        if (NULL == (searchTarget = FormatAllocateString("\n%s\n", packageName)))
         {
             OsConfigLogError(log, "IsPackageInstalled: out of memory");
             status = ENOMEM;
         }
-        else if ((NULL != (found = strstr(g_installedPackages, searchTarget))) && (0 < (size = strlen(found))) && (0 == isalnum(found[size])))
+        else if ((NULL != (found = strstr(g_installedPackages, searchTarget))) && (0 < strlen(found)))
         {
             OsConfigLogInfo(log, "IsPackageInstalled: '%s' is installed", packageName);
             status = 0;
