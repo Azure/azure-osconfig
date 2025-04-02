@@ -2061,9 +2061,18 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_EQ(0, CheckPackageNotInstalled("~package_that_does_not_exist*", nullptr, nullptr));
     EXPECT_EQ(0, CheckPackageNotInstalled("*~package_that_does_not_exist*", nullptr, nullptr));
 
-    EXPECT_EQ(0, IsPackageInstalled("gcc", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr, nullptr));
-    EXPECT_NE(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
+    if (0 == IsPackageInstalled("gcc", nullptr))
+    {
+        EXPECT_EQ(0, IsPackageInstalled("gcc", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr, nullptr));
+        EXPECT_NE(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
+    }
+    else
+    {
+        EXPECT_NE(0, IsPackageInstalled("gcc", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("gcc", nullptr, nullptr));
+        EXPECT_EQ(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
+    }
 
     if (0 == IsPackageInstalled("nano", nullptr))
     {

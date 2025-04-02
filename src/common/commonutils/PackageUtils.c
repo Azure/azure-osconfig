@@ -212,6 +212,8 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
         g_updateInstalledPackagesCache = 0;
     }
 
+    CheckPackageManagersPresence(log);
+
     if (NULL == g_installedPackagesCache)
     {
         if (0 != (status = UpdateInstalledPackagesCache(log)))
@@ -219,8 +221,6 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
             OsConfigLogInfo(log, "IsPackageInstalled(%s) failed (UpdateInstalledPackagesCache failed)", packageName);
         }
     }
-
-    CheckPackageManagersPresence(log);
 
     if (0 == status)
     {
@@ -242,15 +242,17 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
             OsConfigLogError(log, "IsPackageInstalled: out of memory");
             status = ENOMEM;
         }
-        else if (NULL == strstr(g_installedPackagesCache, searchTarget))
-        {
-            OsConfigLogInfo(log, "IsPackageInstalled: '%s' is not installed", packageName);
-            status = ENOENT;
-        }
         else
         {
-            OsConfigLogInfo(log, "IsPackageInstalled: '%s' is installed", packageName);
-            status = 0;
+            if (NULL != strstr(g_installedPackagesCache, searchTarget))
+            {
+                OsConfigLogInfo(log, "IsPackageInstalled: '%s' is installed", packageName);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "IsPackageInstalled: '%s' is not installed", packageName);
+                status = ENOENT;
+            }
         }
 
         FREE_MEMORY(searchTarget);
