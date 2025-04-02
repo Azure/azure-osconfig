@@ -121,7 +121,7 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
         return ENOMEM;
     }
 
-    status = ExecuteCommand(NULL, command, true, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log);
+    status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log);
 
     OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d (errno: %d)", packageManager, command, status, errno);
     OsConfigLogInfo(log, "%s", *results); //TODO: Change this to OsConfigLogDebug
@@ -187,6 +187,7 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
 int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
     char* searchTarget = NULL;
+    char* found = NULL;
     int status = 0;
 
     if ((NULL == packageName) || (0 == strlen(packageName)))
@@ -205,23 +206,23 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 
     if (0 == status)
     {
-        if (NULL == (searchTarget = FormatAllocateString(" %s ", packageName)))
+        if (NULL == (searchTarget = FormatAllocateString("\n%s", packageName)))
         {
             OsConfigLogError(log, "IsPackageInstalled: out of memory");
             status = ENOMEM;
         }
-        else if (NULL == strstr(g_installedPackages, searchTarget))
+        else if ((NULL != (found = strstr(g_installedPackages, searchTarget))) && (0 == isalnum((char)(found + strlen(found)))))
+        {
+            OsConfigLogInfo(log, "IsPackageInstalled: '%s' is installed", packageName);
+            status = 0;
+        }
+        else
         {
             OsConfigLogInfo(log, "IsPackageInstalled: '%s' is not installed", packageName);
             status = ENOENT;
         }
 
         FREE_MEMORY(searchTarget);
-    }
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is installed", packageName);
     }
 
     return status;
