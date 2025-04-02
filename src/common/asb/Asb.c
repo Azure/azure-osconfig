@@ -1040,7 +1040,7 @@ void AsbShutdown(OsConfigLogHandle log)
     FREE_MEMORY(g_desiredEnsureDefaultDenyFirewallPolicyIsSet);
 
     SshAuditCleanup(log);
-    
+
     PackageUtilsCleanup();
 
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
