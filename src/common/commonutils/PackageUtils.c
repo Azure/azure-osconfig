@@ -3,6 +3,10 @@
 
 #include "Internal.h"
 
+#if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
+#include <stdatomic.h>
+#endif
+
 static const char* g_aptGet = "apt-get";
 static const char* g_dpkg = "dpkg";
 static const char* g_tdnf = "tdnf";
