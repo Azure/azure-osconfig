@@ -352,22 +352,22 @@ static int ExecuteZypperRefresh(OsConfigLogHandle log)
 
     int status = 0;
 
-    if (true = g_zypperRefreshExecuted)
+    if (true == g_zypperRefreshExecuted)
     {
         return status;
     }
 
     if (0 != (status = ExecuteCommand(NULL, zypperClean, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
     {
-        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' '%s' returned %d (errno: %d '%s')", zypperClean, status, errno, strerror(errno));
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d (errno: %d '%s')", zypperClean, status, errno, strerror(errno));
     }
     else if (0 != (status = ExecuteCommand(NULL, zypperRefresh, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
     {
-        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' '%s' returned %d (errno: %d '%s')", zypperRefresh, status, errno, strerror(errno));
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d (errno: %d '%s')", zypperRefresh, status, errno, strerror(errno));
     }
     else if (0 != (status = ExecuteCommand(NULL, zypperRefreshServices, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
     {
-        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' '%s' returned %d (errno: %d '%s')", zypperRefreshServices, status, errno, strerror(errno));
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d (errno: %d '%s')", zypperRefreshServices, status, errno, strerror(errno));
     }
 
     if (0 == status)
