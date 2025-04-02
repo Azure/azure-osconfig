@@ -133,9 +133,8 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
 
 static int ListAllInstalledPackages(OsConfigLogHandle log)
 {
-    const char* commandTemplate = "%s list installed";
-    const char* commandTemplateYumDnf = "%s list installed  --cacheonly";
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
+    const char* commandTemplateYumDnf = "%s list installed  --cacheonly";
     const char* commandTmeplateZypper = "%s search --installed-only --query-format '%{name}\n'";
     char* results = NULL;
     int status = ENOENT;
