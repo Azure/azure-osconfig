@@ -349,14 +349,14 @@ static int ExecuteZypperRefresh(OsConfigLogHandle log)
     const char* zypperClean = "zypper clean";
     const char* zypperRefresh = "zypper refresh";
     const char* zypperRefreshServices = "zypper refresh --services";
-    
+
     int status = 0;
 
     if (true = g_zypperRefreshExecuted)
     {
         return status;
     }
-    
+
     if (0 != (status = ExecuteCommand(NULL, zypperClean, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
     {
         OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' '%s' returned %d (errno: %d '%s')", zypperClean, status, errno, strerror(errno));
