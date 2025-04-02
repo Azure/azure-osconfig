@@ -116,7 +116,7 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
 
     status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log);
 
-    OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d (errno: %d)", packageManager, command, *results, status, errno);
+    OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d (errno: %d)", packageManager, command, status, errno);
     //Change this to Debug
     OsConfigLogInfo(log, "%s", *results);
 
