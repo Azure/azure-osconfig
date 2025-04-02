@@ -227,6 +227,10 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
         {
             searchTarget = FormatAllocateString("\n%s.x86_64\n", packageName);
         }
+        else if (g_zypperIsPresent)
+        {
+            searchTarget = FormatAllocateString(" %s", packageName);
+        }
         else
         {
             searchTarget = FormatAllocateString("\n%s\n", packageName);
