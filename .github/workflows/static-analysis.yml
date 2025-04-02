@@ -1,0 +1,40 @@
+name: Static analysis
+
+on: [push, pull_request]
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/azure/azure-osconfig/ubuntu-22.04-amd64
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        clean: true
+
+    - name: Prepare compile command database
+      run: |
+        mkdir -p build
+        cd build
+        cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug ../src
+
+    - name: Run clang static analyzer
+      run: |
+        mkdir -p output
+        analyze-build-14 --verbose \
+          --status-bugs \
+          --exclude src/adapters/pnp/azure-iot-sdk-c \
+          --exclude src/adapters/pnp/PnpUtils.c \
+          --exclude src/adapters/pnp/AisUtils.c \
+          --cdb build/compile_commands.json \
+          --output output/scan-build
+
+    - uses: actions/upload-artifact@v4
+      if: success() || failure()
+      with:
+        name: scan-build
+        path: |
+          output/scan-build
