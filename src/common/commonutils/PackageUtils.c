@@ -346,7 +346,7 @@ static int ExecuteAptGetUpdate(OsConfigLogHandle log)
 
 static int ExecuteZypperRefresh(OsConfigLogHandle log)
 {
-    const char* zypperClean = "zypper clean";
+    //const char* zypperClean = "zypper clean";
     const char* zypperRefresh = "zypper refresh";
     const char* zypperRefreshServices = "zypper refresh --services";
 
@@ -357,11 +357,11 @@ static int ExecuteZypperRefresh(OsConfigLogHandle log)
         return status;
     }
 
-    if (0 != (status = ExecuteCommand(NULL, zypperClean, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
+    /*if (0 != (status = ExecuteCommand(NULL, zypperClean, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
     {
         OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d (errno: %d '%s')", zypperClean, status, errno, strerror(errno));
     }
-    else if (0 != (status = ExecuteCommand(NULL, zypperRefresh, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
+    else*/ if (0 != (status = ExecuteCommand(NULL, zypperRefresh, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
     {
         OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d (errno: %d '%s')", zypperRefresh, status, errno, strerror(errno));
     }
