@@ -205,7 +205,7 @@ static int IsPackageListedAsInstalled(const char* packageName, OsConfigLogHandle
 
     if (0 == status)
     {
-        if (NULL == (searchTarget = FormatAllocateString(" %s ", packageName)))
+        if (NULL == (searchTarget = FormatAllocateString("\n%s\n", packageName)))
         {
             OsConfigLogError(log, "IsPackageListedAsInstalled: out of memory");
             status = ENOMEM;
