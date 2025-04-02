@@ -2088,7 +2088,7 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
             EXPECT_NE(0, IsPackageInstalled("nano", nullptr));
             EXPECT_EQ(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
             EXPECT_NE(0, CheckPackageInstalled("nano", nullptr, nullptr));
-        
+
             if (0 == InstallPackage("nano", nullptr))
             {
                 EXPECT_EQ(0, IsPackageInstalled("nano", nullptr));
