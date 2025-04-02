@@ -211,7 +211,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
         }
         else if (NULL == strstr(g_installedPackages, searchTarget))
         {
-            OsConfigLogInfo(log, "IsPackageInstalled: '%s' not found in the list of installed packages", packageName);
+            OsConfigLogInfo(log, "IsPackageInstalled: '%s' is not installed", packageName);
             status = ENOENT;
         }
 
@@ -221,10 +221,6 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is installed", packageName);
-    }
-    else
-    {
-        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is not installed", packageName);
     }
 
     return status;
