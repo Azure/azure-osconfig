@@ -128,7 +128,7 @@ static char* g_installedPackages = NULL;
 static int ListAllInstalledPackages(OsConfigLogHandle log)
 {
     const char* commandTemplate = "%s list installed";
-    const char* commandTemplateAptGet = "%s list --installed"
+    const char* commandTemplateAptGet = "%s list --installed";
     const char* commandTemplateDpkg = "%s -l";
     const char* commandTmeplateZypper = "%s search --installed-only";
     char* results = NULL;
