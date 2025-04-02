@@ -105,7 +105,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
 
     status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log);
 
-    OsConfigLogInfo(log, "Package manager '%s' command '%s' returning %d (errno: %d)", packageManager, command, status, errno);
+    OsConfigLogInfo(log, "Package manager '%s' command '%s' returning %d", packageManager, command, status);
 
     FREE_MEMORY(command);
 
@@ -134,7 +134,7 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
 
     status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log);
 
-    OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d (errno: %d)", packageManager, command, status, errno);
+    OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d", packageManager, command, status);
     OsConfigLogInfo(log, "%s", *results); //TODO: Change this to OsConfigLogDebug
 
     FREE_MEMORY(command);
@@ -187,7 +187,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
     {
         FREE_MEMORY(g_installedPackagesCache);
         status = status ? status : ENOENT;
-        OsConfigLogInfo(log, "UpdateInstalledPackagesCache: enumerating all packages failed with %d, errno: %d (%s)", status, errno, strerror(errno));
+        OsConfigLogInfo(log, "UpdateInstalledPackagesCache: enumerating all packages failed with %d", status);
     }
 
     FREE_MEMORY(results);
@@ -332,7 +332,7 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, OsCo
     }
     else
     {
-        OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' returned %d (errno: %d)", command, status, errno);
+        OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' returned %d", command, status);
         *executed = false;
     }
 
@@ -346,7 +346,7 @@ static int ExecuteAptGetUpdate(OsConfigLogHandle log)
 
 static int ExecuteZypperRefresh(OsConfigLogHandle log)
 {
-    //const char* zypperClean = "zypper clean";
+    const char* zypperClean = "zypper clean";
     const char* zypperRefresh = "zypper refresh";
     const char* zypperRefreshServices = "zypper refresh --services";
 
@@ -357,17 +357,17 @@ static int ExecuteZypperRefresh(OsConfigLogHandle log)
         return status;
     }
 
-    /*if (0 != (status = ExecuteCommand(NULL, zypperClean, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
+    if (0 != (status = ExecuteCommand(NULL, zypperClean, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
     {
-        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d (errno: %d '%s')", zypperClean, status, errno, strerror(errno));
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d", zypperClean, status);
     }
-    else*/ if (0 != (status = ExecuteCommand(NULL, zypperRefresh, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
+    else if (0 != (status = ExecuteCommand(NULL, zypperRefresh, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
     {
-        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d (errno: %d '%s')", zypperRefresh, status, errno, strerror(errno));
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d", zypperRefresh, status);
     }
     else if (0 != (status = ExecuteCommand(NULL, zypperRefreshServices, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
     {
-        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d (errno: %d '%s')", zypperRefreshServices, status, errno, strerror(errno));
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d", zypperRefreshServices, status);
     }
 
     if (0 == status)
@@ -441,7 +441,7 @@ int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log)
     }
     else
     {
-        OsConfigLogInfo(log, "InstallOrUpdatePackage: installation or update of package '%s' returned %d (errno: %d)", packageName, status, errno);
+        OsConfigLogInfo(log, "InstallOrUpdatePackage: installation or update of package '%s' returned %d", packageName, status);
     }
 
     return status;
@@ -516,7 +516,7 @@ int UninstallPackage(const char* packageName, OsConfigLogHandle log)
         }
         else
         {
-            OsConfigLogInfo(log, "UninstallPackage: uninstallation of package '%s' returned %d (errno: %d)", packageName, status, errno);
+            OsConfigLogInfo(log, "UninstallPackage: uninstallation of package '%s' returned %d", packageName, status);
         }
     }
     else if (EINVAL != status)
