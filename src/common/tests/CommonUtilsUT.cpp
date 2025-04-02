@@ -2076,19 +2076,33 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 
     if (0 == IsPackageInstalled("nano", nullptr))
     {
+        EXPECT_EQ(0, IsPackageInstalled("nano", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("nano", nullptr, nullptr));
+        EXPECT_NE(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
+
         EXPECT_EQ(0, UninstallPackage("nano", nullptr));
+        EXPECT_NE(0, IsPackageInstalled("nano", nullptr));
         EXPECT_EQ(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
         EXPECT_NE(0, CheckPackageInstalled("nano", nullptr, nullptr));
+        
         EXPECT_EQ(0, InstallPackage("nano", nullptr));
+        EXPECT_EQ(0, IsPackageInstalled("nano", nullptr));
         EXPECT_EQ(0, CheckPackageInstalled("nano", nullptr, nullptr));
         EXPECT_NE(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
     }
     else
     {
+        EXPECT_NE(0, IsPackageInstalled("nano", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("nano", nullptr, nullptr));
+        EXPECT_EQ(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
+
         EXPECT_EQ(0, InstallPackage("nano", nullptr));
+        EXPECT_EQ(0, IsPackageInstalled("nano", nullptr));
         EXPECT_EQ(0, CheckPackageInstalled("nano", nullptr, nullptr));
         EXPECT_NE(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
+
         EXPECT_EQ(0, UninstallPackage("nano", nullptr));
+        EXPECT_NE(0, IsPackageInstalled("nano", nullptr));
         EXPECT_EQ(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
         EXPECT_NE(0, CheckPackageInstalled("nano", nullptr, nullptr));
     }

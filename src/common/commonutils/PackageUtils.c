@@ -135,7 +135,7 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
     status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log);
 
     OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d", packageManager, command, status);
-    OsConfigLogInfo(log, "%s", *results); //TODO: Change this to OsConfigLogDebug
+    OsConfigLogDebug(log, "%s", *results);
 
     FREE_MEMORY(command);
 
@@ -146,7 +146,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 {
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
     const char* commandTemplateYumDnf = "%s list installed  --cacheonly | awk '{print $1}'";
-    const char* commandTmeplateZypper = "%s search -i"; //"%s search -i | awk 'NR>2 {print $2}' | tr -d '|'";
+    const char* commandTmeplateZypper = "%s search -i";
 
     char* results = NULL;
     int status = ENOENT;
