@@ -33,26 +33,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get changed containers
-        id: changed-containers
-        uses: tj-actions/changed-files@v46.0.1
-        with:
-          files: ./devops/docker/**/Dockerfile
-
       - name: Create build matrix
         id: matrix
         run: |
-          # If this workflow is present in other_changed_files, then rebuild all containers
-          distro_list="${{ inputs.distro_list }}"
-          if [[ -n "${distro_list// }" ]]; then
-            echo "Building specified containers..."
-            containers=$(echo "$distro_list" | jq -R 'split(",") | map("devops/docker/" + . + "/Dockerfile")')
-          elif [[ "${{ steps.changed-containers.outputs.other_changed_files }}" == *".github/workflows/build-containers.yml"* ]] || [[ "${{ inputs.rebuild_all }}" == "true" ]]; then
-            echo "Workflow file changed, adding all containers to build matrix..."
-            containers=$(ls -d devops/docker/**/Dockerfile | jq -R . | jq -s .)
-          else
-            containers=$(echo -n ${{ steps.changed-containers.outputs.all_changed_files }} | jq -R -s -c 'split(" ")')
-          fi
+          containers=$(ls -d devops/docker/**/Dockerfile | jq -R . | jq -s .)
 
           echo Containers to build: $containers
           echo containers=$containers >> $GITHUB_OUTPUT
