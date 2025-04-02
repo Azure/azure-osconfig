@@ -186,6 +186,8 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
 
 int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
+    const char* commandTemplate = "\n%s\n";
+    const char* commandTemplateTdnf = "\n%s.x86_64\n";
     char* searchTarget = NULL;
     char* found = NULL;
     int status = 0;
@@ -204,9 +206,20 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
         }
     }
 
+    CheckPackageManagersPresence(log);
+
     if (0 == status)
     {
-        if (NULL == (searchTarget = FormatAllocateString("\n%s\n", packageName)))
+        if (g_tdnfIsPresent || g_dnfIsPresent || g_yumIsPresent)
+        {
+            searchTarget = FormatAllocateString("\n%s.x86_64\n", packageName);
+        }
+        else
+        {
+            searchTarget = FormatAllocateString("\n%s\n", packageName)
+        }
+
+        if (NULL == searchTarget)
         {
             OsConfigLogError(log, "IsPackageInstalled: out of memory");
             status = ENOMEM;
