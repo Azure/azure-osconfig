@@ -390,6 +390,9 @@ int InstallPackage(const char* packageName, OsConfigLogHandle log)
 
     if (0 != (status = IsPackageInstalled(packageName, log)))
     {
+        // Erase the installed packages cache, we'll need to refresh the cache after installing this package
+        FREE_MEMORY(g_installedPackages);
+
         status = InstallOrUpdatePackage(packageName, log);
     }
     else
@@ -448,6 +451,9 @@ int UninstallPackage(const char* packageName, OsConfigLogHandle log)
         if (0 == status)
         {
             OsConfigLogInfo(log, "UninstallPackage: package '%s' was successfully uninstalled", packageName);
+
+            // Erase the installed packages cache, we'll need to refresh the cache after uninstalling this package
+            FREE_MEMORY(g_installedPackages);
         }
         else
         {
