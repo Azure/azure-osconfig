@@ -224,19 +224,19 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 
     if (0 == status)
     {
-        if (g_tdnfIsPresent || g_dnfIsPresent || g_yumIsPresent)
-        {
-            searchTarget = FormatAllocateString("\n%s.x86_64\n", packageName);
-        }
-        else if (g_zypperIsPresent)
-        {
-            searchTarget = FormatAllocateString("| %s", packageName);
-        }
-        else
+        if (g_aptGetIsPresent || g_dpkgIsPresent)
         {
             searchTarget = FormatAllocateString("\n%s\n", packageName);
         }
-
+        else if (g_tdnfIsPresent || g_dnfIsPresent || g_yumIsPresent)
+        {
+            searchTarget = FormatAllocateString("\n%s.x86_64\n", packageName);
+        }
+        else //if (g_zypperIsPresent)
+        {
+            searchTarget = FormatAllocateString("| %s", packageName);
+        }
+        
         if (NULL == searchTarget)
         {
             OsConfigLogError(log, "IsPackageInstalled: out of memory");
