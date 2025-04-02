@@ -194,7 +194,7 @@ static int IsPackageListedAsInstalled(const char* packageName, OsConfigLogHandle
 
     if ((NULL == g_installedPackages) && (0 != (status = ListAllInstalledPackages(log))))
     {
-        if ((NULL == g_installedPackages) && (NULL != strstr(g_installedPackages, packageName)))
+        if ((NULL != g_installedPackages) && (NULL != strstr(g_installedPackages, packageName)))
         {
             status = 0;
         }
