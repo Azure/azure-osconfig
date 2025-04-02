@@ -146,7 +146,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 {
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
     const char* commandTemplateYumDnf = "%s list installed  --cacheonly | awk '{print $1}'";
-    const char* commandTmeplateZypper = "%s search -i | grep -v '|' | awk '{print $2}'";
+    const char* commandTmeplateZypper = "%s search -i"; //"%s search -i | grep -v '|' | awk '{print $2}'";
 
     char* results = NULL;
     int status = ENOENT;
