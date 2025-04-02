@@ -124,8 +124,7 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
     status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log);
 
     OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d (errno: %d)", packageManager, command, status, errno);
-    //Change this to Debug
-    OsConfigLogInfo(log, "%s", *results);
+    OsConfigLogInfo(log, "%s", *results); //TODO: Change this to OsConfigLogDebug
 
     FREE_MEMORY(command);
 
@@ -135,6 +134,7 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
 static int ListAllInstalledPackages(OsConfigLogHandle log)
 {
     const char* commandTemplate = "%s list installed";
+    const char* commandTemplateYumDnf = "%s list installed  --cacheonly";
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
     const char* commandTmeplateZypper = "%s search --installed-only --query-format '%{name}\n'";
     char* results = NULL;
@@ -148,15 +148,15 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
     }
     else if (g_tdnfIsPresent)
     {
-        status = CheckAllPackages(commandTemplate, g_tdnf, &results, log);
+        status = CheckAllPackages(commandTemplateYumDnf, g_tdnf, &results, log);
     }
     else if (g_dnfIsPresent)
     {
-        status = CheckAllPackages(commandTemplate, g_dnf, &results, log);
+        status = CheckAllPackages(commandTemplateYumDnf, g_dnf, &results, log);
     }
     else if (g_yumIsPresent)
     {
-        status = CheckAllPackages(commandTemplate, g_yum, &results, log);
+        status = CheckAllPackages(commandTemplateYumDnf, g_yum, &results, log);
     }
     else if (g_zypperIsPresent)
     {
@@ -184,14 +184,14 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
     return status;
 }
 
-static int IsPackageListedAsInstalled(const char* packageName, OsConfigLogHandle log)
+int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
     char* searchTarget = NULL;
     int status = 0;
 
     if ((NULL == packageName) || (0 == strlen(packageName)))
     {
-        OsConfigLogError(log, "IsPackageListedAsInstalled called with an invalid argument");
+        OsConfigLogError(log, "IsPackageInstalled called with an invalid argument");
         return EINVAL;
     }
 
@@ -199,7 +199,7 @@ static int IsPackageListedAsInstalled(const char* packageName, OsConfigLogHandle
     {
         if (0 != (status = ListAllInstalledPackages(log)))
         {
-            OsConfigLogInfo(log, "IsPackageListedAsInstalled(%s) failed (ListAllInstalledPackages failed)", packageName);
+            OsConfigLogInfo(log, "IsPackageInstalled(%s) failed (ListAllInstalledPackages failed)", packageName);
         }
     }
 
@@ -207,12 +207,12 @@ static int IsPackageListedAsInstalled(const char* packageName, OsConfigLogHandle
     {
         if (NULL == (searchTarget = FormatAllocateString("\n%s\n", packageName)))
         {
-            OsConfigLogError(log, "IsPackageListedAsInstalled: out of memory");
+            OsConfigLogError(log, "IsPackageInstalled: out of memory");
             status = ENOMEM;
         }
         else if (NULL == strstr(g_installedPackages, searchTarget))
         {
-            OsConfigLogInfo(log, "IsPackageListedAsInstalled: '%s' not found in the list of installed packages", packageName);
+            OsConfigLogInfo(log, "IsPackageInstalled: '%s' not found in the list of installed packages", packageName);
             status = ENOENT;
         }
 
@@ -221,59 +221,14 @@ static int IsPackageListedAsInstalled(const char* packageName, OsConfigLogHandle
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "IsPackageListedAsInstalled: package '%s' is installed", packageName);
-    }
-    else
-    {
-        OsConfigLogInfo(log, "IsPackageListedAsInstalled: package '%s' is not installed", packageName);
-    }
-
-    return status;
-}
-
-int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
-{
-    /*
-    const char* commandTemplateDpkg = "%s -l %s | grep ^ii";
-    const char* commandTemplateYumDnf = "%s list installed  --cacheonly %s";
-    const char* commandTemplateRedHat = "%s list installed %s --disableplugin subscription-manager";
-    const char* commandTemplateZypper = "%s se -x %s"; //or: 'zypper search --installed-only %s'
-    int status = ENOENT;
-
-    CheckPackageManagersPresence(log);
-
-    if (g_dpkgIsPresent)
-    {
-        status = CheckOrInstallPackage(commandTemplateDpkg, g_dpkg, packageName, log);
-    }
-    else if (g_tdnfIsPresent)
-    {
-        status = CheckOrInstallPackage(commandTemplateYumDnf, g_tdnf, packageName, log);
-    }
-    else if (g_dnfIsPresent)
-    {
-        status = CheckOrInstallPackage(IsRedHatBased(log) ? commandTemplateRedHat : commandTemplateYumDnf, g_dnf, packageName, log);
-    }
-    else if (g_yumIsPresent)
-    {
-        status = CheckOrInstallPackage(IsRedHatBased(log) ? commandTemplateRedHat : commandTemplateYumDnf, g_yum, packageName, log);
-    }
-    else if (g_zypperIsPresent)
-    {
-        status = CheckOrInstallPackage(commandTemplateZypper, g_zypper, packageName, log);
-    }
-
-    if (0 == status)
-    {
         OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is installed", packageName);
     }
     else
     {
-        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is not found (%d, errno: %d)", packageName, status, errno);
+        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is not installed", packageName);
     }
 
-    return status;*/
-    return IsPackageListedAsInstalled(packageName, log);
+    return status;
 }
 
 static bool WildcardsPresent(const char* packageName)
