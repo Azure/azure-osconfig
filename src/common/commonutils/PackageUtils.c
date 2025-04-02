@@ -110,6 +110,9 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
 
     FREE_MEMORY(command);
 
+    // Refresh the cache holding list of installed packages
+    g_updateInstalledPackagesCache = 1;
+
     return status;
 }
 
@@ -140,7 +143,7 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
     return status;
 }
 
-static int ListAllInstalledPackages(OsConfigLogHandle log)
+static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 {
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
     const char* commandTemplateYumDnf = "%s list installed  --cacheonly | awk '{print $1}'";
@@ -177,7 +180,7 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
         FREE_MEMORY(g_installedPackagesCache);
         if (NULL == (g_installedPackagesCache = DuplicateString(results)))
         {
-            OsConfigLogError(log, "ListAllInstalledPackages: out of memory");
+            OsConfigLogError(log, "UpdateInstalledPackagesCache: out of memory");
             status = ENOENT;
         }
     }
@@ -185,7 +188,7 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
     {
         FREE_MEMORY(g_installedPackagesCache);
         status = status ? status : ENOENT;
-        OsConfigLogInfo(log, "ListAllInstalledPackages: enumerating all packages failed with %d, errno: %d (%s)", status, errno, strerror(errno));
+        OsConfigLogInfo(log, "UpdateInstalledPackagesCache: enumerating all packages failed with %d, errno: %d (%s)", status, errno, strerror(errno));
     }
 
     FREE_MEMORY(results);
@@ -213,9 +216,9 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 
     if (NULL == g_installedPackagesCache)
     {
-        if (0 != (status = ListAllInstalledPackages(log)))
+        if (0 != (status = UpdateInstalledPackagesCache(log)))
         {
-            OsConfigLogInfo(log, "IsPackageInstalled(%s) failed (ListAllInstalledPackages failed)", packageName);
+            OsConfigLogInfo(log, "IsPackageInstalled(%s) failed (UpdateInstalledPackagesCache failed)", packageName);
         }
     }
 
@@ -424,8 +427,7 @@ int InstallPackage(const char* packageName, OsConfigLogHandle log)
     {
         if (0 == (status = InstallOrUpdatePackage(packageName, log)))
         {
-            // We'll need to refresh the cache after installing this package
-            g_updateInstalledPackagesCache = 1;
+            OsConfigLogInfo(log, "InstallPackage: package '%s' was successfully installed", packageName);
         }
     }
     else
@@ -484,9 +486,6 @@ int UninstallPackage(const char* packageName, OsConfigLogHandle log)
         if (0 == status)
         {
             OsConfigLogInfo(log, "UninstallPackage: package '%s' was successfully uninstalled", packageName);
-
-            // We'll need to refresh the cache after uninstalling this package
-            g_updateInstalledPackagesCache = 1;
         }
         else
         {
