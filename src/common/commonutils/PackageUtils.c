@@ -27,6 +27,13 @@ static bool g_tdnfCheckUpdateExecuted = false;
 static bool g_dnfCheckUpdateExecuted = false;
 static bool g_yumCheckUpdateExecuted = false;
 
+static char* g_installedPackages = NULL;
+
+void PackageUtilsCleanup(void)
+{
+    FREE_MEMORY(g_installedPackages);
+}
+
 int IsPresent(const char* what, OsConfigLogHandle log)
 {
     const char* commandTemplate = "command -v %s";
@@ -125,8 +132,6 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
     return status;
 }
 
-static char* g_installedPackages = NULL;
-
 static int ListAllInstalledPackages(OsConfigLogHandle log)
 {
     const char* commandTemplate = "%s list installed";
@@ -181,6 +186,7 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
 
 static int IsPackageListedAsInstalled(const char* packageName, OsConfigLogHandle log)
 {
+    char* searchTarget = NULL;
     int status = 0;
 
     if ((NULL == packageName) || (0 == strlen(packageName)))
@@ -199,11 +205,18 @@ static int IsPackageListedAsInstalled(const char* packageName, OsConfigLogHandle
 
     if (0 == status)
     {
-        if (NULL == strstr(g_installedPackages, packageName))
+        if (NULL == (searchTarget = FormatAllocateString(" %s ", packageName)))
+        {
+            OsConfigLogError(log, "IsPackageListedAsInstalled: out of memory");
+            status = ENOMEM;
+        }
+        else if (NULL == strstr(g_installedPackages, searchTarget))
         {
             OsConfigLogInfo(log, "IsPackageListedAsInstalled: '%s' not found in the list of installed packages", packageName);
             status = ENOENT;
         }
+
+        FREE_MEMORY(searchTarget);
     }
 
     if (0 == status)
