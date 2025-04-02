@@ -198,7 +198,6 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
     char* searchTarget = NULL;
-    char* found = NULL;
     int status = 0;
 
     if ((NULL == packageName) || (0 == strlen(packageName)))
@@ -243,15 +242,15 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
             OsConfigLogError(log, "IsPackageInstalled: out of memory");
             status = ENOMEM;
         }
-        else if ((NULL != (found = strstr(g_installedPackagesCache, searchTarget))) && (0 < strlen(found)))
-        {
-            OsConfigLogInfo(log, "IsPackageInstalled: '%s' is installed", packageName);
-            status = 0;
-        }
-        else
+        else if (NULL == strstr(g_installedPackagesCache, searchTarget))
         {
             OsConfigLogInfo(log, "IsPackageInstalled: '%s' is not installed", packageName);
             status = ENOENT;
+        }
+        else
+        {
+            OsConfigLogInfo(log, "IsPackageInstalled: '%s' is installed", packageName);
+            status = 0;
         }
 
         FREE_MEMORY(searchTarget);
