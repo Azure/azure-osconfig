@@ -27,11 +27,16 @@ static bool g_tdnfCheckUpdateExecuted = false;
 static bool g_dnfCheckUpdateExecuted = false;
 static bool g_yumCheckUpdateExecuted = false;
 
-static char* g_installedPackages = NULL;
+#if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
+static atomic_int g_updateInstalledPackagesCache = 0;
+#else
+static int g_updateInstalledPackagesCache = 0;
+#endif
+static char* g_installedPackagesCache = NULL;
 
 void PackageUtilsCleanup(void)
 {
-    FREE_MEMORY(g_installedPackages);
+    FREE_MEMORY(g_installedPackagesCache);
 }
 
 int IsPresent(const char* what, OsConfigLogHandle log)
@@ -165,8 +170,8 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
 
     if ((0 == status) && (NULL != results))
     {
-        FREE_MEMORY(g_installedPackages);
-        if (NULL == (g_installedPackages = DuplicateString(results)))
+        FREE_MEMORY(g_installedPackagesCache);
+        if (NULL == (g_installedPackagesCache = DuplicateString(results)))
         {
             OsConfigLogError(log, "ListAllInstalledPackages: out of memory");
             status = ENOENT;
@@ -174,7 +179,7 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
     }
     else
     {
-        FREE_MEMORY(g_installedPackages);
+        FREE_MEMORY(g_installedPackagesCache);
         status = status ? status : ENOENT;
         OsConfigLogInfo(log, "ListAllInstalledPackages: enumerating all packages failed with %d, errno: %d (%s)", status, errno, strerror(errno));
     }
@@ -196,7 +201,13 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
         return EINVAL;
     }
 
-    if (NULL == g_installedPackages)
+    if (g_updateInstalledPackagesCache)
+    {
+        FREE_MEMORY(g_installedPackagesCache);
+        g_updateInstalledPackagesCache = 0;
+    }
+
+    if (NULL == g_installedPackagesCache)
     {
         if (0 != (status = ListAllInstalledPackages(log)))
         {
@@ -222,7 +233,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
             OsConfigLogError(log, "IsPackageInstalled: out of memory");
             status = ENOMEM;
         }
-        else if ((NULL != (found = strstr(g_installedPackages, searchTarget))) && (0 < strlen(found)))
+        else if ((NULL != (found = strstr(g_installedPackagesCache, searchTarget))) && (0 < strlen(found)))
         {
             OsConfigLogInfo(log, "IsPackageInstalled: '%s' is installed", packageName);
             status = 0;
@@ -403,10 +414,11 @@ int InstallPackage(const char* packageName, OsConfigLogHandle log)
 
     if (0 != (status = IsPackageInstalled(packageName, log)))
     {
-        // Erase the installed packages cache, we'll need to refresh the cache after installing this package
-        FREE_MEMORY(g_installedPackages);
-
-        status = InstallOrUpdatePackage(packageName, log);
+        if (0 == (status = InstallOrUpdatePackage(packageName, log)))
+        {
+            // We'll need to refresh the cache after installing this package
+            g_updateInstalledPackagesCache = 1;
+        }
     }
     else
     {
@@ -465,8 +477,8 @@ int UninstallPackage(const char* packageName, OsConfigLogHandle log)
         {
             OsConfigLogInfo(log, "UninstallPackage: package '%s' was successfully uninstalled", packageName);
 
-            // Erase the installed packages cache, we'll need to refresh the cache after uninstalling this package
-            FREE_MEMORY(g_installedPackages);
+            // We'll need to refresh the cache after uninstalling this package
+            g_updateInstalledPackagesCache = 1;
         }
         else
         {
