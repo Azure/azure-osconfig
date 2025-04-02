@@ -2065,19 +2065,19 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr, nullptr));
     EXPECT_NE(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
 
-    if (0 == IsPackageInstalled("curl", nullptr))
+    if (0 == IsPackageInstalled("nano", nullptr))
     {
-        EXPECT_EQ(0, UninstallPackage("curl", nullptr));
-        EXPECT_NE(0, CheckPackageNotInstalled("curl", nullptr, nullptr));
-        EXPECT_EQ(0, InstallPackage("curl", nullptr));
-        EXPECT_NE(0, CheckPackageInstalled("curl", nullptr, nullptr));
+        EXPECT_EQ(0, UninstallPackage("nano", nullptr));
+        EXPECT_NE(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
+        EXPECT_EQ(0, InstallPackage("nano", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("nano", nullptr, nullptr));
     }
     else
     {
-        EXPECT_EQ(0, InstallPackage("curl", nullptr));
-        EXPECT_NE(0, CheckPackageInstalled("curl", nullptr, nullptr));
-        EXPECT_EQ(0, UninstallPackage("curl", nullptr));
-        EXPECT_NE(0, CheckPackageNotInstalled("curl", nullptr, nullptr));
+        EXPECT_EQ(0, InstallPackage("nano", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("nano", nullptr, nullptr));
+        EXPECT_EQ(0, UninstallPackage("nano", nullptr));
+        EXPECT_NE(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
     }
 }
 
