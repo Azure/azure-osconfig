@@ -83,6 +83,16 @@ TEST_F(FileRegexMatchTest, Audit_InvalidArguments_4)
     ASSERT_EQ(result.Error().code, EINVAL);
 }
 
+TEST_F(FileRegexMatchTest, Audit_InvalidArguments_5)
+{
+    mArgs["filename"] = mTempfile;
+    mArgs["matchPattern"] = "(?i)"; // invalid regex pattern
+    mArgs["matchOperation"] = "pattern match";
+    auto result = Audit_fileRegexMatch(mArgs, mLogstream);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_FALSE(result.Value());
+}
+
 TEST_F(FileRegexMatchTest, Audit_EmptyFile_1)
 {
     mArgs["filename"] = mTempfile;
