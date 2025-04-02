@@ -114,9 +114,11 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
         return ENOMEM;
     }
 
-    status = ExecuteCommand(NULL, command, true, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log);
+    status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log);
 
-    OsConfigLogInfo(log, "Package manager '%s' command '%s' returning '%s' and status %d (errno: %d)", packageManager, command, *results, status, errno);
+    OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d (errno: %d)", packageManager, command, *results, status, errno);
+    //Change this to Debug
+    OsConfigLogInfo(log, "%s", *results);
 
     FREE_MEMORY(command);
 
@@ -179,7 +181,7 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
 
 static int IsPackageListedAsInstalled(const char* packageName, OsConfigLogHandle log)
 {
-    int status = ENOENT;
+    int status = 0;
 
     if ((NULL == packageName) || (0 == strlen(packageName)))
     {
@@ -187,11 +189,20 @@ static int IsPackageListedAsInstalled(const char* packageName, OsConfigLogHandle
         return EINVAL;
     }
 
-    if ((NULL == g_installedPackages) && (0 != (status = ListAllInstalledPackages(log))))
+    if (NULL == g_installedPackages)
     {
-        if ((NULL != g_installedPackages) && (NULL != strstr(g_installedPackages, packageName)))
+        if (0 != (status = ListAllInstalledPackages(log)))
         {
-            status = 0;
+            OsConfigLogInfo(log, "IsPackageListedAsInstalled(%s) failed (ListAllInstalledPackages failed)", packageName);
+        }
+    }
+
+    if (0 == status)
+    {
+        if (NULL == strstr(g_installedPackages, packageName))
+        {
+            OsConfigLogInfo(log, "IsPackageListedAsInstalled: '%s' not found in the list of installed packages", packageName);
+            status = ENOENT;
         }
     }
 
