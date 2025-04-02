@@ -26,7 +26,6 @@ static bool g_yumIsPresent = false;
 static bool g_zypperIsPresent = false;
 static bool g_aptGetUpdateExecuted = false;
 static bool g_zypperRefreshExecuted = false;
-static bool g_zypperRefreshServicesExecuted = false;
 static bool g_tdnfCheckUpdateExecuted = false;
 static bool g_dnfCheckUpdateExecuted = false;
 static bool g_yumCheckUpdateExecuted = false;
@@ -327,6 +326,9 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, OsCo
     {
         OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' was successful", command);
         *executed = true;
+
+        // Refresh the cache holding list of installed packages
+        g_updateInstalledPackagesCache = 1;
     }
     else
     {
@@ -344,12 +346,39 @@ static int ExecuteAptGetUpdate(OsConfigLogHandle log)
 
 static int ExecuteZypperRefresh(OsConfigLogHandle log)
 {
-    return ExecuteSimplePackageCommand("zypper refresh", &g_zypperRefreshExecuted, log);
-}
+    const char* zypperClean = "zypper clean";
+    const char* zypperRefresh = "zypper refresh";
+    const char* zypperRefreshServices = "zypper refresh --services";
+    
+    int status = 0;
 
-static int ExecuteZypperRefreshServices(OsConfigLogHandle log)
-{
-    return ExecuteSimplePackageCommand("zypper refresh --services", &g_zypperRefreshServicesExecuted, log);
+    if (true = g_zypperRefreshExecuted)
+    {
+        return status;
+    }
+    
+    if (0 != (status = ExecuteCommand(NULL, zypperClean, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' '%s' returned %d (errno: %d '%s')", zypperClean, status, errno, strerror(errno));
+    }
+    else if (0 != (status = ExecuteCommand(NULL, zypperRefresh, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' '%s' returned %d (errno: %d '%s')", zypperRefresh, status, errno, strerror(errno));
+    }
+    else if (0 != (status = ExecuteCommand(NULL, zypperRefreshServices, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' '%s' returned %d (errno: %d '%s')", zypperRefreshServices, status, errno, strerror(errno));
+    }
+
+    if (0 == status)
+    {
+        g_zypperRefreshExecuted = true;
+    }
+
+    // Regardless of result, we need to refresh the cache holding list of installed packages
+    g_updateInstalledPackagesCache = 1;
+
+    return status;
 }
 
 static int ExecuteTdnfCheckUpdate(OsConfigLogHandle log)
@@ -398,7 +427,6 @@ int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log)
     else if (g_zypperIsPresent)
     {
         ExecuteZypperRefresh(log);
-        ExecuteZypperRefreshServices(log);
         status = CheckOrInstallPackage(commandTemplate, g_zypper, packageName, log);
     }
 
@@ -474,7 +502,6 @@ int UninstallPackage(const char* packageName, OsConfigLogHandle log)
         else if (g_zypperIsPresent)
         {
             ExecuteZypperRefresh(log);
-            ExecuteZypperRefreshServices(log);
             status = CheckOrInstallPackage(commandTemplateZypper, g_zypper, packageName, log);
         }
 
