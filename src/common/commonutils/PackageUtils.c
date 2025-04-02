@@ -164,7 +164,7 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
     if ((0 == status) && (NULL != results))
     {
         FREE_MEMORY(g_installedPackages);
-        if (NULL == g_installedPackages = DuplicateString(results))
+        if (NULL == (g_installedPackages = DuplicateString(results)))
         {
             OsConfigLogError(log, "ListAllInstalledPackages: out of memory");
             status = ENOENT;
