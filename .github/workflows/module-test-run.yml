@@ -55,11 +55,28 @@ jobs:
           recipes=$(find ../../src/modules/test/recipes/ -name "*.json")
 
           for recipe in $recipes; do
-            if [ ! -f ../../src/tests/e2e-test-recipes/$(basename $recipe) ]; then
+            modules=$(cat $recipe | grep '\.so' | awk -F'"' '{print $4}')
+            if [ -z "$modules" ]; then
+              echo "no modules found in $recipe"
               continue
             fi
-            name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
 
+            skip=
+            for module in $modules; do
+              echo "module: $module"
+              if [ ! -f ../bin/$module ]; then
+                echo "module $module lodaed in recipe $recipe not found"
+                skip=1
+                break
+              fi
+            done
+
+            if [ ! -z "$skip" ]; then
+              echo "skipping recipe $recipe"
+              continue
+            fi
+
+            name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
             echo -n "testing $name ... "
 
             if output=$(sudo ./moduletest $recipe --bin ../bin); then

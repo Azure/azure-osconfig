@@ -4,6 +4,12 @@
     "Module": "compliance.so"
   },
 
+  // If the shadow group does not exist, create it (it does not exist on few distros)
+  {
+    "RunCommand": "if [ -z \"$(grep shadow /etc/group)\" ]; then groupadd -g 42 shadow && touch /tmp/.remove_shadow_group; fi"
+  },
+
+
 
   // Create a test user which has shadow as primary group
   {
@@ -82,6 +88,9 @@
   },
   {
     "RunCommand": "groupdel securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "if [ -f /tmp/.remove_shadow_group ]; then groupdel shadow && rm -f /tmp/.remove_shadow_group; fi"
   },
   {
     "Action": "UnloadModule"

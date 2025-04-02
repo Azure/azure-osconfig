@@ -7,7 +7,7 @@
     "RunCommand": "useradd securitybaselinetest && id securitybaselinetest"
   },
   {
-    "RunCommand": "groupadd securitybaselinetest2 && usermod -G securitybaselinetest2 securitybaselinetest && id securitybaselinetest"
+    "RunCommand": "groupadd -g 8888 securitybaselinetest2 && usermod -G securitybaselinetest2 securitybaselinetest && id securitybaselinetest"
   },
   {
     "ObjectType": "Desired",
@@ -51,7 +51,10 @@
 
   // Create a securitybaselinetest2 user and drop it from /etc/group, this should fail as securitybaselinetest2 is a primary group for the user
   {
-    "RunCommand": "useradd securitybaselinetest2 && id securitybaselinetest2"
+    "RunCommand": "groupadd -g 8888 securitybaselinetest2"
+  },
+  {
+    "RunCommand": "useradd -g 8888 securitybaselinetest2 && id securitybaselinetest2"
   },
   {
     "RunCommand": "sed -i '/securitybaselinetest2/d' /etc/group"
@@ -60,7 +63,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
-    "Payload": "{ allOf: [{ ensureAllGroupsFromEtcPasswdExistInEtcGroup: User's 'securitybaselinetest2' group 1002 from \/etc\/passwd does not exist in \/etc\/group } == FALSE] == FALSE }"
+    "Payload": "{ allOf: [{ ensureAllGroupsFromEtcPasswdExistInEtcGroup: User's 'securitybaselinetest2' group 8888 from \/etc\/passwd does not exist in \/etc\/group } == FALSE] == FALSE }"
   },
 
 
