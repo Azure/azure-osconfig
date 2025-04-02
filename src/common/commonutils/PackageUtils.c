@@ -214,7 +214,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
         }
         else
         {
-            searchTarget = FormatAllocateString("\n%s\n", packageName)
+            searchTarget = FormatAllocateString("\n%s\n", packageName);
         }
 
         if (NULL == searchTarget)
