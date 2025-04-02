@@ -146,7 +146,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 {
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
     const char* commandTemplateYumDnf = "%s list installed  --cacheonly | awk '{print $1}'";
-    const char* commandTmeplateZypper = "%s search -i | awk 'NR>2 {print $2}' | tr -d '|'";
+    const char* commandTmeplateZypper = "%s search -i"; //"%s search -i | awk 'NR>2 {print $2}' | tr -d '|'";
 
     char* results = NULL;
     int status = ENOENT;
@@ -231,7 +231,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
         }
         else if (g_zypperIsPresent)
         {
-            searchTarget = FormatAllocateString("\n%s\n", packageName);
+            searchTarget = FormatAllocateString("| %s", packageName);
         }
         else
         {
