@@ -185,13 +185,13 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
 static int IsPackageListedAsInstalled(const char* packageName, OsConfigLogHandle log)
 {
     int status = ENOENT;
-    
+
     if ((NULL == packageName) || (0 == strlen(packageName)))
     {
         OsConfigLogError(log, "IsPackageListedAsInstalled called with an invalid argument");
         return EINVAL;
     }
-    
+
     if ((NULL == g_installedPackages) && (0 != (status = ListAllInstalledPackages(log))))
     {
         if ((NULL == g_installedPackages) && (NULL != strstr(g_installedPackages, packageName)))
