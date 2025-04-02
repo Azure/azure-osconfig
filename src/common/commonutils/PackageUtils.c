@@ -186,8 +186,6 @@ static int ListAllInstalledPackages(OsConfigLogHandle log)
 
 int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
-    const char* commandTemplate = "\n%s\n";
-    const char* commandTemplateTdnf = "\n%s.x86_64\n";
     char* searchTarget = NULL;
     char* found = NULL;
     int status = 0;
