@@ -29,9 +29,13 @@ class Regex
     {
         int flags = 0;
         if (options & std::regex_constants::icase)
+        {
             flags |= REG_ICASE;
+        }
         if (options & std::regex_constants::extended)
+        {
             flags |= REG_EXTENDED;
+        }
         return flags;
     }
 
