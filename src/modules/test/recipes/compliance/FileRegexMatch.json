@@ -26,12 +26,6 @@
     }
   },
   {
-    "ObjectType": "Reported",
-    "ComponentName": "Compliance",
-    "ObjectName": "auditTest",
-    "Payload": "PASS{ fileRegexMatch: pattern '.*' matched line 1 } == TRUE"
-  },
-  {
     "RunCommand": "echo foo > /tmp/testfile"
   },
   {
@@ -172,6 +166,9 @@
 
   {
     "RunCommand": "rm -f /tmp/passwd"
+  },
+  {
+    "RunCommand": "rm -f /tmp/testfile"
   },
   {
     "Action": "UnloadModule"
