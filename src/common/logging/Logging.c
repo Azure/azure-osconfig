@@ -241,7 +241,11 @@ void TrimLog(OsConfigLogHandle log)
 
             // Reapply restrictions once the file is recreated (also for backup, if any):
             RestrictFileAccessToCurrentAccountOnly(log->logFileName);
-            RestrictFileAccessToCurrentAccountOnly(log->backLogFileName);
+            if (NULL != log->backLogFileName)
+            {
+                // Reapply restrictions to the backup file:
+                RestrictFileAccessToCurrentAccountOnly(log->backLogFileName);
+            }
         }
     }
 
