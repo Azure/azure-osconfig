@@ -62,7 +62,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissing)
     args["filename"] = "/this_doesnt_exist_for_sure";
 
     std::ostringstream logstream;
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
     ASSERT_TRUE(logstream.str().find("Stat error") != std::string::npos);
@@ -77,7 +77,7 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongOwner)
     args["permissions"] = "0400";
     args["mask"] = "0066";
     std::ostringstream logstream;
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
     ASSERT_TRUE(logstream.str().find("Invalid owner") != std::string::npos);
@@ -92,7 +92,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongOwner)
     args["permissions"] = "0400";
     args["mask"] = "0066";
     std::ostringstream logstream;
-    Result<bool> result = Remediate_ensureFilePermissions(args, logstream);
+    Result<bool> result = Remediate_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
     struct stat st;
@@ -111,7 +111,7 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongGroup)
     args["permissions"] = "0400";
     args["mask"] = "0066";
     std::ostringstream logstream;
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
     ASSERT_TRUE(logstream.str().find("Invalid group") != std::string::npos);
@@ -126,7 +126,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongGroup)
     args["permissions"] = "0400";
     args["mask"] = "0066";
     std::ostringstream logstream;
-    Result<bool> result = Remediate_ensureFilePermissions(args, logstream);
+    Result<bool> result = Remediate_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
     struct stat st;
@@ -145,7 +145,7 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongPermissions)
     args["permissions"] = "0400";
     args["mask"] = "0066";
     std::ostringstream logstream;
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
     ASSERT_TRUE(logstream.str().find("Invalid permissions") != std::string::npos);
@@ -160,7 +160,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongPermissions)
     args["permissions"] = "0400";
     args["mask"] = "0066";
     std::ostringstream logstream;
-    Result<bool> result = Remediate_ensureFilePermissions(args, logstream);
+    Result<bool> result = Remediate_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
     struct stat st;
@@ -179,7 +179,7 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongMask)
     args["permissions"] = "0400";
     args["mask"] = "0066";
     std::ostringstream logstream;
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
     ASSERT_TRUE(logstream.str().find("Invalid permissions") != std::string::npos);
@@ -194,7 +194,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongMask)
     args["permissions"] = "0400";
     args["mask"] = "0066";
     std::ostringstream logstream;
-    Result<bool> result = Remediate_ensureFilePermissions(args, logstream);
+    Result<bool> result = Remediate_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
     struct stat st;
@@ -213,7 +213,7 @@ TEST_F(EnsureFilePermissionsTest, AuditAllWrong)
     args["permissions"] = "0400";
     args["mask"] = "0066";
     std::ostringstream logstream;
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
 }
@@ -227,7 +227,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateAllWrong)
     args["permissions"] = "0400";
     args["mask"] = "0066";
     std::ostringstream logstream;
-    Result<bool> result = Remediate_ensureFilePermissions(args, logstream);
+    Result<bool> result = Remediate_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
     struct stat st;
@@ -246,7 +246,7 @@ TEST_F(EnsureFilePermissionsTest, AuditAllOk)
     args["permissions"] = "0400";
     args["mask"] = "0066";
     std::ostringstream logstream;
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
 }
@@ -260,7 +260,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateAllOk)
     args["permissions"] = "0400";
     args["mask"] = "0066";
     std::ostringstream logstream;
-    Result<bool> result = Remediate_ensureFilePermissions(args, logstream);
+    Result<bool> result = Remediate_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
     struct stat st;
@@ -274,7 +274,7 @@ TEST_F(EnsureFilePermissionsTest, AuditMissingFilename)
 {
     std::map<std::string, std::string> args;
     std::ostringstream logstream;
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "No filename provided");
 }
@@ -283,7 +283,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateMissingFilename)
 {
     std::map<std::string, std::string> args;
     std::ostringstream logstream;
-    Result<bool> result = Remediate_ensureFilePermissions(args, logstream);
+    Result<bool> result = Remediate_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "No filename provided");
 }
@@ -294,7 +294,7 @@ TEST_F(EnsureFilePermissionsTest, AuditBadFileOwner)
     std::ostringstream logstream;
     CreateFile(args["filename"], 15213, 0, 0600);
     args["owner"] = "boohoonotarealuser";
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
 }
@@ -305,7 +305,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateBadFileOwner)
     std::ostringstream logstream;
     CreateFile(args["filename"], 15213, 0, 0600);
     args["owner"] = "boohoonotarealuser";
-    Result<bool> result = Remediate_ensureFilePermissions(args, logstream);
+    Result<bool> result = Remediate_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
 }
@@ -316,7 +316,7 @@ TEST_F(EnsureFilePermissionsTest, AuditBadFileGroup)
     std::ostringstream logstream;
     CreateFile(args["filename"], 0, 15213, 0600);
     args["group"] = "boohoonotarealgroup";
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
 }
@@ -327,7 +327,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateBadFileGroup)
     std::ostringstream logstream;
     CreateFile(args["filename"], 0, 15213, 0600);
     args["group"] = "boohoonotarealgroup";
-    Result<bool> result = Remediate_ensureFilePermissions(args, logstream);
+    Result<bool> result = Remediate_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
 }
@@ -338,7 +338,7 @@ TEST_F(EnsureFilePermissionsTest, AuditBadPermissions)
     std::ostringstream logstream;
     CreateFile(args["filename"], 0, 0, 0600);
     args["permissions"] = "999";
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
     ASSERT_TRUE(logstream.str().find("Invalid permissions") != std::string::npos);
@@ -350,7 +350,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateBadPermissions)
     std::ostringstream logstream;
     CreateFile(args["filename"], 0, 0, 0600);
     args["permissions"] = "999";
-    Result<bool> result = Remediate_ensureFilePermissions(args, logstream);
+    Result<bool> result = Remediate_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_FALSE(result.HasValue());
 }
 
@@ -360,7 +360,7 @@ TEST_F(EnsureFilePermissionsTest, AuditBadMask)
     std::ostringstream logstream;
     CreateFile(args["filename"], 0, 0, 0600);
     args["mask"] = "999";
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
     ASSERT_TRUE(logstream.str().find("Invalid permissions") != std::string::npos);
@@ -372,7 +372,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateBadMask)
     std::ostringstream logstream;
     CreateFile(args["filename"], 0, 0, 0600);
     args["mask"] = "999";
-    Result<bool> result = Remediate_ensureFilePermissions(args, logstream);
+    Result<bool> result = Remediate_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_FALSE(result.HasValue());
 }
 
@@ -383,7 +383,7 @@ TEST_F(EnsureFilePermissionsTest, AuditSameBitsSet)
     CreateFile(args["filename"], 0, 0, 0600);
     args["permissions"] = "600";
     args["mask"] = "600";
-    Result<bool> result = Audit_ensureFilePermissions(args, logstream);
+    Result<bool> result = Audit_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_FALSE(result.HasValue());
 }
 
@@ -394,6 +394,6 @@ TEST_F(EnsureFilePermissionsTest, RemediateSameBitsSet)
     CreateFile(args["filename"], 0, 0, 0600);
     args["permissions"] = "600";
     args["mask"] = "600";
-    Result<bool> result = Remediate_ensureFilePermissions(args, logstream);
+    Result<bool> result = Remediate_ensureFilePermissions(args, logstream, nullptr);
     ASSERT_FALSE(result.HasValue());
 }

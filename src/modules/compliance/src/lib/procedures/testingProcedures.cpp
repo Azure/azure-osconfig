@@ -8,6 +8,7 @@ namespace compliance
 {
 REMEDIATE_FN(remediationFailure, "message:message to be logged")
 {
+    UNUSED(log);
     auto it = args.find("message");
     if (it != args.end())
     {
@@ -18,6 +19,7 @@ REMEDIATE_FN(remediationFailure, "message:message to be logged")
 
 REMEDIATE_FN(remediationSuccess, "message:message to be logged")
 {
+    UNUSED(log);
     auto it = args.find("message");
     if (it != args.end())
     {
@@ -28,6 +30,7 @@ REMEDIATE_FN(remediationSuccess, "message:message to be logged")
 
 AUDIT_FN(auditFailure, "message:message to be logged")
 {
+    UNUSED(log);
     auto it = args.find("message");
     if (it != args.end())
     {
@@ -38,6 +41,7 @@ AUDIT_FN(auditFailure, "message:message to be logged")
 
 AUDIT_FN(auditSuccess, "message:message to be logged")
 {
+    UNUSED(log);
     auto it = args.find("message");
     if (it != args.end())
     {
@@ -49,6 +53,7 @@ AUDIT_FN(auditSuccess, "message:message to be logged")
 REMEDIATE_FN(remediationParametrized, "result:Expected remediation result - success or failure:M")
 {
     UNUSED(logstream);
+    UNUSED(log);
     auto it = args.find("result");
     if (it == args.end())
     {

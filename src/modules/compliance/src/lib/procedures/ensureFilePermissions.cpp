@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+#include <CommonUtils.h>
 #include <Evaluator.h>
 #include <errno.h>
 #include <grp.h>
@@ -15,6 +16,7 @@ namespace compliance
 AUDIT_FN(ensureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
     "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
+    UNUSED(log);
     struct stat statbuf;
     if (args.find("filename") == args.end())
     {
@@ -116,6 +118,7 @@ AUDIT_FN(ensureFilePermissions, "filename:Path to the file:M", "owner:Required o
 REMEDIATE_FN(ensureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
     "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
+    UNUSED(log);
     if (args.find("filename") == args.end())
     {
         logstream << "ERROR: No filename provided";

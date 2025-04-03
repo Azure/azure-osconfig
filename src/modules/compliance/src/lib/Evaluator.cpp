@@ -225,7 +225,7 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
             return Error("Function not found");
         }
         mLogstream << "{ " << name << ": ";
-        auto result = fn(arguments, mLogstream);
+        auto result = fn(arguments, mLogstream, mLog);
         mLogstream << " } == ";
         if (!result.HasValue())
         {
