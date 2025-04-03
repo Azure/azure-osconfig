@@ -239,3 +239,5 @@ char* GetGitBranchFromJsonConfig(const char* jsonString, void* log);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // COMMONUTILS_H
