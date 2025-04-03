@@ -41,7 +41,7 @@ void PackageUtilsCleanup(void)
     FREE_MEMORY(g_installedPackagesCache);
 }
 
-int IsPresent(const char* what, OsConfigLogHandle log)
+int IsPresent(const char* what, void* log)
 {
     const char* commandTemplate = "command -v %s";
     char* command = NULL;
@@ -115,7 +115,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     return status;
 }
 
-static int CheckAllPackages(const char* commandTemplate, const char* packageManager, char** results, OsConfigLogHandle log)
+static int CheckAllPackages(const char* commandTemplate, const char* packageManager, char** results, void* log)
 {
     char* command = NULL;
     int status = ENOENT;
@@ -141,7 +141,7 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
     return status;
 }
 
-static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
+static int UpdateInstalledPackagesCache(void* log)
 {
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
     const char* commandTemplateRpm = "%s -qa --queryformat \"%{NAME}\n\"";
@@ -205,7 +205,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
     return status;
 }
 
-int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
+int IsPackageInstalled(const char* packageName, void* log)
 {
     const char* searchTemplateDpkgRpm = "\n%s\n";
     const char* searchTemplateYumDnf = "\n%s.x86_64\n";
