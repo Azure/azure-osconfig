@@ -109,7 +109,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
 
     FREE_MEMORY(command);
 
-    // Refresh the cache holding list of installed packages
+    // Refresh the cache holding the list of installed packages next time we check
     g_updateInstalledPackagesCache = 1;
 
     return status;
@@ -149,6 +149,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
     const char* commandTmeplateZypper = "%s search -i";
 
     char* results = NULL;
+    char* buffer = NULL;
     int status = ENOENT;
 
     CheckPackageManagersPresence(log);
@@ -176,16 +177,21 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 
     if ((0 == status) && (NULL != results))
     {
-        FREE_MEMORY(g_installedPackagesCache);
-        if (NULL == (g_installedPackagesCache = DuplicateString(results)))
+        if (NULL != (buffer = DuplicateString(results)))
         {
+            FREE_MEMORY(g_installedPackagesCache);
+            g_installedPackagesCache = buffer;
+        }
+        else
+        {
+            // Leave the cache as-is, just log the error
             OsConfigLogError(log, "UpdateInstalledPackagesCache: out of memory");
             status = ENOENT;
         }
     }
     else
     {
-        FREE_MEMORY(g_installedPackagesCache);
+        // Leave the cache as-is, we can still use it even if it's stale
         status = status ? status : ENOENT;
         OsConfigLogInfo(log, "UpdateInstalledPackagesCache: enumerating all packages failed with %d", status);
     }
@@ -210,23 +216,24 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
         return EINVAL;
     }
 
-    if (g_updateInstalledPackagesCache)
-    {
-        FREE_MEMORY(g_installedPackagesCache);
-        g_updateInstalledPackagesCache = 0;
-    }
-
     CheckPackageManagersPresence(log);
 
-    if (NULL == g_installedPackagesCache)
+    if ((0 != g_updateInstalledPackagesCache) || (NULL == g_installedPackagesCache))
     {
+        g_updateInstalledPackagesCache = 0;
+
         if (0 != (status = UpdateInstalledPackagesCache(log)))
         {
             OsConfigLogInfo(log, "IsPackageInstalled(%s) failed (UpdateInstalledPackagesCache failed)", packageName);
         }
     }
 
-    if (0 == status)
+    if (NULL == g_installedPackagesCache)
+    {
+        OsConfigLogError(log, "IsPackageInstalled: cannot check for '%s' presence without cache", packageName);
+        status = ENOENT;
+    }
+    else if (0 == status)
     {
         if (g_aptGetIsPresent || g_dpkgIsPresent)
         {
@@ -332,7 +339,7 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, OsCo
         OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' was successful", command);
         *executed = true;
 
-        // Refresh the cache holding list of installed packages
+        // Refresh the cache holding the list of the installed packages next time we check
         g_updateInstalledPackagesCache = 1;
     }
     else
@@ -380,7 +387,7 @@ static int ExecuteZypperRefresh(OsConfigLogHandle log)
         g_zypperRefreshExecuted = true;
     }
 
-    // Regardless of result, we need to refresh the cache holding list of installed packages
+    // Regardless of result, we need to refresh the cache holding the list of installed packages next time we check
     g_updateInstalledPackagesCache = 1;
 
     return status;
