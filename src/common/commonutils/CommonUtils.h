@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
@@ -239,5 +240,3 @@ char* GetGitBranchFromJsonConfig(const char* jsonString, void* log);
 #ifdef __cplusplus
 }
 #endif
-
-#endif // COMMONUTILS_H

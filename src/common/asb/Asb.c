@@ -965,6 +965,8 @@ void AsbShutdown(void* log)
     FREE_MEMORY(g_desiredEnsureDefaultDenyFirewallPolicyIsSet);
 
     SshAuditCleanup(log);
+
+    PackageUtilsCleanup();
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(void* log)
