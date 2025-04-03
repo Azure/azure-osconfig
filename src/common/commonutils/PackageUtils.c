@@ -15,6 +15,9 @@ static const char* g_yum = "yum";
 static const char* g_zypper = "zypper";
 static const char* g_rpm = "rpm";
 
+// 30 minutes
+static const unsigned int g_packageManagerTimeoutSeconds = 1800;
+
 static bool g_checkedPackageManagersPresence = false;
 static bool g_aptGetIsPresent = false;
 static bool g_dpkgIsPresent = false;
