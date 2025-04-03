@@ -212,7 +212,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
     const char* searchTemplateDpkg = "\n%s\n";
     //const char* searchTemplateYumDnf = "\n%s.x86_64\n";
     //const char* searchTemplateZypper = "| %s ";
-    
+
     char* searchTarget = NULL;
     int status = 0;
 
