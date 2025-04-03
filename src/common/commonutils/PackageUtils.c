@@ -369,8 +369,6 @@ static int ExecuteZypperRefresh(void* log)
     const char* zypperRefresh = "zypper refresh";
     const char* zypperRefreshServices = "zypper refresh --services";
 
-static int ExecuteZypperRefreshServices(void* log)
-{
     int status = 0;
 
     if (true == g_zypperRefreshExecuted)
