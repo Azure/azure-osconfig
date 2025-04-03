@@ -42,6 +42,21 @@
               }
             }
           }
+        },
+        {
+          "type": "object",
+          "required": [
+            "auditGetParamValues"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "auditGetParamValues": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
         }
       ]
     },
