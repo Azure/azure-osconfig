@@ -597,6 +597,9 @@ int main(int argc, char *argv[])
     FREE_MEMORY(cpuType);
     FREE_MEMORY(cpuVendor);
     FREE_MEMORY(cpuModel);
+    FREE_MEMORY(kernelName);
+    FREE_MEMORY(kernelRelease);
+    FREE_MEMORY(kernelVersion);
     FREE_MEMORY(productName);
     FREE_MEMORY(productVendor);
     FREE_MEMORY(encodedProductInfo);
@@ -709,6 +712,7 @@ int main(int argc, char *argv[])
 done:
     OsConfigLogInfo(GetLog(), "OSConfig Agent (PID: %d) exiting with %d", pid, g_stopSignal);
 
+    FREE_MEMORY(jsonConfiguration);
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
     FREE_MEMORY(connectionString);
