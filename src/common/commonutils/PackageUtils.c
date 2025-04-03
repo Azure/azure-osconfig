@@ -13,6 +13,7 @@ static const char* g_tdnf = "tdnf";
 static const char* g_dnf = "dnf";
 static const char* g_yum = "yum";
 static const char* g_zypper = "zypper";
+static const char* g_rpm = "rpm";
 
 // 30 minutes
 static const unsigned int g_packageManagerTimeoutSeconds = 1800;
@@ -24,6 +25,7 @@ static bool g_tdnfIsPresent = false;
 static bool g_dnfIsPresent = false;
 static bool g_yumIsPresent = false;
 static bool g_zypperIsPresent = false;
+static bool g_rpmIsPresent = false;
 static bool g_aptGetUpdateExecuted = false;
 static bool g_zypperRefreshExecuted = false;
 static bool g_tdnfCheckUpdateExecuted = false;
@@ -83,6 +85,7 @@ static void CheckPackageManagersPresence(OsConfigLogHandle log)
         g_dnfIsPresent = (0 == IsPresent(g_dnf, log)) ? true : false;
         g_yumIsPresent = (0 == IsPresent(g_yum, log)) ? true : false;
         g_zypperIsPresent = (0 == IsPresent(g_zypper, log)) ? true : false;
+        g_rpmIsPresent = (0 == IsPresent(g_rpm, log)) ? true : false;
     }
 }
 
@@ -135,8 +138,7 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
     status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log);
 
     OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d", packageManager, command, status);
-    //OsConfigLogDebug(log, "%s", *results);
-    OsConfigLogInfo(log, "%s", *results);
+    OsConfigLogDebug(log, "%s", *results);
 
     FREE_MEMORY(command);
 
@@ -146,9 +148,9 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
 static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 {
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
-    //const char* commandTemplateYumDnf = "%s list installed  --cacheonly | awk '{print $1}'";
-    //const char* commandTmeplateZypper = "%s search -i";
     const char* commandTemplateRpm = "%s -qa --queryformat \"%{NAME}\n\"";
+    const char* commandTemplateYumDnf = "%s list installed  --cacheonly | awk '{print $1}'";
+    const char* commandTmeplateZypper = "%s search -i";
 
     char* results = NULL;
     char* buffer = NULL;
@@ -160,11 +162,11 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
     {
         status = CheckAllPackages(commandTemplateDpkg, g_dpkg, &results, log);
     }
-    else
+    else if (g_rpmIsPresent)
     {
-        status = CheckAllPackages(commandTemplateRpm, "rpm", &results, log);
+        status = CheckAllPackages(commandTemplateRpm, g_rpm, &results, log);
     }
-    /*else if (g_tdnfIsPresent)
+    else if (g_tdnfIsPresent)
     {
         status = CheckAllPackages(commandTemplateYumDnf, g_tdnf, &results, log);
     }
@@ -179,7 +181,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
     else if (g_zypperIsPresent)
     {
         status = CheckAllPackages(commandTmeplateZypper, g_zypper, &results, log);
-    }*/
+    }
 
     if ((0 == status) && (NULL != results))
     {
@@ -210,8 +212,8 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
     const char* searchTemplateDpkg = "\n%s\n";
-    //const char* searchTemplateYumDnf = "\n%s.x86_64\n";
-    //const char* searchTemplateZypper = "| %s ";
+    const char* searchTemplateYumDnf = "\n%s.x86_64\n";
+    const char* searchTemplateZypper = "| %s ";
 
     char* searchTarget = NULL;
     int status = 0;
@@ -241,10 +243,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
     }
     else if (0 == status)
     {
-        searchTarget = FormatAllocateString(searchTemplateDpkg, packageName);
-
-        /*
-        if (g_aptGetIsPresent || g_dpkgIsPresent)
+        if (g_aptGetIsPresent || g_dpkgIsPresent || g_rpmIsPresent)
         {
             searchTarget = FormatAllocateString(searchTemplateDpkg, packageName);
         }
@@ -255,7 +254,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
         else //if (g_zypperIsPresent)
         {
             searchTarget = FormatAllocateString(searchTemplateZypper, packageName);
-        }*/
+        }
 
         if (NULL == searchTarget)
         {
