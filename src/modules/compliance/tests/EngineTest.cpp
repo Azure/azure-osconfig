@@ -15,16 +15,6 @@ using compliance::JsonWrapper;
 using compliance::Result;
 using compliance::Status;
 
-static Result<bool> AuditFailure(std::map<std::string, std::string>, std::ostringstream&, OsConfigLogHandle)
-{
-    return false;
-}
-
-static Result<bool> AuditSuccess(std::map<std::string, std::string>, std::ostringstream&, OsConfigLogHandle)
-{
-    return true;
-}
-
 class ComplianceEngineTest : public ::testing::Test
 {
 public:
@@ -35,16 +25,6 @@ public:
 
 protected:
     Engine mEngine;
-    std::map<std::string, std::pair<action_func_t, action_func_t>> mProcedureMap;
-
-    void SetUp() override
-    {
-        mProcedureMap = {
-            {"success", {AuditSuccess, AuditSuccess}},
-            {"failure", {AuditFailure, AuditFailure}},
-            {"NoAudit", {nullptr, AuditSuccess}},
-        };
-    }
 };
 
 TEST_F(ComplianceEngineTest, MmiGet_InvalidArgument_1)
@@ -335,4 +315,186 @@ TEST_F(ComplianceEngineTest, MmiGet_3)
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
     EXPECT_EQ(result.Value().status, Status::NonCompliant);
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_1)
+{
+    std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    auto result = mEngine.MmiSet("initX", "KEY=value");
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_2)
+{
+    std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    auto result = mEngine.MmiSet("initX", "k=value");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.Error().message, std::string("Invalid key: must be uppercase"));
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_3)
+{
+    std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    auto result = mEngine.MmiSet("initX", "1st=value");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.Error().message, std::string("Invalid key: first character must be an uppercase letter"));
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_4)
+{
+    std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // KEY_ not found in parameters, but is valid
+    auto result = mEngine.MmiSet("initX", "KEY_=value");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.Error().message, std::string("User parameter 'KEY_' not found"));
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_5)
+{
+    std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // $ is not accepted in the key
+    auto result = mEngine.MmiSet("initX", "KEY_$=value");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.Error().message, std::string("Invalid key: only alphanumeric and underscore characters are allowed"));
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_6)
+{
+    std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // check if spaces are trimmed from the key
+    auto result = mEngine.MmiSet("initX", "KEY_1 =  value");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.Error().message, std::string("User parameter 'KEY_1' not found"));
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_1)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // check if spaces are trimmed from the key
+    ASSERT_TRUE(mEngine.MmiSet("initX", "KEY1 =  value"));
+
+    auto result = mEngine.MmiGet("auditX");
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().payload, R"(PASS{ auditGetParamValues: KEY1=value } == TRUE)");
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_2)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    ASSERT_TRUE(mEngine.MmiSet("initX", "KEY1 =  value KEY2 = value2   "));
+    auto result = mEngine.MmiGet("auditX");
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().payload, R"(PASS{ auditGetParamValues: KEY1=value, KEY2=value2 } == TRUE)");
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_3)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    ASSERT_TRUE(mEngine.MmiSet("initX", "KEY1 ='  value' KEY2 = value2   "));
+    auto result = mEngine.MmiGet("auditX");
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().payload, R"(PASS{ auditGetParamValues: KEY1=  value, KEY2=value2 } == TRUE)");
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_4)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // Check if the escaping backslash is erased and the single quote is preserved
+    ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1=' v ' KEY2='value2\'')"));
+    auto result = mEngine.MmiGet("auditX");
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().payload, R"(PASS{ auditGetParamValues: KEY1= v , KEY2=value2' } == TRUE)");
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_5)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // We escape only the single quote, the result is expected to be the same
+    ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1=' v ' KEY2='\\value2')"));
+    auto result = mEngine.MmiGet("auditX");
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().payload, R"(PASS{ auditGetParamValues: KEY1= v , KEY2=\\value2 } == TRUE)");
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_6)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // We don't treat the pair of backslashes as an escape sequence, so the result is expected to contain only one backslash
+    ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1=' v ' KEY2='value2\\')"));
+    auto result = mEngine.MmiGet("auditX");
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().payload, R"(PASS{ auditGetParamValues: KEY1= v , KEY2=value2\ } == TRUE)");
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_7)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1"}},"parameters":{"KEY1":"VALUE1"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1='')"));
+    auto result = mEngine.MmiGet("auditX");
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result.Value().payload, R"(PASS{ auditGetParamValues: KEY1= } == TRUE)");
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_8)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1"}},"parameters":{"KEY1":"VALUE1"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // Unterminated value
+    ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1=')"));
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_9)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1"}},"parameters":{"KEY1":"VALUE1"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1=''')"));
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_10)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1"}},"parameters":{"KEY1":"VALUE1"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1='x)"));
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_11)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1"}},"parameters":{"KEY1":"VALUE1"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // middle spaces handling
+    ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1 )"));
+    ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1= )"));
+    ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1=)"));
+    ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1 =)"));
 }
