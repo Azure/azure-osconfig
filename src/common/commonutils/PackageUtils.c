@@ -194,7 +194,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
         {
             // Leave the cache as-is, just log the error
             OsConfigLogError(log, "UpdateInstalledPackagesCache: out of memory");
-            status = ENOENT;
+            status = ENOMEM;
         }
     }
     else
