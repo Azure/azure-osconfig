@@ -2061,9 +2061,62 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_EQ(0, CheckPackageNotInstalled("~package_that_does_not_exist*", nullptr, nullptr));
     EXPECT_EQ(0, CheckPackageNotInstalled("*~package_that_does_not_exist*", nullptr, nullptr));
 
-    EXPECT_EQ(0, IsPackageInstalled("gcc", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr, nullptr));
-    EXPECT_NE(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
+    if (0 == IsPackageInstalled("gcc", nullptr))
+    {
+        EXPECT_EQ(0, IsPackageInstalled("gcc", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr, nullptr));
+        EXPECT_NE(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
+    }
+    else
+    {
+        EXPECT_NE(0, IsPackageInstalled("gcc", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("gcc", nullptr, nullptr));
+        EXPECT_EQ(0, CheckPackageNotInstalled("gcc", nullptr, nullptr));
+    }
+
+    // While running in container during CI we may not be able to install or uninstall
+    // packages so we condition on success of such operations running additional tests:
+
+    if (0 == IsPackageInstalled("nano", nullptr))
+    {
+        EXPECT_EQ(0, IsPackageInstalled("nano", nullptr));
+        EXPECT_EQ(0, CheckPackageInstalled("nano", nullptr, nullptr));
+        EXPECT_NE(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
+
+        if (0 == UninstallPackage("nano", nullptr))
+        {
+            EXPECT_NE(0, IsPackageInstalled("nano", nullptr));
+            EXPECT_EQ(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
+            EXPECT_NE(0, CheckPackageInstalled("nano", nullptr, nullptr));
+
+            if (0 == InstallPackage("nano", nullptr))
+            {
+                EXPECT_EQ(0, IsPackageInstalled("nano", nullptr));
+                EXPECT_EQ(0, CheckPackageInstalled("nano", nullptr, nullptr));
+                EXPECT_NE(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
+            }
+        }
+    }
+    else
+    {
+        EXPECT_NE(0, IsPackageInstalled("nano", nullptr));
+        EXPECT_NE(0, CheckPackageInstalled("nano", nullptr, nullptr));
+        EXPECT_EQ(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
+
+        if (0 == InstallPackage("nano", nullptr))
+        {
+            EXPECT_EQ(0, IsPackageInstalled("nano", nullptr));
+            EXPECT_EQ(0, CheckPackageInstalled("nano", nullptr, nullptr));
+            EXPECT_NE(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
+
+            if (0 == UninstallPackage("nano", nullptr))
+            {
+                EXPECT_NE(0, IsPackageInstalled("nano", nullptr));
+                EXPECT_EQ(0, CheckPackageNotInstalled("nano", nullptr, nullptr));
+                EXPECT_NE(0, CheckPackageInstalled("nano", nullptr, nullptr));
+            }
+        }
+    }
 }
 
 TEST_F(CommonUtilsTest, CheckPackageManagerNotThrottling)

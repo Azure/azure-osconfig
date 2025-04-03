@@ -92,6 +92,7 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, OsConfigLog
 int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log);
 int InstallPackage(const char* packageName, OsConfigLogHandle log);
 int UninstallPackage(const char* packageName, OsConfigLogHandle log);
+void PackageUtilsCleanup(void);
 
 unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);

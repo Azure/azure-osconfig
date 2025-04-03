@@ -1041,6 +1041,8 @@ void AsbShutdown(OsConfigLogHandle log)
 
     SshAuditCleanup(log);
 
+    PackageUtilsCleanup();
+
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
