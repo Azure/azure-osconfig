@@ -135,7 +135,8 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
     status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log);
 
     OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d", packageManager, command, status);
-    OsConfigLogDebug(log, "%s", *results);
+    //OsConfigLogDebug(log, "%s", *results);
+    OsConfigLogInfo(log, "%s", *results);
 
     FREE_MEMORY(command);
 
@@ -145,8 +146,9 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
 static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 {
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
-    const char* commandTemplateYumDnf = "%s list installed  --cacheonly | awk '{print $1}'";
-    const char* commandTmeplateZypper = "%s search -i";
+    //const char* commandTemplateYumDnf = "%s list installed  --cacheonly | awk '{print $1}'";
+    //const char* commandTmeplateZypper = "%s search -i";
+    const char* commandTemplateRpm = "%s - qa --queryformat \"%{NAME}\n\"";
 
     char* results = NULL;
     char* buffer = NULL;
@@ -158,7 +160,11 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
     {
         status = CheckAllPackages(commandTemplateDpkg, g_dpkg, &results, log);
     }
-    else if (g_tdnfIsPresent)
+    else
+    {
+        status = CheckAllPackages(commandTemplateRpm, "rpm", &results, log);
+    }
+    /*else if (g_tdnfIsPresent)
     {
         status = CheckAllPackages(commandTemplateYumDnf, g_tdnf, &results, log);
     }
@@ -173,7 +179,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
     else if (g_zypperIsPresent)
     {
         status = CheckAllPackages(commandTmeplateZypper, g_zypper, &results, log);
-    }
+    }*/
 
     if ((0 == status) && (NULL != results))
     {
@@ -204,9 +210,9 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
     const char* searchTemplateDpkg = "\n%s\n";
-    const char* searchTemplateYumDnf = "\n%s.x86_64\n";
-    const char* searchTemplateZypper = "| %s ";
-
+    //const char* searchTemplateYumDnf = "\n%s.x86_64\n";
+    //const char* searchTemplateZypper = "| %s ";
+    
     char* searchTarget = NULL;
     int status = 0;
 
@@ -235,6 +241,9 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
     }
     else if (0 == status)
     {
+        searchTarget = FormatAllocateString(searchTemplateDpkg, packageName);
+
+        /*
         if (g_aptGetIsPresent || g_dpkgIsPresent)
         {
             searchTarget = FormatAllocateString(searchTemplateDpkg, packageName);
@@ -246,7 +255,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
         else //if (g_zypperIsPresent)
         {
             searchTarget = FormatAllocateString(searchTemplateZypper, packageName);
-        }
+        }*/
 
         if (NULL == searchTarget)
         {
