@@ -4009,7 +4009,6 @@ static int RemediateEnsureSmbWithSambaIsDisabled(char* value, OsConfigLogHandle 
 {
     const char* command = "sed -i '/^\\[global\\]/a min protocol = SMB2' /etc/samba/smb.conf";
     const char* smb1 = "SMB1";
-    //const char* allSambaPackages = "samba*";
     int status = 0;
 
     UNUSED(value);

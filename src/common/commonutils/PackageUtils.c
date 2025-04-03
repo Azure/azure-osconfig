@@ -197,6 +197,10 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 
 int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
+    const char* searchTemplateDpkg = "\n%s\n";
+    const char* searchTemplateYumDnf = "\n%s.x86_64\n";
+    const char* commandTmeplateZypper = "| %s ";
+
     char* searchTarget = NULL;
     int status = 0;
 
@@ -226,15 +230,15 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
     {
         if (g_aptGetIsPresent || g_dpkgIsPresent)
         {
-            searchTarget = FormatAllocateString("\n%s\n", packageName);
+            searchTarget = FormatAllocateString(searchTemplateDpkg, packageName);
         }
         else if (g_tdnfIsPresent || g_dnfIsPresent || g_yumIsPresent)
         {
-            searchTarget = FormatAllocateString("\n%s.x86_64\n", packageName);
+            searchTarget = FormatAllocateString(searchTemplateYumDnf, packageName);
         }
         else //if (g_zypperIsPresent)
         {
-            searchTarget = FormatAllocateString("| %s ", packageName);
+            searchTarget = FormatAllocateString(searchTemplateZypper, packageName);
         }
 
         if (NULL == searchTarget)
