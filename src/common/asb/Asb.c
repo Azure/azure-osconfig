@@ -4009,7 +4009,7 @@ static int RemediateEnsureSmbWithSambaIsDisabled(char* value, OsConfigLogHandle 
 {
     const char* command = "sed -i '/^\\[global\\]/a min protocol = SMB2' /etc/samba/smb.conf";
     const char* smb1 = "SMB1";
-    const char* allSambaPackages = "samba*";
+    //const char* allSambaPackages = "samba*";
     int status = 0;
 
     UNUSED(value);
@@ -4026,7 +4026,7 @@ static int RemediateEnsureSmbWithSambaIsDisabled(char* value, OsConfigLogHandle 
     }
     else
     {
-        UninstallPackage(allSambaPackages, log);
+        UninstallPackage(g_samba, log);
         remove(g_etcSambaConf);
         status = CheckPackageNotInstalled(g_samba, NULL, log);
     }

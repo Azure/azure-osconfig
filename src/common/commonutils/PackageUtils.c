@@ -234,7 +234,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
         }
         else //if (g_zypperIsPresent)
         {
-            searchTarget = FormatAllocateString("| %s", packageName);
+            searchTarget = FormatAllocateString("| %s ", packageName);
         }
 
         if (NULL == searchTarget)
