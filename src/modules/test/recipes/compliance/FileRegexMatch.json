@@ -1,0 +1,176 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "compliance.so"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "fileRegexMatch": {
+          "filename": "$PATH",
+          "matchOperation": "$OPERATION",
+          "matchPattern": "$PATTERN"
+        }
+      },
+      "parameters": {
+        "OPERATION": "pattern match",
+        "PATTERN": ".*",
+        "PATH": "/tmp/testfile"
+      }
+    }
+  },
+  {
+    "RunCommand": "echo foo > /tmp/testfile"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ fileRegexMatch: pattern '.*' matched line 1 } == TRUE"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATTERN=foo"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ fileRegexMatch: pattern 'foo' matched line 1 } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATTERN=f.*o"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ fileRegexMatch: pattern 'f.*o' matched line 1 } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATTERN=f.*O"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ fileRegexMatch: pattern 'f.*O' did not match any line } == FALSE"
+  },
+
+
+
+  {
+    "RunCommand": "echo foooOx > /tmp/testfile"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ fileRegexMatch: pattern 'f.*O' matched line 1 } == TRUE"
+  },
+
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATH=/etc/passwd PATTERN=^root:x:[0-9]+:[0-9]+"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ fileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+' matched line 1 } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATH=/etc/passwd PATTERN=^root:x:[0-9]+:[0-9]+$"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ fileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+$' did not match any line } == FALSE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATH=/etc/passwd PATTERN=^[^:#]+:.*"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ fileRegexMatch: pattern '^[^:#]+:.*' matched line 1 } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATH=/tmp/passwd PATTERN=^[^:#]+::"
+  },
+  {
+    "RunCommand": "echo testuser::1111:1111::/home/someuser:/bin/sh > /tmp/passwd"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ fileRegexMatch: pattern '^[^:#]+::' matched line 1 } == TRUE"
+  },
+  {
+    "RunCommand": "echo '#testuser::1111:1111::/home/someuser:/bin/sh' > /tmp/passwd"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ fileRegexMatch: pattern '^[^:#]+::' did not match any line } == FALSE"
+  },
+
+
+
+  {
+    "RunCommand": "rm -f /tmp/passwd"
+  },
+  {
+    "RunCommand": "rm -f /tmp/testfile"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]

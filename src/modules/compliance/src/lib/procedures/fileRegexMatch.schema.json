@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "fileRegexMatch"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "fileRegexMatch": {
+              "type": "object",
+              "required": [
+                "filename",
+                "matchOperation",
+                "matchPattern"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "filename": {
+                  "type": "string",
+                  "description": "Path to the file to check"
+                },
+                "matchOperation": {
+                  "type": "string",
+                  "pattern": "^pattern match$",
+                  "description": "Operation to perform on the file contents"
+                },
+                "matchPattern": {
+                  "type": "string",
+                  "description": "The pattern to match against the file contents"
+                },
+                "stateOperation": {
+                  "type": "string",
+                  "pattern": "^pattern match$",
+                  "description": "Operation to perform on each line that matches the 'matchPattern'"
+                },
+                "statePattern": {
+                  "type": "string",
+                  "description": "The pattern to match against each line that matches the 'statePattern'"
+                },
+                "caseSensitive": {
+                  "type": "string",
+                  "pattern": "^true|false$",
+                  "description": "Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}
