@@ -15,7 +15,7 @@
         "version": "1.0.0",
         "contentType": "Custom",
         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-        "contentHash": "AF0099212F9705A930A8CBD8E0AEE570A8C93FF2D5BE0BFFF47BE43E9AD79407"
+        "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED"
       }
     },
     "parameters": {
@@ -341,7 +341,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "AF0099212F9705A930A8CBD8E0AEE570A8C93FF2D5BE0BFFF47BE43E9AD79407",
+                        "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -358,7 +358,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "AF0099212F9705A930A8CBD8E0AEE570A8C93FF2D5BE0BFFF47BE43E9AD79407",
+                        "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
@@ -375,7 +375,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "AF0099212F9705A930A8CBD8E0AEE570A8C93FF2D5BE0BFFF47BE43E9AD79407",
+                        "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED",
                         "assignmentType": "ApplyAndAutoCorrect"
                       }
                     }
