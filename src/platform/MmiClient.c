@@ -318,6 +318,14 @@ MODULE* LoadModule(const char* client, const char* path)
         }
     }
 
+    if (value)
+    {
+        json_value_free(value);
+    }
+    if (payload)
+    {
+        module->free(payload);
+    }
     if (0 != status)
     {
         UnloadModule(module);
