@@ -140,6 +140,7 @@ static void LoadModules(const char* directory, const char* configJson)
 
                 FREE_MEMORY(path);
             }
+            closedir(dir);
         }
         else
         {
@@ -221,6 +222,7 @@ static void LoadModules(const char* directory, const char* configJson)
     {
         json_value_free(config);
     }
+    FREE_MEMORY(clientName);
 }
 
 void AreModulesLoadedAndLoadIfNot(const char* directory, const char* configJson)
@@ -260,6 +262,7 @@ static void FreeSessions(SESSION* sessions)
         {
             moduleSession = curr->modules;
             curr->modules = moduleSession->next;
+            moduleSession->module->close(moduleSession->handle);
             FREE_MEMORY(moduleSession);
         }
 
@@ -288,8 +291,8 @@ static void FreeReportedObjects(REPORTED_OBJECT* reportedObjects, int numReporte
 
 void UnloadModules(void)
 {
-    FreeModules(g_modules);
     FreeSessions(g_sessions);
+    FreeModules(g_modules);
     FreeReportedObjects(g_reported, g_reportedTotal);
 
     g_reportedTotal = 0;
@@ -448,6 +451,13 @@ void MpiClose(MPI_HANDLE handle)
     else
     {
         OsConfigLogDebug(GetPlatformLog(), "MpiClose: closing session with UUID '%s'", session->uuid);
+        while (session->modules)
+        {
+            MODULE_SESSION* moduleSession = session->modules;
+            session->modules = moduleSession->next;
+            moduleSession->module->close(moduleSession->handle);
+            FREE_MEMORY(moduleSession);
+        }
 
         // Remove the session from the linked list
         if (session == g_sessions)
@@ -804,7 +814,8 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
                     FREE_MEMORY(payloadJson);
                 }
 
-                FREE_MEMORY(mmiPayload);
+                moduleSession->module->free(mmiPayload);
+                mmiPayload = NULL;
             }
         }
 

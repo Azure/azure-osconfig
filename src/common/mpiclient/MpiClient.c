@@ -227,10 +227,14 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
     FREE_MEMORY(request);
 
     mpiHandle = (MPI_OK == status) ? (MPI_HANDLE)response : NULL;
-
-    if ((NULL != mpiHandle) && (NULL == (mpiHandleValue = ParseString(log, (char*)mpiHandle))))
+    if (NULL == mpiHandle)
+    {
+        FREE_MEMORY(response);
+    }
+    else if (NULL == (mpiHandleValue = ParseString(log, (char*)mpiHandle)))
     {
         OsConfigLogError(log, "CallMpiOpen: invalid MPI handle '%s'", (char*)mpiHandle);
+        FREE_MEMORY(response);
         mpiHandle = NULL;
     }
 

@@ -407,7 +407,7 @@ void CloseAgent(void)
     if (NULL != g_mpiHandle)
     {
         CallMpiClose(g_mpiHandle, GetLog());
-        g_mpiHandle = NULL;
+        FREE_MEMORY(g_mpiHandle);
     }
 
     FREE_MEMORY(g_reportedProperties);
