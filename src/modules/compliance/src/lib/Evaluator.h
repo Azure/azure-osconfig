@@ -29,15 +29,15 @@ struct json_object_t;
 // "yetanotherparameter:This one is validated::^[0-9]+$"
 
 #define AUDIT_FN(fn_name, parameters...)                                                                                                               \
-    ::compliance::Result<bool> Audit_##fn_name(std::map<std::string, std::string> args, std::ostringstream& logstream)
+    ::compliance::Result<bool> Audit_##fn_name(std::map<std::string, std::string> args, std::ostringstream& logstream, OsConfigLogHandle log)
 
 #define REMEDIATE_FN(fn_name, parameters...)                                                                                                           \
-    ::compliance::Result<bool> Remediate_##fn_name(std::map<std::string, std::string> args, std::ostringstream& logstream)
+    ::compliance::Result<bool> Remediate_##fn_name(std::map<std::string, std::string> args, std::ostringstream& logstream, OsConfigLogHandle log)
 
 namespace compliance
 {
 using ParameterMap = std::map<std::string, std::string>;
-using action_func_t = Result<bool> (*)(ParameterMap, std::ostringstream&);
+using action_func_t = Result<bool> (*)(ParameterMap, std::ostringstream&, OsConfigLogHandle);
 using ProcedureMap = std::map<std::string, std::pair<action_func_t, action_func_t>>;
 class Evaluator
 {

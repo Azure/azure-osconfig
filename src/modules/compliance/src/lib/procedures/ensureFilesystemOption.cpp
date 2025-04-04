@@ -1,5 +1,6 @@
 #include "../Evaluator.h"
 
+#include <CommonUtils.h>
 #include <algorithm>
 #include <ctime>
 #include <fstream>
@@ -106,6 +107,7 @@ static bool CheckOptions(const std::vector<std::string>& options, const std::set
 AUDIT_FN(ensureFilesystemOption, "mountpoint:Filesystem mount point:M", "optionsSet:Comma-separated list of options that must be set",
     "optionsNotSet:Comma-separated list of options that must not be set", "test_fstab:Location of the fstab file", "test_mtab:Location of the mtab file")
 {
+    UNUSED(log);
     if (args.find("mountpoint") == args.end())
     {
         return Error("No mountpoint provided");
@@ -178,6 +180,7 @@ REMEDIATE_FN(ensureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
     "optionsNotSet:Comma-separated list of options that must not be set", "test_fstab:Location of the fstab file",
     "test_mtab:Location of the mtab file", "test_mount:Location of the mount binary")
 {
+    UNUSED(log);
     if (args.find("mountpoint") == args.end())
     {
         return Error("No mountpoint provided");

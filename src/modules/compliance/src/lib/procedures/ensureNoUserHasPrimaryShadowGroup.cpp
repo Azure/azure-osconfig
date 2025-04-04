@@ -16,6 +16,7 @@ namespace compliance
 AUDIT_FN(ensureNoUserHasPrimaryShadowGroup)
 {
     UNUSED(args);
+    UNUSED(log);
 
     struct group* shadow = getgrnam("shadow");
     if (nullptr == shadow)
@@ -51,6 +52,7 @@ AUDIT_FN(ensureNoUserHasPrimaryShadowGroup)
 REMEDIATE_FN(ensureNoUserHasPrimaryShadowGroup)
 {
     UNUSED(args);
+    UNUSED(log);
     logstream << "Manual remediation is required to make sure that no user has 'shadow' as primary group ";
     return false;
 }

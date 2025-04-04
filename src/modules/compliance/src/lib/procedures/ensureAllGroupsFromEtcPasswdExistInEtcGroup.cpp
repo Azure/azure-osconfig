@@ -13,6 +13,7 @@ namespace compliance
 AUDIT_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
 {
     UNUSED(args);
+    UNUSED(log);
 
     struct group* grp = nullptr;
     struct passwd* pwd = nullptr;
@@ -57,7 +58,7 @@ AUDIT_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
 REMEDIATE_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
 {
     UNUSED(args);
-    auto result = Audit_ensureAllGroupsFromEtcPasswdExistInEtcGroup(args, logstream);
+    auto result = Audit_ensureAllGroupsFromEtcPasswdExistInEtcGroup(args, logstream, log);
     if (result)
     {
         return true;
