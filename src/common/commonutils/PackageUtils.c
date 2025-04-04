@@ -3,12 +3,20 @@
 
 #include "Internal.h"
 
+#if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
+#include <stdatomic.h>
+#endif
+
 static const char* g_aptGet = "apt-get";
 static const char* g_dpkg = "dpkg";
 static const char* g_tdnf = "tdnf";
 static const char* g_dnf = "dnf";
 static const char* g_yum = "yum";
 static const char* g_zypper = "zypper";
+static const char* g_rpm = "rpm";
+
+// 30 minutes
+static const unsigned int g_packageManagerTimeoutSeconds = 1800;
 
 static bool g_checkedPackageManagersPresence = false;
 static bool g_aptGetIsPresent = false;
@@ -17,12 +25,24 @@ static bool g_tdnfIsPresent = false;
 static bool g_dnfIsPresent = false;
 static bool g_yumIsPresent = false;
 static bool g_zypperIsPresent = false;
+static bool g_rpmIsPresent = false;
 static bool g_aptGetUpdateExecuted = false;
 static bool g_zypperRefreshExecuted = false;
-static bool g_zypperRefreshServicesExecuted = false;
 static bool g_tdnfCheckUpdateExecuted = false;
 static bool g_dnfCheckUpdateExecuted = false;
 static bool g_yumCheckUpdateExecuted = false;
+
+#if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
+static atomic_int g_updateInstalledPackagesCache = 0;
+#else
+static int g_updateInstalledPackagesCache = 0;
+#endif
+static char* g_installedPackagesCache = NULL;
+
+void PackageUtilsCleanup(void)
+{
+    FREE_MEMORY(g_installedPackagesCache);
+}
 
 int IsPresent(const char* what, void* log)
 {
@@ -65,6 +85,7 @@ static void CheckPackageManagersPresence(void* log)
         g_dnfIsPresent = (0 == IsPresent(g_dnf, log)) ? true : false;
         g_yumIsPresent = (0 == IsPresent(g_yum, log)) ? true : false;
         g_zypperIsPresent = (0 == IsPresent(g_zypper, log)) ? true : false;
+        g_rpmIsPresent = (0 == IsPresent(g_rpm, log)) ? true : false;
     }
 }
 
@@ -85,53 +106,174 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
         return ENOMEM;
     }
 
-    status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
-    
-    OsConfigLogInfo(log, "Package manager '%s' command '%s' complete with %d (errno: %d)", packageManager, command, status, errno);
+    status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log);
+
+    OsConfigLogInfo(log, "Package manager '%s' command '%s' returning %d", packageManager, command, status);
+
+    FREE_MEMORY(command);
+
+    // Refresh the cache holding the list of installed packages next time we check
+    g_updateInstalledPackagesCache = 1;
+
+    return status;
+}
+
+static int CheckAllPackages(const char* commandTemplate, const char* packageManager, char** results, void* log)
+{
+    char* command = NULL;
+    int status = ENOENT;
+
+    if ((NULL == commandTemplate) || (NULL == packageManager) || (NULL == results))
+    {
+        OsConfigLogError(log, "CheckAllPackages called with invalid arguments");
+        return EINVAL;
+    }
+
+    if (NULL == (command = FormatAllocateString(commandTemplate, packageManager)))
+    {
+        OsConfigLogError(log, "CheckAllPackages: FormatAllocateString failed");
+        return ENOMEM;
+    }
+
+    status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log);
+
+    OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d", packageManager, command, status);
 
     FREE_MEMORY(command);
 
     return status;
 }
 
-int IsPackageInstalled(const char* packageName, void* log)
+static int UpdateInstalledPackagesCache(void* log)
 {
-    const char* commandTemplateDpkg = "%s -l %s | grep ^ii";
-    const char* commandTemplateYumDnf = "%s list installed  --cacheonly %s";
-    const char* commandTemplateRedHat = "%s list installed %s --disableplugin subscription-manager";
-    const char* commandTemplateZypper = "%s se -x %s";
+    const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
+    const char* commandTemplateRpm = "%s -qa --queryformat \"%{NAME}\n\"";
+    const char* commandTemplateYumDnf = "%s list installed  --cacheonly | awk '{print $1}'";
+    const char* commandTmeplateZypper = "%s search -i";
+
+    char* results = NULL;
+    char* buffer = NULL;
     int status = ENOENT;
 
     CheckPackageManagersPresence(log);
 
-    if (g_dpkgIsPresent)
+    if (g_aptGetIsPresent || g_dpkgIsPresent)
     {
-        status = CheckOrInstallPackage(commandTemplateDpkg, g_dpkg, packageName, log);
+        status = CheckAllPackages(commandTemplateDpkg, g_dpkg, &results, log);
+    }
+    else if (g_rpmIsPresent)
+    {
+        status = CheckAllPackages(commandTemplateRpm, g_rpm, &results, log);
     }
     else if (g_tdnfIsPresent)
     {
-        status = CheckOrInstallPackage(commandTemplateYumDnf, g_tdnf, packageName, log);
+        status = CheckAllPackages(commandTemplateYumDnf, g_tdnf, &results, log);
     }
     else if (g_dnfIsPresent)
     {
-        status = CheckOrInstallPackage(IsRedHatBased(log) ? commandTemplateRedHat : commandTemplateYumDnf, g_dnf, packageName, log);
+        status = CheckAllPackages(commandTemplateYumDnf, g_dnf, &results, log);
     }
     else if (g_yumIsPresent)
     {
-        status = CheckOrInstallPackage(IsRedHatBased(log) ? commandTemplateRedHat : commandTemplateYumDnf, g_yum, packageName, log);
+        status = CheckAllPackages(commandTemplateYumDnf, g_yum, &results, log);
     }
     else if (g_zypperIsPresent)
     {
-        status = CheckOrInstallPackage(commandTemplateZypper, g_zypper, packageName, log);
+        status = CheckAllPackages(commandTmeplateZypper, g_zypper, &results, log);
     }
 
-    if (0 == status)
+    if ((0 == status) && (NULL != results))
     {
-        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is installed", packageName);
+        if (NULL != (buffer = DuplicateString(results)))
+        {
+            FREE_MEMORY(g_installedPackagesCache);
+            g_installedPackagesCache = buffer;
+        }
+        else
+        {
+            // Leave the cache as-is, just log the error
+            OsConfigLogError(log, "UpdateInstalledPackagesCache: out of memory");
+            status = ENOMEM;
+        }
     }
     else
     {
-        OsConfigLogInfo(log, "IsPackageInstalled: package '%s' is not found (%d, errno: %d)", packageName, status, errno);
+        // Leave the cache as-is, we can still use it even if it's stale
+        status = status ? status : ENOENT;
+        OsConfigLogInfo(log, "UpdateInstalledPackagesCache: enumerating all packages failed with %d", status);
+    }
+
+    FREE_MEMORY(results);
+
+    return status;
+}
+
+int IsPackageInstalled(const char* packageName, void* log)
+{
+    const char* searchTemplateDpkgRpm = "\n%s\n";
+    const char* searchTemplateYumDnf = "\n%s.x86_64\n";
+    const char* searchTemplateZypper = "| %s ";
+
+    char* searchTarget = NULL;
+    int status = 0;
+
+    if ((NULL == packageName) || (0 == strlen(packageName)))
+    {
+        OsConfigLogError(log, "IsPackageInstalled called with an invalid argument");
+        return EINVAL;
+    }
+
+    CheckPackageManagersPresence(log);
+
+    if ((0 != g_updateInstalledPackagesCache) || (NULL == g_installedPackagesCache))
+    {
+        g_updateInstalledPackagesCache = 0;
+
+        if (0 != (status = UpdateInstalledPackagesCache(log)))
+        {
+            OsConfigLogInfo(log, "IsPackageInstalled(%s) failed (UpdateInstalledPackagesCache failed)", packageName);
+        }
+    }
+
+    if (NULL == g_installedPackagesCache)
+    {
+        OsConfigLogError(log, "IsPackageInstalled: cannot check for '%s' presence without cache", packageName);
+        status = ENOENT;
+    }
+    else if (0 == status)
+    {
+        if (g_aptGetIsPresent || g_dpkgIsPresent || g_rpmIsPresent)
+        {
+            searchTarget = FormatAllocateString(searchTemplateDpkgRpm, packageName);
+        }
+        else if (g_tdnfIsPresent || g_dnfIsPresent || g_yumIsPresent)
+        {
+            searchTarget = FormatAllocateString(searchTemplateYumDnf, packageName);
+        }
+        else //if (g_zypperIsPresent)
+        {
+            searchTarget = FormatAllocateString(searchTemplateZypper, packageName);
+        }
+
+        if (NULL == searchTarget)
+        {
+            OsConfigLogError(log, "IsPackageInstalled: out of memory");
+            status = ENOMEM;
+        }
+        else
+        {
+            if (NULL != strstr(g_installedPackagesCache, searchTarget))
+            {
+                OsConfigLogInfo(log, "IsPackageInstalled: '%s' is installed", packageName);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "IsPackageInstalled: '%s' is not installed", packageName);
+                status = ENOENT;
+            }
+        }
+
+        FREE_MEMORY(searchTarget);
     }
 
     return status;
@@ -203,10 +345,13 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, void
     {
         OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' was successful", command);
         *executed = true;
+
+        // Refresh the cache holding the list of the installed packages next time we check
+        g_updateInstalledPackagesCache = 1;
     }
     else
     {
-        OsConfigLogError(log, "ExecuteSimplePackageCommand: '%s' failed with %d (errno: %d)", command, status, errno);
+        OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' returned %d", command, status);
         *executed = false;
     }
 
@@ -220,12 +365,39 @@ static int ExecuteAptGetUpdate(void* log)
 
 static int ExecuteZypperRefresh(void* log)
 {
-    return ExecuteSimplePackageCommand("zypper refresh", &g_zypperRefreshExecuted, log);
-}
+    const char* zypperClean = "zypper clean";
+    const char* zypperRefresh = "zypper refresh";
+    const char* zypperRefreshServices = "zypper refresh --services";
 
-static int ExecuteZypperRefreshServices(void* log)
-{
-    return ExecuteSimplePackageCommand("zypper refresh --services", &g_zypperRefreshServicesExecuted, log);
+    int status = 0;
+
+    if (true == g_zypperRefreshExecuted)
+    {
+        return status;
+    }
+
+    if (0 != (status = ExecuteCommand(NULL, zypperClean, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d", zypperClean, status);
+    }
+    else if (0 != (status = ExecuteCommand(NULL, zypperRefresh, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d", zypperRefresh, status);
+    }
+    else if (0 != (status = ExecuteCommand(NULL, zypperRefreshServices, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d", zypperRefreshServices, status);
+    }
+
+    if (0 == status)
+    {
+        g_zypperRefreshExecuted = true;
+    }
+
+    // Regardless of result, we need to refresh the cache holding the list of installed packages next time we check
+    g_updateInstalledPackagesCache = 1;
+
+    return status;
 }
 
 static int ExecuteTdnfCheckUpdate(void* log)
@@ -274,7 +446,6 @@ int InstallOrUpdatePackage(const char* packageName, void* log)
     else if (g_zypperIsPresent)
     {
         ExecuteZypperRefresh(log);
-        ExecuteZypperRefreshServices(log);
         status = CheckOrInstallPackage(commandTemplate, g_zypper, packageName, log);
     }
 
@@ -289,7 +460,7 @@ int InstallOrUpdatePackage(const char* packageName, void* log)
     }
     else
     {
-        OsConfigLogError(log, "InstallOrUpdatePackage: installation or update of package '%s' failed with %d (errno: %d)", packageName, status, errno);
+        OsConfigLogInfo(log, "InstallOrUpdatePackage: installation or update of package '%s' returned %d", packageName, status);
     }
 
     return status;
@@ -301,7 +472,10 @@ int InstallPackage(const char* packageName, void* log)
 
     if (0 != (status = IsPackageInstalled(packageName, log)))
     {
-        status = InstallOrUpdatePackage(packageName, log);
+        if (0 == (status = InstallOrUpdatePackage(packageName, log)))
+        {
+            OsConfigLogInfo(log, "InstallPackage: package '%s' was successfully installed", packageName);
+        }
     }
     else
     {
@@ -347,7 +521,6 @@ int UninstallPackage(const char* packageName, void* log)
         else if (g_zypperIsPresent)
         {
             ExecuteZypperRefresh(log);
-            ExecuteZypperRefreshServices(log);
             status = CheckOrInstallPackage(commandTemplateZypper, g_zypper, packageName, log);
         }
 
@@ -362,7 +535,7 @@ int UninstallPackage(const char* packageName, void* log)
         }
         else
         {
-            OsConfigLogError(log, "UninstallPackage: uninstallation of package '%s' failed with %d (errno: %d)", packageName, status, errno);
+            OsConfigLogInfo(log, "UninstallPackage: uninstallation of package '%s' returned %d", packageName, status);
         }
     }
     else if (EINVAL != status)
