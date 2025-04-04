@@ -780,7 +780,8 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
                 }
                 else
                 {
-                    memcpy(payloadJson, mmiPayload, mmiPayloadSizeBytes + 1);
+                    memcpy(payloadJson, mmiPayload, mmiPayloadSizeBytes);
+                    payloadJson[mmiPayloadSizeBytes] = '\0';
 
                     if (NULL == (objectValue = json_parse_string(payloadJson)))
                     {
