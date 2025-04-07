@@ -14,7 +14,7 @@ namespace
 {
 std::size_t SkipSpaces(const std::string& input, std::size_t pos)
 {
-    while (pos < input.size() && isspace(input[pos]))
+    while ((pos < input.size()) && (isspace(input[pos])))
     {
         ++pos;
     }
@@ -24,21 +24,16 @@ std::size_t SkipSpaces(const std::string& input, std::size_t pos)
 Result<std::size_t> ParseKey(const std::string& input, std::size_t pos)
 {
     bool first = true;
-    while (pos < input.size() && !isspace(input[pos]) && input[pos] != '=')
+    while ((pos < input.size()) && (!isspace(input[pos])) && (input[pos] != '='))
     {
-        if (islower(input[pos]))
-        {
-            return Error("Invalid key: must be uppercase");
-        }
-
-        if (!isalnum(input[pos]) && input[pos] != '_')
+        if ((!isalnum(input[pos])) && (input[pos] != '_'))
         {
             return Error("Invalid key: only alphanumeric and underscore characters are allowed");
         }
 
         if (first && isdigit(input[pos]))
         {
-            return Error("Invalid key: first character must be an uppercase letter");
+            return Error("Invalid key: first character must not be a digit");
         }
         first = false;
         ++pos;
@@ -52,35 +47,43 @@ std::size_t ParseQuotedValue(const std::string& input, std::size_t pos, std::str
     // Assuming the first character is a quote
     // pos is always > 1 as we are passing value which must follow a valid key, assignment character and a quote
     assert(pos > 1);
-    assert(input[pos] == '\'');
-    assert(input[pos - 1] == '=');
+    assert(input[pos] == '"');
 
     while (++pos < input.size())
     {
-        if (input[pos] != '\'')
+        if (input[pos] == '\\')
         {
-            // Regular character, move on
-            value += input[pos];
-            continue;
+            if (++pos >= input.size())
+            {
+                // Found a backslash at the end of the string, the input is invalid
+                return pos;
+            }
+
+            // Found a backslash, check if it is escaped
+            if (input[pos] == '\\')
+            {
+                // Escaped backslash, add it to the value
+                value += '\\';
+                continue;
+            }
+            else if (input[pos] == '"')
+            {
+                // Escaped quote, add it to the value
+                value += '"';
+                continue;
+            }
+
+            // Found a backslash with invalid escaped character, treat this as error
+            OsConfigLogInfo(nullptr, "Invalid escape sequence: %c", input[pos]);
+            break;
         }
 
-        // At the quote, look back to see if it is escaped
-        if (input[pos - 1] != '\\')
+        if (input[pos] == '"')
         {
-            // Not escaped, end of the value
-            return ++pos;
-        }
-
-        // Found a backslash before the quote, check if there is another one before it
-        if (input[pos - 2] == '\\')
-        {
-            // Found an escaped backslash, end of the value. Drop the last backslash as it was used to escape the quote
-            value.pop_back();
-            return ++pos;
+            return pos + 1;
         }
 
         // Found an escaped quote, add it to the value, but in place of the last backslash
-        value.pop_back();
         value += input[pos];
     }
 
@@ -129,12 +132,17 @@ Optional<Error> Procedure::UpdateUserParameters(const std::string& input)
 
         // Parse value
         std::string value;
-        if (input[pos] == '\'')
+        if (input[pos] == '"')
         {
+            const size_t valueStart = pos;
             pos = ParseQuotedValue(input, pos, value);
-            if ((pos >= input.size()) && ((input[pos - 1] != '\'') || (input[pos - 2] == '=')))
+            if (input[pos - 1] != '"')
             {
-                return Error("Invalid key-value pair: missing closing quote");
+                return Error("Invalid key-value pair: missing closing quote or invalid escape sequence");
+            }
+            if ((pos >= input.size()) && (pos - valueStart == 1))
+            {
+                return Error("Invalid key-value pair: missing closing quote at the end of the input");
             }
         }
         else
