@@ -85,6 +85,7 @@ AUDIT_FN(fileRegexMatch, "filename:Path to the file to check:M", "matchOperation
     "statePattern:The pattern to match against each line that matches the 'statePattern'",
     "caseSensitive:Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'::^true|false$")
 {
+    UNUSED(log);
     auto it = args.find("filename");
     if (it == args.end())
     {
