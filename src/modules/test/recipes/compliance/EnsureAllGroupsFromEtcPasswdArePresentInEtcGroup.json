@@ -70,13 +70,13 @@
 
   // cleanup
   {
-    "RunCommand": "userdel securitybaselinetest || true"
+    "RunCommand": "userdel -f -r securitybaselinetest || true"
   },
   {
     "RunCommand": "groupdel securitybaselinetest || true"
   },
   {
-    "RunCommand": "userdel securitybaselinetest2 || true"
+    "RunCommand": "userdel -f -r securitybaselinetest2 || true"
   },
   {
     "RunCommand": "groupdel securitybaselinetest2 || true"
