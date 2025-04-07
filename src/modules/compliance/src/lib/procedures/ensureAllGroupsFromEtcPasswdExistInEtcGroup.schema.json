@@ -6,11 +6,11 @@
         {
           "type": "object",
           "required": [
-            "ensureAllGroupsFromEtcPasswdExistInEtcGroup"
+            "EnsureAllGroupsFromEtcPasswdExistInEtcGroup"
           ],
           "additionalProperties": false,
           "properties": {
-            "ensureAllGroupsFromEtcPasswdExistInEtcGroup": {
+            "EnsureAllGroupsFromEtcPasswdExistInEtcGroup": {
               "type": "object",
               "required": [],
               "additionalProperties": false,
@@ -25,11 +25,11 @@
         {
           "type": "object",
           "required": [
-            "ensureAllGroupsFromEtcPasswdExistInEtcGroup"
+            "EnsureAllGroupsFromEtcPasswdExistInEtcGroup"
           ],
           "additionalProperties": false,
           "properties": {
-            "ensureAllGroupsFromEtcPasswdExistInEtcGroup": {
+            "EnsureAllGroupsFromEtcPasswdExistInEtcGroup": {
               "type": "object",
               "required": [],
               "additionalProperties": false,

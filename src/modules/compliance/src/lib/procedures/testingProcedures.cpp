@@ -6,7 +6,7 @@
 
 namespace compliance
 {
-REMEDIATE_FN(remediationFailure, "message:message to be logged")
+REMEDIATE_FN(RemediationFailure, "message:message to be logged")
 {
     UNUSED(log);
     auto it = args.find("message");
@@ -17,7 +17,7 @@ REMEDIATE_FN(remediationFailure, "message:message to be logged")
     return false;
 }
 
-REMEDIATE_FN(remediationSuccess, "message:message to be logged")
+REMEDIATE_FN(RemediationSuccess, "message:message to be logged")
 {
     UNUSED(log);
     auto it = args.find("message");
@@ -28,7 +28,7 @@ REMEDIATE_FN(remediationSuccess, "message:message to be logged")
     return true;
 }
 
-AUDIT_FN(auditFailure, "message:message to be logged")
+AUDIT_FN(AuditFailure, "message:message to be logged")
 {
     UNUSED(log);
     auto it = args.find("message");
@@ -39,7 +39,7 @@ AUDIT_FN(auditFailure, "message:message to be logged")
     return false;
 }
 
-AUDIT_FN(auditSuccess, "message:message to be logged")
+AUDIT_FN(AuditSuccess, "message:message to be logged")
 {
     UNUSED(log);
     auto it = args.find("message");
@@ -50,7 +50,7 @@ AUDIT_FN(auditSuccess, "message:message to be logged")
     return true;
 }
 
-REMEDIATE_FN(remediationParametrized, "result:Expected remediation result - success or failure:M")
+REMEDIATE_FN(RemediationParametrized, "result:Expected remediation result - success or failure:M")
 {
     UNUSED(logstream);
     UNUSED(log);

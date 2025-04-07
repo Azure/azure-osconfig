@@ -12,7 +12,7 @@
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
-        "fileRegexMatch": {
+        "FileRegexMatch": {
           "filename": "$PATH",
           "matchOperation": "$OPERATION",
           "matchPattern": "$PATTERN"
@@ -32,7 +32,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ fileRegexMatch: pattern '.*' matched line 1 } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: pattern '.*' matched line 1 } == TRUE"
   },
   {
     "ObjectType": "Desired",
@@ -44,7 +44,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ fileRegexMatch: pattern 'foo' matched line 1 } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: pattern 'foo' matched line 1 } == TRUE"
   },
 
 
@@ -59,7 +59,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ fileRegexMatch: pattern 'f.*o' matched line 1 } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: pattern 'f.*o' matched line 1 } == TRUE"
   },
 
 
@@ -74,7 +74,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ fileRegexMatch: pattern 'f.*O' did not match any line } == FALSE"
+    "Payload": "{ FileRegexMatch: pattern 'f.*O' did not match any line } == FALSE"
   },
 
 
@@ -86,7 +86,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ fileRegexMatch: pattern 'f.*O' matched line 1 } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: pattern 'f.*O' matched line 1 } == TRUE"
   },
 
 
@@ -102,7 +102,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ fileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+' matched line 1 } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+' matched line 1 } == TRUE"
   },
 
 
@@ -117,7 +117,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ fileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+$' did not match any line } == FALSE"
+    "Payload": "{ FileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+$' did not match any line } == FALSE"
   },
 
 
@@ -132,7 +132,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ fileRegexMatch: pattern '^[^:#]+:.*' matched line 1 } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: pattern '^[^:#]+:.*' matched line 1 } == TRUE"
   },
 
 
@@ -150,7 +150,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ fileRegexMatch: pattern '^[^:#]+::' matched line 1 } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: pattern '^[^:#]+::' matched line 1 } == TRUE"
   },
   {
     "RunCommand": "echo '#testuser::1111:1111::/home/someuser:/bin/sh' > /tmp/passwd"
@@ -159,7 +159,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ fileRegexMatch: pattern '^[^:#]+::' did not match any line } == FALSE"
+    "Payload": "{ FileRegexMatch: pattern '^[^:#]+::' did not match any line } == FALSE"
   },
 
 

@@ -25,7 +25,7 @@ static bool MultilineRegexSearch(const std::string& str, const regex& pattern)
     return false;
 }
 
-AUDIT_FN(ensureKernelModuleUnavailable, "moduleName:Name of the kernel module:M")
+AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M")
 {
     UNUSED(log);
     char* output = NULL;

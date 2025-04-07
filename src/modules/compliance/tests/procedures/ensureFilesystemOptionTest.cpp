@@ -11,9 +11,9 @@
 #include <string>
 #include <unistd.h>
 
-using compliance::Audit_ensureFilesystemOption;
+using compliance::AuditEnsureFilesystemOption;
 using compliance::Error;
-using compliance::Remediate_ensureFilesystemOption;
+using compliance::RemediateEnsureFilesystemOption;
 using compliance::Result;
 
 class EnsureFilesystemOptionTest : public ::testing::Test
@@ -63,7 +63,7 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionSuccess)
     args["optionsNotSet"] = "noreltime";
 
     std::ostringstream logstream;
-    Result<bool> result = Audit_ensureFilesystemOption(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureFilesystemOption(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
 }
@@ -79,7 +79,7 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionMissing)
     args["optionsNotSet"] = "noreltime";
 
     std::ostringstream logstream;
-    Result<bool> result = Audit_ensureFilesystemOption(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureFilesystemOption(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
 }
@@ -95,7 +95,7 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionForbidden)
     args["optionsNotSet"] = "nodev";
 
     std::ostringstream logstream;
-    Result<bool> result = Audit_ensureFilesystemOption(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureFilesystemOption(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
 }
@@ -112,7 +112,7 @@ TEST_F(EnsureFilesystemOptionTest, RemediateEnsureFilesystemOption)
     args["test_mount"] = "touch " + dir + " /remounted; /bin/true ";
 
     std::ostringstream logstream;
-    Result<bool> result = Remediate_ensureFilesystemOption(args, logstream, nullptr);
+    Result<bool> result = RemediateEnsureFilesystemOption(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
 

@@ -13,7 +13,7 @@
 
 namespace compliance
 {
-AUDIT_FN(ensureNoUserHasPrimaryShadowGroup)
+AUDIT_FN(EnsureNoUserHasPrimaryShadowGroup)
 {
     UNUSED(args);
     UNUSED(log);
@@ -49,7 +49,7 @@ AUDIT_FN(ensureNoUserHasPrimaryShadowGroup)
     return result;
 }
 
-REMEDIATE_FN(ensureNoUserHasPrimaryShadowGroup)
+REMEDIATE_FN(EnsureNoUserHasPrimaryShadowGroup)
 {
     UNUSED(args);
     UNUSED(log);

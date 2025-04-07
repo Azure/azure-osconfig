@@ -16,7 +16,7 @@
 
 namespace compliance
 {
-AUDIT_FN(ensureNoDuplicateEntriesExist)
+AUDIT_FN(EnsureNoDuplicateEntriesExist)
 {
     UNUSED(log);
     auto it = args.find("filename");

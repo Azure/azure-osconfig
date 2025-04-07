@@ -6,11 +6,11 @@
         {
           "type": "object",
           "required": [
-            "fileRegexMatch"
+            "FileRegexMatch"
           ],
           "additionalProperties": false,
           "properties": {
-            "fileRegexMatch": {
+            "FileRegexMatch": {
               "type": "object",
               "required": [
                 "filename",

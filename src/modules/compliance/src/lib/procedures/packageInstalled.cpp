@@ -7,7 +7,7 @@
 namespace compliance
 {
 
-AUDIT_FN(packageInstalled, "packageName:Package name:M")
+AUDIT_FN(PackageInstalled, "packageName:Package name:M")
 {
     UNUSED(log);
     char* output = NULL;

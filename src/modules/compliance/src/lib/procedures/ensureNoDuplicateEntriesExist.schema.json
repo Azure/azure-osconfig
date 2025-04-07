@@ -6,11 +6,11 @@
         {
           "type": "object",
           "required": [
-            "ensureNoDuplicateEntriesExist"
+            "EnsureNoDuplicateEntriesExist"
           ],
           "additionalProperties": false,
           "properties": {
-            "ensureNoDuplicateEntriesExist": {
+            "EnsureNoDuplicateEntriesExist": {
               "type": "object",
               "required": [],
               "additionalProperties": false,

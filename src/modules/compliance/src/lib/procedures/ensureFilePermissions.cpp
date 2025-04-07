@@ -13,7 +13,7 @@
 namespace compliance
 {
 
-AUDIT_FN(ensureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
+AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
     "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
     UNUSED(log);
@@ -115,7 +115,7 @@ AUDIT_FN(ensureFilePermissions, "filename:Path to the file:M", "owner:Required o
     return true;
 }
 
-REMEDIATE_FN(ensureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
+REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
     "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
     UNUSED(log);

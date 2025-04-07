@@ -6,11 +6,11 @@
         {
           "type": "object",
           "required": [
-            "auditFailure"
+            "AuditFailure"
           ],
           "additionalProperties": false,
           "properties": {
-            "auditFailure": {
+            "AuditFailure": {
               "type": "object",
               "required": [],
               "additionalProperties": false,
@@ -26,11 +26,11 @@
         {
           "type": "object",
           "required": [
-            "auditSuccess"
+            "AuditSuccess"
           ],
           "additionalProperties": false,
           "properties": {
-            "auditSuccess": {
+            "AuditSuccess": {
               "type": "object",
               "required": [],
               "additionalProperties": false,
@@ -50,11 +50,11 @@
         {
           "type": "object",
           "required": [
-            "remediationFailure"
+            "RemediationFailure"
           ],
           "additionalProperties": false,
           "properties": {
-            "remediationFailure": {
+            "RemediationFailure": {
               "type": "object",
               "required": [],
               "additionalProperties": false,
@@ -70,11 +70,11 @@
         {
           "type": "object",
           "required": [
-            "remediationSuccess"
+            "RemediationSuccess"
           ],
           "additionalProperties": false,
           "properties": {
-            "remediationSuccess": {
+            "RemediationSuccess": {
               "type": "object",
               "required": [],
               "additionalProperties": false,
@@ -90,11 +90,11 @@
         {
           "type": "object",
           "required": [
-            "remediationParametrized"
+            "RemediationParametrized"
           ],
           "additionalProperties": false,
           "properties": {
-            "remediationParametrized": {
+            "RemediationParametrized": {
               "type": "object",
               "required": [
                 "result"
