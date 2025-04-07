@@ -112,9 +112,22 @@ def create_procedure_schema(key, args):
         props["properties"][arg] = {
             "type": "string"
         }
-        for k in ["pattern", "description"]:
-            if args[arg].get(k) is not None:
-                props["properties"][arg][k] = args[arg].get(k)
+        if args[arg].get("description") is not None:
+            props["properties"][arg]["description"] = args[arg].get("description")
+        # We need to "fix" the pattern so that it allows for an argument name to be included instead of the actual argument.
+        # For the default value, we need to fix the beginning/ending of the value.
+        pattern = args[arg].get("pattern")
+        if pattern is not None:
+            s_pattern = pattern
+            if len(s_pattern) > 0 and s_pattern[0] == "^":
+                s_pattern = s_pattern[1:]
+            else:
+                s_pattern = ".*" + s_pattern
+            if len(s_pattern) > 0 and s_pattern[-1] == "$":
+                s_pattern = s_pattern[:-1]
+            else:
+                s_pattern = s_pattern + ".*"
+            props["properties"][arg]["pattern"] = f"(^\$[a-zA-Z0-9_]+:({s_pattern})$|({pattern}))"
 
     result["properties"] = { key: props }
     return result

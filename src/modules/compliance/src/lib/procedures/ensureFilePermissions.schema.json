@@ -31,13 +31,13 @@
                 },
                 "permissions": {
                   "type": "string",
-                  "pattern": "^[0-7]{3,4}$",
-                  "description": "Required octal permissions of the file"
+                  "description": "Required octal permissions of the file",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
                 },
                 "mask": {
                   "type": "string",
-                  "pattern": "^[0-7]{3,4}$",
-                  "description": "Required octal permissions of the file - mask"
+                  "description": "Required octal permissions of the file - mask",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
                 }
               }
             }
@@ -75,13 +75,13 @@
                 },
                 "permissions": {
                   "type": "string",
-                  "pattern": "^[0-7]{3,4}$",
-                  "description": "Required octal permissions of the file"
+                  "description": "Required octal permissions of the file",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
                 },
                 "mask": {
                   "type": "string",
-                  "pattern": "^[0-7]{3,4}$",
-                  "description": "Required octal permissions of the file - mask"
+                  "description": "Required octal permissions of the file - mask",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
                 }
               }
             }
