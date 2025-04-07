@@ -54,6 +54,9 @@
     "RunCommand": "userdel securitybaselinetest || true"
   },
   {
+    "RunCommand": "rm -rf /home/securitybaselinetest || true"
+  },
+  {
     "RunCommand": "groupdel securitybaselinetest || true"
   },
   {
