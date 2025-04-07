@@ -8,6 +8,7 @@ namespace compliance
 {
 AUDIT_FN(SCE, "scriptName:Script path:M", "ENVIRONMENT:Environment as passed to the SCE script")
 {
+    UNUSED(log);
     auto it = args.find("scriptName");
     auto scriptName = it != args.end() ? std::move(it->second) : std::string();
 
@@ -20,6 +21,7 @@ AUDIT_FN(SCE, "scriptName:Script path:M", "ENVIRONMENT:Environment as passed to 
 
 REMEDIATE_FN(SCE, "scriptName:Script path:M", "ENVIRONMENT:Environment as passed to the SCE script")
 {
+    UNUSED(log);
     auto it = args.find("scriptName");
     auto scriptName = it != args.end() ? std::move(it->second) : std::string();
 

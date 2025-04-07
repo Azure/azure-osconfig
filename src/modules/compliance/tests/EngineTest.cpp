@@ -15,12 +15,12 @@ using compliance::JsonWrapper;
 using compliance::Result;
 using compliance::Status;
 
-static Result<bool> AuditFailure(std::map<std::string, std::string>, std::ostringstream&)
+static Result<bool> AuditFailure(std::map<std::string, std::string>, std::ostringstream&, OsConfigLogHandle)
 {
     return false;
 }
 
-static Result<bool> AuditSuccess(std::map<std::string, std::string>, std::ostringstream&)
+static Result<bool> AuditSuccess(std::map<std::string, std::string>, std::ostringstream&, OsConfigLogHandle)
 {
     return true;
 }
