@@ -76,7 +76,7 @@ REMEDIATE_FN(remediationParametrized, "result:Expected remediation result - succ
 AUDIT_FN(auditGetParamValues)
 {
     UNUSED(log);
-    const std::vector<std::string> keys = { "KEY1", "KEY2", "KEY3" };
+    const std::vector<std::string> keys = {"KEY1", "KEY2", "KEY3"};
     bool first = true;
     for (const auto& key : keys)
     {
