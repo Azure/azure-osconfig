@@ -196,8 +196,9 @@ char* GetFormattedTime(void)
 {
     time_t rawTime = {0};
     struct tm* timeInfo = NULL;
+    struct tm result = {0};
     time(&rawTime);
-    timeInfo = localtime(&rawTime);
+    timeInfo = localtime_r(&rawTime, &result);
     strftime(g_logTime, ARRAY_SIZE(g_logTime), "%Y-%m-%d %H:%M:%S", timeInfo);
     return g_logTime;
 }
