@@ -53,6 +53,7 @@ repos:
         types_or: [c++, json]
         entry: src/modules/compliance/src/lib/GenJSONSchemas.py
         language: python
+        require_serial: true
         files: |
           (?x)(
           ^src/modules/compliance/src/lib/payload.schema.json$|
