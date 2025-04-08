@@ -115,19 +115,16 @@ Optional<Error> Procedure::UpdateUserParameters(const std::string& input)
         {
             return result.Error();
         }
-
-        auto key = input.substr(keyStart, result.Value() - keyStart);
-        pos = SkipSpaces(input, result.Value());
+        pos = result.Value();
+        auto key = input.substr(keyStart, pos - keyStart);
         if ((pos >= input.size()) || (input[pos] != '='))
         {
             return Error("Invalid key-value pair: '=' expected");
         }
-
-        // Skip space after assignment character
-        pos = SkipSpaces(input, pos + 1);
-        if (pos >= input.size())
+        pos++; // Move past assignment character
+        if (pos >= input.size() || isspace(input[pos]))
         {
-            return Error("Invalid key-value pair: value expected");
+            return Error("Invalid key-value pair: missing value");
         }
 
         // Parse value

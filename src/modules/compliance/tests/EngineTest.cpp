@@ -367,7 +367,18 @@ TEST_F(ComplianceEngineTest, MmiSet_externalParams_6)
     // check if spaces are trimmed from the key
     auto result = mEngine.MmiSet("initX", "KEY_1 =  value");
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.Error().message, std::string("User parameter 'KEY_1' not found"));
+    EXPECT_EQ(result.Error().message, std::string("Invalid key-value pair: '=' expected"));
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_7)
+{
+    std::string payload = R"({"audit":{},"parameters":{"KEY":"VALUE"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // check if spaces are trimmed from the key
+    auto result = mEngine.MmiSet("initX", "KEY_1=  value");
+    ASSERT_FALSE(result);
+    EXPECT_EQ(result.Error().message, std::string("Invalid key-value pair: missing value"));
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_1)
@@ -375,8 +386,7 @@ TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_1)
     std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
 
-    // check if spaces are trimmed from the key
-    ASSERT_TRUE(mEngine.MmiSet("initX", "KEY1 =  value"));
+    ASSERT_TRUE(mEngine.MmiSet("initX", "KEY1=value"));
 
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
@@ -388,7 +398,7 @@ TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_2)
     std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
 
-    ASSERT_TRUE(mEngine.MmiSet("initX", "KEY1 =  value KEY2 = value2   "));
+    ASSERT_TRUE(mEngine.MmiSet("initX", " KEY1=value  KEY2=value2   "));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
     EXPECT_EQ(result.Value().payload, R"(PASS{ auditGetParamValues: KEY1=value, KEY2=value2 } == TRUE)");
@@ -399,7 +409,7 @@ TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_3)
     std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"VALUE1", "KEY2":"VALUE2"}})";
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
 
-    ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1 ="  value" KEY2 = value2   )"));
+    ASSERT_TRUE(mEngine.MmiSet("initX", R"( KEY1="  value" KEY2=value2   )"));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
     EXPECT_EQ(result.Value().payload, R"(PASS{ auditGetParamValues: KEY1=  value, KEY2=value2 } == TRUE)");
@@ -435,7 +445,7 @@ TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_6)
     ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
 
     // We don't treat the pair of backslashes as an escape sequence, so the result is expected to contain only one backslash
-    ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1=" v " KEY2= "value2\\")"));
+    ASSERT_TRUE(mEngine.MmiSet("initX", R"(KEY1=" v " KEY2="value2\\")"));
     auto result = mEngine.MmiGet("auditX");
     ASSERT_TRUE(result);
     EXPECT_EQ(result.Value().payload, R"(PASS{ auditGetParamValues: KEY1= v , KEY2=value2\ } == TRUE)");
@@ -496,4 +506,13 @@ TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_12)
 
     // invalid escape character
     ASSERT_FALSE(mEngine.MmiSet("initX", R"(k1="x\y")"));
+}
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_13)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"k1": "$KEY1"}},"parameters":{"k1":"VALUE1"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // invalid escape character
+    ASSERT_FALSE(mEngine.MmiSet("initX", R"(k1="x\)"));
 }
