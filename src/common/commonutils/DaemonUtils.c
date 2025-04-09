@@ -88,7 +88,7 @@ bool CheckDaemonNotActive(const char* daemonName, char** reason, OsConfigLogHand
 {
     bool result = false;
 
-    if (true == (result = IsDaemonActive(daemonName, log)))
+    if (true == IsDaemonActive(daemonName, log))
     {
         OsConfigLogInfo(log, "CheckDaemonNotActive: service '%s' is active", daemonName);
         OsConfigCaptureReason(reason, "Service '%s' is active", daemonName);
