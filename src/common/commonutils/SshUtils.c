@@ -210,7 +210,6 @@ static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
     const int minVersionMajor = 8;
     const int minVersionMinor = 2;
     char* textResult = NULL;
-    size_t textResultLength = 0;
     size_t textPrefixLength = 0;
     char* textCursor = NULL;
     char versionMajorString[2] = {0};
@@ -232,7 +231,8 @@ static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
 
     if (NULL != textResult)
     {
-        if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult)))
+        textPrefixLength = strlen(expectedPrefix) + 3;
+        if (textPrefixLength < strlen(textResult))
         {
             textCursor = textResult + strlen(expectedPrefix) + 1;
             if (isdigit(textCursor[0]) && ('.' == textCursor[1]) && isdigit(textCursor[2]))
@@ -671,7 +671,7 @@ int CheckSshProtocol(char** reason, OsConfigLogHandle log)
         OsConfigCaptureReason(reason, "'%s' is not present on this device", g_sshServerConfiguration);
         status = EEXIST;
     }
-    if (0 == (status = CheckLineFoundNotCommentedOut(g_sshServerConfiguration, '#', protocol, reason, log)))
+    else if (0 == CheckLineFoundNotCommentedOut(g_sshServerConfiguration, '#', protocol, reason, log))
     {
         OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
         status = 0;
