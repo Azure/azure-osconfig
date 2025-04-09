@@ -669,7 +669,7 @@ int CheckSshProtocol(char** reason, OsConfigLogHandle log)
     {
         OsConfigLogInfo(log, "CheckSshProtocol: the SSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
         OsConfigCaptureReason(reason, "'%s' is not present on this device", g_sshServerConfiguration);
-        status = EEXIST;
+        status = ENOENT;
     }
     else if (0 == CheckLineFoundNotCommentedOut(g_sshServerConfiguration, '#', protocol, reason, log))
     {
