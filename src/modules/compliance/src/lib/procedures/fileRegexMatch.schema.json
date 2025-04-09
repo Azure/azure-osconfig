@@ -25,8 +25,8 @@
                 },
                 "matchOperation": {
                   "type": "string",
-                  "pattern": "^pattern match$",
-                  "description": "Operation to perform on the file contents"
+                  "description": "Operation to perform on the file contents",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(pattern match)$|(^pattern match$))"
                 },
                 "matchPattern": {
                   "type": "string",
@@ -34,8 +34,8 @@
                 },
                 "stateOperation": {
                   "type": "string",
-                  "pattern": "^pattern match$",
-                  "description": "Operation to perform on each line that matches the 'matchPattern'"
+                  "description": "Operation to perform on each line that matches the 'matchPattern'",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(pattern match)$|(^pattern match$))"
                 },
                 "statePattern": {
                   "type": "string",
@@ -43,8 +43,8 @@
                 },
                 "caseSensitive": {
                   "type": "string",
-                  "pattern": "^true|false$",
-                  "description": "Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'"
+                  "description": "Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(true|false)$|(^true|false$))"
                 }
               }
             }
