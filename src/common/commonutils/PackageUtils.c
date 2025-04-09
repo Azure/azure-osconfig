@@ -471,7 +471,7 @@ int InstallPackage(const char* packageName, OsConfigLogHandle log)
 {
     int status = ENOENT;
 
-    if (0 != (status = IsPackageInstalled(packageName, log)))
+    if (0 != IsPackageInstalled(packageName, log))
     {
         if (0 == (status = InstallOrUpdatePackage(packageName, log)))
         {
