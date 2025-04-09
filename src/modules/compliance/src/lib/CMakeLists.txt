@@ -40,6 +40,9 @@ add_library(compliancelib STATIC
 
 set_property(TARGET compliancelib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
+add_custom_target(ProcedureMap
+    DEPENDS ProcedureMap.cpp ProcedureMap.h
+)
 add_custom_command(
     OUTPUT ProcedureMap.cpp ProcedureMap.h
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/GenProcedureMap.sh ${CMAKE_CURRENT_SOURCE_DIR}/procedures/
