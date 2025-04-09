@@ -19,7 +19,7 @@ static char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
         "/lib/x86_64-linux-gnu/security/%s" };
     int numPaths = ARRAY_SIZE(paths);
     char* result = NULL;
-    int status = 0, i = 0;
+    int i = 0;
 
     if (NULL == pamModule)
     {
@@ -31,7 +31,7 @@ static char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
     {
         if (NULL != (result = FormatAllocateString(paths[i], pamModule)))
         {
-            if (0 == (status = CheckFileExists(result, NULL, log)))
+            if (0 == CheckFileExists(result, NULL, log))
             {
                 break;
             }
