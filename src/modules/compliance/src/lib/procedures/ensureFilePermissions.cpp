@@ -16,32 +16,46 @@ namespace compliance
 AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
     "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
-    UNUSED(log);
     struct stat statbuf;
     if (args.find("filename") == args.end())
     {
-        return Error("No filename provided");
+        OsConfigLogError(log, "No filename provided");
+        return Error("No filename provided", EINVAL);
     }
-    logstream << "ensureFilePermissions for '" << args["filename"] << "' ";
+    const auto filename = args["filename"];
 
     if (0 != stat(args["filename"].c_str(), &statbuf))
     {
-        logstream << "Stat error '" << strerror(errno) << "'";
-        return false;
+        const int status = errno;
+        if (ENOENT == status)
+        {
+            OsConfigLogDebug(log, "File '%s' does not exist", args["filename"].c_str());
+            logstream << "File '" << args["filename"] << "' does not exist";
+            return false;
+        }
+
+        OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
+        return Error(std::string("Stat error '") + strerror(status) + "'", status);
     }
 
     if (args.find("owner") != args.end())
     {
-        struct passwd* pwd = getpwuid(statbuf.st_uid);
+        const struct passwd* pwd = getpwuid(statbuf.st_uid);
         if (nullptr == pwd)
         {
-            logstream << "No user with uid " << statbuf.st_uid;
+            OsConfigLogDebug(log, "No user with UID %d", statbuf.st_gid);
+            logstream << "Invalid '" << filename << "' owner: " << statbuf.st_gid << " - no such user";
             return false;
         }
         if (args["owner"] != pwd->pw_name)
         {
-            logstream << "Invalid owner - is " << pwd->pw_name << " should be " << args["owner"];
+            OsConfigLogDebug(log, "Invalid '%s' owner - is '%s' should be '%s'", filename.c_str(), pwd->pw_name, args["owner"].c_str());
+            logstream << "Invalid '" << filename << "' owner - is '" << pwd->pw_name << "' should be '" << args["owner"] << "' ";
             return false;
+        }
+        else
+        {
+            OsConfigLogDebug(log, "Matched owner '%s' to '%s'", args["owner"].c_str(), pwd->pw_name);
         }
     }
 
@@ -50,7 +64,8 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
         struct group* grp = getgrgid(statbuf.st_gid);
         if (nullptr == grp)
         {
-            logstream << "No group with gid " << statbuf.st_gid;
+            OsConfigLogDebug(log, "No group with GID %d", statbuf.st_gid);
+            logstream << "Invalid '" << filename << "' group: " << statbuf.st_gid << " - no such group";
             return false;
         }
         std::istringstream iss(args["group"]);
@@ -60,14 +75,19 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
         {
             if (group == grp->gr_name)
             {
+                OsConfigLogDebug(log, "Matched group '%s' to '%s'", group.c_str(), grp->gr_name);
                 groupOk = true;
                 break;
             }
         }
         if (!groupOk)
         {
-            logstream << "Invalid group - is '" << grp->gr_name << "' should be '" << args["group"] << "' ";
+            logstream << "Invalid '" << filename << "' group - is '" << grp->gr_name << "' should be '" << args["group"] << "' ";
             return false;
+        }
+        else
+        {
+            OsConfigLogDebug(log, "Matched group '%s' to '%s'", args["group"].c_str(), grp->gr_name);
         }
     }
 
@@ -81,8 +101,8 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
         perms = strtol(args["permissions"].c_str(), &endptr, 8);
         if ('\0' != *endptr)
         {
-            logstream << "Invalid permissions: " << args["permissions"];
-            return false;
+            OsConfigLogError(log, "Invalid permissions: %s", args["permissions"].c_str());
+            return Error("Invalid permissions argument: " + args["permissions"], EINVAL);
         }
         has_permissions = true;
     }
@@ -92,44 +112,72 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
         mask = strtol(args["mask"].c_str(), &endptr, 8);
         if ('\0' != *endptr)
         {
-            logstream << "Invalid permissions mask: " << args["mask"];
-            return false;
+            OsConfigLogError(log, "Invalid mask argument: %s", args["mask"].c_str());
+            return Error("Invalid mask argument: " + args["mask"], EINVAL);
         }
         has_mask = true;
     }
     if ((has_permissions && has_mask) && (0 != (perms & mask)))
     {
-        logstream << "ERROR: Invalid permissions and mask - same bits set in both";
+        OsConfigLogError(log, "Invalid permissions and mask - same bits set in both");
         return Error("Invalid permissions and mask - same bits set in both");
     }
-    if (has_permissions && (perms != (statbuf.st_mode & perms)))
+    const mode_t displayMask = 07777;
+    if (has_permissions)
     {
-        logstream << "Invalid permissions - are " << std::oct << statbuf.st_mode << " should be at least " << std::oct << perms;
-        return false;
+        if (perms != (statbuf.st_mode & perms))
+        {
+            logstream << "Invalid '" << filename << "' permissions - are " << std::oct << (statbuf.st_mode & displayMask) << " should be at least "
+                      << std::oct << perms;
+            return false;
+        }
+        else
+        {
+            OsConfigLogDebug(log, "Permissions are correct");
+        }
     }
-    if (has_mask && (0 != (statbuf.st_mode & mask)))
+    if (has_mask)
     {
-        logstream << "Invalid permissions - are " << std::oct << statbuf.st_mode << " while " << std::oct << mask << " should not be set";
-        return false;
+        if (0 != (statbuf.st_mode & mask))
+        {
+            logstream << "Invalid '" << filename << "' permissions - are " << std::oct << (statbuf.st_mode & displayMask) << " while " << std::oct
+                      << mask << " should not be set";
+            return false;
+        }
+        else
+        {
+            OsConfigLogDebug(log, "Mask is correct");
+        }
     }
+
+    OsConfigLogDebug(log, "File '%s' has correct permissions", filename.c_str());
+    logstream << "File '" << filename << "' has correct permissions";
     return true;
 }
 
 REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
     "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
-    UNUSED(log);
     if (args.find("filename") == args.end())
     {
-        logstream << "ERROR: No filename provided";
-        return Error("No filename provided");
+        OsConfigLogError(log, "No filename provided");
+        return Error("No filename provided", EINVAL);
     }
+    const auto filename = args["filename"];
 
     struct stat statbuf;
     if (stat(args["filename"].c_str(), &statbuf) < 0)
     {
-        logstream << "ERROR: Stat error " << strerror(errno);
-        return false;
+        const int status = errno;
+        if (ENOENT == status)
+        {
+            OsConfigLogDebug(log, "File '%s' does not exist", filename.c_str());
+            logstream << "File '" << filename << "' does not exist";
+            return false;
+        }
+
+        OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
+        return Error(std::string("Stat error '") + strerror(status) + "'", status);
     }
 
     uid_t uid = statbuf.st_uid;
@@ -137,21 +185,30 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
     bool owner_changed = false;
     if (args.find("owner") != args.end())
     {
-        struct passwd* pwd = getpwnam(args["owner"].c_str());
+        const struct passwd* pwd = getpwnam(args["owner"].c_str());
         if (pwd == nullptr)
         {
-            logstream << "ERROR: No user with name " << args["owner"];
+            OsConfigLogDebug(log, "No user with UID %d", statbuf.st_gid);
+            logstream << "Invalid '" << filename << "' owner: " << statbuf.st_gid << " - no such user";
             return false;
         }
         uid = pwd->pw_uid;
-        owner_changed = true;
+        if (uid != statbuf.st_uid)
+        {
+            owner_changed = true;
+        }
+        else
+        {
+            OsConfigLogDebug(log, "Matched owner '%s' to '%s'", args["owner"].c_str(), pwd->pw_name);
+        }
     }
     if (args.find("group") != args.end())
     {
-        struct group* grp = getgrgid(statbuf.st_gid);
+        const struct group* grp = getgrgid(statbuf.st_gid);
         if (nullptr == grp)
         {
-            logstream << "ERROR: No group with gid " << statbuf.st_gid;
+            OsConfigLogDebug(log, "No group with GID %d", statbuf.st_gid);
+            logstream << "Invalid '" << filename << "' group: " << statbuf.st_gid << " - no such group";
             return false;
         }
         std::istringstream iss(args["group"]);
@@ -166,6 +223,7 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
             }
             if (group == grp->gr_name)
             {
+                OsConfigLogDebug(log, "Matched group '%s' to '%s'", group.c_str(), grp->gr_name);
                 groupOk = true;
                 break;
             }
@@ -175,19 +233,30 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
             struct group* grp = getgrnam(firstGroup.c_str());
             if (grp == nullptr)
             {
-                logstream << "ERROR: No group with name " << args["group"];
-                return Error("No group with name " + args["group"]);
+                OsConfigLogDebug(log, "No group with GID %d", statbuf.st_gid);
+                logstream << "Invalid '" << filename << "' group: " << statbuf.st_gid << " - no such group";
+                return false;
             }
             gid = grp->gr_gid;
+            if (gid != statbuf.st_gid)
+            {
+                owner_changed = true;
+            }
+            else
+            {
+                OsConfigLogDebug(log, "Matched group '%s' to '%s'", args["group"].c_str(), grp->gr_name);
+            }
             owner_changed = true;
         }
     }
     if (owner_changed)
     {
+        OsConfigLogInfo(log, "Changing owner of '%s' from %d:%d to %d:%d", args["filename"].c_str(), statbuf.st_uid, statbuf.st_gid, uid, gid);
         if (0 != chown(args["filename"].c_str(), uid, gid))
         {
-            logstream << "ERROR: Chown error " << strerror(errno);
-            return Error("Chown error");
+            int status = errno;
+            OsConfigLogError(log, "Chown error %s (%d)", strerror(status), status);
+            return Error(std::string("Chown error: ") + strerror(status), status);
         }
     }
 
@@ -202,8 +271,8 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
         perms = strtol(args["permissions"].c_str(), &endptr, 8);
         if ('\0' != *endptr)
         {
-            logstream << "ERROR: Invalid permissions: " << args["permissions"];
-            return Error("Invalid permissions: " + args["permissions"]);
+            OsConfigLogError(log, "Invalid permissions argument: %s", args["permissions"].c_str());
+            return Error("Invalid permissions argument: " + args["permissions"]);
         }
         new_perms |= perms;
         has_permissions = true;
@@ -214,8 +283,8 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
         mask = strtol(args["mask"].c_str(), &endptr, 8);
         if ('\0' != *endptr)
         {
-            logstream << "ERROR: Invalid permissions mask: " << args["mask"];
-            return Error("Invalid permissions mask: " + args["mask"]);
+            OsConfigLogError(log, "Invalid mask argument: %s", args["mask"].c_str());
+            return Error("Invalid mask argument: " + args["mask"], EINVAL);
         }
         new_perms &= ~mask;
         has_mask = true;
@@ -223,18 +292,21 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
     // Sanity check - we can't have bits set in the mask and permissions at the same time.
     if ((has_permissions && has_mask) && (0 != (perms & mask)))
     {
-        logstream << "ERROR: Invalid permissions and mask - same bits set in both";
-        return Error("Invalid permissions and mask - same bits set in both");
+        OsConfigLogError(log, "Invalid permissions and mask - same bits set in both");
+        return Error("Invalid permissions and mask - same bits set in both", EINVAL);
     }
     if (new_perms != statbuf.st_mode)
     {
+        OsConfigLogInfo(log, "Changing permissions of '%s' from %o to %o", args["filename"].c_str(), statbuf.st_mode, new_perms);
         if (chmod(args["filename"].c_str(), new_perms) < 0)
         {
-            logstream << "ERROR: Chmod error";
-            return Error("Chmod error");
+            int status = errno;
+            OsConfigLogError(log, "Chmod error %s (%d)", strerror(status), status);
+            return Error(std::string("Chmod error: ") + strerror(status), status);
         }
     }
 
+    OsConfigLogDebug(log, "File '%s' remediation succeeded", filename.c_str());
     return true;
 }
 } // namespace compliance
