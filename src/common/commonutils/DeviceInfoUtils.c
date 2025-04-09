@@ -423,7 +423,6 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
     char* command = NULL;
     char* result = NULL;
     size_t commandLength = 0;
-    int status = 0;
 
     if ((NULL == commandTemplate) || (NULL == name) || (0 == strlen(name)))
     {
@@ -443,7 +442,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
             memset(command, 0, commandLength);
             snprintf(command, commandLength, commandTemplate, name);
 
-            if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log))) && result)
+            if ((0 == ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)) && result)
             {
                 RemovePrefixBlanks(result);
                 RemoveTrailingBlanks(result);
