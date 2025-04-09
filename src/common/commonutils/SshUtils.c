@@ -918,6 +918,7 @@ static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
     else if ((NULL == (inclusion = FormatInclusionForRemediation(log))) || (0 == (inclusionSize = strlen(inclusion))))
     {
         OsConfigLogInfo(log, "IncludeRemediationSshConfFile: failed preparing the inclusion statement, cannot include '%s' into '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
+        FREE_MEMORY(inclusion);
         return ENOMEM;
     }
 
