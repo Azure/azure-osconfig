@@ -547,8 +547,6 @@ static void* MpiServerWorker(void* arguments)
 
             contentLength = 0;
             responseSize = 0;
-            actualSize = 0;
-            estimatedSize = 0;
 
             FREE_MEMORY(requestBody);
             FREE_MEMORY(responseBody);
