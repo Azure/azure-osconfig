@@ -700,7 +700,7 @@ int CheckSshProtocol(char** reason, OsConfigLogHandle log)
                 OsConfigCaptureReason(reason, "'%s' is not found included in %s", g_osconfigRemediationConf, g_sshServerConfiguration);
                 status = ENOENT;
             }
-            else if (0 == (status = CheckLineFoundNotCommentedOut(g_osconfigRemediationConf, '#', protocol, reason, log)))
+            else if (0 == CheckLineFoundNotCommentedOut(g_osconfigRemediationConf, '#', protocol, reason, log))
             {
                 OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
                 status = 0;

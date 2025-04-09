@@ -931,7 +931,7 @@ int RemoveGroup(SimplifiedGroup* group, bool removeHomeDirs, OsConfigLogHandle l
         OsConfigLogInfo(log, "RemoveGroup: attempting to delete a group that has users ('%s', %u)", group->groupName, group->groupId);
 
         // Check if this group is the primary group of any existing user
-        if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+        if (0 == EnumerateUsers(&userList, &userListSize, NULL, log))
         {
             for (i = 0; i < userListSize; i++)
             {
