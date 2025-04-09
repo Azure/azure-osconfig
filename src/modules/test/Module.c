@@ -354,7 +354,8 @@ void UnloadModule(MANAGEMENT_MODULE* module)
 
     if (NULL != module->handle)
     {
-        module->close(module->session);
+        if ((NULL != module->close) && (module->session != NULL))
+            module->close(module->session);
         module->session = NULL;
 
         module->getInfo = NULL;
