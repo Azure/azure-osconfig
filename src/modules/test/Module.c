@@ -211,17 +211,16 @@ int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
                     }
                 }
             }
+        }
 
-            if (0 == status)
-            {
-                *moduleInfo = info;
-            }
-            else
-            {
-                FreeModuleInfo(info);
-                info = NULL;
-            }
-
+        if (0 == status)
+        {
+            *moduleInfo = info;
+        }
+        else
+        {
+            FreeModuleInfo(info);
+            info = NULL;
         }
     }
 
@@ -339,7 +338,7 @@ MANAGEMENT_MODULE* LoadModule(const char* client, const char* path)
     if ((status != 0) && (module != NULL))
     {
         UnloadModule(module);
-        module = NULL;
+        FREE_MEMORY(module);
     }
     json_value_free(value);
     FREE_MEMORY(payload);
