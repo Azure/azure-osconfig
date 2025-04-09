@@ -40,7 +40,9 @@ TEST_F(OptionalTest, MoveContructor)
 {
     Optional<int> opt1(42);
     Optional<int> opt2(std::move(opt1));
+#ifndef __clang_analyzer__
     ASSERT_FALSE(opt1.HasValue());
+#endif
     ASSERT_TRUE(opt2.HasValue());
     ASSERT_EQ(opt2.Value(), 42);
 }
@@ -60,7 +62,9 @@ TEST_F(OptionalTest, MoveAssignment)
     Optional<int> opt1(42);
     Optional<int> opt2;
     opt2 = std::move(opt1);
+#ifndef __clang_analyzer__
     ASSERT_FALSE(opt1.HasValue());
+#endif
     ASSERT_TRUE(opt2.HasValue());
     ASSERT_EQ(opt2.Value(), 42);
 }
