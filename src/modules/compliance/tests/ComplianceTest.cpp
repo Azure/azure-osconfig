@@ -120,7 +120,11 @@ TEST_F(ComplianceTest, ComplianceMmiGet_InvalidArguments_3)
 {
     char* payload = nullptr;
     int payloadSizeBytes = 0;
-    ASSERT_NE(MMI_OK, ComplianceMmiGet(mHandle, "Compliance", "auditX", &payload, &payloadSizeBytes));
+    auto result = ComplianceMmiGet(mHandle, "Compliance", "auditX", &payload, &payloadSizeBytes);
+    ASSERT_EQ(result, MMI_OK);
+    ASSERT_NE(payload, nullptr);
+    ASSERT_TRUE(std::string(payload).find("Rule not found") != std::string::npos);
+    free(payload);
 }
 
 TEST_F(ComplianceTest, ComplianceMmiGet_InvalidArguments_4)

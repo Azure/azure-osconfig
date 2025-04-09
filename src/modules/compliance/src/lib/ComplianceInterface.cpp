@@ -14,6 +14,7 @@
 #include <cstring>
 #include <exception>
 #include <parson.h>
+#include <set>
 
 using compliance::Engine;
 using compliance::JSONFromString;
@@ -23,7 +24,8 @@ using compliance::Status;
 namespace
 {
 OsConfigLogHandle g_log = nullptr;
-}
+static const std::set<int> g_criticalErrors = {ENOMEM};
+} // namespace
 
 void ComplianceInitialize(OsConfigLogHandle log)
 {
@@ -95,8 +97,18 @@ int ComplianceMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         auto result = engine.MmiGet(objectName);
         if (!result.HasValue())
         {
-            OsConfigLogError(engine.Log(), "ComplianceMmiGet failed: %s (errno: %d)", result.Error().message.c_str(), result.Error().code);
-            return result.Error().code;
+            if (g_criticalErrors.find(result.Error().code) != g_criticalErrors.end())
+            {
+                OsConfigLogError(engine.Log(), "ComplianceMmiGet failed with a critical error: %s (errno: %d)", result.Error().message.c_str(),
+                    result.Error().code);
+                return result.Error().code;
+            }
+            else
+            {
+                OsConfigLogError(engine.Log(), "ComplianceMmiGet failed with a non-critical error: %s (errno: %d)", result.Error().message.c_str(),
+                    result.Error().code);
+                result = compliance::AuditResult(Status::NonCompliant, result.Error().message);
+            }
         }
 
         auto json = JSONFromString(result.Value().payload.c_str());
@@ -166,8 +178,18 @@ int ComplianceMmiSet(MMI_HANDLE clientSession, const char* componentName, const 
         auto result = engine.MmiSet(objectName, std::move(realPayload));
         if (!result.HasValue())
         {
-            OsConfigLogError(engine.Log(), "ComplianceMmiSet failed: %s (errno: %d)", result.Error().message.c_str(), result.Error().code);
-            return result.Error().code;
+            if (g_criticalErrors.find(result.Error().code) != g_criticalErrors.end())
+            {
+                OsConfigLogError(engine.Log(), "ComplianceMmiSet failed with a critical error: %s (errno: %d)", result.Error().message.c_str(),
+                    result.Error().code);
+                return result.Error().code;
+            }
+            else
+            {
+                OsConfigLogError(engine.Log(), "ComplianceMmiSet failed with a non-critical error: %s (errno: %d)", result.Error().message.c_str(),
+                    result.Error().code);
+                return MMI_OK;
+            }
         }
 
         OsConfigLogInfo(engine.Log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload,
