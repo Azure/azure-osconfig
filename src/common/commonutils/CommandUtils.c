@@ -85,7 +85,10 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         }
         if (0 == strncmp(mock->expectedCommand, command, stringLen))
         {
-            *textResult = DuplicateString(mock->output);
+            if ((NULL != textResult) && (NULL != mock->output))
+            {
+                *textResult = DuplicateString(mock->output);
+            }
             return mock->returnCode;
         }
 	mock = mock->next;
