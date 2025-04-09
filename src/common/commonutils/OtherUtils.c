@@ -278,7 +278,7 @@ int CheckAllWirelessInterfacesAreDisabled(char** reason, OsConfigLogHandle log)
     const char* command = "iwconfig 2>&1 | egrep -v 'no wireless extensions|not found' | grep Frequency";
     int status = 0;
 
-    if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log)))
+    if (0 == ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log))
     {
         OsConfigLogInfo(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
         OsConfigCaptureReason(reason, "At least one active wireless interface is present");
