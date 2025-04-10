@@ -32,7 +32,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ allOf: [{ EnsureNoDuplicateEntriesExist:  } == TRUE] == TRUE }"
+    "Payload": "PASS{ allOf: [{ EnsureNoDuplicateEntriesExist: No duplicate entries found in \/etc\/passwd } == TRUE]} == TRUE"
   },
 
 
@@ -45,7 +45,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ allOf: [{ EnsureNoDuplicateEntriesExist: Duplicate entries found in \/etc\/passwd: [8888]  } == FALSE] == FALSE }"
+    "Payload": "{ allOf: [{ EnsureNoDuplicateEntriesExist: Duplicate entry: '8888', 1 duplicate entries found in \/etc\/passwd } == FALSE]} == FALSE"
   },
 
 
@@ -58,7 +58,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ allOf: [{ EnsureNoDuplicateEntriesExist:  } == TRUE] == TRUE }"
+    "Payload": "PASS{ allOf: [{ EnsureNoDuplicateEntriesExist: No duplicate entries found in \/etc\/passwd } == TRUE]} == TRUE"
   },
 
 
@@ -86,7 +86,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ allOf: [{ EnsureNoDuplicateEntriesExist: Duplicate entries found in \/etc\/passwd: [8888, 8889]  } == FALSE] == FALSE }"
+    "Payload": "{ allOf: [{ EnsureNoDuplicateEntriesExist: Duplicate entry: '8888', Duplicate entry: '8889', 2 duplicate entries found in \/etc\/passwd } == FALSE]} == FALSE"
   },
 
 
@@ -96,7 +96,7 @@
     "RunCommand": "sed -i '$d' /etc/passwd"
   },
   {
-    "RunCommand": "userdel securitybaselinetest2 || true"
+    "RunCommand": "userdel -f -r securitybaselinetest2 || true"
   },
   {
     "RunCommand": "groupdel securitybaselinetest2 || true"
@@ -105,7 +105,7 @@
     "RunCommand": "sed -i '$d' /etc/passwd"
   },
   {
-    "RunCommand": "userdel securitybaselinetest || true"
+    "RunCommand": "userdel -f -r securitybaselinetest || true"
   },
   {
     "RunCommand": "groupdel securitybaselinetest || true"

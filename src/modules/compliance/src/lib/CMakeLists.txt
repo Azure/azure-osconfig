@@ -33,6 +33,7 @@ add_library(compliancelib STATIC
     Base64.cpp
     Engine.cpp
     Procedure.cpp
+    Indicators.cpp
     ${PROCEDURES}
     )
 
