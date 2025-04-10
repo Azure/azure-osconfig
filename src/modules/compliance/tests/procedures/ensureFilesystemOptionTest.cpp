@@ -14,8 +14,10 @@
 
 using compliance::AuditEnsureFilesystemOption;
 using compliance::Error;
+using compliance::Indicators;
 using compliance::RemediateEnsureFilesystemOption;
 using compliance::Result;
+using compliance::Status;
 
 class EnsureFilesystemOptionTest : public ::testing::Test
 {
@@ -25,6 +27,7 @@ protected:
     std::string fstabFile;
     std::string mtabFile;
     MockContext mContext;
+    Indicators indicators;
 
     void SetUp() override
     {
@@ -32,6 +35,7 @@ protected:
         ASSERT_TRUE(dir != "");
         fstabFile = dir + "/fstab";
         mtabFile = dir + "/mtab";
+        indicators.Push("EnsureFilesystemOption");
     }
     void CreateTabs()
     {
@@ -64,9 +68,9 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionSuccess)
     args["optionsSet"] = "rw,noatime";
     args["optionsNotSet"] = "noreltime";
 
-    Result<bool> result = AuditEnsureFilesystemOption(args, mContext);
+    auto result = AuditEnsureFilesystemOption(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionMissing)
@@ -79,9 +83,9 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionMissing)
     args["optionsSet"] = "rw,noatime,noexec";
     args["optionsNotSet"] = "noreltime";
 
-    Result<bool> result = AuditEnsureFilesystemOption(args, mContext);
+    auto result = AuditEnsureFilesystemOption(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionForbidden)
@@ -94,9 +98,9 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionForbidden)
     args["optionsSet"] = "rw";
     args["optionsNotSet"] = "nodev";
 
-    Result<bool> result = AuditEnsureFilesystemOption(args, mContext);
+    auto result = AuditEnsureFilesystemOption(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilesystemOptionTest, RemediateEnsureFilesystemOption)
@@ -110,9 +114,9 @@ TEST_F(EnsureFilesystemOptionTest, RemediateEnsureFilesystemOption)
     args["optionsNotSet"] = "relatime";
     args["test_mount"] = "touch " + dir + " /remounted;/bin/true ";
 
-    Result<bool> result = RemediateEnsureFilesystemOption(args, mContext);
+    auto result = RemediateEnsureFilesystemOption(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 
     std::ifstream fstab(fstabFile);
     std::string fstabContents;

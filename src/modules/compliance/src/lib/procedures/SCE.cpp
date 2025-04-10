@@ -8,25 +8,25 @@ namespace compliance
 {
 AUDIT_FN(SCE, "scriptName:Script path:M", "ENVIRONMENT:Environment as passed to the SCE script")
 {
+    UNUSED(context);
     auto it = args.find("scriptName");
     auto scriptName = it != args.end() ? std::move(it->second) : std::string();
 
     it = args.find("ENVIRONMENT");
     auto env = it != args.end() ? std::move(it->second) : std::string();
 
-    context.GetLogstream() << "SCE scripts are not supported yet (path: '" << scriptName << "', env: '" << env << "')";
-    return false;
+    return indicators.NonCompliant(std::string("SCE scripts are not supported yet (path: '") + scriptName + "', env: '" + env + "')");
 }
 
 REMEDIATE_FN(SCE, "scriptName:Script path:M", "ENVIRONMENT:Environment as passed to the SCE script")
 {
+    UNUSED(context);
     auto it = args.find("scriptName");
     auto scriptName = it != args.end() ? std::move(it->second) : std::string();
 
     it = args.find("ENVIRONMENT");
     auto env = it != args.end() ? std::move(it->second) : std::string();
 
-    context.GetLogstream() << "SCE scripts are not supported yet (path: '" << scriptName << "', env: '" << env << "')";
-    return false;
+    return indicators.NonCompliant(std::string("SCE scripts are not supported yet (path: '") + scriptName + "', env: '" + env + "')");
 }
 } // namespace compliance

@@ -34,6 +34,7 @@ add_library(compliancelib STATIC
     Engine.cpp
     Procedure.cpp
     Result.cpp
+    Indicators.cpp
     ${PROCEDURES}
     )
 

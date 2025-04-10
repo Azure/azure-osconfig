@@ -35,16 +35,4 @@ Result<std::string> CommonContext::GetFileContents(const std::string& filePath) 
     return result;
 }
 
-std::ostream& CommonContext::GetLogstream()
-{
-    return mLogstream;
-}
-
-std::string CommonContext::ConsumeLogstream()
-{
-    std::string result = mLogstream.str();
-    mLogstream.str("");
-    return result;
-}
-
 } // namespace compliance

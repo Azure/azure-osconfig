@@ -13,6 +13,7 @@
 #include "Procedure.h"
 #include "Result.h"
 
+#include <Evaluator.h>
 #include <map>
 #include <memory>
 #include <string>
@@ -27,6 +28,7 @@ private:
     unsigned int mMaxPayloadSize = 0;
     std::map<std::string, Procedure> mDatabase;
     std::unique_ptr<ContextInterface> mContext;
+    std::unique_ptr<PayloadFormatter> mFormatter = nullptr;
 
     Result<JsonWrapper> DecodeB64Json(const std::string& input) const;
     Optional<Error> SetProcedure(const std::string& ruleName, const std::string& payload);
@@ -34,7 +36,8 @@ private:
     Result<Status> ExecuteRemediation(const std::string& ruleName, const std::string& payload);
 
 public:
-    explicit Engine(std::unique_ptr<ContextInterface> context) noexcept;
+    explicit Engine(std::unique_ptr<ContextInterface> context,
+        std::unique_ptr<PayloadFormatter> payloadFormatter = std::unique_ptr<PayloadFormatter>(new MmiFormatter())) noexcept;
     ~Engine() = default;
     Engine(const Engine&) = delete;
     Engine& operator=(const Engine&) = delete;

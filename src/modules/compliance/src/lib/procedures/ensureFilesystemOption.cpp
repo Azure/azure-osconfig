@@ -81,32 +81,35 @@ static Result<std::map<std::string, FstabEntry>> ParseFstab(const std::string& f
     return fstabMap;
 }
 
-static bool CheckOptions(const std::vector<std::string>& options, const std::set<std::string>& optionsSet, const std::set<std::string>& optionsNotSet,
-    std::ostream& logstream)
+static Status CheckOptions(const std::vector<std::string>& options, const std::set<std::string>& optionsSet, const std::set<std::string>& optionsNotSet,
+    Indicators& indicators)
 {
     for (const auto& option : optionsSet)
     {
         if (std::find(options.begin(), options.end(), option) == options.end())
         {
-            logstream << "Required option not set: " << option << "; ";
-            return false;
+            return indicators.NonCompliant("Required option not set: " + option);
         }
+
+        indicators.Compliant("Required option is set: " + option);
     }
     for (const auto& option : optionsNotSet)
     {
         if (std::find(options.begin(), options.end(), option) != options.end())
         {
-            logstream << "Forbidden option is set: " << option << ";";
-            return false;
+            return indicators.NonCompliant("Forbidden option is set: " + option);
         }
+
+        indicators.Compliant("Forbidden option is not set: " + option);
     }
-    logstream << "OK; ";
-    return true;
+
+    return indicators.Compliant("All required options are set and no forbidden options are set");
 };
 
 AUDIT_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "optionsSet:Comma-separated list of options that must be set",
     "optionsNotSet:Comma-separated list of options that must not be set", "test_fstab:Location of the fstab file", "test_mtab:Location of the mtab file")
 {
+    UNUSED(context);
     if (args.find("mountpoint") == args.end())
     {
         return Error("No mountpoint provided");
@@ -156,29 +159,36 @@ AUDIT_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "options
 
     if (fstabEntries->find(mountpoint) != fstabEntries->end())
     {
-        context.GetLogstream() << "Checking fstab :";
-        if (!CheckOptions(fstabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, context.GetLogstream()))
+        if (Status::NonCompliant == CheckOptions(fstabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, indicators))
         {
-            return false;
+            return Status::NonCompliant;
         }
-        context.GetLogstream() << "; ";
     }
+    else
+    {
+        indicators.Compliant("Mountpoint " + mountpoint + " not found in /etc/fstab");
+    }
+
     if (mtabEntries->find(mountpoint) != mtabEntries->end())
     {
-        context.GetLogstream() << "Checking mtab: ";
-        if (!CheckOptions(mtabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, context.GetLogstream()))
+        if (Status::NonCompliant == CheckOptions(mtabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, indicators))
         {
-            return false;
+            return Status::NonCompliant;
         }
-        context.GetLogstream() << "; ";
     }
-    return true;
+    else
+    {
+        indicators.Compliant("Mountpoint " + mountpoint + " not found in /etc/mtab");
+    }
+
+    return indicators.Compliant("All /etc/fstab and /etc/mtab options are verified");
 }
 
 REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "optionsSet:Comma-separated list of options that must be set",
     "optionsNotSet:Comma-separated list of options that must not be set", "test_fstab:Location of the fstab file",
     "test_mtab:Location of the mtab file", "test_mount:Location of the mount binary")
 {
+    UNUSED(context);
     if (args.find("mountpoint") == args.end())
     {
         return Error("No mountpoint provided");
@@ -234,7 +244,7 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
 
     if (fstabEntries->find(mountpoint) != fstabEntries->end())
     {
-        if (!CheckOptions(fstabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, context.GetLogstream()))
+        if (Status::NonCompliant == CheckOptions(fstabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, indicators))
         {
             auto& entry = fstabEntries.Value()[mountpoint];
             std::ifstream file(fstab);
@@ -257,7 +267,7 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
                         }
                         if (optionsNotSet.find(option) != optionsNotSet.end())
                         {
-                            context.GetLogstream() << "Removing forbidden option: " << option << "; ";
+                            indicators.Compliant("Forbidden option " + option + " removed");
                         }
                         else
                         {
@@ -271,7 +281,7 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
                     oss.seekp(-1, std::ios_base::end);
                     oss << " " << entry.dump << " " << entry.pass << "\n";
                     tempFile << oss.str();
-                    context.GetLogstream() << "Replacing fstab line '" << line << "' with '" << oss.str() << "'; ";
+                    indicators.Compliant("Updated fstab entry for " + mountpoint + " with options: " + oss.str());
                 }
                 else
                 {
@@ -296,13 +306,14 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
 
     if (mtabEntries->find(mountpoint) != mtabEntries->end())
     {
-        if (!CheckOptions(mtabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, context.GetLogstream()))
+        if (Status::NonCompliant == CheckOptions(mtabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, indicators))
         {
             std::string command = mount + " -o remount " + mountpoint;
-            context.GetLogstream() << "Remounting " << mountpoint << "; ";
             system(command.c_str());
+            indicators.Compliant("Remounted " + mountpoint + " with options: " + command);
         }
     }
-    return true;
+
+    return Status::Compliant;
 }
 } // namespace compliance

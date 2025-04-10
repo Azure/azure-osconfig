@@ -12,8 +12,10 @@
 
 namespace compliance
 {
-
+namespace
+{
 std::string TrimWhitesSpace(const std::string& str);
+} // anonymous namespace
 
 AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+)$", "value:Regex that the value of sysctl has to match:M",
     "test_procfs:Prefix for the /proc/sys from where sysctl will be read")
@@ -50,8 +52,7 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
     output = LoadStringFromFile(procSysPath.c_str(), false, log);
     if (output == NULL)
     {
-        context.GetLogstream() << "Fail sysctl: '" << sysctlName << "' NOT compliant. Expected value: '" << sysctlValue << "' got NULL";
-        return false;
+        return indicators.NonCompliant("Failed to load sysctl value from '" + procSysPath + "'");
     }
     std::string sysctlOutput(output);
     FREE_MEMORY(output);
@@ -75,8 +76,7 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
 
     if (regex_search(sysctlOutput, valueRegex) == false)
     {
-        context.GetLogstream() << "Fail sysctl: '" << sysctlName << "' NOT compliant. Expected value: '" << sysctlValue << "' got '" << sysctlOutput << "'";
-        return false;
+        return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + sysctlOutput + "'");
     }
     if (args.find("test_procfs") == args.end())
     {
@@ -86,8 +86,8 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
             systemdSysctl = std::string("/usr/lib/systemd/systemd-sysctl");
             if (0 != stat(systemdSysctl.c_str(), &statbuf))
             {
-                OsConfigLogError(log, "Failed to locate systemdSysctl command");
-                return Error("Failed to locate systemdSysctl command");
+                OsConfigLogError(log, "Failed to locate systemd-sysctl command");
+                return Error("Failed to locate systemd-sysctl command");
             }
         }
     }
@@ -95,8 +95,8 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
     // systemd-sysclt shows all configs used by system that have sysctl's
     if ((0 != ExecuteCommand(NULL, systemdSysctl.c_str(), false, false, 0, 0, &output, NULL, log)) || (output == NULL))
     {
-        OsConfigLogError(log, "Failed to execute systemdSysctl command");
-        return Error("Failed to execute systemdSysctl command");
+        OsConfigLogError(log, "Failed to execute systemd-sysctl command");
+        return Error("Failed to execute systemd-sysctl command");
     }
     std::string sysctlConfigs(output);
     FREE_MEMORY(output);
@@ -158,8 +158,7 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
     // we found a match with correct value, or no match at all was found
     if (!invalid || !found)
     {
-        context.GetLogstream() << "sysctl: '" << sysctlName << "' compliant with value: '" << sysctlValue << "'";
-        return true;
+        return indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "'");
     }
 
     // lines are iterated backwards so filename is before last value marked by lines
@@ -185,11 +184,12 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
             break;
         }
     }
-    context.GetLogstream() << "ERROR sysctl: '" << sysctlName << "' NOT compliant expected value: '" << sysctlValue << "' got '" << runSysctlValue
-                           << "' found in: '" << fileName << "'";
-    return false;
+    return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + runSysctlValue + "' found in: '" + fileName +
+                                   "'");
 }
 
+namespace
+{
 std::string TrimWhitesSpace(const std::string& str)
 {
     auto start = std::find_if_not(str.begin(), str.end(), ::isspace);
@@ -200,4 +200,5 @@ std::string TrimWhitesSpace(const std::string& str)
     }
     return std::string();
 }
+} // anonymous namespace
 } // namespace compliance

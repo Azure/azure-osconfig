@@ -15,8 +15,10 @@
 
 using compliance::AuditEnsureFilePermissions;
 using compliance::Error;
+using compliance::Indicators;
 using compliance::RemediateEnsureFilePermissions;
 using compliance::Result;
+using compliance::Status;
 
 class EnsureFilePermissionsTest : public ::testing::Test
 {
@@ -24,6 +26,8 @@ protected:
     char fileTemplate[PATH_MAX] = "/tmp/permTest.XXXXXX";
     std::vector<std::string> files;
     MockContext mContext;
+    Indicators indicators;
+    compliance::NestedListFormatter mFormatter;
 
     void SetUp() override
     {
@@ -34,6 +38,7 @@ protected:
         // SLES15 docker image doesn't have the bin group/user, create if it doesn't exist.
         system("groupadd -g 1 bin >/dev/null 2>&1");
         system("useradd -g 1 -u 1 bin >/dev/null 2>&1");
+        indicators.Push("EnsureFilePermissions");
     }
     void TearDown() override
     {
@@ -63,10 +68,9 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissing)
     std::map<std::string, std::string> args;
     args["filename"] = "/this_doesnt_exist_for_sure";
 
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
-    ASSERT_TRUE(mContext.ConsumeLogstream().find("does not exist") != std::string::npos);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditWrongOwner)
@@ -77,10 +81,10 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongOwner)
     args["group"] = "root";
     args["permissions"] = "0400";
     args["mask"] = "0066";
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
-    ASSERT_TRUE(mContext.ConsumeLogstream().find(std::string("Invalid '") + args["filename"] + "' owner") != std::string::npos);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("owner") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateWrongOwner)
@@ -91,9 +95,10 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongOwner)
     args["group"] = "root";
     args["permissions"] = "0400";
     args["mask"] = "0066";
-    Result<bool> result = RemediateEnsureFilePermissions(args, mContext);
+
+    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(stat(args["filename"].c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0);
@@ -109,10 +114,11 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongGroup)
     args["group"] = "root";
     args["permissions"] = "0400";
     args["mask"] = "0066";
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
-    ASSERT_TRUE(mContext.ConsumeLogstream().find(std::string("Invalid '") + args["filename"] + "' group") != std::string::npos);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("Invalid group") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateWrongGroup)
@@ -123,9 +129,10 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongGroup)
     args["group"] = "root";
     args["permissions"] = "0400";
     args["mask"] = "0066";
-    Result<bool> result = RemediateEnsureFilePermissions(args, mContext);
+
+    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(stat(args["filename"].c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0);
@@ -141,10 +148,11 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongPermissions)
     args["group"] = "root";
     args["permissions"] = "0400";
     args["mask"] = "0066";
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
-    ASSERT_TRUE(mContext.ConsumeLogstream().find(std::string("Invalid '") + args["filename"] + "' permissions") != std::string::npos);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("Invalid permissions") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateWrongPermissions)
@@ -155,9 +163,10 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongPermissions)
     args["group"] = "root";
     args["permissions"] = "0400";
     args["mask"] = "0066";
-    Result<bool> result = RemediateEnsureFilePermissions(args, mContext);
+
+    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(stat(args["filename"].c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0);
@@ -173,10 +182,11 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongMask)
     args["group"] = "root";
     args["permissions"] = "0400";
     args["mask"] = "0066";
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
-    ASSERT_TRUE(mContext.ConsumeLogstream().find(std::string("Invalid '") + args["filename"] + "' permissions") != std::string::npos);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("Invalid permissions") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateWrongMask)
@@ -187,9 +197,10 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongMask)
     args["group"] = "root";
     args["permissions"] = "0400";
     args["mask"] = "0066";
-    Result<bool> result = RemediateEnsureFilePermissions(args, mContext);
+
+    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(stat(args["filename"].c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0);
@@ -205,9 +216,10 @@ TEST_F(EnsureFilePermissionsTest, AuditAllWrong)
     args["group"] = "root";
     args["permissions"] = "0400";
     args["mask"] = "0066";
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateAllWrong)
@@ -218,9 +230,9 @@ TEST_F(EnsureFilePermissionsTest, RemediateAllWrong)
     args["group"] = "root";
     args["permissions"] = "0400";
     args["mask"] = "0066";
-    Result<bool> result = RemediateEnsureFilePermissions(args, mContext);
+    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(stat(args["filename"].c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0);
@@ -236,9 +248,9 @@ TEST_F(EnsureFilePermissionsTest, AuditAllOk)
     args["group"] = "root";
     args["permissions"] = "0400";
     args["mask"] = "0066";
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateAllOk)
@@ -249,9 +261,9 @@ TEST_F(EnsureFilePermissionsTest, RemediateAllOk)
     args["group"] = "root";
     args["permissions"] = "0400";
     args["mask"] = "0066";
-    Result<bool> result = RemediateEnsureFilePermissions(args, mContext);
+    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(stat(args["filename"].c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0);
@@ -262,7 +274,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateAllOk)
 TEST_F(EnsureFilePermissionsTest, AuditMissingFilename)
 {
     std::map<std::string, std::string> args;
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "No filename provided");
 }
@@ -270,7 +282,7 @@ TEST_F(EnsureFilePermissionsTest, AuditMissingFilename)
 TEST_F(EnsureFilePermissionsTest, RemediateMissingFilename)
 {
     std::map<std::string, std::string> args;
-    Result<bool> result = RemediateEnsureFilePermissions(args, mContext);
+    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "No filename provided");
 }
@@ -280,9 +292,9 @@ TEST_F(EnsureFilePermissionsTest, AuditBadFileOwner)
     std::map<std::string, std::string> args;
     CreateFile(args["filename"], 15213, 0, 0600);
     args["owner"] = "boohoonotarealuser";
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateBadFileOwner)
@@ -290,9 +302,9 @@ TEST_F(EnsureFilePermissionsTest, RemediateBadFileOwner)
     std::map<std::string, std::string> args;
     CreateFile(args["filename"], 15213, 0, 0600);
     args["owner"] = "boohoonotarealuser";
-    Result<bool> result = RemediateEnsureFilePermissions(args, mContext);
+    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditBadFileGroup)
@@ -300,9 +312,9 @@ TEST_F(EnsureFilePermissionsTest, AuditBadFileGroup)
     std::map<std::string, std::string> args;
     CreateFile(args["filename"], 0, 15213, 0600);
     args["group"] = "boohoonotarealgroup";
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateBadFileGroup)
@@ -310,9 +322,9 @@ TEST_F(EnsureFilePermissionsTest, RemediateBadFileGroup)
     std::map<std::string, std::string> args;
     CreateFile(args["filename"], 0, 15213, 0600);
     args["group"] = "boohoonotarealgroup";
-    Result<bool> result = RemediateEnsureFilePermissions(args, mContext);
+    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditBadPermissions)
@@ -320,9 +332,9 @@ TEST_F(EnsureFilePermissionsTest, AuditBadPermissions)
     std::map<std::string, std::string> args;
     CreateFile(args["filename"], 0, 0, 0600);
     args["permissions"] = "999";
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Invalid permissions argument") != std::string::npos);
+    ASSERT_EQ(result.Error().message, "Invalid permissions argument: 999");
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateBadPermissions)
@@ -330,8 +342,9 @@ TEST_F(EnsureFilePermissionsTest, RemediateBadPermissions)
     std::map<std::string, std::string> args;
     CreateFile(args["filename"], 0, 0, 0600);
     args["permissions"] = "999";
-    Result<bool> result = RemediateEnsureFilePermissions(args, mContext);
+    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().message, "Invalid permissions argument: 999");
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditBadMask)
@@ -339,9 +352,9 @@ TEST_F(EnsureFilePermissionsTest, AuditBadMask)
     std::map<std::string, std::string> args;
     CreateFile(args["filename"], 0, 0, 0600);
     args["mask"] = "999";
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Invalid mask argument") != std::string::npos);
+    ASSERT_EQ(result.Error().message, "Invalid mask argument: 999");
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateBadMask)
@@ -349,7 +362,7 @@ TEST_F(EnsureFilePermissionsTest, RemediateBadMask)
     std::map<std::string, std::string> args;
     CreateFile(args["filename"], 0, 0, 0600);
     args["mask"] = "999";
-    Result<bool> result = RemediateEnsureFilePermissions(args, mContext);
+    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
 }
 
@@ -359,7 +372,7 @@ TEST_F(EnsureFilePermissionsTest, AuditSameBitsSet)
     CreateFile(args["filename"], 0, 0, 0600);
     args["permissions"] = "600";
     args["mask"] = "600";
-    Result<bool> result = AuditEnsureFilePermissions(args, mContext);
+    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
 }
 
@@ -369,6 +382,6 @@ TEST_F(EnsureFilePermissionsTest, RemediateSameBitsSet)
     CreateFile(args["filename"], 0, 0, 0600);
     args["permissions"] = "600";
     args["mask"] = "600";
-    Result<bool> result = RemediateEnsureFilePermissions(args, mContext);
+    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
 }

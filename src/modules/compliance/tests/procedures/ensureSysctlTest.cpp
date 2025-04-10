@@ -17,8 +17,11 @@
 #include <vector>
 
 using compliance::AuditEnsureSysctl;
+using compliance::CompactListFormatter;
 using compliance::Error;
+using compliance::Indicators;
 using compliance::Result;
+using compliance::Status;
 
 bool startsWith(const std::string& str, const std::string& prefix)
 {
@@ -81,8 +84,7 @@ static const std::vector<SysctlNameValue> cisSsysctlNames = {
     SysctlNameValue(std::string("net.ipv6.conf.default.accept_redirects"), std::string("0")),
     SysctlNameValue(std::string("net.ipv6.conf.default.accept_source_route"), std::string("0")),
 };
-/*
- */
+
 static const char sysctlIpForward1Then0Than1Than0[] =
     "net.ipv4.ip_forward = 1\n"
     "net.ipv4.ip_forward = 0\n"
@@ -133,11 +135,14 @@ protected:
     std::set<std::string, LengthComparator> sysctlDirs;
     std::set<std::string, LengthComparator> sysctlFiles;
     MockContext mContext;
+    Indicators mIndicators;
+    CompactListFormatter mFormatter;
 
     void SetUp() override
     {
         dir = mkdtemp(dirTemplate);
         ASSERT_TRUE(dir != "");
+        mIndicators.Push("EnsureSysctl");
     }
 
     // sysctlName: is sysctl name in dot notation e.g net.net/ipv4/ip_forwardipv4.ip_forward
@@ -192,9 +197,9 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationNoOverride)
     args["value"] = "0";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureSysctlTest, HappyPathSysctlValueConfigurationEqualEmptyOuput)
@@ -207,9 +212,9 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueConfigurationEqualEmptyOuput)
     args["value"] = "0";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWins)
@@ -222,9 +227,9 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWin
     args["value"] = "0";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationComment)
@@ -237,9 +242,9 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationComment)
     args["value"] = "0";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueNotEqual)
@@ -252,9 +257,9 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueNotEqual)
     args["value"] = "0";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationOverride)
@@ -267,9 +272,9 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationOverride)
     args["value"] = "0";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 // Regexp value tests
@@ -283,9 +288,9 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpDotEqualConfiruationNoOverrid
     args["value"] = ".";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpRangeEqualConfiruationNoOverride)
@@ -298,9 +303,9 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpRangeEqualConfiruationNoOverr
     args["value"] = "[0]";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeEqualConfiruationNoOverride)
@@ -313,9 +318,9 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeEqualConfiruationNoOve
     args["value"] = "[0]";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeNotEqual)
@@ -328,9 +333,9 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeNotEqual)
     args["value"] = "[0]";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 // Invalid Args tests
 TEST_F(EnsureSysctlTest, UnHappyPathRegexError)
@@ -343,7 +348,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathRegexError)
     args["value"] = "(?)[1]";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     auto should_contain = result.Error().message.find(std::string("Failed to compile regex '" + args["value"] + "' error:"));
     ASSERT_TRUE(should_contain != std::string::npos);
@@ -359,11 +364,11 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualTabs)
     args["value"] = "1";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
-    ASSERT_EQ(mContext.ConsumeLogstream(),
-        std::string("ERROR sysctl: 'net.ipv4.ip_forward' NOT compliant expected value: '1' got '0' found in: '/etc/sysctl.d/foo.conf'"));
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    ASSERT_EQ(mFormatter.Format(mIndicators).Value(),
+        std::string("[NonCompliant] Expected 'net.ipv4.ip_forward' value: '1' got '0' found in: '/etc/sysctl.d/foo.conf'\n"));
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualExtraSpacesFilenameReportCheck)
@@ -376,11 +381,11 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualExtraSpa
     args["value"] = "1";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
-    ASSERT_EQ(mContext.ConsumeLogstream(),
-        std::string("ERROR sysctl: 'net.ipv4.ip_forward' NOT compliant expected value: '1' got '0' found in: '/etc/sysctl.d/foo.conf'"));
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    ASSERT_EQ(mFormatter.Format(mIndicators).Value(),
+        std::string("[NonCompliant] Expected 'net.ipv4.ip_forward' value: '1' got '0' found in: '/etc/sysctl.d/foo.conf'\n"));
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWinsWithFilename)
@@ -393,12 +398,12 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWin
     args["value"] = "1";
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
 
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
-    ASSERT_EQ(mContext.ConsumeLogstream(),
-        std::string("ERROR sysctl: 'net.ipv4.ip_forward' NOT compliant expected value: '1' got '0' found in: '/etc/sysctl.d/fwd_0_v2.conf'"));
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_EQ(mFormatter.Format(mIndicators).Value(),
+        std::string("[NonCompliant] Expected 'net.ipv4.ip_forward' value: '1' got '0' found in: '/etc/sysctl.d/fwd_0_v2.conf'\n"));
 }
 
 TEST_F(EnsureSysctlTest, HappyPathValidateCisSysctls)
@@ -416,10 +421,10 @@ TEST_F(EnsureSysctlTest, HappyPathValidateCisSysctls)
         args["value"] = value;
         args["test_procfs"] = dir;
 
-        Result<bool> result = AuditEnsureSysctl(args, mContext);
+        auto result = AuditEnsureSysctl(args, mIndicators, mContext);
 
         ASSERT_TRUE(result.HasValue()) << "HappyPathValidateSysctlNameAndValues FAILED: nr " << i << " name '" << sysctlName << "'";
-        ASSERT_TRUE(result.Value()) << "HappyPathValidateSysctlNameAndValues FAILED: nr " << i << " name '" << sysctlName << "'";
+        ASSERT_EQ(result.Value(), Status::Compliant) << "HappyPathValidateSysctlNameAndValues FAILED: nr " << i << " name '" << sysctlName << "'";
         ;
     }
 }
@@ -440,11 +445,11 @@ TEST_F(EnsureSysctlTest, UnhappyPathSysctlMultilineOutput)
     args["value"] = value;
     args["test_procfs"] = dir;
 
-    Result<bool> result = AuditEnsureSysctl(args, mContext);
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
 
     ASSERT_TRUE(result.HasValue()) << "HappyPathValidateSysctlNameAndValues FAILED: nr "
                                    << " name '" << sysctlName << "'";
-    ASSERT_FALSE(result.Value()) << "HappyPathValidateSysctlNameAndValues FAILED: nr "
-                                 << " name '" << sysctlName << "'";
+    ASSERT_EQ(result.Value(), Status::NonCompliant) << "HappyPathValidateSysctlNameAndValues FAILED: nr "
+                                                    << " name '" << sysctlName << "'";
     ;
 }

@@ -53,7 +53,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' has correct permissions } == TRUE"
+    "Payload": "PASS{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile matches expected permissions 777, \/tmp\/testfile mask matches expected mask 0 } == TRUE"
   },
 
 
@@ -68,7 +68,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' has correct permissions } == TRUE"
+    "Payload": "PASS{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile matches expected permissions 777, \/tmp\/testfile mask matches expected mask 0 } == TRUE"
   },
   {
     "RunCommand": "stat /tmp/testfile | grep 'Access: (0777\/-rwxrwxrwx)'"
@@ -85,7 +85,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' has correct permissions } == TRUE"
+    "Payload": "PASS{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile matches expected permissions 644, \/tmp\/testfile mask matches expected mask 0 } == TRUE"
   },
   {
     "ObjectType": "Desired",
@@ -97,7 +97,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' has correct permissions } == TRUE"
+    "Payload": "PASS{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile matches expected permissions 644, \/tmp\/testfile mask matches expected mask 0 } == TRUE"
   },
 
 
@@ -112,7 +112,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureFilePermissions: Invalid '\/tmp\/testfile' owner - is 'root' should be 'foo'  } == FALSE"
+    "Payload": "{ EnsureFilePermissions: Invalid \/tmp\/testfile owner - is 'root' should be 'foo' } == FALSE"
   },
   {
     "ObjectType": "Desired",
@@ -124,7 +124,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureFilePermissions: Invalid '\/tmp\/testfile' group - is 'root' should be 'bar'  } == FALSE"
+    "Payload": "{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', Invalid group - is 'root' should be 'bar' } == FALSE"
   },
 
 
@@ -167,7 +167,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' has correct permissions } == TRUE"
+    "Payload": "PASS{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile mask matches expected mask 0 } == TRUE"
   },
   {
     "ObjectType": "Desired",
@@ -179,7 +179,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureFilePermissions: Invalid '\/tmp\/testfile' permissions - are 777 while 177 should not be set } == FALSE"
+    "Payload": "{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', Invalid permissions - are 777 while 177 should not be set } == FALSE"
   },
 
 
@@ -191,7 +191,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' has correct permissions } == TRUE"
+    "Payload": "PASS{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile mask matches expected mask 177 } == TRUE"
   },
 
 
@@ -209,7 +209,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' has correct permissions } == TRUE"
+    "Payload": "PASS{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile mask matches expected mask 177 } == TRUE"
   },
   {
     "RunCommand": "stat /tmp/testfile | grep 'Access: (0600\/-rw-------)'"
@@ -227,7 +227,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureFilePermissions: Invalid '\/tmp\/testfile' owner - is 'root' should be 'foo'  } == FALSE"
+    "Payload": "{ EnsureFilePermissions: Invalid \/tmp\/testfile owner - is 'root' should be 'foo' } == FALSE"
   },
 
 
@@ -242,7 +242,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureFilePermissions: Invalid '\/tmp\/testfile' group - is 'root' should be 'bar'  } == FALSE"
+    "Payload": "{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', Invalid group - is 'root' should be 'bar' } == FALSE"
   },
 
 
@@ -260,7 +260,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' has correct permissions } == TRUE"
+    "Payload": "PASS{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'bar', \/tmp\/testfile mask matches expected mask 133 } == TRUE"
   },
   {
     "RunCommand": "stat /tmp/testfile | grep 'Access: (0644\/-rw-r--r--)' | grep root | grep bar"
@@ -278,7 +278,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureFilePermissions: Invalid '\/tmp\/testfile' owner - is 'root' should be 'foo'  } == FALSE"
+    "Payload": "{ EnsureFilePermissions: Invalid \/tmp\/testfile owner - is 'root' should be 'foo' } == FALSE"
   },
   {
     "ObjectType": "Desired",
@@ -290,7 +290,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' has correct permissions } == TRUE"
+    "Payload": "PASS{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'foo', \/tmp\/testfile group matches expected value 'bar', \/tmp\/testfile mask matches expected mask 177 } == TRUE"
   },
   {
     "RunCommand": "stat /tmp/testfile | grep 'Access: (0600\/-rw-------)' | grep foo | grep bar"
@@ -336,7 +336,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureFilePermissions: Invalid '\/tmp\/testfile' permissions - are 777 while 777 should not be set } == FALSE"
+    "Payload": "{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile matches expected permissions 0, Invalid permissions - are 777 while 777 should not be set } == FALSE"
   },
 
 
@@ -351,7 +351,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' has correct permissions } == TRUE"
+    "Payload": "PASS{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile matches expected permissions 777, \/tmp\/testfile mask matches expected mask 0 } == TRUE"
   },
 
 
@@ -369,7 +369,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureFilePermissions: Invalid '\/tmp\/testfile' permissions - are 0 should be at least 333 } == FALSE"
+    "Payload": "{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', Invalid permissions - are 0 should be at least 333 } == FALSE"
   },
 
 
@@ -384,7 +384,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' has correct permissions } == TRUE"
+    "Payload": "PASS{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile matches expected permissions 333, \/tmp\/testfile mask matches expected mask 444 } == TRUE"
   },
   {
     "RunCommand": "stat /tmp/testfile | grep 'Access: (0333\/--wx-wx-wx)'"
@@ -402,7 +402,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' has correct permissions } == TRUE"
+    "Payload": "PASS{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile matches expected permissions 1000, \/tmp\/testfile mask matches expected mask 0 } == TRUE"
   },
   {
     "RunCommand": "stat /tmp/testfile | grep 'Access: (1333\/--wx-wx-wt)'"
