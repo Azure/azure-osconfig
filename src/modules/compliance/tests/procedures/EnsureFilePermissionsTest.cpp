@@ -51,15 +51,19 @@ protected:
     void CreateFile(std::string& filename, int owner, int group, short permissions)
     {
         char* newFileName = strdup(fileTemplate);
-        ASSERT_NE(newFileName, nullptr);
+        EXPECT_NE(newFileName, nullptr);
         int f = mkstemp(newFileName);
-        ASSERT_GE(f, 0);
+        if (f < 0)
+        {
+            free(newFileName);
+            GTEST_FAIL() << "Failed to create temporary file";
+        }
         close(f);
-        ASSERT_EQ(chown(newFileName, owner, group), 0);
-        ASSERT_EQ(chmod(newFileName, permissions), 0);
         filename = newFileName;
         files.push_back(filename);
         free(newFileName);
+        ASSERT_EQ(chown(filename.c_str(), owner, group), 0);
+        ASSERT_EQ(chmod(filename.c_str(), permissions), 0);
     }
 };
 
