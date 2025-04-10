@@ -115,6 +115,11 @@ Optional<Error> Procedure::UpdateUserParameters(const std::string& input)
         {
             return result.Error();
         }
+        if (keyStart == pos)
+        {
+            return Error("Invalid key-value pair: empty key");
+        }
+
         pos = result.Value();
         auto key = input.substr(keyStart, pos - keyStart);
         if ((pos >= input.size()) || (input[pos] != '='))
