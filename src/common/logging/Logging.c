@@ -85,8 +85,8 @@ const char* GetLoggingLevelName(LoggingLevel level)
             break;
 
         case LoggingLevelDebug:
-        default:
             result = g_debug;
+            break;
     }
 
     return result;
