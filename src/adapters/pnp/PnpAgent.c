@@ -122,9 +122,6 @@ static void SignalInterrupt(int signal)
 {
     int logDescriptor = -1;
     char* errorMessage = NULL;
-    ssize_t writeResult = -1;
-
-    UNUSED(writeResult);
 
     if (SIGSEGV == signal)
     {
@@ -156,7 +153,9 @@ static void SignalInterrupt(int signal)
     {
         if (0 < (logDescriptor = open(LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
         {
+            ssize_t writeResult = -1;
             writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
+            UNUSED(writeResult);
             close(logDescriptor);
         }
         _exit(signal);
