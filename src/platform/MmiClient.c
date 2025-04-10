@@ -204,15 +204,14 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
                     }
                 }
             }
-
-            if (0 == status)
-            {
-                *moduleInfo = info;
-            }
-            else
-            {
-                FreeModuleInfo(info);
-            }
+        }
+        if (0 == status)
+        {
+            *moduleInfo = info;
+        }
+        else
+        {
+            FreeModuleInfo(info);
         }
     }
 
