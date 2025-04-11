@@ -538,3 +538,12 @@ TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_15)
     ASSERT_TRUE(result);
     EXPECT_EQ(result.Value().payload, R"(PASS{ auditGetParamValues: KEY1='x', KEY2="y" } == TRUE)");
 }
+
+TEST_F(ComplianceEngineTest, MmiSet_externalParams_value_16)
+{
+    std::string payload = R"({"audit":{"auditGetParamValues":{"KEY1": "$KEY1", "KEY2": "$KEY2"}},"parameters":{"KEY1":"v1", "KEY2":"v2"}})";
+    ASSERT_TRUE(mEngine.MmiSet("procedureX", payload));
+
+    // Space should be required between the key and the value
+    ASSERT_FALSE(mEngine.MmiSet("initX", R"(KEY1="'x'"KEY2='"y"')"));
+}

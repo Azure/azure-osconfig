@@ -140,13 +140,25 @@ Optional<Error> Procedure::UpdateUserParameters(const std::string& input)
         {
             const size_t valueStart = pos;
             pos = ParseQuotedValue(input, pos, value);
+
+            // Check if the pos points past a proper quote
             if (input[pos - 1] != input[valueStart])
             {
                 return Error("Invalid key-value pair: missing closing quote or invalid escape sequence");
             }
+
+            // If at the end of the input, we need to check if a closing quote was found, e.g.:
+            // k1=" should fail (ParseQuotedValue will terminate at the opening quote and return valueStart+1)
             if ((pos >= input.size()) && (pos - valueStart == 1))
             {
                 return Error("Invalid key-value pair: missing closing quote at the end of the input");
+            }
+
+            // We want to have at least one space after the value, e.g.:
+            // k1="1"k2="v2" should fail
+            if ((pos < input.size()) && (!isspace(input[pos])))
+            {
+                return Error("Invalid key-value pair: space expected after quoted value");
             }
         }
         else
