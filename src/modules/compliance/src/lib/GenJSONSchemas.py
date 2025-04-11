@@ -5,30 +5,9 @@ import glob
 from collections import OrderedDict
 import json
 
-def parse_macro_args(line, macro_type):
+def parse_macro_args(args):
     """Extract and parse arguments from AUDIT_FN or REMEDIATE_FN lines."""
-    # Find everything inside parentheses after the macro name
-    pattern = f"{macro_type}\\s*\\(([^)]+)\\)"
-    match = re.search(pattern, line)
-    if not match:
-        return None, OrderedDict()
-
-    args_str = match.group(1)
-
     # Split by comma but respect quoted strings
-    args = []
-    current = ""
-    in_quotes = False
-    for char in args_str:
-        if char == '"':
-            in_quotes = not in_quotes
-        if char == ',' and not in_quotes:
-            args.append(current.strip())
-            current = ""
-        else:
-            current += char
-    if current.strip():
-        args.append(current.strip())
 
     if not args:
         return None, OrderedDict()
@@ -43,14 +22,13 @@ def parse_macro_args(line, macro_type):
         if len(arg) >= 2 and arg[0] == '"' and arg[-1] == '"':
             arg = arg[1:-1]
         else:
-            # Handle the case where arg is not properly quoted
-            continue
+            raise ValueError("Improperly quoted parameter")
         parts = arg.split(':')
         name = parts[0]
         if len(name) == 0:
-            raise ValueError(f"Empty argument name found in {macro_type} for function '{fn_name}'.")
+            raise ValueError(f"Empty argument name found for function '{fn_name}'.")
         if arg_dict.get(name) is not None:
-            raise ValueError(f"Duplicate argument '{name}' found in {macro_type} for function '{fn_name}'.")
+            raise ValueError(f"Duplicate argument '{name}' found for function '{fn_name}'.")
         arg_dict[name] = OrderedDict()
         if len(parts) > 1:
             arg_dict[name]["description"] = parts[1]
@@ -61,6 +39,46 @@ def parse_macro_args(line, macro_type):
 
     return fn_name, arg_dict
 
+def process_procedures(content, prefix):
+    procedures = OrderedDict()
+    startpos = content.find(prefix + "(", 0)
+    while startpos != -1:
+        startpos += len(prefix + "(")
+        endpos = startpos
+        quoted = False
+        escaped = False
+        args = []
+        current = ""
+        while True:
+            char = content[endpos]
+            if escaped:
+                current += char
+                escaped = False
+            elif char == ')' and not quoted:
+                break
+            elif char == '"':
+                current += char
+                quoted = not quoted
+            elif char == '\\':
+                current += char
+                escaped = True
+            elif char == "," and not quoted:
+                args.append(current)
+                current = ""
+            else:
+                current += char
+            endpos += 1
+        if len(current) > 0:
+            args.append(current)
+        fn_name, arg_dict = parse_macro_args(args)
+        if fn_name:
+            # Check for duplicate function names
+            if procedures.get(fn_name) is not None:
+                raise ValueError(f"Duplicate function name '{fn_name}' found in '{prefix}'")
+            procedures[fn_name] = arg_dict
+        startpos = content.find(prefix, endpos)
+    return procedures
+
 def process_cpp_file(filepath):
     """Extract AUDIT_FN and REMEDIATE_FN information from a C++ file."""
     print(f"Processing {filepath}")
@@ -68,29 +86,8 @@ def process_cpp_file(filepath):
         content = file.read()
 
     result = {}
-
-    # Process AUDIT_FN macros
-    audits = OrderedDict()
-    for match in re.finditer(r'AUDIT_FN\s*\([^)]+\)', content):
-        fn_name, arg_dict = parse_macro_args(match.group(0), "AUDIT_FN")
-        if fn_name:
-            # Check for duplicate function names
-            if audits.get(fn_name) is not None:
-                raise ValueError(f"Duplicate function name '{fn_name}' found in AUDIT_FN.")
-            audits[fn_name] = arg_dict
-
-    # Process REMEDIATE_FN macros
-    remediations = OrderedDict()
-    for match in re.finditer(r'REMEDIATE_FN\s*\([^)]+\)', content):
-        fn_name, arg_dict = parse_macro_args(match.group(0), "REMEDIATE_FN")
-        if fn_name:
-            # Check for duplicate function names
-            if remediations.get(fn_name) is not None:
-                raise ValueError(f"Duplicate function name '{fn_name}' found in REMEDIATE_FN.")
-            remediations[fn_name] = arg_dict
-
-    result['audits'] = audits
-    result['remediations'] = remediations
+    result['audits'] = process_procedures(content, "AUDIT_FN")
+    result['remediations'] = process_procedures(content, "REMEDIATE_FN")
 
     return result
 
@@ -127,7 +124,7 @@ def create_procedure_schema(key, args):
                 s_pattern = s_pattern[:-1]
             else:
                 s_pattern = s_pattern + ".*"
-            props["properties"][arg]["pattern"] = f"(^\$[a-zA-Z0-9_]+:({s_pattern})$|({pattern}))"
+            props["properties"][arg]["pattern"] = f"(^\\$[a-zA-Z0-9_]+:({s_pattern})$|({pattern}))"
 
     result["properties"] = { key: props }
     return result
