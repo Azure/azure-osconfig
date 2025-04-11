@@ -47,8 +47,9 @@ std::size_t ParseQuotedValue(const std::string& input, std::size_t pos, std::str
     // Assuming the first character is a quote
     // pos is always > 1 as we are passing value which must follow a valid key, assignment character and a quote
     assert(pos > 1);
-    assert(input[pos] == '"');
+    assert((input[pos] == '"') || (input[pos] == '\''));
 
+    const auto quote = input[pos];
     while (++pos < input.size())
     {
         if (input[pos] == '\\')
@@ -66,10 +67,10 @@ std::size_t ParseQuotedValue(const std::string& input, std::size_t pos, std::str
                 value += '\\';
                 continue;
             }
-            else if (input[pos] == '"')
+            else if (input[pos] == quote)
             {
                 // Escaped quote, add it to the value
-                value += '"';
+                value += quote;
                 continue;
             }
 
@@ -78,12 +79,13 @@ std::size_t ParseQuotedValue(const std::string& input, std::size_t pos, std::str
             break;
         }
 
-        if (input[pos] == '"')
+        if (input[pos] == quote)
         {
+            // End of the quoted value, return the position past the quote
             return pos + 1;
         }
 
-        // Found an escaped quote, add it to the value, but in place of the last backslash
+        // Regular character, add it to the value
         value += input[pos];
     }
 
@@ -134,11 +136,11 @@ Optional<Error> Procedure::UpdateUserParameters(const std::string& input)
 
         // Parse value
         std::string value;
-        if (input[pos] == '"')
+        if ((input[pos] == '"') || (input[pos] == '\''))
         {
             const size_t valueStart = pos;
             pos = ParseQuotedValue(input, pos, value);
-            if (input[pos - 1] != '"')
+            if (input[pos - 1] != input[valueStart])
             {
                 return Error("Invalid key-value pair: missing closing quote or invalid escape sequence");
             }
