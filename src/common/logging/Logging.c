@@ -53,6 +53,7 @@ void SetConsoleLoggingEnabled(bool enabledOrDisabled)
 const char* GetLoggingLevelName(LoggingLevel level)
 {
     const char* result = g_debug;
+    (void)result;
 
     switch (level)
     {
@@ -85,8 +86,8 @@ const char* GetLoggingLevelName(LoggingLevel level)
             break;
 
         case LoggingLevelDebug:
+        default:
             result = g_debug;
-            break;
     }
 
     return result;
