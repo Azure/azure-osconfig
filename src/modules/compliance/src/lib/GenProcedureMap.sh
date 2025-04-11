@@ -29,14 +29,14 @@ for filepath in "$directory"/*.cpp; do
         if [[ $buffer =~ AUDIT_FN\(([^,]+)(,.*)?\) ]]; then
             procedure_name=${BASH_REMATCH[1]}
             audit_loc_map[$procedure_name]="$filename:$lineno"
-            audit_map[$procedure_name]="Audit_$procedure_name"
+            audit_map[$procedure_name]="Audit$procedure_name"
             if [[ ! " ${procedures[@]} " =~ " ${procedure_name} " ]]; then
                 procedures+=("$procedure_name")
             fi
         elif [[ $buffer =~ REMEDIATE_FN\(([^,]+)(,.*)?\) ]]; then
             procedure_name=${BASH_REMATCH[1]}
             remediate_loc_map[$procedure_name]="$filename:$lineno"
-            remediate_map[$procedure_name]="Remediate_$procedure_name"
+            remediate_map[$procedure_name]="Remediate$procedure_name"
             if [[ ! " ${procedures[@]} " =~ " ${procedure_name} " ]]; then
                 procedures+=("$procedure_name")
             fi

@@ -10,7 +10,7 @@
 
 namespace compliance
 {
-AUDIT_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
+AUDIT_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
 {
     UNUSED(args);
     UNUSED(log);
@@ -55,10 +55,10 @@ AUDIT_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
     return result;
 }
 
-REMEDIATE_FN(ensureAllGroupsFromEtcPasswdExistInEtcGroup)
+REMEDIATE_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
 {
     UNUSED(args);
-    auto result = Audit_ensureAllGroupsFromEtcPasswdExistInEtcGroup(args, logstream, log);
+    auto result = AuditEnsureAllGroupsFromEtcPasswdExistInEtcGroup(args, logstream, log);
     if (result)
     {
         return true;

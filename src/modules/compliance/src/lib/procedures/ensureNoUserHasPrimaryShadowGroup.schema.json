@@ -6,11 +6,11 @@
         {
           "type": "object",
           "required": [
-            "ensureNoUserHasPrimaryShadowGroup"
+            "EnsureNoUserHasPrimaryShadowGroup"
           ],
           "additionalProperties": false,
           "properties": {
-            "ensureNoUserHasPrimaryShadowGroup": {
+            "EnsureNoUserHasPrimaryShadowGroup": {
               "type": "object",
               "required": [],
               "additionalProperties": false,
@@ -25,11 +25,11 @@
         {
           "type": "object",
           "required": [
-            "ensureNoUserHasPrimaryShadowGroup"
+            "EnsureNoUserHasPrimaryShadowGroup"
           ],
           "additionalProperties": false,
           "properties": {
-            "ensureNoUserHasPrimaryShadowGroup": {
+            "EnsureNoUserHasPrimaryShadowGroup": {
               "type": "object",
               "required": [],
               "additionalProperties": false,

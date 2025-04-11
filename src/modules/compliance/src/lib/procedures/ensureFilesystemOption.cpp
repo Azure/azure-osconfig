@@ -104,7 +104,7 @@ static bool CheckOptions(const std::vector<std::string>& options, const std::set
     return true;
 };
 
-AUDIT_FN(ensureFilesystemOption, "mountpoint:Filesystem mount point:M", "optionsSet:Comma-separated list of options that must be set",
+AUDIT_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "optionsSet:Comma-separated list of options that must be set",
     "optionsNotSet:Comma-separated list of options that must not be set", "test_fstab:Location of the fstab file", "test_mtab:Location of the mtab file")
 {
     UNUSED(log);
@@ -176,7 +176,7 @@ AUDIT_FN(ensureFilesystemOption, "mountpoint:Filesystem mount point:M", "options
     return true;
 }
 
-REMEDIATE_FN(ensureFilesystemOption, "mountpoint:Filesystem mount point:M", "optionsSet:Comma-separated list of options that must be set",
+REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "optionsSet:Comma-separated list of options that must be set",
     "optionsNotSet:Comma-separated list of options that must not be set", "test_fstab:Location of the fstab file",
     "test_mtab:Location of the mtab file", "test_mount:Location of the mount binary")
 {

@@ -6,11 +6,11 @@
         {
           "type": "object",
           "required": [
-            "packageInstalled"
+            "PackageInstalled"
           ],
           "additionalProperties": false,
           "properties": {
-            "packageInstalled": {
+            "PackageInstalled": {
               "type": "object",
               "required": [
                 "packageName"

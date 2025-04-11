@@ -6,11 +6,11 @@
         {
           "type": "object",
           "required": [
-            "ensureFilePermissions"
+            "EnsureFilePermissions"
           ],
           "additionalProperties": false,
           "properties": {
-            "ensureFilePermissions": {
+            "EnsureFilePermissions": {
               "type": "object",
               "required": [
                 "filename"
@@ -50,11 +50,11 @@
         {
           "type": "object",
           "required": [
-            "ensureFilePermissions"
+            "EnsureFilePermissions"
           ],
           "additionalProperties": false,
           "properties": {
-            "ensureFilePermissions": {
+            "EnsureFilePermissions": {
               "type": "object",
               "required": [
                 "filename"

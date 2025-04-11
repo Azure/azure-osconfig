@@ -29,10 +29,10 @@ struct json_object_t;
 // "yetanotherparameter:This one is validated::^[0-9]+$"
 
 #define AUDIT_FN(fn_name, parameters...)                                                                                                               \
-    ::compliance::Result<bool> Audit_##fn_name(std::map<std::string, std::string> args, std::ostringstream& logstream, OsConfigLogHandle log)
+    ::compliance::Result<bool> Audit##fn_name(std::map<std::string, std::string> args, std::ostringstream& logstream, OsConfigLogHandle log)
 
 #define REMEDIATE_FN(fn_name, parameters...)                                                                                                           \
-    ::compliance::Result<bool> Remediate_##fn_name(std::map<std::string, std::string> args, std::ostringstream& logstream, OsConfigLogHandle log)
+    ::compliance::Result<bool> Remediate##fn_name(std::map<std::string, std::string> args, std::ostringstream& logstream, OsConfigLogHandle log)
 
 namespace compliance
 {

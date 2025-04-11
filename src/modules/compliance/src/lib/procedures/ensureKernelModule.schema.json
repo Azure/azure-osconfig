@@ -6,11 +6,11 @@
         {
           "type": "object",
           "required": [
-            "ensureKernelModuleUnavailable"
+            "EnsureKernelModuleUnavailable"
           ],
           "additionalProperties": false,
           "properties": {
-            "ensureKernelModuleUnavailable": {
+            "EnsureKernelModuleUnavailable": {
               "type": "object",
               "required": [
                 "moduleName"
