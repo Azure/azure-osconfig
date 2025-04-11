@@ -166,7 +166,7 @@ Optional<Error> Engine::SetProcedure(const std::string& ruleName, const std::str
             return Error("The 'remediate' value is not an object");
         }
 
-        auto error = procedure.SetRemediation(jsonValue);
+        error = procedure.SetRemediation(jsonValue);
         if (error)
         {
             return error.Value();

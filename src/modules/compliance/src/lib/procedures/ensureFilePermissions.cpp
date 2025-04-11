@@ -172,7 +172,7 @@ REMEDIATE_FN(ensureFilePermissions, "filename:Path to the file:M", "owner:Requir
         }
         if (!groupOk)
         {
-            struct group* grp = getgrnam(firstGroup.c_str());
+            grp = getgrnam(firstGroup.c_str());
             if (grp == nullptr)
             {
                 logstream << "ERROR: No group with name " << args["group"];
