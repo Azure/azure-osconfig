@@ -533,7 +533,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_Value miValueReasonResult = {0};
     MI_Boolean isCompliant = MI_FALSE;
 
-    OsConfigResource_GetTargetResource get_result_object;
+    OsConfigResource_GetTargetResource get_result_object = {{0},{0},{0},{0},{0}};
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
@@ -1170,7 +1170,6 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
                 {
                     // We have both a procedure object name and value, we need to set then now to apply context for compliance
                     SetDesiredObjectValueToDevice("OsConfigResource.Test", g_componentName, g_procedureObjectName, g_procedureObjectValue, context);
-                    miResult = MI_RESULT_FAILED;
                 }
             }
             else
@@ -1261,7 +1260,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     MI_Result miResult = MI_RESULT_OK;
     MI_Result miCleanup = MI_RESULT_OK;
 
-    OsConfigResource_SetTargetResource set_result_object;
+    OsConfigResource_SetTargetResource set_result_object = {{0},{0},{0},{0},{0}};
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
