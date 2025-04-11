@@ -49,10 +49,10 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
     free(output);
     output = NULL;
 
-    if ((0 != ExecuteCommand(NULL, "lsmod", false, false, 0, 0, &output, NULL, NULL)) || (output == NULL))
+    if ((0 != ExecuteCommand(NULL, "cat /proc/modules", false, false, 0, 0, &output, NULL, NULL)) || (output == NULL))
     {
-        logstream << "Failed to execute lsmod ";
-        return Error("Failed to execute lsmod");
+        logstream << "Failed to execute cat";
+        return Error("Failed to execute cat");
     }
     std::string lsmodOutput(output);
     free(output);
