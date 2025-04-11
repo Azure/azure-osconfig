@@ -5,11 +5,94 @@
 
 #include "Logging.h"
 
+#include <cassert>
 #include <parson.h>
-#include <sstream>
 
 namespace compliance
 {
+namespace
+{
+std::size_t SkipSpaces(const std::string& input, std::size_t pos)
+{
+    while ((pos < input.size()) && (isspace(input[pos])))
+    {
+        ++pos;
+    }
+    return pos;
+}
+
+Result<std::size_t> ParseKey(const std::string& input, std::size_t pos)
+{
+    bool first = true;
+    while ((pos < input.size()) && (!isspace(input[pos])) && (input[pos] != '='))
+    {
+        if ((!isalnum(input[pos])) && (input[pos] != '_'))
+        {
+            return Error("Invalid key: only alphanumeric and underscore characters are allowed");
+        }
+
+        if (first && isdigit(input[pos]))
+        {
+            return Error("Invalid key: first character must not be a digit");
+        }
+        first = false;
+        ++pos;
+    }
+
+    return pos;
+}
+
+std::size_t ParseQuotedValue(const std::string& input, std::size_t pos, std::string& value)
+{
+    // Assuming the first character is a quote
+    // pos is always > 1 as we are passing value which must follow a valid key, assignment character and a quote
+    assert(pos > 1);
+    assert((input[pos] == '"') || (input[pos] == '\''));
+
+    const auto quote = input[pos];
+    while (++pos < input.size())
+    {
+        if (input[pos] == '\\')
+        {
+            if (++pos >= input.size())
+            {
+                // Found a backslash at the end of the string, the input is invalid
+                return pos;
+            }
+
+            // Found a backslash, check if it is escaped
+            if (input[pos] == '\\')
+            {
+                // Escaped backslash, add it to the value
+                value += '\\';
+                continue;
+            }
+            else if (input[pos] == quote)
+            {
+                // Escaped quote, add it to the value
+                value += quote;
+                continue;
+            }
+
+            // Found a backslash with invalid escaped character, treat this as error
+            OsConfigLogInfo(nullptr, "Invalid escape sequence: %c", input[pos]);
+            break;
+        }
+
+        if (input[pos] == quote)
+        {
+            // End of the quoted value, return the position past the quote
+            return pos + 1;
+        }
+
+        // Regular character, add it to the value
+        value += input[pos];
+    }
+
+    return pos;
+}
+} // namespace
+
 void Procedure::SetParameter(const std::string& key, std::string value)
 {
     mParameters[key] = std::move(value);
@@ -17,40 +100,76 @@ void Procedure::SetParameter(const std::string& key, std::string value)
 
 Optional<Error> Procedure::UpdateUserParameters(const std::string& input)
 {
-    std::istringstream stream(input);
-    std::string token;
-
-    while (std::getline(stream, token, ' '))
+    size_t pos = 0;
+    while (pos < input.size())
     {
-        size_t pos = token.find('=');
-        if (pos == std::string::npos)
+        // Skip spaces
+        pos = SkipSpaces(input, pos);
+        if (pos >= input.size())
         {
-            continue;
+            break;
         }
 
-        std::string key = token.substr(0, pos);
-        std::string value = token.substr(pos + 1);
-
-        if (!value.empty() && value[0] == '"')
+        // Parse key
+        const size_t keyStart = pos;
+        auto result = ParseKey(input, pos);
+        if (!result.HasValue())
         {
-            value.erase(0, 1);
-            while (!value.empty() && value.back() == '\\')
+            return result.Error();
+        }
+        pos = result.Value();
+        if (keyStart == pos)
+        {
+            return Error("Invalid key-value pair: empty key");
+        }
+
+        auto key = input.substr(keyStart, pos - keyStart);
+        if ((pos >= input.size()) || (input[pos] != '='))
+        {
+            return Error("Invalid key-value pair: '=' expected");
+        }
+        pos++; // Move past assignment character
+        if (pos >= input.size() || isspace(input[pos]))
+        {
+            return Error("Invalid key-value pair: missing value");
+        }
+
+        // Parse value
+        std::string value;
+        if ((input[pos] == '"') || (input[pos] == '\''))
+        {
+            const size_t valueStart = pos;
+            pos = ParseQuotedValue(input, pos, value);
+
+            // Check if the pos points past a proper quote
+            if (input[pos - 1] != input[valueStart])
             {
-                std::string nextToken;
-                if (std::getline(stream, nextToken, ' '))
-                {
-                    value.pop_back();
-                    value += ' ' + nextToken;
-                }
-                else
-                {
-                    break;
-                }
+                return Error("Invalid key-value pair: missing closing quote or invalid escape sequence");
             }
-            if (!value.empty() && value.back() == '"')
+
+            // If at the end of the input, we need to check if a closing quote was found, e.g.:
+            // k1=" should fail (ParseQuotedValue will terminate at the opening quote and return valueStart+1)
+            if ((pos >= input.size()) && (pos - valueStart == 1))
             {
-                value.pop_back();
+                return Error("Invalid key-value pair: missing closing quote at the end of the input");
             }
+
+            // We want to have at least one space after the value, e.g.:
+            // k1="1"k2="v2" should fail
+            if ((pos < input.size()) && (!isspace(input[pos])))
+            {
+                return Error("Invalid key-value pair: space expected after quoted value");
+            }
+        }
+        else
+        {
+            // Unquoted value
+            const size_t valueStart = pos;
+            while (pos < input.size() && !isspace(input[pos]))
+            {
+                pos++;
+            }
+            value = input.substr(valueStart, pos - valueStart);
         }
 
         auto it = mParameters.find(key);

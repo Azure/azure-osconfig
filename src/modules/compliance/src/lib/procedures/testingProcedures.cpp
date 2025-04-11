@@ -3,6 +3,7 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <Result.h>
+#include <vector>
 
 namespace compliance
 {
@@ -70,5 +71,27 @@ REMEDIATE_FN(remediationParametrized, "result:Expected remediation result - succ
     }
 
     return Error("Invalid 'result' parameter");
+}
+
+AUDIT_FN(auditGetParamValues)
+{
+    UNUSED(log);
+    const std::vector<std::string> keys = {"KEY1", "KEY2", "KEY3"};
+    bool first = true;
+    for (const auto& key : keys)
+    {
+        auto it = args.find(key);
+        if (it != args.end())
+        {
+            if (!first)
+            {
+                logstream << ", ";
+            }
+            logstream << it->first << "=" << it->second;
+            first = false;
+        }
+    }
+
+    return true;
 }
 } // namespace compliance
