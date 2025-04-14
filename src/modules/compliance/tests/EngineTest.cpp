@@ -4,6 +4,7 @@
 #include "Engine.h"
 
 #include "Evaluator.h"
+#include "MockContext.h"
 #include "parson.h"
 
 #include <gtest/gtest.h>
@@ -19,7 +20,7 @@ class ComplianceEngineTest : public ::testing::Test
 {
 public:
     ComplianceEngineTest()
-        : mEngine(nullptr)
+        : mEngine(std::unique_ptr<compliance::ContextInterface>(new MockContext))
     {
     }
 

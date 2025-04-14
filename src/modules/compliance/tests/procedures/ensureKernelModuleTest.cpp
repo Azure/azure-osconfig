@@ -3,6 +3,7 @@
 
 #include "CommonUtils.h"
 #include "Evaluator.h"
+#include "MockContext.h"
 #include "ProcedureMap.h"
 
 #include <dirent.h>
@@ -50,6 +51,7 @@ protected:
     std::string dir;
     std::string fstabFile;
     std::string mtabFile;
+    MockContext mContext;
 
     void SetUp() override
     {
@@ -69,8 +71,7 @@ TEST_F(EnsureKernelModuleTest, AuditNoArgument)
     AddMockCommand(modprobeCommand, true, modprobeNothingOutput, 0);
     std::map<std::string, std::string> args;
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "No module name provided");
 }
@@ -84,8 +85,7 @@ TEST_F(EnsureKernelModuleTest, FailedFindExecution)
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Failed to execute find command");
 }
@@ -99,8 +99,7 @@ TEST_F(EnsureKernelModuleTest, FailedLsmodExecution)
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Failed to execute lsmod");
 }
@@ -114,8 +113,7 @@ TEST_F(EnsureKernelModuleTest, FailedModprobeExecution)
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Failed to execute modprobe");
 }
@@ -129,8 +127,7 @@ TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFind)
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), true);
 }
@@ -144,8 +141,7 @@ TEST_F(EnsureKernelModuleTest, ModuleFoundInLsmod)
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), false);
 }
@@ -159,8 +155,7 @@ TEST_F(EnsureKernelModuleTest, NoAlias)
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), false);
 }
@@ -174,8 +169,7 @@ TEST_F(EnsureKernelModuleTest, NoBlacklist)
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), false);
 }
@@ -189,8 +183,7 @@ TEST_F(EnsureKernelModuleTest, ModuleBlocked)
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), true);
 }
@@ -204,8 +197,7 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleNotBlocked)
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), false);
 }
@@ -219,8 +211,7 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleBlocked)
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), true);
 }

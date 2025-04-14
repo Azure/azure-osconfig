@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "Evaluator.h"
+#include "MockContext.h"
 #include "ProcedureMap.h"
 
 #include <dirent.h>
@@ -23,6 +24,7 @@ protected:
     std::string dir;
     std::string fstabFile;
     std::string mtabFile;
+    MockContext mContext;
 
     void SetUp() override
     {
@@ -62,8 +64,7 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionSuccess)
     args["optionsSet"] = "rw,noatime";
     args["optionsNotSet"] = "noreltime";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureFilesystemOption(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureFilesystemOption(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
 }
@@ -78,8 +79,7 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionMissing)
     args["optionsSet"] = "rw,noatime,noexec";
     args["optionsNotSet"] = "noreltime";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureFilesystemOption(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureFilesystemOption(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
 }
@@ -94,8 +94,7 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionForbidden)
     args["optionsSet"] = "rw";
     args["optionsNotSet"] = "nodev";
 
-    std::ostringstream logstream;
-    Result<bool> result = AuditEnsureFilesystemOption(args, logstream, nullptr);
+    Result<bool> result = AuditEnsureFilesystemOption(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
 }
@@ -109,10 +108,9 @@ TEST_F(EnsureFilesystemOptionTest, RemediateEnsureFilesystemOption)
     args["test_mtab"] = mtabFile;
     args["optionsSet"] = "rw,noatime";
     args["optionsNotSet"] = "relatime";
-    args["test_mount"] = "touch " + dir + " /remounted; /bin/true ";
+    args["test_mount"] = "touch " + dir + " /remounted;/bin/true ";
 
-    std::ostringstream logstream;
-    Result<bool> result = RemediateEnsureFilesystemOption(args, logstream, nullptr);
+    Result<bool> result = RemediateEnsureFilesystemOption(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
 
