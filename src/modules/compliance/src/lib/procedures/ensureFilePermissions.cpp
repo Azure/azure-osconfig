@@ -262,7 +262,6 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
             {
                 OsConfigLogDebug(log, "Matched group '%s' to '%s'", groupName.c_str(), grp->gr_name);
             }
-            owner_changed = true;
         }
     }
     if (owner_changed)
