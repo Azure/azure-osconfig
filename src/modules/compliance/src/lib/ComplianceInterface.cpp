@@ -3,6 +3,7 @@
 
 #include "ComplianceInterface.h"
 
+#include "CommonContext.h"
 #include "CommonUtils.h"
 #include "Engine.h"
 #include "JsonWrapper.h"
@@ -39,7 +40,13 @@ void ComplianceShutdown(void)
 
 MMI_HANDLE ComplianceMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
-    auto* result = reinterpret_cast<void*>(new Engine(g_log));
+    auto context = std::unique_ptr<compliance::CommonContext>(new compliance::CommonContext(g_log));
+    if (nullptr == context)
+    {
+        OsConfigLogError(g_log, "ComplianceMmiOpen(%s, %u): failed to create context", clientName, maxPayloadSizeBytes);
+        return nullptr;
+    }
+    auto* result = reinterpret_cast<void*>(new Engine(std::move(context)));
     OsConfigLogInfo(g_log, "ComplianceMmiOpen(%s, %u) returning %p", clientName, maxPayloadSizeBytes, result);
     return result;
 }

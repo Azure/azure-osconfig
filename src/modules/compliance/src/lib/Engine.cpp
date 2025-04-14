@@ -32,8 +32,8 @@ static constexpr const char* cModuleInfo =
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-Engine::Engine(OsConfigLogHandle log) noexcept
-    : mLog{log}
+Engine::Engine(std::unique_ptr<ContextInterface> context) noexcept
+    : mContext{std::move(context)}
 {
 }
 
@@ -49,7 +49,7 @@ unsigned int Engine::GetMaxPayloadSize() const noexcept
 
 OsConfigLogHandle Engine::Log() const noexcept
 {
-    return mLog;
+    return mContext->GetLogHandle();
 }
 
 const char* Engine::GetModuleInfo() noexcept

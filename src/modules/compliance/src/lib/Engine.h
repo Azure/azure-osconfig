@@ -4,6 +4,7 @@
 #ifndef COMPLIANCE_ENGINE_H
 #define COMPLIANCE_ENGINE_H
 
+#include "ContextInterface.h"
 #include "JsonWrapper.h"
 #include "Logging.h"
 #include "Mmi.h"
@@ -23,9 +24,9 @@ namespace compliance
 class Engine
 {
 private:
-    OsConfigLogHandle mLog = nullptr;
     unsigned int mMaxPayloadSize = 0;
     std::map<std::string, Procedure> mDatabase;
+    std::unique_ptr<ContextInterface> mContext;
 
     Result<JsonWrapper> DecodeB64Json(const std::string& input) const;
     Optional<Error> SetProcedure(const std::string& ruleName, const std::string& payload);
@@ -33,7 +34,7 @@ private:
     Result<Status> ExecuteRemediation(const std::string& ruleName, const std::string& payload);
 
 public:
-    explicit Engine(OsConfigLogHandle log) noexcept;
+    explicit Engine(std::unique_ptr<ContextInterface> context) noexcept;
     ~Engine() = default;
     Engine(const Engine&) = delete;
     Engine& operator=(const Engine&) = delete;
