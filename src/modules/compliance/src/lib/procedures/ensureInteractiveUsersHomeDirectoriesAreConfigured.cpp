@@ -94,7 +94,14 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
             }
         }
 
-        map<string, string> args = {{"filename", pwd->pw_dir}, {"mask", "027"}, {"owner", pwd->pw_name}, {"group", pwd->pw_name}};
+        const auto* group = getgrgid(pwd->pw_gid);
+        if (nullptr == group)
+        {
+            OsConfigLogError(log, "Failed to get group for user '%s': %s", pwd->pw_name, strerror(errno));
+            return Error(string("Failed to get group for user: ") + strerror(errno), errno);
+        }
+
+        map<string, string> args = {{"filename", pwd->pw_dir}, {"mask", "027"}, {"owner", pwd->pw_name}, {"group", group->gr_name}};
         std::ostringstream subLogstream;
         auto subResult = AuditEnsureFilePermissions(std::move(args), subLogstream, log);
         if (!subResult.HasValue())
@@ -159,7 +166,14 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
             }
         }
 
-        map<string, string> args = {{"filename", pwd->pw_dir}, {"mask", "027"}, {"owner", pwd->pw_name}, {"group", pwd->pw_name}};
+        const auto* group = getgrgid(pwd->pw_gid);
+        if (nullptr == group)
+        {
+            OsConfigLogError(log, "Failed to get group for user '%s': %s", pwd->pw_name, strerror(errno));
+            return Error(string("Failed to get group for user: ") + strerror(errno), errno);
+        }
+
+        map<string, string> args = {{"filename", pwd->pw_dir}, {"mask", "027"}, {"owner", pwd->pw_name}, {"group", group->gr_name}};
         std::ostringstream subLogstream;
         auto subResult = RemediateEnsureFilePermissions(std::move(args), subLogstream, log);
         if (!subResult.HasValue())
