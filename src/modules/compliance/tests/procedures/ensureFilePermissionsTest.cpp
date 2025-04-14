@@ -65,7 +65,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissing)
     Result<bool> result = AuditEnsureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
-    ASSERT_TRUE(logstream.str().find("Stat error") != std::string::npos);
+    ASSERT_TRUE(logstream.str().find("does not exist") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditWrongOwner)
@@ -80,7 +80,7 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongOwner)
     Result<bool> result = AuditEnsureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
-    ASSERT_TRUE(logstream.str().find("Invalid owner") != std::string::npos);
+    ASSERT_TRUE(logstream.str().find(std::string("Invalid '") + args["filename"] + "' owner") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateWrongOwner)
@@ -114,7 +114,7 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongGroup)
     Result<bool> result = AuditEnsureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
-    ASSERT_TRUE(logstream.str().find("Invalid group") != std::string::npos);
+    ASSERT_TRUE(logstream.str().find(std::string("Invalid '") + args["filename"] + "' group") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateWrongGroup)
@@ -148,7 +148,7 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongPermissions)
     Result<bool> result = AuditEnsureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
-    ASSERT_TRUE(logstream.str().find("Invalid permissions") != std::string::npos);
+    ASSERT_TRUE(logstream.str().find(std::string("Invalid '") + args["filename"] + "' permissions") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateWrongPermissions)
@@ -182,7 +182,7 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongMask)
     Result<bool> result = AuditEnsureFilePermissions(args, logstream, nullptr);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
-    ASSERT_TRUE(logstream.str().find("Invalid permissions") != std::string::npos);
+    ASSERT_TRUE(logstream.str().find(std::string("Invalid '") + args["filename"] + "' permissions") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateWrongMask)
@@ -339,9 +339,8 @@ TEST_F(EnsureFilePermissionsTest, AuditBadPermissions)
     CreateFile(args["filename"], 0, 0, 0600);
     args["permissions"] = "999";
     Result<bool> result = AuditEnsureFilePermissions(args, logstream, nullptr);
-    ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
-    ASSERT_TRUE(logstream.str().find("Invalid permissions") != std::string::npos);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_TRUE(result.Error().message.find("Invalid permissions argument") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateBadPermissions)
@@ -361,9 +360,8 @@ TEST_F(EnsureFilePermissionsTest, AuditBadMask)
     CreateFile(args["filename"], 0, 0, 0600);
     args["mask"] = "999";
     Result<bool> result = AuditEnsureFilePermissions(args, logstream, nullptr);
-    ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
-    ASSERT_TRUE(logstream.str().find("Invalid permissions") != std::string::npos);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_TRUE(result.Error().message.find("Invalid mask argument") != std::string::npos);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateBadMask)
