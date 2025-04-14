@@ -12,9 +12,30 @@
           "properties": {
             "EnsureNoDuplicateEntriesExist": {
               "type": "object",
-              "required": [],
+              "required": [
+                "filename",
+                "delimiter",
+                "column"
+              ],
               "additionalProperties": false,
-              "properties": {}
+              "properties": {
+                "filename": {
+                  "type": "string",
+                  "description": "The file to be checked for duplicate entries"
+                },
+                "delimiter": {
+                  "type": "string",
+                  "description": "A single character used to separate entries"
+                },
+                "column": {
+                  "type": "string",
+                  "description": "Column index to check for duplicates"
+                },
+                "context": {
+                  "type": "string",
+                  "description": "Context for the entries used in the messages"
+                }
+              }
             }
           }
         }

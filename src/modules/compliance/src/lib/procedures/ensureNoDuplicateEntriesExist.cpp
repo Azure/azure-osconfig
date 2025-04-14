@@ -16,7 +16,9 @@
 
 namespace compliance
 {
-AUDIT_FN(EnsureNoDuplicateEntriesExist)
+AUDIT_FN(EnsureNoDuplicateEntriesExist, "filename:The file to be checked for duplicate entries:M",
+    "delimiter:A single character used to separate entries:M", "column:Column index to check for duplicates:M",
+    "context:Context for the entries used in the messages")
 {
     UNUSED(log);
     auto it = args.find("filename");
