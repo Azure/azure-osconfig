@@ -180,6 +180,9 @@
     "RunCommand": "userdel -r securitybaselinetest || true"
   },
   {
+    "RunCommand": "groupadd -g 8888 securitybaselinetest"
+  },
+  {
     "RunCommand": "useradd -s /usr/sbin/nologin -M -g 8888 securitybaselinetest && id securitybaselinetest"
   },
   {
