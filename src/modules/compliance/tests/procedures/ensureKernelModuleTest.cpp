@@ -59,16 +59,11 @@ protected:
 
     void TearDown() override
     {
-        CleanupMockCommands();
     }
 };
 
 TEST_F(EnsureKernelModuleTest, AuditNoArgument)
 {
-    CleanupMockCommands();
-    AddMockCommand(findCommand, true, NULL, -1);
-    AddMockCommand(lsmodCommand, true, lsmodPositiveOutput, 0);
-    AddMockCommand(modprobeCommand, true, modprobeNothingOutput, 0);
     std::map<std::string, std::string> args;
 
     Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
@@ -78,10 +73,10 @@ TEST_F(EnsureKernelModuleTest, AuditNoArgument)
 
 TEST_F(EnsureKernelModuleTest, FailedFindExecution)
 {
-    CleanupMockCommands();
-    AddMockCommand(findCommand, true, NULL, -1);
-    AddMockCommand(lsmodCommand, true, lsmodPositiveOutput, 0);
-    AddMockCommand(modprobeCommand, true, modprobeNothingOutput, 0);
+    // Setup the expectation for the find command to fail
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand)))
+        .WillOnce(::testing::Return(Result<std::string>(Error("Failed to execute find command", -1))));
+
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
@@ -92,10 +87,13 @@ TEST_F(EnsureKernelModuleTest, FailedFindExecution)
 
 TEST_F(EnsureKernelModuleTest, FailedLsmodExecution)
 {
-    CleanupMockCommands();
-    AddMockCommand(findCommand, true, findPositiveOutput, 0);
-    AddMockCommand(lsmodCommand, true, NULL, -1);
-    AddMockCommand(modprobeCommand, true, modprobeNothingOutput, 0);
+    // Setup the expectation for the find command to succeed
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
+
+    // Setup the expectation for the lsmod command to fail
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand)))
+        .WillOnce(::testing::Return(Result<std::string>(Error("Failed to execute lsmod", -1))));
+
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
@@ -106,10 +104,16 @@ TEST_F(EnsureKernelModuleTest, FailedLsmodExecution)
 
 TEST_F(EnsureKernelModuleTest, FailedModprobeExecution)
 {
-    CleanupMockCommands();
-    AddMockCommand(findCommand, true, findPositiveOutput, 0);
-    AddMockCommand(lsmodCommand, true, lsmodPositiveOutput, 0);
-    AddMockCommand(modprobeCommand, true, NULL, -1);
+    // Setup the expectation for the find command to succeed
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
+
+    // Setup the expectation for the lsmod command to succeed
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodPositiveOutput)));
+
+    // Setup the expectation for the modprobe command to fail
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand)))
+        .WillOnce(::testing::Return(Result<std::string>(Error("Failed to execute modprobe", -1))));
+
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
@@ -120,10 +124,15 @@ TEST_F(EnsureKernelModuleTest, FailedModprobeExecution)
 
 TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFind)
 {
-    CleanupMockCommands();
-    AddMockCommand(findCommand, true, findNegativeOutput, 0);
-    AddMockCommand(lsmodCommand, true, lsmodPositiveOutput, 0);
-    AddMockCommand(modprobeCommand, true, modprobeNothingOutput, 0);
+    // Setup the expectation for the find command to return negative results
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findNegativeOutput)));
+
+    // Setup the expectation for the lsmod command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodPositiveOutput)));
+
+    // Setup the expectation for the modprobe command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeNothingOutput)));
+
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
@@ -134,10 +143,15 @@ TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFind)
 
 TEST_F(EnsureKernelModuleTest, ModuleFoundInLsmod)
 {
-    CleanupMockCommands();
-    AddMockCommand(findCommand, true, findPositiveOutput, 0);
-    AddMockCommand(lsmodCommand, true, lsmodPositiveOutput, 0);
-    AddMockCommand(modprobeCommand, true, modprobeNothingOutput, 0);
+    // Setup the expectation for the find command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
+
+    // Setup the expectation for the lsmod command showing the module is loaded
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodPositiveOutput)));
+
+    // Setup the expectation for the modprobe command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeNothingOutput)));
+
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
@@ -148,10 +162,15 @@ TEST_F(EnsureKernelModuleTest, ModuleFoundInLsmod)
 
 TEST_F(EnsureKernelModuleTest, NoAlias)
 {
-    CleanupMockCommands();
-    AddMockCommand(findCommand, true, findPositiveOutput, 0);
-    AddMockCommand(lsmodCommand, true, lsmodNegativeOutput, 0);
-    AddMockCommand(modprobeCommand, true, modprobeBlacklistOutput, 0);
+    // Setup the expectation for the find command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
+
+    // Setup the expectation for the lsmod command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodNegativeOutput)));
+
+    // Setup the expectation for the modprobe command with blacklist output
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeBlacklistOutput)));
+
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
@@ -162,10 +181,15 @@ TEST_F(EnsureKernelModuleTest, NoAlias)
 
 TEST_F(EnsureKernelModuleTest, NoBlacklist)
 {
-    CleanupMockCommands();
-    AddMockCommand(findCommand, true, findPositiveOutput, 0);
-    AddMockCommand(lsmodCommand, true, lsmodNegativeOutput, 0);
-    AddMockCommand(modprobeCommand, true, modprobeAliasOutput, 0);
+    // Setup the expectation for the find command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
+
+    // Setup the expectation for the lsmod command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodNegativeOutput)));
+
+    // Setup the expectation for the modprobe command with alias output
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeAliasOutput)));
+
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
@@ -176,10 +200,15 @@ TEST_F(EnsureKernelModuleTest, NoBlacklist)
 
 TEST_F(EnsureKernelModuleTest, ModuleBlocked)
 {
-    CleanupMockCommands();
-    AddMockCommand(findCommand, true, findPositiveOutput, 0);
-    AddMockCommand(lsmodCommand, true, lsmodNegativeOutput, 0);
-    AddMockCommand(modprobeCommand, true, modprobeBlockedOutput, 0);
+    // Setup the expectation for the find command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
+
+    // Setup the expectation for the lsmod command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodNegativeOutput)));
+
+    // Setup the expectation for the modprobe command with blocked output
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
+
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
@@ -190,10 +219,15 @@ TEST_F(EnsureKernelModuleTest, ModuleBlocked)
 
 TEST_F(EnsureKernelModuleTest, OverlayedModuleNotBlocked)
 {
-    CleanupMockCommands();
-    AddMockCommand(findCommand, true, findOverlayedOutput, 0);
-    AddMockCommand(lsmodCommand, true, lsmodNegativeOutput, 0);
-    AddMockCommand(modprobeCommand, true, modprobeBlockedOutput, 0);
+    // Setup the expectation for the find command with overlayed output
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findOverlayedOutput)));
+
+    // Setup the expectation for the lsmod command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodNegativeOutput)));
+
+    // Setup the expectation for the modprobe command with blocked output
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
+
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
@@ -204,10 +238,15 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleNotBlocked)
 
 TEST_F(EnsureKernelModuleTest, OverlayedModuleBlocked)
 {
-    CleanupMockCommands();
-    AddMockCommand(findCommand, true, findOverlayedOutput, 0);
-    AddMockCommand(lsmodCommand, true, lsmodNegativeOutput, 0);
-    AddMockCommand(modprobeCommand, true, modprobeBlockedOverlayOutput, 0);
+    // Setup the expectation for the find command with overlayed output
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findOverlayedOutput)));
+
+    // Setup the expectation for the lsmod command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodNegativeOutput)));
+
+    // Setup the expectation for the modprobe command with blocked overlay output
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeBlockedOverlayOutput)));
+
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
