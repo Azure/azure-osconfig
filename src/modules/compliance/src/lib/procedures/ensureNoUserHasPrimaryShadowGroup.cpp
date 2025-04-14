@@ -16,7 +16,6 @@ namespace compliance
 AUDIT_FN(EnsureNoUserHasPrimaryShadowGroup)
 {
     UNUSED(args);
-    UNUSED(log);
 
     struct group* shadow = getgrnam("shadow");
     if (nullptr == shadow)
@@ -31,7 +30,7 @@ AUDIT_FN(EnsureNoUserHasPrimaryShadowGroup)
     {
         if (shadow->gr_gid == pwd->pw_gid)
         {
-            logstream << "User's '" << pwd->pw_name << "' primary group is 'shadow'";
+            context.GetLogstream() << "User's '" << pwd->pw_name << "' primary group is 'shadow'";
             result = false;
         }
     }
@@ -44,7 +43,7 @@ AUDIT_FN(EnsureNoUserHasPrimaryShadowGroup)
 
     if (result)
     {
-        logstream << "No user has 'shadow' as primary group";
+        context.GetLogstream() << "No user has 'shadow' as primary group";
     }
     return result;
 }
@@ -52,8 +51,7 @@ AUDIT_FN(EnsureNoUserHasPrimaryShadowGroup)
 REMEDIATE_FN(EnsureNoUserHasPrimaryShadowGroup)
 {
     UNUSED(args);
-    UNUSED(log);
-    logstream << "Manual remediation is required to make sure that no user has 'shadow' as primary group ";
+    context.GetLogstream() << "Manual remediation is required to make sure that no user has 'shadow' as primary group ";
     return false;
 }
 } // namespace compliance

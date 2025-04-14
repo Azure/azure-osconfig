@@ -12,7 +12,7 @@ namespace
 {
 // In single pattern mode, we check if the pattern is present in the file.
 // The function returns true if the pattern matches any line in the file, false otherwise.
-bool SinglePatternMatchMode(std::ifstream& input, const std::string& matchPattern, std::regex_constants::syntax_option_type syntaxOptions, std::ostringstream& logstream)
+bool SinglePatternMatchMode(std::ifstream& input, const std::string& matchPattern, std::regex_constants::syntax_option_type syntaxOptions, std::ostream& logstream)
 {
     try
     {
@@ -44,7 +44,7 @@ bool SinglePatternMatchMode(std::ifstream& input, const std::string& matchPatter
 // For each line that matches the main pattern, we check if statePattern regexp matches line matched by matchPattern.
 // The function returns true if the statePattern regexp matches all the lines that match the matchPattern regexp, false otherwise.
 bool StatePatternMatchMode(std::ifstream& input, const std::string& matchPattern, const std::string& statePattern,
-    std::regex_constants::syntax_option_type syntaxOptions, std::ostringstream& logstream)
+    std::regex_constants::syntax_option_type syntaxOptions, std::ostream& logstream)
 {
     try
     {
@@ -85,7 +85,6 @@ AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation
     "statePattern:The pattern to match against each line that matches the 'statePattern'",
     "caseSensitive:Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'::^true|false$")
 {
-    UNUSED(log);
     auto it = args.find("filename");
     if (it == args.end())
     {
@@ -146,7 +145,7 @@ AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation
     std::ifstream file(path);
     if (!file.is_open())
     {
-        logstream << "Failed to open file" << std::endl;
+        context.GetLogstream() << "Failed to open file" << std::endl;
         return false;
     }
 
@@ -162,11 +161,11 @@ AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation
 
     if (!statePattern.HasValue())
     {
-        return SinglePatternMatchMode(file, matchPattern, syntaxOptions, logstream);
+        return SinglePatternMatchMode(file, matchPattern, syntaxOptions, context.GetLogstream());
     }
     else
     {
-        return StatePatternMatchMode(file, matchPattern, statePattern.Value(), syntaxOptions, logstream);
+        return StatePatternMatchMode(file, matchPattern, statePattern.Value(), syntaxOptions, context.GetLogstream());
     }
 }
 } // namespace compliance

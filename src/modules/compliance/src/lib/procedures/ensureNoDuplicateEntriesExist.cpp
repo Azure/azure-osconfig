@@ -20,7 +20,6 @@ AUDIT_FN(EnsureNoDuplicateEntriesExist, "filename:The file to be checked for dup
     "delimiter:A single character used to separate entries:M", "column:Column index to check for duplicates:M",
     "context:Context for the entries used in the messages")
 {
-    UNUSED(log);
     auto it = args.find("filename");
     if (it == args.end())
     {
@@ -99,18 +98,18 @@ AUDIT_FN(EnsureNoDuplicateEntriesExist, "filename:The file to be checked for dup
 
     if (!duplicateEntries.empty())
     {
-        logstream << "Duplicate " << (context.HasValue() ? context.Value() : "entries") << " found in " << filename << ": [";
+        context.GetLogstream() << "Duplicate " << (context.HasValue() ? context.Value() : "entries") << " found in " << filename << ": [";
         bool first = true;
         for (const auto& entry : duplicateEntries)
         {
             if (!first)
             {
-                logstream << ", ";
+                context.GetLogstream() << ", ";
             }
             first = false;
-            logstream << entry;
+            context.GetLogstream() << entry;
         }
-        logstream << "] ";
+        context.GetLogstream() << "] ";
         return false;
     }
 

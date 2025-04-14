@@ -9,15 +9,14 @@ namespace compliance
 
 AUDIT_FN(PackageInstalled, "packageName:Package name:M")
 {
-    UNUSED(log);
     char* output = NULL;
     std::string cmdline = "dpkg -s ";
     if (args.find("packageName") == args.end())
     {
-        logstream << "No package name provided";
+        context.GetLogstream() << "No package name provided";
         return Error("No package name provided");
     }
-    logstream << "packageInstalled for " << args["packageName"];
+    context.GetLogstream() << "packageInstalled for " << args["packageName"];
     cmdline += args["packageName"];
     auto rv = ExecuteCommand(NULL, cmdline.c_str(), false, false, 0, 0, &output, NULL, NULL);
     if ((0 == rv) && (NULL != output) && (NULL != strstr(output, "\nStatus: install ok installed\n")))

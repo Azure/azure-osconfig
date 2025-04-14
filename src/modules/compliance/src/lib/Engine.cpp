@@ -89,7 +89,7 @@ Result<AuditResult> Engine::MmiGet(const char* objectName)
         return Error("Failed to get 'audit' object");
     }
 
-    Evaluator evaluator(procedure.Audit(), procedure.Parameters(), Log());
+    Evaluator evaluator(procedure.Audit(), procedure.Parameters(), mContext.get());
     return evaluator.ExecuteAudit();
 }
 
@@ -251,7 +251,7 @@ Result<Status> Engine::ExecuteRemediation(const std::string& ruleName, const std
         return error.Value();
     }
 
-    Evaluator evaluator(procedure.Remediation(), procedure.Parameters(), Log());
+    Evaluator evaluator(procedure.Remediation(), procedure.Parameters(), mContext.get());
     return evaluator.ExecuteRemediation();
 }
 
