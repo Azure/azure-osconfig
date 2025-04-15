@@ -18,6 +18,8 @@ namespace compliance
 {
 Result<AuditResult> Evaluator::ExecuteAudit()
 {
+    // Ensure we start with a clear logstream
+    mContext->ConsumeLogstream();
     auto result = EvaluateProcedure(mJson, Action::Audit);
     if (!result.HasValue())
     {
@@ -39,6 +41,8 @@ Result<AuditResult> Evaluator::ExecuteAudit()
 Result<Status> Evaluator::ExecuteRemediation()
 {
     auto result = EvaluateProcedure(mJson, Action::Remediate);
+    // Logstream may have been written to but we don't need the contents
+    mContext->ConsumeLogstream();
     if (!result.HasValue())
     {
         OsConfigLogError(mContext->GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
