@@ -246,7 +246,7 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
         }
         if (!groupOk)
         {
-            struct group* grp = getgrnam(firstGroup.c_str());
+            grp = getgrnam(firstGroup.c_str());
             if (grp == nullptr)
             {
                 OsConfigLogDebug(log, "No group with GID %d", statbuf.st_gid);

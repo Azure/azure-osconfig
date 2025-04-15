@@ -2,7 +2,9 @@
 # Licensed under the MIT License.
 
 project(compliancelib)
-
+if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow=local")
+endif()
 # Temporary solution, until we stabilize the list of procedures.
 file(GLOB PROCEDURES procedures/*.cpp)
 file(GLOB SCHEMAS procedures/*.schema.json)
