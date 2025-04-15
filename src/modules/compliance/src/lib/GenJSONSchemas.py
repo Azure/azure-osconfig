@@ -72,6 +72,8 @@ def process_procedures(content, prefix):
             args.append(current)
         fn_name, arg_dict = parse_macro_args(args)
         if fn_name:
+            if fn_name[0].islower():
+                raise ValueError(f"Error function name '{fn_name}' starts with Lowercase in '{prefix}'")
             # Check for duplicate function names
             if procedures.get(fn_name) is not None:
                 raise ValueError(f"Duplicate function name '{fn_name}' found in '{prefix}'")
