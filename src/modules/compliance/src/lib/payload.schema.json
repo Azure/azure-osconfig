@@ -152,6 +152,9 @@
           "$ref": "procedures/ensureNoUserHasPrimaryShadowGroup.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/ensureSysctl.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/fileRegexMatch.schema.json#/definitions/audit"
         },
         {
@@ -184,6 +187,9 @@
         },
         {
           "$ref": "procedures/ensureNoUserHasPrimaryShadowGroup.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/ensureSysctl.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/fileRegexMatch.schema.json#/definitions/remediation"
