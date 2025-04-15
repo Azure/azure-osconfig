@@ -82,7 +82,7 @@ static Result<std::map<std::string, FstabEntry>> ParseFstab(const std::string& f
 }
 
 static bool CheckOptions(const std::vector<std::string>& options, const std::set<std::string>& optionsSet, const std::set<std::string>& optionsNotSet,
-    std::ostringstream& logstream)
+    std::ostream& logstream)
 {
     for (const auto& option : optionsSet)
     {
@@ -107,7 +107,6 @@ static bool CheckOptions(const std::vector<std::string>& options, const std::set
 AUDIT_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "optionsSet:Comma-separated list of options that must be set",
     "optionsNotSet:Comma-separated list of options that must not be set", "test_fstab:Location of the fstab file", "test_mtab:Location of the mtab file")
 {
-    UNUSED(log);
     if (args.find("mountpoint") == args.end())
     {
         return Error("No mountpoint provided");
@@ -157,21 +156,21 @@ AUDIT_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "options
 
     if (fstabEntries->find(mountpoint) != fstabEntries->end())
     {
-        logstream << "Checking fstab :";
-        if (!CheckOptions(fstabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, logstream))
+        context.GetLogstream() << "Checking fstab :";
+        if (!CheckOptions(fstabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, context.GetLogstream()))
         {
             return false;
         }
-        logstream << "; ";
+        context.GetLogstream() << "; ";
     }
     if (mtabEntries->find(mountpoint) != mtabEntries->end())
     {
-        logstream << "Checking mtab: ";
-        if (!CheckOptions(mtabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, logstream))
+        context.GetLogstream() << "Checking mtab: ";
+        if (!CheckOptions(mtabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, context.GetLogstream()))
         {
             return false;
         }
-        logstream << "; ";
+        context.GetLogstream() << "; ";
     }
     return true;
 }
@@ -180,7 +179,6 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
     "optionsNotSet:Comma-separated list of options that must not be set", "test_fstab:Location of the fstab file",
     "test_mtab:Location of the mtab file", "test_mount:Location of the mount binary")
 {
-    UNUSED(log);
     if (args.find("mountpoint") == args.end())
     {
         return Error("No mountpoint provided");
@@ -236,7 +234,7 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
 
     if (fstabEntries->find(mountpoint) != fstabEntries->end())
     {
-        if (!CheckOptions(fstabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, logstream))
+        if (!CheckOptions(fstabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, context.GetLogstream()))
         {
             auto& entry = fstabEntries.Value()[mountpoint];
             std::ifstream file(fstab);
@@ -259,7 +257,7 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
                         }
                         if (optionsNotSet.find(option) != optionsNotSet.end())
                         {
-                            logstream << "Removing forbidden option: " << option << "; ";
+                            context.GetLogstream() << "Removing forbidden option: " << option << "; ";
                         }
                         else
                         {
@@ -273,7 +271,7 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
                     oss.seekp(-1, std::ios_base::end);
                     oss << " " << entry.dump << " " << entry.pass << "\n";
                     tempFile << oss.str();
-                    logstream << "Replacing fstab line '" << line << "' with '" << oss.str() << "'; ";
+                    context.GetLogstream() << "Replacing fstab line '" << line << "' with '" << oss.str() << "'; ";
                 }
                 else
                 {
@@ -298,10 +296,10 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
 
     if (mtabEntries->find(mountpoint) != mtabEntries->end())
     {
-        if (!CheckOptions(mtabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, logstream))
+        if (!CheckOptions(mtabEntries.Value()[mountpoint].options, optionsSet, optionsNotSet, context.GetLogstream()))
         {
             std::string command = mount + " -o remount " + mountpoint;
-            logstream << "Remounting " << mountpoint << "; ";
+            context.GetLogstream() << "Remounting " << mountpoint << "; ";
             system(command.c_str());
         }
     }

@@ -9,52 +9,47 @@ namespace compliance
 {
 REMEDIATE_FN(RemediationFailure, "message:message to be logged")
 {
-    UNUSED(log);
     auto it = args.find("message");
     if (it != args.end())
     {
-        logstream << "remediationFailure: " << it->second;
+        context.GetLogstream() << "remediationFailure: " << it->second;
     }
     return false;
 }
 
 REMEDIATE_FN(RemediationSuccess, "message:message to be logged")
 {
-    UNUSED(log);
     auto it = args.find("message");
     if (it != args.end())
     {
-        logstream << "remediationSuccess: " << it->second;
+        context.GetLogstream() << "remediationSuccess: " << it->second;
     }
     return true;
 }
 
 AUDIT_FN(AuditFailure, "message:message to be logged")
 {
-    UNUSED(log);
     auto it = args.find("message");
     if (it != args.end())
     {
-        logstream << "auditFailure: " << it->second;
+        context.GetLogstream() << "auditFailure: " << it->second;
     }
     return false;
 }
 
 AUDIT_FN(AuditSuccess, "message:message to be logged")
 {
-    UNUSED(log);
     auto it = args.find("message");
     if (it != args.end())
     {
-        logstream << "auditSuccess: " << it->second;
+        context.GetLogstream() << "auditSuccess: " << it->second;
     }
     return true;
 }
 
 REMEDIATE_FN(RemediationParametrized, "result:Expected remediation result - success or failure:M")
 {
-    UNUSED(logstream);
-    UNUSED(log);
+    UNUSED(context);
     auto it = args.find("result");
     if (it == args.end())
     {
@@ -75,7 +70,6 @@ REMEDIATE_FN(RemediationParametrized, "result:Expected remediation result - succ
 
 AUDIT_FN(auditGetParamValues)
 {
-    UNUSED(log);
     const std::vector<std::string> keys = {"KEY1", "KEY2", "KEY3"};
     bool first = true;
     for (const auto& key : keys)
@@ -85,9 +79,9 @@ AUDIT_FN(auditGetParamValues)
         {
             if (!first)
             {
-                logstream << ", ";
+                context.GetLogstream() << ", ";
             }
-            logstream << it->first << "=" << it->second;
+            context.GetLogstream() << it->first << "=" << it->second;
             first = false;
         }
     }

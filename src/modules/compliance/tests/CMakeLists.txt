@@ -21,6 +21,17 @@ add_executable(compliancetests
 )
 # for ProcedureMap.h
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../src/lib)
-target_link_libraries(compliancetests gtest gtest_main pthread compliancelib logging commonutils parsonlib)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(compliancetests
+    GTest::gtest
+    GTest::gtest_main
+    gmock
+    gmock_main
+    pthread
+    compliancelib
+    logging
+    commonutils
+    parsonlib
+)
 
 gtest_discover_tests(compliancetests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

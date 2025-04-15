@@ -52,11 +52,11 @@ done
     for procedure_name in "${procedures[@]}"; do
     	if [[ ! -z "${audit_map[$procedure_name]}" ]]; then
 	        echo "// ${audit_loc_map[$procedure_name]}"
-	        echo "Result<bool> ${audit_map[$procedure_name]} (std::map<std::string, std::string> args, std::ostringstream &logstream, OsConfigLogHandle log);"
+	        echo "Result<bool> ${audit_map[$procedure_name]} (std::map<std::string, std::string> args, ContextInterface& context);"
 	fi
     	if [[ ! -z "${remediate_map[$procedure_name]}" ]]; then
 	        echo "// ${remediate_loc_map[$procedure_name]}"
-	        echo "Result<bool> ${remediate_map[$procedure_name]} (std::map<std::string, std::string> args, std::ostringstream &logstream, OsConfigLogHandle log);"
+	        echo "Result<bool> ${remediate_map[$procedure_name]} (std::map<std::string, std::string> args, ContextInterface& context);"
 	fi
     done
     echo "}"

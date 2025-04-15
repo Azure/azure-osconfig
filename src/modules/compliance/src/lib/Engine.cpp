@@ -32,8 +32,8 @@ static constexpr const char* cModuleInfo =
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-Engine::Engine(OsConfigLogHandle log) noexcept
-    : mLog{log}
+Engine::Engine(std::unique_ptr<ContextInterface> context) noexcept
+    : mContext{std::move(context)}
 {
 }
 
@@ -49,7 +49,7 @@ unsigned int Engine::GetMaxPayloadSize() const noexcept
 
 OsConfigLogHandle Engine::Log() const noexcept
 {
-    return mLog;
+    return mContext->GetLogHandle();
 }
 
 const char* Engine::GetModuleInfo() noexcept
@@ -89,7 +89,7 @@ Result<AuditResult> Engine::MmiGet(const char* objectName)
         return Error("Failed to get 'audit' object");
     }
 
-    Evaluator evaluator(procedure.Audit(), procedure.Parameters(), Log());
+    Evaluator evaluator(procedure.Audit(), procedure.Parameters(), mContext.get());
     return evaluator.ExecuteAudit();
 }
 
@@ -251,7 +251,7 @@ Result<Status> Engine::ExecuteRemediation(const std::string& ruleName, const std
         return error.Value();
     }
 
-    Evaluator evaluator(procedure.Remediation(), procedure.Parameters(), Log());
+    Evaluator evaluator(procedure.Remediation(), procedure.Parameters(), mContext.get());
     return evaluator.ExecuteRemediation();
 }
 

@@ -16,6 +16,7 @@ namespace compliance
 AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
     "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
+    auto log = context.GetLogHandle();
     struct stat statbuf;
     auto it = args.find("filename");
     if (it == args.end())
@@ -31,7 +32,7 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
         if (ENOENT == status)
         {
             OsConfigLogDebug(log, "File '%s' does not exist", filename.c_str());
-            logstream << "File '" << filename << "' does not exist";
+            context.GetLogstream() << "File '" << filename << "' does not exist";
             return false;
         }
 
@@ -47,13 +48,13 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
         if (nullptr == pwd)
         {
             OsConfigLogDebug(log, "No user with UID %d", statbuf.st_gid);
-            logstream << "Invalid '" << filename << "' owner: " << statbuf.st_gid << " - no such user";
+            context.GetLogstream() << "Invalid '" << filename << "' owner: " << statbuf.st_gid << " - no such user";
             return false;
         }
         if (owner != pwd->pw_name)
         {
             OsConfigLogDebug(log, "Invalid '%s' owner - is '%s' should be '%s'", filename.c_str(), pwd->pw_name, owner.c_str());
-            logstream << "Invalid '" << filename << "' owner - is '" << pwd->pw_name << "' should be '" << owner << "' ";
+            context.GetLogstream() << "Invalid '" << filename << "' owner - is '" << pwd->pw_name << "' should be '" << owner << "' ";
             return false;
         }
         else
@@ -70,7 +71,7 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
         if (nullptr == grp)
         {
             OsConfigLogDebug(log, "No group with GID %d", statbuf.st_gid);
-            logstream << "Invalid '" << filename << "' group: " << statbuf.st_gid << " - no such group";
+            context.GetLogstream() << "Invalid '" << filename << "' group: " << statbuf.st_gid << " - no such group";
             return false;
         }
         std::istringstream iss(groupName);
@@ -87,7 +88,7 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
         }
         if (!groupOk)
         {
-            logstream << "Invalid '" << filename << "' group - is '" << grp->gr_name << "' should be '" << groupName << "' ";
+            context.GetLogstream() << "Invalid '" << filename << "' group - is '" << grp->gr_name << "' should be '" << groupName << "' ";
             return false;
         }
         else
@@ -137,8 +138,8 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
     {
         if (perms != (statbuf.st_mode & perms))
         {
-            logstream << "Invalid '" << filename << "' permissions - are " << std::oct << (statbuf.st_mode & displayMask) << " should be at least "
-                      << std::oct << perms;
+            context.GetLogstream() << "Invalid '" << filename << "' permissions - are " << std::oct << (statbuf.st_mode & displayMask)
+                                   << " should be at least " << std::oct << perms;
             return false;
         }
         else
@@ -150,8 +151,8 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
     {
         if (0 != (statbuf.st_mode & mask))
         {
-            logstream << "Invalid '" << filename << "' permissions - are " << std::oct << (statbuf.st_mode & displayMask) << " while " << std::oct
-                      << mask << " should not be set";
+            context.GetLogstream() << "Invalid '" << filename << "' permissions - are " << std::oct << (statbuf.st_mode & displayMask) << " while "
+                                   << std::oct << mask << " should not be set";
             return false;
         }
         else
@@ -161,13 +162,14 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
     }
 
     OsConfigLogDebug(log, "File '%s' has correct permissions", filename.c_str());
-    logstream << "File '" << filename << "' has correct permissions";
+    context.GetLogstream() << "File '" << filename << "' has correct permissions";
     return true;
 }
 
 REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
     "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
+    auto log = context.GetLogHandle();
     auto it = args.find("filename");
     if (it == args.end())
     {
@@ -183,7 +185,7 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
         if (ENOENT == status)
         {
             OsConfigLogDebug(log, "File '%s' does not exist", filename.c_str());
-            logstream << "File '" << filename << "' does not exist";
+            context.GetLogstream() << "File '" << filename << "' does not exist";
             return false;
         }
 
@@ -202,7 +204,7 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
         if (pwd == nullptr)
         {
             OsConfigLogDebug(log, "No user with UID %d", statbuf.st_gid);
-            logstream << "Invalid '" << filename << "' owner: " << statbuf.st_gid << " - no such user";
+            context.GetLogstream() << "Invalid '" << filename << "' owner: " << statbuf.st_gid << " - no such user";
             return false;
         }
         uid = pwd->pw_uid;
@@ -224,7 +226,7 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
         if (nullptr == grp)
         {
             OsConfigLogDebug(log, "No group with GID %d", statbuf.st_gid);
-            logstream << "Invalid '" << filename << "' group: " << statbuf.st_gid << " - no such group";
+            context.GetLogstream() << "Invalid '" << filename << "' group: " << statbuf.st_gid << " - no such group";
             return false;
         }
         std::istringstream iss(groupName);
@@ -250,7 +252,7 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
             if (grp == nullptr)
             {
                 OsConfigLogDebug(log, "No group with GID %d", statbuf.st_gid);
-                logstream << "Invalid '" << filename << "' group: " << statbuf.st_gid << " - no such group";
+                context.GetLogstream() << "Invalid '" << filename << "' group: " << statbuf.st_gid << " - no such group";
                 return false;
             }
             gid = grp->gr_gid;

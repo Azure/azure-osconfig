@@ -13,7 +13,7 @@ namespace compliance
 AUDIT_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
 {
     UNUSED(args);
-    UNUSED(log);
+    UNUSED(context);
 
     struct group* grp = nullptr;
     struct passwd* pwd = nullptr;
@@ -37,7 +37,7 @@ AUDIT_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
     {
         if (etcGroupGroups.find(pwd->pw_gid) == etcGroupGroups.end())
         {
-            logstream << "User's '" << std::string(pwd->pw_name) << "' group " << pwd->pw_gid << " from /etc/passwd does not exist in /etc/group";
+            context.GetLogstream() << "User's '" << std::string(pwd->pw_name) << "' group " << pwd->pw_gid << " from /etc/passwd does not exist in /etc/group";
             result = false;
         }
     }
@@ -50,7 +50,7 @@ AUDIT_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
 
     if (result)
     {
-        logstream << "All user groups from '/etc/passwd' exist in '/etc/group'";
+        context.GetLogstream() << "All user groups from '/etc/passwd' exist in '/etc/group'";
     }
     return result;
 }
@@ -58,13 +58,13 @@ AUDIT_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
 REMEDIATE_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
 {
     UNUSED(args);
-    auto result = AuditEnsureAllGroupsFromEtcPasswdExistInEtcGroup(args, logstream, log);
+    auto result = AuditEnsureAllGroupsFromEtcPasswdExistInEtcGroup(args, context);
     if (result)
     {
         return true;
     }
 
-    logstream << "Manual remediation is required to ensure all groups from /etc/passwd exist in /etc/group";
+    context.GetLogstream() << "Manual remediation is required to ensure all groups from /etc/passwd exist in /etc/group";
     return false;
 }
 } // namespace compliance

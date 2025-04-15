@@ -24,7 +24,9 @@ add_custom_target(complianceschema
 set_property(TARGET complianceschema PROPERTY OUTPUT ComplianceSchema.zip)
 
 add_library(compliancelib STATIC
+    CommonContext.cpp
     ComplianceInterface.cpp
+    ContextInterface.cpp
     Evaluator.cpp
     ProcedureMap.cpp
     JsonWrapper.cpp

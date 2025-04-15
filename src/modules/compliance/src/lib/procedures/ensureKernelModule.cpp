@@ -27,12 +27,10 @@ static bool MultilineRegexSearch(const std::string& str, const regex& pattern)
 
 AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M")
 {
-    UNUSED(log);
-    char* output = NULL;
     auto it = args.find("moduleName");
     if (it == args.end())
     {
-        logstream << "No module name provided ";
+        context.GetLogstream() << "No module name provided ";
         return Error("No module name provided");
     }
     auto moduleName = std::move(it->second);
@@ -40,34 +38,28 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
     // For all of the Kernel versions in /lib/modules find all the files in the kernel (modules) directory.
     // TODO(wpk) replace this with std::filesystem when we can use C++17.
     std::string findCmd = "find /lib/modules/ -maxdepth 1 -mindepth 1 -type d | while read i; do find \"$i\"/kernel/ -type f; done";
-    if ((0 != ExecuteCommand(NULL, findCmd.c_str(), false, false, 0, 0, &output, NULL, NULL)) || (output == NULL))
+    Result<std::string> findOutput = context.ExecuteCommand(findCmd);
+    if (!findOutput.HasValue())
     {
-        logstream << "Failed to execute find command ";
-        return Error("Failed to execute find command");
+        context.GetLogstream() << "find /lib/modules: " << findOutput.Error().message;
+        return findOutput.Error();
     }
-    std::string findOutput(output);
-    free(output);
-    output = NULL;
 
-    if ((0 != ExecuteCommand(NULL, "lsmod", false, false, 0, 0, &output, NULL, NULL)) || (output == NULL))
+    Result<std::string> lsmodOutput = context.ExecuteCommand("lsmod");
+    if (!lsmodOutput.HasValue())
     {
-        logstream << "Failed to execute lsmod ";
-        return Error("Failed to execute lsmod");
+        context.GetLogstream() << "lsmod: " << lsmodOutput.Error().message;
+        return lsmodOutput.Error();
     }
-    std::string lsmodOutput(output);
-    free(output);
-    output = NULL;
 
-    if ((0 != ExecuteCommand(NULL, "modprobe --showconfig", false, false, 0, 0, &output, NULL, NULL)) || (output == NULL))
+    Result<std::string> modprobeOutput = context.ExecuteCommand("modprobe --showconfig");
+    if (!modprobeOutput.HasValue())
     {
-        logstream << "Failed to execute modprobe ";
-        return Error("Failed to execute modprobe");
+        context.GetLogstream() << "modprobe --showconfig: " << modprobeOutput.Error().message;
+        return modprobeOutput.Error();
     }
-    std::string modprobeOutput(output);
-    free(output);
-    output = NULL;
 
-    std::istringstream findStream(findOutput);
+    std::istringstream findStream(findOutput.Value());
     std::string line;
     bool moduleFound = false;
     while (std::getline(findStream, line))
@@ -93,7 +85,7 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
 
     if (!moduleFound)
     {
-        logstream << "Module " << moduleName << " not found ";
+        context.GetLogstream() << "Module " << moduleName << " not found ";
         return true;
     }
 
@@ -107,9 +99,9 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
         return Error(e.what());
     }
 
-    if (MultilineRegexSearch(lsmodOutput, lsmodRegex))
+    if (MultilineRegexSearch(lsmodOutput.Value(), lsmodRegex))
     {
-        logstream << "Module " << moduleName << " is loaded ";
+        context.GetLogstream() << "Module " << moduleName << " is loaded ";
         return false;
     }
 
@@ -123,9 +115,9 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
         return Error(e.what());
     }
 
-    if (!MultilineRegexSearch(modprobeOutput, modprobeBlacklistRegex))
+    if (!MultilineRegexSearch(modprobeOutput.Value(), modprobeBlacklistRegex))
     {
-        logstream << "Module " << moduleName << " is not blacklisted in modprobe configuration ";
+        context.GetLogstream() << "Module " << moduleName << " is not blacklisted in modprobe configuration ";
         return false;
     }
 
@@ -138,13 +130,13 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
     {
         return Error(e.what());
     }
-    if (!MultilineRegexSearch(modprobeOutput, modprobeInstallRegex))
+    if (!MultilineRegexSearch(modprobeOutput.Value(), modprobeInstallRegex))
     {
-        logstream << "Module " << moduleName << " is not masked in modprobe configuration ";
+        context.GetLogstream() << "Module " << moduleName << " is not masked in modprobe configuration ";
         return false;
     }
 
-    logstream << "Module " << moduleName << " is disabled ";
+    context.GetLogstream() << "Module " << moduleName << " is disabled ";
     return true;
 }
 

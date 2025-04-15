@@ -18,20 +18,22 @@ namespace compliance
 {
 Result<AuditResult> Evaluator::ExecuteAudit()
 {
+    // Ensure we start with a clear logstream
+    mContext->ConsumeLogstream();
     auto result = EvaluateProcedure(mJson, Action::Audit);
     if (!result.HasValue())
     {
-        OsConfigLogError(mLog, "Evaluation failed: %s", result.Error().message.c_str());
+        OsConfigLogError(mContext->GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
         return result.Error();
     }
     std::string vlog;
     if (result.Value() == Status::Compliant)
     {
-        vlog = "PASS" + mLogstream.str();
+        vlog = "PASS" + mContext->ConsumeLogstream();
     }
     else
     {
-        vlog = mLogstream.str();
+        vlog = mContext->ConsumeLogstream();
     }
     return AuditResult{result.Value(), vlog};
 }
@@ -39,9 +41,11 @@ Result<AuditResult> Evaluator::ExecuteAudit()
 Result<Status> Evaluator::ExecuteRemediation()
 {
     auto result = EvaluateProcedure(mJson, Action::Remediate);
+    // Logstream may have been written to but we don't need the contents
+    mContext->ConsumeLogstream();
     if (!result.HasValue())
     {
-        OsConfigLogError(mLog, "Evaluation failed: %s", result.Error().message.c_str());
+        OsConfigLogError(mContext->GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
         return result.Error();
     }
 
@@ -50,9 +54,11 @@ Result<Status> Evaluator::ExecuteRemediation()
 
 Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Action action)
 {
+    std::ostream& logstream = mContext->GetLogstream();
+    OsConfigLogHandle log = mContext->GetLogHandle();
     if (nullptr == json)
     {
-        OsConfigLogError(mLog, "invalid json argument");
+        OsConfigLogError(log, "invalid json argument");
         return Error("invalid json argument");
     }
 
@@ -60,7 +66,7 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
     JSON_Value* value = json_object_get_value_at(json, 0);
     if ((nullptr == name) || (nullptr == value))
     {
-        OsConfigLogError(mLog, "Rule name or value is null");
+        OsConfigLogError(log, "Rule name or value is null");
         return Error("Rule name or value is null");
     }
 
@@ -68,97 +74,97 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
     {
         if (json_value_get_type(value) != JSONArray)
         {
-            mLogstream << "ERROR: anyOf value is not an array";
-            OsConfigLogError(mLog, "anyOf value is not an array");
+            logstream << "ERROR: anyOf value is not an array";
+            OsConfigLogError(log, "anyOf value is not an array");
             return Error("anyOf value is not an array");
         }
         JSON_Array* array = json_value_get_array(value);
         size_t count = json_array_get_count(array);
-        mLogstream << "{ anyOf: [";
+        logstream << "{ anyOf: [";
         for (size_t i = 0; i < count; ++i)
         {
             JSON_Object* subObject = json_array_get_object(array, i);
             auto result = EvaluateProcedure(subObject, action);
             if (!result.HasValue())
             {
-                mLogstream << "] == FAILURE }";
+                logstream << "] == FAILURE }";
                 return result;
             }
             if (result.Value() == Status::NonCompliant)
             {
                 if (i < count - 1)
                 {
-                    mLogstream << ", ";
+                    logstream << ", ";
                 }
             }
             else
             {
-                mLogstream << "] == TRUE }";
+                logstream << "] == TRUE }";
                 return Status::Compliant;
             }
         }
-        mLogstream << "] == FALSE }";
+        logstream << "] == FALSE }";
         return Status::NonCompliant;
     }
     else if (!strcmp(name, "allOf"))
     {
         if (json_value_get_type(value) != JSONArray)
         {
-            mLogstream << "ERROR: allOf value is not an array";
-            OsConfigLogError(mLog, "allOf value is not an array");
+            logstream << "ERROR: allOf value is not an array";
+            OsConfigLogError(log, "allOf value is not an array");
             return Error("allOf value is not an array");
         }
         auto array = json_value_get_array(value);
         size_t count = json_array_get_count(array);
-        mLogstream << "{ allOf: [";
+        logstream << "{ allOf: [";
         for (size_t i = 0; i < count; ++i)
         {
             auto subObject = json_array_get_object(array, i);
             auto result = EvaluateProcedure(subObject, action);
             if (!result.HasValue())
             {
-                mLogstream << "] == FAILURE }";
+                logstream << "] == FAILURE }";
                 return result;
             }
             if (result.Value() == Status::Compliant)
             {
                 if (i < count - 1)
                 {
-                    mLogstream << ", ";
+                    logstream << ", ";
                 }
             }
             else
             {
-                mLogstream << "] == FALSE }";
+                logstream << "] == FALSE }";
                 return Status::NonCompliant;
             }
         }
-        mLogstream << "] == TRUE }";
+        logstream << "] == TRUE }";
         return Status::Compliant;
     }
     else if (!strcmp(name, "not"))
     {
         if (json_value_get_type(value) != JSONObject)
         {
-            mLogstream << "ERROR: not value is not an object";
+            logstream << "ERROR: not value is not an object";
             return Error("not value is not an object");
         }
-        mLogstream << "{ not: ";
+        logstream << "{ not: ";
         // NOT can be only used as an audit!
         auto result = EvaluateProcedure(json_value_get_object(value), Action::Audit);
         if (!result.HasValue())
         {
-            mLogstream << "] == FAILURE }";
+            logstream << "] == FAILURE }";
             return result;
         }
         if (result.Value() == Status::Compliant)
         {
-            mLogstream << "] == FALSE }";
+            logstream << "] == FALSE }";
             return Status::NonCompliant;
         }
         else
         {
-            mLogstream << "] == TRUE }";
+            logstream << "] == TRUE }";
             return Status::Compliant;
         }
     }
@@ -166,8 +172,8 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
     {
         if (json_value_get_type(value) != JSONObject)
         {
-            mLogstream << "ERROR: value is not an object";
-            OsConfigLogError(mLog, "value is not an object");
+            logstream << "ERROR: value is not an object";
+            OsConfigLogError(log, "value is not an object");
             return Error("value is not an object");
         }
         std::map<std::string, std::string> arguments;
@@ -179,8 +185,8 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
             JSON_Value* val = json_object_get_value_at(args_object, i);
             if (json_value_get_type(val) != JSONString)
             {
-                mLogstream << "ERROR: Argument type is not a string '" << key << "' ";
-                OsConfigLogError(mLog, "Argument type is not a string for a key '%s'", key);
+                logstream << "ERROR: Argument type is not a string '" << key << "' ";
+                OsConfigLogError(log, "Argument type is not a string for a key '%s'", key);
                 return Error("Argument type is not a string");
             }
             arguments[key] = json_value_get_string(val);
@@ -189,8 +195,8 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
                 auto f = mParameters.find(arguments[key].substr(1));
                 if (f == mParameters.end())
                 {
-                    mLogstream << "ERROR: Unknown parameter " << arguments[key];
-                    OsConfigLogError(mLog, "Unknown parameter '%s'", arguments[key].c_str());
+                    logstream << "ERROR: Unknown parameter " << arguments[key];
+                    OsConfigLogError(log, "Unknown parameter '%s'", arguments[key].c_str());
                     return Error("Unknown parameter");
                 }
                 arguments[key] = f->second;
@@ -200,8 +206,8 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
         auto procedure = mProcedureMap.find(name);
         if (procedure == mProcedureMap.end())
         {
-            mLogstream << "ERROR: Unknown function " << name;
-            OsConfigLogError(mLog, "Unknown function '%s'", name);
+            logstream << "ERROR: Unknown function " << name;
+            OsConfigLogError(log, "Unknown function '%s'", name);
             return Error("Unknown function");
         }
         action_func_t fn = nullptr;
@@ -210,7 +216,7 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
             fn = procedure->second.second;
             if (nullptr == fn)
             {
-                OsConfigLogInfo(mLog, "No remediation function found for '%s', using audit function", name);
+                OsConfigLogInfo(log, "No remediation function found for '%s', using audit function", name);
                 fn = procedure->second.first;
             }
         }
@@ -220,26 +226,26 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* json, const Actio
         }
         if (nullptr == fn)
         {
-            mLogstream << "ERROR: Function not found";
-            OsConfigLogError(mLog, "Function not found");
+            logstream << "ERROR: Function not found";
+            OsConfigLogError(log, "Function not found");
             return Error("Function not found");
         }
-        mLogstream << "{ " << name << ": ";
-        auto result = fn(arguments, mLogstream, mLog);
-        mLogstream << " } == ";
+        logstream << "{ " << name << ": ";
+        auto result = fn(arguments, *mContext);
+        logstream << " } == ";
         if (!result.HasValue())
         {
-            mLogstream << "FAILURE";
+            logstream << "FAILURE";
             return {result.Error()};
         }
 
         if (result.Value() == true)
         {
-            mLogstream << "TRUE";
+            logstream << "TRUE";
         }
         else
         {
-            mLogstream << "FALSE";
+            logstream << "FALSE";
         }
 
         return result.Value() ? Status::Compliant : Status::NonCompliant;
