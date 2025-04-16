@@ -45,11 +45,11 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
         return findOutput.Error();
     }
 
-    Result<std::string> lsmodOutput = context.ExecuteCommand("lsmod");
-    if (!lsmodOutput.HasValue())
+    Result<std::string> procModules = context.GetFileContents("/proc/modules");
+    if (!procModules.HasValue())
     {
-        context.GetLogstream() << "lsmod: " << lsmodOutput.Error().message;
-        return lsmodOutput.Error();
+        context.GetLogstream() << "procModules: " << procModules.Error();
+        return procModules.Error();
     }
 
     Result<std::string> modprobeOutput = context.ExecuteCommand("modprobe --showconfig");
@@ -89,17 +89,17 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
         return true;
     }
 
-    regex lsmodRegex;
+    regex procModulesRegex;
     try
     {
-        lsmodRegex = regex("^" + moduleName + "\\s+");
+        procModulesRegex = regex("^" + moduleName + "\\s+");
     }
     catch (std::exception& e)
     {
         return Error(e.what());
     }
 
-    if (MultilineRegexSearch(lsmodOutput.Value(), lsmodRegex))
+    if (MultilineRegexSearch(procModules.Value(), procModulesRegex))
     {
         context.GetLogstream() << "Module " << moduleName << " is loaded ";
         return false;
