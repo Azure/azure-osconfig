@@ -2876,6 +2876,7 @@ static int RemediateEnsureLoggingLevel(char* value, OsConfigLogHandle log)
     InitEnsureLoggingLevel(value);
     SetLoggingLevel(GetLoggingLevelFromString(g_desiredLoggingLevel);
     //TODO: also persist this desired logging level to /etc/osconfig/osconfig.json
+    return 0;
 };
 
 static int RemediateEnsurePermissionsOnEtcIssue(char* value, OsConfigLogHandle log)
@@ -5695,7 +5696,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         // Initialization for audit before remediation
         else if (0 == strcmp(objectName, g_initEnsureLoggingLevelObject))
         {
-            status = InitEnsureLoggingLevel(jsonString, log);
+            status = InitEnsureLoggingLevel(jsonString);
         }
         else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcSshSshdConfigObject))
         {
