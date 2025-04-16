@@ -56,7 +56,7 @@ usage() {
     exit 1
 }
 
-OPTSTRING=":j:m:p:"
+OPTSTRING=":j:m:r:"
 
 while getopts ${OPTSTRING} opt; do
     case ${opt} in
@@ -68,7 +68,7 @@ while getopts ${OPTSTRING} opt; do
             vmmemory=${OPTARG}
             echo "VM memory set to $vmmemory MB"
             ;;
-        p)
+        r)
             pipelineRunId=${OPTARG}
             echo "Using pipeline run id: $pipelineRunId"
             ;;

@@ -20,6 +20,7 @@
 #                                    - Clean cloud-init flags to reset cloud-init to initial-state
 #        -l Log Directory:         Directory used to place output logs
 #        -d Debug Mode Flag:       VM stays up for debugging (Default: false)
+#        -h Hostname:              Hostname to set for the VM (Default: osconfige2etest)
 #
 # Dependencies:
 #   - qemu-system-x86_64
@@ -35,6 +36,7 @@ resourcecount=0
 generalize=false
 logDir=""
 qemu_additional_args=""
+hostname="osconfige2etest" # Default hostname
 
 # Private variables
 tests_failed=false
@@ -42,7 +44,7 @@ use_sudo=false
 provisionedUser="user1"
 
 usage() {
-    echo "Usage: $0 [-i image.img -p policypackage.zip [-r]] [-i image.img -g] [-m 512] [-a qemuArgs] [-d]
+    echo "Usage: $0 [-i image.img -p policypackage.zip [-r]] [-i image.img -g] [-m 512] [-a qemuArgs] [-h hostname] [-d]
     -i Image Path:            Path to the image (raw or qcow2 format)
     -p Policy Package:        Path to the policy package
     -m VM Memory (Megabytes): Size of VMs RAM (Default: 512)
@@ -53,7 +55,8 @@ usage() {
                                 - Clean package management cache
                                 - Clean cloud-init flags to reset cloud-init to initial-state
     -l Log Directory:         Directory used to place output logs
-    -d Debug Mode Flag:       VM stays up for debugging (Default: false)" 1>&2;
+    -d Debug Mode Flag:       VM stays up for debugging (Default: false)
+    -h Hostname:              Hostname to set for the VM (Default: osconfige2etest)" 1>&2;
     exit 1;
 }
 check_if_error() {
@@ -97,7 +100,7 @@ do_sudo() {
 
 trap cleanup 1 SIGINT
 
-OPTSTRING=":i:p:m:l:a:rdg"
+OPTSTRING=":i:p:m:l:a:h:rdg"
 
 while getopts ${OPTSTRING} opt; do
     case ${opt} in
@@ -129,8 +132,13 @@ while getopts ${OPTSTRING} opt; do
         l)
             logDir=${OPTARG}
             ;;
+        h)
+            hostname=${OPTARG}
+            echo "Hostname set to: $hostname"
+            ;;
         a)
             qemu_additional_args=${OPTARG}
+            echo "Additional QEMU args: $qemu_additional_args"
             ;;
         :)
             echo "Option -${OPTARG} requires an argument."
@@ -198,8 +206,8 @@ EOF
 cat << EOF > $basepath/metadata/user-data
 #cloud-config
 ssh_pwauth: false
-hostname: osconfige2etest
-fqdn: osconfige2etest.local
+hostname: $hostname
+fqdn: $hostname.local
 users:
   - name: $provisionedUser
     sudo: ALL=(ALL) NOPASSWD:ALL
