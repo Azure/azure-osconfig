@@ -2874,7 +2874,7 @@ static int RemediateEnsureLoggingLevel(char* value, OsConfigLogHandle log)
 {
     UNUSED(log);
     InitEnsureLoggingLevel(value);
-    SetLoggingLevel(GetLoggingLevelFromString(g_desiredLoggingLevel);
+    SetLoggingLevel(GetLoggingLevelFromString(g_desiredLoggingLevel));
     //TODO: also persist this desired logging level to /etc/osconfig/osconfig.json
     return 0;
 };
