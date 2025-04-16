@@ -1120,12 +1120,12 @@ static char* AuditEnsureLoggingLevel(OsConfigLogHandle log)
     if (existingLevel != desiredLevel)
     {
         OsConfigLogInfo(log, "Locally configured logging level for Azure OSConfig is %d instead of %d", existingLevel, desiredLevel);
-        OsConfigCaptureReason(reason, "Locally configured logging level for Azure OSConfig is %d instead of %d", existingLevel, desiredLevel);
+        OsConfigCaptureReason(&reason, "Locally configured logging level for Azure OSConfig is %d instead of %d", existingLevel, desiredLevel);
     }
     else
     {
         OsConfigLogInfo(log, "Locally configured logging level for Azure OSConfig is %d", desiredLevel);
-        OsConfigCaptureSuccessReason(reason, "Locally configured logging level for Azure OSConfig is %d", desiredLevel);
+        OsConfigCaptureSuccessReason(&reason, "Locally configured logging level for Azure OSConfig is %d", desiredLevel);
     }
 
     return reason;
