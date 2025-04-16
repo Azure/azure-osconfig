@@ -37,6 +37,7 @@ static const char* g_securityBaselineComponentName = "SecurityBaseline";
 static const char* g_configurationFile = "/etc/osconfig/osconfig.json";
 
 // Audit
+static const char* g_auditEnsureLoggingLevelObject = "auditEnsureLoggingLevel";
 static const char* g_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
 static const char* g_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
 static const char* g_auditEnsurePermissionsOnEtcHostsAllowObject = "auditEnsurePermissionsOnEtcHostsAllow";
@@ -207,6 +208,7 @@ static const char* g_auditEnsureRloginServiceIsDisabledObject = "auditEnsureRlog
 static const char* g_auditEnsureUnnecessaryAccountsAreRemovedObject = "auditEnsureUnnecessaryAccountsAreRemoved";
 
 // Remediation
+static const char* g_remediateEnsureLoggingLevelObject = "remediateEnsureLoggingLevel";
 static const char* g_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
 static const char* g_remediateEnsurePermissionsOnEtcIssueNetObject = "remediateEnsurePermissionsOnEtcIssueNet";
 static const char* g_remediateEnsurePermissionsOnEtcHostsAllowObject = "remediateEnsurePermissionsOnEtcHostsAllow";
@@ -377,6 +379,7 @@ static const char* g_remediateEnsureRloginServiceIsDisabledObject = "remediateEn
 static const char* g_remediateEnsureUnnecessaryAccountsAreRemovedObject = "remediateEnsureUnnecessaryAccountsAreRemoved";
 
 // Initialization for audit before remediation
+static const char* g_initEnsureLoggingLevelObject = "initEnsureLoggingLevel";
 static const char* g_initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
 static const char* g_initEnsureSshPortIsConfiguredObject = "initEnsureSshPortIsConfigured";
 static const char* g_initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
@@ -433,6 +436,7 @@ static const char* g_initEnsureUnnecessaryAccountsAreRemovedObject = "initEnsure
 static const char* g_initEnsureDefaultDenyFirewallPolicyIsSetObject = "initEnsureDefaultDenyFirewallPolicyIsSet";
 
 // Default values for checks that support configuration (and initialization)
+static const char* g_defaultLoggingLevel = "Informational";
 static const char* g_defaultEnsurePermissionsOnEtcIssue = "644";
 static const char* g_defaultEnsurePermissionsOnEtcIssueNet = "644";
 static const char* g_defaultEnsurePermissionsOnEtcHostsAllow = "644";
@@ -600,6 +604,7 @@ static const char* g_remediationIsNotPossible = "automatic remediation is not po
 static const char* g_pass = SECURITY_AUDIT_PASS;
 static const char* g_fail = SECURITY_AUDIT_FAIL;
 
+static char* g_desiredLoggingLevel = NULL;
 static char* g_desiredEnsurePermissionsOnEtcIssue = NULL;
 static char* g_desiredEnsurePermissionsOnEtcIssueNet = NULL;
 static char* g_desiredEnsurePermissionsOnEtcHostsAllow = NULL;
@@ -875,6 +880,49 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
     return result;
 }
 
+static LoggingLevel GetLoggingLevelFromString(const char* value)
+{
+    LoggingLevel level = LoggingLevelInformational;
+
+    if (value)
+    {
+        if (0 == strcmp(value, "Emergency"))
+        {
+            level = LoggingLevelEmergency;
+        }
+        else if (0 == strcmp(value, "Alert"))
+        {
+            level = LoggingLevelAlert;
+        }
+        else if (0 == strcmp(value, "Critical"))
+        {
+            level = LoggingLevelCritical;
+        }
+        else if (0 == strcmp(value, "Error"))
+        {
+            level = LoggingLevelError;
+        }
+        else if (0 == strcmp(value, "Warning"))
+        {
+            level = LoggingLevelWarning;
+        }
+        else if (0 == strcmp(value, "Notice"))
+        {
+            level = LoggingLevelNotice;
+        }
+        else if (0 == strcmp(value, "Informational"))
+        {
+            level = LoggingLevelInformational;
+        }
+        else if (0 == strcmp(value, "Debug"))
+        {
+            level = LoggingLevelDebug;
+        }
+    }
+
+    return level;
+}
+
 void AsbInitialize(OsConfigLogHandle log)
 {
     char* jsonConfiguration = NULL;
@@ -924,7 +972,8 @@ void AsbInitialize(OsConfigLogHandle log)
 
     InitializeSshAudit(log);
 
-    if ((NULL == (g_desiredEnsurePermissionsOnEtcIssue = DuplicateString(g_defaultEnsurePermissionsOnEtcIssue))) ||
+    if ((NULL == (g_desiredLoggingLevel = DuplicateString(g_defaultLoggingLevel))) ||
+        (NULL == (g_desiredEnsurePermissionsOnEtcIssue = DuplicateString(g_defaultEnsurePermissionsOnEtcIssue))) ||
         (NULL == (g_desiredEnsurePermissionsOnEtcIssueNet = DuplicateString(g_defaultEnsurePermissionsOnEtcIssueNet))) ||
         (NULL == (g_desiredEnsurePermissionsOnEtcHostsAllow = DuplicateString(g_defaultEnsurePermissionsOnEtcHostsAllow))) ||
         (NULL == (g_desiredEnsurePermissionsOnEtcHostsDeny = DuplicateString(g_defaultEnsurePermissionsOnEtcHostsDeny))) ||
@@ -1004,6 +1053,7 @@ void AsbShutdown(OsConfigLogHandle log)
 
     OsConfigLogInfo(log, "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
 
+    FREE_MEMORY(g_desiredLoggingLevel);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssueNet);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcHostsAllow);
@@ -1059,6 +1109,26 @@ void AsbShutdown(OsConfigLogHandle log)
     // When done, allow others access to read the performance log
     SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);
     SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 0644, NULL);
+}
+
+static char* AuditEnsureLoggingLevel(OsConfigLogHandle log)
+{
+    char* reason = NULL;
+    LoggingLevel existingLevel = GetLoggingLevel();
+    LoggingLevel desiredLevel = GetLoggingLevelFromString(g_desiredLoggingLevel ? g_desiredLoggingLevel : g_defaultLoggingLevel);
+
+    if (existingLevel != desiredLevel)
+    {
+        OsConfigLogInfo(log, "Locally configured logging level for Azure OSConfig is %d instead of %d", existingLevel, desiredLevel);
+        OsConfigCaptureReason(reason, "Locally configured logging level for Azure OSConfig is %d instead of %d", existingLevel, desiredLevel);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "Locally configured logging level for Azure OSConfig is %d", desiredLevel);
+        OsConfigCaptureSuccessReason(reason, "Locally configured logging level for Azure OSConfig is %d", desiredLevel);
+    }
+
+    return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcIssue(OsConfigLogHandle log)
@@ -2625,6 +2695,11 @@ static int ReplaceString(char** target, char* source, const char* defaultValue)
     return status;
 }
 
+static int InitEnsureLoggingLevel(char* value, OsConfigLogHandle log)
+{
+    return ReplaceString(&g_desiredLoggingLevel, value, g_defaultLoggingLevel);
+}
+
 static int InitEnsurePermissionsOnEtcIssue(char* value)
 {
     return ReplaceString(&g_desiredEnsurePermissionsOnEtcIssue, value, g_defaultEnsurePermissionsOnEtcIssue);
@@ -2794,6 +2869,13 @@ static int InitEnsureDefaultDenyFirewallPolicyIsSet(char* value)
 {
     return ReplaceString(&g_desiredEnsureDefaultDenyFirewallPolicyIsSet, value, g_defaultEnsureDefaultDenyFirewallPolicyIsSet);
 }
+
+static int RemediateEnsureLoggingLevel(char* value, OsConfigLogHandle log)
+{
+    InitEnsureLoggingLevel(value);
+    SetLoggingLevel(GetLoggingLevelFromString(g_desiredLoggingLevel));
+    //TODO: also persist this desired logging level to /etc/osconfig/osconfig.json
+};
 
 static int RemediateEnsurePermissionsOnEtcIssue(char* value, OsConfigLogHandle log)
 {
@@ -4114,7 +4196,11 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     }
     else
     {
-        if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueObject))
+        if (0 == strcmp(objectName, g_auditEnsureLoggingLevelObject))
+        {
+            result = AuditEnsureLoggingLevel(log);
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueObject))
         {
             result = AuditEnsurePermissionsOnEtcIssue(log);
         }
@@ -4925,7 +5011,11 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
 
     if (0 == status)
     {
-        if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcIssueObject))
+        if (0 == strcmp(objectName, g_remediateEnsureLoggingLevelObject))
+        {
+            status = RemediateEnsureLoggingLevel(jsonString, log);
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcIssueObject))
         {
             status = RemediateEnsurePermissionsOnEtcIssue(jsonString, log);
         }
@@ -5602,6 +5692,10 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             status = RemediateEnsureUnnecessaryAccountsAreRemoved(jsonString, log);
         }
         // Initialization for audit before remediation
+        else if (0 == strcmp(objectName, g_initEnsureLoggingLevelObject))
+        {
+            status = InitEnsureLoggingLevel(jsonString, log);
+        }
         else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcSshSshdConfigObject))
         {
             status = InitEnsurePermissionsOnEtcSshSshdConfig(jsonString, log);
