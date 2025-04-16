@@ -46,11 +46,11 @@
         {
           "type": "object",
           "required": [
-            "auditGetParamValues"
+            "AuditGetParamValues"
           ],
           "additionalProperties": false,
           "properties": {
-            "auditGetParamValues": {
+            "AuditGetParamValues": {
               "type": "object",
               "required": [],
               "additionalProperties": false,

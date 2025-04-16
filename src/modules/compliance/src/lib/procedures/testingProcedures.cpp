@@ -68,7 +68,7 @@ REMEDIATE_FN(RemediationParametrized, "result:Expected remediation result - succ
     return Error("Invalid 'result' parameter");
 }
 
-AUDIT_FN(auditGetParamValues)
+AUDIT_FN(AuditGetParamValues)
 {
     const std::vector<std::string> keys = {"KEY1", "KEY2", "KEY3"};
     bool first = true;
