@@ -2695,7 +2695,7 @@ static int ReplaceString(char** target, char* source, const char* defaultValue)
     return status;
 }
 
-static int InitEnsureLoggingLevel(char* value, OsConfigLogHandle log)
+static int InitEnsureLoggingLevel(char* value)
 {
     return ReplaceString(&g_desiredLoggingLevel, value, g_defaultLoggingLevel);
 }
