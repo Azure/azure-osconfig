@@ -5,6 +5,13 @@ import glob
 from collections import OrderedDict
 import json
 
+def is_valid_regex(pattern):
+    try:
+        re.compile(pattern)
+    except re.error as e:
+        return e
+    return None
+
 def parse_macro_args(args):
     """Extract and parse arguments from AUDIT_FN or REMEDIATE_FN lines."""
     # Split by comma but respect quoted strings
@@ -35,7 +42,11 @@ def parse_macro_args(args):
         if len(parts) > 2:
             arg_dict[name]["flags"] = parts[2]
         if len(parts) > 3:
-            arg_dict[name]["pattern"] = parts[3]
+            pattern = parts[3]
+            err = is_valid_regex(pattern)
+            if err:
+                raise ValueError(f"Ivalid pattern  function '{fn_name}' pattern '{pattern}' re.compile error {err}.")
+            arg_dict[name]["pattern"] =  pattern
 
     return fn_name, arg_dict
 
@@ -124,7 +135,12 @@ def create_procedure_schema(key, args):
                 s_pattern = s_pattern[:-1]
             else:
                 s_pattern = s_pattern + ".*"
-            props["properties"][arg]["pattern"] = f"(^\\$[a-zA-Z0-9_]+:({s_pattern})$|({pattern}))"
+
+            final_pattern = f"(^\\$[a-zA-Z0-9_]+:({s_pattern})$|({pattern}))"
+            err = is_valid_regex(final_pattern)
+            if err:
+                raise ValueError(f"invalid patttern in {key} generated pattern {final_pattern} compile error {err}")
+            props["properties"][arg]["pattern"] = final_pattern
 
     result["properties"] = { key: props }
     return result
