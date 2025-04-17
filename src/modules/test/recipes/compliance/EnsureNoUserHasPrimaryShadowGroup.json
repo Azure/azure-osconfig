@@ -55,12 +55,6 @@
   {
     "RunCommand": "useradd securitybaselinetest && id securitybaselinetest"
   },
-  {
-    "RunCommand": "id securitybaselinetest"
-  },
-  {
-    "RunCommand": "cat /etc/group"
-  },
 
 
   // This is expected to pass as the user has default primary group
