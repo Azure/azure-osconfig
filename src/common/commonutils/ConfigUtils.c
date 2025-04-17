@@ -366,13 +366,13 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
     }
     else
     {
+        OsConfigLogInfo(log, "SetLoggingLevelPersistently: logging level %d IS SUPPORTED <<<<<<<<<<<<<", level);///////
+        
         if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, log))))
         {
-            existingLevel = GetLoggingLevelFromJsonConfig(jsonConfiguration, log);
-            
-            if (level != existingLevel)
+            if (level != (existingLevel = GetLoggingLevelFromJsonConfig(jsonConfiguration, log)))
             {
-                if (NULL == (buffer = FormatAllocateString(NULL != strstr(jsonConfiguration, ",") ? loggingLevelTemplateWithComma : loggingLevelTemplate, level)))
+                if (NULL == (buffer = FormatAllocateString(strstr(jsonConfiguration, ",") ? loggingLevelTemplateWithComma : loggingLevelTemplate, level)))
                 {
                     OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
                     result = ENOMEM;
