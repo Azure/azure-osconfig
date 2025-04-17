@@ -1354,12 +1354,13 @@ TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
     const char* configurationFile = "/etc/osconfig/osconfig.json";
     char* jsonConfiguration = NULL;
 
-    for (LoggingLevel level = LoggingLevelEmergency; level <= LoggingLevelDebug; level++)
+    for (int level = (int)LoggingLevelEmergency; level <= (int)LoggingLevelDebug; level++)
     {
-        EXPECT_EQ(0, SetLoggingLevelPersistently(level, nullptr));
+        EXPECT_TRUE(IsLoggingLevelSupported((LoggingLevel)level));
+        EXPECT_EQ(0, SetLoggingLevelPersistently((LoggingLevel)level, nullptr));
         EXPECT_TRUE(FileExists(configurationFile));
         EXPECT_NE(nullptr, jsonConfiguration = LoadStringFromFile(configurationFile, false, nullptr));
-        EXPECT_EQ(level, GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr));
+        EXPECT_EQ(level, (int)GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr));
     }
 
     FREE_MEMORY(jsonConfiguration);
