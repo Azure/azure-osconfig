@@ -397,6 +397,8 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
                 RestrictFileAccessToCurrentAccountOnly(configurationFile);
             }
         }
+
+        SetLoggingLevel(level);
     }
 
     FREE_MEMORY(jsonConfiguration);

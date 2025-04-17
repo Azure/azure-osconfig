@@ -2872,7 +2872,6 @@ static int InitEnsureDefaultDenyFirewallPolicyIsSet(char* value)
 
 static int RemediateEnsureLoggingLevel(char* value, OsConfigLogHandle log)
 {
-    UNUSED(log);
     InitEnsureLoggingLevel(value);
     SetLoggingLevelPersistently(GetLoggingLevelFromString(g_desiredLoggingLevel), log);
     return 0;
