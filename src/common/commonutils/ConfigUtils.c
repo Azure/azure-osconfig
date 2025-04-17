@@ -362,10 +362,10 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
     }
     else
     {
-        SetLoggingLevel(level);
-
         if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, log))))
         {
+            OsConfigLogIInfo(log, "LOADED JSON: '%s'", jsonConfiguration);////
+
             if (level != (existingLevel = GetLoggingLevelFromJsonConfig(jsonConfiguration, log)))
             {
                 if (NULL == (buffer = FormatAllocateString(loggingLevelTemplate, level)))
