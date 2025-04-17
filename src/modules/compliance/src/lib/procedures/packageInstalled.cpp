@@ -15,6 +15,7 @@
 namespace
 {
 
+using compliance::ContextInterface;
 using compliance::Error;
 using compliance::Result;
 
@@ -44,13 +45,15 @@ private:
     std::function<void()> f;
 };
 
-std::string DetectPackageManager(OsConfigLogHandle log)
+std::string DetectPackageManager(ContextInterface& context)
 {
-    if (0 == ExecuteCommand(NULL, "dpkg -l dpkg", false, false, 0, 0, NULL, NULL, log))
+    auto dpkg = context.ExecuteCommand("dpkg -l dpkg");
+    if (dpkg.HasValue())
     {
         return "dpkg";
     }
-    else if (0 == ExecuteCommand(NULL, "rpm -qa rpm", false, false, 0, 0, NULL, NULL, log))
+    auto rpm = context.ExecuteCommand("rpm -qa rpm");
+    if (rpm.HasValue())
     {
         return "rpm";
     }
@@ -111,7 +114,7 @@ Result<PackageCache> LoadPackageCache(const std::string& path)
 
 Result<int> SavePackageCache(const PackageCache& cache, const std::string& path)
 {
-    std::string tempPath = path + ".XXXXXX.tmp";
+    std::string tempPath = path + ".tmp.XXXXXX";
     char pathTemplate[PATH_MAX];
     snprintf(pathTemplate, sizeof(pathTemplate), "%s", tempPath.c_str());
     int fd = mkstemp(pathTemplate);
@@ -158,26 +161,21 @@ Result<int> SavePackageCache(const PackageCache& cache, const std::string& path)
     return 0;
 }
 
-Result<PackageCache> GetInstalledPackagesRpm(OsConfigLogHandle log)
+Result<PackageCache> GetInstalledPackagesRpm(ContextInterface& context)
 {
     PackageCache cache;
     cache.packageManager = "rpm";
     cache.lastUpdateTime = time(NULL);
 
-    const char* cmd = "rpm -qa --qf='%{NAME}\n'";
-    char* output = nullptr;
+    const std::string cmd = "rpm -qa --qf='%{NAME}\n'";
 
-    int rv = ExecuteCommand(nullptr, cmd, false, false, 0, 0, &output, nullptr, log);
-    if (rv != 0 || output == nullptr)
+    auto rpmqa = context.ExecuteCommand(cmd);
+    if (!rpmqa.HasValue())
     {
-        if (output)
-        {
-            free(output);
-        }
         return Error("Failed to execute rpm command");
     }
 
-    std::istringstream stream(output);
+    std::istringstream stream(rpmqa.Value());
     std::string packageName;
     while (std::getline(stream, packageName))
     {
@@ -186,31 +184,24 @@ Result<PackageCache> GetInstalledPackagesRpm(OsConfigLogHandle log)
             cache.packageNames.insert(packageName);
         }
     }
-
-    free(output);
     return cache;
 }
 
-Result<PackageCache> GetInstalledPackagesDpkg(OsConfigLogHandle log)
+Result<PackageCache> GetInstalledPackagesDpkg(ContextInterface& context)
 {
     PackageCache cache;
     cache.packageManager = "dpkg";
     cache.lastUpdateTime = time(NULL);
 
-    const char* cmd = "dpkg -l";
-    char* output = nullptr;
+    const std::string cmd = "dpkg -l";
 
-    int rv = ExecuteCommand(nullptr, cmd, false, false, 0, 0, &output, nullptr, log);
-    if (rv != 0 || output == nullptr)
+    auto dpkgl = context.ExecuteCommand(cmd);
+    if (!dpkgl.HasValue())
     {
-        if (output)
-        {
-            free(output);
-        }
         return Error("Failed to execute dpkg command");
     }
 
-    std::istringstream stream(output);
+    std::istringstream stream(dpkgl.Value());
     std::string line;
     bool headerSkipped = false;
 
@@ -236,20 +227,18 @@ Result<PackageCache> GetInstalledPackagesDpkg(OsConfigLogHandle log)
             }
         }
     }
-
-    free(output);
     return cache;
 }
 
-Result<PackageCache> GetInstalledPackages(const std::string& packageManager, OsConfigLogHandle log)
+Result<PackageCache> GetInstalledPackages(const std::string& packageManager, ContextInterface& context)
 {
     if (packageManager == "rpm")
     {
-        return GetInstalledPackagesRpm(log);
+        return GetInstalledPackagesRpm(context);
     }
     else if (packageManager == "dpkg")
     {
-        return GetInstalledPackagesDpkg(log);
+        return GetInstalledPackagesDpkg(context);
     }
     return Error("Unsupported package manager: " + packageManager);
 }
@@ -281,7 +270,7 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "packageManager:Package
     }
     else
     {
-        packageManager = DetectPackageManager(log);
+        packageManager = DetectPackageManager(context);
         if (packageManager.empty())
         {
             logstream << "No package manager found";
@@ -327,7 +316,7 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "packageManager:Package
 
     if (!cacheValid || cacheStale)
     {
-        cacheResult = GetInstalledPackages(packageManager, log);
+        cacheResult = GetInstalledPackages(packageManager, context);
 
         if (cacheResult.HasValue())
         {
@@ -356,14 +345,14 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "packageManager:Package
         }
     }
 
-    if (cache.packageNames.find(args["packageName"]) != cache.packageNames.end())
+    if (cache.packageNames.find(packageName) != cache.packageNames.end())
     {
-        logstream << "Package " << args["packageName"] << " is installed";
+        logstream << "Package " << packageName << " is installed";
         return true;
     }
     else
     {
-        logstream << "Package " << args["packageName"] << " is not installed";
+        logstream << "Package " << packageName << " is not installed";
         return false;
     }
 }

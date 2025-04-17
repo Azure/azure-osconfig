@@ -17,12 +17,15 @@ using compliance::AuditPackageInstalled;
 using compliance::Error;
 using compliance::Result;
 
-static const char rpmCommand[] = "rpm -qa --qf='%{NAME}\n'";
-static const char rpmWithPackageOutput[] = "package1\npackage2\nsample-package\nmysql-server\npackage5\n";
-static const char rpmWithoutPackageOutput[] = "package1\npackage2\nother-package\npackage5\n";
+using testing::HasSubstr;
+using testing::Return;
 
-static const char dpkgCommand[] = "dpkg -l";
-static const char dpkgWithPackageOutput[] =
+static const std::string rpmCommand = "rpm -qa --qf='%{NAME}\n'";
+static const std::string rpmWithPackageOutput = "package1\npackage2\nsample-package\nmysql-server\npackage5\n";
+static const std::string rpmWithoutPackageOutput = "package1\npackage2\nother-package\npackage5\n";
+
+static const std::string dpkgCommand = "dpkg -l";
+static const std::string dpkgWithPackageOutput =
     "Desired=Unknown/Install/Remove/Purge/Hold\n"
     "| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend\n"
     "|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)\n"
@@ -34,7 +37,7 @@ static const char dpkgWithPackageOutput[] =
     "rc  removed-package           1.0.0-1                  amd64        Removed package\n"
     "ii  mysql-server              5.7.32-1                 amd64        MySQL server package\n";
 
-static const char dpkgWithoutPackageOutput[] =
+static const std::string dpkgWithoutPackageOutput =
     "Desired=Unknown/Install/Remove/Purge/Hold\n"
     "| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend\n"
     "|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)\n"
@@ -46,16 +49,16 @@ static const char dpkgWithoutPackageOutput[] =
     "ii  mysql-server              5.7.32-1                 amd64        MySQL server package\n";
 
 // Package manager detection commands
-static const char dpkgDetectCommand[] = "dpkg -l dpkg";
-static const char rpmDetectCommand[] = "rpm -qa rpm";
-static const char dpkgDetectOutput[] =
+static const std::string dpkgDetectCommand = "dpkg -l dpkg";
+static const std::string rpmDetectCommand = "rpm -qa rpm";
+static const std::string dpkgDetectOutput =
     "Desired=Unknown/Install/Remove/Purge/Hold\n"
     "| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend\n"
     "|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)\n"
     "||/ Name                      Version                  Architecture Description\n"
     "+++-=========================-========================-============-===============================\n"
     "ii  dpkg                      1.19.7                   amd64        Debian package management system\n";
-static const char rpmDetectOutput[] = "rpm-4.14.2.1-1.el8\n";
+static const std::string rpmDetectOutput = "rpm-4.14.2.1-1.el8\n";
 
 class PackageInstalledTest : public ::testing::Test
 {
@@ -75,7 +78,6 @@ protected:
 
     void TearDown() override
     {
-        CleanupMockCommands();
         rmdir(dir.c_str());
     }
 
@@ -94,53 +96,47 @@ protected:
 
 TEST_F(PackageInstalledTest, DetectDpkgPackageManager)
 {
-    CleanupMockCommands();
-    AddMockCommand(dpkgDetectCommand, true, dpkgDetectOutput, 0);
-    AddMockCommand(rpmDetectCommand, true, NULL, 1);
-    AddMockCommand(dpkgCommand, true, dpkgWithPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(dpkgDetectCommand))).WillRepeatedly(Return(Result<std::string>(dpkgDetectOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmDetectCommand))).WillRepeatedly(Return(Result<std::string>(Error("Command failed", 1))));
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(dpkgCommand))).WillRepeatedly(Return(Result<std::string>(dpkgWithPackageOutput)));
 
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
 
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
-    ASSERT_TRUE(logstream.str().find("sample-package") != std::string::npos);
+    ASSERT_TRUE(mContext.GetLogstreamRef().str().find("sample-package") != std::string::npos);
 }
 
 TEST_F(PackageInstalledTest, DetectRpmPackageManager)
 {
-    CleanupMockCommands();
-    AddMockCommand(dpkgDetectCommand, true, NULL, 1);
-    AddMockCommand(rpmDetectCommand, true, rpmDetectOutput, 0);
-    AddMockCommand(rpmCommand, true, rpmWithPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(dpkgDetectCommand))).WillRepeatedly(Return(Result<std::string>(Error("Command failed", 1))));
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmDetectCommand))).WillRepeatedly(Return(Result<std::string>(rpmDetectOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmCommand))).WillRepeatedly(Return(Result<std::string>(rpmWithPackageOutput)));
 
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
 
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
-    ASSERT_TRUE(logstream.str().find("sample-package") != std::string::npos);
+    ASSERT_TRUE(mContext.GetLogstreamRef().str().find("sample-package") != std::string::npos);
 }
 
 TEST_F(PackageInstalledTest, NoPackageManagerDetected)
 {
-    CleanupMockCommands();
-    AddMockCommand(dpkgDetectCommand, true, NULL, 1);
-    AddMockCommand(rpmDetectCommand, true, NULL, 1);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(dpkgDetectCommand))).WillRepeatedly(Return(Result<std::string>(Error("Command failed", 1))));
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmDetectCommand))).WillRepeatedly(Return(Result<std::string>(Error("Command failed", 1))));
 
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
 
     ASSERT_FALSE(result.HasValue());
@@ -149,17 +145,15 @@ TEST_F(PackageInstalledTest, NoPackageManagerDetected)
 
 TEST_F(PackageInstalledTest, SpecifiedPackageManagerOverridesDetection)
 {
-    CleanupMockCommands();
-    AddMockCommand(dpkgDetectCommand, true, NULL, 1);
-    AddMockCommand(rpmDetectCommand, true, NULL, 1);
-    AddMockCommand(rpmCommand, true, rpmWithPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(dpkgDetectCommand))).WillRepeatedly(Return(Result<std::string>(Error("Command failed", 1))));
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmDetectCommand))).WillRepeatedly(Return(Result<std::string>(Error("Command failed", 1))));
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmCommand))).WillRepeatedly(Return(Result<std::string>(rpmWithPackageOutput)));
 
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
 
     ASSERT_TRUE(result.HasValue());
@@ -168,10 +162,8 @@ TEST_F(PackageInstalledTest, SpecifiedPackageManagerOverridesDetection)
 
 TEST_F(PackageInstalledTest, NoPackageName)
 {
-    CleanupMockCommands();
     std::map<std::string, std::string> args;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "No package name provided");
@@ -179,13 +171,11 @@ TEST_F(PackageInstalledTest, NoPackageName)
 
 TEST_F(PackageInstalledTest, UnsupportedPackageManager)
 {
-    CleanupMockCommands();
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "apt";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_TRUE(result.Error().message.find("Unsupported package manager") != std::string::npos);
@@ -193,14 +183,12 @@ TEST_F(PackageInstalledTest, UnsupportedPackageManager)
 
 TEST_F(PackageInstalledTest, RpmPackageExists)
 {
-    CleanupMockCommands();
-    AddMockCommand(rpmCommand, true, rpmWithPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmCommand))).WillRepeatedly(Return(Result<std::string>(rpmWithPackageOutput)));
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
@@ -208,14 +196,12 @@ TEST_F(PackageInstalledTest, RpmPackageExists)
 
 TEST_F(PackageInstalledTest, RpmPackageDoesNotExist)
 {
-    CleanupMockCommands();
-    AddMockCommand(rpmCommand, true, rpmWithoutPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmCommand))).WillRepeatedly(Return(Result<std::string>(rpmWithoutPackageOutput)));
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
@@ -223,14 +209,12 @@ TEST_F(PackageInstalledTest, RpmPackageDoesNotExist)
 
 TEST_F(PackageInstalledTest, DpkgPackageExists)
 {
-    CleanupMockCommands();
-    AddMockCommand(dpkgCommand, true, dpkgWithPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(dpkgCommand))).WillRepeatedly(Return(Result<std::string>(dpkgWithPackageOutput)));
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "dpkg";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
@@ -238,14 +222,12 @@ TEST_F(PackageInstalledTest, DpkgPackageExists)
 
 TEST_F(PackageInstalledTest, DpkgPackageDoesNotExist)
 {
-    CleanupMockCommands();
-    AddMockCommand(dpkgCommand, true, dpkgWithoutPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(dpkgCommand))).WillRepeatedly(Return(Result<std::string>(dpkgWithoutPackageOutput)));
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "dpkg";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_FALSE(result.Value());
@@ -253,14 +235,12 @@ TEST_F(PackageInstalledTest, DpkgPackageDoesNotExist)
 
 TEST_F(PackageInstalledTest, RpmCommandFails)
 {
-    CleanupMockCommands();
-    AddMockCommand(rpmCommand, true, NULL, -1);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmCommand))).WillRepeatedly(Return(Result<std::string>(Error("Command failed", 1))));
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_TRUE(result.Error().message.find("Failed to get installed packages") != std::string::npos);
@@ -268,14 +248,12 @@ TEST_F(PackageInstalledTest, RpmCommandFails)
 
 TEST_F(PackageInstalledTest, DpkgCommandFails)
 {
-    CleanupMockCommands();
-    AddMockCommand(dpkgCommand, true, NULL, -1);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(dpkgCommand))).WillRepeatedly(Return(Result<std::string>(Error("Command failed", 1))));
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "dpkg";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_TRUE(result.Error().message.find("Failed to get installed packages") != std::string::npos);
@@ -283,9 +261,8 @@ TEST_F(PackageInstalledTest, DpkgCommandFails)
 
 TEST_F(PackageInstalledTest, UseCacheWhenAvailable)
 {
-    CleanupMockCommands();
     time_t now = time(nullptr);
-    AddMockCommand(rpmCommand, true, NULL, -1); // it should never be called
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmCommand))).Times(0); // it should never be called
     CreateCacheFile("rpm", now, {"package1", "package2", "sample-package", "mysql-server"});
 
     std::map<std::string, std::string> args;
@@ -293,7 +270,6 @@ TEST_F(PackageInstalledTest, UseCacheWhenAvailable)
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
@@ -301,18 +277,15 @@ TEST_F(PackageInstalledTest, UseCacheWhenAvailable)
 
 TEST_F(PackageInstalledTest, UseStaleCache)
 {
-    CleanupMockCommands();
     time_t staleTime = time(nullptr) - 4000; // Over PACKAGELIST_TTL (3000)
     CreateCacheFile("rpm", staleTime, {"sample-package", "package1", "package2", "old-package", "mysql-server"});
 
-    AddMockCommand(rpmCommand, true, NULL, -1);
-
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmCommand))).WillRepeatedly(Return(Result<std::string>(Error("Command failed", 1))));
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
@@ -320,18 +293,16 @@ TEST_F(PackageInstalledTest, UseStaleCache)
 
 TEST_F(PackageInstalledTest, RefreshStaleCache)
 {
-    CleanupMockCommands();
     time_t staleTime = time(nullptr) - 4000; // Over PACKAGELIST_TTL (3000)
     CreateCacheFile("rpm", staleTime, {"package1", "package2", "old-package", "mysql-server"});
 
-    AddMockCommand(rpmCommand, true, rpmWithPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmCommand))).WillRepeatedly(Return(Result<std::string>(rpmWithPackageOutput)));
 
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
@@ -339,18 +310,16 @@ TEST_F(PackageInstalledTest, RefreshStaleCache)
 
 TEST_F(PackageInstalledTest, PackageManagerMismatch)
 {
-    CleanupMockCommands();
     time_t now = time(nullptr);
     CreateCacheFile("dpkg", now, {"package1", "package2", "sample-package", "mysql-server"});
 
-    AddMockCommand(rpmCommand, true, rpmWithPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmCommand))).WillRepeatedly(Return(Result<std::string>(rpmWithPackageOutput)));
 
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "rpm"; // Mismatch with cache
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
@@ -358,20 +327,18 @@ TEST_F(PackageInstalledTest, PackageManagerMismatch)
 
 TEST_F(PackageInstalledTest, InvalidCacheFormat)
 {
-    CleanupMockCommands();
     std::ofstream cache(cacheFile);
     ASSERT_TRUE(cache.is_open());
     cache << "This is not a valid cache file format" << std::endl;
     cache.close();
 
-    AddMockCommand(rpmCommand, true, rpmWithPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmCommand))).WillRepeatedly(Return(Result<std::string>(rpmWithPackageOutput)));
 
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
@@ -379,7 +346,6 @@ TEST_F(PackageInstalledTest, InvalidCacheFormat)
 
 TEST_F(PackageInstalledTest, CacheWithInvalidTimestamp)
 {
-    CleanupMockCommands();
     std::ofstream cache(cacheFile);
     ASSERT_TRUE(cache.is_open());
     cache << "# PackageCache rpm@notanumber" << std::endl;
@@ -387,14 +353,13 @@ TEST_F(PackageInstalledTest, CacheWithInvalidTimestamp)
     cache << "sample-package" << std::endl;
     cache.close();
 
-    AddMockCommand(rpmCommand, true, rpmWithPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmCommand))).WillRepeatedly(Return(Result<std::string>(rpmWithPackageOutput)));
 
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
@@ -402,18 +367,16 @@ TEST_F(PackageInstalledTest, CacheWithInvalidTimestamp)
 
 TEST_F(PackageInstalledTest, CacheTooStale)
 {
-    CleanupMockCommands();
     time_t veryStaleTime = time(nullptr) - 13000; // Over PACKAGELIST_STALE_TTL (12600)
     CreateCacheFile("rpm", veryStaleTime, {"package1", "package2", "sample-package", "mysql-server"});
 
-    AddMockCommand(rpmCommand, true, rpmWithPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(rpmCommand))).WillRepeatedly(Return(Result<std::string>(rpmWithPackageOutput)));
 
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
@@ -421,14 +384,13 @@ TEST_F(PackageInstalledTest, CacheTooStale)
 
 TEST_F(PackageInstalledTest, CachePathBroken)
 {
-    CleanupMockCommands();
-    AddMockCommand(dpkgCommand, true, dpkgWithPackageOutput, 0);
+    EXPECT_CALL(mContext, ExecuteCommand(HasSubstr(dpkgCommand))).WillRepeatedly(Return(Result<std::string>(dpkgWithPackageOutput)));
+
     std::map<std::string, std::string> args;
     args["packageName"] = "sample-package";
     args["packageManager"] = "dpkg";
     args["test_cachePath"] = "/invalid/path/to/cache"; // Invalid path
 
-    std::ostringstream logstream;
     Result<bool> result = AuditPackageInstalled(args, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(result.Value());
