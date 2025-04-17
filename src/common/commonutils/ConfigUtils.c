@@ -73,6 +73,8 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
     JSON_Object* rootObject = NULL;
     int valueToReturn = defaultValue;
 
+    OsConfigLogInfo(log, "GetIntegerFromJsonConfig called for %s, %d (default), %d (min), %d (max) <<<<<<<<<<<<<<<< ", valueName, defaultValue, minValue, maxValue);////////////////////
+
     if (NULL == valueName)
     {
         OsConfigLogDebug(log, "GetIntegerFromJsonConfig: no value name, using the specified default (%d)", defaultValue);
@@ -390,15 +392,10 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
                 OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
                 result = ENOMEM;
             }
-            //else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
-            else
+            else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
             {
-                OsConfigLogInfo(log, "SetLoggingLevelPersistently: BUFFER FOR WHOLE FILE IS: '%s' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<", buffer);///////
-                if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
-                {
-                    OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'", level, configurationFile);
-                    result = ENOENT;
-                }
+                OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'", level, configurationFile);
+                result = ENOENT;
             }
 
             if (FileExists(configurationFile))
