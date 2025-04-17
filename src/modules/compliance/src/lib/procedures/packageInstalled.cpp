@@ -36,13 +36,21 @@ public:
     template <class Callable>
     ScopeGuard(Callable&& f)
         : f(std::forward<Callable>(f)){};
+    void Deactivate()
+    {
+        active = false;
+    }
     ~ScopeGuard()
     {
-        f();
+        if (active)
+        {
+            f();
+        }
     }
 
 private:
     std::function<void()> f;
+    bool active{true};
 };
 
 std::string DetectPackageManager(ContextInterface& context)
@@ -158,6 +166,7 @@ Result<int> SavePackageCache(const PackageCache& cache, const std::string& path)
     {
         return Error("Failed to rename temporary file to target path: " + tempPath + "->" + path);
     }
+    tempFileRemover.Deactivate();
     return 0;
 }
 
