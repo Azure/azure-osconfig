@@ -1368,11 +1368,10 @@ TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
         EXPECT_TRUE(FileExists(configurationFile));
         EXPECT_NE(nullptr, jsonConfiguration = LoadStringFromFile(configurationFile, false, nullptr));
         EXPECT_EQ(level, (int)GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr));
+        FREE_MEMORY(jsonConfiguration);
     }
 
     EXPECT_EQ(0, SetLoggingLevelPersistently(original, nullptr));
-
-    FREE_MEMORY(jsonConfiguration);
 }
 
 TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
