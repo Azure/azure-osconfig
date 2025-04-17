@@ -55,13 +55,19 @@ private:
 
 std::string DetectPackageManager(ContextInterface& context)
 {
-    auto dpkg = context.ExecuteCommand("dpkg -l dpkg");
-    if (dpkg.HasValue())
+    auto output = context.ExecuteCommand("dpkg -l dpkg");
+    if (output.HasValue())
     {
         return "dpkg";
     }
-    auto rpm = context.ExecuteCommand("rpm -qa rpm");
-    if (rpm.HasValue())
+    output = context.ExecuteCommand("rpm -qa rpm");
+    if (output.HasValue())
+    {
+        return "rpm";
+    }
+    // For SLES 15
+    output = context.ExecuteCommand("rpm -qa rpm-ndb");
+    if (output.HasValue())
     {
         return "rpm";
     }
