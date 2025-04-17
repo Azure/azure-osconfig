@@ -1357,7 +1357,7 @@ TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
 
     if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, nullptr))))
     {
-        original = GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr);
+        original = (LoggingLevel)GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr);
         FREE_MEMORY(jsonConfiguration);
     }
 
