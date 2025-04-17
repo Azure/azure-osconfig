@@ -111,13 +111,13 @@ public:
     Result<AuditResult> ExecuteAudit(const PayloadFormatter& formatter);
     Result<Status> ExecuteRemediation();
 
-private:
     enum class Action
     {
         Audit,
         Remediate
     };
 
+private:
     enum class ListAction
     {
         AnyOf,
