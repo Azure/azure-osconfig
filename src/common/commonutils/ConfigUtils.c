@@ -73,8 +73,6 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
     JSON_Object* rootObject = NULL;
     int valueToReturn = defaultValue;
 
-    OsConfigLogInfo(log, "GetIntegerFromJsonConfig called for %s, %d (default), %d (min), %d (max) <<<<<<<<<<<<<<<< ", valueName, defaultValue, minValue, maxValue);////////////////////
-
     if (NULL == valueName)
     {
         OsConfigLogDebug(log, "GetIntegerFromJsonConfig: no value name, using the specified default (%d)", defaultValue);
@@ -94,10 +92,10 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
             if (NULL != (rootObject = json_value_get_object(rootValue)))
             {
                 valueToReturn = (int)json_object_get_number(rootObject, valueName);
-                if (0 == valueToReturn)
+                if ((0 == valueToReturn) && (0 != minValue) && (0 != maxValue))
                 {
                     valueToReturn = defaultValue;
-                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: '%s' value not found or 0, using default (%d)", valueName, defaultValue);
+                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: '%s' value not found, using default (%d)", valueName, defaultValue);
                 }
                 else if (valueToReturn < minValue)
                 {
