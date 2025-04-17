@@ -1358,7 +1358,6 @@ TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
     if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, nullptr))))
     {
         original = GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr);
-        printf("Original: %d", original);
         FREE_MEMORY(jsonConfiguration);
     }
 

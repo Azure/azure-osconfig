@@ -133,7 +133,10 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
 
 int GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
-    return GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
+    //return GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
+    int result = GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
+    OsConfigLogInfo(log, "### GetIntegerFromJsonConfig: '%s' is set to value %d", valueName, result);
+    return result;
 }
 
 int GetMaxLogSizeFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
@@ -364,8 +367,6 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
     {
         if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, log))))
         {
-            OsConfigLogInfo(log, "LOADED JSON: '%s'", jsonConfiguration);////
-
             if (level != (existingLevel = GetLoggingLevelFromJsonConfig(jsonConfiguration, log)))
             {
                 if (NULL == (buffer = FormatAllocateString(loggingLevelTemplate, level)))
