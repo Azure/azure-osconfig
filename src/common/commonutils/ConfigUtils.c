@@ -349,7 +349,7 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
 {
     const char* configurationFile = "/etc/osconfig/osconfig.json";
     const char* loggingLevelTemplate = "  \"LoggingLevel\": %d,\n";
-    const char* configurationTemplate = "{\n  \"LoggingLevel\": %d\n}";
+    const char* configurationTemplate = "{\n  \"LoggingLevel\": %d\n}\n";
     LoggingLevel existingLevel = LoggingLevelInformational;
     char* jsonConfiguration = NULL;
     char* buffer = NULL;
