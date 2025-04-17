@@ -377,15 +377,9 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
                     OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
                     result = ENOMEM;
                 } 
-                //else if (0 != (result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", buffer, '#', true, log)))
-                else
+                else if (0 != (result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", buffer, '#', true, log)))
                 {
-                    result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", buffer, '#', true, log);
-                    OsConfigLogInfo(log, "SetLoggingLevelPersistently: BUFFER was '%s' <<<<<<<<<<<<<", buffer);///////
-                    if (0 != result)
-                    {
-                        OsConfigLogError(log, "SetLoggingLevelPersistently: failed to update the logging level to %u in the configuration file '%s'", level, configurationFile);
-                    }
+                    OsConfigLogError(log, "SetLoggingLevelPersistently: failed to update the logging level to %u in the configuration file '%s'", level, configurationFile);
                 }
             }
         }
@@ -396,10 +390,15 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
                 OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
                 result = ENOMEM;
             }
-            else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
+            //else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
+            else
             {
-                OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'", level, configurationFile);
-                result = ENOENT;
+                OsConfigLogInfo(log, "SetLoggingLevelPersistently: BUFFER FOR WHOLE FILE IS: '%s' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<", buffer);///////
+                if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
+                {
+                    OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'", level, configurationFile);
+                    result = ENOENT;
+                }
             }
 
             if (FileExists(configurationFile))
