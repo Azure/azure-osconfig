@@ -1374,7 +1374,7 @@ TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
 
     if (-1 != original)
     {
-        EXPECT_EQ(0, SetLoggingLevelPersistently(original, nullptr));
+        EXPECT_EQ(0, SetLoggingLevelPersistently((LoggingLevel)original, nullptr));
     }
 }
 
