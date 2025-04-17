@@ -2752,7 +2752,6 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
 
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
-
     const char* emergency = "EMERGENCY";
     const char* alert = "ALERT";
     const char* critical = "CRITICAL";
@@ -2766,41 +2765,43 @@ TEST_F(CommonUtilsTest, LoggingOptions)
     unsigned int i = 0;
     unsigned int maxLogSize = 0;
 
-    SetLoggingLevel(LoggingLevelDebug);
-    EXPECT_TRUE(IsDebugLoggingEnabled());
-    EXPECT_EQ(LoggingLevelDebug, level = GetLoggingLevel());
-    EXPECT_STREQ(debug, GetLoggingLevelName(level));
+    SetLoggingLevel(LoggingLevelEmergency);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelEmergency, level = GetLoggingLevel());
+    EXPECT_STREQ(emergency, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelAlert);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelAlert, level = GetLoggingLevel());
+    EXPECT_STREQ(alert, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelCritical);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelCritical, level = GetLoggingLevel());
+    EXPECT_STREQ(critical, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelError);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelError, level = GetLoggingLevel());
+    EXPECT_STREQ(error, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelWarning);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelWarning, level = GetLoggingLevel());
+    EXPECT_STREQ(warning, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelNotice);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelNotice, level = GetLoggingLevel());
+    EXPECT_STREQ(notice, GetLoggingLevelName(level));
 
     SetLoggingLevel(LoggingLevelInformational);
     EXPECT_FALSE(IsDebugLoggingEnabled());
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
     EXPECT_STREQ(info, GetLoggingLevelName(level));
 
-    SetLoggingLevel(LoggingLevelEmergency);
-    EXPECT_EQ(LoggingLevelEmergency, level = GetLoggingLevel());
-    EXPECT_STREQ(emergency, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelAlert);
-    EXPECT_EQ(LoggingLevelAlert, level = GetLoggingLevel());
-    EXPECT_STREQ(alert, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelCritical);
-    EXPECT_EQ(LoggingLevelCritical, level = GetLoggingLevel());
-    EXPECT_STREQ(critical, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelError);
-    EXPECT_EQ(LoggingLevelError, level = GetLoggingLevel());
-    EXPECT_STREQ(error, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelWarning);
-    EXPECT_EQ(LoggingLevelWarning, level = GetLoggingLevel());
-    EXPECT_STREQ(warning, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelNotice);
-    EXPECT_EQ(LoggingLevelNotice, level = GetLoggingLevel());
-    EXPECT_STREQ(notice, GetLoggingLevelName(level));
-
     SetLoggingLevel(LoggingLevelDebug);
+    EXPECT_TRUE(IsDebugLoggingEnabled());
     EXPECT_EQ(LoggingLevelDebug, level = GetLoggingLevel());
     EXPECT_STREQ(debug, GetLoggingLevelName(level));
 
