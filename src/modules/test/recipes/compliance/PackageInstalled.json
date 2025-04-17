@@ -1,0 +1,49 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "compliance.so"
+  },
+  {
+    "RunCommand": "mkdir -p /var/lib/GuestConfig"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "PackageInstalled": {
+          "packageName": "bash"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ PackageInstalled: Package bash is installed } == TRUE"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "PackageInstalled": {
+          "packageName": "nobodywouldnameapackagethis"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ PackageInstalled: Package nobodywouldnameapackagethis is not installed } == FALSE"
+  },
+
+  {
+    "Action": "UnloadModule"
+  }
+]

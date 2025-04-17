@@ -20,6 +20,15 @@
                 "packageName": {
                   "type": "string",
                   "description": "Package name"
+                },
+                "packageManager": {
+                  "type": "string",
+                  "description": "Package manager, autodetected by default",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((rpm|dpkg))$|(^(rpm|dpkg)$))"
+                },
+                "test_cachePath": {
+                  "type": "string",
+                  "description": "Cache path"
                 }
               }
             }

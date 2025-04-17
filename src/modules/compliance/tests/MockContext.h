@@ -16,6 +16,11 @@ struct MockContext : public compliance::ContextInterface
         return mLogstream;
     }
 
+    std::stringstream& GetLogstreamRef()
+    {
+        return mLogstream;
+    }
+
     std::string ConsumeLogstream() override
     {
         std::string result = mLogstream.str();
