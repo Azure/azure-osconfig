@@ -134,7 +134,7 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
 int GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     //return GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
-    int result = GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
+    int result = GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);/////
     OsConfigLogInfo(log, "### GetIntegerFromJsonConfig: '%s' is set to value %d", LOGGING_LEVEL, result);
     return result;
 }
@@ -351,7 +351,8 @@ char* GetGitBranchFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
 {
     const char* configurationFile = "/etc/osconfig/osconfig.json";
-    const char* loggingLevelTemplate = "  \"LoggingLevel\": %d,\n";
+    const char* loggingLevelTemplate = "  \"LoggingLevel\": %d\n";
+    const char* loggingLevelTemplateWithComma = "  \"LoggingLevel\": %d,\n";
     const char* configurationTemplate = "{\n  \"LoggingLevel\": %d\n}\n";
     LoggingLevel existingLevel = LoggingLevelInformational;
     char* jsonConfiguration = NULL;
@@ -367,9 +368,11 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
     {
         if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, log))))
         {
-            if (level != (existingLevel = GetLoggingLevelFromJsonConfig(jsonConfiguration, log)))
+            existingLevel = GetLoggingLevelFromJsonConfig(jsonConfiguration, log);
+            
+            if (level != existingLevel)
             {
-                if (NULL == (buffer = FormatAllocateString(loggingLevelTemplate, level)))
+                if (NULL == (buffer = FormatAllocateString(strstr(",", jsonConfiguration) ? loggingLevelTemplateWithComma : loggingLevelTemplate, level)))
                 {
                     OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
                     result = ENOMEM;
