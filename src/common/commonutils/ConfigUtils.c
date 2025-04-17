@@ -372,7 +372,7 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
             
             if (level != existingLevel)
             {
-                if (NULL == (buffer = FormatAllocateString(strstr(",", jsonConfiguration) ? loggingLevelTemplateWithComma : loggingLevelTemplate, level)))
+                if (NULL == (buffer = FormatAllocateString(strstr(jsonConfiguration, ",") ? loggingLevelTemplateWithComma : loggingLevelTemplate), level))
                 {
                     OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
                     result = ENOMEM;
