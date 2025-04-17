@@ -348,7 +348,7 @@ char* GetGitBranchFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
 {
     const char* configurationFile = "/etc/osconfig/osconfig.json";
-    const char* loggingLevelTemplate = "\"LoggingLevel\": %d\n";
+    const char* loggingLevelTemplate = "\"LoggingLevel\": %d\\n";
     LoggingLevel existingLevel = LoggingLevelInformational;
     char* loggingLevelLine = NULL;
     char* jsonConfiguration = NULL;
@@ -366,12 +366,14 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
     }
     else
     {
-        OsConfigLogInfo(log, "SetLoggingLevelPersistently: '%s'", loggingLevelLine); //
+        OsConfigLogInfo(log, "FORMATTED LINE: '%s'", loggingLevelLine); //
         
         SetLoggingLevel(level);
 
         if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, log))))
         {
+            OsConfigLogInfo(log, "JSON CONFIG: '%s'", jsonConfiguration); //    
+            
             if (level != (existingLevel = GetLoggingLevelFromJsonConfig(jsonConfiguration, log)))
             {
                 if (0 != (result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", loggingLevelLine, '#', true, log)))
