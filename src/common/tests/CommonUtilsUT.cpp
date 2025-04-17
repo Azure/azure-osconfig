@@ -1353,11 +1353,12 @@ TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
 {
     const char* configurationFile = "/etc/osconfig/osconfig.json";
     char* jsonConfiguration = NULL;
-    LoggingLevel original = GetLoggingLevel();
+    int original = -1;
 
     if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, nullptr))))
     {
-        original = (LoggingLevel)GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr);
+        original = GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr);
+        printf("Original: %d", original);
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -1367,11 +1368,14 @@ TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
         EXPECT_EQ(0, SetLoggingLevelPersistently((LoggingLevel)level, nullptr));
         EXPECT_TRUE(FileExists(configurationFile));
         EXPECT_NE(nullptr, jsonConfiguration = LoadStringFromFile(configurationFile, false, nullptr));
-        EXPECT_EQ(level, (int)GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr));
+        EXPECT_EQ(level, GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr));
         FREE_MEMORY(jsonConfiguration);
     }
 
-    EXPECT_EQ(0, SetLoggingLevelPersistently(original, nullptr));
+    if (-1 != original)
+    {
+        EXPECT_EQ(0, SetLoggingLevelPersistently(original, nullptr));
+    }
 }
 
 TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
