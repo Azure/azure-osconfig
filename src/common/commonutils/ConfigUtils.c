@@ -135,7 +135,7 @@ int GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     //return GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
     int result = GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
-    OsConfigLogInfo(log, "### GetIntegerFromJsonConfig: '%s' is set to value %d", valueName, result);
+    OsConfigLogInfo(log, "### GetIntegerFromJsonConfig: '%s' is set to value %d", LOGGING_LEVEL, result);
     return result;
 }
 
