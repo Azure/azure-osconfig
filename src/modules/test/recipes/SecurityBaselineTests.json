@@ -36,6 +36,12 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureLoggingLevel",
+    "Payload": "Informational"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcSshSshdConfig",
     "Payload": "600"
   },
@@ -50,6 +56,12 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureSshBestPracticeProtocol",
     "Payload": "2"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureLoggingLevel",
+    "Payload": "Informational"
   },
   {
     "ObjectType": "Desired",
@@ -1252,6 +1264,12 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureLoggingLevel",
+    "Payload": "Informational"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcSshSshdConfig",
     "Payload": "600"
   },
@@ -1287,6 +1305,11 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureSshLogLevelIsSet",
     "Payload": "INFO"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLoggingLevel"
   },
   {
     "ObjectType": "Reported",
