@@ -92,9 +92,14 @@ const char* GetLoggingLevelName(LoggingLevel level)
     return result;
 }
 
+bool IsLoggingLevelSupported(LoggingLevel level)
+{
+    return ((level >= LoggingLevelEmergency) && (level <= LoggingLevelDebug)) ? true : false;
+}
+
 void SetLoggingLevel(LoggingLevel level)
 {
-    g_loggingLevel = (level > LoggingLevelNotice) ? level : LoggingLevelInformational;
+    g_loggingLevel = IsLoggingLevelSupported(level) ? level : LoggingLevelInformational;
 }
 
 LoggingLevel GetLoggingLevel(void)

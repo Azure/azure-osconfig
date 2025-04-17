@@ -27,9 +27,10 @@
 #define MIN_DEVICE_MODEL_ID 7
 #define MAX_DEVICE_MODEL_ID 999
 
+// Emergency
+#define MIN_LOGGING_LEVEL 0
 // Informational
-#define MIN_LOGGING_LEVEL 6
-#define DEFAULT_LOGGING_LEVEL MIN_LOGGING_LEVEL
+#define DEFAULT_LOGGING_LEVEL 6
 // Debug
 #define MAX_LOGGING_LEVEL 7
 
@@ -342,4 +343,60 @@ char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, OsConfigLogHandl
 char* GetGitBranchFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetStringFromJsonConfig(GIT_BRANCH, jsonString, log);
+}
+
+int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
+{
+    const char* configurationFile = "/etc/osconfig/osconfig.json";
+    const char* loggingLevelTemplate = "\"LoggingLevel\": %u\n";
+    LoggingLevel existingLevel = LoggingLevelInformational;
+    char* loggingLevelLine = NULL;
+    char* jsonConfiguration = NULL;
+    int result = 0;
+
+    if (false == IsLoggingLevelSupported(level))
+    {
+        OsConfigLogError(log, "SetLoggingLevelPersistently: requested logging level %u is not supported", level);
+        result = EINVAL;
+    }
+    else if (NULL == loggingLevelLine = FormatAllocateString(loggingLevelTemplate, level))
+    {
+        OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
+        result = ENOMEM;
+    }
+    else
+    {
+        SetLoggingLevel(level);
+
+        if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, log))))
+        {
+            if (level != (existingLevel = GetLoggingLevelFromJsonConfig(jsonConfiguration, log)))
+            {
+                if (0 != (status = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", loggingLevelLine, '#', true, log)))
+                {
+                    OsConfigLogError(log, "SetLoggingLevelPersistently: failed to update the logging level to %u in the configuration file '%s'", level, configurationFile);
+                }
+            }
+        }
+        else
+        {
+            if (false == SavePayloadToFile(configurationFile, loggingLevelLine, strlen(loggingLevelLine), log))
+            {
+                OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'", level, configurationFile);
+                result = ENOENT;
+            }
+
+            if (FileExists(configurationFile))
+            {
+                RestrictFileAccessToCurrentAccountOnly(configurationFile);
+            }
+        }
+    }
+
+    FREE_MEMORY(loggingLevelLine);
+    FREE_MEMORY(jsonConfiguration);
+
+    OsConfigLogInfo(log, "SetLoggingLevelPersistently: saving operation for requested logging level %u completed with %d", level, result);
+
+    return result;
 }

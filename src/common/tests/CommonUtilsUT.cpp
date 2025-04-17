@@ -1349,6 +1349,22 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     FREE_MEMORY(reportedProperties);
 }
 
+TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
+{
+    const char* configurationFile = "/etc/osconfig/osconfig.json";
+    char* jsonConfiguration = NULL;
+
+    for (LoggingLevel level = LoggingLevelEmergency; level <= LoggingLevelDebug; level++)
+    {
+        EXPECT_EQ(0, SetLoggingLevelPersistently(level, nullptr));
+        EXPECT_TRUE(FileExists(configurationFile));
+        EXPECT_NE(nullptr, jsonConfiguration = LoadStringFromFile(configurationFile, false, nullptr));
+        EXPECT_EQ(level, GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr));
+    }
+
+    FREE_MEMORY(jsonConfiguration);
+}
+
 TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
 {
     unsigned int testModes[] = { 0, 0600, 0601, 0640, 0644, 0650, 0700, 0710, 0750, 0777 };
