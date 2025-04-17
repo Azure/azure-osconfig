@@ -1353,7 +1353,7 @@ TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
 {
     const char* configurationFile = "/etc/osconfig/osconfig.json";
     char* jsonConfiguration = NULL;
-    LoggingLevel original = GetLoggingLevel
+    LoggingLevel original = GetLoggingLevel();
 
     if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, nullptr))))
     {
