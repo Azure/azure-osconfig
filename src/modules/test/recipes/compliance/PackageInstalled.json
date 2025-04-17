@@ -1,0 +1,29 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "compliance.so"
+  },
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "PackageInstalled": {
+          "packageName": "bash"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ FileRegexMatch: pattern '.*' matched line 1 } == TRUE"
+  },
+
+  {
+    "Action": "UnloadModule"
+  }
+]
