@@ -349,9 +349,10 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
 {
     const char* configurationFile = "/etc/osconfig/osconfig.json";
     const char* loggingLevelTemplate = "  \"LoggingLevel\": %d,\n";
+    const char* configurationTemplate = "{\n  \"LoggingLevel\": %d\n}";
     LoggingLevel existingLevel = LoggingLevelInformational;
-    char* loggingLevelLine = NULL;
     char* jsonConfiguration = NULL;
+    char* buffer = NULL;
     int result = 0;
 
     if (false == IsLoggingLevelSupported(level))
@@ -359,24 +360,20 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
         OsConfigLogError(log, "SetLoggingLevelPersistently: requested logging level %u is not supported", level);
         result = EINVAL;
     }
-    else if (NULL == (loggingLevelLine = FormatAllocateString(loggingLevelTemplate, level)))
-    {
-        OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
-        result = ENOMEM;
-    }
     else
     {
-        OsConfigLogInfo(log, "FORMATTED LINE: '%s'", loggingLevelLine); //
-        
         SetLoggingLevel(level);
 
         if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, log))))
         {
-            OsConfigLogInfo(log, "JSON CONFIG: '%s'", jsonConfiguration); //    
-            
             if (level != (existingLevel = GetLoggingLevelFromJsonConfig(jsonConfiguration, log)))
             {
-                if (0 != (result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", loggingLevelLine, '#', true, log)))
+                if (NULL == (buffer = FormatAllocateString(loggingLevelTemplate, level)))
+                {
+                    OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
+                    result = ENOMEM;
+                } 
+                else if (0 != (result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", buffer, '#', true, log)))
                 {
                     OsConfigLogError(log, "SetLoggingLevelPersistently: failed to update the logging level to %u in the configuration file '%s'", level, configurationFile);
                 }
@@ -384,7 +381,12 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
         }
         else
         {
-            if (false == SavePayloadToFile(configurationFile, loggingLevelLine, strlen(loggingLevelLine), log))
+            if (NULL == (buffer = FormatAllocateString(configurationTemplate, level)))
+            {
+                OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
+                result = ENOMEM;
+            }
+            else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
             {
                 OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'", level, configurationFile);
                 result = ENOENT;
@@ -397,8 +399,8 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
         }
     }
 
-    FREE_MEMORY(loggingLevelLine);
     FREE_MEMORY(jsonConfiguration);
+    FREE_MEMORY(buffer);
 
     OsConfigLogInfo(log, "SetLoggingLevelPersistently: saving operation for requested logging level %u completed with %d", level, result);
 
