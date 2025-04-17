@@ -2752,7 +2752,7 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
 
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
-    
+
     const char* emergency = "EMERGENCY";
     const char* alert = "ALERT";
     const char* critical = "CRITICAL";
