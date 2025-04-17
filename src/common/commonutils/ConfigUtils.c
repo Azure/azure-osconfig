@@ -351,7 +351,7 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
     const char* loggingLevelTemplate = "  \"LoggingLevel\": %d\n";
     const char* loggingLevelTemplateWithComma = "  \"LoggingLevel\": %d,\n";
     const char* configurationTemplate = "{\n  \"LoggingLevel\": %d\n}\n";
-    
+
     LoggingLevel existingLevel = LoggingLevelInformational;
     char* jsonConfiguration = NULL;
     char* buffer = NULL;
@@ -372,7 +372,7 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
                 {
                     OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
                     result = ENOMEM;
-                } 
+                }
                 else if (0 != (result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", buffer, '#', true, log)))
                 {
                     OsConfigLogError(log, "SetLoggingLevelPersistently: failed to update the logging level to %u in the configuration file '%s'", level, configurationFile);
