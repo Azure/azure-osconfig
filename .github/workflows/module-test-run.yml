@@ -91,9 +91,6 @@ jobs:
             echo "$output"
             echo "$output" > ../../$name.log
           done
-          if command -v rpm > /dev/null 2>&1 ; then rpm -qa > ../../package.log; fi
-          if command -v dpkg > /dev/null 2>&1 ; then dpkg -l > ../../package.log; fi
-          if command -v dpkg > /dev/null 2>&1 ; then dpkg --get-selections >> ../../package.log; fi
 
           exit $result
 
