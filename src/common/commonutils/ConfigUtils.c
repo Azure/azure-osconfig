@@ -347,6 +347,7 @@ char* GetGitBranchFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 
 int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
 {
+    const char* configurationDirectory = "/etc/osconfig";
     const char* configurationFile = "/etc/osconfig/osconfig.json";
     const char* loggingLevelTemplate = "  \"LoggingLevel\": %d\n";
     const char* loggingLevelTemplateWithComma = "  \"LoggingLevel\": %d,\n";
@@ -394,15 +395,15 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
                 OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
                 result = ENOMEM;
             }
-            else
+            else if ((false == DirectoryExists(configurationDirectory)) && (0 != (result = mkdir(configurationDirectory, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))))
             {
-                remove(configurationFile);
-
-                if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
-                {
-                    OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'", level, configurationFile);
-                    result = ENOENT;
-                }
+                OsConfigLogError(log, "SetLoggingLevelPersistently: failed to create directiory '%s'for the configuration file (%d, %s)", configurationDirectory, errno, strerror(errno));
+                result = result ? result : (errno ? errno : ENOENT);
+            }
+            else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
+            {
+                OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'  (%d, %s)", level, configurationFile, errno, strerror(errno));
+                result = errno ? errno : ENOENT;
             }
 
             if (FileExists(configurationFile))
