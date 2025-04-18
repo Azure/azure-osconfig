@@ -32,6 +32,7 @@ static struct sockaddr_un g_socketaddr = {0};
 static socklen_t g_socketlen = 0;
 
 static pthread_t g_mpiServerWorker = 0;
+static int g_mpiServerWorkerError = -1;
 static bool g_serverActive = false;
 
 char g_mpiCall[MPI_CALL_MESSAGE_LENGTH] = {0};
@@ -547,8 +548,6 @@ static void* MpiServerWorker(void* arguments)
 
             contentLength = 0;
             responseSize = 0;
-            actualSize = 0;
-            estimatedSize = 0;
 
             FREE_MEMORY(requestBody);
             FREE_MEMORY(responseBody);
@@ -596,7 +595,7 @@ void MpiInitialize(void)
                 OsConfigLogInfo(GetPlatformLog(), "Listening on socket '%s'", g_mpiSocket);
 
                 g_serverActive = true;
-                g_mpiServerWorker = pthread_create(&g_mpiServerWorker, NULL, MpiServerWorker, NULL);
+                g_mpiServerWorkerError = pthread_create(&g_mpiServerWorker, NULL, MpiServerWorker, NULL);
             }
             else
             {
@@ -618,9 +617,10 @@ void MpiShutdown(void)
 {
     g_serverActive = false;
 
-    if (g_mpiServerWorker > 0)
+    if (g_mpiServerWorkerError == 0)
     {
         pthread_join(g_mpiServerWorker, NULL);
+        g_mpiServerWorkerError = -1;
     }
 
     UnloadModules();

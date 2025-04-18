@@ -42,7 +42,9 @@ TEST_F(ResultTest, MoveContructor)
 {
     Result<int> result1(42);
     Result<int> result2(std::move(result1));
+#ifndef __clang_analyzer__
     ASSERT_FALSE(result1.HasValue());
+#endif
     ASSERT_TRUE(result2.HasValue());
     ASSERT_EQ(result2.Value(), 42);
 }
@@ -60,7 +62,9 @@ TEST_F(ResultTest, MoveAssignment)
 {
     Result<int> result1(42);
     Result<int> result2 = std::move(result1);
+#ifndef __clang_analyzer__
     ASSERT_FALSE(result1.HasValue());
+#endif
     ASSERT_TRUE(result2.HasValue());
     ASSERT_EQ(result2.Value(), 42);
 }

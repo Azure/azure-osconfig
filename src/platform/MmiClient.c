@@ -204,15 +204,14 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
                     }
                 }
             }
-
-            if (0 == status)
-            {
-                *moduleInfo = info;
-            }
-            else
-            {
-                FreeModuleInfo(info);
-            }
+        }
+        if (0 == status)
+        {
+            *moduleInfo = info;
+        }
+        else
+        {
+            FreeModuleInfo(info);
         }
     }
 
@@ -318,6 +317,14 @@ MODULE* LoadModule(const char* client, const char* path)
         }
     }
 
+    if (value)
+    {
+        json_value_free(value);
+    }
+    if (payload)
+    {
+        module->free(payload);
+    }
     if (0 != status)
     {
         UnloadModule(module);

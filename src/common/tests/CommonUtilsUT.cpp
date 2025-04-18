@@ -1161,7 +1161,7 @@ TEST_F(CommonUtilsTest, FormatAllocateString)
     FREE_MEMORY(formatted);
     EXPECT_STREQ("Test ABC 123", formatted = FormatAllocateString("Test %s %d", "ABC", 123));
     FREE_MEMORY(formatted);
-    ASSERT_NE(nullptr, longString = (char*)malloc(longStringLength + 1));
+    EXPECT_NE(nullptr, longString = (char*)malloc(longStringLength + 1));
     memset(longString, 'a', longStringLength);
     longString[4095] = 0;
     EXPECT_STREQ(longString, formatted = FormatAllocateString("%s", longString));
