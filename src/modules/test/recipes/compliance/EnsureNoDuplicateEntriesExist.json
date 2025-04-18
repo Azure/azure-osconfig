@@ -45,7 +45,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ allOf: [{ EnsureNoDuplicateEntriesExist: Duplicate entry: '8888', 1 duplicate entries found in \/etc\/passwd } == FALSE]} == FALSE"
+    "Payload": "{ allOf: [{ EnsureNoDuplicateEntriesExist: Duplicate entry: '8888' } == FALSE]} == FALSE"
   },
 
 
@@ -86,7 +86,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ allOf: [{ EnsureNoDuplicateEntriesExist: Duplicate entry: '8888', Duplicate entry: '8889', 2 duplicate entries found in \/etc\/passwd } == FALSE]} == FALSE"
+    "Payload": "{ allOf: [{ EnsureNoDuplicateEntriesExist: Duplicate entry: '8888', Duplicate entry: '8889' } == FALSE]} == FALSE"
   },
 
 
