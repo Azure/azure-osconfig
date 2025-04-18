@@ -107,7 +107,7 @@ AUDIT_FN(EnsureNoDuplicateEntriesExist, "filename:The file to be checked for dup
         {
             indicators.NonCompliant("Duplicate entry: '" + entry + "'");
         }
-        return indicators.NonCompliant(std::to_string(duplicateEntries.size()) + " duplicate " + entries + " found in " + filename);
+        return Status::NonCompliant;
     }
 
     return indicators.Compliant(std::string("No duplicate ") + entries + " found in " + filename);
