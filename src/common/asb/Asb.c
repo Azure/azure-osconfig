@@ -1119,7 +1119,7 @@ static char* AuditEnsureLoggingLevel(OsConfigLogHandle log)
 
 // We need to avoid the warning treated as error for 'reason' always being non-NULL in this case
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Werror=address"
+#pragma GCC diagnostic ignored "-Waddress"
     if (existingLevel != desiredLevel)
     {
         OsConfigLogInfo(log, "Locally configured logging level for Azure OSConfig is %d instead of %d", existingLevel, desiredLevel);
