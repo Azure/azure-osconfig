@@ -46,7 +46,7 @@ jobs:
           DEFAULT_POLICYPACKAGES: |
             [
               { "name": "LinuxSshServerSecurityBaseline", "short-name": "SSH", "resource-count": 20 },
-              { "name": "AzureLinuxBaseline", "short-name": "ASB", "resource-count": 168 }
+              { "name": "AzureLinuxBaseline", "short-name": "ASB", "resource-count": 169 }
             ]
           TARGETS: |
             [
