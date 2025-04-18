@@ -15,7 +15,7 @@
         "version": "1.0.0",
         "contentType": "Custom",
         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-        "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED",
+        "contentHash": "BC94409A587C68363FEBC78D0CED404A368B3E91567E521B70203DB401A8F505",
         "configurationParameter": {
           "loggingLevel": "Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue"
         }
@@ -315,7 +315,7 @@
               },
               {
                 "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/parameterHash",
-                "equals": "[base64(concat('Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue', '=', parameters('loggingLevel')]"
+                "equals": "[base64(concat('Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue', '=', parameters('loggingLevel')))]"
               }
             ]
           },
@@ -337,7 +337,7 @@
                 },
                 "loggingLevel": {
                   "value": "[parameters('loggingLevel')]"
-                },
+                }
               },
               "template": {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -357,7 +357,7 @@
                   },
                   "loggingLevel": {
                     "type": "string"
-                  },
+                  }
                 },
                 "resources": [
                   {
@@ -372,7 +372,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED",
+                        "contentHash": "BC94409A587C68363FEBC78D0CED404A368B3E91567E521B70203DB401A8F505",
                         "assignmentType": "ApplyAndAutoCorrect",
                         "configurationParameter": [
                           {
@@ -395,7 +395,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED",
+                        "contentHash": "BC94409A587C68363FEBC78D0CED404A368B3E91567E521B70203DB401A8F505",
                         "assignmentType": "ApplyAndAutoCorrect",
                         "configurationParameter": [
                           {
@@ -418,7 +418,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED",
+                        "contentHash": "BC94409A587C68363FEBC78D0CED404A368B3E91567E521B70203DB401A8F505",
                         "assignmentType": "ApplyAndAutoCorrect",
                         "configurationParameter": [
                           {
