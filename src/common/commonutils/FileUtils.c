@@ -101,7 +101,7 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
         else
         {
             result = false;
-            OsConfigLogInfo(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
+            OsConfigLogInfo(log, "SaveToFile: cannot open '%s' in mode '%s' (%d, %s)", fileName, mode, errno, strerror(errno));
         }
     }
     else
@@ -940,8 +940,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, OsCon
     return status;
 }
 
-static int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess,
-    bool prepend, OsConfigLogHandle log)
+static int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, bool prepend, OsConfigLogHandle log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.ReplacingLines%u";
     char* tempFileName = NULL;

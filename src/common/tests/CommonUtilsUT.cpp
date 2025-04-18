@@ -1349,6 +1349,34 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     FREE_MEMORY(reportedProperties);
 }
 
+TEST_F(CommonUtilsTest, SetLoggingLevelPersistently)
+{
+    const char* configurationFile = "/etc/osconfig/osconfig.json";
+    char* jsonConfiguration = NULL;
+    int original = -1;
+
+    if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, nullptr))))
+    {
+        original = GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr);
+        FREE_MEMORY(jsonConfiguration);
+    }
+
+    for (int level = (int)LoggingLevelEmergency; level <= (int)LoggingLevelDebug; level++)
+    {
+        EXPECT_TRUE(IsLoggingLevelSupported((LoggingLevel)level));
+        EXPECT_EQ(0, SetLoggingLevelPersistently((LoggingLevel)level, nullptr));
+        EXPECT_TRUE(FileExists(configurationFile));
+        EXPECT_NE(nullptr, jsonConfiguration = LoadStringFromFile(configurationFile, false, nullptr));
+        EXPECT_EQ(level, GetLoggingLevelFromJsonConfig(jsonConfiguration, nullptr));
+        FREE_MEMORY(jsonConfiguration);
+    }
+
+    if (-1 != original)
+    {
+        EXPECT_EQ(0, SetLoggingLevelPersistently((LoggingLevel)original, nullptr));
+    }
+}
+
 TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
 {
     unsigned int testModes[] = { 0, 0600, 0601, 0640, 0644, 0650, 0700, 0710, 0750, 0777 };
@@ -2726,6 +2754,12 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
 
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
+    const char* emergency = "EMERGENCY";
+    const char* alert = "ALERT";
+    const char* critical = "CRITICAL";
+    const char* error = "ERROR";
+    const char* warning = "WARNING";
+    const char* notice = "NOTICE";
     const char* info = "INFO";
     const char* debug = "DEBUG";
 
@@ -2733,39 +2767,45 @@ TEST_F(CommonUtilsTest, LoggingOptions)
     unsigned int i = 0;
     unsigned int maxLogSize = 0;
 
-    SetLoggingLevel(LoggingLevelDebug);
-    EXPECT_TRUE(IsDebugLoggingEnabled());
-    EXPECT_EQ(LoggingLevelDebug, level = GetLoggingLevel());
-    EXPECT_STREQ(debug, GetLoggingLevelName(level));
+    SetLoggingLevel(LoggingLevelEmergency);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelEmergency, level = GetLoggingLevel());
+    EXPECT_STREQ(emergency, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelAlert);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelAlert, level = GetLoggingLevel());
+    EXPECT_STREQ(alert, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelCritical);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelCritical, level = GetLoggingLevel());
+    EXPECT_STREQ(critical, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelError);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelError, level = GetLoggingLevel());
+    EXPECT_STREQ(error, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelWarning);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelWarning, level = GetLoggingLevel());
+    EXPECT_STREQ(warning, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelNotice);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelNotice, level = GetLoggingLevel());
+    EXPECT_STREQ(notice, GetLoggingLevelName(level));
 
     SetLoggingLevel(LoggingLevelInformational);
     EXPECT_FALSE(IsDebugLoggingEnabled());
     EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
     EXPECT_STREQ(info, GetLoggingLevelName(level));
 
-    SetLoggingLevel(LoggingLevelEmergency);
-    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ(info, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelAlert);
-    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ(info, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelCritical);
-    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ(info, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelError);
-    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ(info, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelWarning);
-    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ(info, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelNotice);
-    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ(info, GetLoggingLevelName(level));
+    SetLoggingLevel(LoggingLevelDebug);
+    EXPECT_TRUE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelDebug, level = GetLoggingLevel());
+    EXPECT_STREQ(debug, GetLoggingLevelName(level));
 
     for (i = 0; i < 100; i++)
     {

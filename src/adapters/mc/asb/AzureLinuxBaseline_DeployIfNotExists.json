@@ -15,7 +15,10 @@
         "version": "1.0.0",
         "contentType": "Custom",
         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-        "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED"
+        "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED",
+        "configurationParameter": {
+          "loggingLevel": "Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue"
+        }
       }
     },
     "parameters": {
@@ -44,6 +47,24 @@
           "Disabled"
         ],
         "defaultValue": "AuditIfNotExists"
+      },
+      "loggingLevel": {
+        "type": "string",
+        "metadata": {
+          "displayName": "LoggingLevel",
+          "description": "Configures the logging level for Azure OSConfig on local machine"
+        },
+        "allowedValues": [
+          "Emergency",
+          "Alert",
+          "Critical",
+          "Error",
+          "Warning",
+          "Notice",
+          "Informational",
+          "Debug"
+        ],
+        "defaultValue": "Informational"
       }
     },
     "policyRule": {
@@ -291,6 +312,10 @@
               {
                 "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/complianceStatus",
                 "equals": "Compliant"
+              },
+              {
+                "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/parameterHash",
+                "equals": "[base64(concat('Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue', '=', parameters('loggingLevel')]"
               }
             ]
           },
@@ -309,7 +334,10 @@
                 },
                 "assignmentName": {
                   "value": "[concat('AzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
-                }
+                },
+                "loggingLevel": {
+                  "value": "[parameters('loggingLevel')]"
+                },
               },
               "template": {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -326,7 +354,10 @@
                   },
                   "assignmentName": {
                     "type": "string"
-                  }
+                  },
+                  "loggingLevel": {
+                    "type": "string"
+                  },
                 },
                 "resources": [
                   {
@@ -342,7 +373,13 @@
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
                         "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED",
-                        "assignmentType": "ApplyAndAutoCorrect"
+                        "assignmentType": "ApplyAndAutoCorrect",
+                        "configurationParameter": [
+                          {
+                            "name": "Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue",
+                            "value": "[parameters('loggingLevel')]"
+                          }
+                        ]
                       }
                     }
                   },
@@ -359,7 +396,13 @@
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
                         "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED",
-                        "assignmentType": "ApplyAndAutoCorrect"
+                        "assignmentType": "ApplyAndAutoCorrect",
+                        "configurationParameter": [
+                          {
+                            "name": "Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue",
+                            "value": "[parameters('loggingLevel')]"
+                          }
+                        ]
                       }
                     }
                   },
@@ -376,7 +419,13 @@
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
                         "contentHash": "FFB8E1CA4A7319012BE51C7E651092819679E9F8F7803A3A9741332D061B1AED",
-                        "assignmentType": "ApplyAndAutoCorrect"
+                        "assignmentType": "ApplyAndAutoCorrect",
+                        "configurationParameter": [
+                          {
+                            "name": "Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue",
+                            "value": "[parameters('loggingLevel')]"
+                          }
+                        ]
                       }
                     }
                   }

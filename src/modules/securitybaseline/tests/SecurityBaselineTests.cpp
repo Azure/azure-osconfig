@@ -25,6 +25,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_securityBaselineModuleName = "OSConfig SecurityBaseline module";
         const char* m_securityBaselineComponentName = "SecurityBaseline";
 
+        const char* m_auditEnsureLoggingLevelObject = "auditEnsureLoggingLevel";
         const char* m_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
         const char* m_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
         const char* m_auditEnsurePermissionsOnEtcHostsAllowObject = "auditEnsurePermissionsOnEtcHostsAllow";
@@ -194,6 +195,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureUnnecessaryAccountsAreRemovedObject = "auditEnsureUnnecessaryAccountsAreRemoved";
 
         // Initialization for audit
+        const char* m_initEnsureLoggingLevelObject = "initEnsureLoggingLevel";
         const char* m_initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
         const char* m_initEnsureSshPortIsConfiguredObject = "initEnsureSshPortIsConfigured";
         const char* m_initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
@@ -318,6 +320,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
     int payloadSizeBytes = 0;
 
     const char* mimObjects[] = {
+        m_auditEnsureLoggingLevelObject,
         m_auditEnsurePermissionsOnEtcIssueObject,
         m_auditEnsurePermissionsOnEtcIssueNetObject,
         m_auditEnsurePermissionsOnEtcHostsAllowObject,

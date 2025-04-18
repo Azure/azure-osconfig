@@ -36,6 +36,143 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureLoggingLevel",
+    "Payload": "Emergency"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureLoggingLevel",
+    "Payload": "Emergency"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLoggingLevel"
+  },
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureLoggingLevel",
+    "Payload": "Alert"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureLoggingLevel",
+    "Payload": "Alert"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLoggingLevel"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureLoggingLevel",
+    "Payload": "Critical"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureLoggingLevel",
+    "Payload": "Critical"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLoggingLevel"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureLoggingLevel",
+    "Payload": "Error"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureLoggingLevel",
+    "Payload": "Error"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLoggingLevel"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureLoggingLevel",
+    "Payload": "Warning"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureLoggingLevel",
+    "Payload": "Warning"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLoggingLevel"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureLoggingLevel",
+    "Payload": "Notice"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureLoggingLevel",
+    "Payload": "Notice"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLoggingLevel"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureLoggingLevel",
+    "Payload": "Debug"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureLoggingLevel",
+    "Payload": "Debug"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLoggingLevel"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureLoggingLevel",
+    "Payload": "Informational"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureLoggingLevel",
+    "Payload": "Informational"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLoggingLevel"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcSshSshdConfig",
     "Payload": "600"
   },
@@ -1252,6 +1389,12 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureLoggingLevel",
+    "Payload": "Informational"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePermissionsOnEtcSshSshdConfig",
     "Payload": "600"
   },
@@ -1287,6 +1430,11 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureSshLogLevelIsSet",
     "Payload": "INFO"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLoggingLevel"
   },
   {
     "ObjectType": "Reported",

@@ -238,6 +238,7 @@ int GetModelVersionFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 int GetLocalManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetIotHubProtocolFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** reportedProperties, OsConfigLogHandle log);
+int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log);
 
 int GetGitManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
