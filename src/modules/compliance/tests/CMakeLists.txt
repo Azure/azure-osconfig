@@ -11,6 +11,7 @@ FILE(GLOB PROCEDURES procedures/*.cpp)
 
 add_executable(compliancetests
     Base64Test.cpp
+    CommonContextTest.cpp
     ComplianceTest.cpp
     EngineTest.cpp
     EvaluatorTest.cpp
