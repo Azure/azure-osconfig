@@ -50,6 +50,10 @@ jobs:
         working-directory: ${{ steps.download.outputs.download-path }}/modules/test
         run: |
           sudo chmod +x ./moduletest
+          if command -v rpm > /dev/null 2>&1 ; then rpm -qa > package.log; fi
+          if command -v dpkg > /dev/null 2>&1 ; then dpkg -l > package.log; fi
+          if command -v dpkg > /dev/null 2>&1 ; then dpkg --get-selections > package.log; fi
+
 
           result=0
           recipes=$(find ../../src/modules/test/recipes/ -name "*.json")
