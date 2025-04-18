@@ -82,7 +82,7 @@ static Result<std::map<std::string, FstabEntry>> ParseFstab(const std::string& f
 }
 
 static Status CheckOptions(const std::vector<std::string>& options, const std::set<std::string>& optionsSet, const std::set<std::string>& optionsNotSet,
-    Indicators& indicators)
+    IndicatorsTree& indicators)
 {
     for (const auto& option : optionsSet)
     {

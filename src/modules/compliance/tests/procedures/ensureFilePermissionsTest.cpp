@@ -15,7 +15,7 @@
 
 using compliance::AuditEnsureFilePermissions;
 using compliance::Error;
-using compliance::Indicators;
+using compliance::IndicatorsTree;
 using compliance::RemediateEnsureFilePermissions;
 using compliance::Result;
 using compliance::Status;
@@ -26,7 +26,7 @@ protected:
     char fileTemplate[PATH_MAX] = "/tmp/permTest.XXXXXX";
     std::vector<std::string> files;
     MockContext mContext;
-    Indicators indicators;
+    IndicatorsTree indicators;
     compliance::NestedListFormatter mFormatter;
 
     void SetUp() override

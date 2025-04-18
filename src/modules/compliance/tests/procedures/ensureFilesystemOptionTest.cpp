@@ -14,7 +14,7 @@
 
 using compliance::AuditEnsureFilesystemOption;
 using compliance::Error;
-using compliance::Indicators;
+using compliance::IndicatorsTree;
 using compliance::RemediateEnsureFilesystemOption;
 using compliance::Result;
 using compliance::Status;
@@ -27,7 +27,7 @@ protected:
     std::string fstabFile;
     std::string mtabFile;
     MockContext mContext;
-    Indicators indicators;
+    IndicatorsTree indicators;
 
     void SetUp() override
     {

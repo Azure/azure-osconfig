@@ -34,10 +34,10 @@ struct json_value_t;
 // "yetanotherparameter:This one is validated::^[0-9]+$"
 
 #define AUDIT_FN(fn_name, parameters...)                                                                                                               \
-    ::compliance::Result<::compliance::Status> Audit##fn_name(std::map<std::string, std::string> args, Indicators& indicators, ContextInterface& context)
+    ::compliance::Result<::compliance::Status> Audit##fn_name(std::map<std::string, std::string> args, IndicatorsTree& indicators, ContextInterface& context)
 
 #define REMEDIATE_FN(fn_name, parameters...)                                                                                                           \
-    ::compliance::Result<::compliance::Status> Remediate##fn_name(std::map<std::string, std::string> args, Indicators& indicators, ContextInterface& context)
+    ::compliance::Result<::compliance::Status> Remediate##fn_name(std::map<std::string, std::string> args, IndicatorsTree& indicators, ContextInterface& context)
 
 namespace compliance
 {
@@ -47,50 +47,50 @@ class PayloadFormatter
 public:
     virtual ~PayloadFormatter() = default;
 
-    virtual Result<std::string> Format(const Indicators& indicators) const = 0;
+    virtual Result<std::string> Format(const IndicatorsTree& indicators) const = 0;
 };
 
 class NestedListFormatter : public PayloadFormatter
 {
-    void FormatNode(const Indicators::Node& node, std::ostringstream& output, int depth) const;
+    void FormatNode(const IndicatorsTree::Node& node, std::ostringstream& output, int depth) const;
 
 public:
     ~NestedListFormatter() override = default;
 
-    Result<std::string> Format(const Indicators& indicators) const override;
+    Result<std::string> Format(const IndicatorsTree& indicators) const override;
 };
 
 class CompactListFormatter : public PayloadFormatter
 {
-    void FormatNode(const Indicators::Node& node, std::ostringstream& output) const;
+    void FormatNode(const IndicatorsTree::Node& node, std::ostringstream& output) const;
 
 public:
     ~CompactListFormatter() override = default;
 
-    Result<std::string> Format(const Indicators& indicators) const override;
+    Result<std::string> Format(const IndicatorsTree& indicators) const override;
 };
 
 class JsonFormatter : public PayloadFormatter
 {
-    Optional<Error> FormatNode(const Indicators::Node& node, json_value_t* jsonValue) const;
+    Optional<Error> FormatNode(const IndicatorsTree::Node& node, json_value_t* jsonValue) const;
 
 public:
     ~JsonFormatter() override = default;
 
-    Result<std::string> Format(const Indicators& indicators) const override;
+    Result<std::string> Format(const IndicatorsTree& indicators) const override;
 };
 
 class MmiFormatter : public PayloadFormatter
 {
-    void FormatNode(const Indicators::Node& node, std::ostringstream& output) const;
+    void FormatNode(const IndicatorsTree::Node& node, std::ostringstream& output) const;
 
 public:
     ~MmiFormatter() override = default;
-    Result<std::string> Format(const Indicators& indicators) const override;
+    Result<std::string> Format(const IndicatorsTree& indicators) const override;
 };
 
 using ParameterMap = std::map<std::string, std::string>;
-using action_func_t = Result<Status> (*)(ParameterMap, Indicators&, ContextInterface&);
+using action_func_t = Result<Status> (*)(ParameterMap, IndicatorsTree&, ContextInterface&);
 struct ProcedureActions
 {
     action_func_t audit;
@@ -131,7 +131,7 @@ private:
     static const size_t cLogstreamMaxSize = 4096;
 
     // List of indicators which determine the final state of the evaluation
-    Indicators mIndicators;
+    IndicatorsTree mIndicators;
 };
 } // namespace compliance
 
