@@ -101,7 +101,7 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
         else
         {
             result = false;
-            OsConfigLogInfo(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
+            OsConfigLogInfo(log, "SaveToFile: cannot open '%s' in mode '%s' (%d, %s)", fileName, mode, errno, strerror(errno));
         }
     }
     else

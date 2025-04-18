@@ -394,10 +394,15 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
                 OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
                 result = ENOMEM;
             }
-            else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
+            else
             {
-                OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'", level, configurationFile);
-                result = ENOENT;
+                remove(configurationFile);
+
+                if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
+                {
+                    OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'", level, configurationFile);
+                    result = ENOENT;
+                }
             }
 
             if (FileExists(configurationFile))
