@@ -364,19 +364,27 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
     }
     else
     {
-        if (FileExists(configurationFile) && (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, log))))
+        if (FileExists(configurationFile))
         {
-            if (level != (existingLevel = GetLoggingLevelFromJsonConfig(jsonConfiguration, log)))
+            if (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, log)))
             {
-                if (NULL == (buffer = FormatAllocateString(strstr(jsonConfiguration, ",") ? loggingLevelTemplateWithComma : loggingLevelTemplate, level)))
+                if (level != (existingLevel = GetLoggingLevelFromJsonConfig(jsonConfiguration, log)))
                 {
-                    OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
-                    result = ENOMEM;
+                    if (NULL == (buffer = FormatAllocateString(strstr(jsonConfiguration, ",") ? loggingLevelTemplateWithComma : loggingLevelTemplate, level)))
+                    {
+                        OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
+                        result = ENOMEM;
+                    }
+                    else if (0 != (result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", buffer, '#', true, log)))
+                    {
+                        OsConfigLogError(log, "SetLoggingLevelPersistently: failed to update the logging level to %u in the configuration file '%s'", level, configurationFile);
+                    }
                 }
-                else if (0 != (result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", buffer, '#', true, log)))
-                {
-                    OsConfigLogError(log, "SetLoggingLevelPersistently: failed to update the logging level to %u in the configuration file '%s'", level, configurationFile);
-                }
+            }
+            else
+            {
+                OsConfigLogError(log, "SetLoggingLevelPersistently: cannot read from '%s' (%d, %s)", configurationFile, errno, strerror(errno));
+                result = errno ? errno : ENOENT;
             }
         }
         else
