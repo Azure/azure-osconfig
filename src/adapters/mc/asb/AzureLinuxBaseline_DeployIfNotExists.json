@@ -51,7 +51,7 @@
       "loggingLevel": {
         "type": "string",
         "metadata": {
-          "displayName": "LoggingLevel",
+          "displayName": "Logging level for Azure OSConfig",
           "description": "Configures the logging level for Azure OSConfig on local machine"
         },
         "allowedValues": [
