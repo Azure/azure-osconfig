@@ -83,7 +83,7 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
     if (!strcmp(name, "anyOf"))
     {
         mIndicators.Push("anyOf");
-        const auto result = EvaluateAnyOf(value, action);
+        const auto result = EvaluateList(value, action, ListAction::AnyOf);
         if (!result.HasValue())
         {
             OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
@@ -97,7 +97,7 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
     if (!strcmp(name, "allOf"))
     {
         mIndicators.Push("allOf");
-        const auto result = EvaluateAllOf(value, action);
+        const auto result = EvaluateList(value, action, ListAction::AllOf);
         if (!result.HasValue())
         {
             OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
@@ -135,9 +135,10 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
     return result.Value();
 }
 
-Result<Status> Evaluator::EvaluateAnyOf(const json_value_t* value, const Action action)
+Result<Status> Evaluator::EvaluateList(const json_value_t* value, const Action action, const ListAction listAction)
 {
-    OsConfigLogDebug(mContext.GetLogHandle(), "Evaluating anyOf operator");
+    const char* actionName = listAction == ListAction::AnyOf ? "anyOf" : "allOf";
+    OsConfigLogDebug(mContext.GetLogHandle(), "Evaluating %s operator", actionName);
 
     if (nullptr == value)
     {
@@ -147,8 +148,8 @@ Result<Status> Evaluator::EvaluateAnyOf(const json_value_t* value, const Action 
 
     if (json_value_get_type(value) != JSONArray)
     {
-        OsConfigLogError(mContext.GetLogHandle(), "anyOf value is not an array");
-        return Error("anyOf value is not an array", EINVAL);
+        OsConfigLogError(mContext.GetLogHandle(), "%s value is not an array", actionName);
+        return Error(std::string(actionName) + " value is not an array", EINVAL);
     }
 
     const auto* array = json_value_get_array(value);
@@ -163,51 +164,20 @@ Result<Status> Evaluator::EvaluateAnyOf(const json_value_t* value, const Action 
             return result;
         }
 
-        if (result.Value() == Status::Compliant)
+        if (result.Value() == Status::Compliant && listAction == ListAction::AnyOf)
         {
             OsConfigLogDebug(mContext.GetLogHandle(), "Evaluation returned compliant status at index %zu", i);
             return Status::Compliant;
         }
-    }
 
-    return Status::NonCompliant;
-}
-
-Result<Status> Evaluator::EvaluateAllOf(const json_value_t* value, const Action action)
-{
-    OsConfigLogDebug(mContext.GetLogHandle(), "Evaluating allOf operator");
-
-    if (nullptr == value)
-    {
-        OsConfigLogError(mContext.GetLogHandle(), "invalid argument");
-        return Error("invalid argument", EINVAL);
-    }
-
-    if (json_value_get_type(value) != JSONArray)
-    {
-        OsConfigLogError(mContext.GetLogHandle(), "allOf value is not an array");
-        return Error("allOf value is not an array", EINVAL);
-    }
-
-    const auto* array = json_value_get_array(value);
-    const size_t count = json_array_get_count(array);
-    for (size_t i = 0; i < count; ++i)
-    {
-        const auto* subObject = json_array_get_object(array, i);
-        const auto result = EvaluateProcedure(subObject, action);
-        if (!result.HasValue())
-        {
-            OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed at index %zu: %s", i, result.Error().message.c_str());
-            return result;
-        }
-
-        if (result.Value() == Status::NonCompliant)
+        if (result.Value() == Status::NonCompliant && listAction == ListAction::AllOf)
         {
             OsConfigLogDebug(mContext.GetLogHandle(), "Evaluation returned non-compliant status at index %zu", i);
             return Status::NonCompliant;
         }
     }
-    return Status::Compliant;
+
+    return listAction == ListAction::AnyOf ? Status::NonCompliant : Status::Compliant;
 }
 
 Result<Status> Evaluator::EvaluateNot(const json_value_t* value, const Action action)
