@@ -266,13 +266,11 @@ namespace compliance
 AUDIT_FN(PackageInstalled, "packageName:Package name:M", "packageManager:Package manager, autodetected by default::^(rpm|dpkg)$",
     "test_cachePath:Cache path")
 {
-    auto& logstream = context.GetLogstream();
     auto log = context.GetLogHandle();
 
     auto packageNameIt = args.find("packageName");
     if (packageNameIt == args.end())
     {
-        context.GetLogstream() << "No package name provided";
         return Error("No package name provided");
     }
     auto packageName = std::move(packageNameIt->second);
@@ -288,7 +286,6 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "packageManager:Package
         packageManager = DetectPackageManager(context);
         if (packageManager.empty())
         {
-            logstream << "No package manager found";
             return Error("No package manager found");
         }
     }
@@ -362,13 +359,11 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "packageManager:Package
 
     if (cache.packageNames.find(packageName) != cache.packageNames.end())
     {
-        logstream << "Package " << packageName << " is installed";
-        return true;
+        return indicators.Compliant("Package " + packageName + " is installed");
     }
     else
     {
-        logstream << "Package " << packageName << " is not installed";
-        return false;
+        return indicators.NonCompliant("Package " + packageName + " is not installed");
     }
 }
 } // namespace compliance

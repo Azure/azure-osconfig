@@ -255,7 +255,7 @@ TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_1)
     // Result is reported by the Evaluator class
     auto result = mEngine.MmiSet("remediateX", "");
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.Error().message, std::string("Unknown function"));
+    EXPECT_EQ(result.Error().message, std::string("Unknown function 'X'"));
 }
 
 TEST_F(ComplianceEngineTest, MmiSet_executeRemediation_2)
@@ -291,7 +291,7 @@ TEST_F(ComplianceEngineTest, MmiGet_1)
     // Result is reported by the Evaluator class
     auto result = mEngine.MmiGet("auditX");
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.Error().message, std::string("Unknown function"));
+    EXPECT_EQ(result.Error().message, std::string("Unknown function 'X'"));
 }
 
 TEST_F(ComplianceEngineTest, MmiGet_2)

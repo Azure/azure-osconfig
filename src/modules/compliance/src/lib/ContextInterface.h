@@ -18,9 +18,6 @@ public:
     virtual Result<std::string> ExecuteCommand(const std::string& cmd) const = 0;
     virtual Result<std::string> GetFileContents(const std::string& filePath) const = 0;
 
-    // TODO: To be replaced with a proper logging interface
-    virtual std::ostream& GetLogstream() = 0;
-    virtual std::string ConsumeLogstream() = 0;
     virtual OsConfigLogHandle GetLogHandle() const = 0;
 };
 } // namespace compliance
