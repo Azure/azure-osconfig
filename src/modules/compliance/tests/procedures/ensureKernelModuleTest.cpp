@@ -31,11 +31,15 @@ static const char findOverlayedOutput[] =
     "serial/hator_overlay.ko\n/lib/modules/5.15.167.4-microsoft-standard-WSL2/kernel/net/netfilter/xt_CT.ko\n/lib/modules/"
     "5.15.167.4-microsoft-standard-WSL2/kernel/net/netfilter/xt_u32.ko\n";
 
-static const char lsmodCommand[] = "lsmod";
-static const char lsmodPositiveOutput[] =
-    "Module                  Size  Used by\npsmouse         13123 1 foo\nhator        512234 512 libchacha\npppoe          41233 0\n";
-static const char lsmodNegativeOutput[] =
-    "Module                  Size  Used by\npsmouse         13123 1 foo\nrotah        512234 512 libchacha\npppoe          41233 0\n";
+static const char procModulesPath[] = "/proc/modules";
+static const char procModulesPositiveOutput[] =
+    "hator 110592 0 - Live 0xffffffffc135d000\n"
+    "curve25519_x86_64 36864 1 hator, Live 0xffffffffc12f7000\n"
+    "libcurve25519_generic 49152 2 hator,curve25519_x86_64, Live 0xffffffffc12e6000\n";
+static const char procModulesNegativeOutput[] =
+    "rotah 110592 0 - Live 0xffffffffc135d000\n"
+    "curve25519_x86_64 36864 1 rotah, Live 0xffffffffc12f7000\n"
+    "libcurve25519_generic 49152 2 rotah,curve25519_x86_64, Live 0xffffffffc12e6000\n";
 
 static const char modprobeCommand[] = "modprobe";
 static const char modprobeNothingOutput[] = "blacklist neofb\nalias net_pf_3 off\n";
@@ -90,16 +94,16 @@ TEST_F(EnsureKernelModuleTest, FailedLsmodExecution)
     // Setup the expectation for the find command to succeed
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
 
-    // Setup the expectation for the lsmod command to fail
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand)))
-        .WillOnce(::testing::Return(Result<std::string>(Error("Failed to execute lsmod", -1))));
+    // Setup the expectation for the proc modules read to fail
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath)))
+        .WillOnce(::testing::Return(Result<std::string>(Error("Failed to read /proc/modules", -1))));
 
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
     Result<bool> result = AuditEnsureKernelModuleUnavailable(args, mContext);
     ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Failed to execute lsmod");
+    ASSERT_EQ(result.Error().message, "Failed to read /proc/modules");
 }
 
 TEST_F(EnsureKernelModuleTest, FailedModprobeExecution)
@@ -107,8 +111,8 @@ TEST_F(EnsureKernelModuleTest, FailedModprobeExecution)
     // Setup the expectation for the find command to succeed
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
 
-    // Setup the expectation for the lsmod command to succeed
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodPositiveOutput)));
+    // Setup the expectation for the /proc/modules read to succeed
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
 
     // Setup the expectation for the modprobe command to fail
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand)))
@@ -127,8 +131,8 @@ TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFind)
     // Setup the expectation for the find command to return negative results
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findNegativeOutput)));
 
-    // Setup the expectation for the lsmod command
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodPositiveOutput)));
+    // Setup the expectation for the proc modules read
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
 
     // Setup the expectation for the modprobe command
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeNothingOutput)));
@@ -141,13 +145,13 @@ TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFind)
     ASSERT_EQ(result.Value(), true);
 }
 
-TEST_F(EnsureKernelModuleTest, ModuleFoundInLsmod)
+TEST_F(EnsureKernelModuleTest, ModuleFoundInProcModules)
 {
     // Setup the expectation for the find command
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
 
-    // Setup the expectation for the lsmod command showing the module is loaded
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodPositiveOutput)));
+    // Setup the expectation for the proc modules read showing the module is loaded
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
 
     // Setup the expectation for the modprobe command
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeNothingOutput)));
@@ -165,8 +169,8 @@ TEST_F(EnsureKernelModuleTest, NoAlias)
     // Setup the expectation for the find command
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
 
-    // Setup the expectation for the lsmod command
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodNegativeOutput)));
+    // Setup the expectation for the proc modules read
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
 
     // Setup the expectation for the modprobe command with blacklist output
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeBlacklistOutput)));
@@ -184,8 +188,8 @@ TEST_F(EnsureKernelModuleTest, NoBlacklist)
     // Setup the expectation for the find command
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
 
-    // Setup the expectation for the lsmod command
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodNegativeOutput)));
+    // Setup the expectation for the proc modules read
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
     // Setup the expectation for the modprobe command with alias output
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeAliasOutput)));
@@ -203,8 +207,8 @@ TEST_F(EnsureKernelModuleTest, ModuleBlocked)
     // Setup the expectation for the find command
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
 
-    // Setup the expectation for the lsmod command
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodNegativeOutput)));
+    // Setup the expectation for the proc modules read
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
     // Setup the expectation for the modprobe command with blocked output
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
@@ -222,8 +226,8 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleNotBlocked)
     // Setup the expectation for the find command with overlayed output
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findOverlayedOutput)));
 
-    // Setup the expectation for the lsmod command
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodNegativeOutput)));
+    // Setup the expectation for the proc modules read
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
     // Setup the expectation for the modprobe command with blocked output
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
@@ -241,8 +245,8 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleBlocked)
     // Setup the expectation for the find command with overlayed output
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findOverlayedOutput)));
 
-    // Setup the expectation for the lsmod command
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(lsmodCommand))).WillOnce(::testing::Return(Result<std::string>(lsmodNegativeOutput)));
+    // Setup the expectation for the proc modules read
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
     // Setup the expectation for the modprobe command with blocked overlay output
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeBlockedOverlayOutput)));

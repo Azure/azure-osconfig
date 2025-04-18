@@ -59,6 +59,7 @@ struct Error
     }
     ~Error() = default;
 };
+std::ostream& operator<<(std::ostream& os, const compliance::Error& error);
 
 template <typename T>
 class Result
