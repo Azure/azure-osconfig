@@ -3,6 +3,11 @@
     "Action": "LoadModule",
     "Module": "compliance.so"
   },
+
+  // For CBL Marriner to work
+  {
+    "RunCommand": "grep -q Mariner /etc/issue && rpm -qi azure-security >| /dev/null 2>&1 && tdnf remove -y azsec-bpftrace azsec-clamav azsec-monitor azure-security azuremonitoragent || true"
+  },
   {
     "RunCommand": "sysctl net.ipv4.ip_forward=1 && test -f /etc/sysctl.d/99-sysctl.conf && cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.bak ||  true ; echo net.ipv4.ip_forward=1 >> /etc/sysctl.d/99-sysctl.conf"
   },

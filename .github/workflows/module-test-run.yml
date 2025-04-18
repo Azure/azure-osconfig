@@ -51,6 +51,7 @@ jobs:
         run: |
           sudo chmod +x ./moduletest
 
+
           result=0
           recipes=$(find ../../src/modules/test/recipes/ -name "*.json")
 
