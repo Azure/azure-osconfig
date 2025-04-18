@@ -80,24 +80,10 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
         return Error("Rule name or value is null");
     }
 
-    if (!strcmp(name, "anyOf"))
+    if (!strcmp(name, "anyOf") || !strcmp(name, "allOf"))
     {
-        mIndicators.Push("anyOf");
-        const auto result = EvaluateList(value, action, ListAction::AnyOf);
-        if (!result.HasValue())
-        {
-            OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
-            return result;
-        }
-        mIndicators.Back().status = result.Value();
-        mIndicators.Pop();
-        return result.Value();
-    }
-
-    if (!strcmp(name, "allOf"))
-    {
-        mIndicators.Push("allOf");
-        const auto result = EvaluateList(value, action, ListAction::AllOf);
+        mIndicators.Push(name);
+        const auto result = EvaluateList(value, action, !strcmp(name, "anyOf") ? ListAction::AnyOf : ListAction::AllOf);
         if (!result.HasValue())
         {
             OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
