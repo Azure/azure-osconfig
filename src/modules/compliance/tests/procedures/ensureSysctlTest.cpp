@@ -19,7 +19,7 @@
 using compliance::AuditEnsureSysctl;
 using compliance::CompactListFormatter;
 using compliance::Error;
-using compliance::Indicators;
+using compliance::IndicatorsTree;
 using compliance::Result;
 using compliance::Status;
 
@@ -135,7 +135,7 @@ protected:
     std::set<std::string, LengthComparator> sysctlDirs;
     std::set<std::string, LengthComparator> sysctlFiles;
     MockContext mContext;
-    Indicators mIndicators;
+    IndicatorsTree mIndicators;
     CompactListFormatter mFormatter;
 
     void SetUp() override

@@ -16,7 +16,7 @@
 using compliance::AuditPackageInstalled;
 using compliance::CompactListFormatter;
 using compliance::Error;
-using compliance::Indicators;
+using compliance::IndicatorsTree;
 using compliance::Result;
 using compliance::Status;
 
@@ -71,7 +71,7 @@ protected:
     std::string cacheFile;
     MockContext mContext;
     CompactListFormatter mFormatter;
-    Indicators mIndicators;
+    IndicatorsTree mIndicators;
 
     void SetUp() override
     {

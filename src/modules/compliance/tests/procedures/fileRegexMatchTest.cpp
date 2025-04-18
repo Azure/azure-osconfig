@@ -14,7 +14,7 @@
 
 using compliance::AuditFileRegexMatch;
 using compliance::Error;
-using compliance::Indicators;
+using compliance::IndicatorsTree;
 using compliance::Result;
 using compliance::Status;
 
@@ -25,7 +25,7 @@ protected:
     int mTempfileFd = -1;
     std::map<std::string, std::string> mArgs;
     MockContext mContext;
-    Indicators mIndicators;
+    IndicatorsTree mIndicators;
 
     void SetUp() override
     {

@@ -349,7 +349,7 @@ Result<Status> Evaluator::EvaluateBuiltinProcedure(const string& procedureName, 
     return result.Value();
 }
 
-void NestedListFormatter::FormatNode(const Indicators::Node& node, std::ostringstream& result, int depth) const
+void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result, int depth) const
 {
     for (const auto& child : node.children)
     {
@@ -385,7 +385,7 @@ void NestedListFormatter::FormatNode(const Indicators::Node& node, std::ostrings
     result << (node.status == Status::Compliant ? "[Compliant] " : "[NonCompliant] ") << node.procedureName << "\n";
 }
 
-Result<std::string> NestedListFormatter::Format(const Indicators& indicators) const
+Result<std::string> NestedListFormatter::Format(const IndicatorsTree& indicators) const
 {
     std::ostringstream result;
     const auto* node = indicators.GetRootNode();
@@ -395,7 +395,7 @@ Result<std::string> NestedListFormatter::Format(const Indicators& indicators) co
     return result.str();
 }
 
-void CompactListFormatter::FormatNode(const Indicators::Node& node, std::ostringstream& result) const
+void CompactListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result) const
 {
     for (const auto& indicator : node.indicators)
     {
@@ -416,7 +416,7 @@ void CompactListFormatter::FormatNode(const Indicators::Node& node, std::ostring
     }
 }
 
-Result<std::string> CompactListFormatter::Format(const Indicators& indicators) const
+Result<std::string> CompactListFormatter::Format(const IndicatorsTree& indicators) const
 {
     std::ostringstream result;
     const auto* node = indicators.GetRootNode();
@@ -425,7 +425,7 @@ Result<std::string> CompactListFormatter::Format(const Indicators& indicators) c
     return result.str();
 }
 
-Optional<Error> JsonFormatter::FormatNode(const Indicators::Node& node, json_value_t* jsonValue) const
+Optional<Error> JsonFormatter::FormatNode(const IndicatorsTree::Node& node, json_value_t* jsonValue) const
 {
     auto* array = json_value_get_array(jsonValue);
     assert(nullptr != array);
@@ -516,7 +516,7 @@ Optional<Error> JsonFormatter::FormatNode(const Indicators::Node& node, json_val
     return Optional<Error>();
 }
 
-Result<std::string> JsonFormatter::Format(const Indicators& indicators) const
+Result<std::string> JsonFormatter::Format(const IndicatorsTree& indicators) const
 {
     auto* json = json_value_init_array();
     if (nullptr == json)
@@ -541,7 +541,7 @@ Result<std::string> JsonFormatter::Format(const Indicators& indicators) const
     return result;
 }
 
-void MmiFormatter::FormatNode(const Indicators::Node& node, std::ostringstream& result) const
+void MmiFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result) const
 {
     if (node.procedureName == "anyOf" || node.procedureName == "allOf")
     {
@@ -606,7 +606,7 @@ void MmiFormatter::FormatNode(const Indicators::Node& node, std::ostringstream& 
     }
 }
 
-Result<std::string> MmiFormatter::Format(const Indicators& indicators) const
+Result<std::string> MmiFormatter::Format(const IndicatorsTree& indicators) const
 {
     std::ostringstream result;
     const auto* node = indicators.GetRootNode();

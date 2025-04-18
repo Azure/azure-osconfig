@@ -11,39 +11,39 @@ Indicator::Indicator(std::string msg, Status stat)
 {
 }
 
-Indicators::Node::Node(std::string procedureName)
+IndicatorsTree::Node::Node(std::string procedureName)
     : procedureName(std::move(procedureName))
 {
 }
 
-Status Indicators::Compliant(std::string message) &
+Status IndicatorsTree::Compliant(std::string message) &
 {
-    return PushIndicator(std::move(message), Status::Compliant);
+    return AddIndicator(std::move(message), Status::Compliant);
 }
 
-Status Indicators::NonCompliant(std::string message) &
+Status IndicatorsTree::NonCompliant(std::string message) &
 {
-    return PushIndicator(std::move(message), Status::NonCompliant);
+    return AddIndicator(std::move(message), Status::NonCompliant);
 }
 
-Indicators::Node* Indicators::GetRootNode() const noexcept
+const IndicatorsTree::Node* IndicatorsTree::GetRootNode() const noexcept
 {
-    return mIndicators.get();
+    return mTreeRoot.get();
 }
 
-Status Indicators::PushIndicator(std::string message, Status status) &
+Status IndicatorsTree::AddIndicator(std::string message, Status status) &
 {
     assert(!mEvaluationStack.empty());
     mEvaluationStack.back()->indicators.emplace_back(std::move(message), status);
     return mEvaluationStack.back()->indicators.back().status;
 }
 
-void Indicators::Push(std::string procedureName) &
+void IndicatorsTree::Push(std::string procedureName) &
 {
-    if (!mIndicators)
+    if (!mTreeRoot)
     {
-        mIndicators = std::unique_ptr<Node>(new Node(std::move(procedureName)));
-        mEvaluationStack.push_back(mIndicators.get());
+        mTreeRoot = std::unique_ptr<Node>(new Node(std::move(procedureName)));
+        mEvaluationStack.push_back(mTreeRoot.get());
         return;
     }
 
@@ -53,20 +53,20 @@ void Indicators::Push(std::string procedureName) &
     mEvaluationStack.push_back(current->children.back().get());
 }
 
-void Indicators::Pop() &
+void IndicatorsTree::Pop() &
 {
     assert(!mEvaluationStack.empty());
     mEvaluationStack.pop_back();
 }
 
-const Indicators::Node& Indicators::Back() const& noexcept
+const IndicatorsTree::Node& IndicatorsTree::Back() const& noexcept
 {
     assert(!mEvaluationStack.empty());
     assert(mEvaluationStack.back());
     return *mEvaluationStack.back();
 }
 
-Indicators::Node& Indicators::Back() & noexcept
+IndicatorsTree::Node& IndicatorsTree::Back() & noexcept
 {
     assert(!mEvaluationStack.empty());
     assert(mEvaluationStack.back());
