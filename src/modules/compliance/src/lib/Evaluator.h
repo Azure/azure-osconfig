@@ -117,9 +117,15 @@ private:
         Audit,
         Remediate
     };
+
+    enum class ListAction
+    {
+        AnyOf,
+        AllOf
+    };
+
     Result<Status> EvaluateProcedure(const struct json_object_t* object, Action action);
-    Result<Status> EvaluateAnyOf(const struct json_value_t* value, Action action);
-    Result<Status> EvaluateAllOf(const struct json_value_t* value, Action action);
+    Result<Status> EvaluateList(const struct json_value_t* value, Action action, ListAction listAction);
     Result<Status> EvaluateNot(const struct json_value_t* value, Action action);
     Result<Status> EvaluateBuiltinProcedure(const std::string& procedureName, const struct json_value_t* value, Action action);
     Result<std::map<std::string, std::string>> GetBuiltinProcedureArguments(const json_value_t* value) const;
