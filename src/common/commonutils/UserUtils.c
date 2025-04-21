@@ -410,8 +410,8 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
         for (i = 0; i < *size; i++)
         {
             OsConfigLogDebug(log, "EnumerateUsers(user %u): uid %d, name '%s', gid %d, home '%s', shell '%s'", i, (*userList)[i].userId,
-                IsSystemAccount((*userList)[i].username) ? (*userList)[i].username : "-", (*userList)[i].groupId,
-                IsSystemAccount((*userList)[i].username) ? (*userList)[i].home : "-", (*userList)[i].shell);
+                IsSystemAccount((*userList)[i]) ? (*userList)[i].username : "-", (*userList)[i].groupId,
+                IsSystemAccount((*userList)[i]) ? (*userList)[i].home : "-", (*userList)[i].shell);
         }
     }
 
@@ -1402,9 +1402,9 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, OsConfigLogHandle log)
             if (((NULL == userList[i].username) || (0 != strcmp(userList[i].username, g_root))) && (0 == userList[i].userId))
             {
                 OsConfigLogInfo(log, "CheckRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
-                    IsSystemAccount(userList[i].username) ? userList[i].username : "-", userList[i].userId, userList[i].groupId);
+                    IsSystemAccount(userList[i]) ? userList[i].username : "-", userList[i].userId, userList[i].groupId);
                 OsConfigCaptureReason(reason, "User '%s' (%u, %u) is not root but has uid 0",
-                    IsSystemAccount(userList[i].username) ? userList[i].username : "-", userList[i].userId, userList[i].groupId);
+                    IsSystemAccount(userList[i]) ? userList[i].username : "-", userList[i].userId, userList[i].groupId);
                 status = EACCES;
             }
         }
@@ -1434,7 +1434,7 @@ int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
             if (((NULL == userList[i].username) || (0 != strcmp(userList[i].username, g_root))) && (0 == userList[i].userId))
             {
                 OsConfigLogInfo(log, "SetRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
-                    IsSystemAccount(userList[i].username) ? userList[i].username : "-", userList[i].userId, userList[i].groupId);
+                    IsSystemAccount(userList[i]) ? userList[i].username : "-", userList[i].userId, userList[i].groupId);
 
                 if ((0 != (_status = RemoveUser(&(userList[i]), false, log))) && (0 == status))
                 {
