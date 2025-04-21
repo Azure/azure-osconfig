@@ -1786,7 +1786,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
                     else
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: cannot set restricted access (%03o) for user %u assigned home directory (%d, %s)",
-                            userList[i].userId, _status, strerror(_status));
+                            userList[i].userId, userList[i].isRoot ? modeForRoot : modeForOthers, _status, strerror(_status));
 
                         if (0 == status)
                         {
