@@ -185,7 +185,7 @@ static bool IsUserNonLogin(SimplifiedUser* user)
 
 static bool IsSystemAccount(SimplifiedUser* user)
 {
-    return (IsUserNonLogin(user) && (NULL == user->home) && (user->userId && (user->userId < 1000))) ? true : false;
+    return (user && IsUserNonLogin(user) && (NULL == user->home) && (user->userId && (user->userId < 1000))) ? true : false;
 }
 
 static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
