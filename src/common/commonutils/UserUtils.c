@@ -1308,24 +1308,24 @@ int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
             else if (userList[i].noLogin)
             {
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') is no login",
-                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-"););
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-");
             }
             else if (userList[i].isLocked)
             {
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') is locked",
-                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-"););
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-");
             }
             else if (userList[i].cannotLogin)
             {
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') cannot login with password",
-                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-"););
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-");
             }
             else
             {
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s')  not found to have a password set",
-                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-"););
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-");
                 OsConfigCaptureReason(reason, "User %u ('%s')  not found to have a password set",
-                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-"););
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-");
                 status = ENOENT;
             }
         }
