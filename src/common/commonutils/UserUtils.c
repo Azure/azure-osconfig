@@ -839,7 +839,7 @@ int RemoveUser(SimplifiedUser* user, bool removeHome, OsConfigLogHandle log)
 
             if (DirectoryExists(user->home))
             {
-                OsConfigLogInfo(log, "RemoveUser: home directory of user %u remains and needs to be manually deleted");
+                OsConfigLogInfo(log, "RemoveUser: home directory of user %u remains and needs to be manually deleted", user->userId);
             }
             else
             {
