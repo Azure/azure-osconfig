@@ -1302,24 +1302,30 @@ int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
         {
             if (userList[i].hasPassword)
             {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u appears to have a password set", userList[i].userId);
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') appears to have a password set",
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-");
             }
             else if (userList[i].noLogin)
             {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u is no login", userList[i].userId);
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') is no login",
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-"););
             }
             else if (userList[i].isLocked)
             {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u is locked", userList[i].userId);
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') is locked",
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-"););
             }
             else if (userList[i].cannotLogin)
             {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u cannot login with password", userList[i].userId);
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') cannot login with password",
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-"););
             }
             else
             {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u not found to have a password set", userList[i].userId);
-                OsConfigCaptureReason(reason, "User %u not found to have a password set", userList[i].userId);
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s')  not found to have a password set",
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-"););
+                OsConfigCaptureReason(reason, "User %u ('%s')  not found to have a password set",
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-"););
                 status = ENOENT;
             }
         }
@@ -2834,7 +2840,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                             if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                             {
                                 OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user %u has proper restricted access (%03o) for their dot file '%s'",
-                                    userList[i].userId, modes[j], path);
+                                    userList[i].userId, modes[j], entry->d_name);
                                 oneGoodMode = true;
                                 break;
                             }
@@ -2843,9 +2849,9 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                         if (false == oneGoodMode)
                         {
                             OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user %u does not has have proper restricted access for their dot file '%s'",
-                                userList[i].userId, path);
+                                userList[i].userId, entry->d_name);
                             OsConfigCaptureReason(reason, "User %u does not has have proper restricted access for their dot file '%s'",
-                                userList[i].userId, path);
+                                userList[i].userId, entry->d_name);
 
                             if (0 == status)
                             {
