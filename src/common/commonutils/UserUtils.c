@@ -4,8 +4,6 @@
 #include "Internal.h"
 #include "UserUtils.h"
 
-#include <shadow.h>
-
 #define MAX_GROUPS_USER_CAN_BE_IN 32
 #define NUMBER_OF_SECONDS_IN_A_DAY 86400
 
@@ -71,7 +69,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
     {
         if (NULL == (destination->username = malloc(length + 1)))
         {
-            OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_name '%s'", source->pw_name);
+            OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_name for user %u", source->pw_uid);
             status = ENOMEM;
         }
         else
@@ -185,6 +183,11 @@ static bool IsUserNonLogin(SimplifiedUser* user)
     return noLogin;
 }
 
+static bool IsSystemAccount(SimplifiedUser* user)
+{
+    return (IsUserNonLogin(user) && (NULL == user->home) && (user->userId && (user->userId < 1000))) ? true : false;
+}
+
 static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
 {
     const char* commandTemplate = "usermod -s %s %s";
@@ -199,7 +202,7 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
 
     if (true == (user->noLogin = IsUserNonLogin(user)))
     {
-        OsConfigLogInfo(log, "SetUserNonLogin: user '%s' (%u) is already set to be non-login", user->username, user->userId);
+        OsConfigLogInfo(log, "SetUserNonLogin: user %u is already set to be non-login", user->userId);
         return 0;
     }
 
@@ -216,11 +219,11 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
             }
             else if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
             {
-                OsConfigLogInfo(log, "SetUserNonLogin: '%s' failed with %d (errno: %d)", command, result, errno);
+                OsConfigLogInfo(log, "SetUserNonLogin: usermod for user %u failed with %d (errno: %d)", user->userId, result, errno);
             }
             else
             {
-                OsConfigLogInfo(log, "SetUserNonLogin: user '%s' (%u) is now set to be non-login", user->username, user->userId);
+                OsConfigLogInfo(log, "SetUserNonLogin: user %u is now set to be non-login", user->userId);
             }
 
             FREE_MEMORY(command);
@@ -234,7 +237,7 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
 
     if (ENOENT == result)
     {
-        OsConfigLogInfo(log, "SetUserNonLogin: no suitable no login shell found (to make user '%s' (%u) non-login)", user->username, user->userId);
+        OsConfigLogInfo(log, "SetUserNonLogin: no suitable no login shell found (to make user %u non-login)", user->userId);
     }
 
     return result;
@@ -321,14 +324,13 @@ static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
 
             case ':':
             default:
-                OsConfigLogInfo(log, "CheckIfUserHasPassword: user '%s' (%u, %u) appears to be missing password ('%c')",
-                    user->username, user->userId, user->groupId, control);
+                OsConfigLogInfo(log, "CheckIfUserHasPassword: user %u appears to be missing password ('%c')", user->userId, control);
                 user->hasPassword = false;
         }
     }
     else
     {
-        OsConfigLogInfo(log, "CheckIfUserHasPassword: getspnam('%s') failed (%d)", user->username, errno);
+        OsConfigLogInfo(log, "CheckIfUserHasPassword: getspnam for user %u failed with %d (%s)", user->userId, errno, strerror(errno));
         status = ENOENT;
     }
 
@@ -407,8 +409,9 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
 
         for (i = 0; i < *size; i++)
         {
-            OsConfigLogDebug(log, "EnumerateUsers(user %u): name '%s', uid %d, gid %d, home '%s', shell '%s'", i,
-                (*userList)[i].username, (*userList)[i].userId, (*userList)[i].groupId, (*userList)[i].home, (*userList)[i].shell);
+            OsConfigLogDebug(log, "EnumerateUsers(user %u): uid %d, name '%s', gid %d, home '%s', shell '%s'", i, (*userList)[i].userId,
+                IsSystemAccount((*userList)[i].username) ? (*userList)[i].username : "-", (*userList)[i].groupId,
+                IsSystemAccount((*userList)[i].username) ? (*userList)[i].home : "-", (*userList)[i].shell);
         }
     }
 
@@ -462,8 +465,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
     }
     else if (-1 == (getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups)))
     {
-        OsConfigLogDebug(log, "EnumerateUserGroups: first call to getgrouplist for user '%s' (%u) returned %d and %d",
-            user->username, user->groupId, getGroupListResult, numberOfGroups);
+        OsConfigLogDebug(log, "EnumerateUserGroups: first call to getgrouplist for user %u (%u) returned %d and %d", user->userId, user->groupId, getGroupListResult, numberOfGroups);
         FREE_MEMORY(groupIds);
 
         if (0 < numberOfGroups)
@@ -471,8 +473,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
             if (NULL != (groupIds = malloc(numberOfGroups * sizeof(gid_t))))
             {
                 getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups);
-                OsConfigLogDebug(log, "EnumerateUserGroups: second call to getgrouplist for user '%s' (%u) returned %d and %d",
-                    user->username, user->groupId, getGroupListResult, numberOfGroups);
+                OsConfigLogDebug(log, "EnumerateUserGroups: second call to getgrouplist for user '%u' (%u) returned %d and %d", user->userId, user->groupId, getGroupListResult, numberOfGroups);
             }
             else
             {
@@ -483,15 +484,14 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
         }
         else
         {
-            OsConfigLogInfo(log, "EnumerateUserGroups: first call to getgrouplist for user '%s' (%u) returned -1 and %d groups",
-                user->username, user->groupId, numberOfGroups);
+            OsConfigLogInfo(log, "EnumerateUserGroups: first call to getgrouplist for user %u (%u) returned -1 and %d groups", user->userId, user->groupId, numberOfGroups);
             status = ENOENT;
         }
     }
 
     if ((0 == status) && (0 < numberOfGroups))
     {
-        OsConfigLogDebug(log, "EnumerateUserGroups: user '%s' (%u) is in %d group%s", user->username, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
+        OsConfigLogDebug(log, "EnumerateUserGroups: user %u (%u) is in %d group%s", user->userId, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
 
         if (NULL == (*groupList = malloc(sizeof(SimplifiedGroup) * numberOfGroups)))
         {
@@ -522,7 +522,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                        OsConfigLogDebug(log, "EnumerateUserGroups: user '%s' (%u) is in group '%s' (%u)", user->username, user->groupId, (*groupList)[i].groupName, (*groupList)[i].groupId);
+                        OsConfigLogDebug(log, "EnumerateUserGroups: user %u (%u) is in group '%s' (%u)", user->userId, user->groupId, (*groupList)[i].groupName, (*groupList)[i].groupId);
                     }
                     else
                     {
@@ -652,8 +652,8 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
                     {
                         if (userGroupList[j].groupId == groupList[k].groupId)
                         {
-                            OsConfigLogDebug(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in '/etc/group'",
-                                userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+                            OsConfigLogDebug(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group %u of user %u found in '/etc/group'",
+                                userList[i].userId, userGroupList[j].groupId);
                             found = true;
                             break;
                         }
@@ -661,10 +661,9 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
 
                     if (false == found)
                     {
-                        OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) not found in '/etc/group'",
-                            userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
-                        OsConfigCaptureReason(reason, "Group '%s' (%u) of user '%s' (%u) not found in '/etc/group'",
-                            userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+                        OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group %u of user %u not found in '/etc/group'",
+                            userList[i].userId, userGroupList[j].groupId);
+                        OsConfigCaptureReason(reason, "Group %u of user %u not found in '/etc/group'", userList[i].userId, userGroupList[j].groupId);
                         status = ENOENT;
                         break;
                     }
@@ -716,8 +715,8 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
                     {
                         if (userGroupList[j].groupId == groupList[k].groupId)
                         {
-                            OsConfigLogDebug(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in '/etc/group'",
-                                userGroupList[j].groupName, userGroupList[j].groupId, userList[i].username, userList[i].userId);
+                            OsConfigLogDebug(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user %u found in '/etc/group'",
+                                userGroupList[j].groupName, userGroupList[j].groupId, userList[i].userId);
                             found = true;
                             break;
                         }
@@ -725,15 +724,15 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
 
                     if (false == found)
                     {
-                        OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user '%s' (%u) not found in '/etc/group'",
-                            userGroupList[j].groupName, userGroupList[j].groupId, userList[i].username, userList[i].userId);
+                        OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user %u not found in '/etc/group'",
+                            userGroupList[j].groupName, userGroupList[j].groupId, userList[i].userId);
 
                         if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].userId, userGroupList[j].groupId)))
                         {
                             if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                             {
-                                OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: user '%s' (%u) was removed from group '%s' (%u)",
-                                    userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+                                OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: user %u was removed from group '%s' (%u)",
+                                    userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                             }
                             else
                             {
@@ -828,7 +827,7 @@ int RemoveUser(SimplifiedUser* user, bool removeHome, OsConfigLogHandle log)
     }
     else if (0 == user->userId)
     {
-        OsConfigLogInfo(log, "RemoveUser: cannot remove user with uid 0 ('%s' %u, %u)", user->username, user->userId, user->groupId);
+        OsConfigLogInfo(log, "RemoveUser: cannot remove user with uid 0 (%u, %u)", user->userId, user->groupId);
         return EPERM;
     }
 
@@ -836,20 +835,20 @@ int RemoveUser(SimplifiedUser* user, bool removeHome, OsConfigLogHandle log)
     {
         if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogInfo(log, "RemoveUser: removed user '%s' (%u, %u, '%s')", user->username, user->userId, user->groupId, user->home);
+            OsConfigLogInfo(log, "RemoveUser: removed user %u", user->userId);
 
             if (DirectoryExists(user->home))
             {
-                OsConfigLogInfo(log, "RemoveUser: home directory of user '%s' remains ('%s') and needs to be manually deleted", user->username, user->home);
+                OsConfigLogInfo(log, "RemoveUser: home directory of user %u remains and needs to be manually deleted");
             }
             else
             {
-                OsConfigLogInfo(log, "RemoveUser: home directory of user '%s' successfully removed ('%s')", user->username, user->home);
+                OsConfigLogInfo(log, "RemoveUser: home directory of user %u successfully removed", user->userId);
             }
         }
         else
         {
-            OsConfigLogInfo(log, "RemoveUser: cannot remove user '%s' (%u, %u) (%d)", user->username, user->userId, user->groupId, _status);
+            OsConfigLogInfo(log, "RemoveUser: cannot remove user %u, userdel failed with %d (%s)", user->userId, status, strerror(status));
         }
 
         FREE_MEMORY(command);
@@ -937,8 +936,8 @@ int RemoveGroup(SimplifiedGroup* group, bool removeHomeDirs, OsConfigLogHandle l
             {
                 if (userList[i].groupId == group->groupId)
                 {
-                    OsConfigLogInfo(log, "RemoveGroup: group '%s' (%u) is primary group of user '%s' (%u), try first to delete this user account",
-                        group->groupName, group->groupId, userList[i].username, userList[i].userId);
+                    OsConfigLogInfo(log, "RemoveGroup: group '%s' (%u) is primary group of user %u, try first to delete this user account",
+                        group->groupName, group->groupId, userList[i].userId);
                     RemoveUser(&(userList[i]), removeHomeDirs, log);
                 }
             }
@@ -991,8 +990,8 @@ int CheckNoDuplicateUserNamesExist(char** reason, OsConfigLogHandle log)
 
                     if (hits > 1)
                     {
-                        OsConfigLogInfo(log, "CheckNoDuplicateUserNamesExist: username '%s' appears more than a single time in '/etc/passwd'", userList[i].username);
-                        OsConfigCaptureReason(reason, "Username '%s' appears more than a single time in '/etc/passwd'", userList[i].username);
+                        OsConfigLogInfo(log, "CheckNoDuplicateUserNamesExist: user %u appears more than a single time in '/etc/passwd'", userList[i].userId);
+                        OsConfigCaptureReason(reason, "User %u appears more than a single time in '/etc/passwd'", userList[i].userId);
                         status = EEXIST;
                         break;
                     }
@@ -1109,19 +1108,19 @@ int SetShadowGroupEmpty(OsConfigLogHandle log)
                 {
                     if (0 == strcmp(userGroupList[j].groupName, g_shadow))
                     {
-                        OsConfigLogInfo(log, "SetShadowGroupEmpty: user '%s' (%u) is a member of group '%s' (%u)",
-                            userList[i].username, userList[i].userId, g_shadow, userGroupList[j].groupId);
+                        OsConfigLogInfo(log, "SetShadowGroupEmpty: user %u is a member of group '%s' (%u)",
+                            userList[i].userId, g_shadow, userGroupList[j].groupId);
 
                         if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].username, g_shadow)))
                         {
                             if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                             {
-                                OsConfigLogInfo(log, "SetShadowGroupEmpty: user '%s' (%u) was removed from group '%s' (%u)",
-                                    userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+                                OsConfigLogInfo(log, "SetShadowGroupEmpty: user %u was removed from group '%s' (%u)",
+                                    userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                             }
                             else
                             {
-                                OsConfigLogInfo(log, "SetShadowGroupEmpty: 'gpasswd -d %s %s' failed with %d", userList[i].username, g_shadow, _status);
+                                OsConfigLogInfo(log, "SetShadowGroupEmpty: gpasswd failed with %d (%s)", _status, strerror(_status));
                             }
 
                             FREE_MEMORY(command);
@@ -1303,30 +1302,24 @@ int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
         {
             if (userList[i].hasPassword)
             {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user '%s' (%u, %u) appears to have a password set",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u appears to have a password set", userList[i].userId);
             }
             else if (userList[i].noLogin)
             {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user '%s' (%u, %u) is no login",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u is no login", userList[i].userId);
             }
             else if (userList[i].isLocked)
             {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user '%s' (%u, %u) is locked",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u is locked", userList[i].userId);
             }
             else if (userList[i].cannotLogin)
             {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user '%s' (%u, %u) cannot login with password",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u cannot login with password", userList[i].userId);
             }
             else
             {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user '%s' (%u, %u) not found to have a password set",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
-                OsConfigCaptureReason(reason, "User '%s' (%u, %u) not found to have a password set",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u not found to have a password set", userList[i].userId);
+                OsConfigCaptureReason(reason, "User %u not found to have a password set", userList[i].userId);
                 status = ENOENT;
             }
         }
@@ -1355,28 +1348,23 @@ int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
         {
             if (userList[i].hasPassword)
             {
-                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user '%s' (%u, %u) appears to have a password set",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u appears to have a password set", userList[i].userId);
             }
             else if (userList[i].noLogin)
             {
-                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user '%s' (%u, %u) is no login",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u is no login", userList[i].userId);
             }
             else if (userList[i].isLocked)
             {
-                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user '%s' (%u, %u) is locked",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u is locked", userList[i].userId);
             }
             else if (userList[i].cannotLogin)
             {
-                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user '%s' (%u, %u) cannot login with password",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u cannot login with password", userList[i].userId);
             }
             else
             {
-                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user '%s' (%u, %u) can login and has no password set",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u can login and has no password set", userList[i].userId);
 
                 if (0 == userList[i].userId)
                 {
@@ -1414,9 +1402,9 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, OsConfigLogHandle log)
             if (((NULL == userList[i].username) || (0 != strcmp(userList[i].username, g_root))) && (0 == userList[i].userId))
             {
                 OsConfigLogInfo(log, "CheckRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                    IsSystemAccount(userList[i].username) ? userList[i].username : "-", userList[i].userId, userList[i].groupId);
                 OsConfigCaptureReason(reason, "User '%s' (%u, %u) is not root but has uid 0",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                    IsSystemAccount(userList[i].username) ? userList[i].username : "-", userList[i].userId, userList[i].groupId);
                 status = EACCES;
             }
         }
@@ -1446,7 +1434,7 @@ int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
             if (((NULL == userList[i].username) || (0 != strcmp(userList[i].username, g_root))) && (0 == userList[i].userId))
             {
                 OsConfigLogInfo(log, "SetRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
-                    userList[i].username, userList[i].userId, userList[i].groupId);
+                    IsSystemAccount(userList[i].username) ? userList[i].username : "-", userList[i].userId, userList[i].groupId);
 
                 if ((0 != (_status = RemoveUser(&(userList[i]), false, log))) && (0 == status))
                 {
@@ -1527,10 +1515,8 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log)
             }
             else if ((NULL != userList[i].home) && (false == DirectoryExists(userList[i].home)))
             {
-                OsConfigLogInfo(log, "CheckAllUsersHomeDirectoriesExist: user '%s' (%u, %u) home directory '%s' not found or is not a directory",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
-                OsConfigCaptureReason(reason, "User '%s' (%u, %u) home directory '%s' not found or is not a directory",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                OsConfigLogInfo(log, "CheckAllUsersHomeDirectoriesExist: the home directory for user %u is not found or is not a directory", userList[i].userId);
+                OsConfigCaptureReason(reason, "The home directory for user %u is not found or is not a directory", userList[i].userId);
                 status = ENOENT;
             }
         }
@@ -1567,19 +1553,16 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
                 // If the home directory does not exist, create it
                 if (false == DirectoryExists(userList[i].home))
                 {
-                    OsConfigLogInfo(log, "SetUserHomeDirectories: user '%s' (%u, %u) home directory '%s' not found",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                    OsConfigLogInfo(log, "SetUserHomeDirectories: user %u home directory is not found", userList[i].userId);
 
                     if (0 == (_status = mkdir(userList[i].home, defaultHomeDirAccess)))
                     {
-                        OsConfigLogInfo(log, "SetUserHomeDirectories: user '%s' (%u, %u) has now home directory '%s'",
-                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                        OsConfigLogInfo(log, "SetUserHomeDirectories: user %u has now the home directory set", userList[i].userId);
                     }
                     else
                     {
                         _status = (0 == errno) ? EACCES : errno;
-                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot create home directory '%s' for user '%s' (%u, %u) (%d)",
-                            userList[i].home, userList[i].username, userList[i].userId, userList[i].groupId, _status);
+                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot create home directory for user %u,  %d (%s)", userList[i].userId, _status, strerror(_status));
                     }
                 }
 
@@ -1588,8 +1571,8 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
                 {
                     if (0 != (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, defaultHomeDirAccess, log)))
                     {
-                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot set access and ownership for home directory '%s' of user '%s' (%u, %u) (%d, errno: %d)",
-                            userList[i].home, userList[i].username, userList[i].userId, userList[i].groupId, _status, errno);
+                        OsConfigLogInfo(log, "SetUserHomeDirectories: cannot set access and ownership for home directory of user %u (%d, errno: %d, %s)",
+                            userList[i].userId, userList[i].groupId, _status, errno, strerror(errno));
                     }
                 }
 
@@ -1662,29 +1645,23 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
             {
                 if (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log)))
                 {
-                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) cannot login and their assigned home directory '%s' is owned by root",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user %u cannot login and their assigned home directory is owned by root", userList[i].userId);
                 }
                 else if (0 == CheckHomeDirectoryOwnership(&userList[i], log))
                 {
-                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) owns their assigned home directory '%s'",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user %u owns their assigned home directory", userList[i].userId);
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) does not own their assigned home directory '%s'",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
-                    OsConfigCaptureReason(reason, "User '%s' (%u, %u) does not own their assigned home directory '%s'",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user %u does not own their assigned home directory", userList[i].userId);
+                    OsConfigCaptureReason(reason, "User %u does not own their assigned home directory", userList[i].userId);
                     status = ENOENT;
                 }
             }
             else
             {
-                OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) assigned home directory '%s' does not exist",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
-                OsConfigCaptureReason(reason, "User '%s' (%u, %u) assigned home directory '%s' does not exist",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user %u assigned home directory does not exist", userList[i].userId);
+                OsConfigCaptureReason(reason, "User '%u assigned home directory does not exist", userList[i].userId);
                 status = ENOENT;
             }
         }
@@ -1730,8 +1707,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
                 {
                     if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], true, NULL, log))
                     {
-                        OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has proper restricted access (%03o) for their assigned home directory '%s'",
-                            userList[i].username, userList[i].userId, userList[i].groupId, modes[j], userList[i].home);
+                        OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user %u has proper restricted access (%03o) for their assigned home directory", userList[i].userId);
                         oneGoodMode = true;
                         break;
                     }
@@ -1739,10 +1715,8 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
 
                 if (false == oneGoodMode)
                 {
-                    OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) does not have proper restricted access for their assigned home directory '%s'",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
-                    OsConfigCaptureReason(reason, "User '%s' (%u, %u) does not have proper restricted access for their assigned home directory '%s'",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                    OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user %u does not have proper restricted access for their assigned home directory", userList[i].userId);
+                    OsConfigCaptureReason(reason, "User %u does not have proper restricted access for their assigned home directory", userList[i].userId);
 
                     if (0 == status)
                     {
@@ -1793,8 +1767,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
                 {
                     if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], true, NULL, log))
                     {
-                        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) already has proper restricted access (%03o) for their assigned home directory '%s'",
-                            userList[i].username, userList[i].userId, userList[i].groupId, modes[j], userList[i].home);
+                        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u already has proper restricted access (%03o) for their assigned home directory", userList[i].userId);
                         oneGoodMode = true;
                         break;
                     }
@@ -1804,13 +1777,12 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
                 {
                     if (0 == (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, log)))
                     {
-                        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) has now proper restricted access (%03o) for their assigned home directory '%s'",
-                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].home);
+                        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u has now proper restricted access (%03o) for their assigned home directory", userList[i].userId);
                     }
                     else
                     {
-                        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: cannot set restricted access (%03o) for user '%s' (%u, %u) assigned home directory '%s' (%d)",
-                            userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, _status);
+                        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: cannot set restricted access (%03o) for user %u assigned home directory (%d, %s)",
+                            userList[i].userId, _status, strerror(_status));
 
                         if (0 == status)
                         {
@@ -1921,17 +1893,17 @@ int CheckMinDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHand
             {
                 if (userList[i].minimumPasswordAge >= days)
                 {
-                    OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) has a minimum time between password changes of %ld days (requested: %ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
-                    OsConfigCaptureSuccessReason(reason, "User '%s' (%u, %u) has a minimum time between password changes of %ld days (requested: %ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
+                    OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: user %u has a minimum time between password changes of %ld days (requested: %ld)",
+                        userList[i].userId, userList[i].minimumPasswordAge, days);
+                    OsConfigCaptureSuccessReason(reason, "User %u has a minimum time between password changes of %ld days (requested: %ld)",
+                        userList[i].userId, userList[i].minimumPasswordAge, days);
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %ld days",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
-                    OsConfigCaptureReason(reason, "User '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %ld days",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
+                    OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: user %u minimum time between password changes of %ld days is less than requested %ld days",
+                        userList[i].userId, userList[i].minimumPasswordAge, days);
+                    OsConfigCaptureReason(reason, "User %u minimum time between password changes of %ld days is less than requested %ld days",
+                        userList[i].userId, userList[i].minimumPasswordAge, days);
                     status = ENOENT;
                 }
             }
@@ -1990,8 +1962,8 @@ int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
             }
             else if (userList[i].minimumPasswordAge < days)
             {
-                OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %ld days",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
+                OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user %u minimum time between password changes of %ld days is less than requested %ld days",
+                    userList[i].userId, userList[i].minimumPasswordAge, days);
 
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
@@ -2004,8 +1976,7 @@ int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
                     if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         userList[i].minimumPasswordAge = days;
-                        OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes is now set to %ld days",
-                            userList[i].username, userList[i].userId, userList[i].groupId, days);
+                        OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user %u minimum time between password changes is now set to %ld days", userList[i].userId, days);
                     }
 
                     FREE_MEMORY(command);
@@ -2062,25 +2033,25 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHand
             {
                 if (userList[i].maximumPasswordAge < 0)
                 {
-                    OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has unlimited time between password changes of %ld days (requested: %ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
-                    OsConfigCaptureReason(reason, "User '%s' (%u, %u) has unlimited time between password changes of %ld days(requested: %ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
+                    OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user %u has unlimited time between password changes of %ld days (requested: %ld)",
+                        userList[i].userId, userList[i].maximumPasswordAge, days);
+                    OsConfigCaptureReason(reason, "User %u has unlimited time between password changes of %ld days(requested: %ld)",
+                        userList[i].userId, userList[i].maximumPasswordAge, days);
                     status = ENOENT;
                 }
                 else if (userList[i].maximumPasswordAge <= days)
                 {
-                    OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has a maximum time between password changes of %ld days (requested: %ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
-                    OsConfigCaptureSuccessReason(reason, "User '%s' (%u, %u) has a maximum time between password changes of %ld days(requested: %ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
+                    OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user %u has a maximum time between password changes of %ld days (requested: %ld)",
+                        userList[i].userId, userList[i].maximumPasswordAge, days);
+                    OsConfigCaptureSuccessReason(reason, "User %u has a maximum time between password changes of %ld days(requested: %ld)",
+                        userList[i].userId, userList[i].maximumPasswordAge, days);
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %ld days",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
-                    OsConfigCaptureReason(reason, "User '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %ld days",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
+                    OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user %u maximum time between password changes of %ld days is more than requested %ld days",
+                        userList[i].userId, userList[i].maximumPasswordAge, days);
+                    OsConfigCaptureReason(reason, "User %u maximum time between password changes of %ld days is more than requested %ld days",
+                        userList[i].userId, userList[i].maximumPasswordAge, days);
                     status = ENOENT;
                 }
             }
@@ -2133,8 +2104,8 @@ int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
             }
             else if ((userList[i].maximumPasswordAge > days) || (userList[i].maximumPasswordAge < 0))
             {
-                OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has maximum time between password changes of %ld days while requested is %ld days",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
+                OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user %u has maximum time between password changes of %ld days while requested is %ld days",
+                    userList[i].userId, userList[i].maximumPasswordAge, days);
 
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
@@ -2147,8 +2118,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
                     if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         userList[i].maximumPasswordAge = days;
-                        OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) maximum time between password changes is now set to %ld days",
-                            userList[i].username, userList[i].userId, userList[i].groupId, days);
+                        OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user %u maximum time between password changes is now set to %ld days", userList[i].userId, days);
                     }
 
                     FREE_MEMORY(command);
@@ -2206,8 +2176,7 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log)
             }
             else if (userList[i].lastPasswordChange < 0)
             {
-                OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: password for user '%s' (%u, %u) was never changed (%lu)",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
+                OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: password for user %u was never changed (%lu)", userList[i].userId, userList[i].lastPasswordChange);
 
                 if (NULL == (command = FormatAllocateString(commandTemplate, currentDate, userList[i].username)))
                 {
@@ -2219,8 +2188,8 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log)
                 {
                     if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
-                        OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: user '%s' (%u, %u) date of last password change is now set to %ld days since epoch (today)",
-                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate);
+                        OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: user %u date of last password change is now set to %ld days since epoch (today)",
+                            userList[i].userId, currentDate);
                     }
 
                     FREE_MEMORY(command);
@@ -2265,18 +2234,14 @@ int CheckPasswordExpirationLessThan(long days, char** reason, OsConfigLogHandle 
             {
                 if (userList[i].maximumPasswordAge < 0)
                 {
-                    OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no expiration date (%ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge);
-                    OsConfigCaptureReason(reason, "Password for user '%s' (%u, %u) has no expiration date (%ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge);
+                    OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user %u has no expiration date (%ld)", userList[i].userId, userList[i].maximumPasswordAge);
+                    OsConfigCaptureReason(reason, "Password for user %u has no expiration date (%ld)", userList[i].userId, userList[i].maximumPasswordAge);
                     status = ENOENT;
                 }
                 else if (userList[i].lastPasswordChange < 0)
                 {
-                    OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no recorded change date (%ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
-                    OsConfigCaptureReason(reason, "Password for user '%s' (%u, %u) has no recorded last change date (%ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
+                    OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user %u has no recorded change date (%ld)", userList[i].userId, userList[i].lastPasswordChange);
+                    OsConfigCaptureReason(reason, "Password for user %u has no recorded last change date (%ld)", userList[i].userId, userList[i].lastPasswordChange);
                     status = ENOENT;
                 }
                 else
@@ -2287,26 +2252,26 @@ int CheckPasswordExpirationLessThan(long days, char** reason, OsConfigLogHandle 
                     {
                         if ((passwordExpirationDate - currentDate) <= days)
                         {
-                            OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days (requested maximum: %ld)",
-                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
-                            OsConfigCaptureSuccessReason(reason, "Password for user '%s' (%u, %u) will expire in %ld days (requested maximum: %ld)",
-                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
+                            OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user %u will expire in %ld days (requested maximum: %ld)",
+                                userList[i].userId, passwordExpirationDate - currentDate, days);
+                            OsConfigCaptureSuccessReason(reason, "Password for user %u will expire in %ld days (requested maximum: %ld)",
+                                userList[i].userId, passwordExpirationDate - currentDate, days);
                         }
                         else
                         {
-                            OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days, more than requested maximum of %ld days",
-                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
-                            OsConfigCaptureReason(reason, "Password for user '%s' (%u, %u) will expire in %ld days, more than requested maximum of %ld days",
-                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
+                            OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user %u will expire in %ld days, more than requested maximum of %ld days",
+                                userList[i].userId, passwordExpirationDate - currentDate, days);
+                            OsConfigCaptureReason(reason, "Password for user %u will expire in %ld days, more than requested maximum of %ld days",
+                                userList[i].userId, passwordExpirationDate - currentDate, days);
                             status = ENOENT;
                         }
                     }
                     else
                     {
-                        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) expired %ld days ago (current date: %ld, expiration date: %ld days since the epoch)",
-                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate, currentDate, passwordExpirationDate);
-                        OsConfigCaptureSuccessReason(reason, "Password for user '%s' (%u, %u)  expired %ld days ago (current date: %ld, expiration date: %ld days since the epoch)",
-                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate, currentDate, passwordExpirationDate);
+                        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user %u expired %ld days ago (current date: %ld, expiration date: %ld days since the epoch)",
+                            userList[i].userId, currentDate - passwordExpirationDate, currentDate, passwordExpirationDate);
+                        OsConfigCaptureSuccessReason(reason, "Password for user '%u)  expired %ld days ago (current date: %ld, expiration date: %ld days since the epoch)",
+                            userList[i].userId, currentDate - passwordExpirationDate, currentDate, passwordExpirationDate);
                     }
                 }
             }
@@ -2343,17 +2308,17 @@ int CheckPasswordExpirationWarning(long days, char** reason, OsConfigLogHandle l
             {
                 if (userList[i].warningPeriod >= days)
                 {
-                    OsConfigLogInfo(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) has a password expiration warning time of %ld days (requested: %ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
-                    OsConfigCaptureSuccessReason(reason, "User '%s' (%u, %u) has a password expiration warning time of %ld days (requested: %ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
+                    OsConfigLogInfo(log, "CheckPasswordExpirationWarning: user %u has a password expiration warning time of %ld days (requested: %ld)",
+                        userList[i].userId, userList[i].warningPeriod, days);
+                    OsConfigCaptureSuccessReason(reason, "User %u has a password expiration warning time of %ld days (requested: %ld)",
+                        userList[i].userId, userList[i].warningPeriod, days);
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is %ld days, less than requested %ld days",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
-                    OsConfigCaptureReason(reason, "User '%s' (%u, %u) password expiration warning time is %ld days, less than requested %ld days",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
+                    OsConfigLogInfo(log, "CheckPasswordExpirationWarning: user %u password expiration warning time is %ld days, less than requested %ld days",
+                        userList[i].userId, userList[i].warningPeriod, days);
+                    OsConfigCaptureReason(reason, "User %u password expiration warning time is %ld days, less than requested %ld days",
+                        userList[i].userId, userList[i].warningPeriod, days);
                     status = ENOENT;
                 }
             }
@@ -2406,8 +2371,8 @@ int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
             }
             else if (userList[i].warningPeriod < days)
             {
-                OsConfigLogInfo(log, "SetPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is %ld days, less than requested %ld days",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
+                OsConfigLogInfo(log, "SetPasswordExpirationWarning: user %u password expiration warning time is %ld days, less than requested %ld days",
+                    userList[i].userId, userList[i].warningPeriod, days);
 
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
@@ -2420,8 +2385,7 @@ int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
                     if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         userList[i].warningPeriod = days;
-                        OsConfigLogInfo(log, "SetPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is now set to %ld days",
-                            userList[i].username, userList[i].userId, userList[i].groupId, days);
+                        OsConfigLogInfo(log, "SetPasswordExpirationWarning: user %u password expiration warning time is now set to %ld days", userList[i].userId, days);
                     }
 
                     FREE_MEMORY(command);
@@ -2479,24 +2443,24 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, OsConfigLogHandle log)
             {
                 if (userList[i].lastPasswordChange < 0)
                 {
-                    OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: password for user '%s' (%u, %u) has no recorded change date (%ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
-                    OsConfigCaptureSuccessReason(reason, "User '%s' (%u, %u) has no recorded last password change date (%ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange);
+                    OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: password for user %u has no recorded change date (%ld)",
+                        userList[i].userId, userList[i].lastPasswordChange);
+                    OsConfigCaptureSuccessReason(reason, "User %u has no recorded last password change date (%ld)",
+                        userList[i].userId, userList[i].lastPasswordChange);
                 }
                 else if (userList[i].lastPasswordChange <= daysCurrent)
                 {
-                    OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) has %lu days since last password change",
-                        userList[i].username, userList[i].userId, userList[i].groupId, daysCurrent - userList[i].lastPasswordChange);
-                    OsConfigCaptureSuccessReason(reason, "User '%s' (%u, %u) has %lu days since last password change",
-                        userList[i].username, userList[i].userId, userList[i].groupId, daysCurrent - userList[i].lastPasswordChange);
+                    OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: user %u has %lu days since last password change",
+                        userList[i].userId, daysCurrent - userList[i].lastPasswordChange);
+                    OsConfigCaptureSuccessReason(reason, "User %u has %lu days since last password change",
+                        userList[i].userId, daysCurrent - userList[i].lastPasswordChange);
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) last recorded password change is in the future (next %ld days)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange - daysCurrent);
-                    OsConfigCaptureReason(reason, "User '%s' (%u, %u) last recorded password change is in the future (next %ld days)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange - daysCurrent);
+                    OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: user %u last recorded password change is in the future (next %ld days)",
+                        userList[i].userId, userList[i].lastPasswordChange - daysCurrent);
+                    OsConfigCaptureReason(reason, "User %u last recorded password change is in the future (next %ld days)",
+                        userList[i].userId, userList[i].lastPasswordChange - daysCurrent);
                     status = ENOENT;
                 }
             }
@@ -2530,10 +2494,10 @@ int CheckLockoutAfterInactivityLessThan(long days, char** reason, OsConfigLogHan
             }
             else if (userList[i].inactivityPeriod > days)
             {
-                OsConfigLogInfo(log, "CheckLockoutAfterInactivityLessThan: user '%s' (%u, %u) period of inactivity before lockout is %ld days, more than requested %ld days",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].inactivityPeriod, days);
-                OsConfigCaptureReason(reason, "User '%s' (%u, %u) password period of inactivity before lockout is %ld days, more than requested %ld days",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].inactivityPeriod, days);
+                OsConfigLogInfo(log, "CheckLockoutAfterInactivityLessThan: user %u period of inactivity before lockout is %ld days, more than requested %ld days",
+                    userList[i].userId, userList[i].inactivityPeriod, days);
+                OsConfigCaptureReason(reason, "User %u password period of inactivity before lockout is %ld days, more than requested %ld days",
+                    userList[i].userId, userList[i].inactivityPeriod, days);
                 status = ENOENT;
             }
         }
@@ -2568,8 +2532,8 @@ int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log)
             }
             else if (userList[i].inactivityPeriod > days)
             {
-                OsConfigLogInfo(log, "SetLockoutAfterInactivityLessThan: user '%s' (%u, %u) is locked out after %ld days of inactivity while requested is %ld days",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].inactivityPeriod, days);
+                OsConfigLogInfo(log, "SetLockoutAfterInactivityLessThan: user %u is locked out after %ld days of inactivity while requested is %ld days",
+                    userList[i].userId, userList[i].inactivityPeriod, days);
 
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
@@ -2582,8 +2546,7 @@ int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log)
                     if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         userList[i].inactivityPeriod = days;
-                        OsConfigLogInfo(log, "SetLockoutAfterInactivityLessThan: user '%s' (%u, %u) lockout time after inactivity is now set to %ld days",
-                            userList[i].username, userList[i].userId, userList[i].groupId, days);
+                        OsConfigLogInfo(log, "SetLockoutAfterInactivityLessThan: user %u lockout time after inactivity is now set to %ld days", userList[i].userId, days);
                     }
 
                     FREE_MEMORY(command);
@@ -2619,10 +2582,8 @@ int CheckSystemAccountsAreNonLogin(char** reason, OsConfigLogHandle log)
         {
             if ((userList[i].isLocked || userList[i].noLogin || userList[i].cannotLogin) && userList[i].hasPassword && userList[i].userId)
             {
-                OsConfigLogInfo(log, "CheckSystemAccountsAreNonLogin: user '%s' (%u, %u, '%s', '%s') is either locked, no-login, or cannot-login, "
-                    "but can login with password", userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
-                OsConfigCaptureReason(reason, "User '%s' (%u, %u, '%s', '%s') is either locked, no-login, or cannot-login, but can login with password",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
+                OsConfigLogInfo(log, "CheckSystemAccountsAreNonLogin: user %u is either locked, no-login, or cannot-login, but can login with password ('%s')", userList[i].userId, userList[i].shell);
+                OsConfigCaptureReason(reason, "User %u is either locked, no-login, or cannot-login, but can login with password", userList[i].userId, userList[i].shell);
                 status = ENOENT;
             }
         }
@@ -2651,8 +2612,7 @@ int SetSystemAccountsNonLogin(OsConfigLogHandle log)
         {
             if ((userList[i].isLocked || userList[i].noLogin || userList[i].cannotLogin) && userList[i].hasPassword && userList[i].userId)
             {
-                OsConfigLogInfo(log, "SetSystemAccountsNonLogin: user '%s' (%u, %u, '%s', '%s') is either locked, non-login, or cannot-login, "
-                    "but can login with password",  userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
+                OsConfigLogInfo(log, "SetSystemAccountsNonLogin: user %u is either locked, non-login, or cannot-login, but can login with password ('%s')",  userList[i].userId, userList[i].shell);
 
                 // If the account is not already true non-login, try to make it non-login and if that does not work, remove the account
                 if (0 != (_status = SetUserNonLogin(&(userList[i]), log)))
@@ -2700,8 +2660,7 @@ int CheckRootPasswordForSingleUserMode(char** reason, OsConfigLogHandle log)
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: user '%s' (%u, %u) appears to have a password",
-                        userList[i].username, userList[i].userId, userList[i].groupId);
+                    OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: user %u appears to have a password", userList[i].userId);
                     usersWithPassword = true;
                 }
             }
@@ -2792,17 +2751,14 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
 
                         if (FileExists(dotPath))
                         {
-                            OsConfigLogInfo(log, "CheckOrEnsureUsersDontHaveDotFiles: for user '%s' (%u, %u), '%s' needs to be manually removed",
-                                userList[i].username, userList[i].userId, userList[i].groupId, dotPath);
+                            OsConfigLogInfo(log, "CheckOrEnsureUsersDontHaveDotFiles: for user %u, '%s' needs to be manually removed", userList[i].userId, dotPath);
                             status = ENOENT;
                         }
                     }
                     else
                     {
-                        OsConfigLogInfo(log, "CheckOrEnsureUsersDontHaveDotFiles: user '%s' (%u, %u) has file '.%s' ('%s')",
-                            userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
-                        OsConfigCaptureReason(reason, "User '%s' (%u, %u) has file '.%s' ('%s')",
-                            userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
+                        OsConfigLogInfo(log, "CheckOrEnsureUsersDontHaveDotFiles: user %u has file '.%s' ('%s')", userList[i].userId, name, dotPath);
+                        OsConfigCaptureReason(reason, "User %u has file '.%s' ('%s')", userList[i].userId, name, dotPath);
                         status = ENOENT;
                     }
                 }
@@ -2873,8 +2829,8 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                         {
                             if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                             {
-                                OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user '%s' (%u, %u) has proper restricted access (%03o) for their dot file '%s'",
-                                    userList[i].username, userList[i].userId, userList[i].groupId, modes[j], path);
+                                OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user %u has proper restricted access (%03o) for their dot file '%s'",
+                                    userList[i].userId, modes[j], path);
                                 oneGoodMode = true;
                                 break;
                             }
@@ -2882,10 +2838,10 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
                         if (false == oneGoodMode)
                         {
-                            OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user '%s' (%u, %u) does not has have proper restricted access for their dot file '%s'",
-                                userList[i].username, userList[i].userId, userList[i].groupId, path);
-                            OsConfigCaptureReason(reason, "User '%s' (%u, %u) does not has have proper restricted access for their dot file '%s'",
-                                userList[i].username, userList[i].userId, userList[i].groupId, path);
+                            OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user %u does not has have proper restricted access for their dot file '%s'",
+                                userList[i].userId, path);
+                            OsConfigCaptureReason(reason, "User %u does not has have proper restricted access for their dot file '%s'",
+                                userList[i].userId, path);
 
                             if (0 == status)
                             {
@@ -2963,8 +2919,8 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                         {
                             if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                             {
-                                OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user '%s' (%u, %u) already has proper restricted access (%03o) set for their dot file '%s'",
-                                    userList[i].username, userList[i].userId, userList[i].groupId, modes[j], path);
+                                OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u already has proper restricted access (%03o) set for their dot file '%s'",
+                                    userList[i].userId, modes[j], path);
                                 oneGoodMode = true;
                                 break;
                             }
@@ -2974,13 +2930,13 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                         {
                             if (0 == (_status = SetFileAccess(path, userList[i].userId, userList[i].groupId, mode, log)))
                             {
-                                OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user '%s' (%u, %u) now has restricted access (%03o) set for their dot file '%s'",
-                                    userList[i].username, userList[i].userId, userList[i].groupId, mode, path);
+                                OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u now has restricted access (%03o) set for their dot file '%s'",
+                                    userList[i].userId, umode, path);
                             }
                             else
                             {
-                                OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: cannot set restricted access (%u) for user '%s' (%u, %u) dot file '%s'",
-                                    mode, userList[i].username, userList[i].userId, userList[i].groupId, path);
+                                OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: cannot set restricted access (%u) for user %u dot file '%s'",
+                                    mode, userList[i].userId, path);
 
                                 if (0 == status)
                                 {
@@ -3047,16 +3003,14 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
                         EnumerateUserGroups(&userList[i], &groupList, &groupListSize, reason, log);
                         FreeGroupList(&groupList, groupListSize);
 
-                        OsConfigLogInfo(log, "CheckUserAccountsNotFound: user '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
-                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
+                        OsConfigLogInfo(log, "CheckUserAccountsNotFound: user %u is present in %u group(s)", userList[i].userId, groupListSize);
 
                         if (DirectoryExists(userList[i].home))
                         {
-                            OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user '%s' exists ('%s')", name, userList[i].home);
+                            OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user %u exists", userList[i].userId);
                         }
 
-                        OsConfigCaptureReason(reason, "User '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
-                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
+                        OsConfigCaptureReason(reason, "User %u is present in %u group(s)", userList[i].userId, groupListSize);
 
                         found = true;
                     }

@@ -25,6 +25,7 @@
 #include <dirent.h>
 #include <math.h>
 #include <libgen.h>
+#include <shadow.h>
 #include <parson.h>
 #include <Logging.h>
 #include <Reasons.h>
