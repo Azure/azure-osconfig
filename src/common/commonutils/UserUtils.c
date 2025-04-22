@@ -243,7 +243,7 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
 
     if (ENOENT == result)
     {
-        OsConfigLogInfo(log, "SetUserNonLogin: no suitable no login shell found (to make user %u non-login)", user->userId);
+        OsConfigLogInfo(log, "SetUserNonLogin: no suitable 'no login shell' found (to make user %u non-login)", user->userId);
     }
 
     return result;
