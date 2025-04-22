@@ -24,17 +24,17 @@ add_custom_target(complianceschema
 set_property(TARGET complianceschema PROPERTY OUTPUT ComplianceSchema.zip)
 
 add_library(compliancelib STATIC
+    Base64.cpp
     CommonContext.cpp
     ComplianceInterface.cpp
     ContextInterface.cpp
-    Evaluator.cpp
-    ProcedureMap.cpp
-    JsonWrapper.cpp
-    Base64.cpp
     Engine.cpp
-    Procedure.cpp
-    Result.cpp
+    Evaluator.cpp
     Indicators.cpp
+    JsonWrapper.cpp
+    Procedure.cpp
+    ProcedureMap.cpp
+    Result.cpp
     ${PROCEDURES}
     )
 
