@@ -290,7 +290,7 @@ REMEDIATE_FN(EnsureFilesystemOption, "mountpoint:Filesystem mount point:M", "opt
             }
             file.close();
             tempFile.close();
-            char timeString[PATH_MAX];
+            char timeString[PATH_MAX] = {0};
             auto tm = time(nullptr);
             strftime(timeString, 64, "%Y%m%d%H%M%S", gmtime(&tm));
             if (0 != rename(fstab.c_str(), (fstab + ".bak." + timeString).c_str()))
