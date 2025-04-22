@@ -30,6 +30,7 @@ add_library(compliancelib STATIC
     ContextInterface.cpp
     Engine.cpp
     Evaluator.cpp
+    FileTreeWalk.cpp
     Indicators.cpp
     IterateUsers.cpp
     JsonWrapper.cpp
