@@ -63,35 +63,3 @@ TEST_F(CommonContextTest, GetFileContents_ExistingFile)
 
     remove(filePath.c_str());
 }
-
-TEST_F(CommonContextTest, LogStream_Test)
-{
-    compliance::CommonContext ctx(nullptr);
-    ctx.GetLogstream() << "Log message";
-    auto logContent = ctx.ConsumeLogstream();
-    EXPECT_EQ(logContent, "Log message");
-}
-
-TEST_F(CommonContextTest, LogStream_MultipleWrites)
-{
-    compliance::CommonContext ctx(nullptr);
-
-    // First write and read
-    ctx.GetLogstream() << "First message ";
-    ctx.GetLogstream() << "Second message";
-    auto logContent = ctx.ConsumeLogstream();
-    EXPECT_EQ(logContent, "First message Second message");
-
-    // No content left
-    logContent = ctx.ConsumeLogstream();
-    EXPECT_TRUE(logContent.empty());
-
-    // Write again
-    ctx.GetLogstream() << "Third message";
-    logContent = ctx.ConsumeLogstream();
-    EXPECT_EQ(logContent, "Third message");
-
-    // No content left
-    logContent = ctx.ConsumeLogstream();
-    EXPECT_TRUE(logContent.empty());
-}

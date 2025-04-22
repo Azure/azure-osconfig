@@ -31,7 +31,6 @@ public:
 
 private:
     OsConfigLogHandle mLog;
-    std::ostringstream mLogstream;
 };
 } // namespace compliance
 #endif // COMPLIANCE_COMMONCONTEXT_H
