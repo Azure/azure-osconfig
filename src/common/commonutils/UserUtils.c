@@ -189,6 +189,11 @@ static bool IsSystemAccount(SimplifiedUser* user)
     return (user && ((user->username && (0 == strcmp(user->username, g_root))) || IsUserNonLogin(user) || (user->userId < 1000))) ? true : false;
 }
 
+static bool IsSystemGroup(SimplifiedGroup* group)
+{
+    return (group && ((group->groupName && (0 == strcmp(group->groupName, g_root))) || (group->groupId < 1000))) ? true : false;
+}
+
 static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
 {
     const char* commandTemplate = "usermod -s %s %s";
@@ -523,7 +528,8 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                        OsConfigLogDebug(log, "EnumerateUserGroups: user %u (%u) is in group '%s' (%u)", user->userId, user->groupId, (*groupList)[i].groupName, (*groupList)[i].groupId);
+                        OsConfigLogDebug(log, "EnumerateUserGroups: user %u (%u) is in group %u ('%s')", user->userId, user->groupId, 
+                            (*groupList)[i].groupId, IsSystemGroup(&(*groupList)[i]) ? (*groupList)[i].groupName : g_redacted);
                     }
                     else
                     {
@@ -587,7 +593,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
                         OsConfigLogDebug(log, "EnumerateAllGroups(group %d): group name '%s', gid %u, %s", i,
-                            (*groupList)[i].groupName, (*groupList)[i].groupId, (*groupList)[i].hasUsers ? "has users" : "empty");
+                            IsSystemGroup(&(*groupList)[i]) ? (*groupList)[i].groupName : g_redacted, (*groupList)[i].groupId, (*groupList)[i].hasUsers ? "has users" : "empty");
                     }
                     else
                     {
@@ -732,8 +738,8 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
                         {
                             if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                             {
-                                OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: user %u was removed from group '%s' (%u)",
-                                    userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+                                OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: user %u was removed from group %u ('%s')",
+                                    userList[i].userId, userGroupList[j].groupId, IsSystemGroup(&userGroupList[j]) ? userGroupList[j].groupName : g_redacted);
                             }
                             else
                             {
@@ -928,7 +934,7 @@ int RemoveGroup(SimplifiedGroup* group, bool removeHomeDirs, OsConfigLogHandle l
 
     if (group->hasUsers)
     {
-        OsConfigLogInfo(log, "RemoveGroup: attempting to delete a group that has users ('%s', %u)", group->groupName, group->groupId);
+        OsConfigLogInfo(log, "RemoveGroup: attempting to delete a group that has users ('%s', %u)", IsSystemGroup(group) ? group->groupName : g_redacted, group->groupId);
 
         // Check if this group is the primary group of any existing user
         if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
@@ -937,8 +943,7 @@ int RemoveGroup(SimplifiedGroup* group, bool removeHomeDirs, OsConfigLogHandle l
             {
                 if (userList[i].groupId == group->groupId)
                 {
-                    OsConfigLogInfo(log, "RemoveGroup: group '%s' (%u) is primary group of user %u, try first to delete this user account",
-                        group->groupName, group->groupId, userList[i].userId);
+                    OsConfigLogInfo(log, "RemoveGroup: group %u is primary group of user %u, try first to delete this user account", group->groupId, userList[i].userId);
                     RemoveUser(&(userList[i]), removeHomeDirs, log);
                 }
             }
@@ -951,11 +956,11 @@ int RemoveGroup(SimplifiedGroup* group, bool removeHomeDirs, OsConfigLogHandle l
     {
         if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogInfo(log, "RemoveGroup: removed group '%s' (%u)", group->groupName, group->groupId);
+            OsConfigLogInfo(log, "RemoveGroup: removed group %u", group->groupId);
         }
         else
         {
-            OsConfigLogInfo(log, "RemoveGroup: cannot remove group '%s' (%u) (%d)", group->groupName, group->groupId, status);
+            OsConfigLogInfo(log, "RemoveGroup: cannot remove group %u (%d, %s)", group->groupId, status, strerror(status));
         }
 
         FREE_MEMORY(command);
@@ -1034,8 +1039,10 @@ int CheckNoDuplicateGroupNamesExist(char** reason, OsConfigLogHandle log)
 
                     if (hits > 1)
                     {
-                        OsConfigLogInfo(log, "CheckNoDuplicateGroupNamesExist: group name '%s' appears more than a single time in '/etc/group'", groupList[i].groupName);
-                        OsConfigCaptureReason(reason, "Group name '%s' appears more than a single time in '/etc/group'", groupList[i].groupName);
+                        OsConfigLogInfo(log, "CheckNoDuplicateGroupNamesExist: group %u ('%s') appears more than a single time in '/etc/group'",
+                            groupList[i].groupId, IsSystemGroup(&groupList[i]) ? groupList[i].groupName : g_redacted);
+                        OsConfigCaptureReason(reason, "Group %u ('%s') appears more than a single time in '/etc/group'",
+                            groupList[i].groupId, IsSystemGroup(&groupList[i]) ? groupList[i].groupName : g_redacted);
                         status = EEXIST;
                         break;
                     }
@@ -1116,8 +1123,8 @@ int SetShadowGroupEmpty(OsConfigLogHandle log)
                         {
                             if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                             {
-                                OsConfigLogInfo(log, "SetShadowGroupEmpty: user %u was removed from group '%s' (%u)",
-                                    userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+                                OsConfigLogInfo(log, "SetShadowGroupEmpty: user %u was removed from group %u ('%s')",
+                                    userList[i].userId, userGroupList[j].groupId, IsSystemGroup(&userGroupList[j]) ? userGroupList[j].groupName : g_redacted);
                             }
                             else
                             {
