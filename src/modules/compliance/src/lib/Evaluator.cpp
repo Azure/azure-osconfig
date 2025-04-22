@@ -6,6 +6,7 @@
 #include "JsonWrapper.h"
 #include "Logging.h"
 #include "Result.h"
+#include "Reasons.h"
 
 #include <cassert>
 #include <cstring>
@@ -574,7 +575,7 @@ Result<std::string> MmiFormatter::Format(const IndicatorsTree& indicators) const
     node = node->children[0].get();
     assert(nullptr != node);
     FormatNode(*node, result);
-    return (indicators.GetRootNode()->status == Status::Compliant ? "PASS" : "") + result.str();
+    return (indicators.GetRootNode()->status == Status::Compliant ? SECURITY_AUDIT_PASS : "") + result.str();
 }
 
 } // namespace compliance
