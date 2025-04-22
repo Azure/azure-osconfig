@@ -497,7 +497,8 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
     if ((0 == status) && (0 < numberOfGroups))
     {
-        OsConfigLogDebug(log, "EnumerateUserGroups: user %u (%u) is in %d group%s", user->userId, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
+        OsConfigLogDebug(log, "EnumerateUserGroups: user %u ('%s', gid: %u) is in %d group%s",
+            user->userId, IsSystemAccount(user) ? user->username : g_redacted, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
 
         if (NULL == (*groupList = malloc(sizeof(SimplifiedGroup) * numberOfGroups)))
         {
