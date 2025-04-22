@@ -954,6 +954,11 @@ void AsbInitialize(OsConfigLogHandle log)
         OsConfigLogWarning(log, "AsbInitialize: console logging is enabled. If the syslog rotation is not enabled this may result in a fill-up of the local storage space");
     }
 
+    if (IsDebugLoggingEnabled())
+    {
+        OsConfigLogWarning(log, "AsbInitialize: debug logging is enabled and this may include private information such as unredacted usernames");
+    }
+
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
@@ -1116,6 +1121,9 @@ static char* AuditEnsureLoggingLevel(OsConfigLogHandle log)
     char* reason = NULL;
     LoggingLevel existingLevel = GetLoggingLevel();
     LoggingLevel desiredLevel = GetLoggingLevelFromString(g_desiredLoggingLevel ? g_desiredLoggingLevel : g_defaultLoggingLevel);
+
+    // We need to configure the desired logging level even in audit-only mode
+    SetLoggingLevelPersistently(desiredLevel, log);
 
 // We need to avoid the warning treated as error for 'reason' always being non-NULL in this case
 #pragma GCC diagnostic push
