@@ -9,6 +9,7 @@
 
 static const char* g_root = "root";
 static const char* g_shadow = "shadow";
+static const char* g_redacted = "***";
 
 static const char* g_noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/usr/bin/false", "/dev/null", "" };
 
@@ -410,8 +411,8 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
         for (i = 0; i < *size; i++)
         {
             OsConfigLogDebug(log, "EnumerateUsers(user %u): uid %d, name '%s', gid %d, home '%s', shell '%s'", i, (*userList)[i].userId,
-                IsSystemAccount(&(*userList)[i]) ? (*userList)[i].username : "-", (*userList)[i].groupId,
-                IsSystemAccount(&(*userList)[i]) ? (*userList)[i].home : "-", (*userList)[i].shell);
+                IsSystemAccount(&(*userList)[i]) ? (*userList)[i].username : g_redacted, (*userList)[i].groupId,
+                IsSystemAccount(&(*userList)[i]) ? (*userList)[i].home : g_redacted, (*userList)[i].shell);
         }
     }
 
@@ -1303,29 +1304,29 @@ int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
             if (userList[i].hasPassword)
             {
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') appears to have a password set",
-                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-");
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
             }
             else if (userList[i].noLogin)
             {
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') is no login",
-                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-");
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
             }
             else if (userList[i].isLocked)
             {
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') is locked",
-                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-");
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
             }
             else if (userList[i].cannotLogin)
             {
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') cannot login with password",
-                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-");
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
             }
             else
             {
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s')  not found to have a password set",
-                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-");
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
                 OsConfigCaptureReason(reason, "User %u ('%s')  not found to have a password set",
-                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : "-");
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
                 status = ENOENT;
             }
         }
@@ -1408,9 +1409,9 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, OsConfigLogHandle log)
             if (((NULL == userList[i].username) || (0 != strcmp(userList[i].username, g_root))) && (0 == userList[i].userId))
             {
                 OsConfigLogInfo(log, "CheckRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
-                    IsSystemAccount(&userList[i]) ? userList[i].username : "-", userList[i].userId, userList[i].groupId);
+                    IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted, userList[i].userId, userList[i].groupId);
                 OsConfigCaptureReason(reason, "User '%s' (%u, %u) is not root but has uid 0",
-                    IsSystemAccount(&userList[i]) ? userList[i].username : "-", userList[i].userId, userList[i].groupId);
+                    IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted, userList[i].userId, userList[i].groupId);
                 status = EACCES;
             }
         }
@@ -1440,7 +1441,7 @@ int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
             if (((NULL == userList[i].username) || (0 != strcmp(userList[i].username, g_root))) && (0 == userList[i].userId))
             {
                 OsConfigLogInfo(log, "SetRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
-                    IsSystemAccount(&userList[i]) ? userList[i].username : "-", userList[i].userId, userList[i].groupId);
+                    IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted, userList[i].userId, userList[i].groupId);
 
                 if ((0 != (_status = RemoveUser(&(userList[i]), false, log))) && (0 == status))
                 {
