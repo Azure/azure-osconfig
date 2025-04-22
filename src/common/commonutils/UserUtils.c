@@ -184,11 +184,16 @@ static bool IsUserNonLogin(SimplifiedUser* user)
     return noLogin;
 }
 
+// For logging purposes, we identify an user account as a system account if either has name "root", or has a no-loging shell,
+// or has an UID below 1000. For non-system accounts we redact usernames and home names, for system accounts we log everything.
+// We do this in order to log in full clear deviant accounts (that for example use a no-login shell while having UID above 1000)
 static bool IsSystemAccount(SimplifiedUser* user)
 {
     return (user && ((user->username && (0 == strcmp(user->username, g_root))) || IsUserNonLogin(user) || (user->userId < 1000))) ? true : false;
 }
 
+// Similar to determining if an user account is system, we identify a group to be system if either
+// has name "root" or has a GID below 1000 (and all such system groups get logged in full)
 static bool IsSystemGroup(SimplifiedGroup* group)
 {
     return (group && ((group->groupName && (0 == strcmp(group->groupName, g_root))) || (group->groupId < 1000))) ? true : false;
