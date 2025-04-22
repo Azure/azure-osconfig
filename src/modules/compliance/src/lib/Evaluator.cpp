@@ -124,7 +124,7 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
 
 Result<Status> Evaluator::EvaluateList(const json_value_t* value, const Action action, const ListAction listAction)
 {
-    const char* actionName = listAction == ListAction::AnyOf ? "anyOf" : "allOf";
+    const char* actionName = ((listAction == ListAction::AnyOf) ? "anyOf" : "allOf");
     OsConfigLogDebug(mContext.GetLogHandle(), "Evaluating %s operator", actionName);
 
     if (nullptr == value)
@@ -164,7 +164,7 @@ Result<Status> Evaluator::EvaluateList(const json_value_t* value, const Action a
         }
     }
 
-    return listAction == ListAction::AnyOf ? Status::NonCompliant : Status::Compliant;
+    return ((listAction == ListAction::AnyOf) ? Status::NonCompliant : Status::Compliant);
 }
 
 Result<Status> Evaluator::EvaluateNot(const json_value_t* value, const Action action)
