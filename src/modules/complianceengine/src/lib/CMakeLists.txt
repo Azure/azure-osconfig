@@ -32,6 +32,7 @@ add_library(complianceenginelib STATIC
     Evaluator.cpp
     KernelModuleTools.cpp
     FilePermissionsHelpers.cpp
+    FileTreeWalk.cpp
     Indicators.cpp
     IterateUsers.cpp
     JsonWrapper.cpp
