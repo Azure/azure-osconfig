@@ -659,8 +659,7 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
                     {
                         if (userGroupList[j].groupId == groupList[k].groupId)
                         {
-                            OsConfigLogDebug(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group %u of user %u found in '/etc/group'",
-                                userList[i].userId, userGroupList[j].groupId);
+                            OsConfigLogDebug(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group %u of user %u found in '/etc/group'", userGroupList[j].groupId, userList[i].userId);
                             found = true;
                             break;
                         }
@@ -668,9 +667,8 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
 
                     if (false == found)
                     {
-                        OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group %u of user %u not found in '/etc/group'",
-                            userList[i].userId, userGroupList[j].groupId);
-                        OsConfigCaptureReason(reason, "Group %u of user %u not found in '/etc/group'", userList[i].userId, userGroupList[j].groupId);
+                        OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group %u of user %u not found in '/etc/group'", userGroupList[j].groupId, userList[i].userId);
+                        OsConfigCaptureReason(reason, "Group %u of user %u not found in '/etc/group'", userGroupList[j].groupId, userList[i].userId);
                         status = ENOENT;
                         break;
                     }
