@@ -1118,7 +1118,7 @@ static char* AuditEnsureLoggingLevel(OsConfigLogHandle log)
     LoggingLevel desiredLevel = GetLoggingLevelFromString(g_desiredLoggingLevel ? g_desiredLoggingLevel : g_defaultLoggingLevel);
 
     // We need to configure the desired logging level even in audit-only mode
-    SetLoggingLevelPersistently(GetLoggingLevelFromString(desiredLevel), log);
+    SetLoggingLevelPersistently(desiredLevel, log);
 
 // We need to avoid the warning treated as error for 'reason' always being non-NULL in this case
 #pragma GCC diagnostic push
