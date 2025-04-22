@@ -529,7 +529,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                        OsConfigLogDebug(log, "EnumerateUserGroups: user %u ('%s', gid: %u) is in group %u ('%s')", 
+                        OsConfigLogDebug(log, "EnumerateUserGroups: user %u ('%s', gid: %u) is in group %u ('%s')",
                             user->userId, IsSystemAccount(user) ? user->username : g_redacted, user->groupId,
                             (*groupList)[i].groupId, IsSystemGroup(&(*groupList)[i]) ? (*groupList)[i].groupName : g_redacted);
                     }
