@@ -1,5 +1,5 @@
 [
-  // TODO(robertwoj, kkanas): This test randomly fail especially on Mariner 2. Disabled temporarily until the root cause is identified.
+  // TODO(robertwoj, kkanas): This test randomly fails especially on Mariner 2. Disabled temporarily until the root cause is identified.
   // {
   //   "Action": "LoadModule",
   //   "Module": "compliance.so"
