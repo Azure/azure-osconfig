@@ -5,8 +5,8 @@
 
 #include "JsonWrapper.h"
 #include "Logging.h"
-#include "Result.h"
 #include "Reasons.h"
+#include "Result.h"
 
 #include <cassert>
 #include <cstring>
