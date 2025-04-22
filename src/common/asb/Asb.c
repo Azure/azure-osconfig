@@ -954,6 +954,11 @@ void AsbInitialize(OsConfigLogHandle log)
         OsConfigLogWarning(log, "AsbInitialize: console logging is enabled. If the syslog rotation is not enabled this may result in a fill-up of the local storage space");
     }
 
+    if (IsDebugLoggingEnabled())
+    {
+        OsConfigLogWarning(log, "AsbInitialize: debug logging is enabled and this may include private information such as unredacted usernames");
+    }
+
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
     if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
