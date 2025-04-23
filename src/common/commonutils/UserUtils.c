@@ -734,57 +734,61 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
         {
             if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, NULL, log)))
             {
-                for (j = 0; (j < userGroupListSize) && (0 == status); j++)
+                if (NULL == userGroupList)
                 {
-                    found = false;
-
-                    for (k = 0; (k < groupListSize) && (0 == status); k++)
+                    OsConfigLogDebug(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: there are no groups to enumerate for user %u", userList[i].userId);
+                }
+                else
+                {
+                    for (j = 0; (j < userGroupListSize) && (0 == status); j++)
                     {
-                        if (userGroupList[j].groupId == groupList[k].groupId)
-                        {
-                            OsConfigLogDebug(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user %u found in '/etc/group'",
-                                userGroupList[j].groupName, userGroupList[j].groupId, userList[i].userId);
-                            found = true;
-                            break;
-                        }
-                    }
+                        found = false;
 
-                    if (false == found)
-                    {
-                        OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user %u not found in '/etc/group'",
-                            userGroupList[j].groupName, userGroupList[j].groupId, userList[i].userId);
-
-                        if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].userId, userGroupList[j].groupId)))
+                        for (k = 0; (k < groupListSize) && (0 == status); k++)
                         {
-                            if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                            if (userGroupList[j].groupId == groupList[k].groupId)
                             {
-                                OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: user %u was removed from group %u ('%s')",
-                                    userList[i].userId, userGroupList[j].groupId, IsSystemGroup(&userGroupList[j]) ? userGroupList[j].groupName : g_redacted);
+                                OsConfigLogDebug(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user %u found in '/etc/group'",
+                                    userGroupList[j].groupName, userGroupList[j].groupId, userList[i].userId);
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (false == found)
+                        {
+                            OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: group '%s' (%u) of user %u not found in '/etc/group'",
+                                userGroupList[j].groupName, userGroupList[j].groupId, userList[i].userId);
+
+                            if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].userId, userGroupList[j].groupId)))
+                            {
+                                if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                                {
+                                    OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: user %u was removed from group %u ('%s')",
+                                        userList[i].userId, userGroupList[j].groupId, IsSystemGroup(&userGroupList[j]) ? userGroupList[j].groupName : g_redacted);
+                                }
+                                else
+                                {
+                                    OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: 'gpasswd -d %u %u' failed with %d",
+                                        userList[i].userId, userGroupList[j].groupId, _status);
+                                }
+
+                                FREE_MEMORY(command);
                             }
                             else
                             {
-                                OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: 'gpasswd -d %u %u' failed with %d",
-                                    userList[i].userId, userGroupList[j].groupId, _status);
+                                OsConfigLogError(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: out of memory");
+                                _status = ENOMEM;
                             }
-
-                            FREE_MEMORY(command);
                         }
-                        else
+
+                        if (0 == status)
                         {
-                            OsConfigLogError(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: out of memory");
-                            _status = ENOMEM;
+                            status = _status;
                         }
-                    }
 
-                    if (0 == status)
-                    {
-                        status = _status;
+                        FreeGroupList(&userGroupList, userGroupListSize);
                     }
-                }
-
-                if (NULL != userGroupList)
-                {
-                    FreeGroupList(&userGroupList, userGroupListSize);
                 }
             }
         }
