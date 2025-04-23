@@ -162,6 +162,9 @@
         },
         {
           "$ref": "procedures/testingProcedures.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/ufwStatus.schema.json#/definitions/audit"
         }
       ]
     },
@@ -199,6 +202,9 @@
         },
         {
           "$ref": "procedures/testingProcedures.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/ufwStatus.schema.json#/definitions/remediation"
         },
         {
           "$ref": "#definitions/auditProcedure"
