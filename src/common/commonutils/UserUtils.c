@@ -1079,7 +1079,7 @@ int CheckShadowGroupIsEmpty(char** reason, OsConfigLogHandle log)
     {
         for (i = 0; i < groupListSize; i++)
         {
-            if (0 == strcmp(groupList[i].groupName, g_shadow)) 
+            if (0 == strcmp(groupList[i].groupName, g_shadow))
             {
                 found = true;
                 OsConfigLogInfo(log, "CheckShadowGroupIsEmpty: group 'shadow' (%u) exists", groupList[i].groupId);
