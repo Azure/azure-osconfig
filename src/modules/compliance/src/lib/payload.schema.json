@@ -143,6 +143,9 @@
           "$ref": "procedures/ensureFilesystemOption.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/ensureInteractiveUsersDotFilesAccessIsConfigured.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/ensureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/audit"
         },
         {
@@ -181,6 +184,9 @@
         },
         {
           "$ref": "procedures/ensureFilesystemOption.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/ensureInteractiveUsersDotFilesAccessIsConfigured.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/ensureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/remediation"
