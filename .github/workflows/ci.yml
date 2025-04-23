@@ -38,7 +38,8 @@ jobs:
             { "name": "rhel-9", "arch": "amd64", "tag": "latest" },
             { "name": "sles-15", "arch": "amd64", "tag": "latest" },
             { "name": "ubuntu-20.04", "arch": "amd64", "tag": "latest" },
-            { "name": "ubuntu-22.04", "arch": "amd64", "tag": "latest" }
+            { "name": "ubuntu-22.04", "arch": "amd64", "tag": "latest" },
+            { "name": "ubuntu-24.04", "arch": "amd64", "tag": "latest" }
           ]
           EOL
           )"
@@ -51,7 +52,8 @@ jobs:
           #   { "name": "debian-11", "arch": "arm64", "tag": "sha-c689eee" },
           #   { "name": "debian-12", "arch": "arm64", "tag": "sha-db3d4c8" },
           #   { "name": "ubuntu-20.04", "arch": "arm64", "tag": "sha-c689eee" },
-          #   { "name": "ubuntu-22.04", "arch": "arm64", "tag": "sha-db3d4c8" }
+          #   { "name": "ubuntu-22.04", "arch": "arm64", "tag": "sha-db3d4c8" },
+          #   { "name": "ubuntu-24.04", "arch": "arm64", "tag": "sha-db3d4c8" }
           # ]
           # EOL
           # )"
