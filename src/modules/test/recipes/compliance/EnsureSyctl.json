@@ -1,0 +1,64 @@
+[
+  // TODO(robertwoj, kkanas): This test randomly fails especially on Mariner 2. Disabled temporarily until the root cause is identified.
+  // {
+  //   "Action": "LoadModule",
+  //   "Module": "compliance.so"
+  // },
+  // {
+  //   "RunCommand": "sysctl net.ipv4.ip_forward=1 && test -f /etc/sysctl.d/99-sysctl.conf && cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.bak ||  true ; echo net.ipv4.ip_forward=1 >> /etc/sysctl.d/99-sysctl.conf"
+  // },
+
+  // {
+  //   "ObjectType": "Desired",
+  //   "ComponentName": "Compliance",
+  //   "ObjectName": "procedureTest",
+  //   "Payload": {
+  //     "audit": {
+  //       "EnsureSysctl": {
+  //         "sysctlName": "net.ipv4.ip_forward",
+  //         "value": "1"
+  //       }
+  //     },
+  //     "parameters": {
+  //     }
+  //   }
+  // },
+  // {
+  //   "ObjectType": "Reported",
+  //   "ComponentName": "Compliance",
+  //   "ObjectName": "auditTest",
+  //   "Payload": "PASS{ EnsureSysctl: sysctl: 'net.ipv4.ip_forward' compliant with value: '1' } == TRUE"
+
+  // },
+
+  // {
+  //   "ObjectType": "Desired",
+  //   "ComponentName": "Compliance",
+  //   "ObjectName": "procedureTest",
+  //   "Payload": {
+  //     "audit": {
+  //       "EnsureSysctl": {
+  //         "sysctlName": "net.ipv4.ip_forward",
+  //         "value": "0"
+  //       }
+  //     },
+  //     "parameters": {
+  //     }
+  //   }
+  // },
+  // {
+  //   "ObjectType": "Reported",
+  //   "ComponentName": "Compliance",
+  //   "ObjectName": "auditTest",
+  //   "Payload": "{ EnsureSysctl: Fail sysctl: 'net.ipv4.ip_forward' NOT compliant. Expected value: '0' got '1' } == FALSE"
+
+  // },
+
+  // {
+  //   "RunCommand": "sysctl net.ipv4.ip_forward=0 && test -f /etc/sysctl.d/99-sysctl.conf.bak && { mv /etc/sysctl.d/99-sysctl.conf.bak /etc/sysctl.d/99-sysctl.conf ; } || { rm /etc/sysctl.d/99-sysctl.conf ; }"
+  // },
+
+  // {
+  //   "Action": "UnloadModule"
+  // }
+]

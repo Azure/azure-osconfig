@@ -20,6 +20,7 @@ AUDIT_FN(EnsureNoDuplicateEntriesExist, "filename:The file to be checked for dup
     "delimiter:A single character used to separate entries:M", "column:Column index to check for duplicates:M",
     "context:Context for the entries used in the messages")
 {
+    UNUSED(context);
     auto it = args.find("filename");
     if (it == args.end())
     {
@@ -102,21 +103,13 @@ AUDIT_FN(EnsureNoDuplicateEntriesExist, "filename:The file to be checked for dup
 
     if (!duplicateEntries.empty())
     {
-        context.GetLogstream() << "Duplicate " << entries << " found in " << filename << ": [";
-        bool first = true;
         for (const auto& entry : duplicateEntries)
         {
-            if (!first)
-            {
-                context.GetLogstream() << ", ";
-            }
-            first = false;
-            context.GetLogstream() << entry;
+            indicators.NonCompliant("Duplicate entry: '" + entry + "'");
         }
-        context.GetLogstream() << "] ";
-        return false;
+        return Status::NonCompliant;
     }
 
-    return true;
+    return indicators.Compliant(std::string("No duplicate ") + entries + " found in " + filename);
 }
 } // namespace compliance

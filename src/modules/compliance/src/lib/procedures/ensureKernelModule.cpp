@@ -30,7 +30,6 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
     auto it = args.find("moduleName");
     if (it == args.end())
     {
-        context.GetLogstream() << "No module name provided ";
         return Error("No module name provided");
     }
     auto moduleName = std::move(it->second);
@@ -41,22 +40,19 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
     Result<std::string> findOutput = context.ExecuteCommand(findCmd);
     if (!findOutput.HasValue())
     {
-        context.GetLogstream() << "find /lib/modules: " << findOutput.Error().message;
-        return findOutput.Error();
+        return Error("Failed to execute find command");
     }
 
     Result<std::string> procModules = context.GetFileContents("/proc/modules");
     if (!procModules.HasValue())
     {
-        context.GetLogstream() << "procModules: " << procModules.Error();
         return procModules.Error();
     }
 
     Result<std::string> modprobeOutput = context.ExecuteCommand("modprobe --showconfig");
     if (!modprobeOutput.HasValue())
     {
-        context.GetLogstream() << "modprobe --showconfig: " << modprobeOutput.Error().message;
-        return modprobeOutput.Error();
+        return Error("Failed to execute modprobe");
     }
 
     std::istringstream findStream(findOutput.Value());
@@ -85,8 +81,7 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
 
     if (!moduleFound)
     {
-        context.GetLogstream() << "Module " << moduleName << " not found ";
-        return true;
+        return indicators.Compliant("Module " + moduleName + " not found");
     }
 
     regex procModulesRegex;
@@ -101,8 +96,7 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
 
     if (MultilineRegexSearch(procModules.Value(), procModulesRegex))
     {
-        context.GetLogstream() << "Module " << moduleName << " is loaded ";
-        return false;
+        return indicators.NonCompliant("Module " + moduleName + " is loaded");
     }
 
     regex modprobeBlacklistRegex;
@@ -117,8 +111,7 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
 
     if (!MultilineRegexSearch(modprobeOutput.Value(), modprobeBlacklistRegex))
     {
-        context.GetLogstream() << "Module " << moduleName << " is not blacklisted in modprobe configuration ";
-        return false;
+        return indicators.NonCompliant("Module " + moduleName + " is not blacklisted in modprobe configuration");
     }
 
     regex modprobeInstallRegex;
@@ -132,12 +125,10 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
     }
     if (!MultilineRegexSearch(modprobeOutput.Value(), modprobeInstallRegex))
     {
-        context.GetLogstream() << "Module " << moduleName << " is not masked in modprobe configuration ";
-        return false;
+        return indicators.NonCompliant("Module " + moduleName + " is not masked in modprobe configuration");
     }
 
-    context.GetLogstream() << "Module " << moduleName << " is disabled ";
-    return true;
+    return indicators.Compliant("Module " + moduleName + " is disabled");
 }
 
 } // namespace compliance
