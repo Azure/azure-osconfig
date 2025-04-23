@@ -28,7 +28,7 @@ private:
     unsigned int mMaxPayloadSize = 0;
     std::map<std::string, Procedure> mDatabase;
     std::unique_ptr<ContextInterface> mContext;
-    std::unique_ptr<PayloadFormatter> mFormatter = nullptr;
+    std::unique_ptr<PayloadFormatter> mFormatter;
 
     Result<JsonWrapper> DecodeB64Json(const std::string& input) const;
     Optional<Error> SetProcedure(const std::string& ruleName, const std::string& payload);
