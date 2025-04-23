@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "SystemdUnitState"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "SystemdUnitState": {
+              "type": "object",
+              "required": [
+                "unitName"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "unitName": {
+                  "type": "string",
+                  "description": "Name of the systemd unit"
+                },
+                "ActiveState": {
+                  "type": "string",
+                  "description": "value of systemd ActiveState of unitName to match"
+                },
+                "LoadState": {
+                  "type": "string",
+                  "description": "value of systemd LoadState of unitName to match"
+                },
+                "UnitFileState": {
+                  "type": "string",
+                  "description": "value of systemd UnitFileState of unitName to match"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}
