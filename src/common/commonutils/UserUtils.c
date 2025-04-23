@@ -521,6 +521,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                     if (0 == errno)
                     {
                         OsConfigLogInfo(log, "EnumerateUserGroups: group %u not found or there are no more groups (errno: %d)", (unsigned int)groupIds[i], errno);
+                        status = ENOENT;
                         continue;
                     }
                     else
@@ -3053,7 +3054,10 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
                     if (0 == strcmp(userList[i].username, name))
                     {
                         EnumerateUserGroups(&userList[i], &groupList, &groupListSize, reason, log);
-                        FreeGroupList(&groupList, groupListSize);
+                        if (NULL != groupList)
+                        {
+                            FreeGroupList(&groupList, groupListSize);
+                        }
 
                         OsConfigLogInfo(log, "CheckUserAccountsNotFound: user %u is present in %u group(s)", userList[i].userId, groupListSize);
 
