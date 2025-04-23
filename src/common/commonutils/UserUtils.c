@@ -502,7 +502,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
     if ((0 == status) && (0 < numberOfGroups))
     {
-        OsConfigLogDebug(log, "EnumerateUserGroups: user %u ('%s', gid: %u) is in %d group%s",
+        OsConfigLog/*Debug*/Info(log, "EnumerateUserGroups: user %u ('%s', gid: %u) is in %d group%s",
             user->userId, IsSystemAccount(user) ? user->username : g_redacted, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
 
         if (NULL == (*groupList = malloc(sizeof(SimplifiedGroup) * numberOfGroups)))
@@ -523,7 +523,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                     if (0 == errno)
                     {
                         OsConfigLogInfo(log, "EnumerateUserGroups: group %u not found or there are no more groups (errno: %d)", (unsigned int)groupIds[i], errno);
-                        break;
+                        continue;
                     }
                     else
                     {
