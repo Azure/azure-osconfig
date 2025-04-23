@@ -2553,7 +2553,7 @@
   },
   {
     "Action": "UnloadModule"
-  },
+  }
   // Additional test for auditEnsureShadowGroupIsEmpty
   {
     "Action": "LoadModule",
@@ -2574,7 +2574,7 @@
   },
   {
     "Action": "UnloadModule"
-  }
+  },
   // Additional test for auditEnsureAllEtcPasswdGroupsExistInEtcGroup
   {
     "Action": "LoadModule",
