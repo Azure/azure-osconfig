@@ -32,8 +32,9 @@ static constexpr const char* cModuleInfo =
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-Engine::Engine(std::unique_ptr<ContextInterface> context) noexcept
-    : mContext{std::move(context)}
+Engine::Engine(std::unique_ptr<ContextInterface> context, std::unique_ptr<PayloadFormatter> payloadFormatter) noexcept
+    : mContext{std::move(context)},
+      mFormatter{std::move(payloadFormatter)}
 {
 }
 
@@ -89,8 +90,8 @@ Result<AuditResult> Engine::MmiGet(const char* objectName)
         return Error("Failed to get 'audit' object");
     }
 
-    Evaluator evaluator(procedure.Audit(), procedure.Parameters(), mContext.get());
-    return evaluator.ExecuteAudit();
+    Evaluator evaluator(ruleName, procedure.Audit(), procedure.Parameters(), *mContext);
+    return evaluator.ExecuteAudit(*mFormatter);
 }
 
 Result<JsonWrapper> Engine::DecodeB64Json(const std::string& input) const
@@ -251,7 +252,7 @@ Result<Status> Engine::ExecuteRemediation(const std::string& ruleName, const std
         return error.Value();
     }
 
-    Evaluator evaluator(procedure.Remediation(), procedure.Parameters(), mContext.get());
+    Evaluator evaluator(ruleName, procedure.Remediation(), procedure.Parameters(), *mContext);
     return evaluator.ExecuteRemediation();
 }
 

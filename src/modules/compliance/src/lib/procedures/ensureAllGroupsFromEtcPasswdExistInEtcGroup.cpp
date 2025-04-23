@@ -32,13 +32,13 @@ AUDIT_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
     }
 
     setpwent();
-    bool result = true;
+    Status result = Status::Compliant;
     for (errno = 0, pwd = getpwent(); nullptr != pwd; errno = 0, pwd = getpwent())
     {
         if (etcGroupGroups.find(pwd->pw_gid) == etcGroupGroups.end())
         {
-            context.GetLogstream() << "User's '" << std::string(pwd->pw_name) << "' group " << pwd->pw_gid << " from /etc/passwd does not exist in /etc/group";
-            result = false;
+            result = indicators.NonCompliant(std::string("User's '") + std::string(pwd->pw_name) + "' group " + std::to_string(pwd->pw_gid) +
+                                             " from /etc/passwd does not exist in /etc/group");
         }
     }
     status = errno;
@@ -48,23 +48,21 @@ AUDIT_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
         return Error(std::string("getpwent failed: ") + strerror(status), status);
     }
 
-    if (result)
+    if (result == Status::Compliant)
     {
-        context.GetLogstream() << "All user groups from '/etc/passwd' exist in '/etc/group'";
+        indicators.Compliant("All user groups from '/etc/passwd' exist in '/etc/group'");
     }
     return result;
 }
 
 REMEDIATE_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
 {
-    UNUSED(args);
-    auto result = AuditEnsureAllGroupsFromEtcPasswdExistInEtcGroup(args, context);
+    auto result = AuditEnsureAllGroupsFromEtcPasswdExistInEtcGroup(args, indicators, context);
     if (result)
     {
-        return true;
+        return indicators.Compliant("Audit passed, remediation not required");
     }
 
-    context.GetLogstream() << "Manual remediation is required to ensure all groups from /etc/passwd exist in /etc/group";
-    return false;
+    return indicators.NonCompliant("Manual remediation is required to ensure all groups from /etc/passwd exist in /etc/group");
 }
 } // namespace compliance

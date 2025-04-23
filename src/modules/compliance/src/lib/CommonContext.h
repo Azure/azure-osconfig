@@ -24,9 +24,6 @@ public:
 
     Result<std::string> ExecuteCommand(const std::string& cmd) const override;
     Result<std::string> GetFileContents(const std::string& filePath) const override;
-
-    std::ostream& GetLogstream() override;
-    std::string ConsumeLogstream() override;
     OsConfigLogHandle GetLogHandle() const override
     {
         return mLog;
@@ -34,7 +31,6 @@ public:
 
 private:
     OsConfigLogHandle mLog;
-    std::ostringstream mLogstream;
 };
 } // namespace compliance
 #endif // COMPLIANCE_COMMONCONTEXT_H

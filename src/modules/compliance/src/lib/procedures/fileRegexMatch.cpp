@@ -12,7 +12,8 @@ namespace
 {
 // In single pattern mode, we check if the pattern is present in the file.
 // The function returns true if the pattern matches any line in the file, false otherwise.
-bool SinglePatternMatchMode(std::ifstream& input, const std::string& matchPattern, std::regex_constants::syntax_option_type syntaxOptions, std::ostream& logstream)
+Result<Status> SinglePatternMatchMode(std::ifstream& input, const std::string& matchPattern, std::regex_constants::syntax_option_type syntaxOptions,
+    IndicatorsTree& indicators)
 {
     try
     {
@@ -23,8 +24,7 @@ bool SinglePatternMatchMode(std::ifstream& input, const std::string& matchPatter
         {
             if (regex_search(line, matchRegex))
             {
-                logstream << "pattern '" << matchPattern << "' matched line " << std::to_string(lineNumber);
-                return true;
+                return indicators.Compliant("pattern '" + matchPattern + "' matched line " + std::to_string(lineNumber));
             }
 
             lineNumber++;
@@ -33,18 +33,17 @@ bool SinglePatternMatchMode(std::ifstream& input, const std::string& matchPatter
     catch (const std::exception& e)
     {
         OsConfigLogError(nullptr, "Regex error: %s", e.what());
-        return false;
+        return Error("Regex error: " + std::string(e.what()), EINVAL);
     }
 
-    logstream << "pattern '" << matchPattern << "' did not match any line";
-    return false;
+    return indicators.NonCompliant("pattern '" + matchPattern + "' did not match any line");
 }
 
 // In state-pattern match mode, we check each line of the input file if it matches the matchPattern regexp.
 // For each line that matches the main pattern, we check if statePattern regexp matches line matched by matchPattern.
 // The function returns true if the statePattern regexp matches all the lines that match the matchPattern regexp, false otherwise.
-bool StatePatternMatchMode(std::ifstream& input, const std::string& matchPattern, const std::string& statePattern,
-    std::regex_constants::syntax_option_type syntaxOptions, std::ostream& logstream)
+Result<Status> StatePatternMatchMode(std::ifstream& input, const std::string& matchPattern, const std::string& statePattern,
+    std::regex_constants::syntax_option_type syntaxOptions, IndicatorsTree& indicators)
 {
     try
     {
@@ -62,8 +61,7 @@ bool StatePatternMatchMode(std::ifstream& input, const std::string& matchPattern
 
             if (!regex_search(line, stateRegex))
             {
-                logstream << "state pattern '" << statePattern << "' not found in '" << line << "'";
-                return false;
+                return indicators.NonCompliant("state pattern '" + statePattern + "' not found in line " + std::to_string(lineNumber));
             }
 
             lineNumber++;
@@ -72,10 +70,10 @@ bool StatePatternMatchMode(std::ifstream& input, const std::string& matchPattern
     catch (const std::exception& e)
     {
         OsConfigLogError(nullptr, "Regex error: %s", e.what());
-        return false;
+        return Error("Regex error: " + std::string(e.what()), EINVAL);
     }
 
-    return true;
+    return indicators.Compliant("state pattern '" + statePattern + "' matched all lines");
 }
 } // anonymous namespace
 
@@ -85,6 +83,7 @@ AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation
     "statePattern:The pattern to match against each line that matches the 'statePattern'",
     "caseSensitive:Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'::^true|false$")
 {
+    UNUSED(context);
     auto it = args.find("filename");
     if (it == args.end())
     {
@@ -145,8 +144,7 @@ AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation
     std::ifstream file(path);
     if (!file.is_open())
     {
-        context.GetLogstream() << "Failed to open file" << std::endl;
-        return false;
+        return indicators.NonCompliant("Failed to open file: " + path);
     }
 
     if (matchOperation != "pattern match")
@@ -161,11 +159,11 @@ AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation
 
     if (!statePattern.HasValue())
     {
-        return SinglePatternMatchMode(file, matchPattern, syntaxOptions, context.GetLogstream());
+        return SinglePatternMatchMode(file, matchPattern, syntaxOptions, indicators);
     }
     else
     {
-        return StatePatternMatchMode(file, matchPattern, statePattern.Value(), syntaxOptions, context.GetLogstream());
+        return StatePatternMatchMode(file, matchPattern, statePattern.Value(), syntaxOptions, indicators);
     }
 }
 } // namespace compliance

@@ -14,8 +14,11 @@
 #include <unistd.h>
 
 using compliance::AuditPackageInstalled;
+using compliance::CompactListFormatter;
 using compliance::Error;
+using compliance::IndicatorsTree;
 using compliance::Result;
+using compliance::Status;
 
 using testing::HasSubstr;
 using testing::Return;
@@ -67,6 +70,8 @@ protected:
     std::string dir;
     std::string cacheFile;
     MockContext mContext;
+    CompactListFormatter mFormatter;
+    IndicatorsTree mIndicators;
 
     void SetUp() override
     {
@@ -74,6 +79,7 @@ protected:
         ASSERT_NE(tempDir, nullptr);
         dir = tempDir;
         cacheFile = dir + "/packageCache";
+        mIndicators.Push("PackageInstalled");
     }
 
     void TearDown() override
@@ -104,11 +110,11 @@ TEST_F(PackageInstalledTest, DetectDpkgPackageManager)
     args["packageName"] = "sample-package";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
 
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
-    ASSERT_TRUE(mContext.GetLogstreamRef().str().find("sample-package") != std::string::npos);
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("sample-package") != std::string::npos);
 }
 
 TEST_F(PackageInstalledTest, DetectRpmPackageManager)
@@ -121,11 +127,11 @@ TEST_F(PackageInstalledTest, DetectRpmPackageManager)
     args["packageName"] = "sample-package";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
 
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
-    ASSERT_TRUE(mContext.GetLogstreamRef().str().find("sample-package") != std::string::npos);
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("sample-package") != std::string::npos);
 }
 
 TEST_F(PackageInstalledTest, NoPackageManagerDetected)
@@ -137,7 +143,7 @@ TEST_F(PackageInstalledTest, NoPackageManagerDetected)
     args["packageName"] = "sample-package";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
 
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "No package manager found");
@@ -154,17 +160,17 @@ TEST_F(PackageInstalledTest, SpecifiedPackageManagerOverridesDetection)
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
 
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(PackageInstalledTest, NoPackageName)
 {
     std::map<std::string, std::string> args;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "No package name provided");
 }
@@ -176,7 +182,7 @@ TEST_F(PackageInstalledTest, UnsupportedPackageManager)
     args["packageManager"] = "apt";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_TRUE(result.Error().message.find("Unsupported package manager") != std::string::npos);
 }
@@ -189,9 +195,9 @@ TEST_F(PackageInstalledTest, RpmPackageExists)
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(PackageInstalledTest, RpmPackageDoesNotExist)
@@ -202,9 +208,9 @@ TEST_F(PackageInstalledTest, RpmPackageDoesNotExist)
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(PackageInstalledTest, DpkgPackageExists)
@@ -215,9 +221,9 @@ TEST_F(PackageInstalledTest, DpkgPackageExists)
     args["packageManager"] = "dpkg";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(PackageInstalledTest, DpkgPackageDoesNotExist)
@@ -228,9 +234,9 @@ TEST_F(PackageInstalledTest, DpkgPackageDoesNotExist)
     args["packageManager"] = "dpkg";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_FALSE(result.Value());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(PackageInstalledTest, RpmCommandFails)
@@ -241,7 +247,7 @@ TEST_F(PackageInstalledTest, RpmCommandFails)
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_TRUE(result.Error().message.find("Failed to get installed packages") != std::string::npos);
 }
@@ -254,7 +260,7 @@ TEST_F(PackageInstalledTest, DpkgCommandFails)
     args["packageManager"] = "dpkg";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_TRUE(result.Error().message.find("Failed to get installed packages") != std::string::npos);
 }
@@ -270,9 +276,9 @@ TEST_F(PackageInstalledTest, UseCacheWhenAvailable)
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(PackageInstalledTest, UseStaleCache)
@@ -286,9 +292,9 @@ TEST_F(PackageInstalledTest, UseStaleCache)
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(PackageInstalledTest, RefreshStaleCache)
@@ -303,9 +309,9 @@ TEST_F(PackageInstalledTest, RefreshStaleCache)
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(PackageInstalledTest, PackageManagerMismatch)
@@ -320,9 +326,9 @@ TEST_F(PackageInstalledTest, PackageManagerMismatch)
     args["packageManager"] = "rpm"; // Mismatch with cache
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(PackageInstalledTest, InvalidCacheFormat)
@@ -339,9 +345,9 @@ TEST_F(PackageInstalledTest, InvalidCacheFormat)
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(PackageInstalledTest, CacheWithInvalidTimestamp)
@@ -360,9 +366,9 @@ TEST_F(PackageInstalledTest, CacheWithInvalidTimestamp)
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(PackageInstalledTest, CacheTooStale)
@@ -377,9 +383,9 @@ TEST_F(PackageInstalledTest, CacheTooStale)
     args["packageManager"] = "rpm";
     args["test_cachePath"] = cacheFile;
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(PackageInstalledTest, CachePathBroken)
@@ -391,7 +397,7 @@ TEST_F(PackageInstalledTest, CachePathBroken)
     args["packageManager"] = "dpkg";
     args["test_cachePath"] = "/invalid/path/to/cache"; // Invalid path
 
-    Result<bool> result = AuditPackageInstalled(args, mContext);
+    auto result = AuditPackageInstalled(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_TRUE(result.Value());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }

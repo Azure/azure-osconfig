@@ -43,14 +43,14 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: User's 'securitybaselinetest' primary group is 'shadow' } == FALSE] == FALSE }"
+    "Payload": "{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: User's 'securitybaselinetest' primary group is 'shadow' } == FALSE]} == FALSE"
   },
 
 
 
   // Re-create the test user, but this time with default primary group
   {
-    "RunCommand": "userdel securitybaselinetest || true"
+    "RunCommand": "userdel -f -r securitybaselinetest || true"
   },
   {
     "RunCommand": "useradd securitybaselinetest && id securitybaselinetest"
@@ -62,7 +62,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: No user has 'shadow' as primary group } == TRUE] == TRUE }"
+    "Payload": "PASS{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: No user has 'shadow' as primary group } == TRUE]} == TRUE"
   },
 
 
@@ -78,13 +78,13 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: No user has 'shadow' as primary group } == TRUE] == TRUE }"
+    "Payload": "PASS{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: No user has 'shadow' as primary group } == TRUE]} == TRUE"
   },
 
 
   // Cleanup
   {
-    "RunCommand": "userdel securitybaselinetest || true"
+    "RunCommand": "userdel -f -r securitybaselinetest || true"
   },
   {
     "RunCommand": "groupdel securitybaselinetest || true"
