@@ -2554,45 +2554,45 @@
   {
     "Action": "UnloadModule"
   }
-  // Additional test for auditEnsureShadowGroupIsEmpty 
-  { 
-    "Action": "LoadModule", 
-    "Module": "securitybaseline.so" 
-  }, 
-  // Create a user that belongs to the shadow group 
-  { 
-    "RunCommand": "useradd -g shadow securitybaselinetest && id securitybaselinetest" 
-  }, 
-  { 
-    "ObjectType": "Reported", 
-    "ComponentName": "SecurityBaseline", 
-    "ObjectName": "auditEnsureShadowGroupIsEmpty", 
-    "Payload": "Group 'shadow' is not empty: 42" 
-  }, 
-  { 
-    "RunCommand": "userdel securitybaselinetest || true" 
-  }, 
-  { 
-    "Action": "UnloadModule" 
-  } 
-  // Additional test for auditEnsureAllEtcPasswdGroupsExistInEtcGroup 
-  { 
-    "Action": "LoadModule", 
-    "Module": "securitybaseline.so" 
-  }, 
-  // Create a user and a group, then drop it only from /etc/group 
-  { 
-    "RunCommand": "useradd securitybaselinetest && id securitybaselinetest && sed -i '/securitybaselinetest/d' /etc/group" 
-  }, 
-  { 
-    "ObjectType": "Reported", 
-    "ComponentName": "SecurityBaseline", 
-    "ObjectName": "auditEnsureAllEtcPasswdGroupsExistInEtcGroup" 
-  }, 
-  { 
-    "RunCommand": "userdel securitybaselinetest || true" 
-  }, 
-  { 
-    "Action": "UnloadModule" 
-  } 
+  // Additional test for auditEnsureShadowGroupIsEmpty
+  {
+    "Action": "LoadModule",
+    "Module": "securitybaseline.so"
+  },
+  // Create a user that belongs to the shadow group
+  {
+    "RunCommand": "useradd -g shadow securitybaselinetest && id securitybaselinetest"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureShadowGroupIsEmpty",
+    "Payload": "Group 'shadow' is not empty: 42"
+  },
+  {
+    "RunCommand": "userdel securitybaselinetest || true"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+  // Additional test for auditEnsureAllEtcPasswdGroupsExistInEtcGroup
+  {
+    "Action": "LoadModule",
+    "Module": "securitybaseline.so"
+  },
+  // Create a user and a group, then drop it only from /etc/group
+  {
+    "RunCommand": "useradd securitybaselinetest && id securitybaselinetest && sed -i '/securitybaselinetest/d' /etc/group"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAllEtcPasswdGroupsExistInEtcGroup"
+  },
+  {
+    "RunCommand": "userdel securitybaselinetest || true"
+  },
+  {
+    "Action": "UnloadModule"
+  }
 ]
