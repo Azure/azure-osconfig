@@ -531,6 +531,8 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                     }
                 }
 
+                OsConfigLogInfo(log, "EnumerateUserGroups: Processing group %u", groupEntry->gr_gid);
+                
                 (*groupList)[i].groupId = groupEntry->gr_gid;
                 (*groupList)[i].groupName = NULL;
                 (*groupList)[i].hasUsers = true;
