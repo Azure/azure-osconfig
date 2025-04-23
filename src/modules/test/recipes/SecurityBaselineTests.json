@@ -2553,5 +2553,26 @@
   },
   {
     "Action": "UnloadModule"
+  },
+  // Additional test for auditEnsureShadowGroupIsEmpty
+  {
+    "Action": "LoadModule",
+    "Module": "securitybaseline.so"
+  },
+  // Create a user that belongs to the shadow group
+  {
+    "RunCommand": "useradd -g shadow securitybaselinetest && id securitybaselinetest"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureShadowGroupIsEmpty",
+    "Payload": "Group 'shadow' is not empty: 42"
+  },
+  {
+    "RunCommand": "id securitybaselinetest &>/dev/null && userdel -r -f securitybaselinetest || true"
+  },
+  {
+    "Action": "UnloadModule"
   }
 ]

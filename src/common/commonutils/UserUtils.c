@@ -1079,11 +1079,18 @@ int CheckShadowGroupIsEmpty(char** reason, OsConfigLogHandle log)
     {
         for (i = 0; i < groupListSize; i++)
         {
-            if ((0 == strcmp(groupList[i].groupName, g_shadow)) && (true == groupList[i].hasUsers))
+            if (0 == strcmp(groupList[i].groupName, g_shadow))
             {
-                OsConfigLogInfo(log, "CheckShadowGroupIsEmpty: group 'shadow' (%u) is not empty", groupList[i].groupId);
-                OsConfigCaptureReason(reason, "Group 'shadow' is not empty: %u", groupList[i].groupId);
-                status = ENOENT;
+                found = true;
+                OsConfigLogInfo(log, "CheckShadowGroupIsEmpty: group 'shadow' (%u) exists", groupList[i].groupId);
+
+                if (true == groupList[i].hasUsers)
+                {
+                    OsConfigLogInfo(log, "CheckShadowGroupIsEmpty: group 'shadow' (%u) is not empty", groupList[i].groupId);
+                    OsConfigCaptureReason(reason, "Group 'shadow' is not empty: %u", groupList[i].groupId);
+                    status = ENOENT;
+                }
+
                 break;
             }
         }
