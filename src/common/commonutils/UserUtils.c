@@ -516,8 +516,6 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
             for (i = 0; i < numberOfGroups; i++)
             {
-                OsConfigLogInfo(log, "EnumerateUserGroups: calling getgrgid(%u) for step %d out of %d", groupIds[i], i, numberOfGroups);
-                
                 if (NULL == (groupEntry = getgrgid(groupIds[i])))
                 {
                     if (0 == errno)
@@ -668,30 +666,37 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
         {
             if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, reason, log)))
             {
-                for (j = 0; (j < userGroupListSize) && (0 == status); j++)
+                if (NULL == userGroupList)
                 {
-                    found = false;
-
-                    for (k = 0; (k < groupListSize) && (0 == status); k++)
+                    OsConfigLogDebug(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: there are no groups to enumerate for user user %u", userList[i].userId);
+                }
+                else
+                {
+                    for (j = 0; (j < userGroupListSize) && (0 == status); j++)
                     {
-                        if (userGroupList[j].groupId == groupList[k].groupId)
+                        found = false;
+
+                        for (k = 0; (k < groupListSize) && (0 == status); k++)
                         {
-                            OsConfigLogDebug(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group %u of user %u found in '/etc/group'", userGroupList[j].groupId, userList[i].userId);
-                            found = true;
+                            if (userGroupList[j].groupId == groupList[k].groupId)
+                            {
+                                OsConfigLogDebug(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group %u of user %u found in '/etc/group'", userGroupList[j].groupId, userList[i].userId);
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (false == found)
+                        {
+                            OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group %u of user %u not found in '/etc/group'", userGroupList[j].groupId, userList[i].userId);
+                            OsConfigCaptureReason(reason, "Group %u of user %u not found in '/etc/group'", userGroupList[j].groupId, userList[i].userId);
+                            status = ENOENT;
                             break;
                         }
                     }
 
-                    if (false == found)
-                    {
-                        OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group %u of user %u not found in '/etc/group'", userGroupList[j].groupId, userList[i].userId);
-                        OsConfigCaptureReason(reason, "Group %u of user %u not found in '/etc/group'", userGroupList[j].groupId, userList[i].userId);
-                        status = ENOENT;
-                        break;
-                    }
-                }
-
-                FreeGroupList(&userGroupList, userGroupListSize);
+                    FreeGroupList(&userGroupList, userGroupListSize);
+               }
             }
         }
     }
