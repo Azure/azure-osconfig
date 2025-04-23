@@ -516,12 +516,14 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
             for (i = 0; i < numberOfGroups; i++)
             {
+                OsConfigLogInfo(log, "EnumerateUserGroups: calling getgrgid(%u) for step %d out of %d", groupIds[i], i, numberOfGroups);
+                
                 if (NULL == (groupEntry = getgrgid(groupIds[i])))
                 {
                     if (0 == errno)
                     {
-                        OsConfigLogInfo(log, "EnumerateUserGroups: group %u not found (errno: %d)", (unsigned int)groupIds[i], errno);
-                        continue;
+                        OsConfigLogInfo(log, "EnumerateUserGroups: group %u not found or there are no more groups (errno: %d)", (unsigned int)groupIds[i], errno);
+                        break;
                     }
                     else
                     {
