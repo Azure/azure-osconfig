@@ -2570,7 +2570,7 @@
     "Payload": "Group 'shadow' is not empty: 42"
   },
   {
-    "RunCommand": "id securitybaselinetest &>/dev/null && sudo userdel -r -f securitybaselinetest || echo done; true"
+    "RunCommand": "id securitybaselinetest &>/dev/null && userdel -r -f securitybaselinetest || true"
   },
   {
     "Action": "UnloadModule"
