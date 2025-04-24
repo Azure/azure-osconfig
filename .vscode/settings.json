@@ -82,6 +82,9 @@
         "codecvt": "cpp",
         "source_location": "cpp",
         "numbers": "cpp",
-        "semaphore": "cpp"
+        "semaphore": "cpp",
+        "charconv": "cpp",
+        "format": "cpp",
+        "span": "cpp"
     }
 }
