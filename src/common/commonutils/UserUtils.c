@@ -2969,8 +2969,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
 
                     if (0 == strcmp(userEntry->pw_name, name))
                     {
-                        OsConfigLogInfo(log, "CheckUserAccountsNotFound: user %u is present", userList[i].userId);
-                        OsConfigCaptureReason(reason, "User %u is present", userList[i].userId);
+                        OsConfigLogInfo(log, "CheckUserAccountsNotFound: user %u is present", userEntry->userId);
+                        OsConfigCaptureReason(reason, "User %u is present", userEntry->userId);
                         found = true;
                     }
                 }
@@ -3015,7 +3015,6 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
     struct passwd* userEntry = NULL;
     unsigned int numberOfPasswdLines = 0;
     unsigned int i = 0, j = 0;
-    bool userAccountsNotFound = false;
     int status = 0, _status = 0;
 
     if (NULL == names)
