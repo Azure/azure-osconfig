@@ -29,7 +29,7 @@ def parse_macro_args(args):
         if len(arg) >= 2 and arg[0] == '"' and arg[-1] == '"':
             arg = arg[1:-1]
         else:
-            raise ValueError("Improperly quoted parameter")
+            raise ValueError(f"Improperly quoted parameter in args {args[1:]}")
         parts = arg.split(':')
         name = parts[0]
         if len(name) == 0:
@@ -80,6 +80,8 @@ def process_procedures(content, prefix):
                 current += char
             endpos += 1
         if len(current) > 0:
+            if not current.strip():
+                raise ValueError(f"Trailing comma in AUDIT_FN in {content[startpos:endpos]}")
             args.append(current)
         fn_name, arg_dict = parse_macro_args(args)
         if fn_name:
