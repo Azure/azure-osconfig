@@ -2936,6 +2936,9 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
     struct passwd* userEntry = NULL;
     unsigned int i = 0, j = 0;
     unsigned int numberOfPasswdLines = 0;
+    unsigned int namesLength = 0;
+    char* name = NULL;
+    bool found = false;
     int status = 0;
 
     if (NULL == names)
@@ -2943,6 +2946,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
         OsConfigLogError(log, "CheckUserAccountsNotFound: invalid argument");
         return EINVAL;
     }
+
+    namesLength = strlen(names);
 
     if (0 != (numberOfPasswdLines = GetNumberOfLinesInFile(g_passwdFile)))
     {
@@ -2965,14 +2970,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
                     if (0 == strcmp(userEntry->pw_name, name))
                     {
                         OsConfigLogInfo(log, "CheckUserAccountsNotFound: user %u is present", userList[i].userId);
-
-                        if (DirectoryExists(userList[i].home))
-                        {
-                            OsConfigLogInfo(log, "CheckUserAccountsNotFound: home directory of user %u exists", userList[i].userId);
-                        }
-
                         OsConfigCaptureReason(reason, "User %u is present", userList[i].userId);
-
                         found = true;
                     }
                 }
@@ -3056,20 +3054,12 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
 
                 if (0 == strcmp(userEntry->pw_name, name))
                 {
-                    OsConfigLogInfo(log, "RemoveUserAccounts: user %u is present", userList[i].userId);
-
-                    if (DirectoryExists(userList[i].home))
-                    {
-                        OsConfigLogInfo(log, "RemoveUserAccounts: home directory of user %u exists", userList[i].userId);
-                    }
-
                     if (0 != (status = CopyUserEntry(&simplifiedUser, userEntry, log)))
                     {
                         OsConfigLogError(log, "RemoveUserAccounts: failed making copy of user entry (%d)", status);
                         break;
                     }
-
-                    if ((0 != (_status = RemoveUser(&simplifiedUser, log))) && (0 == status))
+                    else if ((0 != (_status = RemoveUser(&simplifiedUser, log))) && (0 == status))
                     {
                         status = _status;
                     }
