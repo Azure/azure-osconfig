@@ -2574,5 +2574,25 @@
   },
   {
     "Action": "UnloadModule"
+  },
+  // Additional test for auditEnsureAllEtcPasswdGroupsExistInEtcGroup
+  {
+    "Action": "LoadModule",
+    "Module": "securitybaseline.so"
+  },
+  // Create a user and a group, then drop it only from /etc/group
+  {
+    "RunCommand": "useradd securitybaselinetest && id securitybaselinetest && sed -i '/securitybaselinetest/d' /etc/group"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAllEtcPasswdGroupsExistInEtcGroup"
+  },
+  {
+    "RunCommand": "id securitybaselinetest &>/dev/null && userdel -r -f securitybaselinetest || true"
+  },
+  {
+    "Action": "UnloadModule"
   }
 ]
