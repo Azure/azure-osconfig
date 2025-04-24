@@ -2607,16 +2607,13 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "games,test"
-  },
-  {
-    "RunCommand": "id securitybaselinetest"
+    "Payload": "securitybaselinetest"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "games,test"
+    "Payload": "securitybaselinetest"
   },
   {
     "ObjectType": "Reported",
@@ -2624,19 +2621,7 @@
     "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
   },
   {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "securitybaselinetest"
-  },
-  {
-    "RunCommand": "! id securitybaselinetest"
-  },
-  {
     "RunCommand": "id securitybaselinetest &>/dev/null && userdel -r -f securitybaselinetest || true"
-  },
-  {
-    "RunCommand": "groupdel securitybaselinetest || true"
   },
   {
     "Action": "UnloadModule"
