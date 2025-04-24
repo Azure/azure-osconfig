@@ -521,15 +521,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                     if (0 == errno)
                     {
                         OsConfigLogInfo(log, "EnumerateUserGroups: group %u does not exist (errno: %d)", (unsigned int)groupIds[i], errno);
-
-                        // Fill in the already allocated structure with values that indicate that this group does not exist
-                        //(*groupList)[i].groupId = -1;
-                        //(*groupList)[i].groupName = NULL;
-                        //(*groupList)[i].hasUsers = false;
-
-                        // Decrement the number of groups to be returned
                         *size -= 1;
-
                         continue;
                     }
                     else
