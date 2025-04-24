@@ -131,80 +131,80 @@
     "auditProcedure": {
       "anyOf": [
         {
+          "$ref": "procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/EnsureFilePermissions.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/EnsureFilesystemOption.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/EnsureNoDuplicateEntriesExist.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/EnsureSysctl.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/FileRegexMatch.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/PackageInstalled.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/SCE.schema.json#/definitions/audit"
         },
         {
-          "$ref": "procedures/ensureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/audit"
+          "$ref": "procedures/TestingProcedures.schema.json#/definitions/audit"
         },
         {
-          "$ref": "procedures/ensureFilePermissions.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/ensureFilesystemOption.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/ensureKernelModule.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/ensureNoDuplicateEntriesExist.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/ensureNoUserHasPrimaryShadowGroup.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/ensureSysctl.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/fileRegexMatch.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/packageInstalled.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/testingProcedures.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/ufwStatus.schema.json#/definitions/audit"
+          "$ref": "procedures/UfwStatus.schema.json#/definitions/audit"
         }
       ]
     },
     "remediationProcedure": {
       "anyOf": [
         {
+          "$ref": "procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureFilePermissions.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureFilesystemOption.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureNoDuplicateEntriesExist.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureSysctl.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/FileRegexMatch.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/PackageInstalled.schema.json#/definitions/remediation"
+        },
+        {
           "$ref": "procedures/SCE.schema.json#/definitions/remediation"
         },
         {
-          "$ref": "procedures/ensureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/remediation"
+          "$ref": "procedures/TestingProcedures.schema.json#/definitions/remediation"
         },
         {
-          "$ref": "procedures/ensureFilePermissions.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/ensureFilesystemOption.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/ensureKernelModule.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/ensureNoDuplicateEntriesExist.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/ensureNoUserHasPrimaryShadowGroup.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/ensureSysctl.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/fileRegexMatch.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/packageInstalled.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/testingProcedures.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/ufwStatus.schema.json#/definitions/remediation"
+          "$ref": "procedures/UfwStatus.schema.json#/definitions/remediation"
         },
         {
           "$ref": "#definitions/auditProcedure"
