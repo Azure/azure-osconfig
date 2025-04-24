@@ -3050,6 +3050,8 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
         return 0;
     }
 
+    status = 0;
+
     namesLength = strlen(names);
 
     setpwent();
