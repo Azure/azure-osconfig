@@ -12,9 +12,16 @@
           "properties": {
             "UfwStatus": {
               "type": "object",
-              "required": [],
+              "required": [
+                "statusRegex"
+              ],
               "additionalProperties": false,
-              "properties": {}
+              "properties": {
+                "statusRegex": {
+                  "type": "string",
+                  "description": "Regex that the status must match"
+                }
+              }
             }
           }
         }

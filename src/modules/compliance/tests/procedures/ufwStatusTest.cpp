@@ -10,6 +10,7 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <linux/limits.h>
+#include <regex>
 #include <string>
 #include <unistd.h>
 
@@ -20,17 +21,20 @@ using compliance::NestedListFormatter;
 using compliance::Result;
 using compliance::Status;
 
-static const std::string ufwCommand = "ufw status";
+static const std::string ufwCommand = "ufw status verbose";
 static const std::string ufwActiveOutput =
-    "Status: active\n\n"
+    "Status: active\n"
+    "Logging: on (low)\n"
+    "Default: deny (incoming), allow (outgoing), disabled (routed)\n"
+    "New profiles: skip\n\n"
     "To                         Action      From\n"
     "--                         ------      ----\n"
-    "22/tcp                     ALLOW       Anywhere\n"
-    "80/tcp                     ALLOW       Anywhere\n"
-    "443/tcp                    ALLOW       Anywhere\n"
-    "22/tcp (v6)                ALLOW       Anywhere (v6)\n"
-    "80/tcp (v6)                ALLOW       Anywhere (v6)\n"
-    "443/tcp (v6)               ALLOW       Anywhere (v6)\n";
+    "22/tcp                     ALLOW IN    Anywhere\n"
+    "80/tcp                     ALLOW IN    Anywhere\n"
+    "443/tcp                    ALLOW IN    Anywhere\n"
+    "22/tcp (v6)                ALLOW IN    Anywhere (v6)\n"
+    "80/tcp (v6)                ALLOW IN    Anywhere (v6)\n"
+    "443/tcp (v6)               ALLOW IN    Anywhere (v6)\n";
 
 static const std::string ufwInactiveOutput = "Status: inactive\n";
 
@@ -51,28 +55,83 @@ protected:
     }
 };
 
-TEST_F(UfwStatusTest, UfwActive)
+TEST_F(UfwStatusTest, MissingRegexParameter)
+{
+    std::map<std::string, std::string> args;
+    // No statusRegex parameter provided
+
+    auto result = AuditUfwStatus(args, mIndicators, mContext);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().message, "Missing 'statusRegex' parameter");
+    ASSERT_EQ(result.Error().code, EINVAL);
+}
+
+TEST_F(UfwStatusTest, UfwActiveStatusMatches)
 {
     // Setup the expectation for the ufw status command to return active status
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(ufwCommand))).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
 
     std::map<std::string, std::string> args;
+    args["statusRegex"] = "Status:\\s*active";
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
+
+    auto formattedResult = mFormatter.Format(mIndicators);
+    ASSERT_TRUE(formattedResult.HasValue());
+    ASSERT_TRUE(formattedResult.Value().find("found") != std::string::npos);
 }
 
-TEST_F(UfwStatusTest, UfwNotActive)
+TEST_F(UfwStatusTest, UfwNotActiveStatusMismatch)
 {
     // Setup the expectation for the ufw status command to return inactive status
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(ufwCommand))).WillOnce(::testing::Return(Result<std::string>(ufwInactiveOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwInactiveOutput)));
 
     std::map<std::string, std::string> args;
+    args["statusRegex"] = "Status:\\s*active";
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
+
+    auto formattedResult = mFormatter.Format(mIndicators);
+    ASSERT_TRUE(formattedResult.HasValue());
+    ASSERT_TRUE(formattedResult.Value().find("not found") != std::string::npos);
+}
+
+TEST_F(UfwStatusTest, UfwFirewallRuleMatches)
+{
+    // Setup the expectation for the ufw status command to return output with firewall rules
+    EXPECT_CALL(mContext, ExecuteCommand((ufwCommand))).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
+
+    std::map<std::string, std::string> args;
+    args["statusRegex"] = "22/tcp\\s+ALLOW IN\\s+Anywhere";
+
+    auto result = AuditUfwStatus(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+
+    auto formattedResult = mFormatter.Format(mIndicators);
+    ASSERT_TRUE(formattedResult.HasValue());
+    ASSERT_TRUE(formattedResult.Value().find("found") != std::string::npos);
+}
+
+TEST_F(UfwStatusTest, UfwFirewallRuleMissing)
+{
+    // Setup the expectation for the ufw status command to return output with firewall rules
+    EXPECT_CALL(mContext, ExecuteCommand(ufwCommand)).WillOnce(::testing::Return(Result<std::string>(ufwActiveOutput)));
+
+    std::map<std::string, std::string> args;
+    args["statusRegex"] = "8080/tcp\\s+ALLOW IN\\s+Anywhere"; // Rule not present in output
+
+    auto result = AuditUfwStatus(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+
+    auto formattedResult = mFormatter.Format(mIndicators);
+    ASSERT_TRUE(formattedResult.HasValue());
+    ASSERT_TRUE(formattedResult.Value().find("not found") != std::string::npos);
 }
 
 TEST_F(UfwStatusTest, UfwNotFound)
@@ -81,6 +140,7 @@ TEST_F(UfwStatusTest, UfwNotFound)
     EXPECT_CALL(mContext, ExecuteCommand(::testing::StrEq(ufwCommand))).WillOnce(::testing::Return(Result<std::string>(Error("Command not found", 127))));
 
     std::map<std::string, std::string> args;
+    args["statusRegex"] = "Status:\\s*active";
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -90,4 +150,14 @@ TEST_F(UfwStatusTest, UfwNotFound)
     auto formattedResult = mFormatter.Format(mIndicators);
     ASSERT_TRUE(formattedResult.HasValue());
     ASSERT_TRUE(formattedResult.Value().find("ufw not found") != std::string::npos);
+}
+
+TEST_F(UfwStatusTest, InvalidRegex)
+{
+    std::map<std::string, std::string> args;
+    args["statusRegex"] = "Status:*["; // Invalid regex
+
+    auto result = AuditUfwStatus(args, mIndicators, mContext);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_TRUE(result.Error().message.find("Failed to compile regex") != std::string::npos);
 }
