@@ -764,8 +764,8 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
                             }
                             else
                             {
-                                OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: 'gpasswd -d %u %u' failed with %d",
-                                    userList[i].userId, userGroupList[j].groupId, _status);
+                                OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: 'gpasswd -d %u %u' failed with %d (%s)",
+                                    userList[i].userId, userGroupList[j].groupId, _status, strerror(_status));
                             }
 
                             FREE_MEMORY(command);
@@ -1091,6 +1091,12 @@ int SetShadowGroupEmpty(OsConfigLogHandle log)
                             {
                                 OsConfigLogInfo(log, "SetShadowGroupEmpty: user %u was removed from group %u ('%s')",
                                     userList[i].userId, userGroupList[j].groupId, IsSystemGroup(&userGroupList[j]) ? userGroupList[j].groupName : g_redacted);
+                            }
+                            else if ((ESRCH == _status) || (ENOENT== _status))
+                            {
+                                OsConfigLogInfo(log, "SetShadowGroupEmpty: gpasswd returned %d (%s) which means group '%s' is not found",
+                                    _status, strerror(_status), g_shadow);
+                                _status = 0;
                             }
                             else
                             {
