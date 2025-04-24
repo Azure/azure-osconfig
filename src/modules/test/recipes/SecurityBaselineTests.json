@@ -2570,7 +2570,10 @@
     "Payload": "Group 'shadow' is not empty: 42"
   },
   {
-    "RunCommand": "id securitybaselinetest &>/dev/null && userdel -r -f securitybaselinetest || true"
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
+    "Payload": "securitybaselinetest"
   },
   {
     "Action": "UnloadModule"
@@ -2590,7 +2593,10 @@
     "ObjectName": "auditEnsureAllEtcPasswdGroupsExistInEtcGroup"
   },
   {
-    "RunCommand": "id securitybaselinetest &>/dev/null && userdel -r -f securitybaselinetest || true"
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
+    "Payload": "securitybaselinetest"
   },
   {
     "Action": "UnloadModule"
@@ -2619,9 +2625,6 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
-  },
-  {
-    "RunCommand": "id securitybaselinetest &>/dev/null && userdel -r -f securitybaselinetest || true"
   },
   {
     "Action": "UnloadModule"
