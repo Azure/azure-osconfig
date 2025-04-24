@@ -2969,8 +2969,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
 
                     if (0 == strcmp(userEntry->pw_name, name))
                     {
-                        OsConfigLogInfo(log, "CheckUserAccountsNotFound: user %u is present", userEntry->userId);
-                        OsConfigCaptureReason(reason, "User %u is present", userEntry->userId);
+                        OsConfigLogInfo(log, "CheckUserAccountsNotFound: user %u is present", userEntry->pw_uid);
+                        OsConfigCaptureReason(reason, "User %u is present", userEntry->pw_uid);
                         found = true;
                     }
                 }
