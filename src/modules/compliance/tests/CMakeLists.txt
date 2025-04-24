@@ -16,6 +16,8 @@ add_executable(compliancetests
     EngineTest.cpp
     EvaluatorTest.cpp
     OptionalTest.cpp
+    RegexFallbackTest.cpp
+    RegexTest.cpp
     ResultTest.cpp
     Base64Test.cpp
     ${PROCEDURES}

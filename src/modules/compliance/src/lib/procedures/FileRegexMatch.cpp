@@ -30,7 +30,7 @@ Result<Status> SinglePatternMatchMode(std::ifstream& input, const std::string& m
             lineNumber++;
         }
     }
-    catch (const std::exception& e)
+    catch (const regex_error& e)
     {
         OsConfigLogError(nullptr, "Regex error: %s", e.what());
         return Error("Regex error: " + std::string(e.what()), EINVAL);
@@ -67,7 +67,7 @@ Result<Status> StatePatternMatchMode(std::ifstream& input, const std::string& ma
             lineNumber++;
         }
     }
-    catch (const std::exception& e)
+    catch (const regex_error& e)
     {
         OsConfigLogError(nullptr, "Regex error: %s", e.what());
         return Error("Regex error: " + std::string(e.what()), EINVAL);

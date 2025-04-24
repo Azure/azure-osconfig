@@ -89,7 +89,7 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
     {
         procModulesRegex = regex("^" + moduleName + "\\s+");
     }
-    catch (std::exception& e)
+    catch (regex_error& e)
     {
         return Error(e.what());
     }

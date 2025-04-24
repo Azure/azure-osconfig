@@ -31,7 +31,7 @@ AUDIT_FN(EnsureSshdOption, "optionName:Name of the SSH daemon option:M", "option
     {
         valueRegex = regex(optionRegex);
     }
-    catch (const std::exception& e)
+    catch (const regex_error& e)
     {
         OsConfigLogError(log, "Regex error: %s", e.what());
         return Error("Failed to compile regex '" + optionRegex + "' error: " + e.what(), EINVAL);
