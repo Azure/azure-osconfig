@@ -2567,9 +2567,9 @@
     "Action": "LoadModule",
     "Module": "securitybaseline.so"
   },
-  // -------------------------------------------------------------------------------- 
+  // --------------------------------------------------------------------------------
   // Additional test for auditEnsureShadowGroupIsEmpty
-  // -------------------------------------------------------------------------------- 
+  // --------------------------------------------------------------------------------
   {
     "RunCommand": "useradd -g shadow securitybaselinetest && id securitybaselinetest"
   },
@@ -2596,7 +2596,7 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
   },
-  // -------------------------------------------------------------------------------- 
+  // --------------------------------------------------------------------------------
   // Additional test for auditEnsureAllEtcPasswdGroupsExistInEtcGroup
   // --------------------------------------------------------------------------------
   {
