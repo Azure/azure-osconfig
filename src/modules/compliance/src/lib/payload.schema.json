@@ -149,6 +149,9 @@
           "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureSshdOption.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureSysctl.schema.json#/definitions/audit"
         },
         {
@@ -187,6 +190,9 @@
         },
         {
           "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureSshdOption.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureSysctl.schema.json#/definitions/remediation"
