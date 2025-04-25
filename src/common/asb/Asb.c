@@ -3154,7 +3154,7 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, OsConfigLogHandle 
         EnableAndStartDaemon(g_auditd, log);
         status = CheckDaemonActive(g_auditd, NULL, log) ? 0 : ENOENT;
     }
-    
+
     return status;
 }
 
