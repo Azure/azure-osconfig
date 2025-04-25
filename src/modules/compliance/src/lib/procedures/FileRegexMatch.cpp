@@ -2,86 +2,109 @@
 // Licensed under the MIT License.
 #include <CommonUtils.h>
 #include <Evaluator.h>
+#include <FactExistenceValidator.h>
 #include <Optional.h>
 #include <Regex.h>
 #include <Result.h>
 #include <fstream>
+
 namespace compliance
 {
+using std::ifstream;
+using std::string;
+using std::regex_constants::syntax_option_type;
+using Behavior = FactExistenceValidator::Behavior;
 namespace
 {
-// In single pattern mode, we check if the pattern is present in the file.
-// The function returns true if the pattern matches any line in the file, false otherwise.
-Result<Status> SinglePatternMatchMode(std::ifstream& input, const std::string& matchPattern, std::regex_constants::syntax_option_type syntaxOptions,
-    IndicatorsTree& indicators)
+// This function is used to check if the file contents match the given pattern.
+// It reads the file line by line and checks each line against the matchPattern.
+// If a line matches the matchPattern, it checks if the statePattern (if provided) also matches.
+// Based on the result of the matches, fact existence validator is used to determine
+// if the criteria is met or unmet based on the behavior specified in the arguments.
+Result<Status> MultilineMatch(ifstream& input, const string& matchPattern, const Optional<string>& statePattern, syntax_option_type syntaxOptions,
+    Behavior behavior, IndicatorsTree& indicators, ContextInterface& context)
 {
+    Optional<regex> matchRegex;
+    Optional<regex> stateRegex;
+
     try
     {
-        int lineNumber = 1;
-        auto matchRegex = regex(matchPattern, syntaxOptions);
-        std::string line;
-        while (std::getline(input, line))
+        matchRegex = regex(matchPattern, syntaxOptions);
+        if (statePattern.HasValue())
         {
-            if (regex_search(line, matchRegex))
-            {
-                return indicators.Compliant("pattern '" + matchPattern + "' matched line " + std::to_string(lineNumber));
-            }
-
-            lineNumber++;
+            stateRegex = regex(statePattern.Value(), syntaxOptions);
         }
     }
     catch (const regex_error& e)
     {
-        OsConfigLogError(nullptr, "Regex error: %s", e.what());
-        return Error("Regex error: " + std::string(e.what()), EINVAL);
+        OsConfigLogInfo(context.GetLogHandle(), "Regex error: %s", e.what());
+        return Error("Regex error: " + string(e.what()), EINVAL);
     }
 
-    return indicators.NonCompliant("pattern '" + matchPattern + "' did not match any line");
-}
-
-// In state-pattern match mode, we check each line of the input file if it matches the matchPattern regexp.
-// For each line that matches the main pattern, we check if statePattern regexp matches line matched by matchPattern.
-// The function returns true if the statePattern regexp matches all the lines that match the matchPattern regexp, false otherwise.
-Result<Status> StatePatternMatchMode(std::ifstream& input, const std::string& matchPattern, const std::string& statePattern,
-    std::regex_constants::syntax_option_type syntaxOptions, IndicatorsTree& indicators)
-{
-    try
+    FactExistenceValidator validator(behavior);
+    int lineNumber = 0;
+    string line;
+    while (!validator.Done() && getline(input, line))
     {
-        int lineNumber = 1;
-        auto matchRegex = regex(matchPattern, syntaxOptions);
-        auto stateRegex = regex(statePattern, syntaxOptions);
-        std::string line;
-        while (std::getline(input, line))
+        lineNumber++;
+        OsConfigLogDebug(context.GetLogHandle(), "Matching line %d: %s, pattern: %s", lineNumber, line.c_str(), matchPattern.c_str());
+        if (regex_search(line, matchRegex.Value()))
         {
-            if (!regex_search(line, matchRegex))
+            OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line.c_str());
+            if (stateRegex.HasValue())
             {
-                lineNumber++;
-                continue;
+                if (regex_search(line, stateRegex.Value()))
+                {
+                    OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line.c_str());
+                    validator.CriteriaMet();
+                    if (validator.Done())
+                    {
+                        indicators.AddIndicator("state pattern '" + statePattern.Value() + "' matched line " + std::to_string(lineNumber), validator.Result());
+                    }
+                }
+                else
+                {
+                    OsConfigLogDebug(context.GetLogHandle(), "Did not match line %d: %s", lineNumber, line.c_str());
+                    validator.CriteriaUnmet();
+                    if (validator.Done())
+                    {
+                        indicators.AddIndicator("state pattern '" + statePattern.Value() + "' did not match line " + std::to_string(lineNumber),
+                            validator.Result());
+                    }
+                }
             }
-
-            if (!regex_search(line, stateRegex))
+            else
             {
-                return indicators.NonCompliant("state pattern '" + statePattern + "' not found in line " + std::to_string(lineNumber));
+                OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line.c_str());
+                validator.CriteriaMet();
+                if (validator.Done())
+                {
+                    indicators.AddIndicator("pattern '" + matchPattern + "' matched line " + std::to_string(lineNumber), validator.Result());
+                }
             }
-
-            lineNumber++;
+        }
+        else
+        {
+            OsConfigLogDebug(context.GetLogHandle(), "Did not match line %d: %s", lineNumber, line.c_str());
+            validator.CriteriaUnmet();
+            if (validator.Done())
+            {
+                indicators.AddIndicator("pattern '" + matchPattern + "' did not match line " + std::to_string(lineNumber), validator.Result());
+            }
         }
     }
-    catch (const regex_error& e)
-    {
-        OsConfigLogError(nullptr, "Regex error: %s", e.what());
-        return Error("Regex error: " + std::string(e.what()), EINVAL);
-    }
 
-    return indicators.Compliant("state pattern '" + statePattern + "' matched all lines");
+    validator.Finish();
+    return validator.Result();
 }
 } // anonymous namespace
 
-AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation:Operation to perform on the file contents:M:^pattern match$",
+AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation:Operation to perform on the file contents::^pattern match$",
     "matchPattern:The pattern to match against the file contents:M",
     "stateOperation:Operation to perform on each line that matches the 'matchPattern'::^pattern match$",
     "statePattern:The pattern to match against each line that matches the 'statePattern'",
-    "caseSensitive:Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'::^true|false$")
+    "caseSensitive:Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'::^true|false$",
+    "behavior:Determine the function behavior::^(all_exist|any_exist|at_least_one_exists|none_exist)$")
 {
     UNUSED(context);
     auto it = args.find("filename");
@@ -99,36 +122,36 @@ AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation
     auto matchPattern = std::move(it->second);
 
     it = args.find("matchOperation");
-    if (it == args.end())
+    string matchOperation;
+    if (it != args.end())
     {
-        return Error("Missing 'matchOperation' parameter", EINVAL);
+        matchOperation = std::move(it->second);
     }
-    auto matchOperation = std::move(it->second);
+    else
+    {
+        matchOperation = "pattern match";
+    }
 
     it = args.find("stateOperation");
-    Optional<std::string> stateOperation;
+    string stateOperation;
     if (it != args.end())
     {
         stateOperation = std::move(it->second);
     }
+    else
+    {
+        stateOperation = "pattern match";
+    }
 
     it = args.find("statePattern");
-    Optional<std::string> statePattern;
+    Optional<string> statePattern;
     if (it != args.end())
     {
         statePattern = std::move(it->second);
     }
-    if (stateOperation.HasValue() && !statePattern.HasValue())
-    {
-        return Error("stateOperation field requires statePattern field", EINVAL);
-    }
-    if (!stateOperation.HasValue() && statePattern.HasValue())
-    {
-        return Error("statePattern field requires stateOperation field", EINVAL);
-    }
 
     it = args.find("caseSensitive");
-    std::regex_constants::syntax_option_type syntaxOptions = std::regex_constants::extended;
+    syntax_option_type syntaxOptions = std::regex_constants::ECMAScript;
     if (it != args.end())
     {
         if (it->second == "false")
@@ -141,29 +164,35 @@ AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation
         }
     }
 
-    std::ifstream file(path);
+    auto behavior = Behavior::NoneExist;
+    it = args.find("behavior");
+    if (it != args.end())
+    {
+        auto result = FactExistenceValidator::MapBehavior(it->second);
+        if (!result.HasValue())
+        {
+            return Error("Invalid behavior value: " + it->second, result.Error().code);
+        }
+
+        behavior = result.Value();
+    }
+
+    ifstream file(path);
     if (!file.is_open())
     {
         return indicators.NonCompliant("Failed to open file: " + path);
     }
 
+    // Currently only "pattern match" is supported for both match and state operations.
     if (matchOperation != "pattern match")
     {
-        return Error(std::string("Unsupported operation '") + matchOperation + std::string("'"), EINVAL);
+        return Error(string("Unsupported operation '") + matchOperation + string("'"), EINVAL);
+    }
+    if (stateOperation != "pattern match")
+    {
+        return Error(string("Unsupported operation '") + stateOperation + string("'"), EINVAL);
     }
 
-    if (stateOperation.HasValue() && stateOperation.Value() != "pattern match")
-    {
-        return Error(std::string("Unsupported operation '") + stateOperation.Value() + std::string("'"), EINVAL);
-    }
-
-    if (!statePattern.HasValue())
-    {
-        return SinglePatternMatchMode(file, matchPattern, syntaxOptions, indicators);
-    }
-    else
-    {
-        return StatePatternMatchMode(file, matchPattern, statePattern.Value(), syntaxOptions, indicators);
-    }
+    return MultilineMatch(file, matchPattern, statePattern, syntaxOptions, behavior, indicators, context);
 }
 } // namespace compliance

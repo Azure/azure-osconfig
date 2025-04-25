@@ -59,7 +59,7 @@ TEST_F(FileRegexMatchTest, Audit_InvalidArguments_2)
 {
     mArgs["filename"] = mTempfile;
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
-    ASSERT_TRUE(!result.HasValue());
+    ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().code, EINVAL);
 }
 
@@ -67,22 +67,13 @@ TEST_F(FileRegexMatchTest, Audit_InvalidArguments_3)
 {
     mArgs["filename"] = mTempfile;
     mArgs["matchPattern"] = "test";
+    mArgs["matchOperation"] = "test"; // invalid match operation value
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
-    ASSERT_TRUE(!result.HasValue());
+    ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().code, EINVAL);
 }
 
 TEST_F(FileRegexMatchTest, Audit_InvalidArguments_4)
-{
-    mArgs["filename"] = mTempfile;
-    mArgs["matchPattern"] = "test";
-    mArgs["matchOperation"] = "test"; // invalid match operation value
-    auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
-    ASSERT_TRUE(!result.HasValue());
-    ASSERT_EQ(result.Error().code, EINVAL);
-}
-
-TEST_F(FileRegexMatchTest, Audit_InvalidArguments_5)
 {
     mArgs["filename"] = mTempfile;
     mArgs["matchPattern"] = "(?i)"; // invalid regex pattern
@@ -92,6 +83,16 @@ TEST_F(FileRegexMatchTest, Audit_InvalidArguments_5)
     EXPECT_EQ(result.Error().code, EINVAL);
 }
 
+TEST_F(FileRegexMatchTest, Audit_InvalidArguments_5)
+{
+    mArgs["filename"] = mTempfile;
+    mArgs["matchPattern"] = "test";
+    mArgs["stateOperation"] = "test"; // invalid state operation value
+    auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().code, EINVAL);
+}
+
 TEST_F(FileRegexMatchTest, Audit_EmptyFile_1)
 {
     mArgs["filename"] = mTempfile;
@@ -99,7 +100,7 @@ TEST_F(FileRegexMatchTest, Audit_EmptyFile_1)
     mArgs["matchOperation"] = "pattern match";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_Match_1)
@@ -110,7 +111,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_1)
     mArgs["matchOperation"] = "pattern match";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_Match_2)
@@ -121,7 +122,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_2)
     mArgs["matchOperation"] = "pattern match";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_Match_3)
@@ -132,7 +133,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_3)
     mArgs["matchOperation"] = "pattern match";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_Match_4)
@@ -143,7 +144,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_4)
     mArgs["matchOperation"] = "pattern match";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_Match_5)
@@ -154,7 +155,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_5)
     mArgs["matchOperation"] = "pattern match";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_Match_6)
@@ -165,7 +166,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_6)
     mArgs["matchOperation"] = "pattern match";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_CaseInsensitive_1)
@@ -177,7 +178,7 @@ TEST_F(FileRegexMatchTest, Audit_CaseInsensitive_1)
     mArgs["caseSensitive"] = "false";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_State_1)
@@ -185,9 +186,8 @@ TEST_F(FileRegexMatchTest, Audit_State_1)
     FillTempfile("key=foo");
     mArgs["filename"] = mTempfile;
     mArgs["matchPattern"] = R"(^key=.*$)";
-    mArgs["matchOperation"] = "pattern match";
     mArgs["statePattern"] = R"(^key=foo$)";
-    mArgs["stateOperation"] = "pattern match";
+    mArgs["behavior"] = "all_exist";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -201,20 +201,88 @@ TEST_F(FileRegexMatchTest, Audit_State_2)
     mArgs["matchOperation"] = "pattern match";
     mArgs["statePattern"] = R"(^key=bar$)";
     mArgs["stateOperation"] = "pattern match";
+    mArgs["behavior"] = "all_exist";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(FileRegexMatchTest, Audit_Multiline_Match_2)
+TEST_F(FileRegexMatchTest, Audit_State_3)
+{
+    FillTempfile("key=foo");
+    mArgs["filename"] = mTempfile;
+    mArgs["matchPattern"] = R"(^key=.*$)";
+    mArgs["matchOperation"] = "pattern match";
+    mArgs["statePattern"] = R"(^key=bar$)";
+    mArgs["stateOperation"] = "pattern match";
+    mArgs["behavior"] = "none_exist";
+    auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(FileRegexMatchTest, Audit_State_4)
+{
+    FillTempfile("key=foo");
+    mArgs["filename"] = mTempfile;
+    mArgs["matchPattern"] = R"(^key=.*$)";
+    mArgs["matchOperation"] = "pattern match";
+    mArgs["statePattern"] = R"(^key=foo$)";
+    mArgs["stateOperation"] = "pattern match";
+    mArgs["behavior"] = "none_exist";
+    auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(FileRegexMatchTest, Audit_Multiline_Match_1)
 {
     FillTempfile("key=foo\nkey=bar\nkey=baz");
     mArgs["filename"] = mTempfile;
     mArgs["matchPattern"] = R"(^key=.*$)";
     mArgs["matchOperation"] = "pattern match";
+    mArgs["behavior"] = "all_exist";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(FileRegexMatchTest, Audit_Multiline_Match_2)
+{
+    FillTempfile("key=foo\nkey=bar\nkey=baz\nky=typo");
+    mArgs["filename"] = mTempfile;
+    mArgs["matchPattern"] = R"(^key=.*$)";
+    mArgs["matchOperation"] = "pattern match";
+    mArgs["behavior"] = "at_least_one_exists";
+    auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(FileRegexMatchTest, Audit_Multiline_Match_3)
+{
+    FillTempfile("key=foo\nkey=bar\nkey=baz\nky=typo");
+    mArgs["filename"] = mTempfile;
+    mArgs["matchPattern"] = R"(^key=.*$)";
+    mArgs["matchOperation"] = "pattern match";
+    mArgs["behavior"] = "all_exist";
+    auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(FileRegexMatchTest, Audit_Multiline_State_1)
+{
+    FillTempfile("key=foo\nkey=bar\nkey=baz");
+    mArgs["filename"] = mTempfile;
+    mArgs["matchPattern"] = R"(^key=.*$)";
+    mArgs["matchOperation"] = "pattern match";
+    mArgs["statePattern"] = R"(^key=bar$)";
+    mArgs["stateOperation"] = "pattern match";
+    mArgs["behavior"] = "all_exist";
+    auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_Multiline_State_2)
@@ -223,21 +291,9 @@ TEST_F(FileRegexMatchTest, Audit_Multiline_State_2)
     mArgs["filename"] = mTempfile;
     mArgs["matchPattern"] = R"(^key=.*$)";
     mArgs["matchOperation"] = "pattern match";
-    mArgs["statePattern"] = R"(^key=bar$)";
-    mArgs["stateOperation"] = "pattern match";
-    auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
-    ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
-}
-
-TEST_F(FileRegexMatchTest, Audit_Multiline_State_3)
-{
-    FillTempfile("key=foo\nkey=bar\nkey=baz");
-    mArgs["filename"] = mTempfile;
-    mArgs["matchPattern"] = R"(^key=.*$)";
-    mArgs["matchOperation"] = "pattern match";
     mArgs["statePattern"] = R"(^key=(foo|bar|baz)$)";
     mArgs["stateOperation"] = "pattern match";
+    mArgs["behavior"] = "all_exist";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -251,6 +307,7 @@ TEST_F(FileRegexMatchTest, Audit_Multiline_State_4)
     mArgs["matchOperation"] = "pattern match";
     mArgs["statePattern"] = R"(^key=(foo|bar)$)";
     mArgs["stateOperation"] = "pattern match";
+    mArgs["behavior"] = "all_exist";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);

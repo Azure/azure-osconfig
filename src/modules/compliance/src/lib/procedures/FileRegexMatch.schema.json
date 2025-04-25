@@ -14,7 +14,6 @@
               "type": "object",
               "required": [
                 "filename",
-                "matchOperation",
                 "matchPattern"
               ],
               "additionalProperties": false,
@@ -45,6 +44,11 @@
                   "type": "string",
                   "description": "Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:(true|false)$|(^true|false$))"
+                },
+                "behavior": {
+                  "type": "string",
+                  "description": "Determine the function behavior",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((all_exist|any_exist|at_least_one_exists|none_exist))$|(^(all_exist|any_exist|at_least_one_exists|none_exist)$))"
                 }
               }
             }
