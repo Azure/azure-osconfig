@@ -246,6 +246,8 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
     return mpiHandle;
 }
 
+// We're responsible for free-ing the handle even on failure.
+// The handle comes from the response allocated in CallMpiOpen.
 void CallMpiClose(MPI_HANDLE clientSession, OsConfigLogHandle log)
 {
     const char *name = "MpiClose";
@@ -259,6 +261,7 @@ void CallMpiClose(MPI_HANDLE clientSession, OsConfigLogHandle log)
     if ((NULL == clientSession) || (0 == strlen((char*)clientSession)))
     {
         OsConfigLogError(log, "CallMpiClose(%p) called with invalid argument", clientSession);
+        FREE_MEMORY(clientSession);
         return;
     }
 
@@ -268,6 +271,7 @@ void CallMpiClose(MPI_HANDLE clientSession, OsConfigLogHandle log)
     if (NULL == request)
     {
         OsConfigLogError(log, "CallMpiClose(%p): failed to allocate memory for request", clientSession);
+        FREE_MEMORY(clientSession);
         return;
     }
 
@@ -279,6 +283,7 @@ void CallMpiClose(MPI_HANDLE clientSession, OsConfigLogHandle log)
     FREE_MEMORY(response);
 
     OsConfigLogInfo(log, "CallMpiClose(%p)", clientSession);
+    FREE_MEMORY(clientSession);
 }
 
 int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JSON_STRING payload, const int payloadSizeBytes, OsConfigLogHandle log)
