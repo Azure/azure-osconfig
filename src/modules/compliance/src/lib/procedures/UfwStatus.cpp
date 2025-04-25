@@ -3,25 +3,43 @@
 
 #include <CommonUtils.h>
 #include <Evaluator.h>
+#include <Regex.h>
 #include <string>
-
 namespace compliance
 {
-AUDIT_FN(UfwStatus)
+AUDIT_FN(UfwStatus, "statusRegex:Regex that the status must match:M")
 {
-    UNUSED(args);
-    auto output = context.ExecuteCommand("ufw status");
+    auto it = args.find("statusRegex");
+    if (it == args.end())
+    {
+        return Error("Missing 'statusRegex' parameter", EINVAL);
+    }
+    auto statusRegexStr = std::move(it->second);
+
+    regex statusRegex;
+    try
+    {
+        statusRegex = regex(statusRegexStr);
+    }
+    catch (const std::exception& e)
+    {
+        OsConfigLogError(context.GetLogHandle(), "Regex error: %s", e.what());
+        return Error("Failed to compile regex '" + statusRegexStr + "' error: " + e.what());
+    }
+
+    auto output = context.ExecuteCommand("ufw status verbose");
     if (!output.HasValue())
     {
         return indicators.NonCompliant("ufw not found: " + output.Error().message);
     }
-    if (output.Value().find("Status: active") != std::string::npos)
+
+    if (regex_search(output.Value(), statusRegex) == false)
     {
-        return indicators.Compliant("ufw active");
+        return indicators.NonCompliant("Searched value not found in UFW output");
     }
     else
     {
-        return indicators.NonCompliant("ufw not active");
+        return indicators.Compliant("Searched value found in UFW output");
     }
 }
 } // namespace compliance
