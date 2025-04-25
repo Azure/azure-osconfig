@@ -13,14 +13,19 @@
             "FileRegexMatch": {
               "type": "object",
               "required": [
-                "filename",
+                "path",
+                "filenamePattern",
                 "matchPattern"
               ],
               "additionalProperties": false,
               "properties": {
-                "filename": {
+                "path": {
                   "type": "string",
-                  "description": "Path to the file to check"
+                  "description": "A directory name contining files to check"
+                },
+                "filenamePattern": {
+                  "type": "string",
+                  "description": "A pattern to match file names in the provided path"
                 },
                 "matchOperation": {
                   "type": "string",

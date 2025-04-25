@@ -6,6 +6,7 @@
 #include <Optional.h>
 #include <Regex.h>
 #include <Result.h>
+#include <dirent.h>
 #include <fstream>
 
 namespace compliance
@@ -21,11 +22,17 @@ namespace
 // If a line matches the matchPattern, it checks if the statePattern (if provided) also matches.
 // Based on the result of the matches, fact existence validator is used to determine
 // if the criteria is met or unmet based on the behavior specified in the arguments.
-Result<Status> MultilineMatch(ifstream& input, const string& matchPattern, const Optional<string>& statePattern, syntax_option_type syntaxOptions,
-    Behavior behavior, IndicatorsTree& indicators, ContextInterface& context)
+Result<Status> MultilineMatch(const std::string& filename, const string& matchPattern, const Optional<string>& statePattern,
+    syntax_option_type syntaxOptions, Behavior behavior, IndicatorsTree& indicators, ContextInterface& context)
 {
     Optional<regex> matchRegex;
     Optional<regex> stateRegex;
+
+    ifstream input(filename);
+    if (!input.is_open())
+    {
+        return Error("Failed to open file: " + filename, ENOENT);
+    }
 
     try
     {
@@ -59,7 +66,9 @@ Result<Status> MultilineMatch(ifstream& input, const string& matchPattern, const
                     validator.CriteriaMet();
                     if (validator.Done())
                     {
-                        indicators.AddIndicator("state pattern '" + statePattern.Value() + "' matched line " + std::to_string(lineNumber), validator.Result());
+                        indicators.AddIndicator("state pattern '" + statePattern.Value() + "' matched line " + std::to_string(lineNumber) +
+                                                    " in file '" + filename + "'",
+                            validator.Result());
                     }
                 }
                 else
@@ -68,7 +77,8 @@ Result<Status> MultilineMatch(ifstream& input, const string& matchPattern, const
                     validator.CriteriaUnmet();
                     if (validator.Done())
                     {
-                        indicators.AddIndicator("state pattern '" + statePattern.Value() + "' did not match line " + std::to_string(lineNumber),
+                        indicators.AddIndicator("state pattern '" + statePattern.Value() + "' did not match line " + std::to_string(lineNumber) +
+                                                    " in file '" + filename + "'",
                             validator.Result());
                     }
                 }
@@ -79,7 +89,8 @@ Result<Status> MultilineMatch(ifstream& input, const string& matchPattern, const
                 validator.CriteriaMet();
                 if (validator.Done())
                 {
-                    indicators.AddIndicator("pattern '" + matchPattern + "' matched line " + std::to_string(lineNumber), validator.Result());
+                    indicators.AddIndicator("pattern '" + matchPattern + "' matched line " + std::to_string(lineNumber) + " in file '" + filename + "'",
+                        validator.Result());
                 }
             }
         }
@@ -89,7 +100,9 @@ Result<Status> MultilineMatch(ifstream& input, const string& matchPattern, const
             validator.CriteriaUnmet();
             if (validator.Done())
             {
-                indicators.AddIndicator("pattern '" + matchPattern + "' did not match line " + std::to_string(lineNumber), validator.Result());
+                indicators.AddIndicator("pattern '" + matchPattern + "' did not match line " + std::to_string(lineNumber) + " in file '" + filename +
+                                            "'",
+                    validator.Result());
             }
         }
     }
@@ -99,20 +112,37 @@ Result<Status> MultilineMatch(ifstream& input, const string& matchPattern, const
 }
 } // anonymous namespace
 
-AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation:Operation to perform on the file contents::^pattern match$",
-    "matchPattern:The pattern to match against the file contents:M",
+AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "filenamePattern:A pattern to match file names in the provided path:M",
+    "matchOperation:Operation to perform on the file contents::^pattern match$", "matchPattern:The pattern to match against the file contents:M",
     "stateOperation:Operation to perform on each line that matches the 'matchPattern'::^pattern match$",
     "statePattern:The pattern to match against each line that matches the 'statePattern'",
     "caseSensitive:Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'::^true|false$",
     "behavior:Determine the function behavior::^(all_exist|any_exist|at_least_one_exists|none_exist)$")
 {
     UNUSED(context);
-    auto it = args.find("filename");
+    auto it = args.find("path");
     if (it == args.end())
     {
-        return Error("Missing 'filename' parameter", EINVAL);
+        return Error("Missing 'path' parameter", EINVAL);
     }
     auto path = std::move(it->second);
+
+    it = args.find("filenamePattern");
+    if (it == args.end())
+    {
+        return Error("Missing 'filenamePattern' parameter", EINVAL);
+    }
+    auto filenamePattern = std::move(it->second);
+
+    Optional<regex> filenameRegex;
+    try
+    {
+        filenameRegex = regex(filenamePattern, std::regex_constants::ECMAScript);
+    }
+    catch (const regex_error& e)
+    {
+        return Error("Invalid filename pattern: " + string(e.what()), EINVAL);
+    }
 
     it = args.find("matchPattern");
     if (it == args.end())
@@ -177,13 +207,8 @@ AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation
         behavior = result.Value();
     }
 
-    ifstream file(path);
-    if (!file.is_open())
-    {
-        return indicators.NonCompliant("Failed to open file: " + path);
-    }
-
     // Currently only "pattern match" is supported for both match and state operations.
+    // Depending on use cases, we may want to support other operations in the future.
     if (matchOperation != "pattern match")
     {
         return Error(string("Unsupported operation '") + matchOperation + string("'"), EINVAL);
@@ -193,6 +218,66 @@ AUDIT_FN(FileRegexMatch, "filename:Path to the file to check:M", "matchOperation
         return Error(string("Unsupported operation '") + stateOperation + string("'"), EINVAL);
     }
 
-    return MultilineMatch(file, matchPattern, statePattern, syntaxOptions, behavior, indicators, context);
+    auto* dir = opendir(path.c_str());
+    if (dir == nullptr)
+    {
+        int status = errno;
+        OsConfigLogInfo(context.GetLogHandle(), "Failed to open directory '%s': %s", path.c_str(), strerror(status));
+        return Error("Failed to open directory '" + path + "': " + strerror(status), status);
+    }
+
+    auto matchedAnyFilename = false;
+    Result<Status> result = Status::Compliant;
+    struct dirent* entry = nullptr;
+    for (errno = 0, entry = readdir(dir); nullptr != entry; errno = 0, entry = readdir(dir))
+    {
+        if (entry->d_type != DT_REG)
+        {
+            continue;
+        }
+
+        if (!regex_search(entry->d_name, filenameRegex.Value()))
+        {
+            OsConfigLogDebug(context.GetLogHandle(), "Ignoring file '%s' in directory '%s'", entry->d_name, path.c_str());
+            continue;
+        }
+        matchedAnyFilename = true;
+
+        auto filename = path + "/" + entry->d_name;
+        auto matchResult = MultilineMatch(filename, matchPattern, statePattern, syntaxOptions, behavior, indicators, context);
+        if (!matchResult.HasValue())
+        {
+            OsConfigLogInfo(context.GetLogHandle(), "Failed to match file '%s': %s", filename.c_str(), matchResult.Error().message.c_str());
+            result = matchResult.Error();
+            break;
+        }
+
+        OsConfigLogDebug(context.GetLogHandle(), "Matched file '%s': %s", filename.c_str(), matchResult.Value() == Status::Compliant ? "Compliant" : "NonCompliant");
+        if (matchResult.Value() == Status::NonCompliant)
+        {
+            result = Status::NonCompliant;
+            break;
+        }
+    }
+
+    if (nullptr == entry && errno != 0)
+    {
+        int status = errno;
+        OsConfigLogError(context.GetLogHandle(), "Failed to read directory '%s': %s", path.c_str(), strerror(status));
+        result = Error("Failed to read directory '" + path + "': " + strerror(status), status);
+    }
+    closedir(dir);
+
+    if (!result.HasValue())
+    {
+        return result;
+    }
+
+    if (!matchedAnyFilename)
+    {
+        return indicators.Compliant("No files matched the filename pattern '" + filenamePattern + "'");
+    }
+
+    return result;
 }
 } // namespace compliance
