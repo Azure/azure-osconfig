@@ -55,12 +55,17 @@ Result<Status> MultilineMatch(const std::string& filename, const string& matchPa
     {
         lineNumber++;
         OsConfigLogDebug(context.GetLogHandle(), "Matching line %d: %s, pattern: %s", lineNumber, line.c_str(), matchPattern.c_str());
-        if (regex_search(line, matchRegex.Value()))
+        smatch match;
+        if (regex_search(line, match, matchRegex.Value()))
         {
             OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line.c_str());
             if (stateRegex.HasValue())
             {
-                if (regex_search(line, stateRegex.Value()))
+                assert(match.ready());
+                assert(match.size() > 0);
+                auto valueToMatch = match.size() > 1 ? match[1].str() : match[0].str();
+                OsConfigLogDebug(context.GetLogHandle(), "Value to match: %s", valueToMatch.c_str());
+                if (regex_search(valueToMatch, stateRegex.Value()))
                 {
                     OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line.c_str());
                     validator.CriteriaMet();
