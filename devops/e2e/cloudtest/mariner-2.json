@@ -1,4 +1,4 @@
-// Base Image: MicrosoftCBLMariner:cblmariner:cbl-mariner-2:latest
+// Base Image: MicrosoftCBLMariner:cblmariner:cbl-mariner-2-gen2/latest
 {
     "artifacts": [
         {
