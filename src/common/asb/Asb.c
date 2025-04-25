@@ -543,6 +543,7 @@ static const char* g_sendmail = "sendmail";
 static const char* g_slapd = "slapd";
 static const char* g_bind9 = "bind9";
 static const char* g_dovecotCore = "dovecot-core";
+static const char* g_auoms = "auoms";
 static const char* g_audit = "audit";
 static const char* g_auditd = "auditd";
 static const char* g_auditLibs = "audit-libs";
@@ -1805,6 +1806,7 @@ static char* AuditEnsureAuditdServiceIsRunning(OsConfigLogHandle log)
 {
     char* reason = NULL;
     CheckDaemonActive(g_auditd, &reason, log);
+    CheckDaemonNotActive(g_auoms, &reason, log);
     return reason;
 }
 
@@ -3125,6 +3127,22 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, OsConfigLogHandle 
 {
     int status = 0;
     UNUSED(value);
+
+    // The auoms service is part of Microsoft's Operations Management Suite (OMS) and is used for collecting audit events.
+    // Conflicts between auoms and auditd can arise because both services attempt to manage and collect audit events.
+    // One of the recommended mitigation strategies is Single Service Usage: use either auoms or auditd, but not both.
+    // To mitigate this conflict we try to stop and disable auoms when present and we are asked to enable and start auditd:
+    if (IsDaemoNActive(auoms, log))
+    {
+        StopAndDisableDaemon(g_auoms, log);
+    }
+
+    if (IsDaemoNActive(g_auoms, log))
+    {
+        OsConfigLogWarning(log, "RemediateEnsureAuditdServiceIsRunning: '%s' is active and collides with '%s', %s",
+            g_auoms, g_auditd, g_remediationIsNotPossible);
+    }
+
     if ((0 != InstallPackage(g_audit, log)) && (0 != InstallPackage(g_auditd, log)) &&
         (0 != InstallPackage(g_auditLibs, log)) && (0 != InstallPackage(g_auditLibsDevel, log)))
     {
@@ -3136,6 +3154,7 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, OsConfigLogHandle 
         EnableAndStartDaemon(g_auditd, log);
         status = CheckDaemonActive(g_auditd, NULL, log) ? 0 : ENOENT;
     }
+    
     return status;
 }
 
