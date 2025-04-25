@@ -3132,7 +3132,7 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, OsConfigLogHandle 
     // Conflicts between auoms and auditd can arise because both services attempt to manage and collect audit events.
     // One of the recommended mitigation strategies is Single Service Usage: use either auoms or auditd, but not both.
     // To mitigate this conflict we try to stop and disable auoms when present and we are asked to enable and start auditd:
-    if (IsDaemonActive(auoms, log))
+    if (IsDaemonActive(g_auoms, log))
     {
         StopAndDisableDaemon(g_auoms, log);
     }
