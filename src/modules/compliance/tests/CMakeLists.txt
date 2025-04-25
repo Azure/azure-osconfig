@@ -15,6 +15,7 @@ add_executable(compliancetests
     ComplianceTest.cpp
     EngineTest.cpp
     EvaluatorTest.cpp
+    FactExistenceValidatorTest.cpp
     OptionalTest.cpp
     RegexFallbackTest.cpp
     RegexTest.cpp
