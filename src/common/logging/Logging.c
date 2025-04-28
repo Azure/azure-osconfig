@@ -213,10 +213,7 @@ char* GetFormattedTime(void)
     struct tm result = {0};
     time(&rawTime);
     timeInfo = localtime_r(&rawTime, &result);
-    // Leave space for timezone
-    strftime(g_logTime, ARRAY_SIZE(g_logTime) - 4, "%Y-%m-%d %H:%M:%S", timeInfo);
-    // Append timezone
-    snprintf(g_logTime + strlen(g_logTime), 4, " %s", timeInfo->tm_zone);
+    strftime(g_logTime, ARRAY_SIZE(g_logTime) - 1, "%Y-%m-%d %H:%M:%S %Z", timeInfo);
     return g_logTime;
 }
 
