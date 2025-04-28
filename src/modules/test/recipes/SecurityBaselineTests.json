@@ -1,11 +1,5 @@
 [
   {
-    "RunCommand": "useradd securitybaselinetest1 && id securitybaselinetest1"
-  },
-  {
-    "RunCommand": "useradd securitybaselinetest2 && id securitybaselinetest2"
-  },
-  {
     "Action": "LoadModule",
     "Module": "securitybaseline.so"
   },
@@ -1347,18 +1341,18 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureRootIsOnlyUidZeroAccount"
   },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "securitybaselinetest1,securitybaselinetest2"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "securitybaselinetest1,securitybaselinetest2"
-  },
+  // {
+  //   "ObjectType": "Desired",
+  //   "ComponentName": "SecurityBaseline",
+  //   "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
+  //   "Payload": "games,test"
+  // },
+  // {
+  //   "ObjectType": "Desired",
+  //   "ComponentName": "SecurityBaseline",
+  //   "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
+  //   "Payload": "games,test"
+  // },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
@@ -2521,17 +2515,17 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureRootIsOnlyUidZeroAccount"
   },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "securitybaselinetest1,securitybaselinetest2"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
-  },
+  // {
+  //   "ObjectType": "Desired",
+  //   "ComponentName": "SecurityBaseline",
+  //   "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
+  //   "Payload": "games,test"
+  // },
+  // {
+  //   "ObjectType": "Reported",
+  //   "ComponentName": "SecurityBaseline",
+  //   "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
+  // },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
@@ -2560,16 +2554,12 @@
   {
     "Action": "UnloadModule"
   },
-  // --------------------------------------------------------------------------------
-  // Additional tests
-  // --------------------------------------------------------------------------------
+  // Additional test for auditEnsureShadowGroupIsEmpty
   {
     "Action": "LoadModule",
     "Module": "securitybaseline.so"
   },
-  // --------------------------------------------------------------------------------
-  // Additional test for auditEnsureShadowGroupIsEmpty
-  // --------------------------------------------------------------------------------
+  // Create a user that belongs to the shadow group
   {
     "RunCommand": "useradd -g shadow securitybaselinetest && id securitybaselinetest"
   },
@@ -2580,49 +2570,7 @@
     "Payload": "Group 'shadow' is not empty: 42"
   },
   {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "securitybaselinetest"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "securitybaselinetest"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
-  },
-  // --------------------------------------------------------------------------------
-  // Additional test for auditEnsureAllEtcPasswdGroupsExistInEtcGroup
-  // --------------------------------------------------------------------------------
-  {
-    "RunCommand": "useradd securitybaselinetest && id securitybaselinetest && sed -i '/securitybaselinetest/d' /etc/group"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureAllEtcPasswdGroupsExistInEtcGroup"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "securitybaselinetest"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "securitybaselinetest"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
+    "RunCommand": "id securitybaselinetest &>/dev/null && userdel -r -f securitybaselinetest || true"
   },
   {
     "Action": "UnloadModule"

@@ -517,52 +517,35 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
             {
                 if (NULL == (groupEntry = getgrgid(groupIds[i])))
                 {
-                    if (0 == errno)
+                    OsConfigLogInfo(log, "EnumerateUserGroups: getgrgid(for gid: %u) failed (errno: %d)", (unsigned int)groupIds[i], errno);
+                    status = ENOENT;
+                    break;
+                }
+
+                (*groupList)[i].groupId = groupEntry->gr_gid;
+                (*groupList)[i].groupName = NULL;
+                (*groupList)[i].hasUsers = true;
+
+                if (0 < (groupNameLength = (groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0)))
+                {
+                    if (NULL != ((*groupList)[i].groupName = malloc(groupNameLength + 1)))
                     {
-                        OsConfigLogInfo(log, "EnumerateUserGroups: group %u does not exist (errno: %d)", (unsigned int)groupIds[i], errno);
-                        *size -= 1;
-                        continue;
+                        memset((*groupList)[i].groupName, 0, groupNameLength + 1);
+                        memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
+
+                        OsConfigLogDebug(log, "EnumerateUserGroups: user %u ('%s', gid: %u) is in group %u ('%s')",
+                            user->userId, IsSystemAccount(user) ? user->username : g_redacted, user->groupId,
+                            (*groupList)[i].groupId, IsSystemGroup(&(*groupList)[i]) ? (*groupList)[i].groupName : g_redacted);
                     }
                     else
                     {
-                        OsConfigLogInfo(log, "EnumerateUserGroups: getgrgid(for gid: %u) failed (errno: %d)", (unsigned int)groupIds[i], errno);
-                        status = errno ? errno : ENOENT;
+                        OsConfigLogError(log, "EnumerateUserGroups: out of memory");
+                        status = ENOMEM;
                         break;
-                    }
-                }
-
-                if (NULL != groupEntry)
-                {
-                    (*groupList)[i].groupId = groupEntry->gr_gid;
-                    (*groupList)[i].groupName = NULL;
-                    (*groupList)[i].hasUsers = true;
-
-                    if (0 < (groupNameLength = (groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0)))
-                    {
-                        if (NULL != ((*groupList)[i].groupName = malloc(groupNameLength + 1)))
-                        {
-                            memset((*groupList)[i].groupName, 0, groupNameLength + 1);
-                            memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
-
-                            OsConfigLogDebug(log, "EnumerateUserGroups: user %u ('%s', gid: %u) is in group %u ('%s')",
-                                user->userId, IsSystemAccount(user) ? user->username : g_redacted, user->groupId,
-                                (*groupList)[i].groupId, IsSystemGroup(&(*groupList)[i]) ? (*groupList)[i].groupName : g_redacted);
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "EnumerateUserGroups: out of memory");
-                            status = ENOMEM;
-                            break;
-                        }
                     }
                 }
             }
         }
-    }
-
-    if (0 == *size)
-    {
-        FREE_MEMORY(*groupList);
     }
 
     if (status)
