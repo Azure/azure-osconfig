@@ -122,9 +122,6 @@ static void SignalInterrupt(int signal)
 {
     int logDescriptor = -1;
     char* errorMessage = NULL;
-    ssize_t writeResult = -1;
-
-    UNUSED(writeResult);
 
     if (SIGSEGV == signal)
     {
@@ -156,7 +153,9 @@ static void SignalInterrupt(int signal)
     {
         if (0 < (logDescriptor = open(LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
         {
+            ssize_t writeResult = -1;
             writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
+            UNUSED(writeResult);
             close(logDescriptor);
         }
         _exit(signal);
@@ -597,6 +596,9 @@ int main(int argc, char *argv[])
     FREE_MEMORY(cpuType);
     FREE_MEMORY(cpuVendor);
     FREE_MEMORY(cpuModel);
+    FREE_MEMORY(kernelName);
+    FREE_MEMORY(kernelRelease);
+    FREE_MEMORY(kernelVersion);
     FREE_MEMORY(productName);
     FREE_MEMORY(productVendor);
     FREE_MEMORY(encodedProductInfo);
@@ -709,6 +711,7 @@ int main(int argc, char *argv[])
 done:
     OsConfigLogInfo(GetLog(), "OSConfig Agent (PID: %d) exiting with %d", pid, g_stopSignal);
 
+    FREE_MEMORY(jsonConfiguration);
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
     FREE_MEMORY(connectionString);

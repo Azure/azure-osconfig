@@ -230,7 +230,7 @@ typedef struct ReportedProperty
 } ReportedProperty;
 
 bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString);
-int GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
+LoggingLevel GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetMaxLogSizeFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetMaxLogSizeDebugMultiplierFromJsonConfig(const char* jsonString, OsConfigLogHandle log);
 int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log);

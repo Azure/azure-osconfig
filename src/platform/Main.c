@@ -59,8 +59,6 @@ static void SignalInterrupt(int signal)
     size_t sizeOfMpiMessage = 0;
     ssize_t writeResult = -1;
 
-    UNUSED(writeResult);
-
     if (SIGSEGV == signal)
     {
         errorMessage = ERROR_MESSAGE_SIGSEGV;
@@ -91,7 +89,7 @@ static void SignalInterrupt(int signal)
     {
         if (0 < (logDescriptor = open(LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
         {
-            if (0 < (writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage))))
+            if (0 < write(logDescriptor, (const void*)errorMessage, strlen(errorMessage)))
             {
                 sizeOfMpiMessage = strlen(g_mpiCall);
                 if (sizeOfMpiMessage > 0)
@@ -102,6 +100,7 @@ static void SignalInterrupt(int signal)
                 {
                     writeResult = write(logDescriptor, (const void*)EOL_TERMINATOR, sizeof(char));
                 }
+                UNUSED(writeResult);
             }
             close(logDescriptor);
         }

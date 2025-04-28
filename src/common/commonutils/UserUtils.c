@@ -3050,7 +3050,7 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
         OsConfigLogError(log, "RemoveUserAccounts: cannot read from '%s'", g_passwdFile);
         return EPERM;
     }
-    else if (0 == (status = CheckUserAccountsNotFound(names, NULL, log)))
+    else if (0 == CheckUserAccountsNotFound(names, NULL, log))
     {
         OsConfigLogInfo(log, "RemoveUserAccounts: the requested user accounts '%s' appear already removed", names);
         return 0;

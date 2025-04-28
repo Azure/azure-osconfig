@@ -210,7 +210,6 @@ static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
     const int minVersionMajor = 8;
     const int minVersionMinor = 2;
     char* textResult = NULL;
-    size_t textResultLength = 0;
     size_t textPrefixLength = 0;
     char* textCursor = NULL;
     char versionMajorString[2] = {0};
@@ -232,7 +231,8 @@ static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
 
     if (NULL != textResult)
     {
-        if (((textPrefixLength = strlen(expectedPrefix)) + 3) < (textResultLength = strlen(textResult)))
+        textPrefixLength = strlen(expectedPrefix) + 3;
+        if (textPrefixLength < strlen(textResult))
         {
             textCursor = textResult + strlen(expectedPrefix) + 1;
             if (isdigit(textCursor[0]) && ('.' == textCursor[1]) && isdigit(textCursor[2]))
@@ -669,9 +669,9 @@ int CheckSshProtocol(char** reason, OsConfigLogHandle log)
     {
         OsConfigLogInfo(log, "CheckSshProtocol: the SSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
         OsConfigCaptureReason(reason, "'%s' is not present on this device", g_sshServerConfiguration);
-        status = EEXIST;
+        status = ENOENT;
     }
-    if (0 == (status = CheckLineFoundNotCommentedOut(g_sshServerConfiguration, '#', protocol, reason, log)))
+    else if (0 == CheckLineFoundNotCommentedOut(g_sshServerConfiguration, '#', protocol, reason, log))
     {
         OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
         status = 0;
@@ -700,7 +700,7 @@ int CheckSshProtocol(char** reason, OsConfigLogHandle log)
                 OsConfigCaptureReason(reason, "'%s' is not found included in %s", g_osconfigRemediationConf, g_sshServerConfiguration);
                 status = ENOENT;
             }
-            else if (0 == (status = CheckLineFoundNotCommentedOut(g_osconfigRemediationConf, '#', protocol, reason, log)))
+            else if (0 == CheckLineFoundNotCommentedOut(g_osconfigRemediationConf, '#', protocol, reason, log))
             {
                 OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
                 status = 0;
@@ -918,6 +918,7 @@ static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
     else if ((NULL == (inclusion = FormatInclusionForRemediation(log))) || (0 == (inclusionSize = strlen(inclusion))))
     {
         OsConfigLogInfo(log, "IncludeRemediationSshConfFile: failed preparing the inclusion statement, cannot include '%s' into '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
+        FREE_MEMORY(inclusion);
         return ENOMEM;
     }
 
