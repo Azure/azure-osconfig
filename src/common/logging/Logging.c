@@ -192,19 +192,6 @@ FILE* GetLogFile(OsConfigLogHandle log)
 
 static char g_logTime[TIME_FORMAT_STRING_LENGTH] = {0};
 
-// Returns the local date/time formatted as YYYY-MM-DD HH:MM:SS (for example: 2014-03-19 11:11:52)
-/*
-char* GetFormattedTime(void)
-{
-    time_t rawTime = {0};
-    struct tm* timeInfo = NULL;
-    struct tm result = {0};
-    time(&rawTime);
-    timeInfo = localtime_r(&rawTime, &result);
-    strftime(g_logTime, ARRAY_SIZE(g_logTime), "%Y-%m-%d %H:%M:%S", timeInfo);
-    return g_logTime;
-}*/
-
 // Returns the local date/time formatted as YYYY-MM-DD HH:MM:SS TZ (for example: 2014-03-19 11:11:52 PST)
 char* GetFormattedTime(void)
 {
@@ -213,7 +200,7 @@ char* GetFormattedTime(void)
     struct tm result = {0};
     time(&rawTime);
     timeInfo = localtime_r(&rawTime, &result);
-    strftime(g_logTime, ARRAY_SIZE(g_logTime) - 1, "%Y-%m-%d %H:%M:%S %Z", timeInfo);
+    strftime(g_logTime, ARRAY_SIZE(g_logTime) - 1, "%Y-%m-%d %H:%M:%S %z", timeInfo);
     return g_logTime;
 }
 
