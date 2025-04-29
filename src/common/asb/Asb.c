@@ -1049,7 +1049,7 @@ void AsbInitialize(OsConfigLogHandle log)
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(cpuModel);
 
-    OsConfigLogInfo(log, "%s initialized", g_asbName);
+    OsConfigLogCritical(log, "%s initialized", g_asbName);
 }
 
 void AsbShutdown(OsConfigLogHandle log)
@@ -1057,7 +1057,7 @@ void AsbShutdown(OsConfigLogHandle log)
     const char* auditOnly = "audit-only";
     const char* automaticRemediation = "automatic remediation";
 
-    OsConfigLogInfo(log, "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
+    OsConfigLogCritical(log, "%s shutting down (%s)", g_asbName, g_auditOnly ? auditOnly : automaticRemediation);
 
     FREE_MEMORY(g_desiredLoggingLevel);
     FREE_MEMORY(g_desiredEnsurePermissionsOnEtcIssue);
