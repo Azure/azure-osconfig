@@ -11,7 +11,6 @@ include_directories(${CMAKE_SOURCE_DIR}/src/adapters/mc)
 include_directories(${CMAKE_SOURCE_DIR}/src/common/mpiclient)
 include_directories(${CMAKE_SOURCE_DIR}/src/common/parson)
 
-
 set(ASB_SOURCES
     ${CMAKE_SOURCE_DIR}/src/common/asb/asb.c)
 
@@ -38,7 +37,7 @@ set(LOGGING_SOURCES
 set(MC_SOURCES
     ${CMAKE_SOURCE_DIR}/src/adapters/mc/module.c
     ${CMAKE_SOURCE_DIR}/src/adapters/mc/schema.c
-    ${CMAKE_SOURCE_DIR}/src/adapters/mc/OsConfigResource.c
+    ${CMAKE_SOURCE_DIR}/src/adapters/mc/OsConfigResource.c)
 
 set(MPICLIENT_SOURCES
     ${CMAKE_SOURCE_DIR}/src/common/mpiclient/MpiClient.c)
