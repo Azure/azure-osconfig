@@ -12,7 +12,7 @@ include_directories(${CMAKE_SOURCE_DIR}/common/mpiclient)
 include_directories(${CMAKE_SOURCE_DIR}/common/parson)
 
 set(ASB_SOURCES
-    ${CMAKE_SOURCE_DIR}/common/asb/asb.c)
+    ${CMAKE_SOURCE_DIR}/common/asb/Asb.c)
 
 set(COMMONUTILS_SOURCES
     ${CMAKE_SOURCE_DIR}/common/commonutils/CommandUtils.c
