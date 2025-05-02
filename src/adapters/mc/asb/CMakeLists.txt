@@ -1,11 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 # Azure Security Baseline for Linux
 project(OsConfigResourceAsb)
 
+include_directories(${CMAKE_SOURCE_DIR}/platform/inc)
 include_directories(${CMAKE_SOURCE_DIR}/common/asb)
 include_directories(${CMAKE_SOURCE_DIR}/common/commonutils)
 include_directories(${CMAKE_SOURCE_DIR}/common/logging)
