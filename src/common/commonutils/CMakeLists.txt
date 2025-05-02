@@ -23,8 +23,7 @@ add_library(commonutils STATIC
 target_include_directories(commonutils
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${RAPIDJSON_INCLUDE_DIRS}
-)
+        ${RAPIDJSON_INCLUDE_DIRS})
 
 target_link_libraries(commonutils PRIVATE
     logging
