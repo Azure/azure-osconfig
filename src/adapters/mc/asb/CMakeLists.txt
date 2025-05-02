@@ -26,8 +26,6 @@ set(COMMONUTILS_SOURCES
     ${CMAKE_SOURCE_DIR}/common/commonutils/PackageUtils.c
     ${CMAKE_SOURCE_DIR}/common/commonutils/PassUtils.c
     ${CMAKE_SOURCE_DIR}/common/commonutils/PerfUtils.c
-    ${CMAKE_SOURCE_DIR}/common/commonutils/ProxyUtils.c
-    ${CMAKE_SOURCE_DIR}/common/commonutils/SocketUtils.c
     ${CMAKE_SOURCE_DIR}/common/commonutils/SshUtils.c
     ${CMAKE_SOURCE_DIR}/common/commonutils/UrlUtils.c
     ${CMAKE_SOURCE_DIR}/common/commonutils/UserUtils.c)
