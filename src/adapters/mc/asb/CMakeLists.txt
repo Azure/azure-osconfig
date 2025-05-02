@@ -4,46 +4,46 @@
 # Azure Security Baseline for Linux
 project(OsConfigResourceAsb)
 
-include_directories(${CMAKE_SOURCE_DIR}/src/common/asb)
-include_directories(${CMAKE_SOURCE_DIR}/src/common/commonutils)
-include_directories(${CMAKE_SOURCE_DIR}/src/common/logging)
-include_directories(${CMAKE_SOURCE_DIR}/src/adapters/mc)
-include_directories(${CMAKE_SOURCE_DIR}/src/common/mpiclient)
-include_directories(${CMAKE_SOURCE_DIR}/src/common/parson)
+include_directories(${CMAKE_SOURCE_DIR}/common/asb)
+include_directories(${CMAKE_SOURCE_DIR}/common/commonutils)
+include_directories(${CMAKE_SOURCE_DIR}/common/logging)
+include_directories(${CMAKE_SOURCE_DIR}/adapters/mc)
+include_directories(${CMAKE_SOURCE_DIR}/common/mpiclient)
+include_directories(${CMAKE_SOURCE_DIR}/common/parson)
 
 set(ASB_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/common/asb/asb.c)
+    ${CMAKE_SOURCE_DIR}/common/asb/asb.c)
 
 set(COMMONUTILS_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/CommandUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/ConfigUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/DaemonUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/DeviceInfoUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/FileUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/MountUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/OtherUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/PackageUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/PassUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/PerfUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/ProxyUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/SocketUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/SshUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/UrlUtils.c
-    ${CMAKE_SOURCE_DIR}/src/common/commonutils/UserUtils.c)
+    ${CMAKE_SOURCE_DIR}/common/commonutils/CommandUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/ConfigUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/DaemonUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/DeviceInfoUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/FileUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/MountUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/OtherUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/PackageUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/PassUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/PerfUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/ProxyUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/SocketUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/SshUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/UrlUtils.c
+    ${CMAKE_SOURCE_DIR}/common/commonutils/UserUtils.c)
 
 set(LOGGING_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/common/logging/Logging.c)
+    ${CMAKE_SOURCE_DIR}/common/logging/Logging.c)
 
 set(MC_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/adapters/mc/module.c
-    ${CMAKE_SOURCE_DIR}/src/adapters/mc/schema.c
-    ${CMAKE_SOURCE_DIR}/src/adapters/mc/OsConfigResource.c)
+    ${CMAKE_SOURCE_DIR}/adapters/mc/module.c
+    ${CMAKE_SOURCE_DIR}/adapters/mc/schema.c
+    ${CMAKE_SOURCE_DIR}/adapters/mc/OsConfigResource.c)
 
 set(MPICLIENT_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/common/mpiclient/MpiClient.c)
+    ${CMAKE_SOURCE_DIR}/common/mpiclient/MpiClient.c)
 
 set(PARSON_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/common/parson/parson.c)
+    ${CMAKE_SOURCE_DIR}/common/parson/parson.c)
 
 set(ALL_SOURCES
     ${ASB_SOURCES}
