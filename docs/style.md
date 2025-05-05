@@ -9,21 +9,16 @@ Apart from that there are style rules that can't be expressed in clang-format bu
 
 # Formatting quirks
 ## Boolean statements (e.g. in if) should explicitly use parenthesis and never rely on operators order:
-  - Don't: `(a != b && c != d)`
   - Do: `((a != b) && (c != d))`
+  - Don't: `(a != b && c != d)`
 ## In comparison statements the constant should be on the left of the comparison operator
-  - Don't: `if (variable == 0)`
   - Do: `if (0 < variable)`
+  - Don't: `if (variable == 0)`
 # Readability
 - Always chose readability over compactness
 - Never use side-effects in if statements if they are conditional:
-    - Don't:
-            if ((7 == a) && (NULL == (y = malloc(10))))
-            {
-            }
-
-
     - Do:
+
             if (7 == a)
             {
               if (NULL == (y = malloc(10))
@@ -31,8 +26,67 @@ Apart from that there are style rules that can't be expressed in clang-format bu
               }
             }
 
+    - Don't:
+            if ((7 == a) && (NULL == (y = malloc(10))))
+            {
+            }
+
+
 - Avoid ternary operators with complex statements
 - Avoid deeply nested if statements: use if-else chains, helper functions, early returns or goto to cleanup code:
+    - Do:
+
+            void someFunction(int x)
+            {
+              int result = 0;
+              char* foo = NULL;
+              char* bar = NULL;
+              char* baz = NULL;
+
+              if (7 == x)
+              {
+                return EINVAL;
+              }
+
+              foo = func();
+              if (NULL == foo)
+              {
+                result = ENOMEM;
+                goto cleanup;
+              }
+
+              bar = func();
+              if (NULL == bar)
+              {
+                result = ENOMEM;
+                goto cleanup;
+              }
+
+              baz = func();
+              if (NULL == baz)
+              {
+                result = ENOMEM;
+                goto cleanup;
+              }
+
+              result = doSomething(foo, bar, baz);
+
+            cleanup:
+              if (NULL != foo)
+              {
+                free(foo);
+              }
+              if (NULL != bar)
+              {
+                free(bar);
+              }
+              if (NULL != baz)
+              {
+                free(baz);
+              }
+              return result;
+            }
+
     - Don't:
 
             void someFunction(int x)
@@ -88,59 +142,6 @@ Apart from that there are style rules that can't be expressed in clang-format bu
               return result;
             }
 
-    - Do:
-
-            void someFunction(int x)
-            {
-              int result = 0;
-              char* foo = NULL;
-              char* bar = NULL;
-              char* baz = NULL;
-
-              if (7 == x)
-              {
-                return EINVAL;
-              }
-
-              foo = func();
-              if (NULL == foo)
-              {
-                result = ENOMEM;
-                goto cleanup;
-              }
-
-              bar = func();
-              if (NULL == bar)
-              {
-                result = ENOMEM;
-                goto cleanup;
-              }
-
-              baz = func();
-              if (NULL == baz)
-              {
-                result = ENOMEM;
-                goto cleanup;
-              }
-
-              result = doSomething(foo, bar, baz);
-
-            cleanup:
-              if (NULL != foo)
-              {
-                free(foo);
-              }
-              if (NULL != bar)
-              {
-                free(bar);
-              }
-              if (NULL != baz)
-              {
-                free(baz);
-              }
-              return result;
-            }
-
 
 # Naming Conventions
 - PascalCase for files, functions, types, and structs
@@ -151,20 +152,6 @@ Apart from that there are style rules that can't be expressed in clang-format bu
 # Variables
 -  Variables must always be initialized
 -  For C, variables should be defined at the beginning of the code block they're used:
-    - Don't:
-
-            int foo(int bar)
-            {
-              int x=0; // variable defined at the beginning of a larger block, but it's used only in the smaller block
-              if (1 == bar)
-              {
-                x = 7;
-                return x;
-              }
-              int y = 5; // variable defined not at the beginning of the code block
-              return y;
-            }
-
     - Do:
 
             int foo(int bar)
@@ -176,6 +163,20 @@ Apart from that there are style rules that can't be expressed in clang-format bu
                 x = 7;
                 return x;
               }
+              return y;
+            }
+
+    - Don't:
+
+            int foo(int bar)
+            {
+              int x=0; // variable defined at the beginning of a larger block, but it's used only in the smaller block
+              if (1 == bar)
+              {
+                x = 7;
+                return x;
+              }
+              int y = 5; // variable defined not at the beginning of the code block
               return y;
             }
 
