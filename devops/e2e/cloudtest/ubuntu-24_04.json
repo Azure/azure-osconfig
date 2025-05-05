@@ -1,4 +1,4 @@
-// Base Image: Canonical:ubuntu-24_04-lts:server:latest
+// Base Image: Canonical:ubuntu-24_04-lts:minimal:latest
 {
     "artifacts": [
         {
