@@ -1,46 +1,39 @@
 # Introduction
-All code needs to be formatted according to .pre-commit-config.yaml. Each pull request is checked by [Formatting Tests](https://github.com/Azure/azure-osconfig/blob/dev/.github/workflows/formatting.yml).
+This coding style applies to all of the new code that's introduced into the codebase.
+When fixing old code that might not adhere to this style guide, use common sense to decide whether this code style guide should be applied,
+based on how much of the content is actually new, but never mix conventions on a function level.
+
+# General formatting
+All code needs to be formatted according to rules defined in .pre-commit-config.yaml - specifally with regards to the clang-format and clang-tidy rules.
 Apart from that there are style rules that can't be expressed in clang-format but must be followed nevertheless:
 
 # Formatting quirks
 ## Boolean statements (e.g. in if) should explicitly use parenthesis and never rely on operators order:
-  - Bad: `(a != b && c != d)`
-  - Good: `((a != b) && (c != d))`
+  - Don't: `(a != b && c != d)`
+  - Do: `((a != b) && (c != d))`
 ## In comparison statements the constant should be on the left of the comparison operator
-  - Bad: `if (variable == 0)`
-  - Good: `if (0 < variable)`
+  - Don't: `if (variable == 0)`
+  - Do: `if (0 < variable)`
 # Readability
 - Always chose readability over compactness
-- Avoid side-effects in if statements, never use side-effects in if statements if they are conditional:
-    - Bad:
-
-            if (NULL == (x = malloc(10))) // Avoid
-            {
-            }
-
-            if ((7 == a) && (NULL == (y = malloc(10)))) // Must not use
+- Never use side-effects in if statements if they are conditional:
+    - Don't:
+            if ((7 == a) && (NULL == (y = malloc(10))))
             {
             }
 
 
-    - Good:
-
-            x = malloc(10);
-            if (NULL == x)
-            {
-            }
-
+    - Do:
             if (7 == a)
             {
-              y = malloc(10);
-              if (NULL == y)
+              if (NULL == (y = malloc(10))
               {
               }
             }
 
 - Avoid ternary operators with complex statements
-- Avoid deeply nested if statements, use helper functions, early returns or goto to cleanup code:
-    - Bad:
+- Avoid deeply nested if statements: use if-else chains, helper functions, early returns or goto to cleanup code:
+    - Don't:
 
             void someFunction(int x)
             {
@@ -95,7 +88,7 @@ Apart from that there are style rules that can't be expressed in clang-format bu
               return result;
             }
 
-    - Good:
+    - Do:
 
             void someFunction(int x)
             {
@@ -158,7 +151,7 @@ Apart from that there are style rules that can't be expressed in clang-format bu
 # Variables
 -  Variables must always be initialized
 -  For C, variables should be defined at the beginning of the code block they're used:
-    - Bad:
+    - Don't:
 
             int foo(int bar)
             {
@@ -172,7 +165,7 @@ Apart from that there are style rules that can't be expressed in clang-format bu
               return y;
             }
 
-    - Good:
+    - Do:
 
             int foo(int bar)
             {
@@ -195,7 +188,7 @@ Apart from that there are style rules that can't be expressed in clang-format bu
 - For C++ using complex/optional error types is allowed
 - Always validate function inputs
 - Use early returns for validation and error conditions
-- Log errors with descriptive messages using OsConfigLogError or OsConfigLogInfo
+- Log errors with descriptive messages using OsConfigLogError, OsConfigLogWarning, or OsConfigLogInfo
 - For C++ avoid throwing exceptions, but handle them properly when thrown by external code
 
 # Memory Management
@@ -210,9 +203,10 @@ Apart from that there are style rules that can't be expressed in clang-format bu
 - Use appropriate log levels:
   - OsConfigLogDebug: Detailed debugging information
   - OsConfigLogInfo: General operational information
+  - OsConfigLogWarning: Non-critical warnings
   - OsConfigLogError: Function errors and failures
 - Log return values and status codes for debugging
-- Avoid logging sensitive data, eg. information read from the user machine
+- Avoid logging sensitive data, eg. information read from the user machine on log levels lower than Debug
 
 # Comments and Documentation
 - Each source code file starts with a copyright notice
