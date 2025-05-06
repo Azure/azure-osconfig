@@ -60,7 +60,8 @@ jobs:
               { "os": "rhel", "version": "9" },
               { "os": "sles", "version": "15" },
               { "os": "ubuntu", "version": "20.04" },
-              { "os": "ubuntu", "version": "22.04" }
+              { "os": "ubuntu", "version": "22.04" },
+              { "os": "ubuntu", "version": "24.04" }
             ]
         run: |
           # If no explicit packages defined, use the default packages
