@@ -39,6 +39,7 @@ jobs:
             { "name": "sles-15", "arch": "amd64", "tag": "latest" },
             { "name": "ubuntu-20.04", "arch": "amd64", "tag": "latest" },
             { "name": "ubuntu-22.04", "arch": "amd64", "tag": "latest" }
+            { "name": "ubuntu-24.04", "arch": "amd64", "tag": "latest" }
           ]
           EOL
           )"

@@ -26,6 +26,7 @@ jobs:
             { os: sles, version: 15, package-type: RPM },
             { os: ubuntu, version: 20.04, package-type: DEB },
             { os: ubuntu, version: 22.04, package-type: DEB },
+            { os: ubuntu, version: 24.04, package-type: DEB },
           ]
         arch: [amd64]
     with:
