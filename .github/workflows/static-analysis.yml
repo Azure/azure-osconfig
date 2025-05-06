@@ -7,7 +7,7 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/azure/azure-osconfig/ubuntu-22.04-amd64
+      image: ghcr.io/azure/azure-osconfig/ubuntu-24.04-amd64
 
     steps:
     - uses: actions/checkout@v4
@@ -22,15 +22,10 @@ jobs:
         cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug ../src
         cmake --build . --target ProcedureMap
 
-    - name: "Temporary: install clang-tools"
-      run: |
-        apt-get update
-        apt-get install -y clang-tools
-
     - name: Run clang static analyzer
       run: |
         mkdir -p output
-        analyze-build-14 --verbose \
+        analyze-build-18 --verbose \
           --status-bugs \
           --exclude src/adapters/pnp/azure-iot-sdk-c \
           --exclude src/adapters/pnp/PnpUtils.c \
