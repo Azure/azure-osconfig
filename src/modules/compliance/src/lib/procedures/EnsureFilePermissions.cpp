@@ -38,7 +38,7 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
         if (ENOENT == status)
         {
             OsConfigLogDebug(log, "File '%s' does not exist", filename.c_str());
-            return indicators.NonCompliant("File '" + filename + "' does not exist");
+            return indicators.Compliant("File '" + filename + "' does not exist");
         }
 
         OsConfigLogError(log, "Stat error %s (%d)", strerror(status), status);
