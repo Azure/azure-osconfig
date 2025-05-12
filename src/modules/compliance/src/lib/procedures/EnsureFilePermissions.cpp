@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 #include <CommonUtils.h>
 #include <Evaluator.h>
+#include <Regex.h>
+#include <dirent.h>
 #include <errno.h>
 #include <grp.h>
 #include <iostream>
@@ -17,21 +19,42 @@ namespace
 {
 // Mask to display permissions
 const unsigned short displayMask = 0xFFF;
+static std::string Regexize(const std::string& str)
+{
+    std::string result = "^";
+    for (const char& c : str)
+    {
+        if (c == '*')
+        {
+            result += ".*";
+        }
+        else if (c == '?')
+        {
+            result += ".";
+        }
+        else if (c == '.')
+        {
+            result += "\\.";
+        }
+        else if (c == '\\')
+        {
+            result += "\\\\";
+        }
+        else
+        {
+            result += c;
+        }
+    }
+    result += "$";
+    return result;
+}
 } // namespace
 
-AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
-    "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
+Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, std::map<std::string, std::string> args, IndicatorsTree& indicators,
+    ContextInterface& context)
 {
     auto log = context.GetLogHandle();
     struct stat statbuf;
-    auto it = args.find("filename");
-    if (it == args.end())
-    {
-        OsConfigLogError(log, "No filename provided");
-        return Error("No filename provided", EINVAL);
-    }
-    auto filename = std::move(it->second);
-
     if (0 != stat(filename.c_str(), &statbuf))
     {
         const int status = errno;
@@ -45,7 +68,7 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
         return Error("Stat error '" + std::string(strerror(status)) + "'", status);
     }
 
-    it = args.find("owner");
+    auto it = args.find("owner");
     if (it != args.end())
     {
         auto owner = std::move(it->second);
@@ -175,7 +198,7 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
     return indicators.Compliant(oss.str());
 }
 
-REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
+AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
     "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
     auto log = context.GetLogHandle();
@@ -186,7 +209,92 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
         return Error("No filename provided", EINVAL);
     }
     auto filename = std::move(it->second);
+    return AuditEnsureFilePermissionsHelper(filename, args, indicators, context);
+}
 
+AUDIT_FN(EnsureFilePermissionsCollection, "directory:Directory path:M", "ext:File pattern:M", "owner:Required owner of the file",
+    "group:Required group of the file", "permissions:Required octal permissions of the file::^[0-7]{3,4}$",
+    "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
+{
+    auto log = context.GetLogHandle();
+    auto it = args.find("directory");
+    if (it == args.end())
+    {
+        OsConfigLogError(log, "No directory provided");
+        return Error("No directory provided", EINVAL);
+    }
+    auto directory = std::move(it->second);
+    it = args.find("ext");
+    if (it == args.end())
+    {
+        OsConfigLogError(log, "No file pattern provided");
+        return Error("No file pattern provided", EINVAL);
+    }
+    auto ext = std::move(it->second);
+    auto extRegexized = Regexize(ext);
+
+    regex fileRegex;
+    try
+    {
+        fileRegex = regex(extRegexized, std::regex_constants::extended);
+    }
+    catch (const std::exception& e)
+    {
+        OsConfigLogError(log, "Invalid file pattern %s (%s): %s", ext.c_str(), extRegexized.c_str(), e.what());
+        return Error("Invalid file pattern: " + ext + " regex error: " + std::string(e.what()), EINVAL);
+    }
+    struct dirent* entry = nullptr;
+
+    DIR* dp = opendir(directory.c_str());
+
+    if (dp == NULL)
+    {
+        OsConfigLogInfo(log, "Directory '%s' does not exist", directory.c_str());
+        return indicators.Compliant("Directory '" + directory + "' does not exist");
+    }
+    auto dp_up = std::unique_ptr<DIR, int (*)(DIR*)>(dp, closedir);
+
+    bool hasFiles = false;
+    while ((entry = readdir(dp)) != NULL)
+    {
+        if (entry->d_type == DT_REG)
+        {
+            const char* fileName = entry->d_name;
+            if (regex_match(fileName, fileRegex)) // Match the file name
+            {
+                hasFiles = true;
+                auto result = AuditEnsureFilePermissionsHelper(directory + "/" + fileName, args, indicators, context);
+                if (!result.HasValue())
+                {
+                    OsConfigLogError(log, "Error checking permissions for '%s'", fileName);
+                    return result;
+                }
+                if (Status::NonCompliant == result.Value())
+                {
+                    OsConfigLogError(log, "File '%s' does not match expected permissions", fileName);
+                    return result;
+                }
+                OsConfigLogDebug(log, "File '%s' matches expected permissions", fileName);
+            }
+        }
+    }
+
+    if (hasFiles)
+    {
+        OsConfigLogDebug(log, "All matching files in '%s' match expected permissions", directory.c_str());
+        return indicators.Compliant("All matching files in '" + directory + "' match expected permissions");
+    }
+    else
+    {
+        OsConfigLogDebug(log, "No files in '%s' match the pattern", directory.c_str());
+        return indicators.Compliant("No files in '" + directory + "' match the pattern");
+    }
+}
+
+Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename, std::map<std::string, std::string> args, IndicatorsTree& indicators,
+    ContextInterface& context)
+{
+    auto log = context.GetLogHandle();
     struct stat statbuf;
     if (stat(filename.c_str(), &statbuf) < 0)
     {
@@ -204,7 +312,7 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
     uid_t uid = statbuf.st_uid;
     gid_t gid = statbuf.st_gid;
     bool owner_changed = false;
-    it = args.find("owner");
+    auto it = args.find("owner");
     if (it != args.end())
     {
         auto owner = std::move(it->second);
@@ -342,4 +450,98 @@ REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Requir
     OsConfigLogDebug(log, "File '%s' remediation succeeded", filename.c_str());
     return Status::Compliant;
 }
+
+REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
+    "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
+{
+    auto log = context.GetLogHandle();
+    auto it = args.find("filename");
+    if (it == args.end())
+    {
+        OsConfigLogError(log, "No filename provided");
+        return Error("No filename provided", EINVAL);
+    }
+    auto filename = std::move(it->second);
+    return RemediateEnsureFilePermissionsHelper(filename, args, indicators, context);
+}
+
+REMEDIATE_FN(EnsureFilePermissionsCollection, "directory:Directory path:M", "ext:File pattern:M", "owner:Required owner of the file",
+    "group:Required group of the file", "permissions:Required octal permissions of the file::^[0-7]{3,4}$",
+    "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
+{
+    auto log = context.GetLogHandle();
+    auto it = args.find("directory");
+    if (it == args.end())
+    {
+        OsConfigLogError(log, "No directory provided");
+        return Error("No directory provided", EINVAL);
+    }
+    auto directory = std::move(it->second);
+    it = args.find("ext");
+    if (it == args.end())
+    {
+        OsConfigLogError(log, "No file pattern provided");
+        return Error("No file pattern provided", EINVAL);
+    }
+    auto ext = std::move(it->second);
+    auto extRegexized = Regexize(ext);
+
+    regex fileRegex;
+    try
+    {
+        fileRegex = regex(extRegexized, std::regex_constants::extended);
+    }
+    catch (const std::exception& e)
+    {
+        OsConfigLogError(log, "Invalid file pattern %s (%s): %s", ext.c_str(), extRegexized.c_str(), e.what());
+        return Error("Invalid file pattern: " + ext + " regex error: " + std::string(e.what()), EINVAL);
+    }
+    struct dirent* entry = nullptr;
+
+    DIR* dp = opendir(directory.c_str());
+
+    if (dp == NULL)
+    {
+        OsConfigLogInfo(log, "Directory '%s' does not exist", directory.c_str());
+        return indicators.Compliant("Directory '" + directory + "' does not exist");
+    }
+    auto dp_up = std::unique_ptr<DIR, int (*)(DIR*)>(dp, closedir);
+
+    bool hasFiles = false;
+    while ((entry = readdir(dp)) != NULL)
+    {
+        if (entry->d_type == DT_REG)
+        {
+            const char* fileName = entry->d_name;
+            if (regex_match(fileName, fileRegex)) // Match the file name
+            {
+                hasFiles = true;
+                auto result = RemediateEnsureFilePermissionsHelper(directory + "/" + fileName, args, indicators, context);
+                if (!result.HasValue())
+                {
+                    OsConfigLogError(log, "Error fixing permissions for '%s'", fileName);
+                    return result;
+                }
+                if (Status::NonCompliant == result.Value())
+                {
+                    OsConfigLogError(log, "File '%s' does not match expected permissions", fileName);
+                    return result;
+                }
+                OsConfigLogDebug(log, "File '%s' matches expected permissions", fileName);
+            }
+        }
+    }
+
+    if (hasFiles)
+    {
+        OsConfigLogDebug(log, "All matching files in '%s' match expected permissions", directory.c_str());
+        return indicators.Compliant("All matching files in '" + directory + "' match expected permissions");
+    }
+    else
+    {
+        OsConfigLogDebug(log, "No files in '%s' match the pattern", directory.c_str());
+        return indicators.Compliant("No files in '" + directory + "' match the pattern");
+    }
+}
+
 } // namespace compliance

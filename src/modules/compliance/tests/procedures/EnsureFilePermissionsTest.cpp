@@ -14,9 +14,11 @@
 #include <vector>
 
 using compliance::AuditEnsureFilePermissions;
+using compliance::AuditEnsureFilePermissionsCollection;
 using compliance::Error;
 using compliance::IndicatorsTree;
 using compliance::RemediateEnsureFilePermissions;
+using compliance::RemediateEnsureFilePermissionsCollection;
 using compliance::Result;
 using compliance::Status;
 
@@ -25,6 +27,8 @@ class EnsureFilePermissionsTest : public ::testing::Test
 protected:
     char fileTemplate[PATH_MAX] = "/tmp/permTest.XXXXXX";
     std::vector<std::string> files;
+    char dirTemplate[PATH_MAX] = "/tmp/permCollectionTest.XXXXXX";
+    std::string testDir;
     MockContext mContext;
     IndicatorsTree indicators;
     compliance::NestedListFormatter mFormatter;
@@ -38,14 +42,19 @@ protected:
         // SLES15 docker image doesn't have the bin group/user, create if it doesn't exist.
         system("groupadd -g 1 bin >/dev/null 2>&1");
         system("useradd -g 1 -u 1 bin >/dev/null 2>&1");
+        testDir = mkdtemp(dirTemplate);
+        ASSERT_FALSE(testDir.empty());
         indicators.Push("EnsureFilePermissions");
     }
+
     void TearDown() override
     {
+        return;
         for (auto& file : files)
         {
             unlink(file.c_str());
         }
+        rmdir(testDir.c_str());
     }
 
     void CreateFile(std::string& filename, int owner, int group, short permissions)
@@ -64,6 +73,17 @@ protected:
         free(newFileName);
         ASSERT_EQ(chown(filename.c_str(), owner, group), 0);
         ASSERT_EQ(chmod(filename.c_str(), permissions), 0);
+    }
+
+    void CreateFileInDir(const std::string& filename, int owner, int group, short permissions)
+    {
+        std::string filePath = testDir + "/" + filename;
+        std::ofstream file(filePath);
+        file << "test content";
+        file.close();
+        ASSERT_EQ(chmod(filePath.c_str(), permissions), 0);
+        ASSERT_EQ(chown(filePath.c_str(), owner, group), 0);
+        files.push_back(filePath);
     }
 };
 
@@ -388,4 +408,121 @@ TEST_F(EnsureFilePermissionsTest, RemediateSameBitsSet)
     args["mask"] = "600";
     auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionAllCompliant)
+{
+    CreateFileInDir("file1.txt", 0, 0, 0644);
+    CreateFileInDir("file2.txt", 0, 0, 0644);
+
+    std::map<std::string, std::string> args;
+    args["directory"] = testDir;
+    args["ext"] = "*.txt";
+    args["owner"] = "root";
+    args["group"] = "root";
+    args["permissions"] = "0644";
+
+    auto result = AuditEnsureFilePermissionsCollection(args, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("file1.txt") != std::string::npos);
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionExplicitFile)
+{
+    CreateFileInDir("file1.txt", 0, 0, 0644);
+
+    std::map<std::string, std::string> args;
+    args["directory"] = testDir;
+    args["ext"] = "file1.txt";
+    args["owner"] = "root";
+    args["group"] = "root";
+    args["permissions"] = "0644";
+
+    auto result = AuditEnsureFilePermissionsCollection(args, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("file1.txt owner") != std::string::npos);
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionQuestionMark)
+{
+    CreateFileInDir("file1.txt", 0, 0, 0644);
+    CreateFileInDir("file2.txt", 0, 0, 0644);
+    CreateFileInDir("file1.log", 0, 0, 0644);
+    CreateFileInDir("file13.txt", 0, 0, 0644);
+
+    std::map<std::string, std::string> args;
+    args["directory"] = testDir;
+    args["ext"] = "file?.txt";
+    args["owner"] = "root";
+    args["group"] = "root";
+    args["permissions"] = "0644";
+
+    auto result = AuditEnsureFilePermissionsCollection(args, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("file1.txt") != std::string::npos);
+    ASSERT_TRUE(mFormatter.Format(indicators).Value().find("file2.txt") != std::string::npos);
+    ASSERT_FALSE(mFormatter.Format(indicators).Value().find("file1.log") != std::string::npos);
+    ASSERT_FALSE(mFormatter.Format(indicators).Value().find("file13.txt") != std::string::npos);
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+TEST_F(EnsureFilePermissionsTest, AuditCollectionNonCompliantFile)
+{
+    CreateFileInDir("file1.txt", 0, 0, 0644);
+    CreateFileInDir("file2.txt", 1000, 0, 0644);
+
+    std::map<std::string, std::string> args;
+    args["directory"] = testDir;
+    args["ext"] = "*.txt";
+    args["owner"] = "root";
+    args["group"] = "root";
+    args["permissions"] = "0644";
+
+    auto result = AuditEnsureFilePermissionsCollection(args, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(EnsureFilePermissionsTest, RemediateCollectionNonCompliantFile)
+{
+    CreateFileInDir("file1.txt", 0, 0, 0644);
+    CreateFileInDir("file2.txt", 1000, 0, 0600);
+
+    std::map<std::string, std::string> args;
+    args["directory"] = testDir;
+    args["ext"] = "*.txt";
+    args["owner"] = "root";
+    args["group"] = "root";
+    args["permissions"] = "0644";
+
+    auto result = RemediateEnsureFilePermissionsCollection(args, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+
+    struct stat st;
+    for (const auto& file : files)
+    {
+        ASSERT_EQ(stat(file.c_str(), &st), 0);
+        ASSERT_EQ(st.st_uid, 0);
+        ASSERT_EQ(st.st_gid, 0);
+        ASSERT_EQ(st.st_mode & 0777, 0644);
+    }
+}
+
+TEST_F(EnsureFilePermissionsTest, AuditCollectionNoMatchingFiles)
+{
+    CreateFileInDir("file1.log", 0, 0, 0644);
+    CreateFileInDir("file2.log", 0, 0, 0644);
+
+    std::map<std::string, std::string> args;
+    args["directory"] = testDir;
+    args["ext"] = "*.txt";
+    args["owner"] = "root";
+    args["group"] = "root";
+    args["permissions"] = "0644";
+
+    auto result = AuditEnsureFilePermissionsCollection(args, indicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
