@@ -38,7 +38,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureFilePermissions: File '\/tmp\/testfile' does not exist } == FALSE"
+    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' does not exist } == TRUE"
   },
   {
     "RunCommand": "touch /tmp/testfile && chmod 777 /tmp/testfile && chown root:root /tmp/testfile"

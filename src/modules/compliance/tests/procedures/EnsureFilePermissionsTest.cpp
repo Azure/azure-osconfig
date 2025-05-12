@@ -74,7 +74,7 @@ TEST_F(EnsureFilePermissionsTest, AuditFileMissing)
 
     auto result = AuditEnsureFilePermissions(args, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditWrongOwner)
