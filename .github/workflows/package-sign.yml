@@ -17,19 +17,19 @@ on:
 
 jobs:
   sign:
-    runs-on: [self-hosted, 1ES.Pool=release-pool, 1ES.ImageOverride=windows-2022]
+    runs-on: [self-hosted, 1ES.Pool=osconfig-prod-release-pool, 1ES.ImageOverride=windows-2022]
     steps:
       - uses: actions/checkout@v4
 
       - uses: azure/login@v2
         with:
           auth-type: IDENTITY
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant-id: ${{ secrets.AZURE_AME_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_AME_SUBSCRIPTION_ID }}
 
       - name: Setup ESRP
         env:
-          AZURE_VAULT: ${{ secrets.AZURE_VAULT }}
+          AZURE_VAULT: ${{ secrets.AZURE_AME_VAULT }}
           AUTH_CERT: ${{ secrets.AZURE_VAULT_AUTH_CERT_NAME }}
           REQUEST_SIGNING_CERT: ${{ secrets.AZURE_VAULT_REQUEST_SIGNING_CERT_NAME }}
         run: |

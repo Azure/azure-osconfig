@@ -43,21 +43,24 @@ runs:
         pprint.pp(files)
 
         auth_json = {
-            "Version": "1.0.0",
-            "AuthenticationType": "AAD_CERT",
-            "TenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
-            "ClientId": f"{aad_id}",
-            "AuthCert": {
-                    "SubjectName": f"CN={aad_id}.microsoft.com",
-                    "StoreLocation": "LocalMachine",
-                    "StoreName": "My",
-                    "SendX5c" :  "true"
-            },
-            "RequestSigningCert": {
-                    "SubjectName": f"CN={aad_id}",
-                    "StoreLocation": "LocalMachine",
-                    "StoreName": "My"
-            }
+          "Version": "1.0.0",
+          "AuthenticationType": "AAD_CERT",
+          "TenantId": "33e01921-4d64-4f8c-a055-5bdaffd5e33d",
+          "ClientId": f"{aad_id}",
+          "AuthCert": {
+            "SubjectName": f"CN={aad_id}.microsoft.com",
+            "StoreLocation": "LocalMachine",
+            "StoreName": "My",
+            "SendX5c": "true",
+            "WithAzureRegion": "false"
+          },
+          "RequestSigningCert": {
+            "SubjectName": f"CN={aad_id}",
+            "StoreLocation": "LocalMachine",
+            "StoreName": "My",
+            "SendX5c": "false",
+            "WithAzureRegion": "false"
+          }
         }
 
         input_json = {
