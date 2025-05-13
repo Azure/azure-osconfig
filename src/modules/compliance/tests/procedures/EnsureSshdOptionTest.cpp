@@ -269,3 +269,57 @@ TEST_F(EnsureSshdOptionTest, ComplexRegexMatches)
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
+
+TEST_F(EnsureSshdOptionTest, NegativeModeOptionMatches)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    std::map<std::string, std::string> args;
+    args["optionName"] = "permitrootlogin";
+    args["optionRegex"] = "no";
+    args["mode"] = "N";
+
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("[NonCompliant]") != std::string::npos);
+    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("matches the pattern 'no'") != std::string::npos);
+}
+
+TEST_F(EnsureSshdOptionTest, NegativeModeOptionMissing)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    std::map<std::string, std::string> args;
+    args["optionName"] = "permitfoobarbaz";
+    args["optionRegex"] = "yes";
+    args["mode"] = "N";
+
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("[Compliant]") != std::string::npos);
+    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("not found in SSH daemon configuration") != std::string::npos);
+}
+
+TEST_F(EnsureSshdOptionTest, NegativeModeOptionDoesNotMatch)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    std::map<std::string, std::string> args;
+    args["optionName"] = "permitrootlogin";
+    args["optionRegex"] = "yes";
+    args["mode"] = "N";
+
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("[Compliant]") != std::string::npos);
+    ASSERT_TRUE(mFormatter.Format(mIndicators).Value().find("has a compliant value 'no'") != std::string::npos);
+}

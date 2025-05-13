@@ -25,6 +25,10 @@
                 "optionRegex": {
                   "type": "string",
                   "description": "Regex that the option value has to match"
+                },
+                "mode": {
+                  "type": "string",
+                  "description": "P for positive (option must exists, default), N for negative mode"
                 }
               }
             }

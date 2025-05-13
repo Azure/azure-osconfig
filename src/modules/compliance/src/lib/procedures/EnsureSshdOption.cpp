@@ -9,7 +9,8 @@
 
 namespace compliance
 {
-AUDIT_FN(EnsureSshdOption, "optionName:Name of the SSH daemon option:M", "optionRegex:Regex that the option value has to match:M")
+AUDIT_FN(EnsureSshdOption, "optionName:Name of the SSH daemon option:M", "optionRegex:Regex that the option value has to match:M",
+    "mode:P for positive (option must exists, default), N for negative mode")
 {
     auto log = context.GetLogHandle();
 
@@ -35,6 +36,21 @@ AUDIT_FN(EnsureSshdOption, "optionName:Name of the SSH daemon option:M", "option
     {
         OsConfigLogError(log, "Regex error: %s", e.what());
         return Error("Failed to compile regex '" + optionRegex + "' error: " + e.what(), EINVAL);
+    }
+
+    bool positiveMode = true;
+    it = args.find("mode");
+    if (it != args.end())
+    {
+        auto mode = std::move(it->second);
+        if (mode == "N")
+        {
+            positiveMode = false;
+        }
+        else if (mode != "P")
+        {
+            return Error("Invalid 'mode' parameter, expected 'P' or 'N'", EINVAL);
+        }
     }
 
     auto sshdTestOutput = context.ExecuteCommand("sshd -T 2>&1");
@@ -97,20 +113,39 @@ AUDIT_FN(EnsureSshdOption, "optionName:Name of the SSH daemon option:M", "option
             }
         }
     }
-
-    if (!optionFound)
+    if (positiveMode)
     {
-        return indicators.NonCompliant("Option '" + optionName + "' not found in SSH daemon configuration");
-    }
+        if (!optionFound)
+        {
+            return indicators.NonCompliant("Option '" + optionName + "' not found in SSH daemon configuration");
+        }
 
-    if (regex_search(optionValue, valueRegex))
-    {
-        return indicators.Compliant("Option '" + optionName + "' has a compliant value '" + optionValue + "'");
+        if (regex_search(optionValue, valueRegex))
+        {
+            return indicators.Compliant("Option '" + optionName + "' has a compliant value '" + optionValue + "'");
+        }
+        else
+        {
+            return indicators.NonCompliant("Option '" + optionName + "' has value '" + optionValue + "' which does not match required pattern '" +
+                                           optionRegex + "'");
+        }
     }
     else
     {
-        return indicators.NonCompliant("Option '" + optionName + "' has value '" + optionValue + "' which does not match required pattern '" +
-                                       optionRegex + "'");
+        if (!optionFound)
+        {
+            return indicators.Compliant("Option '" + optionName + "' not found in SSH daemon configuration");
+        }
+
+        if (regex_search(optionValue, valueRegex))
+        {
+            return indicators.NonCompliant("Option '" + optionName + "' has value '" + optionValue + "' which matches the pattern '" + optionRegex +
+                                           "'");
+        }
+        else
+        {
+            return indicators.Compliant("Option '" + optionName + "' has a compliant value '" + optionValue + "'");
+        }
     }
 }
 } // namespace compliance
