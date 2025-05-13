@@ -155,6 +155,9 @@
           "$ref": "procedures/EnsureSysctl.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/ExecuteCommandGrep.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/FileRegexMatch.schema.json#/definitions/audit"
         },
         {
@@ -199,6 +202,9 @@
         },
         {
           "$ref": "procedures/EnsureSysctl.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/ExecuteCommandGrep.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/FileRegexMatch.schema.json#/definitions/remediation"
