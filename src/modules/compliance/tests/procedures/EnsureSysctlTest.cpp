@@ -31,7 +31,7 @@ bool startsWith(const std::string& str, const std::string& prefix)
 static const char systemdSysctlCat[] = "/lib/systemd/systemd-sysctl --cat-config";
 static const char sysctlIpForward0[] = "net.ipv4.ip_forward = 0";
 static const char sysctlIpForward1[] = "net.ipv4.ip_forward = 1";
-static const char sysctlIpForward0Comment[] = "                          # net.ipv4.ip_forward = 1";
+static const char sysctlIpForward0Comment[] = "                          # net.ipv4.ip_forward = 0";
 
 struct SysctlNameValue
 {
@@ -202,7 +202,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationNoOverride)
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(EnsureSysctlTest, HappyPathSysctlValueConfigurationEqualEmptyOuput)
+TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueConfigurationEqualEmptyOuput)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     CreateSysctlFile(sysctlName, sysctlName + " = 0\n");
@@ -214,7 +214,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueConfigurationEqualEmptyOuput)
 
     auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWins)
@@ -232,7 +232,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWin
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationComment)
+TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationComment)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     CreateSysctlFile(sysctlName, sysctlName + " = 0\n");
@@ -244,7 +244,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationComment)
 
     auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueNotEqual)
