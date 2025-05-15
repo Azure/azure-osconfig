@@ -35,7 +35,7 @@ runs:
         keycode = os.environ['LINUX_KEY_CODE'].strip()
         opcode = os.environ['LINUX_OP_CODE'].strip()
         esrp_clientId = os.environ['ESRP_CLIENTID'].strip()
-        vault_name = os.environ['VAULT_NAME'].strip()
+        vault_name = os.environ['AZURE_VAULT'].strip()
         request_signing_cert = os.environ['REQUEST_SIGNING_CERT'].strip()
         managed_identity_clientId = os.environ['MANAGED_IDENTITY_CLIENTID'].strip()
 
