@@ -54,7 +54,7 @@ runs:
           "RequestSigningCert": {
             "GetCertFromKeyVault": true,
             "KeyVaultName": f"{vault_name}",
-            "KeyVaultCertName": f"{request_signing_cert}"
+            "KeyVaultCertName": f"{request_signing_cert}",
             "SendX5c": "false",
             "WithAzureRegion": "false"
           },
