@@ -1920,8 +1920,8 @@ static char* AuditEnsureMartianPacketLoggingIsEnabled(OsConfigLogHandle log)
 static char* AuditEnsureReversePathSourceValidationIsEnabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "2", &reason, log));
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "2", &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", &reason, log));
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", &reason, log);
     return reason;
 }
 
@@ -3546,8 +3546,8 @@ static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, OsConfigLog
 static int RemediateEnsureReversePathSourceValidationIsEnabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/rp_filter", "2", 1, log) &&
-        SavePayloadToFile("/proc/sys/net/ipv4/conf/default/rp_filter", "2", 1, log)) ? 0 : ENOENT;
+    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/rp_filter", "1", 1, log) &&
+        SavePayloadToFile("/proc/sys/net/ipv4/conf/default/rp_filter", "1", 1, log)) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureTcpSynCookiesAreEnabled(char* value, OsConfigLogHandle log)
