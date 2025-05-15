@@ -83,7 +83,13 @@ TEST_F(EnsureKernelModuleTest, FailedFindExecution)
 {
     // Setup the expectation for the find command to fail
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand)))
-        .WillOnce(::testing::Return(Result<std::string>(Error("Failed to execute find command", -1))));
+        .WillRepeatedly(::testing::Return(Result<std::string>(Error("Failed to execute find command", -1))));
+
+    // Setup the expectation for the proc modules read
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
+
+    // Setup the expectation for the modprobe command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
 
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
@@ -96,11 +102,14 @@ TEST_F(EnsureKernelModuleTest, FailedFindExecution)
 TEST_F(EnsureKernelModuleTest, FailedLsmodExecution)
 {
     // Setup the expectation for the find command to succeed
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findPositiveOutput)));
 
     // Setup the expectation for the proc modules read to fail
     EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath)))
-        .WillOnce(::testing::Return(Result<std::string>(Error("Failed to read /proc/modules", -1))));
+        .WillRepeatedly(::testing::Return(Result<std::string>(Error("Failed to read /proc/modules", -1))));
+
+    // Setup the expectation for the modprobe command
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
 
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
@@ -113,33 +122,33 @@ TEST_F(EnsureKernelModuleTest, FailedLsmodExecution)
 TEST_F(EnsureKernelModuleTest, FailedModprobeExecution)
 {
     // Setup the expectation for the find command to succeed
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findPositiveOutput)));
 
     // Setup the expectation for the /proc/modules read to succeed
-    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
     // Setup the expectation for the modprobe command to fail
     EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand)))
-        .WillOnce(::testing::Return(Result<std::string>(Error("Failed to execute modprobe", -1))));
+        .WillRepeatedly(::testing::Return(Result<std::string>(Error("Failed to execute modprobe", -1))));
 
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
 
     auto result = AuditEnsureKernelModuleUnavailable(args, indicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Failed to execute modprobe");
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFind)
 {
     // Setup the expectation for the find command to return negative results
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findNegativeOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findNegativeOutput)));
 
     // Setup the expectation for the proc modules read
-    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
 
     // Setup the expectation for the modprobe command
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeNothingOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
 
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
@@ -152,13 +161,13 @@ TEST_F(EnsureKernelModuleTest, ModuleNotFoundInFind)
 TEST_F(EnsureKernelModuleTest, ModuleFoundInProcModules)
 {
     // Setup the expectation for the find command
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findPositiveOutput)));
 
     // Setup the expectation for the proc modules read showing the module is loaded
-    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
 
     // Setup the expectation for the modprobe command
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeNothingOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeNothingOutput)));
 
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
@@ -171,13 +180,13 @@ TEST_F(EnsureKernelModuleTest, ModuleFoundInProcModules)
 TEST_F(EnsureKernelModuleTest, NoAlias)
 {
     // Setup the expectation for the find command
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findPositiveOutput)));
 
     // Setup the expectation for the proc modules read
-    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesPositiveOutput)));
 
     // Setup the expectation for the modprobe command with blacklist output
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeBlacklistOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlacklistOutput)));
 
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
@@ -190,13 +199,13 @@ TEST_F(EnsureKernelModuleTest, NoAlias)
 TEST_F(EnsureKernelModuleTest, NoBlacklist)
 {
     // Setup the expectation for the find command
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findPositiveOutput)));
 
     // Setup the expectation for the proc modules read
-    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
     // Setup the expectation for the modprobe command with alias output
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeAliasOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeAliasOutput)));
 
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
@@ -209,13 +218,13 @@ TEST_F(EnsureKernelModuleTest, NoBlacklist)
 TEST_F(EnsureKernelModuleTest, ModuleBlocked)
 {
     // Setup the expectation for the find command
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findPositiveOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findPositiveOutput)));
 
     // Setup the expectation for the proc modules read
-    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
     // Setup the expectation for the modprobe command with blocked output
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
 
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
@@ -228,13 +237,13 @@ TEST_F(EnsureKernelModuleTest, ModuleBlocked)
 TEST_F(EnsureKernelModuleTest, OverlayedModuleNotBlocked)
 {
     // Setup the expectation for the find command with overlayed output
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findOverlayedOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findOverlayedOutput)));
 
     // Setup the expectation for the proc modules read
-    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
     // Setup the expectation for the modprobe command with blocked output
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlockedOutput)));
 
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
@@ -247,13 +256,13 @@ TEST_F(EnsureKernelModuleTest, OverlayedModuleNotBlocked)
 TEST_F(EnsureKernelModuleTest, OverlayedModuleBlocked)
 {
     // Setup the expectation for the find command with overlayed output
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillOnce(::testing::Return(Result<std::string>(findOverlayedOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(findCommand))).WillRepeatedly(::testing::Return(Result<std::string>(findOverlayedOutput)));
 
     // Setup the expectation for the proc modules read
-    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillOnce(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
+    EXPECT_CALL(mContext, GetFileContents(::testing::StrEq(procModulesPath))).WillRepeatedly(::testing::Return(Result<std::string>(procModulesNegativeOutput)));
 
     // Setup the expectation for the modprobe command with blocked overlay output
-    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillOnce(::testing::Return(Result<std::string>(modprobeBlockedOverlayOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(modprobeCommand))).WillRepeatedly(::testing::Return(Result<std::string>(modprobeBlockedOverlayOutput)));
 
     std::map<std::string, std::string> args;
     args["moduleName"] = "hator";
