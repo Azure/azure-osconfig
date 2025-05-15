@@ -52,7 +52,7 @@ runs:
           "ClientId": f"{aad_id}",
           "EsrpClientId": f"{esrp_clientId}",
           "RequestSigningCert": {
-            "GetCertFromKeyVault": true,
+            "GetCertFromKeyVault": "true",
             "KeyVaultName": f"{vault_name}",
             "KeyVaultCertName": f"{request_signing_cert}",
             "SendX5c": "false",
