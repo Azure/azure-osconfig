@@ -34,6 +34,10 @@ runs:
         workspace = os.environ['GITHUB_WORKSPACE'].strip()
         keycode = os.environ['LINUX_KEY_CODE'].strip()
         opcode = os.environ['LINUX_OP_CODE'].strip()
+        esrp_clientId = os.environ['ESRP_CLIENTID'].strip()
+        vault_name = os.environ['VAULT_NAME'].strip()
+        request_signing_cert = os.environ['REQUEST_SIGNING_CERT'].strip()
+        managed_identity_clientId = os.environ['MANAGED_IDENTITY_CLIENTID'].strip()
 
         source_location = 'unsigned'
         package_filter = '*.${{ inputs.package-type }}'
@@ -44,23 +48,16 @@ runs:
 
         auth_json = {
           "Version": "1.0.0",
-          "AuthenticationType": "AAD_CERT",
-          "TenantId": "33e01921-4d64-4f8c-a055-5bdaffd5e33d",
+          "AuthenticationType": "AAD_MSI",
           "ClientId": f"{aad_id}",
-          "AuthCert": {
-            "SubjectName": f"CN={aad_id}.microsoft.com",
-            "StoreLocation": "LocalMachine",
-            "StoreName": "My",
-            "SendX5c": "true",
-            "WithAzureRegion": "false"
-          },
+          "EsrpClientId": f"{esrp_clientId}",
           "RequestSigningCert": {
-            "SubjectName": f"CN={aad_id}",
-            "StoreLocation": "LocalMachine",
-            "StoreName": "My",
+            "GetCertFromKeyVault": true,
+            "KeyVaultName": f"{vault_name}",
+            "KeyVaultCertName": f"{request_signing_cert}"
             "SendX5c": "false",
             "WithAzureRegion": "false"
-          }
+          },
         }
 
         input_json = {

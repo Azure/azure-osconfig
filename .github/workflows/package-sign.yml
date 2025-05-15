@@ -33,9 +33,9 @@ jobs:
           AUTH_CERT: ${{ secrets.AZURE_VAULT_AUTH_CERT_NAME }}
           REQUEST_SIGNING_CERT: ${{ secrets.AZURE_VAULT_REQUEST_SIGNING_CERT_NAME }}
         run: |
-          az keyvault secret download --vault-name "$env:AZURE_VAULT" --name "$env:AUTH_CERT" --file out.pfx
-          certutil -f -importpfx out.pfx
-          Remove-Item -Path out.pfx
+          # az keyvault secret download --vault-name "$env:AZURE_VAULT" --name "$env:AUTH_CERT" --file out.pfx
+          # certutil -f -importpfx out.pfx
+          # Remove-Item -Path out.pfx
 
           az keyvault secret download --vault-name "$env:AZURE_VAULT" --name "$env:REQUEST_SIGNING_CERT" --file out.pfx
           certutil -f -importpfx out.pfx
@@ -44,7 +44,11 @@ jobs:
       - name: Sign package
         uses: ./.github/actions/sign-package
         env:
+          AZURE_VAULT: ${{ secrets.AZURE_AME_VAULT }}
+          REQUEST_SIGNING_CERT: ${{ secrets.AZURE_VAULT_REQUEST_SIGNING_CERT_NAME }}
           AAD_ID: ${{ secrets.ESRP_AAD_ID }}
+          MANAGED_IDENTITY_CLIENTID: ${{ secrets.MANAGED_IDENTITY_CLIENTID }}
+          ESRP_CLIENTID: ${{ secrets.ESRP_CLIENTID }}
           LINUX_KEY_CODE: ${{ inputs.key-code }}
           LINUX_OP_CODE: ${{ secrets.ESRP_LINUX_OP_CODE }}
         with:
