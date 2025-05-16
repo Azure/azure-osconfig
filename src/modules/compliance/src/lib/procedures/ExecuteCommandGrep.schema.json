@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "ExecuteCommandGrep"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ExecuteCommandGrep": {
+              "type": "object",
+              "required": [
+                "command",
+                "regex"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "command": {
+                  "type": "string",
+                  "description": "Command to be executed"
+                },
+                "regex": {
+                  "type": "string",
+                  "description": "Regex to be matched"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Type of regex, P for Perl (default) or E for Extended"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}
