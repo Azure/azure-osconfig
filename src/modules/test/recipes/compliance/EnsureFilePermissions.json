@@ -409,9 +409,59 @@
   },
 
 
+  {
+    "RunCommand": "mkdir /tmp/testdir && touch /tmp/testdir/test1.log && touch /tmp/testdir/test2.txt && chmod 700 /tmp/testdir/*"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "EnsureFilePermissionsCollection": {
+          "directory": "/tmp/testdir",
+          "ext": "*.log",
+          "permissions": "0666"
+        }
+      },
+      "remediate": {
+        "EnsureFilePermissionsCollection": {
+          "directory": "/tmp/testdir",
+          "ext": "*.log",
+          "permissions": "0666"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "FAIL{ EnsureFilePermissions: File '\/tmp\/testfile' does not exist } == TRUE"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateTest",
+    "Payload": ""
+  },
 
   {
-    "RunCommand": "rm -f /tmp/testfile"
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ EnsureFilePermissions: File '\/tmp\/testfile' does not exist } == TRUE"
+  },
+  {
+    "RunCommand": "stat /tmp/test1.log | grep 'Access: (0666\/-rw-rw-rw-)'"
+  },
+  {
+    "RunCommand": "stat /tmp/test2.txt | grep 'Access: (0700\/-rwx------)'"
+  },
+
+
+  {
+    "RunCommand": "rm -f /tmp/testfile; rm -Rf /tmp/testdir"
   },
   {
     "RunCommand": "userdel foo || true"
