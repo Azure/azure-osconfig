@@ -61,6 +61,7 @@ static char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
 
 int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHandle log)
 {
+    const char* etcPamdSystemPassword = "/etc/pam.d/system-password";
     int status = ENOENT;
     char* pamModule = NULL;
 
@@ -76,10 +77,16 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHa
         status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, reason, log)) &&
             (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
     }
+    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
+    {
+        // On Azure Linux '/etc/pam.d/system-password' is expected to exist
+        status = ((0 == CheckLineFoundNotCommentedOut(etcPamdSystemPassword, '#', g_remember, reason, log)) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(etcPamdSystemPassword, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
+    }
     else
     {
-        OsConfigCaptureReason(reason, "Neither '%s' or '%s' found, unable to check for '%s' option being set",
-            g_etcPamdCommonPassword, g_etcPamdSystemAuth, g_remember);
+        OsConfigCaptureReason(reason, "Neither '%s' or '%s' or '%s' found, unable to check for '%s' option being set",
+            g_etcPamdCommonPassword, g_etcPamdSystemAuth, etcPamdSystemPassword, g_remember);
     }
 
     if (status)
