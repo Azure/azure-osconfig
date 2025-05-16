@@ -6,6 +6,7 @@
 static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
 static const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
 static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
+static const char* g_etcPamdSystemPassword = "/etc/pam.d/system-password";
 static const char* g_pamUnixSo = "pam_unix.so";
 static const char* g_remember = "remember";
 
@@ -61,7 +62,6 @@ static char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
 
 int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHandle log)
 {
-    const char* etcPamdSystemPassword = "/etc/pam.d/system-password";
     int status = ENOENT;
     char* pamModule = NULL;
 
@@ -80,13 +80,13 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHa
     else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
     {
         // On Azure Linux '/etc/pam.d/system-password' is expected to exist
-        status = ((0 == CheckLineFoundNotCommentedOut(etcPamdSystemPassword, '#', g_remember, reason, log)) &&
-            (0 == CheckIntegerOptionFromFileLessOrEqualWith(etcPamdSystemPassword, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemPassword, '#', g_remember, reason, log)) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemPassword, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
     }
     else
     {
         OsConfigCaptureReason(reason, "Neither '%s' or '%s' or '%s' found, unable to check for '%s' option being set",
-            g_etcPamdCommonPassword, g_etcPamdSystemAuth, etcPamdSystemPassword, g_remember);
+            g_etcPamdCommonPassword, g_etcPamdSystemAuth, g_etcPamdSystemPassword, g_remember);
     }
 
     if (status)
@@ -157,6 +157,14 @@ int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log)
         if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
         {
             if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log))) && (0 == status))
+            {
+                status = _status;
+            }
+        }
+
+        if (0 == CheckFileExists(g_etcPamdSystemPassword, NULL, log))
+        {
+            if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdSystemPassword, g_remember, newline, '#', true, log))) && (0 == status))
             {
                 status = _status;
             }
