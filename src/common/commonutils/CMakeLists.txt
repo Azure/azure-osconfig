@@ -26,7 +26,10 @@ target_include_directories(commonutils
         ${RAPIDJSON_INCLUDE_DIRS}
 )
 
-target_link_libraries(commonutils PRIVATE
-    logging
-    parsonlib
-    m)
+target_link_libraries(commonutils
+    PUBLIC
+        logging
+    PRIVATE
+        parsonlib
+        m
+)
