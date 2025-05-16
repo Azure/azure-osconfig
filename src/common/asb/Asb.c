@@ -594,9 +594,10 @@ static const char* g_rcpSocket = "rcp.socket";
 static const char* g_rshSocket = "rsh.socket";
 static const char* g_hardCoreZero = "* hard core 0";
 static const char* g_fsSuidDumpable = "fs.suid_dumpable = 0";
+static const char* g_bootGrubGrubCfg = "/boot/grub/grub.cfg";
 static const char* g_bootGrubGrubConf = "/boot/grub/grub.conf";
 static const char* g_bootGrub2GrubCfg = "/boot/grub2/grub.cfg";
-static const char* g_bootGrubGrubCfg = "/boot/grub/grub.cfg";
+static const char* g_bootGrub2GrubConf = "/boot/grub2/grub.conf";
 static const char* g_minSambaProtocol = "min protocol = SMB2";
 static const char* g_login = "login";
 
@@ -2010,7 +2011,9 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(OsConfigLogHandle log)
 
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubCfg, 0, 0, mode, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubConf, 0, 0, mode, &reason, log));
-    CheckFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, &reason, log));
+    CheckFileAccess(g_bootGrub2GrubConf, 0, 0, mode, &reason, log);
+    
     return reason;
 }
 
@@ -3638,7 +3641,8 @@ static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, OsConfigLog
 
     return ((FileExists(g_bootGrubGrubCfg) && (0 == SetFileAccess(g_bootGrubGrubCfg, 0, 0, mode, log))) ||
         (FileExists(g_bootGrubGrubConf) && (0 == SetFileAccess(g_bootGrubGrubConf, 0, 0, mode, log))) ||
-        (FileExists(g_bootGrub2GrubCfg) && (0 == SetFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, log)))) ? 0 : ENOENT;
+        (FileExists(g_bootGrub2GrubCfg) && (0 == SetFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, log))) ||
+        (FileExists(g_bootGrub2GrubConf) && (0 == SetFileAccess(g_bootGrub2GrubConf, 0, 0, mode, log)))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePasswordReuseIsLimited(char* value, OsConfigLogHandle log)
