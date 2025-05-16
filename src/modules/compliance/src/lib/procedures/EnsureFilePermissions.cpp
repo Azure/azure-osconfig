@@ -5,6 +5,8 @@
 #include <Regex.h>
 #include <dirent.h>
 #include <errno.h>
+#include <fnmatch.h>
+#include <fts.h>
 #include <grp.h>
 #include <iostream>
 #include <pwd.h>
@@ -19,35 +21,6 @@ namespace
 {
 // Mask to display permissions
 const unsigned short displayMask = 0xFFF;
-static std::string Regexize(const std::string& str)
-{
-    std::string result = "^";
-    for (const char& c : str)
-    {
-        if (c == '*')
-        {
-            result += ".*";
-        }
-        else if (c == '?')
-        {
-            result += ".";
-        }
-        else if (c == '.')
-        {
-            result += "\\.";
-        }
-        else if (c == '\\')
-        {
-            result += "\\\\";
-        }
-        else
-        {
-            result += c;
-        }
-    }
-    result += "$";
-    return result;
-}
 } // namespace
 
 Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, std::map<std::string, std::string> args, IndicatorsTree& indicators,
@@ -231,39 +204,34 @@ AUDIT_FN(EnsureFilePermissionsCollection, "directory:Directory path:M", "ext:Fil
         return Error("No file pattern provided", EINVAL);
     }
     auto ext = std::move(it->second);
-    auto extRegexized = Regexize(ext);
 
-    regex fileRegex;
-    try
+    auto directorycharp = std::unique_ptr<char, void (*)(void*)>(strdup(directory.c_str()), free);
+    if (nullptr == directorycharp)
     {
-        fileRegex = regex(extRegexized, std::regex_constants::extended);
+        OsConfigLogError(log, "Failed to allocate memory for directory path");
+        return Error("Failed to allocate memory for directory path", ENOMEM);
     }
-    catch (const std::exception& e)
-    {
-        OsConfigLogError(log, "Invalid file pattern %s (%s): %s", ext.c_str(), extRegexized.c_str(), e.what());
-        return Error("Invalid file pattern: " + ext + " regex error: " + std::string(e.what()), EINVAL);
-    }
-    struct dirent* entry = nullptr;
+    char* const paths[] = {directorycharp.get(), nullptr};
+    FTS* ftsp = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
 
-    DIR* dp = opendir(directory.c_str());
-
-    if (dp == NULL)
+    if (!ftsp)
     {
         OsConfigLogInfo(log, "Directory '%s' does not exist", directory.c_str());
         return indicators.Compliant("Directory '" + directory + "' does not exist");
     }
-    auto dp_up = std::unique_ptr<DIR, int (*)(DIR*)>(dp, closedir);
-
+    auto ftsp_up = std::unique_ptr<FTS, int (*)(FTS*)>(ftsp, fts_close);
     bool hasFiles = false;
-    while ((entry = readdir(dp)) != NULL)
+
+    FTSENT* entry = nullptr;
+    while (nullptr != (entry = fts_read(ftsp)))
     {
-        if (entry->d_type == DT_REG)
+        if (FTS_F == entry->fts_info)
         {
-            const char* fileName = entry->d_name;
-            if (regex_match(fileName, fileRegex)) // Match the file name
+            if (0 == fnmatch(ext.c_str(), entry->fts_name, 0))
             {
                 hasFiles = true;
-                auto result = AuditEnsureFilePermissionsHelper(directory + "/" + fileName, args, indicators, context);
+                const char* fileName = entry->fts_path;
+                auto result = AuditEnsureFilePermissionsHelper(fileName, args, indicators, context);
                 if (!result.HasValue())
                 {
                     OsConfigLogError(log, "Error checking permissions for '%s'", fileName);
@@ -484,39 +452,34 @@ REMEDIATE_FN(EnsureFilePermissionsCollection, "directory:Directory path:M", "ext
         return Error("No file pattern provided", EINVAL);
     }
     auto ext = std::move(it->second);
-    auto extRegexized = Regexize(ext);
 
-    regex fileRegex;
-    try
+    auto directorycharp = std::unique_ptr<char, void (*)(void*)>(strdup(directory.c_str()), free);
+    if (nullptr == directorycharp)
     {
-        fileRegex = regex(extRegexized, std::regex_constants::extended);
+        OsConfigLogError(log, "Failed to allocate memory for directory path");
+        return Error("Failed to allocate memory for directory path", ENOMEM);
     }
-    catch (const std::exception& e)
-    {
-        OsConfigLogError(log, "Invalid file pattern %s (%s): %s", ext.c_str(), extRegexized.c_str(), e.what());
-        return Error("Invalid file pattern: " + ext + " regex error: " + std::string(e.what()), EINVAL);
-    }
-    struct dirent* entry = nullptr;
+    char* const paths[] = {directorycharp.get(), nullptr};
+    FTS* ftsp = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
 
-    DIR* dp = opendir(directory.c_str());
-
-    if (dp == NULL)
+    if (!ftsp)
     {
         OsConfigLogInfo(log, "Directory '%s' does not exist", directory.c_str());
         return indicators.Compliant("Directory '" + directory + "' does not exist");
     }
-    auto dp_up = std::unique_ptr<DIR, int (*)(DIR*)>(dp, closedir);
-
+    auto ftspDeleter = std::unique_ptr<FTS, int (*)(FTS*)>(ftsp, fts_close);
     bool hasFiles = false;
-    while ((entry = readdir(dp)) != NULL)
+
+    FTSENT* entry = nullptr;
+    while (nullptr != (entry = fts_read(ftsp)))
     {
-        if (entry->d_type == DT_REG)
+        if (FTS_F == entry->fts_info)
         {
-            const char* fileName = entry->d_name;
-            if (regex_match(fileName, fileRegex)) // Match the file name
+            if (0 == fnmatch(ext.c_str(), entry->fts_name, 0))
             {
                 hasFiles = true;
-                auto result = RemediateEnsureFilePermissionsHelper(directory + "/" + fileName, args, indicators, context);
+                const char* fileName = entry->fts_path;
+                auto result = RemediateEnsureFilePermissionsHelper(fileName, args, indicators, context);
                 if (!result.HasValue())
                 {
                     OsConfigLogError(log, "Error fixing permissions for '%s'", fileName);
