@@ -54,7 +54,7 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, std
         if (owner != pwd->pw_name)
         {
             OsConfigLogDebug(log, "Invalid '%s' owner - is '%s' should be '%s'", filename.c_str(), pwd->pw_name, owner.c_str());
-            return indicators.NonCompliant("Invalid " + filename + " owner - is '" + std::string(pwd->pw_name) + "' should be '" + owner + "'");
+            return indicators.NonCompliant("Invalid owner on '" + filename + "' - is '" + std::string(pwd->pw_name) + "' should be '" + owner + "'");
         }
         else
         {
@@ -88,7 +88,7 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, std
         }
         if (!groupOk)
         {
-            return indicators.NonCompliant("Invalid group - is '" + std::string(grp->gr_name) + "' should be '" + groupName + "'");
+            return indicators.NonCompliant("Invalid group on '" + filename + "' - is '" + std::string(grp->gr_name) + "' should be '" + groupName + "'");
         }
         else
         {
@@ -139,7 +139,8 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, std
         if (perms != (statbuf.st_mode & perms))
         {
             std::ostringstream oss;
-            oss << "Invalid permissions - are " << std::oct << (statbuf.st_mode & displayMask) << " should be at least " << std::oct << perms;
+            oss << "Invalid permissions on '" << filename << "' - are " << std::oct << (statbuf.st_mode & displayMask) << " should be at least "
+                << std::oct << perms;
             return indicators.NonCompliant(oss.str());
         }
         else
@@ -156,7 +157,8 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, std
         if (0 != (statbuf.st_mode & mask))
         {
             std::ostringstream oss;
-            oss << "Invalid permissions - are " << std::oct << (statbuf.st_mode & displayMask) << " while " << std::oct << mask << " should not be set";
+            oss << "Invalid permissions on '" << filename << "' - are " << std::oct << (statbuf.st_mode & displayMask) << " while " << std::oct << mask
+                << " should not be set";
             return indicators.NonCompliant(oss.str());
         }
         else
