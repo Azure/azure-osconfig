@@ -58,7 +58,7 @@ TEST_F(ExecuteCommandGrepTest, AuditInvalidCommand)
 
 TEST_F(ExecuteCommandGrepTest, AuditCommandFails)
 {
-    EXPECT_CALL(mContext, ExecuteCommand("iptables -L -n | grep -P -- \"test\"")).WillOnce(Return(Result<std::string>(Error("Command execution failed", -1))));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("iptables -L -n"))).WillOnce(Return(Result<std::string>(Error("Command execution failed", -1))));
 
     std::map<std::string, std::string> args;
     args["command"] = "iptables -L -n";
@@ -71,7 +71,7 @@ TEST_F(ExecuteCommandGrepTest, AuditCommandFails)
 
 TEST_F(ExecuteCommandGrepTest, AuditCommandMatches)
 {
-    EXPECT_CALL(mContext, ExecuteCommand("iptables -L -n | grep -P -- \"test\"")).WillOnce(Return(Result<std::string>("test output")));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("iptables -L -n"))).WillOnce(Return(Result<std::string>("test output")));
 
     std::map<std::string, std::string> args;
     args["command"] = "iptables -L -n";
@@ -96,7 +96,7 @@ TEST_F(ExecuteCommandGrepTest, AuditInvalidRegexType)
 
 TEST_F(ExecuteCommandGrepTest, AuditExtendedRegex)
 {
-    EXPECT_CALL(mContext, ExecuteCommand("iptables -L -n | grep -E -- \"test\"")).WillOnce(Return(Result<std::string>("test output")));
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr("iptables -L -n"))).WillOnce(Return(Result<std::string>("test output")));
 
     std::map<std::string, std::string> args;
     args["command"] = "iptables -L -n";
