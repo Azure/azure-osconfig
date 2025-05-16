@@ -49,7 +49,6 @@ protected:
 
     void TearDown() override
     {
-        return;
         for (auto& file : files)
         {
             unlink(file.c_str());

@@ -21,9 +21,8 @@ namespace
 {
 // Mask to display permissions
 const unsigned short displayMask = 0xFFF;
-} // namespace
 
-Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, std::map<std::string, std::string> args, IndicatorsTree& indicators,
+Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, const std::map<std::string, std::string>& args, IndicatorsTree& indicators,
     ContextInterface& context)
 {
     auto log = context.GetLogHandle();
@@ -173,11 +172,12 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, std
     return indicators.Compliant(oss.str());
 }
 
-Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename, std::map<std::string, std::string> args, IndicatorsTree& indicators,
-    ContextInterface& context)
+Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename, const std::map<std::string, std::string>& args,
+    IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
     struct stat statbuf;
+    std::string owner, groupName;
     if (stat(filename.c_str(), &statbuf) < 0)
     {
         const int status = errno;
@@ -197,12 +197,12 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
     auto it = args.find("owner");
     if (it != args.end())
     {
-        auto owner = std::move(it->second);
+        owner = std::move(it->second);
         const struct passwd* pwd = getpwnam(owner.c_str());
         if (pwd == nullptr)
         {
             OsConfigLogDebug(log, "No user with UID %d", statbuf.st_gid);
-            return indicators.NonCompliant("No user with name " + args["owner"]);
+            return indicators.NonCompliant("No user with name " + owner);
         }
         uid = pwd->pw_uid;
         if (uid != statbuf.st_uid)
@@ -218,7 +218,7 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
     it = args.find("group");
     if (it != args.end())
     {
-        auto groupName = std::move(it->second);
+        groupName = std::move(it->second);
         const struct group* grp = getgrgid(statbuf.st_gid);
         if (nullptr == grp)
         {
@@ -271,7 +271,7 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
             return Error(std::string("Chown error: ") + strerror(status), status);
         }
 
-        indicators.Compliant(args["filename"] + " owner changed to " + args["owner"] + ":" + args["group"]);
+        indicators.Compliant(filename + " owner changed to " + owner + ":" + groupName);
     }
 
     bool has_permissions = false;
@@ -326,14 +326,15 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
 
         std::ostringstream oss;
         oss << std::oct << new_perms;
-        indicators.Compliant(args["filename"] + " permissions changed to " + oss.str());
+        indicators.Compliant(filename + " permissions changed to " + oss.str());
     }
 
     OsConfigLogDebug(log, "File '%s' remediation succeeded", filename.c_str());
     return Status::Compliant;
 }
 
-Result<Status> EnsureFilePermissionsCollectionHelper(std::map<std::string, std::string> args, IndicatorsTree& indicators, ContextInterface& context, bool isRemediation)
+Result<Status> EnsureFilePermissionsCollectionHelper(const std::map<std::string, std::string>& args, IndicatorsTree& indicators,
+    ContextInterface& context, bool isRemediation)
 {
     auto log = context.GetLogHandle();
     auto it = args.find("directory");
@@ -351,13 +352,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(std::map<std::string, std::
     }
     auto ext = std::move(it->second);
 
-    auto directorycharp = std::unique_ptr<char, void (*)(void*)>(strdup(directory.c_str()), free);
-    if (nullptr == directorycharp)
-    {
-        OsConfigLogError(log, "Failed to allocate memory for directory path");
-        return Error("Failed to allocate memory for directory path", ENOMEM);
-    }
-    char* const paths[] = {directorycharp.get(), nullptr};
+    char* const paths[] = {&directory[0], nullptr};
     FTS* ftsp = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
 
     if (!ftsp)
@@ -406,6 +401,7 @@ Result<Status> EnsureFilePermissionsCollectionHelper(std::map<std::string, std::
         return indicators.Compliant("No files in '" + directory + "' match the pattern");
     }
 }
+} // namespace
 
 AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
     "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
