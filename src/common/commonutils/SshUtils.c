@@ -590,16 +590,16 @@ static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
         return status;
     }
 
-    if (NULL != (bannerPath = GetSshServerState(g_banner, log)))
+    if (NULL != (bannerPath = GetSshServerState(g_sshBanner, log)))
     {
-        OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' found in SSH Server response set to '%s'", g_banner, bannerPath);
+        OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' found in SSH Server response set to '%s'", g_sshBanner, bannerPath);
         status = CheckFileExists(bannerPath, reason, log);
         FREE_MEMORY(bannerPath);
     }
     else
     {
-        OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' not found in SSH Server response", g_banner);
-        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", g_banner);
+        OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' not found in SSH Server response", g_sshBanner);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", g_sshBanner);
         status = ENOENT;
     }
 
