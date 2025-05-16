@@ -66,6 +66,7 @@ jobs:
             # { os: ubuntu, version: 20.04, arch: arm64, dist: focal, package-type: DEB, repo: microsoft-ubuntu-focal-prod-apt, container-tag: sha-c689eee },
             { os: ubuntu, version: 22.04, arch: amd64, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt, container-tag: latest },
             # { os: ubuntu, version: 22.04, arch: arm64, dist: jammy, package-type: DEB, repo: microsoft-ubuntu-jammy-prod-apt, container-tag: sha-db3d4c8 },
+            { os: ubuntu, version: 24.04, arch: amd64, dist: noble, package-type: DEB, repo: microsoft-ubuntu-noble-prod-apt, container-tag: latest },
           ]
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
