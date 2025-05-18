@@ -17,13 +17,17 @@ using std::regex_constants::syntax_option_type;
 using Behavior = FactExistenceValidator::Behavior;
 namespace
 {
+
+// syntax Options for matchPattern and statePattern respectively
+using MatchStateSyntaxOptions = std::pair<syntax_option_type, syntax_option_type>;
+
 // This function is used to check if the file contents match the given pattern.
 // It reads the file line by line and checks each line against the matchPattern.
 // If a line matches the matchPattern, it checks if the statePattern (if provided) also matches.
 // Based on the result of the matches, fact existence validator is used to determine
 // if the criteria is met or unmet based on the behavior specified in the arguments.
 Result<Status> MultilineMatch(const std::string& filename, const string& matchPattern, const Optional<string>& statePattern,
-    syntax_option_type syntaxOptions, Behavior behavior, IndicatorsTree& indicators, ContextInterface& context)
+    MatchStateSyntaxOptions syntaxOptions, Behavior behavior, IndicatorsTree& indicators, ContextInterface& context)
 {
     Optional<regex> matchRegex;
     Optional<regex> stateRegex;
@@ -36,10 +40,10 @@ Result<Status> MultilineMatch(const std::string& filename, const string& matchPa
 
     try
     {
-        matchRegex = regex(matchPattern, syntaxOptions);
+        matchRegex = regex(matchPattern, syntaxOptions.first);
         if (statePattern.HasValue())
         {
-            stateRegex = regex(statePattern.Value(), syntaxOptions);
+            stateRegex = regex(statePattern.Value(), syntaxOptions.second);
         }
     }
     catch (const regex_error& e)
@@ -121,7 +125,8 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     "matchOperation:Operation to perform on the file contents::^pattern match$", "matchPattern:The pattern to match against the file contents:M",
     "stateOperation:Operation to perform on each line that matches the 'matchPattern'::^pattern match$",
     "statePattern:The pattern to match against each line that matches the 'statePattern'",
-    "caseSensitive:Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'::^true|false$",
+    "ignoreCase:Determine whether the a match or state should be ignore case sensitivity  'matchPattern' and 'statePattern' or none when empty'::"
+    "^(matchPattern\\sstatePattern|matchPattern|statePattern)",
     "behavior:Determine the function behavior::^(all_exist|any_exist|at_least_one_exists|none_exist)$")
 {
     UNUSED(context);
@@ -185,17 +190,31 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         statePattern = std::move(it->second);
     }
 
-    it = args.find("caseSensitive");
-    syntax_option_type syntaxOptions = std::regex_constants::ECMAScript;
+    it = args.find("ignoreCase");
+    MatchStateSyntaxOptions syntaxOptions = std::make_pair(std::regex_constants::ECMAScript, std::regex_constants::ECMAScript);
     if (it != args.end())
     {
-        if (it->second == "false")
+        std::istringstream arg(it->second);
+        std::string caseSensitive;
+        while (getline(arg, caseSensitive, ' '))
         {
-            syntaxOptions |= std::regex_constants::icase;
-        }
-        else if (it->second != "true")
-        {
-            return Error("caseSensitive must be 'true' or 'false'", EINVAL);
+            if (caseSensitive == "matchPattern")
+            {
+                syntaxOptions.first |= std::regex_constants::icase;
+            }
+            else if (caseSensitive != "statePattern")
+            {
+                syntaxOptions.second |= std::regex_constants::icase;
+            }
+            else if (caseSensitive != "matchPattern statePattern")
+            {
+                syntaxOptions.first |= std::regex_constants::icase;
+                syntaxOptions.second |= std::regex_constants::icase;
+            }
+            else
+            {
+                return Error("caseSensitive must be 'matchPattern' or 'statePattern', or both or ''", EINVAL);
+            }
         }
     }
 
