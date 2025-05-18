@@ -220,7 +220,7 @@ TEST_F(FileRegexMatchTest, Audit_CaseInsensitive_1)
     mArgs["filenamePattern"] = "1";
     mArgs["matchPattern"] = R"(^[[:space:]]*Te[a-z]t.*$)";
     mArgs["matchOperation"] = "pattern match";
-    mArgs["caseSensitive"] = "false";
+    mArgs["ignoreCase"] = "matchPattern";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -239,6 +239,47 @@ TEST_F(FileRegexMatchTest, Audit_State_1)
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
+TEST_F(FileRegexMatchTest, Audit_State_2_CaseInsensitve)
+{
+    MakeTempfile("key=foo");
+    mArgs["path"] = mTempdir;
+    mArgs["filenamePattern"] = "1";
+    mArgs["matchPattern"] = R"(^key=.*$)";
+    mArgs["statePattern"] = R"(^key=FoO$)";
+    mArgs["behavior"] = "all_exist";
+    mArgs["ignoreCase"] = "statePattern";
+    auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(FileRegexMatchTest, Audit_State_2_CaseInsensitveBoth)
+{
+    MakeTempfile("key=foo");
+    mArgs["path"] = mTempdir;
+    mArgs["filenamePattern"] = "1";
+    mArgs["matchPattern"] = R"(^Key=.*$)";
+    mArgs["statePattern"] = R"(^Key=FoO$)";
+    mArgs["behavior"] = "all_exist";
+    mArgs["ignoreCase"] = "matchPattern statePattern";
+    auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(FileRegexMatchTest, Audit_State_2_CaseInsensitveBothDiffetnArg)
+{
+    MakeTempfile("key=foo");
+    mArgs["path"] = mTempdir;
+    mArgs["filenamePattern"] = "1";
+    mArgs["matchPattern"] = R"(^Key=.*$)";
+    mArgs["statePattern"] = R"(^Key=FoO$)";
+    mArgs["behavior"] = "all_exist";
+    mArgs["ignoreCase"] = "statePattern matchPattern";
+    auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
 TEST_F(FileRegexMatchTest, Audit_State_2)
 {
     MakeTempfile("key=foo");
