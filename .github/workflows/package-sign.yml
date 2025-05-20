@@ -45,6 +45,7 @@ jobs:
         uses: ./.github/actions/sign-package
         env:
           AAD_ID: ${{ secrets.ESRP_AAD_ID }}
+          ESRP_ID: ${{ secrets.ESRP_CLIENTID }}
           LINUX_KEY_CODE: ${{ inputs.key-code }}
           LINUX_OP_CODE: ${{ secrets.ESRP_LINUX_OP_CODE }}
         with:

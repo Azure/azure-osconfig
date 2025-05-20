@@ -31,6 +31,7 @@ runs:
         esrp_tool = 'EsrpClient'
 
         aad_id = os.environ['AAD_ID'].strip()
+        esrp_id = os.environ['ESRP_ID'].strip()
         workspace = os.environ['GITHUB_WORKSPACE'].strip()
         keycode = os.environ['LINUX_KEY_CODE'].strip()
         opcode = os.environ['LINUX_OP_CODE'].strip()
@@ -47,6 +48,7 @@ runs:
           "AuthenticationType": "AAD_CERT",
           "TenantId": "33e01921-4d64-4f8c-a055-5bdaffd5e33d",
           "ClientId": f"{aad_id}",
+          "EsrpClientId": f"{esrp_id}",
           "AuthCert": {
             "SubjectName": f"CN={aad_id}.microsoft.com",
             "StoreLocation": "LocalMachine",
@@ -55,7 +57,7 @@ runs:
             "WithAzureRegion": "false"
           },
           "RequestSigningCert": {
-            "SubjectName": f"CN={aad_id}",
+            "SubjectName": f"CN={esrp_id}",
             "StoreLocation": "LocalMachine",
             "StoreName": "My",
             "SendX5c": "false",
