@@ -38,7 +38,7 @@ Result<set<string>> ListValidShells(ContextInterface& context)
         return Error(std::string("Failed to open ") + etcShellsPath + " file", EINVAL);
     }
     string line;
-    while (std::getline(shellsFile, line))
+    while (getline(shellsFile, line))
     {
         if (line.empty() || line[0] == '#')
         {
