@@ -281,6 +281,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         close(pipefd[0]);
         kill(workerPid, SIGKILL);
         waitpid(workerPid, &childStatus, 0);
+
         if (status == 0)
         {
             // The command was successful, but we need to check the child process status.
