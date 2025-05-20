@@ -2440,7 +2440,7 @@ static char* AuditEnsurePostfixPackageIsUninstalled(OsConfigLogHandle log)
 static char* AuditEnsurePostfixNetworkListeningIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    if (0 == CheckFileExists(g_etcPostfixMainCf, &reason, log))
+    if ((0 != CheckPackageNotInstalled(g_postfix, &reason, log)) && (0 == CheckFileExists(g_etcPostfixMainCf, &reason, log)))
     {
         CheckTextIsFoundInFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, &reason, log);
     }
@@ -4025,14 +4025,19 @@ static int RemediateEnsurePostfixPackageIsUninstalled(char* value, OsConfigLogHa
 static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    return DisablePostfixNetworkListening(log);
+    int result = 0;
+    if (0 == IsPackageInstalled(g_postfix, log))
+    {
+        result = DisablePostfixNetworkListening(log);
+    }
+    return result;
 }
 
 static int CheckAndFreeReason(char *reason)
 {
-    int ret = (0 == strncmp(g_pass, reason, strlen(g_pass))) ? 0 : ENOENT;
+    int result = (0 == strncmp(g_pass, reason, strlen(g_pass))) ? 0 : ENOENT;
     FREE_MEMORY(reason);
-    return ret;
+    return result;
 }
 
 static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, OsConfigLogHandle log)
