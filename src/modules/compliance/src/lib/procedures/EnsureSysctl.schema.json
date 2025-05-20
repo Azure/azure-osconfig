@@ -21,7 +21,7 @@
                 "sysctlName": {
                   "type": "string",
                   "description": "Name of the sysctl",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:(([a-zA-Z0-9_]+[\\\\.a-zA-Z0-9_-]+))$|(^([a-zA-Z0-9_]+[\\\\.a-zA-Z0-9_-]+)$))"
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+))$|(^([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+)$))"
                 },
                 "value": {
                   "type": "string",

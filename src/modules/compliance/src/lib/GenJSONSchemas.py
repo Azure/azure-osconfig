@@ -28,8 +28,6 @@ def parse_macro_args(args):
         arg = arg.strip()
         if len(arg) >= 2 and arg[0] == '"' and arg[-1] == '"':
             arg = arg[1:-1]
-        else:
-            raise ValueError(f"Improperly quoted parameter in args {args[1:]}")
         parts = arg.split(':')
         name = parts[0]
         if len(name) == 0:
@@ -50,39 +48,46 @@ def parse_macro_args(args):
 
     return fn_name, arg_dict
 
+def tokkenize_macros_args(content, startpos):
+    endpos = startpos
+    quoted = False
+    escaped = False
+    args = []
+    current = ""
+
+    while endpos < len(content):
+        char = content[endpos]
+
+        if escaped:
+            current += char
+            escaped = False
+        elif char == '\\':
+            escaped = True
+        elif char == '"':
+            quoted = not quoted
+        elif char == ',' and not quoted:
+            args.append(current.strip())
+            current = ""
+        elif char == ')' and not quoted:
+            break
+        elif not quoted and char.isspace():
+            pass
+        else:
+            current += char
+
+        endpos += 1
+
+    if current:
+        args.append(current.strip())
+
+    return endpos, args
+
 def process_procedures(content, prefix):
     procedures = OrderedDict()
     startpos = content.find(prefix + "(", 0)
     while startpos != -1:
         startpos += len(prefix + "(")
-        endpos = startpos
-        quoted = False
-        escaped = False
-        args = []
-        current = ""
-        while True:
-            char = content[endpos]
-            if escaped:
-                current += char
-                escaped = False
-            elif char == ')' and not quoted:
-                break
-            elif char == '"':
-                current += char
-                quoted = not quoted
-            elif char == '\\':
-                current += char
-                escaped = True
-            elif char == "," and not quoted:
-                args.append(current)
-                current = ""
-            else:
-                current += char
-            endpos += 1
-        if len(current) > 0:
-            if not current.strip():
-                raise ValueError(f"Trailing comma in AUDIT_FN in {content[startpos:endpos]}")
-            args.append(current)
+        endpos, args = tokkenize_macros_args(content, startpos)
         fn_name, arg_dict = parse_macro_args(args)
         if fn_name:
             if fn_name[0].islower():
