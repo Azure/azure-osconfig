@@ -260,9 +260,9 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             {
                 // Copy the data. Following characters are replaced with spaces:
                 // all special characters from 0x00 to 0x1F except 0x0A (LF) when replaceEol is false
-                // plus 0x22 ("), TAB (0x09), and 0x5C (\) characters that break the JSON envelope when forJson is true
+                // plus 0x22 (") and 0x5C (\) characters that break the JSON envelope plus TAB when forJson is true
                 const char c = buffer[inputBufferPos];
-                if ((replaceEol && (EOL == c)) || ((c < 0x20) && (EOL != c)) || (0x7F == c) || (forJson && (('"' == c) || (0x09 == c) && ('\\' == c))))
+                if ((replaceEol && (EOL == c)) || ((c < 0x20) && (EOL != c)) || (0x7F == c) || (forJson && (('"' == c) || (TAB == c) || ('\\' == c))))
                 {
                     (*textResult)[outputBufferPos] = ' ';
                 }
