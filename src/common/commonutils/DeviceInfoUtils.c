@@ -940,7 +940,7 @@ int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandl
         }
         else
         {
-            OsConfigCaptureReason(reason, "'*hard core 0' is not set or commenetd out in '/etc/security/limits.conf'");
+            OsConfigCaptureReason(reason, "'*hard core 0' is not set or commented out in '/etc/security/limits.conf'");
         }
     }
 
