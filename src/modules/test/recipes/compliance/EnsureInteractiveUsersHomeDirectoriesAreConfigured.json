@@ -1,0 +1,232 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "compliance.so"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": {
+      "audit": {
+        "allOf": [
+          {
+            "EnsureInteractiveUsersHomeDirectoriesAreConfigured": {}
+          }
+        ]
+      },
+      "remediate": {
+        "allOf": [
+          {
+            "EnsureInteractiveUsersHomeDirectoriesAreConfigured": {}
+          }
+        ]
+      }
+    }
+  },
+
+
+  // Initial state should be clean
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": ""
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
+  },
+
+
+  // Make sure there are no residues of other module tests
+  {
+    "RunCommand": "! stat /home/securitybaselinetest"
+  },
+  {
+    "RunCommand": "! stat /home/securitybaselinetest2"
+  },
+
+
+
+  // Missing home directory
+  {
+    "RunCommand": "groupadd -g 8888 securitybaselinetest"
+  },
+  {
+    "RunCommand": "useradd -M -g 8888 securitybaselinetest && id securitybaselinetest"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": "{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' does not exist } == FALSE]} == FALSE"
+  },
+
+
+  // Fix manually first to verify only the audit procedure
+  {
+    "RunCommand": "mkdir /home/securitybaselinetest && chown securitybaselinetest:securitybaselinetest /home/securitybaselinetest && chmod 750 /home/securitybaselinetest"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
+  },
+
+
+  // Break the permissions: CIS recommends 027 mask
+  {
+    "RunCommand": "chmod 755 /home/securitybaselinetest"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": "{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' has incorrect permissions } == FALSE]} == FALSE"
+  },
+
+
+  // Remediate and audit
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": ""
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
+  },
+  {
+    "RunCommand": "stat /home/securitybaselinetest | grep -E 'Access: \\(0[0-7][0-5]0/d[r-][w-]x[r-]-[x-]---\\)'"
+  },
+
+
+  // Remove the directory and use remediation to fix it
+  {
+    "RunCommand": "rm -r /home/securitybaselinetest"
+  },
+  {
+    "RunCommand": "rm -r /home/securitybaselinetest || true"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": "{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' does not exist } == FALSE]} == FALSE"
+  },
+
+
+  // Remediate and audit
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": ""
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
+  },
+  {
+    "RunCommand": "stat /home/securitybaselinetest | grep -E 'Access: \\(0[0-7][0-5]0/d[r-][w-]x[r-]-[x-]---\\)'"
+  },
+
+
+  // Break directory ownership
+  {
+    "RunCommand": "groupadd -g 8889 securitybaselinetest2"
+  },
+  {
+    "RunCommand": "useradd -m -g 8889 securitybaselinetest2 && chmod 0700 /home/securitybaselinetest2 && id securitybaselinetest2"
+  },
+  {
+    "RunCommand": "chown securitybaselinetest2:securitybaselinetest2 /home/securitybaselinetest"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": "{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' has incorrect permissions } == FALSE]} == FALSE"
+  },
+  // Remediate and audit
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": ""
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
+  },
+  {
+    "RunCommand": "stat /home/securitybaselinetest | grep -E 'Access: \\(0[0-7][0-5]0/d[r-][w-]x[r-]-[x-]---\\)'"
+  },
+
+
+  // Recreate the user, but without interactive shell, audit should be clean despite missing home directory
+  {
+    "RunCommand": "userdel -f -r securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "groupadd -g 8888 securitybaselinetest"
+  },
+  {
+    "RunCommand": "useradd -s /usr/sbin/nologin -M -g 8888 securitybaselinetest && id securitybaselinetest"
+  },
+  {
+    "RunCommand": "! stat /home/securitybaselinetest"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
+  },
+
+
+
+  // Make sure the remediation does not fix sth that audit is skipping: the directory should still be missing
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
+    "Payload": ""
+  },
+  {
+    "RunCommand": "! stat /home/securitybaselinetest"
+  },
+
+
+
+  // cleanup
+  {
+    "RunCommand": "userdel -f -r securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "userdel -f -r securitybaselinetest2 || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest2 || true"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]
