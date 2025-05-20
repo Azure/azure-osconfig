@@ -324,25 +324,25 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureSshClientIntervalCountMaxIsConfigured",
-    "Payload": "0"
+    "Payload": "3"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureSshClientIntervalCountMaxIsConfigured",
-    "Payload": "0"
+    "Payload": "3"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureSshClientAliveIntervalIsConfigured",
-    "Payload": "3600"
+    "Payload": "300"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureSshClientAliveIntervalIsConfigured",
-    "Payload": "3600"
+    "Payload": "300"
   },
   {
     "ObjectType": "Desired",
@@ -1539,7 +1539,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureSshClientIntervalCountMaxIsConfigured",
-    "Payload": "0"
+    "Payload": "3"
   },
   {
     "ObjectType": "Reported",
@@ -1550,7 +1550,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureSshClientAliveIntervalIsConfigured",
-    "Payload": "3600"
+    "Payload": "300"
   },
   {
     "ObjectType": "Reported",
