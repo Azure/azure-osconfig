@@ -14,7 +14,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace ComplianceEngineEngine
+namespace ComplianceEngine
 {
 using std::ifstream;
 using std::map;
@@ -35,7 +35,7 @@ Result<set<string>> ListValidShells(ContextInterface& context)
     if (!shellsFile.is_open())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to open %s file", etcShellsPath);
-        return Error(string("Failed to open ") + etcShellsPath + " file", EINVAL);
+        return Error(std::string("Failed to open ") + etcShellsPath + " file", EINVAL);
     }
     string line;
     while (std::getline(shellsFile, line))
@@ -151,11 +151,7 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
             OsConfigLogDebug(context.GetLogHandle(), "stat failed for home directory '%s' for user '%s': %s", pwd->pw_dir, pwd->pw_name, strerror(status));
             if (status == ENOENT)
             {
-                // CIS allows for different remediations for a missing home directory:
-                // - Lock the user account
-                // - Remove the user from the system
-                // - create a directory for the user. If undefined, edit /etc/passwd and add the absolute path to the directory to the last field of the
-                // user. We create the directory, as it seems to be the least risky solution.
+                // Home directory does not exist, so we need to create it
                 if (0 != mkdir(pwd->pw_dir, 0750))
                 {
                     status = errno;
@@ -194,4 +190,4 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
     return IterateUsers(cb, BreakOnNonCompliant::False, context);
 }
 
-} // namespace ComplianceEngineEngine
+} // namespace ComplianceEngine
