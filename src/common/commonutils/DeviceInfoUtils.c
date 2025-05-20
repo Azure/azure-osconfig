@@ -932,7 +932,7 @@ int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandl
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
-        
+
         if (0 == strcmp("0", textResult))
         {
             OsConfigCaptureSuccessReason(reason, "'*hard core 0' is set and uncommented in '/etc/security/limits.conf'");

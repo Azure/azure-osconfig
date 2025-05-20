@@ -377,7 +377,7 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
     // S_IWUSR (0200): Write permission, owner
     // S_IRGRP (0040): Read permission, group
     // S_IWGRP (0020): Write permission, group.
-    
+
     return chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 }
 
