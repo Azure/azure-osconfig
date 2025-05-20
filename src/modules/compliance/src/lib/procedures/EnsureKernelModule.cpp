@@ -42,19 +42,6 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
     {
         return Error("Failed to execute find command");
     }
-
-    Result<std::string> procModules = context.GetFileContents("/proc/modules");
-    if (!procModules.HasValue())
-    {
-        return procModules.Error();
-    }
-
-    Result<std::string> modprobeOutput = context.ExecuteCommand("modprobe --showconfig");
-    if (!modprobeOutput.HasValue())
-    {
-        return Error("Failed to execute modprobe");
-    }
-
     std::istringstream findStream(findOutput.Value());
     std::string line;
     bool moduleFound = false;
@@ -84,6 +71,12 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
         return indicators.Compliant("Module " + moduleName + " not found");
     }
 
+    Result<std::string> procModules = context.GetFileContents("/proc/modules");
+    if (!procModules.HasValue())
+    {
+        return procModules.Error();
+    }
+
     regex procModulesRegex;
     try
     {
@@ -99,33 +92,42 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
         return indicators.NonCompliant("Module " + moduleName + " is loaded");
     }
 
-    regex modprobeBlacklistRegex;
-    try
+    Result<std::string> modprobeOutput = context.ExecuteCommand("modprobe --showconfig");
+    if (modprobeOutput.HasValue())
     {
-        modprobeBlacklistRegex = regex("^blacklist\\s+" + moduleName + "$");
-    }
-    catch (std::exception& e)
-    {
-        return Error(e.what());
-    }
 
-    if (!MultilineRegexSearch(modprobeOutput.Value(), modprobeBlacklistRegex))
-    {
-        return indicators.NonCompliant("Module " + moduleName + " is not blacklisted in modprobe configuration");
-    }
+        regex modprobeBlacklistRegex;
+        try
+        {
+            modprobeBlacklistRegex = regex("^blacklist\\s+" + moduleName + "$");
+        }
+        catch (std::exception& e)
+        {
+            return Error(e.what());
+        }
 
-    regex modprobeInstallRegex;
-    try
-    {
-        modprobeInstallRegex = regex("^install\\s+" + moduleName + "\\s+(/usr)?/bin/(true|false)");
+        if (!MultilineRegexSearch(modprobeOutput.Value(), modprobeBlacklistRegex))
+        {
+            return indicators.NonCompliant("Module " + moduleName + " is not blacklisted in modprobe configuration");
+        }
+
+        regex modprobeInstallRegex;
+        try
+        {
+            modprobeInstallRegex = regex("^install\\s+" + moduleName + "\\s+(/usr)?/bin/(true|false)");
+        }
+        catch (std::exception& e)
+        {
+            return Error(e.what());
+        }
+        if (!MultilineRegexSearch(modprobeOutput.Value(), modprobeInstallRegex))
+        {
+            return indicators.NonCompliant("Module " + moduleName + " is not masked in modprobe configuration");
+        }
     }
-    catch (std::exception& e)
+    else
     {
-        return Error(e.what());
-    }
-    if (!MultilineRegexSearch(modprobeOutput.Value(), modprobeInstallRegex))
-    {
-        return indicators.NonCompliant("Module " + moduleName + " is not masked in modprobe configuration");
+        indicators.Compliant("Failed to execute modprobe: " + modprobeOutput.Error().message + ", ignoring modprobe output");
     }
 
     return indicators.Compliant("Module " + moduleName + " is disabled");
