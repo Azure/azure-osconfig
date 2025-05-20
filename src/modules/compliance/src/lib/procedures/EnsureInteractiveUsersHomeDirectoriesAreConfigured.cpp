@@ -35,7 +35,7 @@ Result<set<string>> ListValidShells(ContextInterface& context)
     if (!shellsFile.is_open())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to open %s file", etcShellsPath);
-        return Error(std::string("Failed to open ") + etcShellsPath + " file", EINVAL);
+        return Error(string("Failed to open ") + etcShellsPath + " file", EINVAL);
     }
     string line;
     while (std::getline(shellsFile, line))
