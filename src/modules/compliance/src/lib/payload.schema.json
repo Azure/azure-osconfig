@@ -143,6 +143,9 @@
           "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureMountPointExists.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureNoDuplicateEntriesExist.schema.json#/definitions/audit"
         },
         {
@@ -190,6 +193,9 @@
         },
         {
           "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureMountPointExists.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureNoDuplicateEntriesExist.schema.json#/definitions/remediation"
