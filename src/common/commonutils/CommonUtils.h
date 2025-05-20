@@ -179,6 +179,7 @@ bool IsRedHatBased(OsConfigLogHandle log);
 bool IsCommodore(OsConfigLogHandle log);
 bool IsSelinuxPresent(void);
 bool DetectSelinux(OsConfigLogHandle log);
+int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandle log);
 
 void RemovePrefix(char* target, char marker);
 void RemovePrefixBlanks(char* target);

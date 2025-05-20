@@ -921,3 +921,30 @@ bool DetectSelinux(OsConfigLogHandle log)
 
     return status;
 }
+
+int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandle log)
+{
+    const char* command = "grep -v '^#' /etc/security/limits.conf | grep 'hard[[:space:]]\+core' | tr '\t' ' ' | tr -s ' ' | cut -d' ' -f4";
+    char* textResult = NULL;
+    int status = ENOENT;
+
+    if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log)) && textResult)
+    {
+        RemovePrefixBlanks(textResult);
+        RemoveTrailingBlanks(textResult);
+        
+        if (0 == strcmp("0", textResult))
+        {
+            OsConfigCaptureSuccessReason(reason, "'*hard core 0' is set and uncommented in '/etc/security/limits.conf'");
+            status = 0;
+        }
+        else
+        {
+            OsConfigCaptureReason(reason, "'*hard core 0' is not set or commenetd out in '/etc/security/limits.conf'");
+        }
+    }
+
+    FREE_MEMORY(textResult);
+
+    return status;
+}

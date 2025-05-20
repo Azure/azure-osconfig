@@ -373,15 +373,11 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
         return EINVAL;
     }
 
-    // S_ISUID (4000): Set user ID on execution
-    // S_ISGID (2000): Set group ID on execution
     // S_IRUSR (0400): Read permission, owner
     // S_IWUSR (0200): Write permission, owner
     // S_IRGRP (0040): Read permission, group
     // S_IWGRP (0020): Write permission, group.
-    // S_IXUSR (0100): Execute/search permission, owner
-    // S_IXGRP (0010): Execute/search permission, group
-
+    
     return chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 }
 

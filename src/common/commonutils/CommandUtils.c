@@ -56,9 +56,9 @@ void CleanupMockCommands()
 
 #define BUFFER_SIZE 1024
 
-int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds,
-    char** textResult, CommandCallback callback, OsConfigLogHandle log)
+int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, OsConfigLogHandle log)
 {
+    const size_t bufferSize = 1024;
     int workerPid = -1;
     int pipefd[2] = {0};
     long startTime = 0;
@@ -166,7 +166,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             int bytesRead = 0;
             int inputBufferPos = 0;
             long currentTime = 0;
-            char buffer[BUFFER_SIZE] = {0};
+            char buffer[bufferSize] = {0};
             fd_set fdset;
             int ret = 0;
             char* tmp = NULL;
@@ -217,14 +217,14 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                 continue;
             }
 
-            bytesRead = read(pipefd[0], buffer, BUFFER_SIZE);
+            bytesRead = read(pipefd[0], buffer, bufferSize);
             if (bytesRead == 0)
             {
                 // Child closed the pipe, we are done.
                 status = 0;
                 break;
             }
-            if (bytesRead < 0)
+            else if (bytesRead < 0)
             {
                 if (EINTR == errno)
                 {
@@ -261,9 +261,9 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             {
                 // Copy the data. Following characters are replaced with spaces:
                 // all special characters from 0x00 to 0x1F except 0x0A (LF) when replaceEol is false
-                // plus 0x22 (") and 0x5C (\) characters that break the JSON envelope when forJson is true
+                // plus 0x22 ("), TAB (0x09), and 0x5C (\) characters that may break the JSON envelope when forJson is true
                 const char c = buffer[inputBufferPos];
-                if ((replaceEol && (EOL == c)) || ((c < 0x20) && (EOL != c)) || (0x7F == c) || (forJson && (('"' == c) || ('\\' == c))))
+                if ((replaceEol && (EOL == c)) || ((c < 0x20) && (EOL != c)) || (0x7F == c) || (forJson && (('"' == c) || (0x09 == c) || ('\\' == c))))
                 {
                     (*textResult)[outputBufferPos] = ' ';
                 }
