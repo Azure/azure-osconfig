@@ -16,14 +16,16 @@
           "path": "$PATH",
           "filenamePattern": "$FILENAME",
           "matchOperation": "$OPERATION",
-          "matchPattern": "$PATTERN"
+          "matchPattern": "$PATTERN",
+          "behavior": "$BEHAVIOR"
         }
       },
       "parameters": {
         "OPERATION": "pattern match",
         "PATTERN": ".*",
         "PATH": "/tmp",
-        "FILENAME": "testfile"
+        "FILENAME": "testfile",
+        "BEHAVIOR": "all_exist"
       }
     }
   },
@@ -34,7 +36,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern '.*' matched line 1 in file '\/tmp\/testfile' } == FALSE"
+    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
   },
   {
     "ObjectType": "Desired",
@@ -46,7 +48,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern 'foo' matched line 1 in file '\/tmp\/testfile' } == FALSE"
+    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
   },
 
 
@@ -61,7 +63,32 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern 'f.*o' matched line 1 in file '\/tmp\/testfile' } == FALSE"
+    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
+  },
+
+
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATTERN=f.*O"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "{ FileRegexMatch: pattern 'f.*O' did not match line 1 in file '\/tmp\/testfile' } == FALSE"
+  },
+
+  {
+    "RunCommand": "echo foooOx > /tmp/testfile"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
   },
 
 
@@ -79,8 +106,6 @@
     "Payload": "PASS{ FileRegexMatch:  } == TRUE"
   },
 
-
-
   {
     "RunCommand": "echo foooOx > /tmp/testfile"
   },
@@ -88,7 +113,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern 'f.*O' matched line 1 in file '\/tmp\/testfile' } == FALSE"
+    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
   },
 
 
@@ -104,7 +129,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+' matched line 1 in file '\/etc\/passwd' } == FALSE"
+    "Payload": "{ FileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+' did not match line 2 in file '\/etc\/passwd' } == FALSE"
   },
 
 
@@ -119,7 +144,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
+    "Payload": "{ FileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+$' did not match line 1 in file '\/etc\/passwd' } == FALSE"
   },
 
 
@@ -134,7 +159,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern '^[^:#]+:.*' matched line 1 in file '\/etc\/passwd' } == FALSE"
+    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
   },
 
 
@@ -152,7 +177,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern '^[^:#]+::' matched line 1 in file '\/tmp\/passwd' } == FALSE"
+    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
   },
   {
     "RunCommand": "echo '#testuser::1111:1111::/home/someuser:/bin/sh' > /tmp/passwd"
@@ -161,11 +186,43 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
+    "Payload": "{ FileRegexMatch: pattern '^[^:#]+::' did not match line 1 in file '\/tmp\/passwd' } == FALSE"
   },
 
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "initTest",
+    "Payload": "PATH=/tmp/non-existing-dir FILENAME='^passwd$' PATTERN=^[^:#]+:: BEHAVIOR=none_exist"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
+  },
+  {
+    "RunCommand": "mkdir -p /tmp/non-existing-dir"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ FileRegexMatch: No files matched the filename pattern '^passwd$' } == TRUE"
+  },
+  {
+    "RunCommand": "echo 'not the searched pattern' >   /tmp/non-existing-dir/passwd"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ FileRegexMatch: pattern '^[^:#]+::' did not match line 1 in file '\/tmp\/non-existing-dir\/passwd' } == TRUE"
+  },
 
-
+  {
+    "RunCommand": "rm -rf /tmp/non-existing-dir"
+  },
   {
     "RunCommand": "rm -f /tmp/passwd"
   },

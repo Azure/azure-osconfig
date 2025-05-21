@@ -92,6 +92,9 @@ void FactExistenceValidator::CriteriaUnmet()
         case Behavior::AllExist:
             mState = Status::NonCompliant;
             break;
+        case Behavior::NoneExist:
+            mState = Status::Compliant;
+            break;
         default:
             break;
     }

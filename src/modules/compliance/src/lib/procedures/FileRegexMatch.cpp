@@ -26,15 +26,22 @@ using MatchStateSyntaxOptions = std::pair<syntax_option_type, syntax_option_type
 // If a line matches the matchPattern, it checks if the statePattern (if provided) also matches.
 // Based on the result of the matches, fact existence validator is used to determine
 // if the criteria is met or unmet based on the behavior specified in the arguments.
+// in case of non existing file and Behavior::NoneExist success is expected
 Result<Status> MultilineMatch(const std::string& filename, const string& matchPattern, const Optional<string>& statePattern,
     MatchStateSyntaxOptions syntaxOptions, Behavior behavior, IndicatorsTree& indicators, ContextInterface& context)
 {
     Optional<regex> matchRegex;
     Optional<regex> stateRegex;
+    FactExistenceValidator validator(behavior);
 
     ifstream input(filename);
     if (!input.is_open())
     {
+        if (behavior == Behavior::NoneExist)
+        {
+            validator.CriteriaUnmet();
+            return validator.Result();
+        }
         return Error("Failed to open file: " + filename, ENOENT);
     }
 
@@ -52,7 +59,6 @@ Result<Status> MultilineMatch(const std::string& filename, const string& matchPa
         return Error("Regex error: " + string(e.what()), EINVAL);
     }
 
-    FactExistenceValidator validator(behavior);
     int lineNumber = 0;
     string line;
     while (!validator.Done() && getline(input, line))
@@ -218,7 +224,7 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         }
     }
 
-    auto behavior = Behavior::NoneExist;
+    auto behavior = Behavior::AllExist;
     it = args.find("behavior");
     if (it != args.end())
     {
@@ -247,6 +253,10 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     {
         int status = errno;
         OsConfigLogInfo(context.GetLogHandle(), "Failed to open directory '%s': %s", path.c_str(), strerror(status));
+        if (behavior == Behavior::NoneExist)
+        {
+            return Status::Compliant;
+        }
         return Error("Failed to open directory '" + path + "': " + strerror(status), status);
     }
 
@@ -297,7 +307,7 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         return result;
     }
 
-    if (!matchedAnyFilename)
+    if (!matchedAnyFilename && behavior == Behavior::NoneExist)
     {
         return indicators.Compliant("No files matched the filename pattern '" + filenamePattern + "'");
     }
