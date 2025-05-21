@@ -150,7 +150,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_1)
     mArgs["matchOperation"] = "pattern match";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_Match_2)
@@ -160,6 +160,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_2)
     mArgs["filenamePattern"] = "1";
     mArgs["matchPattern"] = "test";
     mArgs["matchOperation"] = "pattern match";
+    mArgs["behavior"] = "none_exist";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
@@ -174,7 +175,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_3)
     mArgs["matchOperation"] = "pattern match";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::Compliant);
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_Match_4)
@@ -186,7 +187,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_4)
     mArgs["matchOperation"] = "pattern match";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_Match_5)
@@ -198,7 +199,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_5)
     mArgs["matchOperation"] = "pattern match";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_Match_6)
@@ -210,7 +211,7 @@ TEST_F(FileRegexMatchTest, Audit_Match_6)
     mArgs["matchOperation"] = "pattern match";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_CaseInsensitive_1)
@@ -223,7 +224,7 @@ TEST_F(FileRegexMatchTest, Audit_CaseInsensitive_1)
     mArgs["ignoreCase"] = "matchPattern";
     auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(FileRegexMatchTest, Audit_State_1)
