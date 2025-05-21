@@ -572,13 +572,13 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePasswordCreationRequirements",
-    "Payload": "3,14,4,-1,-1,-1,-1"
+    "Payload": "1,14,4,-1,-1,-1,-1"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePasswordCreationRequirements",
-    "Payload": "3,14,4,-1,-1,-1,-1"
+    "Payload": "1,14,4,-1,-1,-1,-1"
   },
   {
     "ObjectType": "Desired",
@@ -1773,7 +1773,7 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsurePasswordCreationRequirements",
-    "Payload": "3,14,4,-1,-1,-1,-1"
+    "Payload": "1,14,4,-1,-1,-1,-1"
   },
   {
     "ObjectType": "Reported",
