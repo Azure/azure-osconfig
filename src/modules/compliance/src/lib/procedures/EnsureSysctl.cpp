@@ -156,7 +156,7 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
         }
     }
     // we found a match with correct value
-    if (found && not invalid)
+    if (found && !invalid)
     {
         return indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "'");
     }
