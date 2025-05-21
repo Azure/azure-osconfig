@@ -64,7 +64,7 @@ AUDIT_FN(EnsureRootPath)
             auto owner = getpwuid(statbuf.st_uid);
             if (!owner || std::string(owner->pw_name) != "root")
             {
-                return indicators.NonCompliant("Directory '" + path + "' from root's PATH is owned by: " + (owner ? owner->pw_name : "unknown"));
+                return indicators.NonCompliant("Directory '" + path + "' from root's PATH is not owned by root");
             }
 
             if ((statbuf.st_mode & 0777) & ~maxPerm)
@@ -81,6 +81,6 @@ AUDIT_FN(EnsureRootPath)
         }
     }
 
-    return indicators.Compliant("Root's PATH is compliant");
+    return indicators.Compliant("Root's PATH does not contain dangerous entries.");
 }
 } // namespace compliance
