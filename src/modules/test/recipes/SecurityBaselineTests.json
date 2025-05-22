@@ -6,6 +6,9 @@
     "RunCommand": "useradd securitybaselinetest2 && id securitybaselinetest2"
   },
   {
+    "RunCommand": "echo -e "#* hard core 0\n     #    * hard core 0\n* hard core 0\n*     hard        core     0" | sudo tee /etc/security/limits.d/test.conf > /dev/null"
+  },
+  {
     "Action": "LoadModule",
     "Module": "securitybaseline.so"
   },
@@ -175,6 +178,11 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureLoggingLevel"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureCoreDumpsAreRestricted"
   },
   {
     "ObjectType": "Desired",
@@ -2634,6 +2642,17 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
+  },
+  // --------------------------------------------------------------------------------
+  // Additional test for auditEnsureCoreDumpsAreRestricted
+  // --------------------------------------------------------------------------------
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureCoreDumpsAreRestricted"
+  },
+  {
+    "RunCommand": "rm /etc/security/limits.d/test.conf"
   },
   {
     "Action": "UnloadModule"
