@@ -34,6 +34,9 @@
   // },
 
   {
+    "RunCommand": "sysctl net.ipv4.conf.default.log_martians=0"
+  },
+  {
     "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf && cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.bak ||  true ; echo net.ipv4.conf.default.log_martians=0 >> /etc/sysctl.d/99-sysctl.conf"
   },
   {
