@@ -935,7 +935,7 @@ int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandl
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
 
-        if (0 == strncmp("0", 1, textResult))
+        if (0 == strncmp("0", textResult, 1))
         {
             OsConfigCaptureSuccessReason(reason, "'*hard core 0' is present uncommented in '/etc/security/limits.conf'");
             status = 0;
@@ -956,7 +956,7 @@ int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandl
             RemovePrefixBlanks(textResult);
             RemoveTrailingBlanks(textResult);
 
-            if (0 == strncmp("0", 1, textResult))
+            if (0 == strncmp("0", textResult, 1))
             {
                 OsConfigCaptureSuccessReason(reason, "'*hard core 0' is present uncommented in a file under '/etc/security/limits.d/'");
                 status = 0;
