@@ -3663,6 +3663,13 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, OsConfigLogHandle 
 {
     int status = 0;
     UNUSED(value);
+
+    if (0 == CheckCoreDumpsHardLimitIsDisabledForAllUsers(NULL, log)) && 
+        (0 == CheckLineFoundNotCommentedOut(g_sysCtlConf, '#', g_fsSuidDumpable, NULL, log)))
+    {
+        return status;
+    }
+
     if (0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, "hard core", g_hardCoreZero, '#', true, log)))
     {
         if (false == FileExists(g_sysCtlConf))
@@ -3674,6 +3681,7 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, OsConfigLogHandle 
             status = ReplaceMarkedLinesInFile(g_sysCtlConf, "fs.suid_dumpable", g_fsSuidDumpable, '#', true, log);
         }
     }
+    
     return status;
 }
 
