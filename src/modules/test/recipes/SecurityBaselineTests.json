@@ -6,9 +6,6 @@
     "RunCommand": "useradd securitybaselinetest2 && id securitybaselinetest2"
   },
   {
-    "RunCommand": "\"echo -e \"#* hard core 0\\n     #    * hard core 0\\n* hard core 0\\n*     hard        core     0\" | sudo tee /etc/security/limits.d/test.conf > /dev/null\""
-  },
-  {
     "Action": "LoadModule",
     "Module": "securitybaseline.so"
   },
@@ -178,11 +175,6 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureLoggingLevel"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureCoreDumpsAreRestricted"
   },
   {
     "ObjectType": "Desired",
@@ -2646,6 +2638,9 @@
   // --------------------------------------------------------------------------------
   // Additional test for auditEnsureCoreDumpsAreRestricted
   // --------------------------------------------------------------------------------
+  {
+    "RunCommand": "\"echo -e \"#* hard core 0\\n     #    * hard core 0\\n* hard core 0\\n*     hard        core     0\" | sudo tee /etc/security/limits.d/test.conf > /dev/null\""
+  },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
