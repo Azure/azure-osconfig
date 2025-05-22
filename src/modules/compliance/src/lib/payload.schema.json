@@ -143,10 +143,16 @@
           "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureMountPointExists.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureNoDuplicateEntriesExist.schema.json#/definitions/audit"
         },
         {
           "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/EnsureRootPath.schema.json#/definitions/audit"
         },
         {
           "$ref": "procedures/EnsureSshdOption.schema.json#/definitions/audit"
@@ -192,10 +198,16 @@
           "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/remediation"
         },
         {
+          "$ref": "procedures/EnsureMountPointExists.schema.json#/definitions/remediation"
+        },
+        {
           "$ref": "procedures/EnsureNoDuplicateEntriesExist.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureRootPath.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureSshdOption.schema.json#/definitions/remediation"

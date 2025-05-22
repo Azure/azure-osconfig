@@ -466,7 +466,7 @@ static const char* g_defaultEnsurePasswordExpirationWarning = "7";
 static const char* g_defaultEnsureDefaultUmaskForAllUsers = "077";
 static const char* g_defaultEnsurePermissionsOnBootloaderConfig = "400";
 static const char* g_defaultEnsurePasswordReuseIsLimited = "5";
-static const char* g_defaultEnsurePasswordCreationRequirements = "3,14,4,-1,-1,-1,-1";
+static const char* g_defaultEnsurePasswordCreationRequirements = "1,14,4,-1,-1,-1,-1";
 static const char* g_defaultEnsureFilePermissionsForAllRsyslogLogFiles = "600,640";
 static const char* g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable = "600,644,664,700,744";
 static const char* g_defaultEnsureUnnecessaryAccountsAreRemoved = "games,test";
@@ -594,9 +594,10 @@ static const char* g_rcpSocket = "rcp.socket";
 static const char* g_rshSocket = "rsh.socket";
 static const char* g_hardCoreZero = "*\thard\tcore\t0\n";
 static const char* g_fsSuidDumpable = "fs.suid_dumpable = 0";
+static const char* g_bootGrubGrubCfg = "/boot/grub/grub.cfg";
 static const char* g_bootGrubGrubConf = "/boot/grub/grub.conf";
 static const char* g_bootGrub2GrubCfg = "/boot/grub2/grub.cfg";
-static const char* g_bootGrubGrubCfg = "/boot/grub/grub.cfg";
+static const char* g_bootGrub2GrubConf = "/boot/grub2/grub.conf";
 static const char* g_minSambaProtocol = "min protocol = SMB2";
 static const char* g_login = "login";
 
@@ -2010,7 +2011,9 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(OsConfigLogHandle log)
 
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubCfg, 0, 0, mode, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubConf, 0, 0, mode, &reason, log));
-    CheckFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, &reason, log));
+    CheckFileAccess(g_bootGrub2GrubConf, 0, 0, mode, &reason, log);
+
     return reason;
 }
 
@@ -2440,7 +2443,7 @@ static char* AuditEnsurePostfixPackageIsUninstalled(OsConfigLogHandle log)
 static char* AuditEnsurePostfixNetworkListeningIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    if (0 == CheckFileExists(g_etcPostfixMainCf, &reason, log))
+    if ((0 != CheckPackageNotInstalled(g_postfix, &reason, log)) && (0 == CheckFileExists(g_etcPostfixMainCf, &reason, log)))
     {
         CheckTextIsFoundInFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, &reason, log);
     }
@@ -3638,7 +3641,8 @@ static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, OsConfigLog
 
     return ((FileExists(g_bootGrubGrubCfg) && (0 == SetFileAccess(g_bootGrubGrubCfg, 0, 0, mode, log))) ||
         (FileExists(g_bootGrubGrubConf) && (0 == SetFileAccess(g_bootGrubGrubConf, 0, 0, mode, log))) ||
-        (FileExists(g_bootGrub2GrubCfg) && (0 == SetFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, log)))) ? 0 : ENOENT;
+        (FileExists(g_bootGrub2GrubCfg) && (0 == SetFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, log))) ||
+        (FileExists(g_bootGrub2GrubConf) && (0 == SetFileAccess(g_bootGrub2GrubConf, 0, 0, mode, log)))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePasswordReuseIsLimited(char* value, OsConfigLogHandle log)
@@ -4025,14 +4029,19 @@ static int RemediateEnsurePostfixPackageIsUninstalled(char* value, OsConfigLogHa
 static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    return DisablePostfixNetworkListening(log);
+    int result = 0;
+    if (0 == IsPackageInstalled(g_postfix, log))
+    {
+        result = DisablePostfixNetworkListening(log);
+    }
+    return result;
 }
 
 static int CheckAndFreeReason(char *reason)
 {
-    int ret = (0 == strncmp(g_pass, reason, strlen(g_pass))) ? 0 : ENOENT;
+    int result = (0 == strncmp(g_pass, reason, strlen(g_pass))) ? 0 : ENOENT;
     FREE_MEMORY(reason);
-    return ret;
+    return result;
 }
 
 static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, OsConfigLogHandle log)
