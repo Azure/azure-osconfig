@@ -190,7 +190,7 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
         return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + runSysctlValue + "' found in: '" +
                                        fileName + "'");
     }
-    return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + " not found in system");
+    return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' not found in system");
 }
 
 namespace
