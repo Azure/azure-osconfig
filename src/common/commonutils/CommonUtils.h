@@ -27,6 +27,11 @@
 #define EOL 10
 #endif
 
+// Tab ASCII character
+#ifndef TAB
+#define TAB 9
+#endif
+
 #define DEFAULT_DEVICE_MODEL_ID 16
 
 #define MAX_COMPONENT_NAME 256
@@ -179,6 +184,7 @@ bool IsRedHatBased(OsConfigLogHandle log);
 bool IsCommodore(OsConfigLogHandle log);
 bool IsSelinuxPresent(void);
 bool DetectSelinux(OsConfigLogHandle log);
+int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandle log);
 
 void RemovePrefix(char* target, char marker);
 void RemovePrefixBlanks(char* target);

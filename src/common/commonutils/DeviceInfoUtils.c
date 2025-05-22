@@ -921,3 +921,54 @@ bool DetectSelinux(OsConfigLogHandle log)
 
     return status;
 }
+
+int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandle log)
+{
+    const char* checkLimitsConf = "grep -v '^[[:space:]]*#' /etc/security/limits.conf | grep 'hard[[:space:]]\\+core' | tr '\\t' ' ' | tr -s ' ' | cut -d' ' -f4";
+    const char* checkUnderLimitsD = "grep -rh '^[[:space:]]*\\*[[:space:]]\\+hard[[:space:]]\\+core[[:space:]]\\+[0-9]\\+' /etc/security/limits.d/ 2>/dev/null | tr '\\t' ' ' | tr -s ' ' | cut -d' ' -f4";
+    char* textResult = NULL;
+    int status = ENOENT;
+
+    // Check /etc/security/limits.conf for containing uncommented lines of "* hard core 0" where separators can be tab characters or any number of spaces
+    if ((0 == ExecuteCommand(NULL, checkLimitsConf, true, true, 0, 0, &textResult, NULL, log)) && textResult)
+    {
+        RemovePrefixBlanks(textResult);
+        RemoveTrailingBlanks(textResult);
+
+        if (0 == strncmp("0", textResult, 1))
+        {
+            OsConfigCaptureSuccessReason(reason, "'*hard core 0' is present uncommented in '/etc/security/limits.conf'");
+            status = 0;
+        }
+        else
+        {
+            OsConfigCaptureReason(reason, "'*hard core 0' is not present or is commented out in '/etc/security/limits.conf'");
+        }
+    }
+
+    FREE_MEMORY(textResult);
+
+    if (0 != status)
+    {
+        // If not found, also check all files under /etc/security/limits.d/ if they contain any such line:
+        if ((0 == ExecuteCommand(NULL, checkUnderLimitsD, true, true, 0, 0, &textResult, NULL, log)) && textResult)
+        {
+            RemovePrefixBlanks(textResult);
+            RemoveTrailingBlanks(textResult);
+
+            if (0 == strncmp("0", textResult, 1))
+            {
+                OsConfigCaptureSuccessReason(reason, "'*hard core 0' is present uncommented in a file under '/etc/security/limits.d/'");
+                status = 0;
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "'*hard core 0' is not present in any file, or is commented out under '/etc/security/limits.d/'");
+            }
+        }
+
+        FREE_MEMORY(textResult);
+    }
+
+    return status;
+}

@@ -56,8 +56,7 @@ void CleanupMockCommands()
 
 #define BUFFER_SIZE 1024
 
-int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds,
-    char** textResult, CommandCallback callback, OsConfigLogHandle log)
+int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, OsConfigLogHandle log)
 {
     int workerPid = -1;
     int pipefd[2] = {0};
@@ -224,7 +223,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                 status = 0;
                 break;
             }
-            if (bytesRead < 0)
+            else if (bytesRead < 0)
             {
                 if (EINTR == errno)
                 {
@@ -261,9 +260,9 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             {
                 // Copy the data. Following characters are replaced with spaces:
                 // all special characters from 0x00 to 0x1F except 0x0A (LF) when replaceEol is false
-                // plus 0x22 (") and 0x5C (\) characters that break the JSON envelope when forJson is true
+                // plus 0x22 (") and 0x5C (\) characters that break the JSON envelope plus TAB when forJson is true
                 const char c = buffer[inputBufferPos];
-                if ((replaceEol && (EOL == c)) || ((c < 0x20) && (EOL != c)) || (0x7F == c) || (forJson && (('"' == c) || ('\\' == c))))
+                if ((replaceEol && (EOL == c)) || ((c < 0x20) && (EOL != c)) || (0x7F == c) || (forJson && (('"' == c) || (TAB == c) || ('\\' == c))))
                 {
                     (*textResult)[outputBufferPos] = ' ';
                 }
@@ -282,6 +281,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         close(pipefd[0]);
         kill(workerPid, SIGKILL);
         waitpid(workerPid, &childStatus, 0);
+
         if (status == 0)
         {
             // The command was successful, but we need to check the child process status.

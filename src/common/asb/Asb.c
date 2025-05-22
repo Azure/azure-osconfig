@@ -592,7 +592,7 @@ static const char* g_logrotateTimer = "logrotate.timer";
 static const char* g_telnet = "telnet";
 static const char* g_rcpSocket = "rcp.socket";
 static const char* g_rshSocket = "rsh.socket";
-static const char* g_hardCoreZero = "* hard core 0";
+static const char* g_hardCoreZero = "*\thard\tcore\t0\n";
 static const char* g_fsSuidDumpable = "fs.suid_dumpable = 0";
 static const char* g_bootGrubGrubCfg = "/boot/grub/grub.cfg";
 static const char* g_bootGrubGrubConf = "/boot/grub/grub.conf";
@@ -2035,7 +2035,7 @@ static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(OsConfigLogHandle 
 static char* AuditEnsureCoreDumpsAreRestricted(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcSecurityLimitsConf, '#', g_hardCoreZero, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckCoreDumpsHardLimitIsDisabledForAllUsers(&reason, log));
     CheckLineFoundNotCommentedOut(g_sysCtlConf, '#', g_fsSuidDumpable, &reason, log);
     return reason;
 }
@@ -3663,6 +3663,13 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, OsConfigLogHandle 
 {
     int status = 0;
     UNUSED(value);
+
+    if ((0 == CheckCoreDumpsHardLimitIsDisabledForAllUsers(NULL, log)) &&
+        (0 == CheckLineFoundNotCommentedOut(g_sysCtlConf, '#', g_fsSuidDumpable, NULL, log)))
+    {
+        return status;
+    }
+
     if (0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, "hard core", g_hardCoreZero, '#', true, log)))
     {
         if (false == FileExists(g_sysCtlConf))
@@ -3674,6 +3681,7 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, OsConfigLogHandle 
             status = ReplaceMarkedLinesInFile(g_sysCtlConf, "fs.suid_dumpable", g_fsSuidDumpable, '#', true, log);
         }
     }
+
     return status;
 }
 

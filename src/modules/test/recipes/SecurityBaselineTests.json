@@ -2635,6 +2635,20 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
   },
+  // --------------------------------------------------------------------------------
+  // Additional test for auditEnsureCoreDumpsAreRestricted
+  // --------------------------------------------------------------------------------
+  {
+    "RunCommand": "echo -e '#* hard core 0\\n     #    * hard core 0\\n* hard core 0\\n*     hard        core     0' | sudo tee /etc/security/limits.d/test.conf > /dev/null"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureCoreDumpsAreRestricted"
+  },
+  {
+    "RunCommand": "rm /etc/security/limits.d/test.conf"
+  },
   {
     "Action": "UnloadModule"
   }
