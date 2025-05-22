@@ -580,48 +580,29 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, OsConfigLogH
     return status;
 }
 
-static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
+static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
 {
-    char* banner = DuplicateStringToLowercase(g_sshBanner);
-    char* actualValue = NULL;
-    char* contents = NULL;
+    const char* banner = "banner";
+    char* bannerPath = NULL;
     int status = 0;
 
-    if (0 == IsSshServerActive(log))
+    if (0 != IsSshServerActive(log))
     {
-        if ((NULL == bannerFile) || (NULL == bannerText))
-        {
-            OsConfigLogError(log, "CheckSshWarningBanner: invalid arguments");
-            status = EINVAL;
-        }
-        else if (0 == (status = CheckSshOptionIsSet(banner, bannerFile, &actualValue, reason, log)))
-        {
-            OsConfigResetReason(reason);
-
-            if (NULL == (contents = LoadStringFromFile(bannerFile, false, log)))
-            {
-                OsConfigLogInfo(log, "CheckSshWarningBanner: cannot read from '%s'", bannerFile);
-                OsConfigCaptureReason(reason, "'%s' is set to '%s' but the file cannot be read", banner, actualValue);
-                status = ENOENT;
-            }
-            else  if (0 != strcmp(contents, bannerText))
-            {
-                OsConfigLogInfo(log, "CheckSshWarningBanner: banner text is:\n%s instead of:\n%s", contents, bannerText);
-                OsConfigCaptureReason(reason, "Banner text from file '%s' is different from the expected text", bannerFile);
-                status = ENOENT;
-            }
-            else if (0 == (status = CheckFileAccess(bannerFile, 0, 0, desiredAccess, reason, log)))
-            {
-                OsConfigCaptureSuccessReason(reason, "%s reports that '%s' is set to '%s', this file has access '%u' and contains the expected banner text",
-                    g_sshServerService, banner, actualValue, desiredAccess);
-            }
-        }
-
-        FREE_MEMORY(contents);
-        FREE_MEMORY(actualValue);
+        return status;
     }
 
-    FREE_MEMORY(banner);
+    if (NULL != (bannerPath = GetSshServerState(banner, log)))
+    {
+        OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' found in SSH Server response set to '%s'", banner, bannerPath);
+        status = CheckFileExists(bannerPath, reason, log);
+        FREE_MEMORY(bannerPath);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' not found in SSH Server response", banner);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", banner);
+        status = ENOENT;
+    }
 
     OsConfigLogInfo(log, "CheckSshWarningBanner returning %d", status);
 
@@ -1425,8 +1406,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, OsConfigL
     }
     else if (0 == strcmp(name, g_auditEnsureSshWarningBannerIsEnabledObject))
     {
-        CheckSshWarningBanner(g_sshBannerFile, g_desiredSshWarningBannerIsEnabled ? g_desiredSshWarningBannerIsEnabled : g_sshDefaultSshBannerText,
-            strtol(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), reason, log);
+        CheckSshWarningBanner(reason, log);
     }
     else if (0 == strcmp(name, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
     {
