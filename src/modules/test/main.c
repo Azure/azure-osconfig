@@ -26,6 +26,8 @@
 #define RECIPE_STATUS "ExpectedResult"
 #define RECIPE_WAIT_SECONDS "WaitSeconds"
 #define SECURITY_BASELINE "SecurityBaseline"
+#define PASS_WILDCARD "\"PASS*\""
+#define NO_PASS_WILDCARD "\"^PASS*\""
 
 #define RECIPE_RUN_COMMAND "RunCommand"
 
@@ -459,9 +461,10 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 
         if (test->payload || asbAudit)
         {
+            reason = json_value_get_string(actualJsonValue);
             if (asbAudit)
             {
-                if (NULL == (reason = json_value_get_string(actualJsonValue)))
+                if (NULL == reason)
                 {
                     LOG_ERROR("Assertion failed, json_value_get_string('%s') failed", json_serialize_to_string(actualJsonValue));
                     result = -1;
@@ -474,6 +477,30 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                 else
                 {
                     LOG_INFO("Assertion passed with reason: '%s'", reason + strlen(SECURITY_AUDIT_PASS));
+                }
+            }
+            else if ((NULL != reason) && (NULL != test->payload) && (0 == strcmp(test->payload, PASS_WILDCARD)))
+            {
+                if (0 == strncmp(reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))
+                {
+                    LOG_INFO("Assertion passed with reason: '%s'", reason);
+                }
+                else
+                {
+                    LOG_ERROR("Assertion failed, expected: '%s...', actual: '%s'", SECURITY_AUDIT_PASS, reason);
+                    result = EFAULT;
+                }
+            }
+            else if ((NULL != reason) && (NULL != test->payload) && (0 == strcmp(test->payload, NO_PASS_WILDCARD)))
+            {
+                if (0 != strncmp(reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))
+                {
+                    LOG_INFO("Assertion passed with reason: '%s'", reason);
+                }
+                else
+                {
+                    LOG_ERROR("Assertion failed, expected no '%s...', actual: '%s'", SECURITY_AUDIT_PASS, reason);
+                    result = EFAULT;
                 }
             }
             else if (actualJsonValue != NULL)
