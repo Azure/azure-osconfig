@@ -929,7 +929,6 @@ int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandl
     char* textResult = NULL;
     int status = ENOENT;
 
-
     // Check /etc/security/limits.conf for containing uncommented lines of "* hard core 0" where separators can be tab characters or any number of spaces
     if ((0 == ExecuteCommand(NULL, checkLimitsConf, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
