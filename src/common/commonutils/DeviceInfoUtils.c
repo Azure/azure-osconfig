@@ -925,7 +925,7 @@ bool DetectSelinux(OsConfigLogHandle log)
 int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandle log)
 {
     const char* checkLimitsConf = "grep -v '^[[:space:]]*#' /etc/security/limits.conf | grep 'hard[[:space:]]\\+core' | tr '\\t' ' ' | tr -s ' ' | cut -d' ' -f4";
-    const char* checkUnderLimitsD = "grep -rh '^[[:space:]]*\*[[:space:]]\+hard[[:space:]]\+core[[:space:]]\+[0-9]\+' /etc/security/limits.d/ 2>/dev/null | tr '\t' ' ' | tr -s ' ' | cut -d' ' -f4";
+    const char* checkUnderLimitsD = "grep -rh '^[[:space:]]*\\*[[:space:]]\\+hard[[:space:]]\\+core[[:space:]]\\+[0-9]\+' /etc/security/limits.d/ 2>/dev/null | tr '\\t' ' ' | tr -s ' ' | cut -d' ' -f4";
     char* textResult = NULL;
     int status = ENOENT;
 
