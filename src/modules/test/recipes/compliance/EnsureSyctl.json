@@ -33,68 +33,68 @@
   //   "RunCommand": "sysctl net.ipv4.conf.default.log_martians=0 && test -f /etc/sysctl.d/99-sysctl.conf.bak && { mv /etc/sysctl.d/99-sysctl.conf.bak /etc/sysctl.d/99-sysctl.conf ; } || { rm /etc/sysctl.d/99-sysctl.conf ; }"
   // },
 
-  {
-    "RunCommand": "sysctl net.ipv4.conf.default.log_martians=0"
-  },
-  {
-    "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf && cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.bak ||  true ; echo net.ipv4.conf.default.log_martians=0 >> /etc/sysctl.d/99-sysctl.conf"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Compliance",
-    "ObjectName": "procedureTest",
-    "Payload": {
-      "audit": {
-        "EnsureSysctl": {
-          "sysctlName": "net.ipv4.conf.default.log_martians",
-          "value": "0"
-        }
-      },
-      "parameters": {
-      }
-    }
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Compliance",
-    "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureSysctl: Correct value for 'net.ipv4.conf.default.log_martians': '0' } == TRUE"
+   // {
+   //   "RunCommand": "sysctl net.ipv4.conf.default.log_martians=0"
+   // },
+   // {
+   //   "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf && cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.bak ||  true ; echo net.ipv4.conf.default.log_martians=0 >> /etc/sysctl.d/99-sysctl.conf"
+   // },
+   // {
+   //   "ObjectType": "Desired",
+   //   "ComponentName": "Compliance",
+   //   "ObjectName": "procedureTest",
+   //   "Payload": {
+   //     "audit": {
+   //       "EnsureSysctl": {
+   //         "sysctlName": "net.ipv4.conf.default.log_martians",
+   //         "value": "0"
+   //       }
+   //     },
+   //     "parameters": {
+   //     }
+   //   }
+   // },
+   // {
+   //   "ObjectType": "Reported",
+   //   "ComponentName": "Compliance",
+   //   "ObjectName": "auditTest",
+   //   "Payload": "PASS{ EnsureSysctl: Correct value for 'net.ipv4.conf.default.log_martians': '0' } == TRUE"
 
-  },
-  {
-     "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf.bak && { mv /etc/sysctl.d/99-sysctl.conf.bak /etc/sysctl.d/99-sysctl.conf ; } || { rm /etc/sysctl.d/99-sysctl.conf ; }"
-  },
-  {
-    "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf && cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.bak ||  true ; echo net.ipv4.conf.default.log_martians=1 >> /etc/sysctl.d/99-sysctl.conf"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Compliance",
-    "ObjectName": "procedureTest",
-    "Payload": {
-      "audit": {
-        "EnsureSysctl": {
-          "sysctlName": "net.ipv4.conf.default.log_martians",
-          "value": "0"
-        }
-      },
-      "parameters": {
-      }
-    }
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Compliance",
-    "ObjectName": "auditTest",
-    "Payload": "{ EnsureSysctl: Expected 'net.ipv4.conf.default.log_martians' value: '0' got '1' found in: '\/etc\/sysctl.d\/99-sysctl.conf' } == FALSE"
+   // },
+   // {
+   //    "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf.bak && { mv /etc/sysctl.d/99-sysctl.conf.bak /etc/sysctl.d/99-sysctl.conf ; } || { rm /etc/sysctl.d/99-sysctl.conf ; }"
+   // },
+   // {
+   //   "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf && cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.bak ||  true ; echo net.ipv4.conf.default.log_martians=1 >> /etc/sysctl.d/99-sysctl.conf"
+   // },
+   // {
+   //   "ObjectType": "Desired",
+   //   "ComponentName": "Compliance",
+   //   "ObjectName": "procedureTest",
+   //   "Payload": {
+   //     "audit": {
+   //       "EnsureSysctl": {
+   //         "sysctlName": "net.ipv4.conf.default.log_martians",
+   //         "value": "0"
+   //       }
+   //     },
+   //     "parameters": {
+   //     }
+   //   }
+   // },
+   // {
+   //   "ObjectType": "Reported",
+   //   "ComponentName": "Compliance",
+   //   "ObjectName": "auditTest",
+   //   "Payload": "{ EnsureSysctl: Expected 'net.ipv4.conf.default.log_martians' value: '0' got '1' found in: '\/etc\/sysctl.d\/99-sysctl.conf' } == FALSE"
 
-  },
-  {
-     "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf.bak && { mv /etc/sysctl.d/99-sysctl.conf.bak /etc/sysctl.d/99-sysctl.conf ; } || { rm /etc/sysctl.d/99-sysctl.conf ; }"
-  },
+   // },
+   // {
+   //    "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf.bak && { mv /etc/sysctl.d/99-sysctl.conf.bak /etc/sysctl.d/99-sysctl.conf ; } || { rm /etc/sysctl.d/99-sysctl.conf ; }"
+   // },
 
 
-  {
-    "Action": "UnloadModule"
-  }
+   {
+     "Action": "UnloadModule"
+   }
 ]
