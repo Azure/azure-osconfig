@@ -3664,7 +3664,7 @@ static int RemediateEnsureCoreDumpsAreRestricted(char* value, OsConfigLogHandle 
     int status = 0;
     UNUSED(value);
 
-    if (0 == CheckCoreDumpsHardLimitIsDisabledForAllUsers(NULL, log)) && 
+    if ((0 == CheckCoreDumpsHardLimitIsDisabledForAllUsers(NULL, log)) && 
         (0 == CheckLineFoundNotCommentedOut(g_sysCtlConf, '#', g_fsSuidDumpable, NULL, log)))
     {
         return status;
