@@ -1593,6 +1593,17 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureSshWarningBannerIsEnabled",
+    "Payload": "Test"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshWarningBannerIsEnabled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureUsersCannotSetSshEnvironmentOptions",
     "Payload": "no"
   },
