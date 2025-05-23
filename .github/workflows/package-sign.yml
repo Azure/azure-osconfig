@@ -52,7 +52,7 @@ jobs:
             --name ${{ inputs.esrpclient-blob-name }} `
             --file microsoft.esrpclient.nupkg `
             --auth-mode login
-          nuget install microsoft.esrpclient.nupkg -Source .
+          nuget install microsoft.esrpclient.nupkg -Source (Get-Location).Path
 
       - name: Sign package
         uses: ./.github/actions/sign-package
