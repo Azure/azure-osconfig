@@ -18,6 +18,7 @@ AUDIT_FN(EnsureRootPath)
 
     // Directory must not be world- or group-writable
     const int maxPerm = 0777 & ~0022;
+    // We're using sudo to get the proper root login shell, with the whole environment loaded.
     auto rootEnv = context.ExecuteCommand("sudo -Hiu root env");
     if (!rootEnv.HasValue())
     {

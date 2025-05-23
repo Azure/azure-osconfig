@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 #include <string>
+#include <sys/param.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -19,16 +20,13 @@ class EnsureRootPathTest : public ::testing::Test
 protected:
     MockContext mContext;
     IndicatorsTree indicators;
-    const std::string pathTemplate = "/tmp/pathTestXXXXXX";
     std::string path;
 
     void SetUp() override
     {
-        char* tmppath = strdup(pathTemplate.c_str());
-        mkdtemp(tmppath);
-        ASSERT_TRUE(tmppath != nullptr);
+        char tmppath[MAXPATHLEN] = "/tmp/pathTestXXXXXX";
+        ASSERT_TRUE(nullptr != mkdtemp(tmppath));
         path = tmppath;
-        free(tmppath);
         indicators.Push("EnsureRootPath");
     }
 
