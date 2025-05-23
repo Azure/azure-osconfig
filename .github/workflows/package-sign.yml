@@ -46,11 +46,11 @@ jobs:
           Remove-Item -Path out.pfx
 
           # Install latest ESRP Client from storage (The one on ES Image is stale)
-          az storage blob download \
-            --account-name osconfigstorageprod \
-            --container-name esrpclient \
-            --name ${{ inputs.esrpclient-blob-name }} \
-            --file microsoft.esrpclient.nupkg \
+          az storage blob download `
+            --account-name osconfigstorageprod `
+            --container-name esrpclient `
+            --name ${{ inputs.esrpclient-blob-name }} `
+            --file microsoft.esrpclient.nupkg `
             --auth-mode login
           nuget install microsoft.esrpclient.nupkg -Source .
 
