@@ -30,7 +30,9 @@ add_library(compliancelib STATIC
     ContextInterface.cpp
     Engine.cpp
     Evaluator.cpp
+    FilePermissionsHelpers.cpp
     Indicators.cpp
+    IterateUsers.cpp
     JsonWrapper.cpp
     Procedure.cpp
     ProcedureMap.cpp
