@@ -52,7 +52,11 @@ jobs:
             --name ${{ inputs.esrpclient-blob-name }} `
             --file microsoft.esrpclient.nupkg `
             --auth-mode login
-          nuget install microsoft.esrpclient.nupkg -Source (Get-Location).Path
+          dotnet nuget add source (Get-Location).Path --name LocalESRP
+          nuget install Microsoft.ESRPClient -Source LocalESRP
+          $dir=(Get-ChildItem -Filter "ESRPClient.exe" -Recurse -ErrorAction SilentlyContinue -Force | Select-Object -First 1 -ExpandProperty DirectoryName)
+          [Environment]::SetEnvironmentVariable("PATH", "$dir;$env:PATH", [EnvironmentVariableTarget]::User)
+          $env:Path = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::User)
 
       - name: Sign package
         uses: ./.github/actions/sign-package
