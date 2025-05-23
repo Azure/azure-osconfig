@@ -87,7 +87,7 @@ class Regex
         {
             flags |= REG_ICASE;
         }
-        if (options & std::regex_constants::extended)
+        if ((options & std::regex_constants::extended) || (options & std::regex_constants::ECMAScript))
         {
             flags |= REG_EXTENDED;
         }

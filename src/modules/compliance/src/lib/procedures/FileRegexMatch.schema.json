@@ -13,15 +13,19 @@
             "FileRegexMatch": {
               "type": "object",
               "required": [
-                "filename",
-                "matchOperation",
+                "path",
+                "filenamePattern",
                 "matchPattern"
               ],
               "additionalProperties": false,
               "properties": {
-                "filename": {
+                "path": {
                   "type": "string",
-                  "description": "Path to the file to check"
+                  "description": "A directory name contining files to check"
+                },
+                "filenamePattern": {
+                  "type": "string",
+                  "description": "A pattern to match file names in the provided path"
                 },
                 "matchOperation": {
                   "type": "string",
@@ -41,10 +45,15 @@
                   "type": "string",
                   "description": "The pattern to match against each line that matches the 'statePattern'"
                 },
-                "caseSensitive": {
+                "ignoreCase": {
                   "type": "string",
-                  "description": "Determine whether the match should be case sensitive, applies to both 'matchPattern' and 'statePattern'",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:(true|false)$|(^true|false$))"
+                  "description": "Determine whether the a match or state should be ignore case sensitivity  'matchPattern' and 'statePattern' or none when empty'",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((matchPattern\\sstatePattern|matchPattern|statePattern).*)$|(^(matchPattern\\sstatePattern|matchPattern|statePattern)))"
+                },
+                "behavior": {
+                  "type": "string",
+                  "description": "Determine the function behavior",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((all_exist|any_exist|at_least_one_exists|none_exist))$|(^(all_exist|any_exist|at_least_one_exists|none_exist)$))"
                 }
               }
             }
