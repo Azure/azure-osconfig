@@ -14,6 +14,10 @@ on:
       package-type:
         type: string
         required: true
+      esrpclient-blob-name:
+        description: The blob name of the ESRP client to download from Azure Storage.
+        type: string
+        default: microsoft.esrpclient.1.2.142.nupkg
 
 jobs:
   sign:
@@ -40,6 +44,15 @@ jobs:
           az keyvault secret download --vault-name "$env:AZURE_VAULT" --name "$env:REQUEST_SIGNING_CERT" --file out.pfx
           certutil -f -importpfx out.pfx
           Remove-Item -Path out.pfx
+
+          # Install latest ESRP Client from storage (The one on ES Image is stale)
+          az storage blob download \
+            --account-name osconfigstorageprod \
+            --container-name esrpclient \
+            --name ${{ inputs.esrpclient-blob-name }} \
+            --file microsoft.esrpclient.nupkg \
+            --auth-mode login
+          nuget install microsoft.esrpclient.nupkg -Source .
 
       - name: Sign package
         uses: ./.github/actions/sign-package
