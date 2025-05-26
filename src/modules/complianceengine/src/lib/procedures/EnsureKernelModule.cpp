@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "EnsureKernelModule.h"
+
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include "KernelModuleTools.h"
@@ -37,8 +39,7 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
         return indicators.NonCompliant("Module " + moduleName + " is loaded");
     }
 
-    auto isModuleBlackListed = IsKernelModuleBlocked(moduleName, indicators, context);
-    return isModuleBlackListed;
+    return IsKernelModuleBlocked(moduleName, indicators, context);
 }
 
 } // namespace ComplianceEngine
