@@ -67,7 +67,7 @@ endif()
 add_module(securitybaseline)
 add_module(configuration)
 add_module(deviceinfo)
-add_module(compliance)
+add_module(complianceengine)
 
 if (BUILD_MODULETEST)
     add_subdirectory(test)
