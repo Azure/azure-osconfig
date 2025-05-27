@@ -1,7 +1,7 @@
 [
   {
     "Action": "LoadModule",
-    "Module": "compliance.so"
+    "Module": "complianceengine.so"
   },
   {
     "RunCommand": "useradd securitybaselinetest && id securitybaselinetest"
@@ -11,7 +11,7 @@
   },
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
     "Payload": {
       "audit": {
@@ -28,7 +28,7 @@
   // Initial state should be clean
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
     "Payload": "PASS{ allOf: [{ EnsureAllGroupsFromEtcPasswdExistInEtcGroup: All user groups from '\/etc\/passwd' exist in '\/etc\/group' } == TRUE]} == TRUE"
   },
@@ -42,7 +42,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
     "Payload": "PASS{ allOf: [{ EnsureAllGroupsFromEtcPasswdExistInEtcGroup: All user groups from '\/etc\/passwd' exist in '\/etc\/group' } == TRUE]} == TRUE"
   },
@@ -61,7 +61,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureAllGroupsFromEtcPasswdArePresentInEtcGroup",
     "Payload": "{ allOf: [{ EnsureAllGroupsFromEtcPasswdExistInEtcGroup: User's 'securitybaselinetest2' group 8888 from \/etc\/passwd does not exist in \/etc\/group } == FALSE]} == FALSE"
   },

@@ -1,14 +1,14 @@
 [
   {
     "Action": "LoadModule",
-    "Module": "compliance.so"
+    "Module": "complianceengine.so"
   },
   {
     "RunCommand": "mkdir -p /var/lib/GuestConfig"
   },
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
@@ -20,13 +20,13 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ PackageInstalled: Package bash is installed } == TRUE"
   },
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
@@ -38,7 +38,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "{ PackageInstalled: Package nobodywouldnameapackagethis is not installed } == FALSE"
   },

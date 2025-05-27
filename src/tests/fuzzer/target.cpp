@@ -22,11 +22,11 @@
 #include <vector>
 #include <sstream>
 
-using compliance::Optional;
-using compliance::Result;
-using compliance::Error;
-using compliance::Evaluator;
-using compliance::action_func_t;
+using ComplianceEngine::Optional;
+using ComplianceEngine::Result;
+using ComplianceEngine::Error;
+using ComplianceEngine::Evaluator;
+using ComplianceEngine::action_func_t;
 
 // Tells libfuzzer to skip the input when it doesn't contain a valid target
 static const int c_skip_input = -1;
@@ -939,17 +939,17 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
     return 0;
 }
 
-static Result<bool> complianceFailure(std::map<std::string, std::string>, std::ostringstream&)
+static Result<bool> ComplianceEngineFailure(std::map<std::string, std::string>, std::ostringstream&)
 {
     return false;
 }
 
-static Result<bool> complianceSuccess(std::map<std::string, std::string>, std::ostringstream&)
+static Result<bool> ComplianceEngineSuccess(std::map<std::string, std::string>, std::ostringstream&)
 {
     return true;
 }
 
-static Result<bool> complianceParametrized(std::map<std::string, std::string> arguments, std::ostringstream&)
+static Result<bool> ComplianceEngineParametrized(std::map<std::string, std::string> arguments, std::ostringstream&)
 {
     auto it = arguments.find("result");
     if (it == arguments.end())
@@ -969,7 +969,7 @@ static Result<bool> complianceParametrized(std::map<std::string, std::string> ar
     return Error("Invalid 'result' parameter");
 }
 
-static Optional<std::map<std::string, std::string>> parseComplianceParams(const std::string& input)
+static Optional<std::map<std::string, std::string>> parseComplianceEngineParams(const std::string& input)
 {
     std::map<std::string, std::string> result;
     std::istringstream stream(input);
@@ -992,7 +992,7 @@ static Optional<std::map<std::string, std::string>> parseComplianceParams(const 
 
 static int Base64Decode_target(const char* data, std::size_t size) noexcept
 {
-    compliance::Base64Decode(std::string(data, size));
+    ComplianceEngine::Base64Decode(std::string(data, size));
     return c_valid_input;
 }
 
@@ -1006,7 +1006,7 @@ static int ProcedureUpdateUserParameters_target(const char* data, std::size_t si
             return c_skip_input;
         }
     }
-    compliance::Procedure proc;
+    ComplianceEngine::Procedure proc;
     proc.SetParameter("X", "1");
     proc.SetParameter("Y", "2");
     Optional<Error> error = proc.UpdateUserParameters(input);

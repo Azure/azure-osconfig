@@ -1,14 +1,14 @@
 [
   {
     "Action": "LoadModule",
-    "Module": "compliance.so"
+    "Module": "complianceengine.so"
   },
 
 
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
@@ -34,19 +34,19 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "initTest",
     "Payload": "PATTERN=foo"
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
@@ -55,13 +55,13 @@
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "initTest",
     "Payload": "PATTERN=f.*o"
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
@@ -70,13 +70,13 @@
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "initTest",
     "Payload": "PATTERN=f.*O"
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "{ FileRegexMatch: Expected all files to match, but only 0 out of 1 matched } == FALSE"
   },
@@ -86,7 +86,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
@@ -95,13 +95,13 @@
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "initTest",
     "Payload": "PATTERN=f.*O"
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
@@ -111,7 +111,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
@@ -121,13 +121,13 @@
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "initTest",
     "Payload": "PATH=/etc FILENAME='^passwd$' PATTERN=^root:x:[0-9]+:[0-9]+"
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
@@ -136,13 +136,13 @@
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "initTest",
     "Payload": "PATH=/etc FILENAME='^passwd$' PATTERN=^root:x:[0-9]+:[0-9]+$"
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "{ FileRegexMatch: Expected all files to match, but only 0 out of 1 matched } == FALSE"
   },
@@ -151,13 +151,13 @@
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "initTest",
     "Payload": "PATH=/etc FILENAME='^passwd$' PATTERN=^[^:#]+:.*"
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
@@ -166,7 +166,7 @@
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "initTest",
     "Payload": "PATH=/tmp FILENAME='^passwd$' PATTERN=^[^:#]+::"
   },
@@ -175,7 +175,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
@@ -184,20 +184,20 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "{ FileRegexMatch: Expected all files to match, but only 0 out of 1 matched } == FALSE"
   },
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "initTest",
     "Payload": "PATH=/tmp/non-existing-dir FILENAME='^passwd$' PATTERN=^[^:#]+:: BEHAVIOR=none_exist"
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ FileRegexMatch:  } == TRUE"
   },
@@ -206,7 +206,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ FileRegexMatch: No files matched the pattern } == TRUE"
   },
@@ -215,7 +215,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ FileRegexMatch: No files matched the pattern } == TRUE"
   },

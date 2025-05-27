@@ -1,14 +1,14 @@
 [
   {
     "Action": "LoadModule",
-    "Module": "compliance.so"
+    "Module": "complianceengine.so"
   },
   {
     "RunCommand": "useradd securitybaselinetest -K UID_MIN=8888 -K UID_MAX=8888 && id securitybaselinetest"
   },
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
@@ -30,7 +30,7 @@
   // No duplicate entries, this should be PASS
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ allOf: [{ EnsureNoDuplicateEntriesExist: No duplicate entries found in \/etc\/passwd } == TRUE]} == TRUE"
   },
@@ -43,7 +43,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "{ allOf: [{ EnsureNoDuplicateEntriesExist: Duplicate entry: '8888' } == FALSE]} == FALSE"
   },
@@ -56,7 +56,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ allOf: [{ EnsureNoDuplicateEntriesExist: No duplicate entries found in \/etc\/passwd } == TRUE]} == TRUE"
   },
@@ -84,7 +84,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "{ allOf: [{ EnsureNoDuplicateEntriesExist: Duplicate entry: '8888', Duplicate entry: '8889' } == FALSE]} == FALSE"
   },
