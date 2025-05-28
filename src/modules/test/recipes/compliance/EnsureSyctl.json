@@ -1,7 +1,7 @@
 [
   {
     "Action": "LoadModule",
-    "Module": "compliance.so"
+    "Module": "complianceengine.so"
   },
   // Comment out test setup and acctuall test of EnsureSysctl due to problem seting  sysctl relably in github containtes
   // {
@@ -9,7 +9,7 @@
   // },
   // {
   //   "ObjectType": "Desired",
-  //   "ComponentName": "Compliance",
+  //   "ComponentName": "ComplianceEngine",
   //   "ObjectName": "procedureTest",
   //   "Payload": {
   //     "audit": {
@@ -24,7 +24,7 @@
   // },
   // {
   //   "ObjectType": "Reported",
-  //   "ComponentName": "Compliance",
+  //   "ComponentName": "ComplianceEngine",
   //   "ObjectName": "auditTest",
   //   "Payload": "PASS{ EnsureSysctl: Correct value for 'net.ipv4.conf.default.log_martians': '1' } == TRUE"
   // },
@@ -41,7 +41,7 @@
    // },
    // {
    //   "ObjectType": "Desired",
-   //   "ComponentName": "Compliance",
+   //   "ComponentName": "ComplianceEngine",
    //   "ObjectName": "procedureTest",
    //   "Payload": {
    //     "audit": {
@@ -56,7 +56,7 @@
    // },
    // {
    //   "ObjectType": "Reported",
-   //   "ComponentName": "Compliance",
+   //   "ComponentName": "ComplianceEngine",
    //   "ObjectName": "auditTest",
    //   "Payload": "PASS{ EnsureSysctl: Correct value for 'net.ipv4.conf.default.log_martians': '0' } == TRUE"
 
@@ -69,7 +69,7 @@
    // },
    // {
    //   "ObjectType": "Desired",
-   //   "ComponentName": "Compliance",
+   //   "ComponentName": "ComplianceEngine",
    //   "ObjectName": "procedureTest",
    //   "Payload": {
    //     "audit": {
@@ -84,7 +84,7 @@
    // },
    // {
    //   "ObjectType": "Reported",
-   //   "ComponentName": "Compliance",
+   //   "ComponentName": "ComplianceEngine",
    //   "ObjectName": "auditTest",
    //   "Payload": "{ EnsureSysctl: Expected 'net.ipv4.conf.default.log_martians' value: '0' got '1' found in: '\/etc\/sysctl.d\/99-sysctl.conf' } == FALSE"
 

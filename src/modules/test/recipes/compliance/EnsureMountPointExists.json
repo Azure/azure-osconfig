@@ -1,13 +1,13 @@
 [
   {
     "Action": "LoadModule",
-    "Module": "compliance.so"
+    "Module": "complianceengine.so"
   },
 // This test assumes, that /proc is mounted and /usr/bin is not - should be safe everywhere.
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
@@ -21,14 +21,14 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ EnsureMountPointExists: Mount point \/proc is mounted } == TRUE"
   },
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
@@ -42,7 +42,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "{ EnsureMountPointExists: Mount point \/usr\/bin is not mounted } == FALSE"
   },

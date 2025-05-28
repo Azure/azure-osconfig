@@ -1,12 +1,12 @@
 [
   {
     "Action": "LoadModule",
-    "Module": "compliance.so"
+    "Module": "complianceengine.so"
   },
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
@@ -23,14 +23,14 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ SystemdUnitState: Success to match systemctl unit name 'foo.service' for name all params } == TRUE"
   },
 
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
@@ -47,13 +47,13 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "{ SystemdUnitState: Failed to match systemctl unit name 'foo.service' for name 'LoadState' for pattern 'active' for value 'not-found' } == FALSE"
   },
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
@@ -70,7 +70,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "SystemdUnitStateTestPayload": "PASS{ SystemdUnitState: Success to match systemctl unit name 'init.scope' for name all params } == TRUE"
   },

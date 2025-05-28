@@ -1,7 +1,7 @@
 [
   {
     "Action": "LoadModule",
-    "Module": "compliance.so"
+    "Module": "complianceengine.so"
   },
 
   // If the shadow group does not exist, create it (it does not exist on few distros)
@@ -17,7 +17,7 @@
   },
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureTest",
     "Payload": {
       "audit": {
@@ -41,7 +41,7 @@
   // Audit must fail as the user has shadow as primary group
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: User's 'securitybaselinetest' primary group is 'shadow' } == FALSE]} == FALSE"
   },
@@ -60,7 +60,7 @@
   // This is expected to pass as the user has default primary group
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: No user has 'shadow' as primary group } == TRUE]} == TRUE"
   },
@@ -76,7 +76,7 @@
   // This is expected to succeed as shadow is only a supplementary group for the test user
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
     "Payload": "PASS{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: No user has 'shadow' as primary group } == TRUE]} == TRUE"
   },
