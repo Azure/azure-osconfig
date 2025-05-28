@@ -255,7 +255,7 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         {
             return Status::Compliant;
         }
-        return Error("Failed to open directory '" + path + "': " + strerror(status), status);
+        return indicators.NonCompliant("Failed to open directory '" + path + "': " + strerror(status));
     }
 
     auto matchedAnyFilename = false;
