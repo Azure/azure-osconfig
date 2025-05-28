@@ -169,9 +169,9 @@ TEST_F(FactExistenceValidatorTest, NoneExist_3)
     FactExistenceValidator validator(compliance::FactExistenceValidator::Behavior::NoneExist);
     ASSERT_FALSE(validator.Done());
     validator.CriteriaUnmet();
-    ASSERT_TRUE(validator.Done());
+    ASSERT_FALSE(validator.Done());
     validator.CriteriaUnmet();
-    ASSERT_TRUE(validator.Done());
+    ASSERT_FALSE(validator.Done());
     validator.Finish();
     ASSERT_TRUE(validator.Done());
     ASSERT_EQ(validator.Result(), compliance::Status::Compliant);

@@ -115,9 +115,7 @@ Result<Status> MultilineMatch(const std::string& filename, const string& matchPa
             validator.CriteriaUnmet();
             if (validator.Done())
             {
-                indicators.AddIndicator("pattern '" + matchPattern + "' did not match line " + std::to_string(lineNumber) + " in file '" + filename +
-                                            "'",
-                    validator.Result());
+                indicators.AddIndicator("pattern '" + matchPattern + "' did not match any line in file '" + filename + "'", validator.Result());
             }
         }
     }
@@ -310,6 +308,11 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     if (!matchedAnyFilename && behavior == Behavior::NoneExist)
     {
         return indicators.Compliant("No files matched the filename pattern '" + filenamePattern + "'");
+    }
+
+    if (!matchedAnyFilename && behavior == Behavior::AtLeastOneExists)
+    {
+        return indicators.NonCompliant("No files matched the filename pattern '" + filenamePattern + "'");
     }
 
     return result;
