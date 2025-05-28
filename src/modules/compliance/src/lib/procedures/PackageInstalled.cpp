@@ -238,6 +238,8 @@ Result<PackageCache> GetInstalledPackagesDpkg(ContextInterface& context)
             lineStream >> status >> name;
             if (!name.empty())
             {
+                // get rid of the arch
+                name = name.substr(0, name.find(':'));
                 cache.packageNames.insert(name);
             }
         }
