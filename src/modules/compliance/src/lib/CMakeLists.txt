@@ -30,7 +30,6 @@ add_library(compliancelib STATIC
     ContextInterface.cpp
     Engine.cpp
     Evaluator.cpp
-    FactExistenceValidator.cpp
     Indicators.cpp
     JsonWrapper.cpp
     Procedure.cpp
