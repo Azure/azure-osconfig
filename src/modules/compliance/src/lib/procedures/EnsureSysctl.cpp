@@ -76,8 +76,13 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
 
     if (regex_search(sysctlOutput, valueRegex) == false)
     {
-        return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + sysctlOutput + "'");
+        return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + sysctlOutput + "' in runtime configuration");
     }
+    else
+    {
+        indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "' in runtime configuration");
+    }
+
     if (args.find("test_procfs") == args.end())
     {
         struct stat statbuf;
@@ -158,7 +163,7 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
     // we found a match with correct value
     if (found && !invalid)
     {
-        return indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "'");
+        return indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "' in stored configuration");
     }
 
     // lines are iterated backwards so filename is before last value marked by lines
@@ -190,7 +195,7 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
         return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + runSysctlValue + "' found in: '" +
                                        fileName + "'");
     }
-    return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' not found in system");
+    return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' not found in stored configuration");
 }
 
 namespace

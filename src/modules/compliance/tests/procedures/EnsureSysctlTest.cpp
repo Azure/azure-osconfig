@@ -366,7 +366,8 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualTabs)
 
     auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_EQ(mFormatter.Format(mIndicators).Value(),
-        std::string("[NonCompliant] Expected 'net.ipv4.ip_forward' value: '1' got '0' found in: '/etc/sysctl.d/foo.conf'\n"));
+        std::string("[Compliant] Correct value for 'net.ipv4.ip_forward': '1' in runtime configuration\n[NonCompliant] Expected 'net.ipv4.ip_forward' "
+                    "value: '1' got '0' found in: '/etc/sysctl.d/foo.conf'\n"));
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -383,7 +384,8 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualExtraSpa
 
     auto result = AuditEnsureSysctl(args, mIndicators, mContext);
     ASSERT_EQ(mFormatter.Format(mIndicators).Value(),
-        std::string("[NonCompliant] Expected 'net.ipv4.ip_forward' value: '1' got '0' found in: '/etc/sysctl.d/foo.conf'\n"));
+        std::string("[Compliant] Correct value for 'net.ipv4.ip_forward': '1' in runtime configuration\n[NonCompliant] Expected 'net.ipv4.ip_forward' "
+                    "value: '1' got '0' found in: '/etc/sysctl.d/foo.conf'\n"));
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -403,7 +405,8 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWin
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     ASSERT_EQ(mFormatter.Format(mIndicators).Value(),
-        std::string("[NonCompliant] Expected 'net.ipv4.ip_forward' value: '1' got '0' found in: '/etc/sysctl.d/fwd_0_v2.conf'\n"));
+        std::string("[Compliant] Correct value for 'net.ipv4.ip_forward': '1' in runtime configuration\n[NonCompliant] Expected 'net.ipv4.ip_forward' "
+                    "value: '1' got '0' found in: '/etc/sysctl.d/fwd_0_v2.conf'\n"));
 }
 
 TEST_F(EnsureSysctlTest, HappyPathValidateCisSysctls)
