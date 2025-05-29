@@ -32,10 +32,6 @@ jobs:
           subscription-id: ${{ secrets.AZURE_AME_SUBSCRIPTION_ID }}
 
       - name: Setup ESRP
-        env:
-          AZURE_VAULT: ${{ secrets.AZURE_AME_VAULT }}
-          AUTH_CERT: ${{ secrets.AZURE_VAULT_AUTH_CERT_NAME }}
-          REQUEST_SIGNING_CERT: ${{ secrets.AZURE_VAULT_REQUEST_SIGNING_CERT_NAME }}
         run: |
           # Install latest ESRP Client from storage (The one on ES Image is stale)
           az storage blob download `
@@ -55,7 +51,7 @@ jobs:
           LINUX_KEY_CODE: ${{ inputs.key-code }}
           LINUX_OP_CODE: ${{ secrets.ESRP_LINUX_OP_CODE }}
           AZURE_VAULT: ${{ secrets.AZURE_AME_VAULT }}
-          REQUEST_SIGNING_CERT: ${{ secrets.AZURE_VAULT_REQUEST_SIGNING_CERT_NAME }}
+          REQUEST_SIGNING_CERT: ${{ secrets.AZURE_VAULT_AUTH_CERT_NAME }}
           MSI_CLIENT_ID: ${{ secrets.MANAGED_IDENTITY_CLIENTID }}
         with:
           artifact: ${{ inputs.artifact }}
