@@ -56,7 +56,7 @@ jobs:
           # nuget install Microsoft.ESRPClient -Source LocalESRP
           # Extract nuget package
           Expand-Archive -Path microsoft.esrpclient.nupkg -DestinationPath .
-          (Get-ChildItem -Filter "ESRPClient.exe" -Recurse | Select-Object -First 1 -ExpandProperty DirectoryName) >> $GITHUB_PATH
+          (Get-ChildItem -Filter "ESRPClient.exe" -Recurse | Select-Object -First 1 -ExpandProperty DirectoryName) >> $env:$GITHUB_PATH
 
       - name: Sign package
         uses: ./.github/actions/sign-package
