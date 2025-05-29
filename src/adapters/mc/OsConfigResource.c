@@ -77,21 +77,21 @@ void __attribute__((constructor)) Initialize()
 
     BaselineInitialize(GetLog());
 
-    LogInfo(context, GetLog(), "[OsConfigResource] Initialize (PID: %d)", getpid());
-    LogInfo(context, GetLog(), "[OsConfigResource] Version: %s", version);
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] Initialize (PID: %d)", getpid());
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] Version: %s", version);
 }
 
 void __attribute__((destructor)) Destroy()
 {
     if (NULL == g_mpiHandle)
     {
-        LogInfo(context, GetLog(), "[OsConfigResource] Destroy (PID: %d)", getpid());
+        OsConfigLogInfo(GetLog(), "[OsConfigResource] Destroy (PID: %d)", getpid());
 
         BaselineShutdown(GetLog());
     }
     else
     {
-        LogInfo(context, GetLog(), "[OsConfigResource] Destroy (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+        OsConfigLogInfo(GetLog(), "[OsConfigResource] Destroy (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 
         CallMpiClose(g_mpiHandle, GetLog());
         g_mpiHandle = NULL;
