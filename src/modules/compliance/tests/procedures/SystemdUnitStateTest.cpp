@@ -280,3 +280,22 @@ TEST_F(SystemdUnitStateTest, argTestActiveStateActiveLoadStateMaskedUnitFileStat
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
+
+TEST_F(SystemdUnitStateTest, argTestUnit)
+{
+
+    std::map<std::string, std::string> args;
+    args["unitName"] = "fooTimer.timer";
+    args["Unit"] = "foo.service";
+
+    auto executeCmd = systemCtlCmd;
+    executeCmd += "-p Unit ";
+    executeCmd += args["unitName"];
+
+    std::string fooServceAnyOutput = "Unit=foo.service\n";
+
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(executeCmd))).WillOnce(::testing::Return(Result<std::string>(fooServceAnyOutput)));
+    auto result = AuditSystemdUnitState(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
