@@ -299,3 +299,41 @@ TEST_F(SystemdUnitStateTest, argTestUnit)
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
+
+TEST_F(SystemdUnitStateTest, partialMatchFails)
+{
+
+    std::map<std::string, std::string> args;
+    args["unitName"] = "fooArg.service";
+    args["ActiveState"] = "active";
+
+    auto executeCmd = systemCtlCmd;
+    executeCmd += "-p ActiveState ";
+    executeCmd += args["unitName"];
+
+    std::string fooServceAnyOutput = "ActiveState=inactive";
+
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(executeCmd))).WillOnce(::testing::Return(Result<std::string>(fooServceAnyOutput)));
+    auto result = AuditSystemdUnitState(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(SystemdUnitStateTest, partialMatchSucceeds)
+{
+
+    std::map<std::string, std::string> args;
+    args["unitName"] = "fooArg.service";
+    args["ActiveState"] = ".*active";
+
+    auto executeCmd = systemCtlCmd;
+    executeCmd += "-p ActiveState ";
+    executeCmd += args["unitName"];
+
+    std::string fooServceAnyOutput = "ActiveState=inactive";
+
+    EXPECT_CALL(mContext, ExecuteCommand(::testing::HasSubstr(executeCmd))).WillOnce(::testing::Return(Result<std::string>(fooServceAnyOutput)));
+    auto result = AuditSystemdUnitState(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}

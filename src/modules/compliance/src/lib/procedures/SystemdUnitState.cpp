@@ -81,8 +81,9 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
     Result<std::string> systemCtlOutput = context.ExecuteCommand(systemCtlCmd);
     if (!systemCtlOutput.HasValue())
     {
-        OsConfigLogError(log, "Failed to execute systemctl command");
-        return indicators.NonCompliant("Failed to execute systemctl command");
+        OsConfigLogError(log, "Failed to execute systemctl command '%s': %s (code: %d)", systemCtlCmd.c_str(), systemCtlOutput.Error().message.c_str(),
+            systemCtlOutput.Error().code);
+        return indicators.NonCompliant("Failed to execute systemctl command " + systemCtlOutput.Error().message);
     }
     std::string line;
     std::istringstream sysctlValues(systemCtlOutput.Value());
@@ -104,24 +105,29 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
             {
                 continue;
             }
-            if (!regex_search(value, param.valueRegex.Value()))
+            if (!regex_match(value, param.valueRegex.Value()))
             {
-                OsConfigLogError(log, "Failed to match systemctl unit name '%s' for name '%s' for pattern '%s'  for value '%s' ", unitName.c_str(),
+                OsConfigLogInfo(log, "Failed to match systemctl unit name '%s' for name '%s' for pattern '%s'  for value '%s' ", unitName.c_str(),
                     name.c_str(), param.value.c_str(), value.c_str());
-                return indicators.NonCompliant("Failed to match systemctl unit name '" + unitName + "' for name '" + name + "' for pattern '" +
-                                               param.value + "' for value '" + value + "'");
+                return indicators.NonCompliant("Failed to match systemctl unit name '" + unitName + "' field '" + name + "' value '" + value +
+                                               "' with pattern '" + param.value + "'");
+            }
+            else
+            {
+                indicators.Compliant("Successfully matched systemctl unit name '" + unitName + "' field '" + name + "' value '" + value +
+                                     "' with pattern '" + param.value + "'");
             }
             matched = true;
         }
         if (matched == false)
         {
             OsConfigLogError(log, "Error match systemctl unit name '%s' state '%s' not matched any arguments", unitName.c_str(), name.c_str());
-            return indicators.NonCompliant("Error to match systemctl unit name '" + unitName + "' state '" + name + "' not matched any arguments");
+            return Status::NonCompliant;
         }
     }
 
     OsConfigLogDebug(log, "Success to match systemctl unit name '%s' for name all params ", unitName.c_str());
-    return indicators.Compliant("Success to match systemctl unit name '" + unitName + "' for name all params");
+    return Status::Compliant;
 }
 
 } // namespace compliance

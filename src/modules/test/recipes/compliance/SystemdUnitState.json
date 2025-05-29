@@ -25,7 +25,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ SystemdUnitState: Success to match systemctl unit name 'foo.service' for name all params } == TRUE"
+    "Payload": "PASS{ SystemdUnitState: Successfully matched systemctl unit name 'foo.service' field 'LoadState' value 'not-found' with pattern 'not-found', Successfully matched systemctl unit name 'foo.service' field 'ActiveState' value 'inactive' with pattern 'inactive', Successfully matched systemctl unit name 'foo.service' field 'UnitFileState' value '' with pattern '' } == TRUE"
   },
 
   {
@@ -49,7 +49,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ SystemdUnitState: Failed to match systemctl unit name 'foo.service' for name 'LoadState' for pattern 'active' for value 'not-found' } == FALSE"
+    "Payload": "{ SystemdUnitState: Failed to match systemctl unit name 'foo.service' field 'LoadState' value 'not-found' with pattern 'active' } == FALSE"
   },
   {
     "ObjectType": "Desired",
