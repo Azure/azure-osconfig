@@ -14,39 +14,49 @@ on:
       package-type:
         type: string
         required: true
+      esrpclient-blob-name:
+        description: The blob name of the ESRP client to download from Azure Storage.
+        type: string
+        default: microsoft.esrpclient.1.2.142.nupkg
 
 jobs:
   sign:
-    runs-on: [self-hosted, 1ES.Pool=release-pool, 1ES.ImageOverride=windows-2022]
+    runs-on: [self-hosted, 1ES.Pool=osconfig-prod-release-pool, 1ES.ImageOverride=windows-2022]
     steps:
       - uses: actions/checkout@v4
 
       - uses: azure/login@v2
         with:
           auth-type: IDENTITY
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant-id: ${{ secrets.AZURE_AME_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_AME_SUBSCRIPTION_ID }}
 
       - name: Setup ESRP
         env:
-          AZURE_VAULT: ${{ secrets.AZURE_VAULT }}
+          AZURE_VAULT: ${{ secrets.AZURE_AME_VAULT }}
           AUTH_CERT: ${{ secrets.AZURE_VAULT_AUTH_CERT_NAME }}
           REQUEST_SIGNING_CERT: ${{ secrets.AZURE_VAULT_REQUEST_SIGNING_CERT_NAME }}
         run: |
-          az keyvault secret download --vault-name "$env:AZURE_VAULT" --name "$env:AUTH_CERT" --file out.pfx
-          certutil -f -importpfx out.pfx
-          Remove-Item -Path out.pfx
-
-          az keyvault secret download --vault-name "$env:AZURE_VAULT" --name "$env:REQUEST_SIGNING_CERT" --file out.pfx
-          certutil -f -importpfx out.pfx
-          Remove-Item -Path out.pfx
+          # Install latest ESRP Client from storage (The one on ES Image is stale)
+          az storage blob download `
+            --account-name osconfigstorageprod `
+            --container-name esrpclient `
+            --name ${{ inputs.esrpclient-blob-name }} `
+            --file microsoft.esrpclient.nupkg `
+            --auth-mode login
+          Expand-Archive -Path microsoft.esrpclient.nupkg -DestinationPath .
+          (Get-ChildItem -Filter "ESRPClient.exe" -Recurse | Select-Object -First 1 -ExpandProperty DirectoryName) >> $env:GITHUB_PATH
 
       - name: Sign package
         uses: ./.github/actions/sign-package
         env:
           AAD_ID: ${{ secrets.ESRP_AAD_ID }}
+          ESRP_ID: ${{ secrets.ESRP_CLIENTID }}
           LINUX_KEY_CODE: ${{ inputs.key-code }}
           LINUX_OP_CODE: ${{ secrets.ESRP_LINUX_OP_CODE }}
+          AZURE_VAULT: ${{ secrets.AZURE_AME_VAULT }}
+          REQUEST_SIGNING_CERT: ${{ secrets.AZURE_VAULT_REQUEST_SIGNING_CERT_NAME }}
+          MSI_CLIENT_ID: ${{ secrets.MANAGED_IDENTITY_CLIENTID }}
         with:
           artifact: ${{ inputs.artifact }}
           package-type: ${{ inputs.package-type }}
