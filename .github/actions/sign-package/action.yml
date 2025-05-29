@@ -57,7 +57,7 @@ runs:
             "WithAzureRegion": "false"
           },
           "RequestSigningCert": {
-            "SubjectName": f"CN={esrp_id}",
+            "SubjectName": f"CN={aad_id}",
             "StoreLocation": "LocalMachine",
             "StoreName": "My",
             "SendX5c": "false",
