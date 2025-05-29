@@ -36,7 +36,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
   {
     "ObjectType": "Desired",
@@ -48,7 +48,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
 
 
@@ -63,7 +63,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
 
 
@@ -78,7 +78,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern 'f.*O' did not match any line in file '\/tmp\/testfile' } == FALSE"
+    "Payload": "{ FileRegexMatch: Expected all files to match, but only 0 out of 1 matched } == FALSE"
   },
 
   {
@@ -88,7 +88,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
 
 
@@ -103,7 +103,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
 
   {
@@ -113,7 +113,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
 
 
@@ -129,7 +129,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+' did not match any line in file '\/etc\/passwd' } == FALSE"
+    "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
 
 
@@ -144,7 +144,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+$' did not match any line in file '\/etc\/passwd' } == FALSE"
+    "Payload": "{ FileRegexMatch: Expected all files to match, but only 0 out of 1 matched } == FALSE"
   },
 
 
@@ -159,7 +159,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
 
 
@@ -177,7 +177,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All 1 files matched the pattern } == TRUE"
   },
   {
     "RunCommand": "echo '#testuser::1111:1111::/home/someuser:/bin/sh' > /tmp/passwd"
@@ -186,7 +186,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern '^[^:#]+::' did not match any line in file '\/tmp\/passwd' } == FALSE"
+    "Payload": "{ FileRegexMatch: Expected all files to match, but only 0 out of 1 matched } == FALSE"
   },
 
   {
@@ -208,7 +208,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch: No files matched the filename pattern '^passwd$' } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: No files matched the pattern } == TRUE"
   },
   {
     "RunCommand": "echo 'not the searched pattern' >   /tmp/non-existing-dir/passwd"
@@ -217,7 +217,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch: No facts exist } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: No files matched the pattern } == TRUE"
   },
 
   {
