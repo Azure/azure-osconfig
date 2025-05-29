@@ -66,10 +66,39 @@ void __attribute__((constructor)) Initialize()
     g_expectedObjectValue = DuplicateString(g_passValue);
     g_desiredObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectValue = DuplicateString(g_failValue);
+
+    if (NULL != g_mpiHandle)
+    {
+        CallMpiClose(g_mpiHandle, GetLog());
+        g_mpiHandle = NULL;
+    }
+
+    SetConsoleLoggingEnabled(false);
+
+    BaselineInitialize(GetLog());
+
+    LogInfo(context, GetLog(), "[OsConfigResource] Initialize (PID: %d)", getpid());
+    LogInfo(context, GetLog(), "[OsConfigResource] Version: %s", version);
 }
 
 void __attribute__((destructor)) Destroy()
 {
+    if (NULL == g_mpiHandle)
+    {
+        LogInfo(context, GetLog(), "[OsConfigResource] Destroy (PID: %d)", getpid());
+
+        BaselineShutdown(GetLog());
+    }
+    else
+    {
+        LogInfo(context, GetLog(), "[OsConfigResource] Destroy (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+
+        CallMpiClose(g_mpiHandle, GetLog());
+        g_mpiHandle = NULL;
+
+        RestartDaemon(IsDaemonActive(g_osconfig, GetLog()) ? g_osconfig : g_mpiServer, NULL);
+    }
+
     FREE_MEMORY(g_resourceId);
     FREE_MEMORY(g_ruleId);
     FREE_MEMORY(g_payloadKey);
@@ -171,18 +200,7 @@ void MI_CALL OsConfigResource_Load(
 
     *self = NULL;
 
-    if (NULL != g_mpiHandle)
-    {
-        CallMpiClose(g_mpiHandle, GetLog());
-        g_mpiHandle = NULL;
-    }
-
-    SetConsoleLoggingEnabled(false);
-
-    BaselineInitialize(GetLog());
-
     LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d)", getpid());
-    LogInfo(context, GetLog(), "[OsConfigResource] Version: %s", version);
 
     MI_Context_PostResult(context, MI_RESULT_OK);
 }
@@ -193,21 +211,7 @@ void MI_CALL OsConfigResource_Unload(
 {
     MI_UNREFERENCED_PARAMETER(self);
 
-    if (NULL == g_mpiHandle)
-    {
-        LogInfo(context, GetLog(), "[OsConfigResource] Unload (PID: %d)", getpid());
-
-        BaselineShutdown(GetLog());
-    }
-    else
-    {
-        LogInfo(context, GetLog(), "[OsConfigResource] Unload (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
-
-        CallMpiClose(g_mpiHandle, GetLog());
-        g_mpiHandle = NULL;
-
-        RestartDaemon(IsDaemonActive(g_osconfig, GetLog()) ? g_osconfig : g_mpiServer, NULL);
-    }
+    LogInfo(context, GetLog(), "[OsConfigResource] Unload (PID: %d)", getpid());
 
     MI_Context_PostResult(context, MI_RESULT_OK);
 }
