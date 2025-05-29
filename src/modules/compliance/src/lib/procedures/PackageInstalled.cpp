@@ -238,7 +238,7 @@ Result<PackageCache> GetInstalledPackagesDpkg(ContextInterface& context)
             lineStream >> status >> name;
             if (!name.empty())
             {
-                // get rid of the arch
+                // some packages have arch after a colon (e.g. "foo:amd64"), get rid of it
                 name = name.substr(0, name.find(':'));
                 cache.packageNames.insert(name);
             }

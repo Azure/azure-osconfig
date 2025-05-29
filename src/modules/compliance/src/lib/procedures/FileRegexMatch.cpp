@@ -305,12 +305,12 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         return result;
     }
 
-    if (!matchedAnyFilename && behavior == Behavior::NoneExist)
+    if (!matchedAnyFilename && (behavior == Behavior::NoneExist))
     {
         return indicators.Compliant("No files matched the filename pattern '" + filenamePattern + "'");
     }
 
-    if (!matchedAnyFilename && behavior == Behavior::AtLeastOneExists)
+    if (!matchedAnyFilename && (behavior == Behavior::AtLeastOneExists))
     {
         return indicators.NonCompliant("No files matched the filename pattern '" + filenamePattern + "'");
     }
