@@ -51,14 +51,14 @@ runs:
           "ClientId": f"{msi_client_id}",
           "EsrpClientId": f"{esrp_id}",
           "RequestSigningCert": {
-            "GetCertFromKeyVault": true,
+            "GetCertFromKeyVault": True,
             "KeyVaultName": f"{vault_name}",
             "KeyVaultCertName": f"{request_auth_cert}",
             "StoreLocation": "CurrentUser",
             "StoreName": "My",
             "SubjectName": f"CN={aad_id}",
-            "SendX5c": false,
-            "WithAzureRegion": false
+            "SendX5c": False,
+            "WithAzureRegion": False
           },
           "Version": "1.0.0"
         }
