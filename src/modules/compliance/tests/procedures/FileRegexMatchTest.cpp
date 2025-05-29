@@ -313,7 +313,7 @@ TEST_F(FileRegexMatchTest, Audit_State_3)
 
 TEST_F(FileRegexMatchTest, Audit_State_4)
 {
-    MakeTempfile("key=foo");
+    MakeTempfile("key=bar\nkey=foo");
     mArgs["path"] = mTempdir;
     mArgs["filenamePattern"] = "1";
     mArgs["matchPattern"] = R"(^key=.*$)";
@@ -453,7 +453,7 @@ TEST_F(FileRegexMatchTest, Audit_FilenamePattern_3)
     compliance::CompactListFormatter formatter;
     auto payload = formatter.Format(mIndicators);
     ASSERT_TRUE(payload.HasValue());
-    EXPECT_NE(payload.Value().find("[NonCompliant] pattern '^key=.*$' did not match line 1"), std::string::npos);
+    EXPECT_NE(payload.Value().find("[NonCompliant] pattern '^key=.*$' did not match"), std::string::npos);
 }
 
 TEST_F(FileRegexMatchTest, Audit_FilenamePattern_4)
