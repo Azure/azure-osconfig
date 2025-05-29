@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <CommonUtils.h>
 #include <Evaluator.h>
 #include <Regex.h>
 #include <algorithm>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -14,16 +15,23 @@ namespace compliance
 {
 namespace
 {
-std::string TrimWhitesSpace(const std::string& str);
+std::string TrimWhiteSpaces(const std::string& str)
+{
+    auto start = std::find_if_not(str.begin(), str.end(), ::isspace);
+    auto end = std::find_if_not(str.rbegin(), str.rend(), ::isspace).base();
+    if (start < end)
+    {
+        return std::string(start, end);
+    }
+    return std::string();
+}
 } // anonymous namespace
 
-AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+)$", "value:Regex that the value of sysctl has to match:M",
-    "test_procfs:Prefix for the /proc/sys from where sysctl will be read")
+AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+)$", "value:Regex that the value of sysctl has to match:M")
 {
     auto log = context.GetLogHandle();
-    char* output = NULL;
     std::string procfsLocation = "/proc/sys";
-    std::string systemdSysctl = "/lib/systemd/systemd-sysctl";
+    std::string systemdSysctl = "/lib/systemd/systemd-sysctl --cat-config";
 
     auto it = args.find("sysctlName");
     if (it == args.end())
@@ -39,25 +47,18 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
     }
     auto sysctlValue = std::move(it->second);
 
-    it = args.find("test_procfs");
-    if (it != args.end())
-    {
-        procfsLocation = std::move(it->second);
-    }
-
     auto sysctlPath = sysctlName;
     std::replace(sysctlPath.begin(), sysctlPath.end(), '.', '/');
     std::string procSysPath = procfsLocation + std::string("/") + sysctlPath;
 
-    output = LoadStringFromFile(procSysPath.c_str(), false, log);
-    if (output == NULL)
+    auto output = context.GetFileContents(procSysPath);
+    if (!output.HasValue())
     {
-        return indicators.NonCompliant("Failed to load sysctl value from '" + procSysPath + "'");
+        return output.Error();
     }
-    std::string sysctlOutput(output);
-    FREE_MEMORY(output);
+    std::string sysctlOutput = output.Value();
 
-    // remove newline caracter
+    // remove newline character
     if (*sysctlOutput.rbegin() == '\n')
     {
         sysctlOutput.erase(sysctlOutput.size() - 1);
@@ -76,32 +77,22 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
 
     if (regex_search(sysctlOutput, valueRegex) == false)
     {
-        return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + sysctlOutput + "'");
+        return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + sysctlOutput + "' in runtime configuration");
     }
-    if (args.find("test_procfs") == args.end())
+    else
     {
-        struct stat statbuf;
-        if (0 != stat(systemdSysctl.c_str(), &statbuf))
-        {
-            systemdSysctl = std::string("/usr/lib/systemd/systemd-sysctl");
-            if (0 != stat(systemdSysctl.c_str(), &statbuf))
-            {
-                OsConfigLogError(log, "Failed to locate systemd-sysctl command");
-                return Error("Failed to locate systemd-sysctl command");
-            }
-        }
+        indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "' in runtime configuration");
     }
-    systemdSysctl += " --cat-config";
+
     // systemd-sysclt shows all configs used by system that have sysctl's
-    if ((0 != ExecuteCommand(NULL, systemdSysctl.c_str(), false, false, 0, 0, &output, NULL, log)) || (output == NULL))
+    auto execResult = context.ExecuteCommand(systemdSysctl);
+    if (!execResult.HasValue())
     {
         OsConfigLogError(log, "Failed to execute systemd-sysctl command");
-        return Error("Failed to execute systemd-sysctl command");
+        return execResult.Error();
     }
-    std::string sysctlConfigs(output);
-    FREE_MEMORY(output);
 
-    std::istringstream configurations(sysctlConfigs);
+    std::istringstream configurations(execResult.Value());
     std::string line;
     std::string runSysctlValue;
     std::vector<std::string> sysctlConfigLines;
@@ -141,9 +132,9 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
             }
 
             std::string name = line.substr(0, eqPos);
-            name = TrimWhitesSpace(name);
+            name = TrimWhiteSpaces(name);
             runSysctlValue = line.substr(eqPos + 1, line.size() - eqPos);
-            runSysctlValue = TrimWhitesSpace(runSysctlValue);
+            runSysctlValue = TrimWhiteSpaces(runSysctlValue);
 
             if (name == sysctlName)
             {
@@ -158,7 +149,7 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
     // we found a match with correct value
     if (found && !invalid)
     {
-        return indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "'");
+        return indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "' in stored configuration");
     }
 
     // lines are iterated backwards so filename is before last value marked by lines
@@ -190,20 +181,54 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
         return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + runSysctlValue + "' found in: '" +
                                        fileName + "'");
     }
-    return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' not found in system");
-}
-
-namespace
-{
-std::string TrimWhitesSpace(const std::string& str)
-{
-    auto start = std::find_if_not(str.begin(), str.end(), ::isspace);
-    auto end = std::find_if_not(str.rbegin(), str.rend(), ::isspace).base();
-    if (start < end)
+    else
     {
-        return std::string(start, end);
+        indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' not found in stored sysctl configuration");
     }
-    return std::string();
+
+    auto ufwDefaults = context.GetFileContents("/etc/default/ufw");
+    if (!ufwDefaults.HasValue())
+    {
+        return indicators.NonCompliant("Failed to read /etc/default/ufw: " + ufwDefaults.Error().message);
+    }
+    std::istringstream iss(ufwDefaults.Value());
+    std::string sysctlFile;
+    while (std::getline(iss, line))
+    {
+        if (line.find("IPT_SYSCTL=", 0) == 0)
+        {
+            sysctlFile = line.substr(std::string("IPT_SYSCTL=").size());
+            break;
+        }
+    }
+    if (sysctlFile.empty())
+    {
+        return indicators.NonCompliant("Failed to find IPT_SYSCTL in /etc/default/ufw");
+    }
+    auto sysctlContents = context.GetFileContents(TrimWhiteSpaces(sysctlFile));
+    if (!sysctlContents.HasValue())
+    {
+        return indicators.NonCompliant("Failed to read ufw sysctl config file: " + sysctlContents.Error().message);
+    }
+    std::istringstream sysctlStream(sysctlContents.Value());
+    auto slashedSysctlName = sysctlName;
+    std::replace(slashedSysctlName.begin(), slashedSysctlName.end(), '.', '/');
+    while (std::getline(sysctlStream, line))
+    {
+        if (line.find(slashedSysctlName + "=", 0) == 0)
+        {
+            auto value = line.substr(sysctlName.size() + 1);
+            if (regex_search(value, valueRegex))
+            {
+                return indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "' in UFW configuration");
+            }
+            else
+            {
+                return indicators.NonCompliant("Expected '" + sysctlName + "' value: '" + sysctlValue + "' got '" + value + "' in UFW configuration");
+            }
+        }
+    }
+
+    return indicators.NonCompliant("Value not found in UFW configuration for '" + sysctlName + "'");
 }
-} // anonymous namespace
 } // namespace compliance

@@ -26,10 +26,6 @@
                 "value": {
                   "type": "string",
                   "description": "Regex that the value of sysctl has to match"
-                },
-                "test_procfs": {
-                  "type": "string",
-                  "description": "Prefix for the /proc/sys from where sysctl will be read"
                 }
               }
             }
