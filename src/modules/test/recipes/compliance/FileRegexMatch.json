@@ -36,7 +36,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
   },
   {
     "ObjectType": "Desired",
@@ -48,7 +48,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
   },
 
 
@@ -63,7 +63,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
   },
 
 
@@ -78,7 +78,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern 'f.*O' did not match line 1 in file '\/tmp\/testfile' } == FALSE"
+    "Payload": "{ FileRegexMatch: pattern 'f.*O' did not match any line in file '\/tmp\/testfile' } == FALSE"
   },
 
   {
@@ -88,7 +88,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
   },
 
 
@@ -103,7 +103,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
   },
 
   {
@@ -113,7 +113,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
   },
 
 
@@ -129,7 +129,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+' did not match line 2 in file '\/etc\/passwd' } == FALSE"
+    "Payload": "{ FileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+' did not match any line in file '\/etc\/passwd' } == FALSE"
   },
 
 
@@ -144,7 +144,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+$' did not match line 1 in file '\/etc\/passwd' } == FALSE"
+    "Payload": "{ FileRegexMatch: pattern '^root:x:[0-9]+:[0-9]+$' did not match any line in file '\/etc\/passwd' } == FALSE"
   },
 
 
@@ -159,7 +159,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
   },
 
 
@@ -177,7 +177,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch:  } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: All facts exist } == TRUE"
   },
   {
     "RunCommand": "echo '#testuser::1111:1111::/home/someuser:/bin/sh' > /tmp/passwd"
@@ -186,7 +186,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "{ FileRegexMatch: pattern '^[^:#]+::' did not match line 1 in file '\/tmp\/passwd' } == FALSE"
+    "Payload": "{ FileRegexMatch: pattern '^[^:#]+::' did not match any line in file '\/tmp\/passwd' } == FALSE"
   },
 
   {
@@ -217,7 +217,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ FileRegexMatch: pattern '^[^:#]+::' did not match line 1 in file '\/tmp\/non-existing-dir\/passwd' } == TRUE"
+    "Payload": "PASS{ FileRegexMatch: No facts exist } == TRUE"
   },
 
   {

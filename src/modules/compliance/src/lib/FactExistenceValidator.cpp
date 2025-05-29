@@ -12,38 +12,40 @@ FactExistenceValidator::FactExistenceValidator(Behavior behavior)
 {
 }
 
-void FactExistenceValidator::Finish()
+std::string FactExistenceValidator::Finish()
 {
     if (Done())
     {
-        return;
+        return "";
     }
 
     switch (mBehavior)
     {
         case Behavior::AllExist:
             mState = Status::Compliant;
-            break;
+            return "All facts exist";
+
         case Behavior::NoneExist:
             assert(!mHasAtLeastOneFact);
             mState = Status::Compliant;
-            break;
+            return "No facts exist";
 
         case Behavior::AtLeastOneExists:
             assert(!mHasAtLeastOneFact);
             mState = Status::NonCompliant;
-            break;
+            return "At least one fact exist";
 
         case Behavior::AnyExist:
             assert(!mHasAtLeastOneFact);
             mState = Status::Compliant;
-            break;
+            return "Any fact exists";
 
         case Behavior::OnlyOneExists:
             mState = mHasAtLeastOneFact ? Status::Compliant : Status::NonCompliant;
-            break;
+            return mHasAtLeastOneFact ? "Only one fact exists" : "No facts exist";
     }
-    assert(Done());
+    assert(false && "Unreachable code");
+    return "";
 }
 
 void FactExistenceValidator::CriteriaMet()

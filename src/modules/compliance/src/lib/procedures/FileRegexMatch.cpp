@@ -119,8 +119,11 @@ Result<Status> MultilineMatch(const std::string& filename, const string& matchPa
             }
         }
     }
-
-    validator.Finish();
+    if (!validator.Done())
+    {
+        auto finishResult = validator.Finish();
+        indicators.AddIndicator(finishResult, validator.Result());
+    }
     return validator.Result();
 }
 } // anonymous namespace
@@ -257,9 +260,9 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         }
         return indicators.NonCompliant("Failed to open directory '" + path + "': " + strerror(status));
     }
+    auto dirCloser = std::unique_ptr<DIR, int (*)(DIR*)>(dir, closedir);
 
     auto matchedAnyFilename = false;
-    Result<Status> result = Status::Compliant;
     struct dirent* entry = nullptr;
     for (errno = 0, entry = readdir(dir); nullptr != entry; errno = 0, entry = readdir(dir))
     {
@@ -280,15 +283,13 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         if (!matchResult.HasValue())
         {
             OsConfigLogInfo(context.GetLogHandle(), "Failed to match file '%s': %s", filename.c_str(), matchResult.Error().message.c_str());
-            result = matchResult.Error();
-            break;
+            return matchResult.Error();
         }
 
         OsConfigLogDebug(context.GetLogHandle(), "Matched file '%s': %s", filename.c_str(), matchResult.Value() == Status::Compliant ? "Compliant" : "NonCompliant");
         if (matchResult.Value() == Status::NonCompliant)
         {
-            result = Status::NonCompliant;
-            break;
+            return Status::NonCompliant;
         }
     }
 
@@ -296,13 +297,7 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     {
         int status = errno;
         OsConfigLogError(context.GetLogHandle(), "Failed to read directory '%s': %s", path.c_str(), strerror(status));
-        result = Error("Failed to read directory '" + path + "': " + strerror(status), status);
-    }
-    closedir(dir);
-
-    if (!result.HasValue())
-    {
-        return result;
+        return Error("Failed to read directory '" + path + "': " + strerror(status), status);
     }
 
     if (!matchedAnyFilename && (behavior == Behavior::NoneExist))
@@ -315,6 +310,6 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         return indicators.NonCompliant("No files matched the filename pattern '" + filenamePattern + "'");
     }
 
-    return result;
+    return Status::Compliant;
 }
 } // namespace compliance

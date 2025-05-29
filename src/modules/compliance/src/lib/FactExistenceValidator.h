@@ -51,7 +51,7 @@ public:
     ///  CriteriaUnmet eg. when file is not found
     void CriteriaUnmet();
     /// Used by Fact notify FactExistenceValidator that evaluation stooped and Result is present
-    void Finish();
+    std::string Finish();
     /// returns True if FactExistenceValidator can evaluate Result
     bool Done() const;
     /// returns Result of validation (Compliant or NonCompliant)
