@@ -106,23 +106,84 @@ AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option:M", "value:Rege
     {
         return result.Error();
     }
-    auto& options = result.Value();
+    auto& sshdConfig = result.Value();
 
-    auto itOptions = options.find(optionName);
-    if (itOptions == options.end())
+    auto itOptions = sshdConfig.find(option);
+    if (itOptions == sshdConfig.end())
     {
-        return indicators.NonCompliant("Option '" + optionName + "' not found in SSH daemon configuration");
+        return indicators.NonCompliant("Option '" + option + "' not found in SSH daemon configuration");
     }
 
-    auto optionValue = std::move(itOptions->second);
-    if (regex_search(optionValue, valueRegex))
+    auto realValue = std::move(itOptions->second);
+    if (regex_search(realValue, valueRegex))
     {
-        return indicators.Compliant("Option '" + optionName + "' has a compliant value '" + optionValue + "'");
+        return indicators.Compliant("Option '" + option + "' has a compliant value '" + realValue + "'");
     }
     else
     {
-        return indicators.NonCompliant("Option '" + optionName + "' has value '" + optionValue + "' which does not match required pattern '" +
-                                       optionRegex + "'");
+        return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which does not match required pattern '" + value + "'");
     }
 }
+
+AUDIT_FN(EnsureSshdNoOption, "options:Name of the SSH daemon options, comma separated:M", "values:Comma separated list of regexes:M")
+{
+    auto log = context.GetLogHandle();
+
+    auto it = args.find("options");
+    if (it == args.end())
+    {
+        return Error("Missing 'options' parameter", EINVAL);
+    }
+    auto options = std::move(it->second);
+
+    it = args.find("values");
+    if (it == args.end())
+    {
+        return Error("Missing 'values' parameter", EINVAL);
+    }
+    auto values = std::move(it->second);
+
+    auto result = GetSshdOptions(context);
+    if (!result.HasValue())
+    {
+        // We treat it as a success same as CIS - usually means sshd is not installed.
+        return indicators.Compliant("No SSH daemon configuration found, assuming compliant");
+    }
+    auto& sshdConfig = result.Value();
+
+    std::istringstream optionsStream(options);
+    std::string optionName;
+    while (std::getline(optionsStream, optionName, ','))
+    {
+        auto itConfig = sshdConfig.find(optionName);
+        if (itConfig == sshdConfig.end())
+        {
+            indicators.Compliant("Option '" + optionName + "' not found in SSH daemon configuration");
+            continue;
+        }
+
+        std::istringstream valueStream(values);
+        std::string value;
+        while (std::getline(valueStream, value, ','))
+        {
+            regex valueRegex;
+            try
+            {
+                valueRegex = regex(value);
+            }
+            catch (const regex_error& e)
+            {
+                OsConfigLogError(log, "Regex error: %s", e.what());
+                return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
+            }
+            if (regex_search(itConfig->second, valueRegex))
+            {
+                return indicators.NonCompliant("Option '" + optionName + "' has a compliant value '" + itConfig->second + "'");
+            }
+        }
+        indicators.Compliant("Option '" + optionName + "' has no compliant value in SSH daemon configuration");
+    }
+    return Status::Compliant; // All options checked, no non-compliant found
+}
+
 } // namespace compliance

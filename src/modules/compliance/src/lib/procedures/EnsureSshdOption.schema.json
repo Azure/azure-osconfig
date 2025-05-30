@@ -29,6 +29,33 @@
               }
             }
           }
+        },
+        {
+          "type": "object",
+          "required": [
+            "EnsureSshdNoOption"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureSshdNoOption": {
+              "type": "object",
+              "required": [
+                "options",
+                "values"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "options": {
+                  "type": "string",
+                  "description": "Name of the SSH daemon options, comma separated"
+                },
+                "values": {
+                  "type": "string",
+                  "description": "Comma separated list of regexes"
+                }
+              }
+            }
+          }
         }
       ]
     },

@@ -269,3 +269,86 @@ TEST_F(EnsureSshdOptionTest, ComplexRegexMatches)
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
+
+TEST_F(EnsureSshdOptionTest, NoOption_AllOptionsAbsent)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    std::map<std::string, std::string> args;
+    args["options"] = "nonexistentoption1,nonexistentoption2";
+    args["values"] = ".*no.*,.*yes.*";
+
+    auto result = compliance::AuditEnsureSshdNoOption(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Option 'nonexistentoption1' not found") != std::string::npos);
+    ASSERT_TRUE(formatted.find("Option 'nonexistentoption2' not found") != std::string::npos);
+}
+
+TEST_F(EnsureSshdOptionTest, NoOption_OptionPresentWithCompliantValue)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    std::map<std::string, std::string> args;
+    args["options"] = "permitrootlogin";
+    args["values"] = "no";
+
+    auto result = compliance::AuditEnsureSshdNoOption(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Option 'permitrootlogin' has a compliant value 'no'") != std::string::npos);
+}
+
+TEST_F(EnsureSshdOptionTest, NoOption_OptionPresentWithNonCompliantValue)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    std::map<std::string, std::string> args;
+    args["options"] = "maxauthtries";
+    args["values"] = "5,6,7";
+
+    auto result = compliance::AuditEnsureSshdNoOption(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Option 'maxauthtries' has no compliant value in SSH daemon configuration") != std::string::npos);
+}
+
+TEST_F(EnsureSshdOptionTest, NoOption_InvalidRegex)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    std::map<std::string, std::string> args;
+    args["options"] = "permitrootlogin";
+    args["values"] = "(invalid[";
+
+    auto result = compliance::AuditEnsureSshdNoOption(args, mIndicators, mContext);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_TRUE(result.Error().message.find("Failed to compile regex") != std::string::npos);
+}
+
+TEST_F(EnsureSshdOptionTest, NoOption_MissingOptionsArgument)
+{
+    std::map<std::string, std::string> args;
+    args["values"] = "no";
+
+    auto result = compliance::AuditEnsureSshdNoOption(args, mIndicators, mContext);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().message, "Missing 'options' parameter");
+}
+
+TEST_F(EnsureSshdOptionTest, NoOption_MissingValuesArgument)
+{
+    std::map<std::string, std::string> args;
+    args["options"] = "permitrootlogin";
+
+    auto result = compliance::AuditEnsureSshdNoOption(args, mIndicators, mContext);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().message, "Missing 'values' parameter");
+}
