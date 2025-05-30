@@ -9,34 +9,10 @@
 
 namespace compliance
 {
-AUDIT_FN(EnsureSshdOption, "optionName:Name of the SSH daemon option:M", "optionRegex:Regex that the option value has to match:M")
+namespace
 {
-    auto log = context.GetLogHandle();
-
-    auto it = args.find("optionName");
-    if (it == args.end())
-    {
-        return Error("Missing 'optionName' parameter", EINVAL);
-    }
-    auto optionName = std::move(it->second);
-
-    it = args.find("optionRegex");
-    if (it == args.end())
-    {
-        return Error("Missing 'optionRegex' parameter", EINVAL);
-    }
-    auto optionRegex = std::move(it->second);
-    regex valueRegex;
-    try
-    {
-        valueRegex = regex(optionRegex);
-    }
-    catch (const regex_error& e)
-    {
-        OsConfigLogError(log, "Regex error: %s", e.what());
-        return Error("Failed to compile regex '" + optionRegex + "' error: " + e.what(), EINVAL);
-    }
-
+Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& context)
+{
     auto sshdTestOutput = context.ExecuteCommand("sshd -T 2>&1");
     if (!sshdTestOutput.HasValue())
     {
@@ -78,8 +54,7 @@ AUDIT_FN(EnsureSshdOption, "optionName:Name of the SSH daemon option:M", "option
     auto configOutput = output.Value();
     std::istringstream configStream(configOutput);
     std::string line;
-    bool optionFound = false;
-    std::string optionValue;
+    std::map<std::string, std::string> options;
 
     while (std::getline(configStream, line))
     {
@@ -88,21 +63,58 @@ AUDIT_FN(EnsureSshdOption, "optionName:Name of the SSH daemon option:M", "option
 
         if (lineStream >> currentOption)
         {
-            if (currentOption == optionName)
-            {
-                optionFound = true;
-                std::getline(lineStream, optionValue);
-                optionValue.erase(0, optionValue.find_first_not_of(" \t"));
-                break;
-            }
+            std::string optionValue;
+            std::getline(lineStream, optionValue);
+            optionValue.erase(0, optionValue.find_first_not_of(" \t"));
+            options[currentOption] = optionValue;
         }
     }
+    return options;
+}
+} // namespace
 
-    if (!optionFound)
+AUDIT_FN(EnsureSshdOption, "optionName:Name of the SSH daemon option:M", "optionRegex:Regex that the option value has to match:M")
+{
+    auto log = context.GetLogHandle();
+
+    auto it = args.find("optionName");
+    if (it == args.end())
+    {
+        return Error("Missing 'optionName' parameter", EINVAL);
+    }
+    auto optionName = std::move(it->second);
+
+    it = args.find("optionRegex");
+    if (it == args.end())
+    {
+        return Error("Missing 'optionRegex' parameter", EINVAL);
+    }
+    auto optionRegex = std::move(it->second);
+    regex valueRegex;
+    try
+    {
+        valueRegex = regex(optionRegex);
+    }
+    catch (const regex_error& e)
+    {
+        OsConfigLogError(log, "Regex error: %s", e.what());
+        return Error("Failed to compile regex '" + optionRegex + "' error: " + e.what(), EINVAL);
+    }
+
+    auto result = GetSshdOptions(context);
+    if (!result.HasValue())
+    {
+        return result.Error();
+    }
+    auto& options = result.Value();
+
+    auto itOptions = options.find(optionName);
+    if (itOptions == options.end())
     {
         return indicators.NonCompliant("Option '" + optionName + "' not found in SSH daemon configuration");
     }
 
+    auto optionValue = std::move(itOptions->second);
     if (regex_search(optionValue, valueRegex))
     {
         return indicators.Compliant("Option '" + optionName + "' has a compliant value '" + optionValue + "'");
