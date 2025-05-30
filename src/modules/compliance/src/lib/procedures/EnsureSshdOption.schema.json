@@ -13,16 +13,16 @@
             "EnsureSshdOption": {
               "type": "object",
               "required": [
-                "optionName",
-                "optionRegex"
+                "option",
+                "value"
               ],
               "additionalProperties": false,
               "properties": {
-                "optionName": {
+                "option": {
                   "type": "string",
                   "description": "Name of the SSH daemon option"
                 },
-                "optionRegex": {
+                "value": {
                   "type": "string",
                   "description": "Regex that the option value has to match"
                 }

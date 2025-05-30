@@ -65,31 +65,31 @@ protected:
     }
 };
 
-TEST_F(EnsureSshdOptionTest, MissingOptionNameArgument)
+TEST_F(EnsureSshdOptionTest, MissingoptionArgument)
 {
     std::map<std::string, std::string> args;
-    args["optionRegex"] = "no";
+    args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'optionName' parameter");
+    ASSERT_EQ(result.Error().message, "Missing 'option' parameter");
 }
 
-TEST_F(EnsureSshdOptionTest, MissingOptionRegexArgument)
+TEST_F(EnsureSshdOptionTest, MissingvalueArgument)
 {
     std::map<std::string, std::string> args;
-    args["optionName"] = "permitrootlogin";
+    args["option"] = "permitrootlogin";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'optionRegex' parameter");
+    ASSERT_EQ(result.Error().message, "Missing 'value' parameter");
 }
 
 TEST_F(EnsureSshdOptionTest, InvalidRegex)
 {
     std::map<std::string, std::string> args;
-    args["optionName"] = "permitrootlogin";
-    args["optionRegex"] = "(invalid[regex";
+    args["option"] = "permitrootlogin";
+    args["value"] = "(invalid[regex";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
@@ -101,8 +101,8 @@ TEST_F(EnsureSshdOptionTest, InitialCommandFails)
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(Error("Command failed", -1))));
 
     std::map<std::string, std::string> args;
-    args["optionName"] = "permitrootlogin";
-    args["optionRegex"] = "no";
+    args["option"] = "permitrootlogin";
+    args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
@@ -116,8 +116,8 @@ TEST_F(EnsureSshdOptionTest, SimpleConfigOptionExists)
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
     std::map<std::string, std::string> args;
-    args["optionName"] = "permitrootlogin";
-    args["optionRegex"] = "no";
+    args["option"] = "permitrootlogin";
+    args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -133,8 +133,8 @@ TEST_F(EnsureSshdOptionTest, SimpleConfigOptionMismatch)
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
     std::map<std::string, std::string> args;
-    args["optionName"] = "permitrootlogin";
-    args["optionRegex"] = "yes";
+    args["option"] = "permitrootlogin";
+    args["value"] = "yes";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -150,8 +150,8 @@ TEST_F(EnsureSshdOptionTest, ConfigOptionNotFound)
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
     std::map<std::string, std::string> args;
-    args["optionName"] = "nonexistentoption";
-    args["optionRegex"] = ".*";
+    args["option"] = "nonexistentoption";
+    args["value"] = ".*";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -166,8 +166,8 @@ TEST_F(EnsureSshdOptionTest, CommandFailure)
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(Error("Command execution failed", -1))));
 
     std::map<std::string, std::string> args;
-    args["optionName"] = "permitrootlogin";
-    args["optionRegex"] = "no";
+    args["option"] = "permitrootlogin";
+    args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
@@ -185,8 +185,8 @@ TEST_F(EnsureSshdOptionTest, WithMatchGroupConfig)
     EXPECT_CALL(mContext, ExecuteCommand(sshdComplexCommand)).WillOnce(Return(Result<std::string>(sshdWithMatchGroupOutput)));
 
     std::map<std::string, std::string> args;
-    args["optionName"] = "permitrootlogin";
-    args["optionRegex"] = "no";
+    args["option"] = "permitrootlogin";
+    args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -200,8 +200,8 @@ TEST_F(EnsureSshdOptionTest, HostnameCommandFailure)
     EXPECT_CALL(mContext, ExecuteCommand(hostnameCommand)).WillOnce(Return(Result<std::string>(Error("Hostname command failed", -1))));
 
     std::map<std::string, std::string> args;
-    args["optionName"] = "permitrootlogin";
-    args["optionRegex"] = "no";
+    args["option"] = "permitrootlogin";
+    args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
@@ -217,8 +217,8 @@ TEST_F(EnsureSshdOptionTest, HostAddressCommandFailure)
     EXPECT_CALL(mContext, ExecuteCommand(hostAddressCommand)).WillOnce(Return(Result<std::string>(Error("Host address command failed", -1))));
 
     std::map<std::string, std::string> args;
-    args["optionName"] = "permitrootlogin";
-    args["optionRegex"] = "no";
+    args["option"] = "permitrootlogin";
+    args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
@@ -232,8 +232,8 @@ TEST_F(EnsureSshdOptionTest, RegexMatches)
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
     std::map<std::string, std::string> args;
-    args["optionName"] = "maxauthtries";
-    args["optionRegex"] = "[1-4]";
+    args["option"] = "maxauthtries";
+    args["value"] = "[1-4]";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -247,8 +247,8 @@ TEST_F(EnsureSshdOptionTest, RegexDoesNotMatch)
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
     std::map<std::string, std::string> args;
-    args["optionName"] = "maxauthtries";
-    args["optionRegex"] = "[5-9]";
+    args["option"] = "maxauthtries";
+    args["value"] = "[5-9]";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -262,8 +262,8 @@ TEST_F(EnsureSshdOptionTest, ComplexRegexMatches)
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
     std::map<std::string, std::string> args;
-    args["optionName"] = "permitrootlogin";
-    args["optionRegex"] = "^(no|prohibit-password)$";
+    args["option"] = "permitrootlogin";
+    args["value"] = "^(no|prohibit-password)$";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());

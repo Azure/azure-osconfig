@@ -73,32 +73,32 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
 }
 } // namespace
 
-AUDIT_FN(EnsureSshdOption, "optionName:Name of the SSH daemon option:M", "optionRegex:Regex that the option value has to match:M")
+AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option:M", "value:Regex that the option value has to match:M")
 {
     auto log = context.GetLogHandle();
 
-    auto it = args.find("optionName");
+    auto it = args.find("option");
     if (it == args.end())
     {
-        return Error("Missing 'optionName' parameter", EINVAL);
+        return Error("Missing 'option' parameter", EINVAL);
     }
-    auto optionName = std::move(it->second);
+    auto option = std::move(it->second);
 
-    it = args.find("optionRegex");
+    it = args.find("value");
     if (it == args.end())
     {
-        return Error("Missing 'optionRegex' parameter", EINVAL);
+        return Error("Missing 'value' parameter", EINVAL);
     }
-    auto optionRegex = std::move(it->second);
+    auto value = std::move(it->second);
     regex valueRegex;
     try
     {
-        valueRegex = regex(optionRegex);
+        valueRegex = regex(value);
     }
     catch (const regex_error& e)
     {
         OsConfigLogError(log, "Regex error: %s", e.what());
-        return Error("Failed to compile regex '" + optionRegex + "' error: " + e.what(), EINVAL);
+        return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
     }
 
     auto result = GetSshdOptions(context);
