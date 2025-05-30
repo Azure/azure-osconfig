@@ -11,6 +11,7 @@
 #include "Mmi.h"
 
 #include <cerrno>
+#include <climits>
 #include <cstddef>
 #include <cstring>
 #include <exception>
@@ -32,6 +33,7 @@ void ComplianceInitialize(OsConfigLogHandle log)
 {
     UNUSED(log);
     g_log = log;
+    SetMaxLogSize(UINT_MAX);
 }
 
 void ComplianceShutdown(void)

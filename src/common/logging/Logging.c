@@ -207,51 +207,8 @@ char* GetFormattedTime(void)
 // Checks and rolls the log over if larger than maximum size
 void TrimLog(OsConfigLogHandle log)
 {
-    unsigned int maxLogSize = IsDebugLoggingEnabled() ? ((g_maxLogSize < (UINT_MAX / 5)) ? (g_maxLogSize * 5) : UINT_MAX) : g_maxLogSize;
-    unsigned int maxLogTrim = 1000;
-    long fileSize = 0;
-    int savedErrno = errno;
-
-    if (NULL == log)
-    {
-        return;
-    }
-
-    // Loop incrementing the trim log counter from 0 to maxLogTrim
-    log->trimLogCount = (log->trimLogCount < maxLogTrim) ? (log->trimLogCount + 1) : 1;
-
-    // Check every 10 calls:
-    if (0 == (log->trimLogCount % 10))
-    {
-        // In append mode the file pointer will always be at end of file:
-        fileSize = ftell(log->log);
-
-        if ((fileSize >= (long)maxLogSize) || (-1 == fileSize))
-        {
-            fclose(log->log);
-
-            // Rename the log in place to make a backup copy, overwriting previous copy if any:
-            if ((NULL == log->backLogFileName) || (0 != rename(log->logFileName, log->backLogFileName)))
-            {
-                // If the log could not be renamed, empty it:
-                log->log = fopen(log->logFileName, "w");
-                fclose(log->log);
-            }
-
-            // Reopen the log in append mode:
-            log->log = fopen(log->logFileName, "a");
-
-            // Reapply restrictions once the file is recreated (also for backup, if any):
-            RestrictFileAccessToCurrentAccountOnly(log->logFileName);
-            if (NULL != log->backLogFileName)
-            {
-                // Reapply restrictions to the backup file:
-                RestrictFileAccessToCurrentAccountOnly(log->backLogFileName);
-            }
-        }
-    }
-
-    errno = savedErrno;
+    (void)(log);
+    return;
 }
 
 bool IsDaemon()
