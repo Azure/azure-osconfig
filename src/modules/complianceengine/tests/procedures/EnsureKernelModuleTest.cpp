@@ -53,10 +53,6 @@ static const char modprobeBlockedOverlayOutput[] = "blacklist hator_overlay\nins
 class EnsureKernelModuleTest : public ::testing::Test
 {
 protected:
-    char dirTemplate[PATH_MAX] = "/tmp/fsoptionTest.XXXXXX";
-    std::string dir;
-    std::string fstabFile;
-    std::string mtabFile;
     MockContext mContext;
     IndicatorsTree indicators;
 
