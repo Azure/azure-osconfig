@@ -17,8 +17,12 @@ namespace compliance
 
 // Documentation for dbus {ActiveState, LoadState, UnitFileState} possible values and meaning
 // https://www.freedesktop.org/wiki/Software/systemd/dbus/
+// man systemd.timer /Unit=
+// https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html
+// Unit=  # The unit to activate when this timer elapses.
 AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:value of systemd ActiveState of unitName to match",
-    "LoadState:value of systemd LoadState of unitName to match", "UnitFileState:value of systemd UnitFileState of unitName to match")
+    "LoadState:value of systemd LoadState of unitName to match", "UnitFileState:value of systemd UnitFileState of unitName to match",
+    "Unit:value of systemd property Unit, used in systemd.timer, name of unit to run when timer elapses ")
 {
     struct systemdQueryParams
     {
@@ -31,7 +35,8 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
         {
         }
     };
-    systemdQueryParams params[] = {systemdQueryParams("ActiveState"), systemdQueryParams("LoadState"), systemdQueryParams("UnitFileState")};
+    systemdQueryParams params[] = {
+        systemdQueryParams("ActiveState"), systemdQueryParams("LoadState"), systemdQueryParams("UnitFileState"), systemdQueryParams("Unit")};
     bool argFound = false;
     auto log = context.GetLogHandle();
     std::string systemCtlCmd = "systemctl show ";

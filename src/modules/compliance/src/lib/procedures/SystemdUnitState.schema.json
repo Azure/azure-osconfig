@@ -32,6 +32,10 @@
                 "UnitFileState": {
                   "type": "string",
                   "description": "value of systemd UnitFileState of unitName to match"
+                },
+                "Unit": {
+                  "type": "string",
+                  "description": "value of systemd property Unit, used in systemd.timer, name of unit to run when timer elapses"
                 }
               }
             }
