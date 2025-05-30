@@ -159,3 +159,14 @@ TEST_F(RegexFallbackTest, RegexMatch_3)
     EXPECT_TRUE(result);
     ASSERT_TRUE(match.ready());
 }
+
+TEST_F(RegexFallbackTest, RegexMatch_4)
+{
+    std::string target = "account\t[success=1 new_authtok_reqd=done default=ignore]\tpam_unix.so ";
+    std::string pattern = R"(^[ \t]*account[ \t]+[^#\n\r]+[ \t]+pam_unix\.so\b)";
+    auto r = regex(pattern);
+    smatch match;
+    bool result = regex_search(target, match, r);
+    EXPECT_TRUE(result);
+    ASSERT_TRUE(match.ready());
+}
