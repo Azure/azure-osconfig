@@ -104,7 +104,7 @@ AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option:M", "value:Rege
     auto result = GetSshdOptions(context);
     if (!result.HasValue())
     {
-        return result.Error();
+        return indicators.NonCompliant("Failed to execute sshd " + result.Error().message + " (code: " + std::to_string(result.Error().code) + ")");
     }
     auto& sshdConfig = result.Value();
 
@@ -146,8 +146,7 @@ AUDIT_FN(EnsureSshdNoOption, "options:Name of the SSH daemon options, comma sepa
     auto result = GetSshdOptions(context);
     if (!result.HasValue())
     {
-        // We treat it as a success same as CIS - usually means sshd is not installed.
-        return indicators.Compliant("No SSH daemon configuration found, assuming compliant");
+        return indicators.NonCompliant("Failed to execute sshd " + result.Error().message + " (code: " + std::to_string(result.Error().code) + ")");
     }
     auto& sshdConfig = result.Value();
 
