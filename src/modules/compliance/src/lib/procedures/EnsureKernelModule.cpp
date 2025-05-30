@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "EnsureKernelModule.h"
+
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <Regex.h>
@@ -25,15 +27,8 @@ static bool MultilineRegexSearch(const std::string& str, const regex& pattern)
     return false;
 }
 
-AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M")
+Result<Status> EnsureKernelModuleUnavailable(std::string moduleName, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto it = args.find("moduleName");
-    if (it == args.end())
-    {
-        return Error("No module name provided");
-    }
-    auto moduleName = std::move(it->second);
-
     // For all of the Kernel versions in /lib/modules find all the files in the kernel (modules) directory.
     // TODO(wpk) replace this with std::filesystem when we can use C++17.
     std::string findCmd = "find /lib/modules/ -maxdepth 1 -mindepth 1 -type d | while read i; do find \"$i\"/kernel/ -type f; done";
@@ -131,6 +126,17 @@ AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M"
     }
 
     return indicators.Compliant("Module " + moduleName + " is disabled");
+}
+
+AUDIT_FN(EnsureKernelModuleUnavailable, "moduleName:Name of the kernel module:M")
+{
+    auto it = args.find("moduleName");
+    if (it == args.end())
+    {
+        return Error("No module name provided");
+    }
+    auto moduleName = std::move(it->second);
+    return EnsureKernelModuleUnavailable(moduleName, indicators, context);
 }
 
 } // namespace compliance
