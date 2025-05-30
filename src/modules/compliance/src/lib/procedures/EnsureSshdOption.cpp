@@ -66,6 +66,7 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
             std::string optionValue;
             std::getline(lineStream, optionValue);
             optionValue.erase(0, optionValue.find_first_not_of(" \t"));
+            std::transform(currentOption.begin(), currentOption.end(), currentOption.begin(), ::tolower);
             options[currentOption] = optionValue;
         }
     }
@@ -83,6 +84,7 @@ AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option:M", "value:Rege
         return Error("Missing 'option' parameter", EINVAL);
     }
     auto option = std::move(it->second);
+    std::transform(option.begin(), option.end(), option.begin(), ::tolower);
 
     it = args.find("value");
     if (it == args.end())
@@ -154,6 +156,7 @@ AUDIT_FN(EnsureSshdNoOption, "options:Name of the SSH daemon options, comma sepa
     std::string optionName;
     while (std::getline(optionsStream, optionName, ','))
     {
+        std::transform(optionName.begin(), optionName.end(), optionName.begin(), ::tolower);
         auto itConfig = sshdConfig.find(optionName);
         if (itConfig == sshdConfig.end())
         {
