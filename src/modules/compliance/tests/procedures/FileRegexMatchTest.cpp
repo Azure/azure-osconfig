@@ -515,3 +515,18 @@ TEST_F(FileRegexMatchTest, Audit_FilenamePattern_7)
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
+
+TEST_F(FileRegexMatchTest, Audit_TestPattern)
+{
+    MakeTempfile(
+        "# here are the per-package modules (the \"Primary\" block)\naccount\t[success=1 new_authtok_reqd=done default=ignore]\tpam_unix.so \n# here's "
+        "the fallback if no module succeeds\n");
+    mArgs["path"] = mTempdir;
+    mArgs["filenamePattern"] = "1";
+    mArgs["matchOperation"] = "pattern match";
+    mArgs["matchPattern"] = R"(^[ \t]*account[ \t]+[^#\n\r]+[ \t]+pam_unix\.so\b)";
+    mArgs["behavior"] = "at_least_one_exists";
+    auto result = AuditFileRegexMatch(mArgs, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::Compliant);
+}
