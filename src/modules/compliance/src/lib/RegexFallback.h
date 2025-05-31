@@ -102,7 +102,48 @@ public:
     Regex(const std::string& r, std::regex_constants::syntax_option_type options = std::regex_constants::extended)
     {
         preg = std::unique_ptr<regex_t>(new regex_t);
-        int v = regcomp(preg.get(), r.c_str(), ConvertFlags(options));
+        std::string newR;
+        newR.reserve(r.size() + 1);
+        bool escapeNext = false;
+        for (const char& c : r)
+        {
+            if (escapeNext)
+            {
+                switch (c)
+                {
+                    case 'n':
+                        newR += '\n';
+                        break;
+                    case 't':
+                        newR += '\t';
+                        break;
+                    case 'r':
+                        newR += '\r';
+                        break;
+                    case 'h':
+                        newR += "[ \t]";
+                        break;
+                    default:
+                        // keep characters as they are
+                        newR += '\\';
+                        newR += c;
+                }
+                escapeNext = false;
+            }
+            else if (c == '\\')
+            {
+                escapeNext = true;
+            }
+            else
+            {
+                newR += c;
+            }
+        }
+        if (escapeNext)
+        {
+            newR += '\\'; // add last backslash if it was not escaped
+        }
+        int v = regcomp(preg.get(), newR.c_str(), ConvertFlags(options));
         if (0 != v)
         {
             char errbuf[256];
