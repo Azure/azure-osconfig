@@ -344,7 +344,21 @@ inline bool regexSearch(const std::string& s, MatchResults& m, const Regex& r)
 
 inline bool regexMatch(const std::string& s, const Regex& r)
 {
-    return (0 == regexec(r.preg.get(), s.c_str(), 0, NULL, 0));
+    regmatch_t matches[1];
+    auto result = (0 == regexec(r.preg.get(), s.c_str(), 1, matches, 0));
+    if (result)
+    {
+        if (matches[0].rm_so != 0)
+        {
+            return false;
+        }
+
+        if (matches[0].rm_eo != static_cast<regoff_t>(s.length()))
+        {
+            return false;
+        }
+    }
+    return result;
 }
 
 inline bool regexMatch(const std::string& s, MatchResults& m, const Regex& r)
