@@ -246,7 +246,9 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         return Error("Failed to read directory '" + path + "': " + strerror(status), status);
     }
 
-    // This is mapping of OVAL ExistenceEnumerator.
+    // This is a direct mapping mapping of OVAL ExistenceEnumerator
+    // see https://oval.mitre.org/language/version5.9/ovalsc/documentation/oval-common-schema.html#ExistenceEnumeration for details
+
     if ("all_exist" == behavior)
     {
         if (errorCount > 0)
