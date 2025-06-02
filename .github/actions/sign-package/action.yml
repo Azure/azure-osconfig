@@ -48,7 +48,7 @@ runs:
 
         auth_json = {
           "AuthenticationType": "AAD_MSI",
-          "ClientId": f"{msi_client_id}",
+          "ClientId": f"{aad_id}",
           "EsrpClientId": f"{esrp_id}",
           "RequestSigningCert": {
             "GetCertFromKeyVault": True,
