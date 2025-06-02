@@ -46,20 +46,18 @@ runs:
         auth_json = {
           "Version": "1.0.0",
           "AuthenticationType": "AAD_CERT",
+          "TenantId": "33e01921-4d64-4f8c-a055-5bdaffd5e33d",
           "ClientId": f"{aad_id}",
           "AuthCert": {
             "SubjectName": f"CN={aad_id}.microsoft.com",
             "StoreLocation": "LocalMachine",
             "StoreName": "My",
-            "SendX5c": True,
-            "WithAzureRegion": False
+            "SendX5c": "true",
           },
           "RequestSigningCert": {
             "SubjectName": f"CN={aad_id}",
             "StoreLocation": "LocalMachine",
-            "StoreName": "My",
-            "SendX5c": False,
-            "WithAzureRegion": False
+            "StoreName": "My"
           }
         }
 
