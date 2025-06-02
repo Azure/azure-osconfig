@@ -15,7 +15,7 @@
         "version": "1.0.0",
         "contentType": "Custom",
         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-        "contentHash": "BC94409A587C68363FEBC78D0CED404A368B3E91567E521B70203DB401A8F505",
+        "contentHash": "978902B8140B83D7CA8291DBA56D73E7E6D0C513513235E524B04497EB66DA65",
         "configurationParameter": {
           "loggingLevel": "Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue"
         }
@@ -372,7 +372,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "BC94409A587C68363FEBC78D0CED404A368B3E91567E521B70203DB401A8F505",
+                        "contentHash": "978902B8140B83D7CA8291DBA56D73E7E6D0C513513235E524B04497EB66DA65",
                         "assignmentType": "ApplyAndAutoCorrect",
                         "configurationParameter": [
                           {
@@ -395,7 +395,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "BC94409A587C68363FEBC78D0CED404A368B3E91567E521B70203DB401A8F505",
+                        "contentHash": "978902B8140B83D7CA8291DBA56D73E7E6D0C513513235E524B04497EB66DA65",
                         "assignmentType": "ApplyAndAutoCorrect",
                         "configurationParameter": [
                           {
@@ -418,7 +418,7 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "BC94409A587C68363FEBC78D0CED404A368B3E91567E521B70203DB401A8F505",
+                        "contentHash": "978902B8140B83D7CA8291DBA56D73E7E6D0C513513235E524B04497EB66DA65",
                         "assignmentType": "ApplyAndAutoCorrect",
                         "configurationParameter": [
                           {
