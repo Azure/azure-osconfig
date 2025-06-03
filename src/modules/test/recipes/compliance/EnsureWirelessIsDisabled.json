@@ -21,7 +21,7 @@
     "ObjectType": "Reported",
     "ComponentName": "Compliance",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ EnsureWirelessIsDisabled:  } == TRUE"
+    "Payload": "PASS{ EnsureWirelessIsDisabled: No wireless kernel module found } == TRUE"
   },
 
    {
