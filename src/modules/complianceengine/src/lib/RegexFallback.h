@@ -4,6 +4,11 @@
 #ifndef COMPLIANCEENGINE_REGEX_FALLBACK_H
 #define COMPLIANCEENGINE_REGEX_FALLBACK_H
 
+// We don't want clang-tidy to touch this file as we're keeping compatibility
+// with the original regex, which means e.g. different function names.
+
+// NOLINTBEGIN
+
 #if USE_REGEX_FALLBACK == 0
 #error "USE_REGEX_FALLBACK should be set to 1 here"
 #endif
@@ -402,4 +407,7 @@ inline std::ostream& operator<<(std::ostream& os, const RegexLibcWrapper::SubMat
 using regex = RegexLibcWrapper::Regex;
 using smatch = RegexLibcWrapper::MatchResults;
 using regex_error = RegexLibcWrapper::RegexException;
+
+// NOLINTEND
+
 #endif // COMPLIANCEENGINE_REGEX_FALLBACK_H
