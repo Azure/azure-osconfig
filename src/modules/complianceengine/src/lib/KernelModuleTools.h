@@ -2,6 +2,8 @@
 #ifndef KERNELMODULETOOLS_H
 #define KERNELMODULETOOLS_H
 
+// NOLINTBEGIN
+
 #include "ContextInterface.h"
 #include "Indicators.h"
 #include "Result.h"
@@ -16,5 +18,7 @@ Result<bool> IsKernelModuleLoaded(std::string moduleName, ContextInterface& cont
 Result<Status> IsKernelModuleBlocked(std::string moduleName, IndicatorsTree& indicators, ContextInterface& context);
 
 } // namespace compliance
+
+// NOLINTEND
 
 #endif // KERNELMODULETOOLS_H

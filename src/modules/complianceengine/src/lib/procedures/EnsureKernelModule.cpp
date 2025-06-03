@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "KernelModuleTools.h"
+
 #include <CommonUtils.h>
 #include <Evaluator.h>
 

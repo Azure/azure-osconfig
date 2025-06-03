@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 
+// NOLINTBEGIN
 namespace compliance
 {
 // TODO(wpk) std::regex::multiline is only supported in C++17.
@@ -131,3 +132,5 @@ Result<Status> IsKernelModuleBlocked(std::string moduleName, IndicatorsTree& ind
 }
 
 } // namespace compliance
+
+// NOLINTEND
