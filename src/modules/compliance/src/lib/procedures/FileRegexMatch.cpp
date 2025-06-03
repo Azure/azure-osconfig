@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 #include <CommonUtils.h>
 #include <Evaluator.h>
-#include <FactExistenceValidator.h>
 #include <Optional.h>
 #include <Regex.h>
 #include <Result.h>
@@ -14,7 +13,6 @@ namespace compliance
 using std::ifstream;
 using std::string;
 using std::regex_constants::syntax_option_type;
-using Behavior = FactExistenceValidator::Behavior;
 namespace
 {
 
@@ -24,27 +22,18 @@ using MatchStateSyntaxOptions = std::pair<syntax_option_type, syntax_option_type
 // This function is used to check if the file contents match the given pattern.
 // It reads the file line by line and checks each line against the matchPattern.
 // If a line matches the matchPattern, it checks if the statePattern (if provided) also matches.
-// Based on the result of the matches, fact existence validator is used to determine
-// if the criteria is met or unmet based on the behavior specified in the arguments.
-// in case of non existing file and Behavior::NoneExist success is expected
-Result<Status> MultilineMatch(const std::string& filename, const string& matchPattern, const Optional<string>& statePattern,
-    MatchStateSyntaxOptions syntaxOptions, Behavior behavior, IndicatorsTree& indicators, ContextInterface& context)
+// Based on the result of the matches, true is returned if the file matches, false if it doesn't.
+Result<bool> MultilineMatch(const std::string& filename, const string& matchPattern, const Optional<string>& statePattern,
+    MatchStateSyntaxOptions syntaxOptions, ContextInterface& context)
 {
     Optional<regex> matchRegex;
     Optional<regex> stateRegex;
-    FactExistenceValidator validator(behavior);
 
     ifstream input(filename);
     if (!input.is_open())
     {
-        if (behavior == Behavior::NoneExist)
-        {
-            validator.CriteriaUnmet();
-            return validator.Result();
-        }
-        return Error("Failed to open file: " + filename, ENOENT);
+        return Error("Failed to open file: " + filename, errno);
     }
-
     try
     {
         matchRegex = regex(matchPattern, syntaxOptions.first);
@@ -61,10 +50,10 @@ Result<Status> MultilineMatch(const std::string& filename, const string& matchPa
 
     int lineNumber = 0;
     string line;
-    while (!validator.Done() && getline(input, line))
+    while (getline(input, line))
     {
         lineNumber++;
-        OsConfigLogDebug(context.GetLogHandle(), "Matching line %d: %s, pattern: %s", lineNumber, line.c_str(), matchPattern.c_str());
+        OsConfigLogDebug(context.GetLogHandle(), "Matching line %d: '%s', pattern: '%s'", lineNumber, line.c_str(), matchPattern.c_str());
         smatch match;
         if (regex_search(line, match, matchRegex.Value()))
         {
@@ -78,53 +67,17 @@ Result<Status> MultilineMatch(const std::string& filename, const string& matchPa
                 if (regex_search(valueToMatch, stateRegex.Value()))
                 {
                     OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line.c_str());
-                    validator.CriteriaMet();
-                    if (validator.Done())
-                    {
-                        indicators.AddIndicator("state pattern '" + statePattern.Value() + "' matched line " + std::to_string(lineNumber) +
-                                                    " in file '" + filename + "'",
-                            validator.Result());
-                    }
-                }
-                else
-                {
-                    OsConfigLogDebug(context.GetLogHandle(), "Did not match line %d: %s", lineNumber, line.c_str());
-                    validator.CriteriaUnmet();
-                    if (validator.Done())
-                    {
-                        indicators.AddIndicator("state pattern '" + statePattern.Value() + "' did not match line " + std::to_string(lineNumber) +
-                                                    " in file '" + filename + "'",
-                            validator.Result());
-                    }
+                    return true;
                 }
             }
             else
             {
                 OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line.c_str());
-                validator.CriteriaMet();
-                if (validator.Done())
-                {
-                    indicators.AddIndicator("pattern '" + matchPattern + "' matched line " + std::to_string(lineNumber) + " in file '" + filename + "'",
-                        validator.Result());
-                }
-            }
-        }
-        else
-        {
-            OsConfigLogDebug(context.GetLogHandle(), "Did not match line %d: %s", lineNumber, line.c_str());
-            validator.CriteriaUnmet();
-            if (validator.Done())
-            {
-                indicators.AddIndicator("pattern '" + matchPattern + "' did not match any line in file '" + filename + "'", validator.Result());
+                return true;
             }
         }
     }
-    if (!validator.Done())
-    {
-        auto finishResult = validator.Finish();
-        indicators.AddIndicator(finishResult, validator.Result());
-    }
-    return validator.Result();
+    return false;
 }
 } // anonymous namespace
 
@@ -225,17 +178,11 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         }
     }
 
-    auto behavior = Behavior::AllExist;
+    std::string behavior = "all_exist";
     it = args.find("behavior");
     if (it != args.end())
     {
-        auto result = FactExistenceValidator::MapBehavior(it->second);
-        if (!result.HasValue())
-        {
-            return Error("Invalid behavior value: " + it->second, result.Error().code);
-        }
-
-        behavior = result.Value();
+        behavior = it->second;
     }
 
     // Currently only "pattern match" is supported for both match and state operations.
@@ -254,7 +201,7 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     {
         int status = errno;
         OsConfigLogInfo(context.GetLogHandle(), "Failed to open directory '%s': %s", path.c_str(), strerror(status));
-        if (behavior == Behavior::NoneExist)
+        if (behavior == "none_exist")
         {
             return Status::Compliant;
         }
@@ -262,7 +209,9 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     }
     auto dirCloser = std::unique_ptr<DIR, int (*)(DIR*)>(dir, closedir);
 
-    auto matchedAnyFilename = false;
+    int matchCount = 0;
+    int fileCount = 0;
+    int errorCount = 0;
     struct dirent* entry = nullptr;
     for (errno = 0, entry = readdir(dir); nullptr != entry; errno = 0, entry = readdir(dir))
     {
@@ -271,25 +220,22 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
             continue;
         }
 
-        if (!regex_search(entry->d_name, filenameRegex.Value()))
+        if (!regex_match(entry->d_name, filenameRegex.Value()))
         {
             OsConfigLogDebug(context.GetLogHandle(), "Ignoring file '%s' in directory '%s'", entry->d_name, path.c_str());
             continue;
         }
-        matchedAnyFilename = true;
-
+        fileCount++;
         auto filename = path + "/" + entry->d_name;
-        auto matchResult = MultilineMatch(filename, matchPattern, statePattern, syntaxOptions, behavior, indicators, context);
+        auto matchResult = MultilineMatch(filename, matchPattern, statePattern, syntaxOptions, context);
         if (!matchResult.HasValue())
         {
             OsConfigLogInfo(context.GetLogHandle(), "Failed to match file '%s': %s", filename.c_str(), matchResult.Error().message.c_str());
-            return matchResult.Error();
+            errorCount++;
         }
-
-        OsConfigLogDebug(context.GetLogHandle(), "Matched file '%s': %s", filename.c_str(), matchResult.Value() == Status::Compliant ? "Compliant" : "NonCompliant");
-        if (matchResult.Value() == Status::NonCompliant)
+        else if (matchResult.Value())
         {
-            return Status::NonCompliant;
+            matchCount++;
         }
     }
 
@@ -300,16 +246,89 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
         return Error("Failed to read directory '" + path + "': " + strerror(status), status);
     }
 
-    if (!matchedAnyFilename && (behavior == Behavior::NoneExist))
-    {
-        return indicators.Compliant("No files matched the filename pattern '" + filenamePattern + "'");
-    }
+    // This is a direct mapping mapping of OVAL ExistenceEnumerator
+    // see https://oval.mitre.org/language/version5.9/ovalsc/documentation/oval-common-schema.html#ExistenceEnumeration for details
 
-    if (!matchedAnyFilename && (behavior == Behavior::AtLeastOneExists))
+    if ("all_exist" == behavior)
     {
-        return indicators.NonCompliant("No files matched the filename pattern '" + filenamePattern + "'");
+        if (errorCount > 0)
+        {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d errors", errorCount);
+            return Error("Validator finished with " + std::to_string(errorCount) + " errors", EINVAL);
+        }
+        if ((matchCount == fileCount) && (fileCount > 0))
+        {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d matches", matchCount);
+            return indicators.Compliant("All " + std::to_string(fileCount) + " files matched the pattern");
+        }
+        else
+        {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d matches out of %d files", matchCount, fileCount);
+            return indicators.NonCompliant("Expected all files to match, but only " + std::to_string(matchCount) + " out of " +
+                                           std::to_string(fileCount) + " matched");
+        }
     }
+    else if ("any_exist" == behavior)
+    {
+        if ((matchCount == 0) && (errorCount > 0))
+        {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d errors", errorCount);
+            return Error("Validator finished with " + std::to_string(errorCount) + " errors", EINVAL);
+        }
+        return indicators.Compliant("Found " + std::to_string(matchCount) + " matches");
+    }
+    else if ("at_least_one_exists" == behavior)
+    {
+        if (matchCount > 0)
+        {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d matches", matchCount);
+            return indicators.Compliant("At least one file matched, found " + std::to_string(matchCount) + " matches");
+        }
+        if (errorCount > 0)
+        {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d errors", errorCount);
+            return Error("Validator finished with " + std::to_string(errorCount) + " errors", EINVAL);
+        }
+        return indicators.NonCompliant("Expected at least one file to match, but none did");
+    }
+    else if ("none_exist" == behavior)
+    {
+        if (matchCount > 0)
+        {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d matches", matchCount);
+            return indicators.NonCompliant("Expected no files to match, but " + std::to_string(matchCount) + " matched");
+        }
 
-    return Status::Compliant;
+        if (errorCount > 0)
+        {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d errors", errorCount);
+            return Error("Validator finished with " + std::to_string(errorCount) + " errors", EINVAL);
+        }
+        OsConfigLogInfo(context.GetLogHandle(), "Validator finished with no matches");
+        return indicators.Compliant("No files matched the pattern");
+    }
+    else if ("only_one_exists" == behavior)
+    {
+        if (matchCount == 1 && errorCount == 0)
+        {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d matches", matchCount);
+            return indicators.Compliant("Exactly one file matched the pattern");
+        }
+        else if (matchCount > 1)
+        {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d matches", matchCount);
+            return indicators.NonCompliant("Expected only one file to match, but " + std::to_string(matchCount) + " matched");
+        }
+        else if (errorCount > 0)
+        {
+            OsConfigLogInfo(context.GetLogHandle(), "Validator finished with %d errors", errorCount);
+            return Error("Validator finished with " + std::to_string(errorCount) + " errors", EINVAL);
+        }
+        return indicators.NonCompliant("Expected exactly one file to match, but none did");
+    }
+    else
+    {
+        return Error("Unknown behavior: " + behavior, EINVAL);
+    }
 }
 } // namespace compliance
