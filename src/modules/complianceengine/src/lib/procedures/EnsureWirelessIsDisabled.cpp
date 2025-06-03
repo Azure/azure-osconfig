@@ -93,15 +93,15 @@ AUDIT_FN(EnsureWirelessIsDisabled)
             if (FTS_F != entry->fts_info && wireless == entry->fts_name)
             {
                 auto modulePath = sysfs_dev + "device/driver/module";
-                char sysfsModule[PATH_MAX];
+                char sysfsModule[PATH_MAX] = {0};
                 auto ret = readlink(modulePath.c_str(), sysfsModule, PATH_MAX);
-                if (!ret)
+                if (ret == -1)
                 {
                     ret = errno;
                     OsConfigLogInfo(log, "Readlink '%s' resolution errror %ld %s", modulePath.c_str(), ret, strerror(ret));
                     return indicators.NonCompliant("Readlink '" + modulePath + "' resolution error " + std::to_string(ret) + " " + strerror(ret));
                 }
-                std::string moduleName = std::string(sysfsModule);
+                auto moduleName = std::string(sysfsModule, ret);
                 auto pos = moduleName.rfind("/");
                 if (pos == std::string::npos)
                 {
