@@ -30,6 +30,7 @@ add_library(complianceenginelib STATIC
     ContextInterface.cpp
     Engine.cpp
     Evaluator.cpp
+    KernelModuleTools.cpp
     Indicators.cpp
     JsonWrapper.cpp
     Procedure.cpp
