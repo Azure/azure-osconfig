@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "EnsureKernelModule.h"
-
+#include "KernelModuleTools.h"
 #include <CommonUtils.h>
 #include <Evaluator.h>
-#include "KernelModuleTools.h"
 
 namespace ComplianceEngine
 {

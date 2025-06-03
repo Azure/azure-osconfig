@@ -1,5 +1,5 @@
 
-#include "EnsureKernelModule.h"
+#include "KernelModuleTools.h"
 #include "Result.h"
 
 #include <CommonUtils.h>
