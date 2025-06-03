@@ -22,7 +22,6 @@ namespace ComplianceEngine
 
 AUDIT_FN(EnsureWirelessIsDisabled)
 {
-
     auto log = context.GetLogHandle();
     std::string sysfsClassNet = "/sys/class/net";
 
