@@ -1,11 +1,11 @@
 [
   {
     "Action": "LoadModule",
-    "Module": "compliance.so"
+    "Module": "complianceengine.so"
   },
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "procedureEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": {
       "audit": {
@@ -29,13 +29,13 @@
   // Initial state should be clean
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": ""
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
   },
@@ -60,7 +60,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": "{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' does not exist } == FALSE]} == FALSE"
   },
@@ -72,7 +72,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
   },
@@ -84,7 +84,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": "{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' has incorrect permissions } == FALSE]} == FALSE"
   },
@@ -93,13 +93,13 @@
   // Remediate and audit
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": ""
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
   },
@@ -117,7 +117,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": "{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' does not exist } == FALSE]} == FALSE"
   },
@@ -126,13 +126,13 @@
   // Remediate and audit
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": ""
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
   },
@@ -153,20 +153,20 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": "{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured: User's 'securitybaselinetest' home directory '\/home\/securitybaselinetest' has incorrect permissions } == FALSE]} == FALSE"
   },
   // Remediate and audit
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": ""
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
   },
@@ -193,7 +193,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "auditEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": "PASS{ allOf: [{ EnsureInteractiveUsersHomeDirectoriesAreConfigured:  } == TRUE]} == TRUE"
   },
@@ -203,7 +203,7 @@
   // Make sure the remediation does not fix sth that audit is skipping: the directory should still be missing
   {
     "ObjectType": "Desired",
-    "ComponentName": "Compliance",
+    "ComponentName": "ComplianceEngine",
     "ObjectName": "remediateEnsureInteractiveUsersHomeDirectoriesAreConfigured",
     "Payload": ""
   },
