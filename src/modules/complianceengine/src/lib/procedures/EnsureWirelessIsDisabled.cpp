@@ -17,7 +17,7 @@
 #include <unistd.h>
 #include <vector>
 
-namespace compliance
+namespace ComplianceEngine
 {
 
 AUDIT_FN(EnsureWirelessIsDisabled)
@@ -132,4 +132,4 @@ AUDIT_FN(EnsureWirelessIsDisabled)
     }
     return indicators.Compliant("No wireless kernel module found");
 }
-} // namespace compliance
+} // namespace ComplianceEngine

@@ -16,12 +16,12 @@
 #include <unistd.h>
 #include <vector>
 
-using compliance::AuditEnsureWirelessIsDisabled;
-using compliance::CompactListFormatter;
-using compliance::Error;
-using compliance::IndicatorsTree;
-using compliance::Result;
-using compliance::Status;
+using ComplianceEngine::AuditEnsureWirelessIsDisabled;
+using ComplianceEngine::CompactListFormatter;
+using ComplianceEngine::Error;
+using ComplianceEngine::IndicatorsTree;
+using ComplianceEngine::Result;
+using ComplianceEngine::Status;
 
 namespace
 {

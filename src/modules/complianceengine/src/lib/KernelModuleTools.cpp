@@ -1,10 +1,11 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
+#include <KernelModuleTools.h>
 #include <Regex.h>
 #include <iostream>
 #include <string>
 
-namespace compliance
+namespace ComplianceEngine
 {
 // TODO(wpk) std::regex::multiline is only supported in C++17.
 static bool MultilineRegexSearch(const std::string& str, const regex& pattern)
@@ -130,4 +131,4 @@ Result<Status> IsKernelModuleBlocked(std::string moduleName, IndicatorsTree& ind
     return indicators.Compliant("Module " + moduleName + " is disabled");
 }
 
-} // namespace compliance
+} // namespace ComplianceEngine
