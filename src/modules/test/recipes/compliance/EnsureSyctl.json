@@ -3,98 +3,40 @@
     "Action": "LoadModule",
     "Module": "complianceengine.so"
   },
-  // Comment out test setup and acctuall test of EnsureSysctl due to problem seting  sysctl relably in github containtes
-  // {
-  //   "RunCommand": "sysctl net.ipv4.conf.default.log_martians=1 && test -f /etc/sysctl.d/99-sysctl.conf && cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.bak ||  true ; echo net.ipv4.conf.default.log_martians=1 >> /etc/sysctl.d/99-sysctl.conf"
-  // },
-  // {
-  //   "ObjectType": "Desired",
-  //   "ComponentName": "ComplianceEngine",
-  //   "ObjectName": "procedureTest",
-  //   "Payload": {
-  //     "audit": {
-  //       "EnsureSysctl": {
-  //         "sysctlName": "net.ipv4.conf.default.log_martians",
-  //         "value": "1"
-  //       }
-  //     },
-  //     "parameters": {
-  //     }
-  //   }
-  // },
-  // {
-  //   "ObjectType": "Reported",
-  //   "ComponentName": "ComplianceEngine",
-  //   "ObjectName": "auditTest",
-  //   "Payload": "PASS{ EnsureSysctl: Correct value for 'net.ipv4.conf.default.log_martians': '1' } == TRUE"
-  // },
-  // Comment out test setup and acctuall test of EnsureSysctl due to problem seting  sysctl relably in github containtes
-  // {
-  //   "RunCommand": "sysctl net.ipv4.conf.default.log_martians=0 && test -f /etc/sysctl.d/99-sysctl.conf.bak && { mv /etc/sysctl.d/99-sysctl.conf.bak /etc/sysctl.d/99-sysctl.conf ; } || { rm /etc/sysctl.d/99-sysctl.conf ; }"
-  // },
-
-   // {
-   //   "RunCommand": "sysctl net.ipv4.conf.default.log_martians=0"
-   // },
-   // {
-   //   "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf && cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.bak ||  true ; echo net.ipv4.conf.default.log_martians=0 >> /etc/sysctl.d/99-sysctl.conf"
-   // },
-   // {
-   //   "ObjectType": "Desired",
-   //   "ComponentName": "ComplianceEngine",
-   //   "ObjectName": "procedureTest",
-   //   "Payload": {
-   //     "audit": {
-   //       "EnsureSysctl": {
-   //         "sysctlName": "net.ipv4.conf.default.log_martians",
-   //         "value": "0"
-   //       }
-   //     },
-   //     "parameters": {
-   //     }
-   //   }
-   // },
-   // {
-   //   "ObjectType": "Reported",
-   //   "ComponentName": "ComplianceEngine",
-   //   "ObjectName": "auditTest",
-   //   "Payload": "PASS{ EnsureSysctl: Correct value for 'net.ipv4.conf.default.log_martians': '0' } == TRUE"
-
-   // },
-   // {
-   //    "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf.bak && { mv /etc/sysctl.d/99-sysctl.conf.bak /etc/sysctl.d/99-sysctl.conf ; } || { rm /etc/sysctl.d/99-sysctl.conf ; }"
-   // },
-   // {
-   //   "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf && cp /etc/sysctl.d/99-sysctl.conf /etc/sysctl.d/99-sysctl.conf.bak ||  true ; echo net.ipv4.conf.default.log_martians=1 >> /etc/sysctl.d/99-sysctl.conf"
-   // },
-   // {
-   //   "ObjectType": "Desired",
-   //   "ComponentName": "ComplianceEngine",
-   //   "ObjectName": "procedureTest",
-   //   "Payload": {
-   //     "audit": {
-   //       "EnsureSysctl": {
-   //         "sysctlName": "net.ipv4.conf.default.log_martians",
-   //         "value": "0"
-   //       }
-   //     },
-   //     "parameters": {
-   //     }
-   //   }
-   // },
-   // {
-   //   "ObjectType": "Reported",
-   //   "ComponentName": "ComplianceEngine",
-   //   "ObjectName": "auditTest",
-   //   "Payload": "{ EnsureSysctl: Expected 'net.ipv4.conf.default.log_martians' value: '0' got '1' found in: '\/etc\/sysctl.d\/99-sysctl.conf' } == FALSE"
-
-   // },
-   // {
-   //    "RunCommand": "test -f /etc/sysctl.d/99-sysctl.conf.bak && { mv /etc/sysctl.d/99-sysctl.conf.bak /etc/sysctl.d/99-sysctl.conf ; } || { rm /etc/sysctl.d/99-sysctl.conf ; }"
-   // },
-
-
-   {
-     "Action": "UnloadModule"
-   }
+  // We cannot assume anything about the settings on the test machine, but anyOf [x, not x] should always PASS unless there's an error.
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "anyOf": [
+          {
+            "EnsureSysctl": {
+              "sysctlName": "net.ipv4.conf.default.log_martians",
+              "value": "1"
+            }
+          },
+          {
+            "not": {
+              "EnsureSysctl": {
+                "sysctlName": "net.ipv4.conf.default.log_martians",
+                "value": "1"
+              }
+            }
+          }
+        ]
+      },
+      "parameters": {}
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS*"
+  },
+  {
+    "Action": "UnloadModule"
+  }
 ]
