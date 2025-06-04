@@ -1,10 +1,10 @@
 # Introduction
 This coding style applies to all of the new code that's introduced into the codebase.
 When fixing old code that might not adhere to this style guide, use common sense to decide whether this code style guide should be applied,
-based on how much of the content is actually new, but never mix conventions on a function level.
+based on how much of the content is actually new, but never mix conventions on a function level. When not adhering to the style guide provide a rationale in a comment.
 
 # General formatting
-All code needs to be formatted according to rules defined in .pre-commit-config.yaml - specifally with regards to the clang-format and clang-tidy rules.
+All code needs to be formatted according to rules defined in [pre-commit configuration](../.pre-commit-config.yaml) - specifally with regards to the clang-format and clang-tidy rules.
 Apart from that there are style rules that can't be expressed in clang-format but must be followed nevertheless:
 
 # Formatting quirks
@@ -27,6 +27,7 @@ Apart from that there are style rules that can't be expressed in clang-format bu
             }
 
     - Don't:
+
             if ((7 == a) && (NULL == (y = malloc(10))))
             {
             }
@@ -144,9 +145,9 @@ Apart from that there are style rules that can't be expressed in clang-format bu
 
 
 # Naming Conventions
-- PascalCase for files, functions, types, and structs
+- PascalCase for file names, function names, types (including class and struct), and namespaces
 - camelCase for parameters and variables
-- g_ prefix for global variables
+- g_ prefix for global variables, then camelCase
 - UPPER_CASE for macros
 
 # Variables
@@ -180,24 +181,36 @@ Apart from that there are style rules that can't be expressed in clang-format bu
               return y;
             }
 
+- In C++, variables should be defined when needed
 - Variables must not be reused for different purposes, except for simple index variables in for loops and a function-wide result variable
 - Variable names must be verbose enough to explain their purpose if not obvious
 - Use boolean true and false rather than 1 and 0 for boolean operations
+- In C++ when passing an argument references should be used if object is mutable but not nullable, const references for non-mutable, non-nullable objects, pointers only for object that can be null.
 
 # Error Handling
 - For C, return integer status codes for functions that can fail, typically using standard errno values, and 0 for success
-- For C++ using complex/optional error types is allowed
+- For C++ using complex/optional error types is recommended
 - Always validate function inputs
 - Use early returns for validation and error conditions
 - Log errors with descriptive messages using OsConfigLogError, OsConfigLogWarning, or OsConfigLogInfo
-- For C++ avoid throwing exceptions, but handle them properly when thrown by external code
+- For C++ avoid throwing exceptions, but handle them properly when thrown by external code, e.g.:
+
+            try
+            {
+                valueRegex = regex(value);
+            }
+            catch (const std::exception& e)
+            {
+                OsConfigLogError(log, "Regex error: %s", e.what());
+                return Error("Failed to compile regex '" + value + "' error: " + e.what());
+            }
 
 # Memory Management
 - Always check for memory allocation failures, fail gracefully if possible
 - Avoid dangling invalid pointers - if it's freed it should be NULL, use FREE_MEMORY(ptr) macro to safely free memory.
 - Free all allocated memory (except output values) before function returns, including error paths
 - Functions allocating memory should document ownership transfer to caller
-- For C++ use smart pointers wherever possible, avoid new and delete
+- For C++ use smart pointers wherever possible, avoid new and delete, wrap manually allocated objects in e.g. std::unique_ptr<> with a custom deleter to avoid possible leaks
 
 # Logging
 - Include an OsConfigLogHandle log parameter in functions that need to log
