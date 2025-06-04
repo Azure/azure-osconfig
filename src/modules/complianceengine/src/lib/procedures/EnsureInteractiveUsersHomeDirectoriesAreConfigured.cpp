@@ -4,6 +4,7 @@
 
 #include <CommonUtils.h>
 #include <Evaluator.h>
+#include <FilePermissionsHelpers.h>
 #include <Result.h>
 #include <fcntl.h>
 #include <fstream>
@@ -21,9 +22,6 @@ using std::map;
 using std::ostringstream;
 using std::set;
 using std::string;
-
-Result<Status> AuditEnsureFilePermissions(map<string, string>, IndicatorsTree&, ContextInterface&);
-Result<Status> RemediateEnsureFilePermissions(map<string, string>, IndicatorsTree&, ContextInterface&);
 
 namespace
 {
@@ -103,7 +101,7 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
 
         map<string, string> arguments = {{"filename", pwd->pw_dir}, {"mask", "027"}, {"owner", pwd->pw_name}, {"group", group->gr_name}};
         indicators.Push("EnsureFilePermissions");
-        auto subResult = AuditEnsureFilePermissions(std::move(arguments), indicators, context);
+        auto subResult = ComplianceEngine::AuditEnsureFilePermissionsHelper(std::string(pwd->pw_dir), std::move(arguments), indicators, context);
         indicators.Pop();
         if (!subResult.HasValue())
         {
@@ -175,7 +173,7 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
 
         map<string, string> arguments = {{"filename", pwd->pw_dir}, {"mask", "027"}, {"owner", pwd->pw_name}, {"group", group->gr_name}};
         indicators.Push("EnsureFilePermissions");
-        auto subResult = RemediateEnsureFilePermissions(std::move(arguments), indicators, context);
+        auto subResult = RemediateEnsureFilePermissionsHelper(pwd->pw_dir, std::move(arguments), indicators, context);
         indicators.Pop();
         if (!subResult.HasValue())
         {
