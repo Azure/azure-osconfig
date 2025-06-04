@@ -31,7 +31,6 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
 {
     auto log = context.GetLogHandle();
     std::string procfsLocation = "/proc/sys";
-    std::string systemdSysctl = "/lib/systemd/systemd-sysctl --cat-config";
 
     auto it = args.find("sysctlName");
     if (it == args.end())
@@ -84,7 +83,25 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
         indicators.Compliant("Correct value for '" + sysctlName + "': '" + sysctlValue + "' in runtime configuration");
     }
 
-    // systemd-sysclt shows all configs used by system that have sysctl's
+    // systemd-sysctl can be in different places on different OSes, we need to do some heuristics.
+    std::string systemdSysctl;
+    std::vector<std::string> systemdSysctlLocations = {"/lib/systemd/systemd-sysctl", "/usr/lib/systemd/systemd-sysctl"};
+    const std::string argVersion = " --version";
+    const std::string argCatConfig = " --cat-config";
+    for (auto& cmd : systemdSysctlLocations)
+    {
+        auto result = context.ExecuteCommand(cmd + argVersion);
+        if (result.HasValue())
+        {
+            systemdSysctl = cmd + argCatConfig;
+            break;
+        }
+    }
+    if (systemdSysctl.empty())
+    {
+        return Error("Cannot find systemd-sysctl command", ENOENT);
+    }
+    // systemd-sysctl shows all configs used by system that have sysctl's
     auto execResult = context.ExecuteCommand(systemdSysctl);
     if (!execResult.HasValue())
     {

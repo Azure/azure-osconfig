@@ -24,15 +24,13 @@ using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 using ::testing::Return;
 
-bool startsWith(const std::string& str, const std::string& prefix)
-{
-    return str.size() >= prefix.size() && str.compare(0, prefix.size(), prefix) == 0;
-}
-
-static const char systemdSysctlCat[] = "/lib/systemd/systemd-sysctl --cat-config";
-static const char sysctlIpForward0[] = "net.ipv4.ip_forward = 0";
-static const char sysctlIpForward1[] = "net.ipv4.ip_forward = 1";
-static const char sysctlIpForward0Comment[] = "                          # net.ipv4.ip_forward = 0";
+static const std::string systemdSysctlCat = "/lib/systemd/systemd-sysctl --cat-config";
+static const std::string systemdSysctlVersion = "/lib/systemd/systemd-sysctl --version";
+static const std::string systemdUsrSysctlCat = "/usr/lib/systemd/systemd-sysctl --cat-config";
+static const std::string systemdUsrSysctlVersion = "/usr/lib/systemd/systemd-sysctl --version";
+static const std::string sysctlIpForward0 = "net.ipv4.ip_forward = 0";
+static const std::string sysctlIpForward1 = "net.ipv4.ip_forward = 1";
+static const std::string sysctlIpForward0Comment = "                          # net.ipv4.ip_forward = 0";
 
 struct SysctlNameValue
 {
@@ -141,13 +139,32 @@ protected:
     }
 };
 
-TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationNoOverride)
+TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfigurationNoOverride)
 {
     auto sysctlName = std::string("net.ipv4.ip_forward");
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
+    std::map<std::string, std::string> args;
+    args["sysctlName"] = sysctlName;
+    args["value"] = "0";
+
+    auto result = AuditEnsureSysctl(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureSysctlTest, HappyPathAlternativeSystemdSysctlLocation)
+{
+    auto sysctlName = std::string("net.ipv4.ip_forward");
+    auto sysctlSlashedName = sysctlName;
+    std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
+    EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Error("Missing")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdUsrSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
     args["value"] = "0";
@@ -163,6 +180,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueConfigurationEqualEmptyOuput)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(emptyOutput)));
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>(Error("No such file or directory", -1))));
     std::map<std::string, std::string> args;
@@ -180,6 +198,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfigurationOverrideLastOneWi
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1Then0Than1Than0)));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
@@ -196,6 +215,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfigurationComment)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0Comment)));
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>(Error("No such file or directory", -1))));
     std::map<std::string, std::string> args;
@@ -213,6 +233,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueNotEqual)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1)));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
@@ -229,6 +250,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationOverride)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1)));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
@@ -246,6 +268,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpDotEqualConfiruationNoOverrid
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
@@ -262,6 +285,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueRegexpRangeEqualConfiruationNoOverr
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
@@ -278,6 +302,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeEqualConfiruationNoOve
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("0\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1)));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
@@ -294,6 +319,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueRegexpRangeNotEqual)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0)));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
@@ -310,6 +336,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathRegexError)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1)));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
@@ -327,6 +354,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualTabs)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0FilenameTabs)));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
@@ -346,6 +374,7 @@ TEST_F(EnsureSysctlTest, UnHappyPathSysctlValueEqualConfiruationNotEqualExtraSpa
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward0FilenameExtraSpaces)));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
@@ -365,6 +394,7 @@ TEST_F(EnsureSysctlTest, HappyPathSysctlValueEqualConfiruationOverrideLastOneWin
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(sysctlIpForward1Then0Than1Than0WithFilenames)));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
@@ -390,6 +420,7 @@ TEST_F(EnsureSysctlTest, HappyPathValidateCisSysctls)
         auto sysctlSlashedName = sysctlName;
         std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
         EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>(value + "\n")));
+        EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
         EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(cfgOuput.c_str())));
         std::map<std::string, std::string> args;
         args["sysctlName"] = sysctlName;
@@ -414,6 +445,7 @@ TEST_F(EnsureSysctlTest, UnhappyPathSysctlMultilineOutput)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>(value + "\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(cfgOuput.c_str())));
     std::map<std::string, std::string> args;
     args["sysctlName"] = sysctlName;
@@ -434,6 +466,7 @@ TEST_F(EnsureSysctlTest, UfwDefaultsFileMissing)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(emptyOutput)));
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>(Error("No such file or directory", -1))));
 
@@ -452,6 +485,7 @@ TEST_F(EnsureSysctlTest, UfwDefaultsFileNoIptSysctl)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(emptyOutput)));
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>("# No IPT_SYSCTL here\nFOO=bar\n")));
 
@@ -470,6 +504,7 @@ TEST_F(EnsureSysctlTest, UfwSysctlFileMissing)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(emptyOutput)));
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>("IPT_SYSCTL=/tmp/ufw-sysctl.conf\n")));
     EXPECT_CALL(mContext, GetFileContents("/tmp/ufw-sysctl.conf")).WillRepeatedly(Return(Result<std::string>(Error("No such file or directory", -1))));
@@ -489,6 +524,7 @@ TEST_F(EnsureSysctlTest, UfwSysctlFileValueMatches)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(emptyOutput)));
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>("IPT_SYSCTL=/tmp/ufw-sysctl.conf\n")));
     EXPECT_CALL(mContext, GetFileContents("/tmp/ufw-sysctl.conf")).WillRepeatedly(Return(Result<std::string>("net/ipv4/ip_forward=1\n")));
@@ -508,6 +544,7 @@ TEST_F(EnsureSysctlTest, UfwSysctlFileValueDoesNotMatch)
     auto sysctlSlashedName = sysctlName;
     std::replace(sysctlSlashedName.begin(), sysctlSlashedName.end(), '.', '/');
     EXPECT_CALL(mContext, GetFileContents("/proc/sys/" + sysctlSlashedName)).WillRepeatedly(Return(Result<std::string>("1\n")));
+    EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlVersion)).WillRepeatedly(Return(Result<std::string>("")));
     EXPECT_CALL(mContext, ExecuteCommand(systemdSysctlCat)).WillRepeatedly(Return(Result<std::string>(emptyOutput)));
     EXPECT_CALL(mContext, GetFileContents("/etc/default/ufw")).WillRepeatedly(Return(Result<std::string>("IPT_SYSCTL=/tmp/ufw-sysctl.conf\n")));
     EXPECT_CALL(mContext, GetFileContents("/tmp/ufw-sysctl.conf")).WillRepeatedly(Return(Result<std::string>("net/ipv4/ip_forward=0\n")));
