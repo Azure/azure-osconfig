@@ -4,6 +4,8 @@
 #include <Evaluator.h>
 #include <FilePermissionsHelpers.h>
 #include <errno.h>
+#include <fnmatch.h>
+#include <fts.h>
 #include <iostream>
 #include <pwd.h>
 #include <string.h>
