@@ -1,10 +1,9 @@
 # Cloud Test Directory
-
-This directory contains 1ES Managed Image definitions for the distros being exercised by our end-to-end tests.
+This directory contains 1ES Managed Image definitions for the distros being exercised by our end-to-end tests. If the distro is EOL, see [Universal NRP End-to-End Tests Local/GitHub](../../src/tests/universal-nrp-e2e/README.md) for more information.
 
 # General Guidance for onboarding images
 
-Its best to use a pre-existing Azure Marketplace images as they are updated regularly but some EOL distros might require onboarding into a private compute gallery.
+Its best to use a pre-existing Azure Marketplace images as they are updated regularly but some EOL distros might require [local testing](../../src/tests/universal-nrp-e2e/README.md).
 
 ## Dependencies
 
@@ -19,4 +18,4 @@ In addition to performing distro specific setup for [Preparing Linux for imaging
 
  # Azure Helpers
 
- The PowerShell module [AzureInfrastructureHelpers.psm1](./AzureInfrastructureHelpers.psm1) provides the `Create-AzureManagedDisk` PowerShell cmdlet which helps onboard a generalized Hyper-V Linux VHD into an Azure Compute Gallery. See the internal documentation for full onboarding instructions.
+ The PowerShell module [AzureInfrastructureHelpers.psm1](./AzureInfrastructureHelpers.psm1) provides the `Create-AzureManagedDisk` PowerShell cmdlet which helps onboard a generalized Hyper-V Linux VHD into an Azure Compute Gallery. See the internal documentation for full onboarding instructions ([Onboarding new VM Images](https://eng.ms/docs/cloud-ai-platform/azure-edge-platform-aep/aep-security/ens-enterprise-and-security/commercial-fist/edge-security-platform-documentation/teams/est/osconfig/linux/readme#onboarding-new-vm-images)).

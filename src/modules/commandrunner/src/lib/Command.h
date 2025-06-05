@@ -32,7 +32,7 @@ const std::string g_currentState = "currentState";
 class CommandRunnerLog
 {
 public:
-    static OSCONFIG_LOG_HANDLE Get()
+    static OsConfigLogHandle Get()
     {
         return m_log;
     }
@@ -47,7 +47,7 @@ public:
         ::CloseLog(&m_log);
     }
 
-    static OSCONFIG_LOG_HANDLE m_log;
+    static OsConfigLogHandle m_log;
 };
 
 class Command

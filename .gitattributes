@@ -1,1 +1,19 @@
 * text=auto
+
+# Explicitly declare text files you want to always be normalized and converted to LF upon checkout.
+*.c text eol=lf
+*.cpp text eol=lf
+*.h text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+
+# Explicitly declare text files you want to always be normalized and converted to CRLF upon checkout.
+*.cmd text eol=crlf
+*.csrpoj text eol=crlf
+
+
+# Denote all files that are truly binary and should not be modified.
+*.png binary
+*.jpg binary

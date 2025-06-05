@@ -62,7 +62,7 @@ constexpr const char* g_trimDefault = " \n\r\"\';";
 constexpr const char g_splitDefault = '\n';
 constexpr const char g_splitCustom = ';';
 
-OSCONFIG_LOG_HANDLE HostNameLog::m_logHostName = nullptr;
+OsConfigLogHandle HostNameLog::m_logHostName = nullptr;
 
 HostNameBase::HostNameBase(size_t maxPayloadSizeBytes) : m_maxPayloadSizeBytes(maxPayloadSizeBytes)
 {
@@ -140,7 +140,7 @@ int HostNameBase::Get(
 
     if (!IsValidComponentName(componentName))
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_COMPONENT, "Get", componentName, m_componentName);
         }
@@ -149,7 +149,7 @@ int HostNameBase::Get(
 
     if (!IsValidObjectName(objectName, false))
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_OBJECT, "Get", objectName ? objectName : "-", m_propertyName, m_propertyHosts);
         }
@@ -158,7 +158,7 @@ int HostNameBase::Get(
 
     if (!payload || !payloadSizeBytes)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_PAYLOAD, "Get");
         }
@@ -187,7 +187,7 @@ int HostNameBase::Get(
     *payloadSizeBytes = buffer.GetSize();
     if ((0 != m_maxPayloadSizeBytes) && (*payloadSizeBytes > static_cast<int>(m_maxPayloadSizeBytes)))
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(HostNameLog::Get(), ERROR_PAYLOAD_TOO_LARGE, "Get", *payloadSizeBytes, static_cast<int>(m_maxPayloadSizeBytes));
         }
@@ -199,7 +199,7 @@ int HostNameBase::Get(
         *payload = new char[buffer.GetSize()];
         if (!payload)
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(HostNameLog::Get(), ERROR_MEMORY_ALLOCATION, "Get", static_cast<uint>(buffer.GetSize()));
             }
@@ -214,7 +214,7 @@ int HostNameBase::Get(
             // Validate payload.
             if (!HostNameBase::IsValidJsonString(*payload, *payloadSizeBytes))
             {
-                if (IsFullLoggingEnabled())
+                if (IsDebugLoggingEnabled())
                 {
                     OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_PAYLOAD, "Get");
                 }
@@ -234,7 +234,7 @@ int HostNameBase::Get(
         if (!payload)
         {
             // Unable to allocate an empty payload, cannot return MMI_OK at this point.
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(HostNameLog::Get(), ERROR_MEMORY_ALLOCATION, "Get", static_cast<uint>(buffer.GetSize()));
             }
@@ -290,7 +290,7 @@ int HostNameBase::SetName(const std::string &value)
     std::regex pattern(g_regexHostname);
     if (!std::regex_match(name, pattern))
     {
-        OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_VALUE, "SetName", IsFullLoggingEnabled() ? name.c_str() : "-");
+        OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_VALUE, "SetName", IsDebugLoggingEnabled() ? name.c_str() : "-");
         return EINVAL;
     }
 
@@ -298,7 +298,7 @@ int HostNameBase::SetName(const std::string &value)
     int status = RunCommand(command.c_str(), true, nullptr);
     if (status != MMI_OK)
     {
-        OsConfigLogError(HostNameLog::Get(), ERROR_SET_RETURNED, "SetName", IsFullLoggingEnabled() ? name.c_str() : "-", status);
+        OsConfigLogError(HostNameLog::Get(), ERROR_SET_RETURNED, "SetName", IsDebugLoggingEnabled() ? name.c_str() : "-", status);
     }
     return status;
 }
@@ -315,7 +315,7 @@ int HostNameBase::SetHosts(const std::string &value)
         std::string line = RemoveRepeatedCharacters(Trim(*it, g_trimDefault), ' ');
         if (!std::regex_match(line, pattern))
         {
-            OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_VALUE, "SetHosts", IsFullLoggingEnabled() ? line.c_str() : "-");
+            OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_VALUE, "SetHosts", IsDebugLoggingEnabled() ? line.c_str() : "-");
             return EINVAL;
         }
 
@@ -330,7 +330,7 @@ int HostNameBase::SetHosts(const std::string &value)
     int status = RunCommand(command.c_str(), true, nullptr);
     if (status != MMI_OK)
     {
-        OsConfigLogError(HostNameLog::Get(), ERROR_SET_RETURNED, "SetHosts", IsFullLoggingEnabled() ? hosts.c_str() : "-", status);
+        OsConfigLogError(HostNameLog::Get(), ERROR_SET_RETURNED, "SetHosts", IsDebugLoggingEnabled() ? hosts.c_str() : "-", status);
     }
     return status;
 }
@@ -362,7 +362,7 @@ bool HostNameBase::IsValidJsonString(const char* data, const int size)
     document.Parse(str.c_str());
     if (document.HasParseError())
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             const size_t errorOffset = document.GetErrorOffset();
             const char* errorCode = rapidjson::GetParseError_En(document.GetParseError());

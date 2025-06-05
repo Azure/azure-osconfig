@@ -169,7 +169,7 @@ bool IsValidClientName(const char* name)
     return isValid;
 }
 
-OSCONFIG_LOG_HANDLE ZtsiLog::m_log = nullptr;
+OsConfigLogHandle ZtsiLog::m_log = nullptr;
 
 Ztsi::Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes)
 {
@@ -493,7 +493,7 @@ bool Ztsi::IsValidConfiguration(const Ztsi::AgentConfiguration& configuration)
 
     if (configuration.maxManualAttestationsPerDay < 0 || configuration.maxScheduledAttestationsPerDay < 0)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(ZtsiLog::Get(), "MaxManualAttestationsPerDay and MaxScheduledAttestationsPerDay must both be nonnegative");
         }
@@ -503,7 +503,7 @@ bool Ztsi::IsValidConfiguration(const Ztsi::AgentConfiguration& configuration)
 
     if (configuration.maxManualAttestationsPerDay + configuration.maxScheduledAttestationsPerDay > g_totalAttestationsAllowedPerDay)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(ZtsiLog::Get(), "The total number of attestations per day (Scheduled + Manual) cannot exceed %s", std::to_string(g_totalAttestationsAllowedPerDay).c_str());
         }
@@ -522,7 +522,7 @@ std::FILE* Ztsi::OpenAndLockFile(const char* mode)
     {
         if (!LockFile(file, ZtsiLog::Get()))
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(ZtsiLog::Get(), "Failed to lock file %s", m_agentConfigurationFile.c_str());
             }
@@ -632,7 +632,7 @@ int Ztsi::ParseAgentConfiguration(const std::string& configurationJson, Ztsi::Ag
 
     if (document.Parse(configurationJson.c_str()).HasParseError())
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(ZtsiLog::Get(), "Failed to parse JSON %s", configurationJson.c_str());
         }

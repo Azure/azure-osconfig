@@ -93,7 +93,7 @@
             "name": "auto",
             "enumValue": 0
           },
-          { 
+          {
             "name": "mqtt",
             "enumValue": 1
           },

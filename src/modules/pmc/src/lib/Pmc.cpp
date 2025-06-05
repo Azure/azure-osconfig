@@ -54,7 +54,7 @@ std::string Pmc::GetSourcesFingerprint(const char* sourcesDirectory)
         std::string command = std::regex_replace(g_commandGetSourcesContent, std::regex("\\$value"), sourcesDirectory);
         hash = HashCommand(command.c_str(), PmcLog::Get());
     }
-    else if (IsFullLoggingEnabled())
+    else if (IsDebugLoggingEnabled())
     {
         OsConfigLogError(PmcLog::Get(), "Unable to get the fingerprint of source files. Directory %s does not exist", sourcesDirectory);
     }
@@ -71,7 +71,7 @@ bool Pmc::CanRunOnThisPlatform()
         std::string command = std::regex_replace(g_commandCheckToolPresence, std::regex("\\$value"), tool);
         if (RunCommand(command.c_str(), nullptr) != PMC_0K)
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(PmcLog::Get(), "Cannot run on this platform, could not find required tool %s", tool.c_str());
             }

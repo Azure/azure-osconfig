@@ -1697,6 +1697,92 @@ static MI_CONST MI_PropertyDecl OsConfigResource_InitObjectName_prop =
     NULL,
 };
 
+static MI_CONST MI_Boolean OsConfigResource_ProcedureObjectName_Write_qual_value = 1;
+
+static MI_CONST MI_Qualifier OsConfigResource_ProcedureObjectName_Write_qual =
+{
+    MI_T("Write"),
+    MI_BOOLEAN,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
+    &OsConfigResource_ProcedureObjectName_Write_qual_value
+};
+
+static MI_CONST MI_Char* OsConfigResource_ProcedureObjectName_Description_qual_value = MI_T("28");
+
+static MI_CONST MI_Qualifier OsConfigResource_ProcedureObjectName_Description_qual =
+{
+    MI_T("Description"),
+    MI_STRING,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
+    &OsConfigResource_ProcedureObjectName_Description_qual_value
+};
+
+static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_ProcedureObjectName_quals[] =
+{
+    &OsConfigResource_ProcedureObjectName_Write_qual,
+    &OsConfigResource_ProcedureObjectName_Description_qual,
+};
+
+/* property OsConfigResource.ProcedureObjectName */
+static MI_CONST MI_PropertyDecl OsConfigResource_ProcedureObjectName_prop =
+{
+    MI_FLAG_PROPERTY, /* flags */
+    0x00706513, /* code */
+    MI_T("ProcedureObjectName"), /* name */
+    OsConfigResource_ProcedureObjectName_quals, /* qualifiers */
+    MI_COUNT(OsConfigResource_ProcedureObjectName_quals), /* numQualifiers */
+    MI_STRING, /* type */
+    NULL, /* className */
+    0, /* subscript */
+    offsetof(OsConfigResource, ProcedureObjectName), /* offset */
+    MI_T("OsConfigResource"), /* origin */
+    MI_T("OsConfigResource"), /* propagator */
+    NULL,
+};
+
+static MI_CONST MI_Boolean OsConfigResource_ProcedureObjectValue_Write_qual_value = 1;
+
+static MI_CONST MI_Qualifier OsConfigResource_ProcedureObjectValue_Write_qual =
+{
+    MI_T("Write"),
+    MI_BOOLEAN,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
+    &OsConfigResource_ProcedureObjectValue_Write_qual_value
+};
+
+static MI_CONST MI_Char* OsConfigResource_ProcedureObjectValue_Description_qual_value = MI_T("29");
+
+static MI_CONST MI_Qualifier OsConfigResource_ProcedureObjectValue_Description_qual =
+{
+    MI_T("Description"),
+    MI_STRING,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
+    &OsConfigResource_ProcedureObjectValue_Description_qual_value
+};
+
+static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_ProcedureObjectValue_quals[] =
+{
+    &OsConfigResource_ProcedureObjectValue_Write_qual,
+    &OsConfigResource_ProcedureObjectValue_Description_qual,
+};
+
+/* property OsConfigResource.ProcedureObjectValue */
+static MI_CONST MI_PropertyDecl OsConfigResource_ProcedureObjectValue_prop =
+{
+    MI_FLAG_PROPERTY, /* flags */
+    0x00706514, /* code */
+    MI_T("ProcedureObjectValue"), /* name */
+    OsConfigResource_ProcedureObjectValue_quals, /* qualifiers */
+    MI_COUNT(OsConfigResource_ProcedureObjectValue_quals), /* numQualifiers */
+    MI_STRING, /* type */
+    NULL, /* className */
+    0, /* subscript */
+    offsetof(OsConfigResource, ProcedureObjectValue), /* offset */
+    MI_T("OsConfigResource"), /* origin */
+    MI_T("OsConfigResource"), /* propagator */
+    NULL,
+};
+
 static MI_CONST MI_Boolean OsConfigResource_ReportedObjectName_Write_qual_value = 1;
 
 static MI_CONST MI_Qualifier OsConfigResource_ReportedObjectName_Write_qual =
@@ -2011,6 +2097,8 @@ static MI_PropertyDecl MI_CONST* MI_CONST OsConfigResource_props[] =
     &OsConfigResource_PayloadKey_prop,
     &OsConfigResource_ComponentName_prop,
     &OsConfigResource_InitObjectName_prop,
+    &OsConfigResource_ProcedureObjectName_prop,
+    &OsConfigResource_ProcedureObjectValue_prop,
     &OsConfigResource_ReportedObjectName_prop,
     &OsConfigResource_ReportedObjectValue_prop,
     &OsConfigResource_ExpectedObjectValue_prop,
@@ -2776,7 +2864,7 @@ static MI_CONST MI_Qualifier OsConfigResource_Description_qual =
     &OsConfigResource_Description_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_ClassVersion_qual_value = MI_T("3.0.0");
+static MI_CONST MI_Char* OsConfigResource_ClassVersion_qual_value = MI_T("4.0.0");
 
 static MI_CONST MI_Qualifier OsConfigResource_ClassVersion_qual =
 {

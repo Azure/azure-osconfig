@@ -32,11 +32,11 @@ set(MOFS
 )
 
 add_custom_command(
-    OUTPUT ${SRC}/SecurityBaselineTests.json
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/SecurityBaselineTests.json.stamp
     DEPENDS ${SRC}/create-asb-json.sh ${SRC}/mof-to-json.awk ${SRC}/SecurityBaselineTests.json-header ${SRC}/SecurityBaselineTests.json-mid ${SRC}/SecurityBaselineTests.json-footer ${MOFS}
-    COMMAND ./create-asb-json.sh ${MOFS} >${SRC}/SecurityBaselineTests.json
+    COMMAND ./create-asb-json.sh ${MOFS} >${SRC}/SecurityBaselineTests.json && touch ${CMAKE_CURRENT_BINARY_DIR}/SecurityBaselineTests.json.stamp
     WORKING_DIRECTORY ${SRC}
 )
 add_custom_target(generate-asb-test-json
-    DEPENDS ${SRC}/SecurityBaselineTests.json
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/SecurityBaselineTests.json.stamp
 )
