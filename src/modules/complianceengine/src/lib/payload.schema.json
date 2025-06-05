@@ -146,6 +146,9 @@
           "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureMTAsLocalOnly.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureMountPointExists.schema.json#/definitions/audit"
         },
         {
@@ -211,6 +214,9 @@
         },
         {
           "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureMTAsLocalOnly.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureMountPointExists.schema.json#/definitions/remediation"

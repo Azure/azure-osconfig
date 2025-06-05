@@ -36,6 +36,7 @@ add_library(complianceenginelib STATIC
     Indicators.cpp
     IterateUsers.cpp
     JsonWrapper.cpp
+    NetworkTools.cpp
     Procedure.cpp
     ProcedureMap.cpp
     Result.cpp
