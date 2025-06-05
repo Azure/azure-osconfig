@@ -33,6 +33,7 @@ add_library(complianceenginelib STATIC
     KernelModuleTools.cpp
     Indicators.cpp
     JsonWrapper.cpp
+    NetworkTools.cpp
     Procedure.cpp
     ProcedureMap.cpp
     Result.cpp
