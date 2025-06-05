@@ -140,6 +140,9 @@
           "$ref": "procedures/EnsureFilesystemOption.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureFirewallOpenPorts.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/audit"
         },
         {
@@ -205,6 +208,9 @@
         },
         {
           "$ref": "procedures/EnsureFilesystemOption.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureFirewallOpenPorts.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/remediation"
