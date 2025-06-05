@@ -10,6 +10,8 @@ struct MockContext : public ComplianceEngine::ContextInterface
 {
     MOCK_METHOD(ComplianceEngine::Result<std::string>, ExecuteCommand, (const std::string& cmd), (const, override));
     MOCK_METHOD(ComplianceEngine::Result<std::string>, GetFileContents, (const std::string& filePath), (const, override));
+    MOCK_METHOD(ComplianceEngine::Result<ComplianceEngine::DirectoryEntries>, GetDirectoryEntries, (const std::string& directoryPath, bool recursive),
+        (const, override));
 
     OsConfigLogHandle GetLogHandle() const override
     {

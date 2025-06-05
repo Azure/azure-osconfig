@@ -36,4 +36,21 @@ Result<std::string> CommonContext::GetFileContents(const std::string& filePath) 
     return result;
 }
 
+Result<DirectoryEntries> CommonContext::GetDirectoryEntries(const std::string& directoryPath, bool recursive) const
+{
+    try
+    {
+        auto entries = mDirectoryIterator->GetEntries(directoryPath, recursive);
+        return entries;
+    }
+    catch (const std::exception& e)
+    {
+        return Error("Failed to get directory entries: " + std::string(e.what()));
+    }
+    catch (...)
+    {
+        return Error("Failed to get directory entries: unknown error");
+    }
+}
+
 } // namespace ComplianceEngine
