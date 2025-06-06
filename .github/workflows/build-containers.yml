@@ -6,7 +6,7 @@ on:
       - devops/docker/**/Dockerfile
   push:
     branches:
-      - dev
+      - main
     paths:
       - devops/docker/**/Dockerfile
   workflow_dispatch:
@@ -96,7 +96,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ${{ steps.image.outputs.path }}
-          # Only push the image when a pull request is merged to dev
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' }}
+          # Only push the image when a pull request is merged to main
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
