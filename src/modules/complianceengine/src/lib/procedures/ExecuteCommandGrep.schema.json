@@ -22,6 +22,10 @@
                   "type": "string",
                   "description": "Command to be executed"
                 },
+                "awk": {
+                  "type": "string",
+                  "description": "Awk transformation in the middle, optional"
+                },
                 "regex": {
                   "type": "string",
                   "description": "Regex to be matched"
