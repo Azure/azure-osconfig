@@ -67,7 +67,7 @@ TEST_F(DeviceInfoTest, MmiOpen)
 char* CopyPayloadToString(const char* payload, int payloadSizeBytes)
 {
     char* output = nullptr;
-    
+
     EXPECT_NE(nullptr, payload);
     EXPECT_NE(0, payloadSizeBytes);
     EXPECT_NE(nullptr, output = (char*)malloc(payloadSizeBytes + 1));
@@ -106,9 +106,9 @@ TEST_F(DeviceInfoTest, MmiSet)
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = DeviceInfoMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    
+
     EXPECT_EQ(EPERM, DeviceInfoMmiSet(handle, m_osInfoComponentName, m_osVersionObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
-    
+
     DeviceInfoMmiClose(handle);
 }
 
@@ -154,7 +154,7 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
         FREE_MEMORY(payloadString);
         DeviceInfoMmiFree(payload);
     }
-    
+
     DeviceInfoMmiClose(handle);
 }
 
@@ -249,7 +249,7 @@ TEST_F(DeviceInfoTest, MmiGetInvalidComponent)
     EXPECT_EQ(EINVAL, DeviceInfoMmiGet(handle, "Test123", m_osNameObject, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     DeviceInfoMmiClose(handle);
 }
 
@@ -264,7 +264,7 @@ TEST_F(DeviceInfoTest, MmiGetInvalidObject)
     EXPECT_EQ(EINVAL, DeviceInfoMmiGet(handle, m_osInfoComponentName, "Test123", &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     DeviceInfoMmiClose(handle);
 }
 

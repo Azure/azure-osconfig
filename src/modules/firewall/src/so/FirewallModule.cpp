@@ -28,7 +28,7 @@ int MmiGetInfo(
     {
         if (MMI_OK == status)
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogInfo(FirewallLog::Get(), "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
@@ -39,7 +39,7 @@ int MmiGetInfo(
         }
         else
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(FirewallLog::Get(), "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
@@ -169,7 +169,7 @@ int MmiGet(
 
     ScopeGuard sg{[&]()
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             if (MMI_OK == status)
             {

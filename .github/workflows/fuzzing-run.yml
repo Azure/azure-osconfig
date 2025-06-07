@@ -21,6 +21,10 @@ on:
         type: string
         required: false
         default: latest
+      execute:
+        type: boolean
+        required: true
+        default: true
 
 env:
   MOUNT: /azure-osconfig
@@ -37,6 +41,7 @@ jobs:
       build-fuzzers: true
 
   fuzzer-execution:
+    if: ${{ inputs.execute }}
     needs: package
     runs-on: 'ubuntu-latest'
     steps:

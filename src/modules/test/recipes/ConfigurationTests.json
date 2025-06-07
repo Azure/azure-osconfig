@@ -76,63 +76,32 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "Configuration",
-    "ObjectName": "desiredFullLoggingEnabled",
+    "ObjectName": "desiredDebugLoggingEnabled",
     "Payload": "invalid",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "Configuration",
-    "ObjectName": "desiredFullLoggingEnabled",
+    "ObjectName": "desiredDebugLoggingEnabled",
     "Payload": true
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Configuration",
-    "ObjectName": "fullLoggingEnabled",
+    "ObjectName": "debugLoggingEnabled",
     "Payload": true
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "Configuration",
-    "ObjectName": "desiredFullLoggingEnabled",
+    "ObjectName": "desiredDebugLoggingEnabled",
     "Payload": false
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Configuration",
-    "ObjectName": "fullLoggingEnabled",
-    "Payload": false
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredCommandLoggingEnabled",
-    "Payload": "invalid",
-    "ExpectedResult": 22
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredCommandLoggingEnabled",
-    "Payload": true
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Configuration",
-    "ObjectName": "commandLoggingEnabled",
-    "Payload": true
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredCommandLoggingEnabled",
-    "Payload": false
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Configuration",
-    "ObjectName": "commandLoggingEnabled",
+    "ObjectName": "debugLoggingEnabled",
     "Payload": false
   },
   {

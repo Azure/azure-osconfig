@@ -1,0 +1,71 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    - id: end-of-file-fixer
+      exclude: |
+         (?x)^(
+            src/tests/fuzzer/seed_corpus/.*|
+            devops/docker/.*/Dockerfile
+            )$
+    - id: trailing-whitespace
+    - id: mixed-line-ending
+      args: ['--fix', 'lf']
+      files: |
+         (?x)(
+          .*\.c|
+          .*\.h|
+          .*\.cpp|
+          .*\.hpp|
+          .*\.cs|
+          .*\.md|
+          .*\.cmake|
+          .*\.toml|
+          .*\.json|
+          .*\.txt
+            )$
+    - id: mixed-line-ending
+      args: ['--fix', 'crlf']
+      files: |
+         (?x)(
+         .*\.cmd|
+         .*\.csrpoj
+         )$
+  - repo: local
+    hooks:
+      - id: clang-tidy
+        name: Run clang-tidy
+        types_or: [c++]
+        entry: src/tests/clang-tidy/run-clang-tidy.py
+        language: python
+        additional_dependencies: [clang-tidy]
+        files: |
+          (?x)(
+          ^src/modules/complianceengine/src/.*\.h$|
+          ^src/modules/complianceengine/src/.*\.cpp$
+            )
+  - repo: local
+    hooks:
+      - id: compliance-engine-json-schema
+        name: Check compliance engine JSON schema changes
+        types_or: [c++, json]
+        entry: src/modules/complianceengine/src/lib/GenJSONSchemas.py
+        language: python
+        require_serial: true
+        files: |
+          (?x)(
+          ^src/modules/complianceengine/src/lib/payload.schema.json$|
+          ^src/modules/complianceengine/src/lib/procedures/.*\.cpp$|
+          ^src/modules/complianceengine/src/lib/procedures/.*\.schema.json$
+            )
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v14.0.6
+    hooks:
+    - id: clang-format
+      files: |
+         (?x)(
+          ^src/modules/complianceengine/.*\.h$|
+          ^src/modules/complianceengine/.*\.cpp$
+            )

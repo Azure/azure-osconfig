@@ -17,9 +17,9 @@
 #include <parson.h>
 #include <CommonUtils.h>
 #include <Logging.h>
+#include <Reasons.h>
 #include <Mpi.h>
 #include <MpiClient.h>
-#include <Asb.h>
 
 #include "MI.h"
 #include "MSFT_Credential.h"
@@ -50,6 +50,6 @@
     LogWithMiContext(context, miResult, log, FORMAT, ##__VA_ARGS__);\
 }\
 
-OSCONFIG_LOG_HANDLE GetLog(void);
+OsConfigLogHandle GetLog(void);
 
 #endif

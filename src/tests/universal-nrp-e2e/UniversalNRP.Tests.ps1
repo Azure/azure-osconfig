@@ -13,7 +13,7 @@ param (
 Describe 'Validate Universal NRP' {
     # Perform Remediation - Set
     Context "Set" -Skip:$SkipRemediation {
-        It 'Perform remediation' {    
+        It 'Perform remediation' {
             Start-GuestConfigurationPackageRemediation -Path $PolicyPackage
             # Wait for remediation to complete
             Start-Sleep -Seconds 30
@@ -26,7 +26,7 @@ Describe 'Validate Universal NRP' {
             $result = Get-GuestConfigurationPackageComplianceStatus -Path $PolicyPackage
         }
 
-        It 'Ensure the total resource instances count' {    
+        It 'Ensure the total resource instances count' {
             $result.resources | Should -HaveCount $ResourceCount
         }
 
@@ -42,7 +42,7 @@ Describe 'Validate Universal NRP' {
             }
         }
 
-        It 'Ensure all resource instances have status' {    
+        It 'Ensure all resource instances have status' {
             $result.resources.complianceStatus | Should -Not -BeNullOrEmpty
         }
     }

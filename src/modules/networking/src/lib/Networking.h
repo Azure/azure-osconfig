@@ -15,7 +15,7 @@
 class NetworkingLog
 {
 public:
-    static OSCONFIG_LOG_HANDLE Get()
+    static OsConfigLogHandle Get()
     {
         return m_logNetworking;
     }
@@ -31,7 +31,7 @@ public:
     }
 
 private:
-    static OSCONFIG_LOG_HANDLE m_logNetworking;
+    static OsConfigLogHandle m_logNetworking;
 };
 
 struct NetworkingSettings

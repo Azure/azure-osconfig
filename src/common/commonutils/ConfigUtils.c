@@ -14,21 +14,32 @@
 #define REPORTED_SETTING_NAME "ObjectName"
 #define MODEL_VERSION_NAME "ModelVersion"
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
-
 #define IOT_HUB_MANAGEMENT "IotHubManagement"
 #define LOCAL_MANAGEMENT "LocalManagement"
-
-#define COMMAND_LOGGING "CommandLogging"
-#define FULL_LOGGING "FullLogging"
-
 #define PROTOCOL "IotHubProtocol"
-
 #define GIT_MANAGEMENT "GitManagement"
 #define GIT_REPOSITORY_URL "GitRepositoryUrl"
 #define GIT_BRANCH "GitBranch"
+#define LOGGING_LEVEL "LoggingLevel"
+#define MAX_LOG_SIZE "MaxLogSize"
+#define MAX_LOG_SIZE_DEBUG_MULTIPLIER "MaxLogSizeDebugMultiplier"
 
 #define MIN_DEVICE_MODEL_ID 7
 #define MAX_DEVICE_MODEL_ID 999
+
+// Emergency
+#define MIN_LOGGING_LEVEL 0
+// Informational
+#define DEFAULT_LOGGING_LEVEL 6
+// Debug
+#define MAX_LOGGING_LEVEL 7
+
+#define MIN_MAX_LOG_SIZE 1024
+#define MIN_MAX_LOG_SIZE_DEBUG_MULTIPLIER 1
+#define MAX_MAX_LOG_SIZE 1073741824
+#define MAX_MAX_LOG_SIZE_DEBUG_MULTIPLIER 10
+#define DEFAULT_MAX_LOG_SIZE 1048576
+#define DEFAULT_MAX_LOG_SIZE_DEBUG_MULTIPLIER 5
 
 static bool IsOptionEnabledInJsonConfig(const char* jsonString, const char* setting)
 {
@@ -51,22 +62,12 @@ static bool IsOptionEnabledInJsonConfig(const char* jsonString, const char* sett
     return result;
 }
 
-bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString)
-{
-    return IsOptionEnabledInJsonConfig(jsonString, COMMAND_LOGGING);
-}
-
-bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
-{
-    return IsOptionEnabledInJsonConfig(jsonString, FULL_LOGGING);
-}
-
 bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString)
 {
     return IsOptionEnabledInJsonConfig(jsonString, IOT_HUB_MANAGEMENT);
 }
 
-static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue, void* log)
+static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue, OsConfigLogHandle log)
 {
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
@@ -74,19 +75,13 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
 
     if (NULL == valueName)
     {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogError(log, "GetIntegerFromJsonConfig: no value name, using the specified default (%d)", defaultValue);
-        }
+        OsConfigLogDebug(log, "GetIntegerFromJsonConfig: no value name, using the specified default (%d)", defaultValue);
         return valueToReturn;
     }
 
     if (minValue >= maxValue)
     {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogError(log, "GetIntegerFromJsonConfig: bad min (%d) and/or max (%d) values for %s, using default (%d)", minValue, maxValue, valueName, defaultValue);
-        }
+        OsConfigLogDebug(log, "GetIntegerFromJsonConfig: bad min (%d) and/or max (%d) values for '%s', using default (%d)", minValue, maxValue, valueName, defaultValue);
         return valueToReturn;
     }
 
@@ -97,75 +92,81 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
             if (NULL != (rootObject = json_value_get_object(rootValue)))
             {
                 valueToReturn = (int)json_object_get_number(rootObject, valueName);
-                if (0 == valueToReturn)
+                if ((0 == valueToReturn) && (0 != minValue) && (0 != maxValue))
                 {
                     valueToReturn = defaultValue;
-                    if (IsFullLoggingEnabled())
-                    {
-                        OsConfigLogInfo(log, "GetIntegerFromJsonConfig: %s value not found or 0, using default (%d)", valueName, defaultValue);
-                    }
+                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: '%s' value not found, using default (%d)", valueName, defaultValue);
                 }
                 else if (valueToReturn < minValue)
                 {
-                    if (IsFullLoggingEnabled())
-                    {
-                        OsConfigLogError(log, "GetIntegerFromJsonConfig: %s value %d too small, using minimum (%d)", valueName, valueToReturn, minValue);
-                    }
+                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: '%s' value %d too small, using minimum (%d)", valueName, valueToReturn, minValue);
                     valueToReturn = minValue;
                 }
                 else if (valueToReturn > maxValue)
                 {
-                    if (IsFullLoggingEnabled())
-                    {
-                        OsConfigLogError(log, "GetIntegerFromJsonConfig: %s value %d too big, using maximum (%d)", valueName, valueToReturn, maxValue);
-                    }
+                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: '%s' value %d too big, using maximum (%d)", valueName, valueToReturn, maxValue);
                     valueToReturn = maxValue;
                 }
-                else if (IsFullLoggingEnabled())
+                else
                 {
-                    OsConfigLogInfo(log, "GetIntegerFromJsonConfig: %s: %d", valueName, valueToReturn);
+                    OsConfigLogDebug(log, "GetIntegerFromJsonConfig: '%s': %d", valueName, valueToReturn);
                 }
             }
-            else if (IsFullLoggingEnabled())
+            else
             {
-                OsConfigLogError(log, "GetIntegerFromJsonConfig: json_value_get_object(root) failed, using default (%d) for %s", defaultValue, valueName);
+                OsConfigLogDebug(log, "GetIntegerFromJsonConfig: json_value_get_object(root) failed, using default (%d) for '%s'", defaultValue, valueName);
             }
             json_value_free(rootValue);
         }
-        else if (IsFullLoggingEnabled())
+        else
         {
-            OsConfigLogError(log, "GetIntegerFromJsonConfig: json_parse_string failed, using default (%d) for %s", defaultValue, valueName);
+            OsConfigLogDebug(log, "GetIntegerFromJsonConfig: json_parse_string failed, using default (%d) for '%s'", defaultValue, valueName);
         }
     }
-    else if (IsFullLoggingEnabled())
+    else
     {
-        OsConfigLogError(log, "GetIntegerFromJsonConfig: no configuration data, using default (%d) for %s", defaultValue, valueName);
+        OsConfigLogDebug(log, "GetIntegerFromJsonConfig: no configuration data, using default (%d) for '%s'", defaultValue, valueName);
     }
 
     return valueToReturn;
 }
 
-int GetReportingIntervalFromJsonConfig(const char* jsonString, void* log)
+LoggingLevel GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
+{
+    return GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
+}
+
+int GetMaxLogSizeFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
+{
+    return GetIntegerFromJsonConfig(MAX_LOG_SIZE, jsonString, DEFAULT_MAX_LOG_SIZE, MIN_MAX_LOG_SIZE, MAX_MAX_LOG_SIZE, log);
+}
+
+int GetMaxLogSizeDebugMultiplierFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
+{
+    return GetIntegerFromJsonConfig(MAX_LOG_SIZE_DEBUG_MULTIPLIER, jsonString, DEFAULT_MAX_LOG_SIZE_DEBUG_MULTIPLIER, MIN_MAX_LOG_SIZE_DEBUG_MULTIPLIER, MAX_MAX_LOG_SIZE_DEBUG_MULTIPLIER, log);
+}
+
+int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(REPORTING_INTERVAL_SECONDS, jsonString, DEFAULT_REPORTING_INTERVAL, MIN_REPORTING_INTERVAL, MAX_REPORTING_INTERVAL, log);
 }
 
-int GetModelVersionFromJsonConfig(const char* jsonString, void* log)
+int GetModelVersionFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(MODEL_VERSION_NAME, jsonString, DEFAULT_DEVICE_MODEL_ID, MIN_DEVICE_MODEL_ID, MAX_DEVICE_MODEL_ID, log);
 }
 
-int GetLocalManagementFromJsonConfig(const char* jsonString, void* log)
+int GetLocalManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1, log);
 }
 
-int GetIotHubProtocolFromJsonConfig(const char* jsonString, void* log)
+int GetIotHubProtocolFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(PROTOCOL, jsonString, PROTOCOL_AUTO, PROTOCOL_AUTO, PROTOCOL_MQTT_WS, log);
 }
 
-int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** reportedProperties, void* log)
+int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** reportedProperties, OsConfigLogHandle log)
 {
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
@@ -183,7 +184,7 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
         OsConfigLogError(log, "LoadReportedFromJsonConfig: called with an invalid argument, no properties to report");
         return 0;
     }
-    
+
     FREE_MEMORY(*reportedProperties);
 
     if (NULL != jsonString)
@@ -200,8 +201,8 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
 
                     if (numReported > 0)
                     {
-                        bufferSize = numReported * sizeof(REPORTED_PROPERTY);
-                        *reportedProperties = (REPORTED_PROPERTY*)malloc(bufferSize);
+                        bufferSize = numReported * sizeof(ReportedProperty);
+                        *reportedProperties = (ReportedProperty*)malloc(bufferSize);
                         if (NULL != *reportedProperties)
                         {
                             memset(*reportedProperties, 0, bufferSize);
@@ -268,7 +269,7 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
     return numReportedProperties;
 }
 
-static char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, void* log)
+static char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, OsConfigLogHandle log)
 {
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
@@ -278,10 +279,7 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
 
     if (NULL == valueName)
     {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogError(log, "GetStringFromJsonConfig: no value name");
-        }
+        OsConfigLogDebug(log, "GetStringFromJsonConfig: no value name");
         return value;
     }
 
@@ -294,12 +292,9 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                 value = (char*)json_object_get_string(rootObject, valueName);
                 if (NULL == value)
                 {
-                    if (IsFullLoggingEnabled())
-                    {
-                        OsConfigLogInfo(log, "GetStringFromJsonConfig: %s value not found or empty", valueName);
-                    }
+                    OsConfigLogDebug(log, "GetStringFromJsonConfig: %s value not found or empty", valueName);
                 }
-                else 
+                else
                 {
                     valueLength = strlen(value);
                     buffer = (char*)malloc(valueLength + 1);
@@ -308,47 +303,119 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                         memcpy(buffer, value, valueLength);
                         buffer[valueLength] = 0;
                     }
-                    else if (IsFullLoggingEnabled())
+                    else
                     {
                         OsConfigLogError(log, "GetStringFromJsonConfig: failed to allocate %d bytes for %s", (int)(valueLength + 1), valueName);
                     }
                 }
             }
-            else if (IsFullLoggingEnabled())
+            else
             {
-                OsConfigLogError(log, "GetStringFromJsonConfig: json_value_get_object(root) failed for %s", valueName);
+                OsConfigLogDebug(log, "GetStringFromJsonConfig: json_value_get_object(root) failed for %s", valueName);
             }
             json_value_free(rootValue);
         }
-        else if (IsFullLoggingEnabled())
+        else
         {
-            OsConfigLogError(log, "GetStringFromJsonConfig: json_parse_string failed for %s", valueName);
+            OsConfigLogDebug(log, "GetStringFromJsonConfig: json_parse_string failed for %s", valueName);
         }
     }
-    else if (IsFullLoggingEnabled())
+    else
     {
-        OsConfigLogError(log, "GetStringFromJsonConfig: no configuration data for %s", valueName);
+        OsConfigLogDebug(log, "GetStringFromJsonConfig: no configuration data for %s", valueName);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "GetStringFromJsonConfig(%s): %s", valueName, buffer);
-    }
+    OsConfigLogDebug(log, "GetStringFromJsonConfig(%s): %s", valueName, buffer);
 
     return buffer;
 }
 
-int GetGitManagementFromJsonConfig(const char* jsonString, void* log)
+int GetGitManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetIntegerFromJsonConfig(GIT_MANAGEMENT, jsonString, 0, 0, 1, log);
 }
 
-char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, void* log)
+char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetStringFromJsonConfig(GIT_REPOSITORY_URL, jsonString, log);
 }
 
-char* GetGitBranchFromJsonConfig(const char* jsonString, void* log)
+char* GetGitBranchFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
     return GetStringFromJsonConfig(GIT_BRANCH, jsonString, log);
+}
+
+int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
+{
+    const char* configurationDirectory = "/etc/osconfig";
+    const char* configurationFile = "/etc/osconfig/osconfig.json";
+    const char* loggingLevelTemplate = "  \"LoggingLevel\": %d\n";
+    const char* loggingLevelTemplateWithComma = "  \"LoggingLevel\": %d,\n";
+    const char* configurationTemplate = "{\n  \"LoggingLevel\": %d\n}\n";
+
+    char* jsonConfiguration = NULL;
+    char* buffer = NULL;
+    int result = 0;
+
+    if (false == IsLoggingLevelSupported(level))
+    {
+        OsConfigLogError(log, "SetLoggingLevelPersistently: requested logging level %u is not supported", level);
+        result = EINVAL;
+    }
+    else
+    {
+        if (FileExists(configurationFile))
+        {
+            if (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, log)))
+            {
+                if (level != GetLoggingLevelFromJsonConfig(jsonConfiguration, log))
+                {
+                    if (NULL == (buffer = FormatAllocateString(strstr(jsonConfiguration, ",") ? loggingLevelTemplateWithComma : loggingLevelTemplate, level)))
+                    {
+                        OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
+                        result = ENOMEM;
+                    }
+                    else if (0 != (result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", buffer, '#', true, log)))
+                    {
+                        OsConfigLogError(log, "SetLoggingLevelPersistently: failed to update the logging level to %u in the configuration file '%s'", level, configurationFile);
+                    }
+                }
+            }
+            else
+            {
+                OsConfigLogError(log, "SetLoggingLevelPersistently: cannot read from '%s' (%d, %s)", configurationFile, errno, strerror(errno));
+                result = errno ? errno : ENOENT;
+            }
+        }
+        else
+        {
+            if (NULL == (buffer = FormatAllocateString(configurationTemplate, level)))
+            {
+                OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
+                result = ENOMEM;
+            }
+            else if ((false == DirectoryExists(configurationDirectory)) && (0 != (result = mkdir(configurationDirectory, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))))
+            {
+                OsConfigLogError(log, "SetLoggingLevelPersistently: failed to create directory '%s'for the configuration file (%d, %s)", configurationDirectory, errno, strerror(errno));
+                result = result ? result : (errno ? errno : ENOENT);
+            }
+            else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
+            {
+                OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'  (%d, %s)", level, configurationFile, errno, strerror(errno));
+                result = errno ? errno : ENOENT;
+            }
+
+            if (FileExists(configurationFile))
+            {
+                RestrictFileAccessToCurrentAccountOnly(configurationFile);
+            }
+        }
+
+        SetLoggingLevel(level);
+    }
+
+    FREE_MEMORY(jsonConfiguration);
+    FREE_MEMORY(buffer);
+
+    return result;
 }

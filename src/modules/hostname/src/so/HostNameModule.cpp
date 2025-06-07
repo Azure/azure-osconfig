@@ -51,7 +51,7 @@ int MmiGetInfoInternal(const char* clientName, MMI_JSON_STRING* payload, int* pa
     {
         if (status == MMI_OK)
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogInfo(HostNameLog::Get(), "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
@@ -62,7 +62,7 @@ int MmiGetInfoInternal(const char* clientName, MMI_JSON_STRING* payload, int* pa
         }
         else
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(HostNameLog::Get(), "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
@@ -199,7 +199,7 @@ int MmiSet(MMI_HANDLE clientSession, const char* componentName, const char* obje
         int status = MMI_OK;
         ScopeGuard sg{[&]()
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 if (MMI_OK == status)
                 {
@@ -245,7 +245,7 @@ int MmiGet(MMI_HANDLE clientSession, const char* componentName, const char* obje
         int status = MMI_OK;
         ScopeGuard sg{[&]()
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 if (MMI_OK == status)
                 {
@@ -261,7 +261,7 @@ int MmiGet(MMI_HANDLE clientSession, const char* componentName, const char* obje
         HostName *hostName = reinterpret_cast<HostName *>(clientSession);
         if (!hostName)
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_CLIENT_SESSION, "MmiGet");
             }

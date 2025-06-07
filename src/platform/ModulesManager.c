@@ -40,9 +40,9 @@ static MODULE* g_modules = NULL;
 static REPORTED_OBJECT* g_reported = NULL;
 static int g_reportedTotal = 0;
 
-OSCONFIG_LOG_HANDLE g_platformLog = NULL;
+OsConfigLogHandle g_platformLog = NULL;
 
-OSCONFIG_LOG_HANDLE GetPlatformLog(void)
+OsConfigLogHandle GetPlatformLog(void)
 {
     return g_platformLog;
 }
@@ -108,7 +108,7 @@ static void LoadModules(const char* directory, const char* configJson)
         {
             while (NULL != (entry = readdir(dir)))
             {
-                if ((DT_REG != entry->d_type) || 
+                if ((DT_REG != entry->d_type) ||
                     ((strcmp(entry->d_name, "") == 0) || (strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0)) ||
                     (NULL == strstr(entry->d_name, MODULE_EXT)))
                 {
@@ -140,6 +140,7 @@ static void LoadModules(const char* directory, const char* configJson)
 
                 FREE_MEMORY(path);
             }
+            closedir(dir);
         }
         else
         {
@@ -199,11 +200,7 @@ static void LoadModules(const char* directory, const char* configJson)
                         }
                         else
                         {
-                            if (IsFullLoggingEnabled())
-                            {
-                                OsConfigLogInfo(GetPlatformLog(), "LoadModules: found reported property (%s.%s)", reported[i].component, reported[i].object);
-                            }
-
+                            OsConfigLogDebug(GetPlatformLog(), "LoadModules: found reported property (%s.%s)", reported[i].component, reported[i].object);
                             reportedTotal++;
                         }
                     }
@@ -225,6 +222,7 @@ static void LoadModules(const char* directory, const char* configJson)
     {
         json_value_free(config);
     }
+    FREE_MEMORY(clientName);
 }
 
 void AreModulesLoadedAndLoadIfNot(const char* directory, const char* configJson)
@@ -264,6 +262,7 @@ static void FreeSessions(SESSION* sessions)
         {
             moduleSession = curr->modules;
             curr->modules = moduleSession->next;
+            moduleSession->module->close(moduleSession->handle);
             FREE_MEMORY(moduleSession);
         }
 
@@ -292,8 +291,8 @@ static void FreeReportedObjects(REPORTED_OBJECT* reportedObjects, int numReporte
 
 void UnloadModules(void)
 {
-    FreeModules(g_modules);
     FreeSessions(g_sessions);
+    FreeModules(g_modules);
     FreeReportedObjects(g_reported, g_reportedTotal);
 
     g_reportedTotal = 0;
@@ -366,15 +365,12 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
     }
     else
     {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogInfo(GetPlatformLog(), "MpiOpen: creating session with UUID '%s'", uuid);
-        }
+        OsConfigLogDebug(GetPlatformLog(), "MpiOpen: creating session with UUID '%s'", uuid);
 
         if (NULL != (session = (SESSION*)malloc(sizeof(SESSION))))
         {
             memset(session, 0, sizeof(MODULE_SESSION));
-            
+
             if (NULL != (session->client = strdup(clientName)))
             {
                 if (NULL != (session->uuid = strdup(uuid)))
@@ -454,9 +450,13 @@ void MpiClose(MPI_HANDLE handle)
     }
     else
     {
-        if (IsFullLoggingEnabled())
+        OsConfigLogDebug(GetPlatformLog(), "MpiClose: closing session with UUID '%s'", session->uuid);
+        while (session->modules)
         {
-            OsConfigLogInfo(GetPlatformLog(), "MpiClose: closing session with UUID '%s'", session->uuid);
+            MODULE_SESSION* moduleSession = session->modules;
+            session->modules = moduleSession->next;
+            moduleSession->module->close(moduleSession->handle);
+            FREE_MEMORY(moduleSession);
         }
 
         // Remove the session from the linked list
@@ -586,11 +586,11 @@ int MpiGet(MPI_HANDLE handle, const char* component, const char* object, MPI_JSO
     {
         status = moduleSession->module->get(moduleSession->handle, component, object, payload, payloadSizeBytes);
 
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             if (MMI_OK == status)
             {
-                OsConfigLogInfo(GetPlatformLog(), "MpiGet(%p, %s, %s, %p, %p) succeeded", handle, component, object, payload, payloadSizeBytes);
+                OsConfigLogDebug(GetPlatformLog(), "MpiGet(%p, %s, %s, %p, %p) succeeded", handle, component, object, payload, payloadSizeBytes);
             }
             else
             {
@@ -700,11 +700,11 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
         FREE_MEMORY(json);
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         if (MMI_OK == status)
         {
-            OsConfigLogInfo(GetPlatformLog(), "MpiSetDesired(%p, %p, %d) succeeded", handle, payload, payloadSizeBytes);
+            OsConfigLogDebug(GetPlatformLog(), "MpiSetDesired(%p, %p, %d) succeeded", handle, payload, payloadSizeBytes);
         }
         else
         {
@@ -768,10 +768,7 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
             {
                 mmiStatus = moduleSession->module->get(moduleSession->handle, g_reported[i].component, g_reported[i].object, &mmiPayload, &mmiPayloadSizeBytes);
 
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogInfo(GetPlatformLog(), "MmiGet(%s, %s) returned %d (%.*s)", g_reported[i].component, g_reported[i].object, mmiStatus, mmiPayloadSizeBytes, mmiPayload);
-                }
+                OsConfigLogDebug(GetPlatformLog(), "MmiGet(%s, %s) returned %d (%.*s)", g_reported[i].component, g_reported[i].object, mmiStatus, mmiPayloadSizeBytes, mmiPayload);
 
                 if (MMI_OK != mmiStatus)
                 {
@@ -783,11 +780,12 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
                 }
                 else
                 {
-                    memcpy(payloadJson, mmiPayload, mmiPayloadSizeBytes + 1);
+                    memcpy(payloadJson, mmiPayload, mmiPayloadSizeBytes);
+                    payloadJson[mmiPayloadSizeBytes] = '\0';
 
                     if (NULL == (objectValue = json_parse_string(payloadJson)))
                     {
-                        if (IsFullLoggingEnabled())
+                        if (IsDebugLoggingEnabled())
                         {
                             OsConfigLogError(GetPlatformLog(), "MmiGet(%s, %s) returned an invalid payload '%s'", g_reported[i].component, g_reported[i].object, payloadJson);
                         }
@@ -817,7 +815,8 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
                     FREE_MEMORY(payloadJson);
                 }
 
-                FREE_MEMORY(mmiPayload);
+                moduleSession->module->free(mmiPayload);
+                mmiPayload = NULL;
             }
         }
 
@@ -826,11 +825,11 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
         json_value_free(rootValue);
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         if (MMI_OK == status)
         {
-            OsConfigLogInfo(GetPlatformLog(), "MpiGetDesired(%p, %p) succeeded", handle, payload);
+            OsConfigLogDebug(GetPlatformLog(), "MpiGetDesired(%p, %p) succeeded", handle, payload);
         }
         else
         {

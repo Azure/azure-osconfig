@@ -31,7 +31,7 @@ extern "C"
 {
 #endif
 
-OSCONFIG_LOG_HANDLE GetPlatformLog(void);
+OsConfigLogHandle GetPlatformLog(void);
 
 #ifdef __cplusplus
 }

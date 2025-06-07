@@ -43,20 +43,40 @@ jobs:
           sudo mkdir -p /etc/osconfig
           sudo cp -r ./src/adapters/pnp/daemon/osconfig.json /etc/osconfig/osconfig.json
 
+      - name: Defer test execution
+        uses: ./.github/actions/defer-tests
+
       - name: Run moduletest
         working-directory: ${{ steps.download.outputs.download-path }}/modules/test
         run: |
           sudo chmod +x ./moduletest
 
           result=0
-          recipes=$(ls -d ../../src/modules/test/recipes/*.json)
+          recipes=$(find ../../src/modules/test/recipes/ -name "*.json")
 
           for recipe in $recipes; do
-            if [ ! -f ../../src/tests/e2e-test-recipes/$(basename $recipe) ]; then
+            modules=$(cat $recipe | grep '\.so' | awk -F'"' '{print $4}')
+            if [ -z "$modules" ]; then
+              echo "no modules found in $recipe"
               continue
             fi
-            name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
 
+            skip=
+            for module in $modules; do
+              echo "module: $module"
+              if [ ! -f ../bin/$module ]; then
+                echo "module $module lodaed in recipe $recipe not found"
+                skip=1
+                break
+              fi
+            done
+
+            if [ ! -z "$skip" ]; then
+              echo "skipping recipe $recipe"
+              continue
+            fi
+
+            name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
             echo -n "testing $name ... "
 
             if output=$(sudo ./moduletest $recipe --bin ../bin); then
@@ -72,6 +92,13 @@ jobs:
           done
 
           exit $result
+
+      - name: Check performance
+        if: success() || failure()
+        uses: ./.github/actions/check-perf
+        with:
+          perflog: /var/log/osconfig_asb_perf.log
+          mark: "is longer than"
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()

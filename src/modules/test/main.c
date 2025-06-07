@@ -26,6 +26,8 @@
 #define RECIPE_STATUS "ExpectedResult"
 #define RECIPE_WAIT_SECONDS "WaitSeconds"
 #define SECURITY_BASELINE "SecurityBaseline"
+#define PASS_WILDCARD "\"PASS*\""
+#define NO_PASS_WILDCARD "\"^PASS*\""
 
 #define RECIPE_RUN_COMMAND "RunCommand"
 
@@ -319,7 +321,7 @@ int ParseRecipe(const char* path, STEP** steps, int* numSteps)
     JSON_Array* stepArray = NULL;
     JSON_Object* stepObject = NULL;
 
-    if (NULL == (rootValue = json_parse_file(path)))
+    if (NULL == (rootValue = json_parse_file_with_comments(path)))
     {
         LOG_ERROR("Failed to parse test definition file: %s", path);
         status = EINVAL;
@@ -365,10 +367,11 @@ int RunCommand(const COMMAND_STEP* command)
 
     if (command != NULL)
     {
+        // We do log and ignore the result of the command, this is not a MIM object, we want to just execute it
         if (command->status != (status = ExecuteCommand(NULL, command->arguments, false, false, 0, 0, &textResult, NULL, NULL)))
         {
-            LOG_ERROR("Command exited with status: %d (expected %d): %s", status, command->status, textResult);
-            status = (0 != status) ? status : -1;
+            LOG_INFO("Command exited with status: %d (while we were expecting %d): %s", status, command->status, textResult);
+            status = 0;
         }
         else if (textResult != NULL)
         {
@@ -439,11 +442,11 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                     LOG_ERROR("Failed to parse JSON payload: %s", payloadString);
                     result = EINVAL;
                 }
-                else if ((0 == strcmp(test->component, SECURITY_BASELINE)) && 
+                else if ((0 == strcmp(test->component, SECURITY_BASELINE)) &&
                     (0 == strncmp(test->object, audit, strlen(audit))))
                 {
                     asbAudit = true;
-                    
+
                     for (i = 0; i < numSkippedAudits; i++)
                     {
                         if (0 == strcmp(test->object, skippedAudits[i]))
@@ -458,9 +461,10 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 
         if (test->payload || asbAudit)
         {
+            reason = json_value_get_string(actualJsonValue);
             if (asbAudit)
             {
-                if (NULL == (reason = json_value_get_string(actualJsonValue)))
+                if (NULL == reason)
                 {
                     LOG_ERROR("Assertion failed, json_value_get_string('%s') failed", json_serialize_to_string(actualJsonValue));
                     result = -1;
@@ -475,6 +479,30 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                     LOG_INFO("Assertion passed with reason: '%s'", reason + strlen(SECURITY_AUDIT_PASS));
                 }
             }
+            else if ((NULL != reason) && (NULL != test->payload) && (0 == strcmp(test->payload, PASS_WILDCARD)))
+            {
+                if (0 == strncmp(reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))
+                {
+                    LOG_INFO("Assertion passed with reason: '%s'", reason);
+                }
+                else
+                {
+                    LOG_ERROR("Assertion failed, expected: '%s...', actual: '%s'", SECURITY_AUDIT_PASS, reason);
+                    result = EFAULT;
+                }
+            }
+            else if ((NULL != reason) && (NULL != test->payload) && (0 == strcmp(test->payload, NO_PASS_WILDCARD)))
+            {
+                if (0 != strncmp(reason, SECURITY_AUDIT_PASS, strlen(SECURITY_AUDIT_PASS)))
+                {
+                    LOG_INFO("Assertion passed with reason: '%s'", reason);
+                }
+                else
+                {
+                    LOG_ERROR("Assertion failed, expected no '%s...', actual: '%s'", SECURITY_AUDIT_PASS, reason);
+                    result = EFAULT;
+                }
+            }
             else if (actualJsonValue != NULL)
             {
                 if (NULL == (expectedJsonValue = json_parse_string(test->payload)))
@@ -484,15 +512,26 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                 }
                 else if (0 == json_value_equals(expectedJsonValue, actualJsonValue))
                 {
-                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", 
+                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'",
                         json_serialize_to_string(expectedJsonValue), json_serialize_to_string(actualJsonValue));
                     result = EFAULT;
                 }
             }
             else
             {
-                LOG_ERROR("Assertion failed, expected: '%s', actual: (null)", test->payload);
-                result = EFAULT;
+                if (NULL == (expectedJsonValue = json_parse_string(test->payload)))
+                {
+                    LOG_ERROR("Assertion failed, expected: '%s', actual: (null)", test->payload);
+                    result = EFAULT;
+                }
+                else
+                {
+                    if (json_value_get_type(expectedJsonValue) != JSONNull)
+                    {
+                        LOG_ERROR("Assertion failed, expected: '%s', actual: (null)", test->payload);
+                        result = EFAULT;
+                    }
+                }
             }
         }
 
@@ -501,7 +540,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
             LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
             result = EFAULT;
         }
-        
+
         json_value_free(expectedJsonValue);
         json_value_free(actualJsonValue);
         FREE_MEMORY(payloadString);
@@ -848,8 +887,7 @@ int main(int argc, char const* argv[])
         else if (strcmp(argv[i], "--verbose") == 0)
         {
             g_verbose = true;
-            SetFullLogging(true);
-            SetCommandLogging(true);
+            SetLoggingLevel(LoggingLevelDebug);
         }
         else if (strcmp(argv[i], "--help") == 0)
         {

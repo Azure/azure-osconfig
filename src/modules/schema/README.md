@@ -12,4 +12,3 @@ To validate a MIM JSON, run the following command:
 ```bash
 $ jsonschema --instance my-new-mim.json mim.schema.json
 ```
-

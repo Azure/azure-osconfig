@@ -3,7 +3,7 @@
 
 #include "Internal.h"
 
-char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
+char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log)
 {
     const int initialSize = 1024;
     int currentSize = 0;
@@ -26,7 +26,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
             {
                 currentSize = initialSize;
                 memset(&string[0], 0, currentSize);
-                
+
                 while (1)
                 {
                     next = fgetc(file);
@@ -65,7 +65,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
     return string;
 }
 
-static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
+static bool SaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     FILE* file = NULL;
     int i = 0;
@@ -84,7 +84,7 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
                     if (payload[i] != (char)fputc(payload[i], file))
                     {
                         result = false;
-                        OsConfigLogError(log, "SaveToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
+                        OsConfigLogInfo(log, "SaveToFile: cannot save '%c' to '%s' (%d)", payload[i], fileName, errno);
                     }
                 }
 
@@ -92,7 +92,7 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
             }
             else
             {
-                OsConfigLogError(log, "SaveToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
+                OsConfigLogInfo(log, "SaveToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
             }
 
             fflush(file);
@@ -101,7 +101,7 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
         else
         {
             result = false;
-            OsConfigLogError(log, "SaveToFile: cannot open '%s' in mode '%s' (%d)", fileName, mode, errno);
+            OsConfigLogInfo(log, "SaveToFile: cannot open '%s' in mode '%s' (%d, %s)", fileName, mode, errno, strerror(errno));
         }
     }
     else
@@ -113,12 +113,12 @@ static bool SaveToFile(const char* fileName, const char* mode, const char* paylo
     return result;
 }
 
-bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     return SaveToFile(fileName, "w", payload, payloadSizeBytes, log);
 }
 
-bool FileEndsInEol(const char* fileName, void* log)
+bool FileEndsInEol(const char* fileName, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     FILE* file = NULL;
@@ -140,26 +140,26 @@ bool FileEndsInEol(const char* fileName, void* log)
                 }
                 else
                 {
-                    OsConfigLogError(log, "FileEndsInEol: fseek to end of '%s' failed with %d (errno: %d)", fileName, status, errno);
+                    OsConfigLogInfo(log, "FileEndsInEol: fseek to end of '%s' failed with %d (errno: %d)", fileName, status, errno);
                 }
 
                 fclose(file);
             }
             else
             {
-                OsConfigLogError(log, "FileEndsInEol: failed to open '%s' for reading", fileName);
+                OsConfigLogInfo(log, "FileEndsInEol: cannot open '%s' for reading", fileName);
             }
         }
     }
     else
     {
-        OsConfigLogError(log, "FileEndsInEol: stat('%s') failed with %d (errno: %d)", fileName, status, errno);
+        OsConfigLogInfo(log, "FileEndsInEol: stat('%s') returned %d (errno: %d)", fileName, status, errno);
     }
 
     return result;
 }
 
-bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+bool AppendPayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     bool result = false;
 
@@ -174,19 +174,19 @@ bool AppendPayloadToFile(const char* fileName, const char* payload, const int pa
     {
         if (false == SaveToFile(fileName, "a", "\n", 1, log))
         {
-            OsConfigLogError(log, "AppendPayloadToFile: failed to append EOL to '%s'", fileName);
+            OsConfigLogInfo(log, "AppendPayloadToFile: cannot append EOL to '%s'", fileName);
         }
     }
 
     if (false == (result = SaveToFile(fileName, "a", payload, payloadSizeBytes, log)))
     {
-        OsConfigLogError(log, "AppendPayloadToFile: failed to append '%.*s' to '%s'", payloadSizeBytes, payload, fileName);
+        OsConfigLogInfo(log, "AppendPayloadToFile: cannot append '%.*s' to '%s'", payloadSizeBytes, payload, fileName);
     }
 
     return result;
 }
 
-static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, void* log)
+static bool InternalSecureSaveToFile(const char* fileName, const char* mode, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig%u";
     char* fileDirectory = NULL;
@@ -195,7 +195,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     char* fileContents = NULL;
     unsigned int ownerId = 0;
     unsigned int groupId = 0;
-    unsigned int access = 644;
+    unsigned int access = 0644;
     int status = 0;
     bool result = false;
 
@@ -214,14 +214,14 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     {
         OsConfigLogInfo(log, "InternalSecureSaveToFile: no directory name for '%s' (%d)", fileNameCopy, errno);
     }
-    
+
     if (DirectoryExists(fileDirectory))
     {
         if (0 == GetDirectoryAccess(fileDirectory, &ownerId, &groupId, &access, log))
         {
-            OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists, is owned by user (%u, %u) and has access mode %u", 
+            OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists, is owned by user (%u, %u) and has access mode %03o",
                 fileDirectory, ownerId, groupId, access);
-        }    
+        }
     }
 
     if (NULL != (tempFileName = FormatAllocateString(tempFileNameTemplate, fileDirectory ? fileDirectory : "/tmp", rand())))
@@ -245,7 +245,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
             }
             else
             {
-                OsConfigLogError(log, "InternalSecureSaveToFile: failed to read from '%s'", fileName);
+                OsConfigLogInfo(log, "InternalSecureSaveToFile: cannot read from '%s' (%d)", fileName, errno);
                 result = false;
             }
         }
@@ -262,7 +262,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
 
     if (result && (false == FileExists(tempFileName)))
     {
-        OsConfigLogError(log, "InternalSecureSaveToFile: failed to create temporary file");
+        OsConfigLogInfo(log, "InternalSecureSaveToFile: cannot create temporary file (%d)", errno);
         result = false;
     }
 
@@ -270,7 +270,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     {
         if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, fileName, log)))
         {
-            OsConfigLogError(log, "InternalSecureSaveToFile: RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempFileName, fileName, status);
+            OsConfigLogInfo(log, "InternalSecureSaveToFile: RenameFileWithOwnerAndAccess('%s' to '%s') returned %d", tempFileName, fileName, status);
             result = false;
         }
 
@@ -283,17 +283,17 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     return result;
 }
 
-bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+bool SecureSaveToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     return InternalSecureSaveToFile(fileName, "w", payload, payloadSizeBytes, log);
 }
 
-bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log)
+bool AppendToFile(const char* fileName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     return InternalSecureSaveToFile(fileName, "a", payload, payloadSizeBytes, log);
 }
 
-bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool preserveAccess, void* log)
+bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool preserveAccess, OsConfigLogHandle log)
 {
     char* fileContents = NULL;
     char* newFileName = NULL;
@@ -317,13 +317,13 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool prese
             else
             {
                 result = false;
-                OsConfigLogError(log, "MakeFileBackupCopy: failed to make a file copy of '%s'", fileName);
+                OsConfigLogInfo(log, "MakeFileBackupCopy: cannot make a file copy of '%s' (%d)", fileName, errno);
             }
         }
         else
         {
             result = false;
-            OsConfigLogError(log, "MakeFileBackupCopy: file '%s' does not exist", fileName);
+            OsConfigLogInfo(log, "MakeFileBackupCopy: file '%s' does not exist", fileName);
         }
     }
     else
@@ -338,11 +338,11 @@ bool MakeFileBackupCopy(const char* fileName, const char* backupName, bool prese
     return result;
 }
 
-bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, bool preserveAccess, void* log)
+bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, bool preserveAccess, OsConfigLogHandle log)
 {
     char* contents = NULL;
     bool result = false;
-    
+
     if ((NULL == firstFileName) || (NULL == secondFileName))
     {
         OsConfigLogError(log, "ConcatenateFiles: invalid arguments");
@@ -359,7 +359,7 @@ bool ConcatenateFiles(const char* firstFileName, const char* secondFileName, boo
         {
             result = AppendPayloadToFile(firstFileName, contents, strlen(contents), log);
         }
-        
+
         FREE_MEMORY(contents);
     }
 
@@ -373,19 +373,15 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
         return EINVAL;
     }
 
-    // S_ISUID (4000): Set user ID on execution
-    // S_ISGID (2000): Set group ID on execution
     // S_IRUSR (0400): Read permission, owner
     // S_IWUSR (0200): Write permission, owner
     // S_IRGRP (0040): Read permission, group
     // S_IWGRP (0020): Write permission, group.
-    // S_IXUSR (0100): Execute/search permission, owner
-    // S_IXGRP (0010): Execute/search permission, group
 
     return chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 }
 
-static bool IsATrueFileOrDirectory(bool directory, const char* name, void* log)
+static bool IsATrueFileOrDirectory(bool directory, const char* name, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     int format = 0;
@@ -401,15 +397,15 @@ static bool IsATrueFileOrDirectory(bool directory, const char* name, void* log)
     if (-1 != (status = lstat(name, &statStruct)))
     {
         format = S_IFMT & statStruct.st_mode;
-        
+
         switch (format)
         {
             case S_IFBLK:
-                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a block device", name);
+                OsConfigLogInfo(log, "IsATrueFileOrDirectory: '%s' is a block device", name);
                 break;
 
             case S_IFCHR:
-                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a character device", name);
+                OsConfigLogInfo(log, "IsATrueFileOrDirectory: '%s' is a character device", name);
                 break;
 
             case S_IFDIR:
@@ -420,16 +416,16 @@ static bool IsATrueFileOrDirectory(bool directory, const char* name, void* log)
                 }
                 else
                 {
-                    OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a directory", name);
+                    OsConfigLogInfo(log, "IsATrueFileOrDirectory: '%s' is a directory", name);
                 }
                 break;
 
             case S_IFIFO:
-                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a FIFO pipe", name);
+                OsConfigLogInfo(log, "IsATrueFileOrDirectory: '%s' is a FIFO pipe", name);
                 break;
 
             case S_IFLNK:
-                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a symnlink", name);
+                OsConfigLogInfo(log, "IsATrueFileOrDirectory: '%s' is a symnlink", name);
                 break;
 
             case S_IFREG:
@@ -440,32 +436,32 @@ static bool IsATrueFileOrDirectory(bool directory, const char* name, void* log)
                 }
                 else
                 {
-                    OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a regular file", name);
+                    OsConfigLogInfo(log, "IsATrueFileOrDirectory: '%s' is a regular file", name);
                 }
                 break;
 
             case S_IFSOCK:
-                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is a socket", name);
+                OsConfigLogInfo(log, "IsATrueFileOrDirectory: '%s' is a socket", name);
                 break;
 
             default:
-                OsConfigLogError(log, "IsATrueFileOrDirectory: '%s' is of an unknown format 0x%X", name, format);
+                OsConfigLogInfo(log, "IsATrueFileOrDirectory: '%s' is of an unknown format 0x%X", name, format);
         }
     }
     else
     {
-        OsConfigLogError(log, "IsATrueFileOrDirectory: stat('%s') failed with %d (errno: %d)", name, status, errno);
+        OsConfigLogInfo(log, "IsATrueFileOrDirectory: stat('%s') returned %d (errno: %d)", name, status, errno);
     }
 
     return result;
 }
 
-bool IsAFile(const char* fileName, void* log)
+bool IsAFile(const char* fileName, OsConfigLogHandle log)
 {
     return IsATrueFileOrDirectory(false, fileName, log);
 }
 
-bool IsADirectory(const char* fileName, void* log)
+bool IsADirectory(const char* fileName, OsConfigLogHandle log)
 {
     return IsATrueFileOrDirectory(true, fileName, log);
 }
@@ -489,7 +485,7 @@ bool DirectoryExists(const char* fileName)
     return result;
 }
 
-int CheckFileExists(const char* fileName, char** reason, void* log)
+int CheckFileExists(const char* fileName, char** reason, OsConfigLogHandle log)
 {
     int status = 0;
 
@@ -508,7 +504,7 @@ int CheckFileExists(const char* fileName, char** reason, void* log)
     return status;
 }
 
-int CheckFileNotFound(const char* fileName, char** reason, void* log)
+int CheckFileNotFound(const char* fileName, char** reason, OsConfigLogHandle log)
 {
     int status = 0;
 
@@ -527,7 +523,7 @@ int CheckFileNotFound(const char* fileName, char** reason, void* log)
     return status;
 }
 
-static bool LockUnlockFile(FILE* file, bool lock, void* log)
+static bool LockUnlockFile(FILE* file, bool lock, OsConfigLogHandle log)
 {
     int fileDescriptor = -1;
     int lockResult = -1;
@@ -540,49 +536,27 @@ static bool LockUnlockFile(FILE* file, bool lock, void* log)
 
     if (-1 == (fileDescriptor = fileno(file)))
     {
-        OsConfigLogError(log, "LockFile: fileno failed with %d", errno);
+        OsConfigLogInfo(log, "LockFile: fileno failed with %d", errno);
     }
     else if (0 != (lockResult = flock(fileDescriptor, lockOperation)))
     {
-        OsConfigLogError(log, "LockFile: flock(%d) failed with %d", lockOperation, errno);
+        OsConfigLogInfo(log, "LockFile: flock(%d) failed with %d", lockOperation, errno);
     }
 
     return (0 == lockResult) ? true : false;
 }
 
-bool LockFile(FILE* file, void* log)
+bool LockFile(FILE* file, OsConfigLogHandle log)
 {
     return LockUnlockFile(file, true, log);
 }
 
-bool UnlockFile(FILE* file, void* log)
+bool UnlockFile(FILE* file, OsConfigLogHandle log)
 {
     return LockUnlockFile(file, false, log);
 }
 
-static int DecimalToOctal(int decimal)
-{
-    char buffer[10] = {0};
-    snprintf(buffer, ARRAY_SIZE(buffer), "%o", decimal);
-    return atoi(buffer);
-}
-
-static int OctalToDecimal(int octal)
-{
-    int internalOctal = octal;
-    int decimal = 0;
-    int i = 0;
-  
-    while (internalOctal) 
-    {
-        decimal += (internalOctal % 10) * pow(8, i++);
-        internalOctal = internalOctal / 10;
-    }
-
-    return decimal;
-}
-
-static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, void* log)
+static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0;
@@ -602,7 +576,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
             if (((-1 != desiredOwnerId) && (((uid_t)desiredOwnerId != statStruct.st_uid) && (directory && rootCanOverwriteOwnership && ((0 != statStruct.st_uid))))) ||
                 ((-1 != desiredGroupId) && (((gid_t)desiredGroupId != statStruct.st_gid) && (directory && rootCanOverwriteOwnership && ((0 != statStruct.st_gid))))))
             {
-                OsConfigLogError(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
+                OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
                     name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                 OsConfigCaptureReason(reason, "Ownership of '%s' (%d, %d) does not match expected (%d, %d)",
                     name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
@@ -613,48 +587,23 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 // Special case for the MPI Client
                 if (NULL != log)
                 {
-                    OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) matches expected (%d, %d)", 
+                    OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) matches expected (%d, %d)",
                         name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                 }
 
-                // S_IXOTH (00001): Execute/search permission, others
-                // S_IWOTH (00002): Write permission, others
-                // S_IROTH (00004): Read permission, others
-                // S_IRWXO (00007): Read, write, execute/search by others
-                // S_IXGRP (00010): Execute/search permission, group
-                // S_IWGRP (00020): Write permission, group
-                // S_IRGRP (00040): Read permission, group
-                // S_IRWXG (00070): Read, write, execute/search by group
-                // S_IXUSR (00100): Execute/search permission, owner
-                // S_IWUSR (00200): Write permission, owner
-                // S_IRUSR (00400): Read permission, owner
-                // S_IRWXU (00700): Read, write, execute/search by owner
-                // S_ISVTX (01000): On directories, restricted deletion flag
-                // S_ISGID (02000): Set-group-ID on execution
-                // S_ISUID (04000): Set-user-ID on execution
-                
-                currentMode = DecimalToOctal(statStruct.st_mode & 07777);
-                desiredMode = desiredAccess;
+                currentMode = statStruct.st_mode & 07777;
+                desiredMode = desiredAccess & 07777;
 
-                if (((desiredMode & S_IRWXU) && ((desiredMode & S_IRWXU) != (currentMode & S_IRWXU))) ||
-                    ((desiredMode & S_IRWXG) && ((desiredMode & S_IRWXG) != (currentMode & S_IRWXG))) ||
-                    ((desiredMode & S_IRWXO) && ((desiredMode & S_IRWXO) != (currentMode & S_IRWXO))) ||
-                    ((desiredMode & S_IRUSR) && ((desiredMode & S_IRUSR) != (currentMode & S_IRUSR))) ||
-                    ((desiredMode & S_IRGRP) && ((desiredMode & S_IRGRP) != (currentMode & S_IRGRP))) ||
-                    ((desiredMode & S_IROTH) && ((desiredMode & S_IROTH) != (currentMode & S_IROTH))) ||
-                    ((desiredMode & S_IWUSR) && ((desiredMode & S_IWUSR) != (currentMode & S_IWUSR))) ||
-                    ((desiredMode & S_IWGRP) && ((desiredMode & S_IWGRP) != (currentMode & S_IWGRP))) ||
-                    ((desiredMode & S_IWOTH) && ((desiredMode & S_IWOTH) != (currentMode & S_IWOTH))) ||
-                    ((desiredMode & S_IXUSR) && ((desiredMode & S_IXUSR) != (currentMode & S_IXUSR))) ||
-                    ((desiredMode & S_IXGRP) && ((desiredMode & S_IXGRP) != (currentMode & S_IXGRP))) ||
-                    ((desiredMode & S_IXOTH) && ((desiredMode & S_IXOTH) != (currentMode & S_IXOTH))) ||
-                    ((desiredMode & S_ISUID) && ((desiredMode & S_ISUID) != (currentMode & S_ISUID))) ||
-                    ((desiredMode & S_ISGID) && ((desiredMode & S_ISGID) != (currentMode & S_ISGID))) ||
-                    (directory && (desiredMode & S_ISVTX) && ((desiredMode & S_ISVTX) != (currentMode & S_ISVTX))) ||
-                    (currentMode > desiredMode))
+                // S_ISVTX (01000): restricted deletion flag (for directories only)
+                if (!directory)
                 {
-                    OsConfigLogError(log, "CheckAccess: access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
-                    OsConfigCaptureReason(reason, "Access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
+                    desiredMode &= ~S_ISVTX;
+                }
+
+                if (currentMode != desiredMode)
+                {
+                    OsConfigLogInfo(log, "CheckAccess: access to '%s' (%03o) does not match expected (%03o)", name, currentMode, desiredMode);
+                    OsConfigCaptureReason(reason, "Access to '%s' (%03o) does not match expected (%03o)", name, currentMode, desiredMode);
                     result = ENOENT;
                 }
                 else
@@ -662,17 +611,17 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     // Special case for the MPI Client
                     if (NULL != log)
                     {
-                        OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d) matches expected (%d)", name, currentMode, desiredMode);
+                        OsConfigLogInfo(log, "CheckAccess: access to '%s' (%03o) matches expected (%03o)", name, currentMode, desiredMode);
                     }
-                    
-                    OsConfigCaptureSuccessReason(reason, "'%s' has required access (%d) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
+
+                    OsConfigCaptureSuccessReason(reason, "'%s' has required access (%03o) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
                     result = 0;
                 }
             }
         }
         else
         {
-            OsConfigLogError(log, "CheckAccess: stat('%s') failed with %d", name, errno);
+            OsConfigLogInfo(log, "CheckAccess: stat('%s') failed with %d", name, errno);
         }
     }
     else
@@ -692,9 +641,8 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     return result;
 }
 
-static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
+static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
-    mode_t mode = OctalToDecimal(desiredAccess);
     int result = ENOENT;
 
     if (NULL == name)
@@ -705,9 +653,9 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
 
     if (directory ? DirectoryExists(name) : FileExists(name))
     {
-        if (0 == (result = CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, false, NULL, log)))
+        if (0 == CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, false, NULL, log))
         {
-            OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access %u) already set",
+            OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access %03o) already set",
                 name, desiredOwnerId, desiredGroupId, desiredAccess);
             result = 0;
         }
@@ -717,19 +665,19 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
             {
                 OsConfigLogInfo(log, "SetAccess: successfully set ownership of '%s' to owner %u, group %u", name, desiredOwnerId, desiredGroupId);
 
-                if (0 == (result = chmod(name, mode)))
+                if (0 == (result = chmod(name, desiredAccess)))
                 {
-                    OsConfigLogInfo(log, "SetAccess: successfully set access to '%s' to %u", name, desiredAccess);
+                    OsConfigLogInfo(log, "SetAccess: successfully set access to '%s' to %03o", name, desiredAccess);
                 }
                 else
                 {
                     result = errno ? errno : ENOENT;
-                    OsConfigLogError(log, "SetAccess: 'chmod %d %s' failed with %d", desiredAccess, name, result);
+                    OsConfigLogInfo(log, "SetAccess: 'chmod %03o %s' failed with %d", desiredAccess, name, result);
                 }
             }
             else
             {
-                OsConfigLogError(log, "SetAccess: chown('%s', %d, %d) failed with %d", name, desiredOwnerId, desiredGroupId, errno);
+                OsConfigLogInfo(log, "SetAccess: chown('%s', %d, %d) failed with %d", name, desiredOwnerId, desiredGroupId, errno);
             }
         }
     }
@@ -742,22 +690,22 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
     return result;
 }
 
-int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, void* log)
+int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
     return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, reason, log);
 }
 
-int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
+int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
     return SetAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, void* log)
+int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, OsConfigLogHandle log)
 {
     return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, reason, log);
 }
 
-int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
+int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
 {
     return SetAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
@@ -807,13 +755,13 @@ bool CharacterFoundInFile(const char* fileName, char what)
     return (GetNumberOfCharacterInstancesInFile(fileName, what) > 0) ? true : false;
 }
 
-int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* log)
+int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, OsConfigLogHandle log)
 {
     int status = 0;
 
     if (FileExists(fileName) && CharacterFoundInFile(fileName, '+'))
     {
-        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInFile(%s): there are '+' lines in file '%s'", fileName, fileName);
+        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInFile(%s): there are '+' lines in file '%s'", fileName, fileName);
         OsConfigCaptureReason(reason, "There are '+' lines in file '%s'", fileName);
         status = ENOENT;
     }
@@ -826,7 +774,7 @@ int CheckNoLegacyPlusEntriesInFile(const char* fileName, char** reason, void* lo
     return status;
 }
 
-static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
+static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log)
 {
     struct stat statStruct = { 0 };
     int status = ENOENT;
@@ -847,11 +795,11 @@ static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, 
         {
             *ownerId = statStruct.st_uid;
             *groupId = statStruct.st_gid;
-            *mode = DecimalToOctal(statStruct.st_mode & 07777);
+            *mode = statStruct.st_mode & 07777;
         }
         else
         {
-            OsConfigLogError(log, "GetAccess: stat('%s') failed with %d", name, errno);
+            OsConfigLogInfo(log, "GetAccess: stat('%s') failed with %d", name, errno);
         }
     }
     else
@@ -862,31 +810,35 @@ static int GetAccess(bool isDirectory, const char* name, unsigned int* ownerId, 
     return status;
 }
 
-int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
+int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log)
 {
     return GetAccess(false, name, ownerId, groupId, mode, log);
 }
 
-int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, void* log)
+int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log)
 {
     return GetAccess(true, name, ownerId, groupId, mode, log);
 }
 
-static int RestoreSelinuxContext(const char* target, void* log)
+static int RestoreSelinuxContext(const char* target, OsConfigLogHandle log)
 {
     char* restoreCommand = NULL;
     char* textResult = NULL;
     int status = 0;
 
-    if (NULL == (restoreCommand = FormatAllocateString("restorecon -F '%s'", target)))
+    if (NULL == target)
+    {
+        OsConfigLogError(log, "RestoreSelinuxContext called with an invalid argument");
+        status = EINVAL;
+    }
+    else if (NULL == (restoreCommand = FormatAllocateString("restorecon -F '%s'", target)))
     {
         OsConfigLogError(log, "RestoreSelinuxContext: out of memory");
-        return ENOMEM;
+        status = ENOMEM;
     }
-
-    if (0 != (status = ExecuteCommand(NULL, restoreCommand, false, false, 0, 0, &textResult, NULL, log)))
+    else if (0 != (status = ExecuteCommand(NULL, restoreCommand, false, false, 0, 0, &textResult, NULL, log)))
     {
-        OsConfigLogError(log, "RestoreSelinuxContext: restorecon failed %d: %s", status, textResult);
+        OsConfigLogInfo(log, "RestoreSelinuxContext: restorecon failed %d: %s", status, textResult);
     }
 
     FREE_MEMORY(textResult);
@@ -895,7 +847,7 @@ static int RestoreSelinuxContext(const char* target, void* log)
     return status;
 }
 
-int RenameFile(const char* original, const char* target, void* log)
+int RenameFile(const char* original, const char* target, OsConfigLogHandle log)
 {
     int status = 0;
 
@@ -906,7 +858,7 @@ int RenameFile(const char* original, const char* target, void* log)
     }
     else if (false == FileExists(original))
     {
-        OsConfigLogError(log, "RenameFile: original file '%s' does not exist", original);
+        OsConfigLogInfo(log, "RenameFile: original file '%s' does not exist", original);
         return EINVAL;
     }
 
@@ -919,14 +871,14 @@ int RenameFile(const char* original, const char* target, void* log)
     }
     else
     {
-        OsConfigLogError(log, "RenameFile: rename('%s' to '%s') failed with %d", original, target, errno);
+        OsConfigLogInfo(log, "RenameFile: rename('%s' to '%s') failed with %d", original, target, errno);
         status = (0 == errno) ? ENOENT : errno;
     }
 
     return status;
 }
 
-int RenameFileWithOwnerAndAccess(const char* original, const char* target, void* log)
+int RenameFileWithOwnerAndAccess(const char* original, const char* target, OsConfigLogHandle log)
 {
     unsigned int ownerId = 0;
     unsigned int groupId = 0;
@@ -940,17 +892,17 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
     }
     else if (false == FileExists(original))
     {
-        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: original file '%s' does not exist", original);
+        OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: original file '%s' does not exist", original);
         return EINVAL;
     }
-    
+
     if (0 != GetFileAccess(target, &ownerId, &groupId, &mode, log))
     {
         OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: cannot read owner and access mode for original target file '%s', using defaults", target);
 
         ownerId = 0;
         groupId = 0;
-        
+
         // S_IRUSR (00400): Read permission, owner
         // S_IWUSR (00200): Write permission, owner
         // S_IRGRP (00040): Read permission, group
@@ -962,11 +914,11 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
     {
         if (0 != SetFileAccess(target, ownerId, groupId, mode, log))
         {
-            OsConfigLogError(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' without restored original owner and access mode", original, target);
+            OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' without restored original owner and access mode", original, target);
         }
-        else if (IsFullLoggingEnabled())
+        else
         {
-            OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode %u", 
+            OsConfigLogDebug(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode %03o",
                 original, target, ownerId, groupId, mode);
         }
 
@@ -977,14 +929,14 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, void*
     }
     else
     {
-        OsConfigLogError(log, "RenameFileWithOwnerAndAccess: rename('%s' to '%s') failed with %d", original, target, errno);
+        OsConfigLogInfo(log, "RenameFileWithOwnerAndAccess: rename('%s' to '%s') failed with %d", original, target, errno);
         status = (0 == errno) ? ENOENT : errno;
     }
 
     return status;
 }
 
-int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, void* log)
+static int ReplaceMarkedLinesInFileInternal(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, bool prepend, OsConfigLogHandle log)
 {
     const char* tempFileNameTemplate = "%s/~OSConfig.ReplacingLines%u";
     char* tempFileName = NULL;
@@ -1031,6 +983,17 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
             {
                 if (NULL != (tempHandle = fdopen(tempDescriptor, "w")))
                 {
+                    // Write the new line to the beginning of the file if prepend is requested
+                    if (prepend && newline && (newlineLength > 0))
+                    {
+                        if (EOF == fputs(newline, tempHandle))
+                        {
+                            status = (0 == errno) ? EPERM : errno;
+                            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: cannot write prepended line to temporary file '%s' (%d)", tempFileName, status);
+                        }
+                        replacedLine = true;
+                    }
+
                     while (NULL != fgets(line, lineMax + 1, fileHandle))
                     {
                         if (NULL != strstr(line, marker))
@@ -1065,7 +1028,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                             if (EOF == fputs(line, tempHandle))
                             {
                                 status = (0 == errno) ? EPERM : errno;
-                                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed writing to temporary file '%s' (%d)", tempFileName, status);
+                                OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: cannot write to temporary file '%s' (%d)", tempFileName, status);
                             }
                         }
 
@@ -1079,13 +1042,13 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
                 {
                     close(tempDescriptor);
 
-                    OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to open temporary file '%s', fdopen() failed (%d)", tempFileName, errno);
+                    OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: cannot open temporary file '%s', fdopen() failed (%d)", tempFileName, errno);
                     status = EACCES;
                 }
             }
             else
             {
-                OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to open temporary file '%s', open() failed (%d)", tempFileName, errno);
+                OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: cannot open temporary file '%s', open() failed (%d)", tempFileName, errno);
                 status = EACCES;
             }
 
@@ -1093,7 +1056,7 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         }
         else
         {
-            OsConfigLogError(log, "ReplaceMarkedLinesInFile: cannot read from '%s'", fileName);
+            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: cannot read from '%s'", fileName);
             status = EACCES;
         }
     }
@@ -1105,14 +1068,14 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
 
     FREE_MEMORY(line);
 
-    if ((0 == status) && (false == replacedLine) && (NULL != newline))
+    if ((0 == status) && (false == replacedLine) && (NULL != newline) && !prepend)
     {
-        OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: line '%s' did not replace any '%s' line, to be appended at end of '%s'", 
+        OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: line '%s' did not replace any '%s' line, to be appended at end of '%s'",
             newline, marker, fileName);
-        
+
         if (false == AppendPayloadToFile(tempFileName, newline, strlen(newline), log))
         {
-            OsConfigLogError(log, "ReplaceMarkedLinesInFile: failed to append line '%s' at end of '%s'", newline, fileName);
+            OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: cannot append line '%s' at end of '%s'", newline, fileName);
         }
     }
 
@@ -1122,29 +1085,38 @@ int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const cha
         {
             if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, fileName, log)))
             {
-                OsConfigLogError(log, "ReplaceMarkedLinesInFile: RenameFileWithOwnerAndAccess('%s' to '%s') failed with %d", tempFileName, fileName, status);
+                OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: RenameFileWithOwnerAndAccess('%s' to '%s') returned %d", tempFileName, fileName, status);
             }
         }
         else
         {
             if (0 != (status = RenameFile(tempFileName, fileName, log)))
             {
-                OsConfigLogError(log, "ReplaceMarkedLinesInFile: RenameFile('%s' to '%s') failed with %d", tempFileName, fileName, status);
+                OsConfigLogInfo(log, "ReplaceMarkedLinesInFile: RenameFile('%s' to '%s') returned %d", tempFileName, fileName, status);
             }
         }
-        
+
         remove(tempFileName);
     }
 
     FREE_MEMORY(tempFileName);
     FREE_MEMORY(fileNameCopy);
 
-    OsConfigLogInfo(log, "ReplaceMarkedLinesInFile('%s', '%s') complete with %d", fileName, marker, status);
+    OsConfigLogInfo(log, "ReplaceMarkedLinesInFile('%s', '%s') returning %d", fileName, marker, status);
 
     return status;
 }
 
-int FindTextInFile(const char* fileName, const char* text, void* log)
+int ReplaceMarkedLinesInFile(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, OsConfigLogHandle log)
+{
+    return ReplaceMarkedLinesInFileInternal(fileName, marker, newline, commentCharacter, preserveAccess, false, log);
+}
+int ReplaceMarkedLinesInFilePrepend(const char* fileName, const char* marker, const char* newline, char commentCharacter, bool preserveAccess, OsConfigLogHandle log)
+{
+    return ReplaceMarkedLinesInFileInternal(fileName, marker, newline, commentCharacter, preserveAccess, true, log);
+}
+
+int FindTextInFile(const char* fileName, const char* text, OsConfigLogHandle log)
 {
     char* contents = NULL;
     int status = 0;
@@ -1163,7 +1135,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
 
     if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
     {
-        OsConfigLogError(log, "FindTextInFile: cannot read from '%s'", fileName);
+        OsConfigLogInfo(log, "FindTextInFile: cannot read from '%s'", fileName);
         status = ENOENT;
     }
     else
@@ -1184,7 +1156,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
     return status;
 }
 
-int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, void* log)
+int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1208,7 +1180,7 @@ int CheckTextIsFoundInFile(const char* fileName, const char* text, char** reason
     return result;
 }
 
-int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, void* log)
+int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1244,7 +1216,7 @@ static bool IsValidCommentCharacter(char c)
     return (('#' == c) || ('/' == c) || ('*' == c) || (';' == c) || ('!' == c)) ? true : false;
 }
 
-int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, void* log)
+int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, OsConfigLogHandle log)
 {
     const char* commandTemplate = "grep -v '^%c' %s | grep %s";
 
@@ -1254,10 +1226,15 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
     bool foundMarker = false;
     int status = 0;
 
-    if ((false == FileExists(fileName)) || (NULL == text) || (NULL == marker) || (0 == strlen(text)) || (0 == strlen(marker)) || 
+    if ((NULL == fileName) || (NULL == text) || (NULL == marker) || (0 == strlen(text)) || (0 == strlen(marker)) ||
         (false == IsValidGrepArgument(text)) || (false == IsValidCommentCharacter(commentCharacter)))
     {
         OsConfigLogError(log, "CheckMarkedTextNotFoundInFile called with invalid arguments");
+        return EINVAL;
+    }
+    else if (false == FileExists(fileName))
+    {
+        OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile called for a file that does not exist ('%s')", fileName);
         return EINVAL;
     }
     else if (NULL == (command = FormatAllocateString(commandTemplate, commentCharacter, fileName, text)))
@@ -1283,9 +1260,9 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
                     OsConfigCaptureReason(reason, "'%s' containing '%s' found in '%s'", text, marker, fileName);
                     foundMarker = true;
                     status = EEXIST;
-                } 
-            } 
-            
+                }
+            }
+
             if (false == foundMarker)
             {
                 OsConfigLogInfo(log, "CheckMarkedTextNotFoundInFile: '%s' containing '%s' not found in '%s' uncommented with '%c'", text, marker, fileName, commentCharacter);
@@ -1307,7 +1284,7 @@ int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const 
     return status;
 }
 
-int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char* text, bool strictCompare, char** reason, void* log)
+int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char* text, bool strictCompare, char** reason, OsConfigLogHandle log)
 {
     const char* commandTemplate = "printenv %s";
     char* command = NULL;
@@ -1340,7 +1317,7 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
             {
                 if (0 == strcmp(variableValue, text))
                 {
-                    OsConfigLogError(log, "CheckTextNotFoundInEnvironmentVariable: '%s' found set for '%s' ('%s')", text, variableName, variableValue);
+                    OsConfigLogInfo(log, "CheckTextNotFoundInEnvironmentVariable: '%s' found set for '%s' ('%s')", text, variableName, variableValue);
                     OsConfigCaptureReason(reason, "'%s' found set for '%s' ('%s')", text, variableName, variableValue);
                     status = EEXIST;
                 }
@@ -1359,16 +1336,16 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
                     if (0 == found[0])
                     {
                         break;
-                    } 
+                    }
                     else if (0 == isalpha(found[0]))
                     {
-                        OsConfigLogError(log, "CheckTextNotFoundInEnvironmentVariable: '%s' found in '%s' ('%s')", text, variableName, found);
+                        OsConfigLogInfo(log, "CheckTextNotFoundInEnvironmentVariable: '%s' found in '%s' ('%s')", text, variableName, found);
                         OsConfigCaptureReason(reason, "'%s' found in '%s' ('%s')", text, variableName, found);
                         foundText = true;
                         status = EEXIST;
                     }
-                } 
-            
+                }
+
                 if (false == foundText)
                 {
                     OsConfigLogInfo(log, "CheckTextNotFoundInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
@@ -1385,11 +1362,11 @@ int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char*
         FREE_MEMORY(command);
         FREE_MEMORY(variableValue);
     }
-    
+
     return status;
 }
 
-int CheckSmallFileContainsText(const char* fileName, const char* text, char** reason, void* log)
+int CheckSmallFileContainsText(const char* fileName, const char* text, char** reason, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     char* contents = NULL;
@@ -1403,14 +1380,14 @@ int CheckSmallFileContainsText(const char* fileName, const char* text, char** re
     }
     else if ((0 == stat(fileName, &statStruct)) && ((statStruct.st_size > MAX_STRING_LENGTH)))
     {
-        OsConfigLogError(log, "CheckSmallFileContainsText: file is too large (%lu bytes, maximum supported: %d bytes)", statStruct.st_size, MAX_STRING_LENGTH);
+        OsConfigLogInfo(log, "CheckSmallFileContainsText: file is too large (%lu bytes, maximum supported: %d bytes)", statStruct.st_size, MAX_STRING_LENGTH);
         return EINVAL;
     }
 
     if (NULL != (contents = LoadStringFromFile(fileName, false, log)))
     {
         contentsLength = strlen(contents);
-        
+
         if (0 == strncmp(contents, text, (textLength <= contentsLength) ? textLength : contentsLength))
         {
             OsConfigLogInfo(log, "CheckSmallFileContainsText: '%s' matches contents of '%s'", text, fileName);
@@ -1429,7 +1406,7 @@ int CheckSmallFileContainsText(const char* fileName, const char* text, char** re
     return status;
 }
 
-int FindTextInFolder(const char* directory, const char* text, void* log)
+int FindTextInFolder(const char* directory, const char* text, OsConfigLogHandle log)
 {
     const char* pathTemplate = "%s/%s";
 
@@ -1441,10 +1418,10 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
 
     if ((NULL == directory) || (false == DirectoryExists(directory)) || (NULL == text))
     {
-        OsConfigLogError(log, "FindTextInFolder called with invalid arguments");
+        OsConfigLogInfo(log, "FindTextInFolder called for a directory that does not exist");
         return EINVAL;
     }
-    
+
     if (NULL != (home = opendir(directory)))
     {
         while (NULL != (entry = readdir(home)))
@@ -1482,7 +1459,7 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     return status;
 }
 
-int CheckTextNotFoundInFolder(const char* directory, const char* text, char** reason, void* log)
+int CheckTextNotFoundInFolder(const char* directory, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1500,7 +1477,7 @@ int CheckTextNotFoundInFolder(const char* directory, const char* text, char** re
     return result;
 }
 
-int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, void* log)
+int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1516,7 +1493,7 @@ int CheckTextFoundInFolder(const char* directory, const char* text, char** reaso
     return result;
 }
 
-static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log)
+static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log)
 {
     char* contents = NULL;
     char* found = NULL;
@@ -1534,7 +1511,7 @@ static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, 
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
-            OsConfigLogError(log, "IsLineNotFoundOrCommentedOut: cannot read from '%s'", fileName);
+            OsConfigLogInfo(log, "IsLineNotFoundOrCommentedOut: cannot read from '%s'", fileName);
             OsConfigCaptureReason(reason, "Cannot read from file '%s'", fileName);
         }
         else
@@ -1597,10 +1574,10 @@ static int IsLineNotFoundOrCommentedOut(const char* fileName, char commentMark, 
     return status;
 }
 
-int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log)
+int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
-    
+
     if ((NULL != fileName) && (false == FileExists(fileName)))
     {
         if (OsConfigIsSuccessReason(reason))
@@ -1628,7 +1605,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
     return result;
 }
 
-int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, void* log)
+int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1654,7 +1631,7 @@ int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const 
     return result;
 }
 
-static int FindTextInCommandOutput(const char* command, const char* text, void* log)
+static int FindTextInCommandOutput(const char* command, const char* text, OsConfigLogHandle log)
 {
     char* results = NULL;
     int status = 0;
@@ -1687,7 +1664,7 @@ static int FindTextInCommandOutput(const char* command, const char* text, void* 
     return status;
 }
 
-int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, void* log)
+int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1707,7 +1684,7 @@ int CheckTextFoundInCommandOutput(const char* command, const char* text, char** 
     return result;
 }
 
-int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, void* log)
+int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -1729,12 +1706,12 @@ int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char
     return result;
 }
 
-char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
+char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, OsConfigLogHandle log)
 {
     char* found = NULL;
     char* temp = NULL;
     char* result = NULL;
-    
+
     if ((NULL == buffer) || (NULL == option))
     {
         OsConfigLogError(log, "GetStringOptionFromBuffer called with invalid arguments");
@@ -1766,7 +1743,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     return result;
 }
 
-int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
+int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, OsConfigLogHandle log)
 {
     char* stringValue = NULL;
     int value = INT_ENOENT;
@@ -1780,7 +1757,7 @@ int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char sepa
     return value;
 }
 
-char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log)
+char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, OsConfigLogHandle log)
 {
     char* contents = NULL;
     char* result = NULL;
@@ -1789,7 +1766,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
-            OsConfigLogError(log, "GetStringOptionFromFile: cannot read from '%s'", fileName);
+            OsConfigLogInfo(log, "GetStringOptionFromFile: cannot read from '%s'", fileName);
         }
         else
         {
@@ -1809,7 +1786,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
     return result;
 }
 
-int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log)
+int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, OsConfigLogHandle log)
 {
     char* contents = NULL;
     int result = INT_ENOENT;
@@ -1818,7 +1795,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
-            OsConfigLogError(log, "GetIntegerOptionFromFile: cannot read from '%s'", fileName);
+            OsConfigLogInfo(log, "GetIntegerOptionFromFile: cannot read from '%s'", fileName);
         }
         else
         {
@@ -1838,7 +1815,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
     return result;
 }
 
-int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, void* log)
+int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, OsConfigLogHandle log)
 {
     int valueFromFile = INT_ENOENT;
     int i = 0;
@@ -1875,7 +1852,7 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
     return result;
 }
 
-int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, void* log)
+int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, OsConfigLogHandle log)
 {
     int valueFromFile = INT_ENOENT;
     int result = ENOENT;
@@ -1900,7 +1877,7 @@ int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* 
     return result;
 }
 
-int SetEtcConfValue(const char* file, const char* name, const char* value, void* log)
+int SetEtcConfValue(const char* file, const char* name, const char* value, OsConfigLogHandle log)
 {
     const char* newlineTemplate = "%s %s\n";
     char* newline = NULL;
@@ -1913,7 +1890,7 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, void*
     }
     else if (false == FileExists(file))
     {
-        OsConfigLogError(log, "SetEtcConfValue: file '%s' does not exist", file);
+        OsConfigLogInfo(log, "SetEtcConfValue: file '%s' does not exist", file);
         return ENOENT;
     }
     else if (NULL == (newline = FormatAllocateString(newlineTemplate, name, value)))
@@ -1928,7 +1905,7 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, void*
     }
     else
     {
-        OsConfigLogError(log, "SetEtcConfValue: failed to set '%s' to '%s' in '%s' (%d)", name, value, file, status);
+        OsConfigLogInfo(log, "SetEtcConfValue: failed to set '%s' to '%s' in '%s' (%d)", name, value, file, status);
     }
 
     FREE_MEMORY(newline);
@@ -1936,12 +1913,12 @@ int SetEtcConfValue(const char* file, const char* name, const char* value, void*
     return status;
 }
 
-int SetEtcLoginDefValue(const char* name, const char* value, void* log)
+int SetEtcLoginDefValue(const char* name, const char* value, OsConfigLogHandle log)
 {
     return SetEtcConfValue("/etc/login.defs", name, value, log);
 }
 
-int DisablePostfixNetworkListening(void* log)
+int DisablePostfixNetworkListening(OsConfigLogHandle log)
 {
     const char* etcPostfix = "/etc/postfix/";
     const char* etcPostfixMainCf = "/etc/postfix/main.cf";
@@ -1959,11 +1936,11 @@ int DisablePostfixNetworkListening(void* log)
         OsConfigLogInfo(log, "DisablePostfixNetworkListening: directory '%s' does not exist", etcPostfix);
         if (0 == (status = mkdir(etcPostfix, mode)))
         {
-            OsConfigLogInfo(log, "DisablePostfixNetworkListening: created directory '%s' with %d access", etcPostfix, mode);
+            OsConfigLogInfo(log, "DisablePostfixNetworkListening: created directory '%s' with %03o access", etcPostfix, mode);
         }
         else
         {
-            OsConfigLogError(log, "DisablePostfixNetworkListening: failed creating directory '%s' with %d access", etcPostfix, mode);
+            OsConfigLogInfo(log, "DisablePostfixNetworkListening: cannot create directory '%s' with %d access (%03o)", etcPostfix, mode, errno);
         }
     }
 
@@ -1975,7 +1952,7 @@ int DisablePostfixNetworkListening(void* log)
         }
         else
         {
-            OsConfigLogError(log, "DisablePostfixNetworkListening: failed writing '%s' to '%s' (%d)", inetInterfacesLocalhost, etcPostfixMainCf, errno);
+            OsConfigLogInfo(log, "DisablePostfixNetworkListening: cannot write '%s' to '%s' (%d)", inetInterfacesLocalhost, etcPostfixMainCf, errno);
             status = ENOENT;
         }
     }

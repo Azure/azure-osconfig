@@ -21,8 +21,7 @@ static const char* g_configurationComponentName = "Configuration";
 static const char* g_modelVersionObject = "modelVersion";
 static const char* g_refreshIntervalObject = "refreshInterval";
 static const char* g_localManagementEnabledObject = "localManagementEnabled";
-static const char* g_fullLoggingEnabledObject = "fullLoggingEnabled";
-static const char* g_commandLoggingEnabledObject = "commandLoggingEnabled";
+static const char* g_debugLoggingEnabledObject = "debugLoggingEnabled";
 static const char* g_iotHubManagementEnabledObject = "iotHubManagementEnabled";
 static const char* g_iotHubProtocolObject = "iotHubProtocol";
 static const char* g_gitManagementEnabledObject = "gitManagementEnabled";
@@ -30,8 +29,7 @@ static const char* g_gitBranchObject = "gitBranch";
 
 static const char* g_desiredRefreshIntervalObject = "desiredRefreshInterval";
 static const char* g_desiredLocalManagementEnabledObject = "desiredLocalManagementEnabled";
-static const char* g_desiredFullLoggingEnabledObject = "desiredFullLoggingEnabled";
-static const char* g_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
+static const char* g_desiredDebugLoggingEnabledObject = "desiredDebugLoggingEnabled";
 static const char* g_desiredIotHubManagementEnabledObject = "desiredIotHubManagementEnabled";
 static const char* g_desiredIotHubProtocolObject = "desiredIotHubProtocol";
 static const char* g_desiredGitManagementEnabledObject = "desiredGitManagementEnabled";
@@ -59,13 +57,12 @@ static const char* g_configurationModuleInfo = "{\"Name\": \"Configuration\","
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-static OSCONFIG_LOG_HANDLE g_log = NULL;
+static OsConfigLogHandle g_log = NULL;
 
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_refreshInterval = DEFAULT_REPORTING_INTERVAL;
 static bool g_localManagementEnabled = false;
-static bool g_fullLoggingEnabled = false;
-static bool g_commandLoggingEnabled = false;
+static bool g_debugLoggingEnabled = false;
 static bool g_iotHubManagementEnabled = false;
 static int g_iotHubProtocol = 0;
 static bool g_gitManagementEnabled = false;
@@ -78,7 +75,7 @@ static int g_referenceCount = 0;
 #endif
 static unsigned int g_maxPayloadSizeBytes = 0;
 
-static OSCONFIG_LOG_HANDLE ConfigurationGetLog(void)
+static OsConfigLogHandle ConfigurationGetLog(void)
 {
     return g_log;
 }
@@ -93,8 +90,7 @@ static char* LoadConfigurationFromFile(const char* fileName)
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_refreshInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_localManagementEnabled = (GetLocalManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
-        g_fullLoggingEnabled = IsFullLoggingEnabledInJsonConfig(jsonConfiguration);
-        g_commandLoggingEnabled = IsCommandLoggingEnabledInJsonConfig(jsonConfiguration);
+        g_debugLoggingEnabled = (LoggingLevelDebug == GetLoggingLevelFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
         g_iotHubManagementEnabled = IsIotHubManagementEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
@@ -122,7 +118,7 @@ void ConfigurationInitialize(const char* configurationFile)
 
     configuration = LoadConfigurationFromFile(g_configurationFile);
     FREE_MEMORY(configuration);
-        
+
     OsConfigLogInfo(ConfigurationGetLog(), "%s initialized for target configuration file: %s", g_configurationModuleName, g_configurationFile);
 }
 
@@ -131,14 +127,13 @@ void ConfigurationShutdown(void)
     OsConfigLogInfo(ConfigurationGetLog(), "%s shutting down", g_configurationModuleName);
 
     FREE_MEMORY(g_gitBranch);
-    
+
     CloseLog(&g_log);
 }
 
 static int UpdateConfigurationFile(void)
 {
-    const char* commandLoggingEnabledName = "CommandLogging";
-    const char* fullLoggingEnabledName = "FullLogging";
+    const char* debugLoggingEnabledName = "DebugLogging";
     const char* localManagementEnabledName = "LocalManagement";
     const char* modelVersionName = "ModelVersion";
     const char* iotHubtManagementEnabledName = "IotHubManagement";
@@ -146,7 +141,7 @@ static int UpdateConfigurationFile(void)
     const char* refreshIntervalName = "ReportingIntervalSeconds";
     const char* gitManagementEnabledName = "GitManagement";
     const char* gitBranchName = "GitBranch";
-    
+
     int status = MMI_OK;
 
     JSON_Value* jsonValue = NULL;
@@ -155,8 +150,7 @@ static int UpdateConfigurationFile(void)
     int modelVersion = g_modelVersion;
     int refreshInterval = g_refreshInterval;
     bool localManagementEnabled = g_localManagementEnabled;
-    bool fullLoggingEnabled = g_fullLoggingEnabled;
-    bool commandLoggingEnabled = g_commandLoggingEnabled;
+    bool debugLoggingEnabled = g_debugLoggingEnabled;
     bool iotHubManagementEnabled = g_iotHubManagementEnabled;
     int iotHubProtocol = g_iotHubProtocol;
     bool gitManagementEnabled = g_gitManagementEnabled;
@@ -171,9 +165,8 @@ static int UpdateConfigurationFile(void)
         return ENOENT;
     }
 
-    if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) || 
-        (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || 
-        (iotHubManagementEnabled != g_iotHubManagementEnabled) || (iotHubProtocol != g_iotHubProtocol) || 
+    if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) ||
+        (debugLoggingEnabled != g_debugLoggingEnabled) || (iotHubManagementEnabled != g_iotHubManagementEnabled) || (iotHubProtocol != g_iotHubProtocol) ||
         (gitManagementEnabled != g_gitManagementEnabled) || strcmp(gitBranch, g_gitBranch))
     {
         if (NULL == (jsonValue = json_parse_string(existingConfiguration)))
@@ -197,7 +190,7 @@ static int UpdateConfigurationFile(void)
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_modelVersionObject, modelVersion);
             }
-            
+
             if (JSONSuccess == json_object_set_number(jsonObject, refreshIntervalName, (double)refreshInterval))
             {
                 g_refreshInterval = refreshInterval;
@@ -206,7 +199,7 @@ static int UpdateConfigurationFile(void)
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_refreshIntervalObject, refreshInterval);
             }
-            
+
             if (JSONSuccess == json_object_set_number(jsonObject, localManagementEnabledName, (double)(localManagementEnabled ? 1 : 0)))
             {
                 g_localManagementEnabled = localManagementEnabled;
@@ -215,23 +208,14 @@ static int UpdateConfigurationFile(void)
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_localManagementEnabledObject, localManagementEnabled ? "true" : "false");
             }
-            
-            if (JSONSuccess == json_object_set_number(jsonObject, fullLoggingEnabledName, (double)(fullLoggingEnabled ? 1: 0)))
-            {
-                g_fullLoggingEnabled = fullLoggingEnabled;
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_fullLoggingEnabledObject, fullLoggingEnabled ? "true" : "false");
-            }
 
-            if (JSONSuccess == json_object_set_number(jsonObject, commandLoggingEnabledName, (double)(commandLoggingEnabled ? 1 : 0)))
+            if (JSONSuccess == json_object_set_number(jsonObject, debugLoggingEnabledName, (double)(debugLoggingEnabled ? 1: 0)))
             {
-                g_commandLoggingEnabled = commandLoggingEnabled;
+                g_debugLoggingEnabled = debugLoggingEnabled;
             }
             else
             {
-                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_commandLoggingEnabledObject, commandLoggingEnabled ? "true" : "false");
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_debugLoggingEnabledObject, debugLoggingEnabled ? "true" : "false");
             }
 
             if (JSONSuccess == json_object_set_number(jsonObject, iotHubtManagementEnabledName, (double)(iotHubManagementEnabled ? 1 : 0)))
@@ -292,13 +276,13 @@ static int UpdateConfigurationFile(void)
 
     if (MMI_OK == status)
     {
-        OsConfigLogInfo(ConfigurationGetLog(), "New configuration successfully applied: %s", IsFullLoggingEnabled() ? newConfiguration : "-");
+        OsConfigLogInfo(ConfigurationGetLog(), "New configuration successfully applied: %s", IsDebugLoggingEnabled() ? newConfiguration : "-");
     }
     else
     {
-        OsConfigLogError(ConfigurationGetLog(), "Failed to apply new configuration: %s", IsFullLoggingEnabled() ? newConfiguration : "-");
+        OsConfigLogError(ConfigurationGetLog(), "Failed to apply new configuration: %s", IsDebugLoggingEnabled() ? newConfiguration : "-");
     }
-    
+
     if (jsonValue)
     {
         json_value_free(jsonValue);
@@ -351,10 +335,10 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
         OsConfigLogError(ConfigurationGetLog(), "MmiGetInfo(%s, %p, %p) called with invalid arguments", clientName, payload, payloadSizeBytes);
         return status;
     }
-    
+
     *payload = NULL;
     *payloadSizeBytes = (int)strlen(g_configurationModuleInfo);
-    
+
     *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
     if (*payload)
     {
@@ -367,11 +351,8 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
         *payloadSizeBytes = 0;
         status = ENOMEM;
     }
-    
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(ConfigurationGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
-    }
+
+    OsConfigLogDebug(ConfigurationGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     return status;
 }
@@ -416,13 +397,9 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         {
             jsonValue = json_value_init_boolean(g_localManagementEnabled ? 1 : 0);
         }
-        else if (0 == strcmp(objectName, g_fullLoggingEnabledObject))
+        else if (0 == strcmp(objectName, g_debugLoggingEnabledObject))
         {
-            jsonValue = json_value_init_boolean(g_fullLoggingEnabled ? 1 : 0);
-        }
-        else if (0 == strcmp(objectName, g_commandLoggingEnabledObject))
-        {
-            jsonValue = json_value_init_boolean(g_commandLoggingEnabled ? 1 : 0);
+            jsonValue = json_value_init_boolean(g_debugLoggingEnabled ? 1 : 0);
         }
         else if (0 == strcmp(objectName, g_iotHubManagementEnabledObject))
         {
@@ -498,12 +475,9 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
                 status = ENOMEM;
             }
         }
-    }    
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(ConfigurationGetLog(), "MmiGet(%p, %s, %s, '%.*s', %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
+
+    OsConfigLogDebug(ConfigurationGetLog(), "MmiGet(%p, %s, %s, '%.*s', %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     if (NULL != serializedValue)
     {
@@ -537,7 +511,7 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
     {
         OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
-    } 
+    }
     else if (0 != strcmp(componentName, g_configurationComponentName))
     {
         OsConfigLogError(ConfigurationGetLog(), "MmiSet called for an unsupported component name (%s)", componentName);
@@ -561,13 +535,9 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
                 {
                     g_localManagementEnabled = (0 == json_value_get_boolean(jsonValue)) ? false : true;
                 }
-                else if (0 == strcmp(objectName, g_desiredFullLoggingEnabledObject))
+                else if (0 == strcmp(objectName, g_desiredDebugLoggingEnabledObject))
                 {
-                    g_fullLoggingEnabled = (0 == json_value_get_boolean(jsonValue)) ? false : true;
-                }
-                else if (0 == strcmp(objectName, g_desiredCommandLoggingEnabledObject))
-                {
-                    g_commandLoggingEnabled = (0 == json_value_get_boolean(jsonValue)) ? false : true;
+                    g_debugLoggingEnabled = (0 == json_value_get_boolean(jsonValue)) ? false : true;
                 }
                 else if (0 == strcmp(objectName, g_desiredIotHubManagementEnabledObject))
                 {
@@ -644,7 +614,7 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
             status = ENOMEM;
         }
     }
-    
+
     if (MMI_OK == status)
     {
         status = UpdateConfigurationFile();
@@ -657,9 +627,9 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
 
     FREE_MEMORY(payloadString);
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
-        OsConfigLogInfo(ConfigurationGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
+        OsConfigLogDebug(ConfigurationGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
     }
     else
     {

@@ -44,7 +44,7 @@ void PackageUtilsCleanup(void)
     FREE_MEMORY(g_installedPackagesCache);
 }
 
-int IsPresent(const char* what, void* log)
+int IsPresent(const char* what, OsConfigLogHandle log)
 {
     const char* commandTemplate = "command -v %s";
     char* command = NULL;
@@ -58,7 +58,7 @@ int IsPresent(const char* what, void* log)
 
     if (NULL != (command = FormatAllocateString(commandTemplate, what)))
     {
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
         {
             OsConfigLogInfo(log, "'%s' is locally present", what);
         }
@@ -74,7 +74,7 @@ int IsPresent(const char* what, void* log)
     return status;
 }
 
-static void CheckPackageManagersPresence(void* log)
+static void CheckPackageManagersPresence(OsConfigLogHandle log)
 {
     if (false == g_checkedPackageManagersPresence)
     {
@@ -89,7 +89,7 @@ static void CheckPackageManagersPresence(void* log)
     }
 }
 
-static int CheckOrInstallPackage(const char* commandTemplate, const char* packageManager, const char* packageName, void* log)
+static int CheckOrInstallPackage(const char* commandTemplate, const char* packageManager, const char* packageName, OsConfigLogHandle log)
 {
     char* command = NULL;
     int status = ENOENT;
@@ -118,7 +118,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     return status;
 }
 
-static int CheckAllPackages(const char* commandTemplate, const char* packageManager, char** results, void* log)
+static int CheckAllPackages(const char* commandTemplate, const char* packageManager, char** results, OsConfigLogHandle log)
 {
     char* command = NULL;
     int status = ENOENT;
@@ -138,13 +138,14 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
     status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log);
 
     OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d", packageManager, command, status);
+    OsConfigLogDebug(log, "%s", *results);
 
     FREE_MEMORY(command);
 
     return status;
 }
 
-static int UpdateInstalledPackagesCache(void* log)
+static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 {
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
     const char* commandTemplateRpm = "%s -qa --queryformat \"%{NAME}\n\"";
@@ -208,7 +209,7 @@ static int UpdateInstalledPackagesCache(void* log)
     return status;
 }
 
-int IsPackageInstalled(const char* packageName, void* log)
+int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
     const char* searchTemplateDpkgRpm = "\n%s\n";
     const char* searchTemplateYumDnf = "\n%s.x86_64\n";
@@ -284,9 +285,9 @@ static bool WildcardsPresent(const char* packageName)
     return (packageName ? (strstr(packageName, "*") || strstr(packageName, "^")) : false);
 }
 
-int CheckPackageInstalled(const char* packageName, char** reason, void* log)
+int CheckPackageInstalled(const char* packageName, char** reason, OsConfigLogHandle log)
 {
-    int result = 0; 
+    int result = 0;
 
     if (0 == (result = IsPackageInstalled(packageName, log)))
     {
@@ -304,7 +305,7 @@ int CheckPackageInstalled(const char* packageName, char** reason, void* log)
     return result;
 }
 
-int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
+int CheckPackageNotInstalled(const char* packageName, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
@@ -326,7 +327,7 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, void* log)
     return result;
 }
 
-static int ExecuteSimplePackageCommand(const char* command, bool* executed, void* log)
+static int ExecuteSimplePackageCommand(const char* command, bool* executed, OsConfigLogHandle log)
 {
     int status = 0;
 
@@ -335,13 +336,13 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, void
         OsConfigLogError(log, "ExecuteSimplePackageCommand called with invalid arguments");
         return EINVAL;
     }
-    
+
     if (true == *executed)
     {
         return status;
     }
 
-    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log)))
     {
         OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' was successful", command);
         *executed = true;
@@ -358,12 +359,12 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, void
     return status;
 }
 
-static int ExecuteAptGetUpdate(void* log)
+static int ExecuteAptGetUpdate(OsConfigLogHandle log)
 {
     return ExecuteSimplePackageCommand("apt-get update", &g_aptGetUpdateExecuted, log);
 }
 
-static int ExecuteZypperRefresh(void* log)
+static int ExecuteZypperRefresh(OsConfigLogHandle log)
 {
     const char* zypperClean = "zypper clean";
     const char* zypperRefresh = "zypper refresh";
@@ -400,29 +401,29 @@ static int ExecuteZypperRefresh(void* log)
     return status;
 }
 
-static int ExecuteTdnfCheckUpdate(void* log)
+static int ExecuteTdnfCheckUpdate(OsConfigLogHandle log)
 {
     return ExecuteSimplePackageCommand("tdnf check-update", &g_tdnfCheckUpdateExecuted, log);
 }
 
-static int ExecuteDnfCheckUpdate(void* log)
+static int ExecuteDnfCheckUpdate(OsConfigLogHandle log)
 {
     return ExecuteSimplePackageCommand("dnf check-update", &g_dnfCheckUpdateExecuted, log);
 }
 
-static int ExecuteYumCheckUpdate(void* log)
+static int ExecuteYumCheckUpdate(OsConfigLogHandle log)
 {
     return ExecuteSimplePackageCommand("yum check-update", &g_yumCheckUpdateExecuted, log);
 }
 
-int InstallOrUpdatePackage(const char* packageName, void* log)
+int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log)
 {
     const char* commandTemplate = "%s install -y %s";
     const char* commandTemplateTdnfDnfYum = "%s install -y --cacheonly %s";
     int status = ENOENT;
 
     CheckPackageManagersPresence(log);
-    
+
     if (g_aptGetIsPresent)
     {
         ExecuteAptGetUpdate(log);
@@ -466,11 +467,11 @@ int InstallOrUpdatePackage(const char* packageName, void* log)
     return status;
 }
 
-int InstallPackage(const char* packageName, void* log)
+int InstallPackage(const char* packageName, OsConfigLogHandle log)
 {
     int status = ENOENT;
 
-    if (0 != (status = IsPackageInstalled(packageName, log)))
+    if (0 != IsPackageInstalled(packageName, log))
     {
         if (0 == (status = InstallOrUpdatePackage(packageName, log)))
         {
@@ -486,7 +487,7 @@ int InstallPackage(const char* packageName, void* log)
     return status;
 }
 
-int UninstallPackage(const char* packageName, void* log)
+int UninstallPackage(const char* packageName, OsConfigLogHandle log)
 {
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
     const char* commandTemplateZypper = "%s remove -y --force %s";
@@ -528,7 +529,7 @@ int UninstallPackage(const char* packageName, void* log)
         {
             status = ENOENT;
         }
-        
+
         if (0 == status)
         {
             OsConfigLogInfo(log, "UninstallPackage: package '%s' was successfully uninstalled", packageName);

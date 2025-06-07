@@ -34,6 +34,14 @@ gcc --version
 
 For IoT Hub management, you can install and configure the *Azure IoT Identity Service (AIS)* package as described at [azure.github.io/iot-identity-service/](https://azure.github.io/iot-identity-service/).
 
+For contributing to the project, also install the following prerequisites for [pre-commit](https://pre-commit.com/):
+
+```bash
+sudo apt-get install python3
+pip3 install pre_commit
+python3 -m pre_commit install
+```
+
 ### Build
 
 Create a folder build folder under the repo root /build
@@ -116,7 +124,7 @@ Only the root user can view these log files.
 
 OSConfig can be configured via `/etc/osconfig/osconfig.json`. After changing this configuration file, restart OSConfig to apply the configuration changes. Only the root user can view or edit this configuration file.
 
-### Enabling management via IoT Hub 
+### Enabling management via IoT Hub
 
 Originally OSConfig was developed with the IoT Hub management channel by default and always enabled. Currently, this managament channel is by default disabled. You can enable it via the OSConfig general configuration file at `/etc/osconfig/osconfig.json`. Edit there the integer value named "IotHubManagement" to a non-zero value:
 
@@ -138,37 +146,21 @@ OSConfig periodically reports device data at a default time period of 30 seconds
 
 This interval is used for RC/DC, GitOps DC, and IoT Hub processing.
 
-### Enabling logging of system commands executed by OSConfig for debugging purposes
+### Enabling debug logging
 
-Command logging means that OSConfig will log all input and output from system commands executed by Agent, Platform and Modules.
+Debug logging means that OSConfig will log all input and output from and to all management authority channels, as well as all input and output from system commands executed by Agent, Platform and Modules.
 
-Generally it is not recommended to run OSConfig with command logging enabled.
+Generally it is not recommended to run OSConfig with debug logging enabled.
 
-To enable command logging for debugging purposes, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "CommandLogging" to a non-zero value:
-
-```json
-{
-    "CommandLogging": 1
-}
-```
-
-To disable command logging, set "CommandLogging" to 0.
-
-### Enabling full logging for debugging purposes
-
-Full logging means that OSConfig will log all input and output from and to IoT Hub, AIS, RC/DC, GitOps DC, etc.
-
-Generally it is not recommended to run OSConfig with full logging enabled.
-
-To enable full logging for debugging purposes, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "FullLogging" to a non-zero value:
+To enable debug logging, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "LoggingLevel" to a value 7:
 
 ```json
 {
-    "FullLogging": 1
+    "LoggingLevel": 7
 }
 ```
 
-To disable full logging, set "FullLogging" to 0.
+To disable debug logging, set "LoggingLevel" to 6 (informational logging, default).
 
 ## Local Management over RC/DC
 
@@ -197,9 +189,9 @@ To disable local management, set "LocalManagement" to 0.
 
 OSConfig can apply to the device desired configuration in MIM JSON payload format (same as for RC/DC) read from a Git repository and branch. The DC file must be named `osconfig_desired.json` and be placed in the root of the repository.
 
-By default, desired configuration (DC) over GitOps is disabled and there are no configured Git repository or branch. 
+By default, desired configuration (DC) over GitOps is disabled and there are no configured Git repository or branch.
 
-To enable GitOps DC management, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and there: 
+To enable GitOps DC management, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and there:
 
 1. Set (or add if needed) a string value named "GitRepositoryUrl" to a string value containing the string that can be used to clone a Git repository, for example (this example uses OSConfig's own repository but can be anything):
 

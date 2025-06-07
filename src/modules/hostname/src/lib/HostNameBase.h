@@ -22,7 +22,7 @@ inline void HostNameFree(MMI_JSON_STRING payload)
 class HostNameLog
 {
 public:
-    static OSCONFIG_LOG_HANDLE Get()
+    static OsConfigLogHandle Get()
     {
         return m_logHostName;
     }
@@ -38,7 +38,7 @@ public:
     }
 
 private:
-    static OSCONFIG_LOG_HANDLE m_logHostName;
+    static OsConfigLogHandle m_logHostName;
 };
 
 class HostNameBase

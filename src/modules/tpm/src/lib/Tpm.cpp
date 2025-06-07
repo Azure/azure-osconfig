@@ -49,7 +49,7 @@ static const uint8_t g_getTpmProperties[] =
     0x00, 0x00, 0x00, 0x66  // propertyCount (102)
 };
 
-OSCONFIG_LOG_HANDLE TpmLog::m_logTpm = nullptr;
+OsConfigLogHandle TpmLog::m_logTpm = nullptr;
 
 Tpm::Tpm(const unsigned int maxPayloadSizeBytes) :
     m_maxPayloadSizeBytes(maxPayloadSizeBytes),

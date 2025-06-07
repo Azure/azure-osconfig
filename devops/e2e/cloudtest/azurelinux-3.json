@@ -1,0 +1,35 @@
+// Base Image: MicrosoftCBLMariner:azure-linux-3:azure-linux-3-gen2:latest
+{
+    "artifacts": [
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo tdnf install -y dnf-plugins-core && dnf config-manager --add-repo https://packages.microsoft.com/yumrepos/azurelinux-3.0-prod-ms-oss-x86_64/config.repo"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo tdnf -y install powershell"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "sudo tdnf update -y"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "wget https://github.com/microsoft/omi/releases/download/v1.9.1-0/omi-1.9.1-0.ssl_300.ulinux.s.x64.rpm -O omi.rpm && sudo tdnf install -y omi.rpm --nogpgcheck"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "tdnf list installed"
+            }
+        }
+    ]
+}

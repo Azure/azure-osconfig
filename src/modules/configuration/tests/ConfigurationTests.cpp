@@ -28,26 +28,24 @@ class ConfigurationTest : public ::testing::Test
         const char* m_modelVersionObject = "modelVersion";
         const char* m_refreshIntervalObject = "refreshInterval";
         const char* m_localManagementEnabledObject = "localManagementEnabled";
-        const char* m_fullLoggingEnabledObject = "fullLoggingEnabled";
-        const char* m_commandLoggingEnabledObject = "commandLoggingEnabled";
+        const char* m_debugLoggingEnabledObject = "debugLoggingEnabled";
         const char* m_iotHubManagementEnabledObject = "iotHubManagementEnabled";
         const char* m_iotHubProtocolObject = "iotHubProtocol";
         const char* m_gitManagementEnabledObject = "gitManagementEnabled";
         const char* m_gitBranchObject = "gitBranch";
-                
+
         const char* m_desiredRefreshIntervalObject = "desiredRefreshInterval";
         const char* m_desiredLocalManagementEnabledObject = "desiredLocalManagementEnabled";
-        const char* m_desiredFullLoggingEnabledObject = "desiredFullLoggingEnabled";
+        const char* m_desiredDebugLoggingEnabledObject = "desiredDebugLoggingEnabled";
         const char* m_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
         const char* m_desiredIotHubManagementEnabledObject = "desiredIotHubManagementEnabled";
         const char* m_desiredIotHubProtocolObject = "desiredIotHubProtocol";
         const char* m_desiredGitManagementEnabledObject = "desiredGitManagementEnabled";
         const char* m_desiredGitBranchObject = "desiredGitBranch";
 
-        const char* m_testConfiguration = 
+        const char* m_testConfiguration =
             "{"
-                "\"CommandLogging\": 0,"
-                "\"FullLogging\" : 0,"
+                "\"DebugLogging\" : 0,"
                 "\"LocalManagement\" : 0,"
                 "\"ModelVersion\" : 15,"
                 "\"IotHubManagement\" : 0,"
@@ -56,7 +54,7 @@ class ConfigurationTest : public ::testing::Test
                 "\"GitManagement\" : 1,"
                 "\"GitBranch\" : \"Test/Foo\""
             "}";
-        
+
         const char* m_testConfigurationFile = "~testConfiguration.json";
 
         const char* m_clientName = "Test";
@@ -87,7 +85,7 @@ TEST_F(ConfigurationTest, MmiOpen)
 char* CopyPayloadToString(const char* payload, int payloadSizeBytes)
 {
     char* output = nullptr;
-    
+
     EXPECT_NE(nullptr, payload);
     EXPECT_NE(0, payloadSizeBytes);
     EXPECT_NE(nullptr, output = (char*)malloc(payloadSizeBytes + 1));
@@ -130,14 +128,13 @@ TEST_F(ConfigurationTest, MmiGet)
         m_modelVersionObject,
         m_refreshIntervalObject,
         m_localManagementEnabledObject,
-        m_fullLoggingEnabledObject,
-        m_commandLoggingEnabledObject,
+        m_debugLoggingEnabledObject,
         m_iotHubManagementEnabledObject,
         m_iotHubProtocolObject,
         m_gitManagementEnabledObject,
         m_gitBranchObject
     };
-    
+
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
 
     EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
@@ -152,7 +149,7 @@ TEST_F(ConfigurationTest, MmiGet)
         FREE_MEMORY(payloadString);
         ConfigurationMmiFree(payload);
     }
-    
+
     ConfigurationMmiClose(handle);
 }
 
@@ -167,8 +164,7 @@ TEST_F(ConfigurationTest, MmiGetTruncatedPayload)
         m_modelVersionObject,
         m_refreshIntervalObject,
         m_localManagementEnabledObject,
-        m_fullLoggingEnabledObject,
-        m_commandLoggingEnabledObject,
+        m_debugLoggingEnabledObject,
         m_iotHubManagementEnabledObject,
         m_iotHubProtocolObject,
         m_gitManagementEnabledObject,
@@ -205,7 +201,7 @@ TEST_F(ConfigurationTest, MmiGetInvalidComponent)
     EXPECT_EQ(EINVAL, ConfigurationMmiGet(handle, "Test123", m_modelVersionObject, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     ConfigurationMmiClose(handle);
 }
 
@@ -220,7 +216,7 @@ TEST_F(ConfigurationTest, MmiGetInvalidObject)
     EXPECT_EQ(EINVAL, ConfigurationMmiGet(handle, m_configurationComponentName, "Test123", &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     ConfigurationMmiClose(handle);
 }
 
@@ -255,19 +251,16 @@ TEST_F(ConfigurationTest, MmiSet)
 {
     MMI_HANDLE handle = nullptr;
 
-    ConfigurationCombination testCombinations[] = 
+    ConfigurationCombination testCombinations[] =
     {
         { m_desiredRefreshIntervalObject, "5", 0, m_refreshIntervalObject, "5" },
         { m_desiredRefreshIntervalObject, "30", 0, m_refreshIntervalObject, "30" },
         { m_desiredLocalManagementEnabledObject, "true", 0, m_localManagementEnabledObject, "true" },
         { m_desiredLocalManagementEnabledObject, "false", 0, m_localManagementEnabledObject, "false" },
         { m_desiredLocalManagementEnabledObject, "notImplemented", 22, m_localManagementEnabledObject, "false" },
-        { m_desiredFullLoggingEnabledObject, "true", 0, m_fullLoggingEnabledObject, "true" },
-        { m_desiredFullLoggingEnabledObject, "false", 0, m_fullLoggingEnabledObject, "false" },
-        { m_desiredFullLoggingEnabledObject, "notImplemented", 22, m_fullLoggingEnabledObject, "false" },
-        { m_desiredCommandLoggingEnabledObject, "true", 0, m_commandLoggingEnabledObject, "true" },
-        { m_desiredCommandLoggingEnabledObject, "false", 0, m_commandLoggingEnabledObject, "false" },
-        { m_desiredCommandLoggingEnabledObject, "notImplemented", 22, m_commandLoggingEnabledObject, "false" },
+        { m_desiredDebugLoggingEnabledObject, "true", 0, m_debugLoggingEnabledObject, "true" },
+        { m_desiredDebugLoggingEnabledObject, "false", 0, m_debugLoggingEnabledObject, "false" },
+        { m_desiredDebugLoggingEnabledObject, "notImplemented", 22, m_debugLoggingEnabledObject, "false" },
         { m_desiredIotHubManagementEnabledObject, "true", 0, m_iotHubManagementEnabledObject, "true" },
         { m_desiredIotHubManagementEnabledObject, "false", 0, m_iotHubManagementEnabledObject, "false" },
         { m_desiredIotHubManagementEnabledObject, "notImplemented", 22, m_iotHubManagementEnabledObject, "false" },
@@ -279,9 +272,9 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredGitManagementEnabledObject, "false", 0, m_gitManagementEnabledObject, "false" },
         { m_desiredGitBranchObject, "\"Test\\/Foo\"", 0, m_gitBranchObject, "\"Test\\/Foo\"" }
     };
-    
+
     int numTestCombinations = ARRAY_SIZE(testCombinations);
-    
+
     char* payload = nullptr;
     char* payloadString = nullptr;
     int payloadSizeBytes = 0;
@@ -290,7 +283,7 @@ TEST_F(ConfigurationTest, MmiSet)
 
     for (int i = 0; i < numTestCombinations; i++)
     {
-        EXPECT_EQ(testCombinations[i].expectedResult, ConfigurationMmiSet(handle, m_configurationComponentName, 
+        EXPECT_EQ(testCombinations[i].expectedResult, ConfigurationMmiSet(handle, m_configurationComponentName,
             testCombinations[i].desiredObject, (MMI_JSON_STRING)testCombinations[i].desiredValue, strlen(testCombinations[i].desiredValue)));
 
         if (MMI_OK == testCombinations[i].expectedResult)

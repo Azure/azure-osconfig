@@ -46,7 +46,7 @@ int MmiGetInfo(
 
         if ((nullptr == clientName) || (nullptr == payload) || (nullptr == payloadSizeBytes))
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(NetworkingLog::Get(), "MmiGetInfo(%s, %.*s, %d) invalid arguments",
                     clientName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0));
@@ -74,7 +74,7 @@ int MmiGetInfo(
         {
             if ((MMI_OK == status) && (nullptr != payload) && (nullptr != payloadSizeBytes))
             {
-                if (IsFullLoggingEnabled())
+                if (IsDebugLoggingEnabled())
                 {
                     OsConfigLogInfo(NetworkingLog::Get(), "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
                 }
@@ -85,7 +85,7 @@ int MmiGetInfo(
             }
             else
             {
-                if (IsFullLoggingEnabled())
+                if (IsDebugLoggingEnabled())
                 {
                     OsConfigLogError(NetworkingLog::Get(), "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), status);
                 }
@@ -209,13 +209,13 @@ int MmiGet(
     {
         if ((MMI_OK == status) && (nullptr != payload) && (nullptr != payloadSizeBytes))
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogInfo(NetworkingLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d",
                     clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
         }
-        else if (IsFullLoggingEnabled())
+        else if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(NetworkingLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d",
                 clientSession, componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), status);

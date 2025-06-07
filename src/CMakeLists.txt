@@ -23,7 +23,7 @@ option(BUILD_FUZZER "Build fuzzer" OFF)
 
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
     add_compile_options("-Wno-psabi;-fPIC")
-   
+
     # Special Ubuntu 14/GNU 4.8 C compiler build configuration for the Universal NRP adapter
     if (CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.7" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4.8.5")
         set(BUILD_PLATFORM OFF)
@@ -70,6 +70,12 @@ else()
     set(CMAKE_PROJECT_VERSION_TWEAK "${_timestamp}")
 endif()
 
+execute_process(COMMAND git rev-parse --short HEAD
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    OUTPUT_VARIABLE GIT_COMMIT_ID
+    ERROR_QUIET
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 set(OsConfigProjectName "osconfig")
 set(OsConfigProjectLongName "Azure OSConfig")
 set(OsConfigProjectDescription "Azure OSConfig is a modular security configuration stack for Linux Edge devices that supports multi-authority device management over Azure, GitOps, as well as local management.")
@@ -78,6 +84,7 @@ set(OsConfigProjectEmail "osconfigcore@microsoft.com")
 set(OsConfigProjectUrl "https://github.com/Azure/azure-osconfig/")
 set(OsConfigHashAlgorithm "SHA256")
 set(OsConfigVersionString ${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}.${CMAKE_PROJECT_VERSION_TWEAK})
+set(OsConfigVersionStringFull "${OsConfigVersionString}-g${GIT_COMMIT_ID}")
 set(OsConfigRootBinaryDir ${CMAKE_BINARY_DIR})
 
 message(STATUS "${OsConfigProjectName} v${OsConfigVersionString}")
@@ -101,6 +108,7 @@ set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
 
 if (BUILD_TESTS)
     enable_testing()
+    add_compile_options(-D TEST_CODE)
     set (GTEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/gtest-output)
 endif()
 
@@ -174,5 +182,6 @@ set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${OsConfigProjectEmail})
 set(CPACK_DEBIAN_PACKAGE_NAME ${OsConfigProjectName})
 set(CPACK_DEBIAN_PACKAGE_PREDEPENDS "")
 set(CPACK_DEBIAN_PACKAGE_SUGGESTS "aziot-identity-service (>= 1.2.0)")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 include(CPack)

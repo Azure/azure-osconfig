@@ -12,7 +12,7 @@
 #define DC_FILE "/etc/osconfig/osconfig_desired.json"
 #define RC_FILE "/etc/osconfig/osconfig_reported.json"
 
-// The local clone for Git Desired Configuration (DC) 
+// The local clone for Git Desired Configuration (DC)
 #define GIT_DC_CLONE "/etc/osconfig/gitops/"
 #define GIT_DC_FILE GIT_DC_CLONE "osconfig_desired.json"
 
@@ -34,7 +34,7 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
     size_t payloadHash = 0;
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
-    
+
     if (fileName && hash)
     {
         mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
@@ -44,7 +44,7 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
 
             mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
         }
-        
+
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
             if ((*hash != (payloadHash = HashString(payload))) && payloadHash)
@@ -56,16 +56,16 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
                 }
             }
         }
-        
+
         CallMpiFree(payload);
     }
 }
 
-static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* hash, void* log)
+static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* hash, OsConfigLogHandle log)
 {
     size_t payloadHash = 0;
     int payloadSizeBytes = 0;
-    char* payload = NULL; 
+    char* payload = NULL;
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
 
@@ -98,7 +98,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     }
 }
 
-static int DeleteGitClone(const char* gitClonePath, void* log)
+static int DeleteGitClone(const char* gitClonePath, OsConfigLogHandle log)
 {
     const char* g_gitCloneCleanUpTemplate = "rm -r %s";
     char* cleanUpCommand = NULL;
@@ -117,7 +117,7 @@ static int DeleteGitClone(const char* gitClonePath, void* log)
     return result;
 }
 
-static int ProtectDcFile(const char* gitClonedDcFile, void* log)
+static int ProtectDcFile(const char* gitClonedDcFile, OsConfigLogHandle log)
 {
     int error = 0;
 
@@ -139,18 +139,18 @@ static int ProtectDcFile(const char* gitClonedDcFile, void* log)
     return error;
 }
 
-static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, void* log)
+static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, OsConfigLogHandle log)
 {
     const char* g_gitCloneTemplate = "git clone -q --branch %s --single-branch %s %s";
     const char* g_gitConfigTemplate = "git config --global --add safe.directory %s";
-    
+
     char* configCommand = NULL;
     char* cloneCommand = NULL;
     int error = 0;
 
     // Do not log gitRepositoryUrl as it may contain Git account credentials
 
-    if ((NULL == gitRepositoryUrl) || (NULL == gitBranch) || (NULL == gitClonePath) || (NULL == gitClonedDcFile) || 
+    if ((NULL == gitRepositoryUrl) || (NULL == gitBranch) || (NULL == gitClonePath) || (NULL == gitClonedDcFile) ||
         (0 == strcmp("", gitClonePath)) || (0 == strcmp("", gitClonedDcFile)))
     {
         OsConfigLogError(log, "InitializeGitClone: invalid arguments");
@@ -164,7 +164,7 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
 
     cloneCommand = FormatAllocateString(g_gitCloneTemplate, gitBranch, gitRepositoryUrl, gitClonePath);
     configCommand = FormatAllocateString(g_gitConfigTemplate, gitClonePath);
-    
+
     DeleteGitClone(gitClonePath, log);
 
     if (0 != (error = ExecuteCommand(NULL, cloneCommand, false, false, 0, 0, NULL, NULL, GetLog())))
@@ -191,11 +191,11 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
     return error;
 }
 
-static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, void* log)
+static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, OsConfigLogHandle log)
 {
     const char* g_gitCheckoutTemplate = "git checkout %s";
     const char* g_gitPullCommand = "git pull";
-    
+
     char* checkoutBranchCommand = NULL;
     char* checkoutFileCommand = NULL;
     char* currentDirectory = NULL;
@@ -240,15 +240,15 @@ static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, cons
     FREE_MEMORY(checkoutFileCommand);
     FREE_MEMORY(currentDirectory);
 
-    if ((0 == error) && (IsFullLoggingEnabled()))
+    if (0 == error)
     {
-        OsConfigLogInfo(log, "Watcher: successfully refreshed the Git clone at %s for branch %s", gitClonePath, gitBranch);
+        OsConfigLogDebug(log, "Watcher: successfully refreshed the Git clone at %s for branch %s", gitClonePath, gitBranch);
     }
 
     return error;
 }
 
-void InitializeWatcher(const char* jsonConfiguration, void* log)
+void InitializeWatcher(const char* jsonConfiguration, OsConfigLogHandle log)
 {
     if (NULL != jsonConfiguration)
     {
@@ -265,7 +265,7 @@ void InitializeWatcher(const char* jsonConfiguration, void* log)
     RestrictFileAccessToCurrentAccountOnly(GIT_DC_FILE);
 }
 
-void WatcherDoWork(void* log)
+void WatcherDoWork(OsConfigLogHandle log)
 {
     if (g_localManagement)
     {
@@ -291,7 +291,7 @@ void WatcherDoWork(void* log)
     }
 }
 
-void WatcherCleanup(void* log)
+void WatcherCleanup(OsConfigLogHandle log)
 {
     OsConfigLogInfo(log, "Watcher shutting down");
 

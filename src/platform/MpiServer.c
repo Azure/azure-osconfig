@@ -32,6 +32,7 @@ static struct sockaddr_un g_socketaddr = {0};
 static socklen_t g_socketlen = 0;
 
 static pthread_t g_mpiServerWorker = 0;
+static int g_mpiServerWorkerError = -1;
 static bool g_serverActive = false;
 
 char g_mpiCall[MPI_CALL_MESSAGE_LENGTH] = {0};
@@ -52,11 +53,7 @@ static MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayl
 
 static void CallMpiClose(MPI_HANDLE handle)
 {
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(GetPlatformLog(), "Received MpiClose request, session %p ('%s')", handle, (char*)handle);
-    }
-
+    OsConfigLogDebug(GetPlatformLog(), "Received MpiClose request, session %p ('%s')", handle, (char*)handle);
     MpiClose((MPI_HANDLE)handle);
 }
 
@@ -68,11 +65,11 @@ static int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* 
 
     status = MpiSet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         if (MPI_OK == status)
         {
-            OsConfigLogInfo(GetPlatformLog(), "MpiSet(%s, %s) request, session %p ('%s')", componentName, objectName, handle, (char*)handle);
+            OsConfigLogDebug(GetPlatformLog(), "MpiSet(%s, %s) request, session %p ('%s')", componentName, objectName, handle, (char*)handle);
         }
         else
         {
@@ -93,11 +90,11 @@ static int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* 
 
     status = MpiGet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         if (MPI_OK == status)
         {
-            OsConfigLogInfo(GetPlatformLog(), "MpiGet(%s, %s) request, session %p ('%s')", componentName, objectName, handle, (char*)handle);
+            OsConfigLogDebug(GetPlatformLog(), "MpiGet(%s, %s) request, session %p ('%s')", componentName, objectName, handle, (char*)handle);
         }
         else
         {
@@ -118,11 +115,11 @@ static int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, c
 
     status = MpiSetDesired((MPI_HANDLE)handle, payload, payloadSize);
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         if (MPI_OK == status)
         {
-            OsConfigLogInfo(GetPlatformLog(), "MpiSetDesired request, session %p ('%s')", handle, (char*)handle);
+            OsConfigLogDebug(GetPlatformLog(), "MpiSetDesired request, session %p ('%s')", handle, (char*)handle);
         }
         else
         {
@@ -143,11 +140,11 @@ static int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* 
 
     status = MpiGetReported((MPI_HANDLE)handle, payload, payloadSize);
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         if (MPI_OK == status)
         {
-            OsConfigLogInfo(GetPlatformLog(), "MpiGetReported request, session %p ('%s')", handle, (char*)handle);
+            OsConfigLogDebug(GetPlatformLog(), "MpiGetReported request, session %p ('%s')", handle, (char*)handle);
         }
         else
         {
@@ -373,7 +370,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                             if (MPI_OK != (mpiStatus = handlers.mpiSet((MPI_HANDLE)client, component, object, (MPI_JSON_STRING)payload, strlen(payload))))
                             {
                                 status = SetErrorResponse(uri, mpiStatus, response, responseSize);
-                                if (IsFullLoggingEnabled())
+                                if (IsDebugLoggingEnabled())
                                 {
                                     OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed for client '%s' with %d (returning %d)", uri, component, object, client, mpiStatus, status);
                                 }
@@ -383,10 +380,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                     else if (MPI_OK != (mpiStatus = handlers.mpiGet((MPI_HANDLE)client, component, object, response, responseSize)))
                     {
                         status = SetErrorResponse(uri, mpiStatus, response, responseSize);
-                        if (IsFullLoggingEnabled())
-                        {
-                            OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed for client '%s' with %d (returning %d)", uri, component, object, client, mpiStatus, status);
-                        }
+                        OsConfigLogDebug(GetPlatformLog(), "%s(%s, %s): failed for client '%s' with %d (returning %d)", uri, component, object, client, mpiStatus, status);
                     }
                 }
             }
@@ -494,10 +488,7 @@ static void* MpiServerWorker(void* arguments)
         {
             AreModulesLoadedAndLoadIfNot(MODULES_BIN_PATH, CONFIG_JSON_PATH);
 
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogInfo(GetPlatformLog(), "Accepted connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
-            }
+            OsConfigLogDebug(GetPlatformLog(), "Accepted connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
 
             if (NULL == (uri = ReadUriFromSocket(socketHandle, GetPlatformLog())))
             {
@@ -524,11 +515,7 @@ static void* MpiServerWorker(void* arguments)
 
             if (HTTP_OK == status)
             {
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogInfo(GetPlatformLog(), "%s: content-length %d, body, '%s'", uri, contentLength, requestBody);
-                }
-
+                OsConfigLogDebug(GetPlatformLog(), "%s: content-length %d, body, '%s'", uri, contentLength, requestBody);
                 status = HandleMpiCall(uri, requestBody, &responseBody, &responseSize, mpiCalls);
             }
 
@@ -557,15 +544,10 @@ static void* MpiServerWorker(void* arguments)
                 OsConfigLogError(GetPlatformLog(), "Failed to close socket: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
 
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogInfo(GetPlatformLog(), "Closed connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
-            }
+            OsConfigLogDebug(GetPlatformLog(), "Closed connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
 
             contentLength = 0;
             responseSize = 0;
-            actualSize = 0;
-            estimatedSize = 0;
 
             FREE_MEMORY(requestBody);
             FREE_MEMORY(responseBody);
@@ -613,7 +595,7 @@ void MpiInitialize(void)
                 OsConfigLogInfo(GetPlatformLog(), "Listening on socket '%s'", g_mpiSocket);
 
                 g_serverActive = true;
-                g_mpiServerWorker = pthread_create(&g_mpiServerWorker, NULL, MpiServerWorker, NULL);
+                g_mpiServerWorkerError = pthread_create(&g_mpiServerWorker, NULL, MpiServerWorker, NULL);
             }
             else
             {
@@ -635,9 +617,10 @@ void MpiShutdown(void)
 {
     g_serverActive = false;
 
-    if (g_mpiServerWorker > 0)
+    if (g_mpiServerWorkerError == 0)
     {
         pthread_join(g_mpiServerWorker, NULL);
+        g_mpiServerWorkerError = -1;
     }
 
     UnloadModules();

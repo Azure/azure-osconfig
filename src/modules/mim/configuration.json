@@ -19,13 +19,7 @@
           "schema": "boolean"
         },
         {
-          "name": "desiredFullLoggingEnabled",
-          "type": "mimObject",
-          "desired": true,
-          "schema": "boolean"
-        },
-        {
-          "name": "desiredCommandLoggingEnabled",
+          "name": "desiredDebugLoggingEnabled",
           "type": "mimObject",
           "desired": true,
           "schema": "boolean"
@@ -90,13 +84,7 @@
           "schema": "boolean"
         },
         {
-          "name": "fullLoggingEnabled",
-          "type": "mimObject",
-          "desired": false,
-          "schema": "boolean"
-        },
-        {
-          "name": "commandLoggingEnabled",
+          "name": "debugLoggingEnabled",
           "type": "mimObject",
           "desired": false,
           "schema": "boolean"

@@ -5,7 +5,7 @@
 
 #define MAX_MPI_URI_LENGTH 32
 
-static char* ReadUntilStringFound(int socketHandle, const char* what, void* log)
+static char* ReadUntilStringFound(int socketHandle, const char* what, OsConfigLogHandle log)
 {
     char* found = NULL;
     char* buffer = NULL;
@@ -57,7 +57,7 @@ static char* ReadUntilStringFound(int socketHandle, const char* what, void* log)
     return buffer;
 }
 
-char* ReadUriFromSocket(int socketHandle, void* log)
+char* ReadUriFromSocket(int socketHandle, OsConfigLogHandle log)
 {
     const char* postPrefix = "POST /";
     char* returnUri = NULL;
@@ -80,7 +80,7 @@ char* ReadUriFromSocket(int socketHandle, void* log)
     }
 
     FREE_MEMORY(buffer);
-    
+
     for (i = 0; i < sizeof(bufferUri); i++)
     {
         if (1 == read(socketHandle, &(bufferUri[i]), 1))
@@ -103,11 +103,7 @@ char* ReadUriFromSocket(int socketHandle, void* log)
     {
         memset(returnUri, 0, uriLength + 1);
         strncpy(returnUri, bufferUri, uriLength);
-        
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogInfo(log, "ReadUriFromSocket: %s", returnUri);
-        }
+        OsConfigLogDebug(log, "ReadUriFromSocket: %s", returnUri);
     }
     else
     {
@@ -117,7 +113,7 @@ char* ReadUriFromSocket(int socketHandle, void* log)
     return returnUri;
 }
 
-int ReadHttpStatusFromSocket(int socketHandle, void* log)
+int ReadHttpStatusFromSocket(int socketHandle, OsConfigLogHandle log)
 {
     const char* httpPrefix = "HTTP/1.1";
 
@@ -125,7 +121,7 @@ int ReadHttpStatusFromSocket(int socketHandle, void* log)
     char* buffer = NULL;
     char status[4] = {0};
     char expectedSpace = 'x';
-        
+
     if (socketHandle < 0)
     {
         OsConfigLogError(log, "ReadHttpStatusFromSocket: invalid socket (%d)", socketHandle);
@@ -139,15 +135,11 @@ int ReadHttpStatusFromSocket(int socketHandle, void* log)
         return httpStatus;
     }
 
-    if ((1 == read(socketHandle, &expectedSpace, 1)) && (' ' == expectedSpace) && 
+    if ((1 == read(socketHandle, &expectedSpace, 1)) && (' ' == expectedSpace) &&
         (3 == read(socketHandle, status, 3)) && (isdigit(status[0]) && (status[0] >= '1') && (status[0] <= '5') && isdigit(status[1]) && isdigit(status[2])))
     {
         httpStatus = atoi(status);
-        
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogInfo(log, "ReadHttpStatusFromSocket: %d ('%s')", httpStatus, status);
-        }
+        OsConfigLogDebug(log, "ReadHttpStatusFromSocket: %d ('%s')", httpStatus, status);
     }
 
     FREE_MEMORY(buffer);
@@ -155,7 +147,7 @@ int ReadHttpStatusFromSocket(int socketHandle, void* log)
     return httpStatus;
 }
 
-int ReadHttpContentLengthFromSocket(int socketHandle, void* log)
+int ReadHttpContentLengthFromSocket(int socketHandle, OsConfigLogHandle log)
 {
     const char* contentLengthLabel = "Content-Length: ";
     const char* doubleTerminator = "\r\n\r\n";
@@ -179,7 +171,7 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log)
         if (NULL != contentLength)
         {
             contentLength += strlen(contentLengthLabel);
-            
+
             for (i = 0; i < sizeof(isolatedContentLength) - 1; i++)
             {
                 if (isdigit(contentLength[i]))
@@ -195,14 +187,10 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log)
             if (isdigit(isolatedContentLength[0]))
             {
                 httpContentLength = atoi(isolatedContentLength);
-                
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogInfo(log, "ReadHttpContentLengthFromSocket: %d ('%s')", httpContentLength, isolatedContentLength);
-                }
+                OsConfigLogDebug(log, "ReadHttpContentLengthFromSocket: %d ('%s')", httpContentLength, isolatedContentLength);
             }
         }
-        
+
         FREE_MEMORY(buffer);
     }
 

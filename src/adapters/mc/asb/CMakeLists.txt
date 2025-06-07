@@ -8,7 +8,8 @@ add_library(OsConfigResourceAsb
     SHARED
         ../module.c
         ../schema.c
-        ../OsConfigResource.c)
+        ../OsConfigResource.c
+        Baseline.c)
 
 target_link_libraries(OsConfigResourceAsb
     PRIVATE

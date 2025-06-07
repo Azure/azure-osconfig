@@ -10,23 +10,17 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo apt update"
+                "command": "sudo apt update && sudo apt upgrade -y"
             }
         },
         {
             "name": "linux-install-packages",
             "parameters": {
-                "packages": "aziot-identity-service jq omi powershell libgsl-dev libgsl27 libgslcblas0"
+                "packages": "jq omi powershell"
             }
         },
         {
             "name": "linux-azcli"
-        },
-        {
-            "name": "linux-dotnet-sdk",
-            "parameters": {
-                "version": "6.0"
-            }
         },
         {
             "name": "linux-bash-command",
