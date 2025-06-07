@@ -6,7 +6,7 @@ on:
       - devops/docker/**/Dockerfile
   push:
     branches:
-      - dev
+      - main
     paths:
       - devops/docker/**/Dockerfile
   workflow_dispatch:
