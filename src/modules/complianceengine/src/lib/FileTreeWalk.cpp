@@ -111,4 +111,4 @@ Result<Status> FileTreeWalk(const std::string& path, FtwCallback callable, Break
 {
     return FileTreeWalk(path, callable, breakOnNonCompliant, context, 0);
 }
-} // namespace compliance
+} // namespace ComplianceEngine

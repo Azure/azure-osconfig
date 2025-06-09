@@ -238,4 +238,4 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
     return IterateUsers(userCallback, BreakOnNonCompliant::False, context);
 }
 
-} // namespace compliance
+} // namespace ComplianceEngine

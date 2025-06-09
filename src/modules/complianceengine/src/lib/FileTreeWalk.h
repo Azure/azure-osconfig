@@ -24,6 +24,6 @@ using FtwCallback = std::function<Result<Status>(const std::string&, const std::
 // If the walk encounters an error, it will return an Error object with the error message and code.
 // The goal is to mimic the nftw function from the C standard library, but with additional context and support for indicators and compliance-specific interface.
 Result<Status> FileTreeWalk(const std::string& path, FtwCallback callback, BreakOnNonCompliant breakOnNonCompliant, ContextInterface& context);
-} // namespace compliance
+} // namespace ComplianceEngine
 
 #endif // COMPLIANCE_FILE_TREE_WALK_H

@@ -190,4 +190,4 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
     return IterateUsers(cb, BreakOnNonCompliant::False, context);
 }
 
-} // namespace compliance
+} // namespace ComplianceEngine
