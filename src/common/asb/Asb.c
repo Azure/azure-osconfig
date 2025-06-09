@@ -977,6 +977,8 @@ void AsbInitialize(OsConfigLogHandle log)
     freeMemoryPercentage = (freeMemory * 100) / totalMemory;
     OsConfigLogInfo(log, "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
+    OsConfigLogInfo(log, "AsbInitialize: console logging is %s", IsConsoleLoggingEnabled() ? "enabled" : "disabled");
+
     InitializeSshAudit(log);
 
     if ((NULL == (g_desiredLoggingLevel = DuplicateString(g_defaultLoggingLevel))) ||

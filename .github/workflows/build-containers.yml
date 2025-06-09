@@ -33,6 +33,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Get changed containers
+        id: changed-containers
+        uses: tj-actions/changed-files@v46.0.1
+        with:
+          files: ./devops/docker/**/Dockerfile
+
       - name: Create build matrix
         id: matrix
         run: |
