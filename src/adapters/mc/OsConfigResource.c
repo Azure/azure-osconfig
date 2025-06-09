@@ -207,7 +207,7 @@ void MI_CALL OsConfigResource_Load(
     }
 
     SetConsoleLoggingEnabled(false);
-    
+
     AsbInitialize(GetLog());
 
     LogInfo(context, GetLog(), "[OsConfigResource] Load (PID: %d)", getpid());
