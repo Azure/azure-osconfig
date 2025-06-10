@@ -52,7 +52,7 @@ jobs:
           sudo chmod +x ./moduletest
 
           result=0
-          recipes=$(find ../../src/modules/test/recipes/ -name "*.json")
+          recipes=$(find ../../src/modules/test/recipes/ -name "*.json" -a -not -path '*compliance*')
 
           for recipe in $recipes; do
             modules=$(cat $recipe | grep '\.so' | awk -F'"' '{print $4}')
