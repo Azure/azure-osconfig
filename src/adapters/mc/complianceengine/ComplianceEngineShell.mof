@@ -1,0 +1,26 @@
+instance of OsConfigResource as $OsConfigResource0ref
+{
+    ResourceID = "";
+    RuleId = "00000000-0000-0000-0000-000000000000";
+    PayloadKey = "";
+    ComponentName = "Compliance";
+    ProcedureObjectName = "procedureRule";
+    ProcedureObjectValue = "eyJhdWRpdCI6eyJhbGxPZiI6W119fQ==";
+    ReportedObjectName = "auditRule";
+    ExpectedObjectValue = "PASS";
+    InitObjectName = "initRule";
+    DesiredObjectValue = "";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "CIS";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OMI_ConfigurationDocument
+{
+    Version="3.0.0";
+    CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
+    Author="Microsoft";
+    GenerationDate="02/26/2025 13:48:30 UTC";
+    Name="ComplianceExample";
+};

@@ -4,7 +4,6 @@
 add_compile_options("-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-unused-result")
 
 if (BUILD_TESTS)
-    add_compile_options(-D TEST_CODE)
     add_subdirectory(tests)
 endif()
 

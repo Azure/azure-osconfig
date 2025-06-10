@@ -10,25 +10,39 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <limits.h>
 #include "Logging.h"
 
-#define MAX_LOG_TRIM 1000
+#define TIME_FORMAT_STRING_LENGTH 20
 
-static bool g_fullLoggingEnabled = false;
-
-typedef struct OSCONFIG_LOG
+struct OsConfigLog
 {
     FILE* log;
     const char* logFileName;
     const char* backLogFileName;
     unsigned int trimLogCount;
-} OSCONFIG_LOG;
+};
+
+static LoggingLevel g_loggingLevel = LoggingLevelInformational;
+
+// Default maximum log size (1,048,576 is 1024 * 1024 aka 1MB)
+static unsigned int g_maxLogSize = 1048576;
+static unsigned int g_maxLogSizeDebugMultiplier = 5;
+
+static const char* g_emergency = "EMERGENCY";
+static const char* g_alert = "ALERT";
+static const char* g_critical = "CRITICAL";
+static const char* g_error = "ERROR";
+static const char* g_warning = "WARNING";
+static const char* g_notice = "NOTICE";
+static const char* g_info = "INFO";
+static const char* g_debug = "DEBUG";
 
 static bool g_consoleLoggingEnabled = true;
 
 bool IsConsoleLoggingEnabled(void)
 {
-    return g_consoleLoggingEnabled;
+    return IsDaemon() ? false : g_consoleLoggingEnabled;
 }
 
 void SetConsoleLoggingEnabled(bool enabledOrDisabled)
@@ -36,24 +50,97 @@ void SetConsoleLoggingEnabled(bool enabledOrDisabled)
     g_consoleLoggingEnabled = enabledOrDisabled;
 }
 
-void SetFullLogging(bool fullLogging)
+const char* GetLoggingLevelName(LoggingLevel level)
 {
-    g_fullLoggingEnabled = fullLogging;
+    const char* result = g_debug;
+    (void)result;
+
+    switch (level)
+    {
+        case LoggingLevelEmergency:
+            result = g_emergency;
+            break;
+
+        case LoggingLevelAlert:
+            result = g_alert;
+            break;
+
+        case LoggingLevelCritical:
+            result = g_critical;
+            break;
+
+        case LoggingLevelError:
+            result = g_error;
+            break;
+
+        case LoggingLevelWarning:
+            result = g_warning;
+            break;
+
+        case LoggingLevelNotice:
+            result = g_notice;
+            break;
+
+        case LoggingLevelInformational:
+            result = g_info;
+            break;
+
+        case LoggingLevelDebug:
+        default:
+            result = g_debug;
+    }
+
+    return result;
 }
 
-bool IsFullLoggingEnabled()
+bool IsLoggingLevelSupported(LoggingLevel level)
 {
-    return g_fullLoggingEnabled;
+    return ((level >= LoggingLevelEmergency) && (level <= LoggingLevelDebug)) ? true : false;
 }
 
-static int RestrictAccessToRootOnly(const char* fileName)
+void SetLoggingLevel(LoggingLevel level)
+{
+    g_loggingLevel = IsLoggingLevelSupported(level) ? level : LoggingLevelInformational;
+}
+
+LoggingLevel GetLoggingLevel(void)
+{
+    return g_loggingLevel;
+}
+
+bool IsDebugLoggingEnabled(void)
+{
+    return (LoggingLevelDebug == g_loggingLevel) ? true : false;
+}
+
+unsigned int GetMaxLogSize(void)
+{
+    return g_maxLogSize;
+}
+
+void SetMaxLogSize(unsigned int value)
+{
+    g_maxLogSize = value;
+}
+
+unsigned int GetMaxLogSizeDebugMultiplier(void)
+{
+    return g_maxLogSizeDebugMultiplier;
+}
+
+void SetMaxLogSizeDebugMultiplier(unsigned int value)
+{
+    g_maxLogSizeDebugMultiplier = value;
+}
+
+static int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
 {
     return chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 }
 
-OSCONFIG_LOG_HANDLE OpenLog(const char* logFileName, const char* bakLogFileName)
+OsConfigLogHandle OpenLog(const char* logFileName, const char* bakLogFileName)
 {
-    OSCONFIG_LOG* newLog = (OSCONFIG_LOG*)malloc(sizeof(OSCONFIG_LOG));
+    OsConfigLog* newLog = (OsConfigLog*)malloc(sizeof(OsConfigLog));
     if (NULL == newLog)
     {
         return NULL;
@@ -67,95 +154,104 @@ OSCONFIG_LOG_HANDLE OpenLog(const char* logFileName, const char* bakLogFileName)
     if (NULL != newLog->logFileName)
     {
         newLog->log = fopen(newLog->logFileName, "a");
-        RestrictAccessToRootOnly(newLog->logFileName);
+        RestrictFileAccessToCurrentAccountOnly(newLog->logFileName);
     }
 
     if (NULL != newLog->backLogFileName)
     {
-        RestrictAccessToRootOnly(newLog->backLogFileName);
+        RestrictFileAccessToCurrentAccountOnly(newLog->backLogFileName);
     }
 
-    return (OSCONFIG_LOG_HANDLE)newLog;
+    return newLog;
 }
 
-void CloseLog(OSCONFIG_LOG_HANDLE* log)
+void CloseLog(OsConfigLogHandle* log)
 {
     if ((NULL == log) || (NULL == (*log)))
     {
         return;
     }
 
-    OSCONFIG_LOG* logToClose = (OSCONFIG_LOG*)(*log);
+    OsConfigLog* logToClose = *log;
 
     if (NULL != logToClose->log)
     {
         fclose(logToClose->log);
     }
 
-    memset(logToClose, 0, sizeof(OSCONFIG_LOG));
+    memset(logToClose, 0, sizeof(OsConfigLog));
 
     free(logToClose);
-    log = NULL;
+    *log = NULL;
 }
 
-FILE* GetLogFile(OSCONFIG_LOG_HANDLE log)
+FILE* GetLogFile(OsConfigLogHandle log)
 {
-    return log ? ((OSCONFIG_LOG*)log)->log : NULL;
+    return log ? log->log : NULL;
 }
 
 static char g_logTime[TIME_FORMAT_STRING_LENGTH] = {0};
 
 // Returns the local date/time formatted as YYYY-MM-DD HH:MM:SS (for example: 2014-03-19 11:11:52)
-char* GetFormattedTime()
+char* GetFormattedTime(void)
 {
     time_t rawTime = {0};
     struct tm* timeInfo = NULL;
+    struct tm result = {0};
     time(&rawTime);
-    timeInfo = localtime(&rawTime);
+    timeInfo = localtime_r(&rawTime, &result);
     strftime(g_logTime, ARRAY_SIZE(g_logTime), "%Y-%m-%d %H:%M:%S", timeInfo);
     return g_logTime;
 }
 
-// Checks and rolls the log over if larger than MAX_LOG_SIZE
-void TrimLog(OSCONFIG_LOG_HANDLE log)
+// Checks and rolls the log over if larger than maximum size
+void TrimLog(OsConfigLogHandle log)
 {
-    OSCONFIG_LOG* whatLog = NULL;
-    int fileSize = 0;
+    unsigned int maxLogSize = IsDebugLoggingEnabled() ? ((g_maxLogSize < (UINT_MAX / 5)) ? (g_maxLogSize * 5) : UINT_MAX) : g_maxLogSize;
+    unsigned int maxLogTrim = 1000;
+    long fileSize = 0;
+    int savedErrno = errno;
 
-    if ((NULL == log) || (NULL == (whatLog = (OSCONFIG_LOG*)log)))
+    if (NULL == log)
     {
         return;
     }
 
-    // Loop incrementing the trim log counter from 0 to MAX_LOG_TRIM
-    whatLog->trimLogCount = (whatLog->trimLogCount < MAX_LOG_TRIM) ? (whatLog->trimLogCount + 1) : 1;
+    // Loop incrementing the trim log counter from 0 to maxLogTrim
+    log->trimLogCount = (log->trimLogCount < maxLogTrim) ? (log->trimLogCount + 1) : 1;
 
     // Check every 10 calls:
-    if (0 == (whatLog->trimLogCount % 10))
+    if (0 == (log->trimLogCount % 10))
     {
         // In append mode the file pointer will always be at end of file:
-        fileSize = ftell(whatLog->log);
+        fileSize = ftell(log->log);
 
-        if ((fileSize >= MAX_LOG_SIZE) || (-1 == fileSize))
+        if ((fileSize >= (long)maxLogSize) || (-1 == fileSize))
         {
-            fclose(whatLog->log);
+            fclose(log->log);
 
             // Rename the log in place to make a backup copy, overwriting previous copy if any:
-            if ((NULL == whatLog->backLogFileName) || (0 != rename(whatLog->logFileName, whatLog->backLogFileName)))
+            if ((NULL == log->backLogFileName) || (0 != rename(log->logFileName, log->backLogFileName)))
             {
                 // If the log could not be renamed, empty it:
-                whatLog->log = fopen(whatLog->logFileName, "w");
-                fclose(whatLog->log);
+                log->log = fopen(log->logFileName, "w");
+                fclose(log->log);
             }
 
             // Reopen the log in append mode:
-            whatLog->log = fopen(whatLog->logFileName, "a");
+            log->log = fopen(log->logFileName, "a");
 
             // Reapply restrictions once the file is recreated (also for backup, if any):
-            RestrictAccessToRootOnly(whatLog->logFileName);
-            RestrictAccessToRootOnly(whatLog->backLogFileName);
+            RestrictFileAccessToCurrentAccountOnly(log->logFileName);
+            if (NULL != log->backLogFileName)
+            {
+                // Reapply restrictions to the backup file:
+                RestrictFileAccessToCurrentAccountOnly(log->backLogFileName);
+            }
         }
     }
+
+    errno = savedErrno;
 }
 
 bool IsDaemon()

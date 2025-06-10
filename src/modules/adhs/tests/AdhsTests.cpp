@@ -27,7 +27,7 @@ class AdhsTest : public ::testing::Test
         const char* g_desiredOptInObjectName = "desiredOptIn";
 
         const char* m_adhsConfigFile = "test-config.toml";
-        
+
         const char* m_clientName = "Test";
 
         int m_normalMaxPayloadSizeBytes = 1024;
@@ -47,7 +47,7 @@ class AdhsTest : public ::testing::Test
 char* CopyPayloadToString(const char* payload, int payloadSizeBytes)
 {
     char* output = nullptr;
-    
+
     EXPECT_NE(nullptr, payload);
     EXPECT_NE(0, payloadSizeBytes);
     EXPECT_NE(nullptr, output = (char*)malloc(payloadSizeBytes + 1));
@@ -194,7 +194,7 @@ TEST_F(AdhsTest, MmiGetInvalidComponent)
     EXPECT_EQ(EINVAL, AdhsMmiGet(handle, "Test123", g_reportedOptInObjectName, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     AdhsMmiClose(handle);
 }
 
@@ -209,7 +209,7 @@ TEST_F(AdhsTest, MmiGetInvalidObject)
     EXPECT_EQ(EINVAL, AdhsMmiGet(handle, m_adhsComponentName, "Test123", &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     AdhsMmiClose(handle);
 }
 

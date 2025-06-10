@@ -1,10 +1,10 @@
-Scripts in this directory allows to run 
-[microsoft/AttackSurfaceAnalyzer](https://github.com/microsoft/AttackSurfaceAnalyzer) 
+Scripts in this directory allows to run
+[microsoft/AttackSurfaceAnalyzer](https://github.com/microsoft/AttackSurfaceAnalyzer)
 scans for
 [Azure/azure-osconfig](https://github.com/Azure/azure-osconfig)
 
 Scans are running in the container.
-`podman` or `docker` on host system is needed to run the script. 
+`podman` or `docker` on host system is needed to run the script.
 The Default is `docker`, can be configured in [run_asa.sh](run_asa.sh).
 
 Scans will run automatically in all supported distros, for now Ubuntu 22.04 and CentOS 8.

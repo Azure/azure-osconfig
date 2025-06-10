@@ -104,4 +104,3 @@ END {
     sub(/,$/, "", output);
     printf output;
 }
-

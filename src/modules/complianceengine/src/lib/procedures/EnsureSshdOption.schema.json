@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureSshdOption"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureSshdOption": {
+              "type": "object",
+              "required": [
+                "option",
+                "value"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "option": {
+                  "type": "string",
+                  "description": "Name of the SSH daemon option"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Regex that the option value has to match"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "EnsureSshdNoOption"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureSshdNoOption": {
+              "type": "object",
+              "required": [
+                "options",
+                "values"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "options": {
+                  "type": "string",
+                  "description": "Name of the SSH daemon options, comma separated"
+                },
+                "values": {
+                  "type": "string",
+                  "description": "Comma separated list of regexes"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}

@@ -25,8 +25,10 @@
 #include <dirent.h>
 #include <math.h>
 #include <libgen.h>
+#include <shadow.h>
 #include <parson.h>
 #include <Logging.h>
+#include <Reasons.h>
 #include <CommonUtils.h>
 
 #include "../asb/Asb.h"
@@ -35,8 +37,6 @@
 #include <sys/syscall.h>
 #define gettid() syscall(SYS_gettid)
 #endif
-
-#define PLAIN_STATUS_FROM_ERRNO(a) ((0 == a) ? "passed" : "failed")
 
 #define INT_ENOENT -999
 

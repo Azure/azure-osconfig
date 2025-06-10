@@ -1,9 +1,9 @@
 {
   "properties": {
-    "displayName": "Audit Azure security baseline for Linux (powered by OSConfig)",
+    "displayName": "Audit and configure Azure security baseline for Linux (powered by OSConfig)",
     "policyType": "Custom",
     "mode": "Indexed",
-    "description": "This demo policy audits (and can also optionally configure) the Azure security baseline for Linux",
+    "description": "This policy audits and configures the Azure security baseline on Linux machines (Azure VMs and Arc-enabled machines). For more information, see https://aka.ms/azsecbaselinelinuxdocs",
     "metadata": {
       "category": "Guest Configuration",
       "version": "1.0.0",
@@ -15,7 +15,10 @@
         "version": "1.0.0",
         "contentType": "Custom",
         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-        "contentHash": "2EE557B1F9843F2FDD4ACF29563B51A9D1D7EF7721C73D920AEF2C412A1E2499"
+        "contentHash": "978902B8140B83D7CA8291DBA56D73E7E6D0C513513235E524B04497EB66DA65",
+        "configurationParameter": {
+          "loggingLevel": "Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue"
+        }
       }
     },
     "parameters": {
@@ -44,6 +47,24 @@
           "Disabled"
         ],
         "defaultValue": "AuditIfNotExists"
+      },
+      "loggingLevel": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Logging level for Azure OSConfig",
+          "description": "Configures the logging level for Azure OSConfig on local machine"
+        },
+        "allowedValues": [
+          "Emergency",
+          "Alert",
+          "Critical",
+          "Error",
+          "Warning",
+          "Notice",
+          "Informational",
+          "Debug"
+        ],
+        "defaultValue": "Informational"
       }
     },
     "policyRule": {
@@ -291,6 +312,10 @@
               {
                 "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/complianceStatus",
                 "equals": "Compliant"
+              },
+              {
+                "field": "Microsoft.GuestConfiguration/guestConfigurationAssignments/parameterHash",
+                "equals": "[base64(concat('Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue', '=', parameters('loggingLevel')))]"
               }
             ]
           },
@@ -309,6 +334,9 @@
                 },
                 "assignmentName": {
                   "value": "[concat('AzureLinuxBaseline$pid', uniqueString(policy().assignmentId, policy().definitionReferenceId))]"
+                },
+                "loggingLevel": {
+                  "value": "[parameters('loggingLevel')]"
                 }
               },
               "template": {
@@ -326,6 +354,9 @@
                   },
                   "assignmentName": {
                     "type": "string"
+                  },
+                  "loggingLevel": {
+                    "type": "string"
                   }
                 },
                 "resources": [
@@ -341,8 +372,14 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "2EE557B1F9843F2FDD4ACF29563B51A9D1D7EF7721C73D920AEF2C412A1E2499",
-                        "assignmentType": "ApplyAndAutoCorrect"
+                        "contentHash": "978902B8140B83D7CA8291DBA56D73E7E6D0C513513235E524B04497EB66DA65",
+                        "assignmentType": "ApplyAndAutoCorrect",
+                        "configurationParameter": [
+                          {
+                            "name": "Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue",
+                            "value": "[parameters('loggingLevel')]"
+                          }
+                        ]
                       }
                     }
                   },
@@ -358,8 +395,14 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "2EE557B1F9843F2FDD4ACF29563B51A9D1D7EF7721C73D920AEF2C412A1E2499",
-                        "assignmentType": "ApplyAndAutoCorrect"
+                        "contentHash": "978902B8140B83D7CA8291DBA56D73E7E6D0C513513235E524B04497EB66DA65",
+                        "assignmentType": "ApplyAndAutoCorrect",
+                        "configurationParameter": [
+                          {
+                            "name": "Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue",
+                            "value": "[parameters('loggingLevel')]"
+                          }
+                        ]
                       }
                     }
                   },
@@ -375,8 +418,14 @@
                         "version": "1.0.0",
                         "contentType": "Custom",
                         "contentUri": "https://github.com/Azure/azure-osconfig/releases/download/test_policy_package/AzureLinuxBaseline.zip",
-                        "contentHash": "2EE557B1F9843F2FDD4ACF29563B51A9D1D7EF7721C73D920AEF2C412A1E2499",
-                        "assignmentType": "ApplyAndAutoCorrect"
+                        "contentHash": "978902B8140B83D7CA8291DBA56D73E7E6D0C513513235E524B04497EB66DA65",
+                        "assignmentType": "ApplyAndAutoCorrect",
+                        "configurationParameter": [
+                          {
+                            "name": "Ensure the local logging level for Azure OSConfig is configured;DesiredObjectValue",
+                            "value": "[parameters('loggingLevel')]"
+                          }
+                        ]
                       }
                     }
                   }

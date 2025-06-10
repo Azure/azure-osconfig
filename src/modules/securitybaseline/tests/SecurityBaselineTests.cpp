@@ -25,6 +25,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_securityBaselineModuleName = "OSConfig SecurityBaseline module";
         const char* m_securityBaselineComponentName = "SecurityBaseline";
 
+        const char* m_auditEnsureLoggingLevelObject = "auditEnsureLoggingLevel";
         const char* m_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
         const char* m_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
         const char* m_auditEnsurePermissionsOnEtcHostsAllowObject = "auditEnsurePermissionsOnEtcHostsAllow";
@@ -194,6 +195,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureUnnecessaryAccountsAreRemovedObject = "auditEnsureUnnecessaryAccountsAreRemoved";
 
         // Initialization for audit
+        const char* m_initEnsureLoggingLevelObject = "initEnsureLoggingLevel";
         const char* m_initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
         const char* m_initEnsureSshPortIsConfiguredObject = "initEnsureSshPortIsConfigured";
         const char* m_initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
@@ -243,7 +245,7 @@ TEST_F(SecurityBaselineTest, MmiOpen)
 char* CopyPayloadToString(const char* payload, int payloadSizeBytes)
 {
     char* output = nullptr;
-    
+
     EXPECT_NE(nullptr, payload);
     EXPECT_NE(0, payloadSizeBytes);
     EXPECT_NE(nullptr, output = (char*)malloc(payloadSizeBytes + 1));
@@ -318,6 +320,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
     int payloadSizeBytes = 0;
 
     const char* mimObjects[] = {
+        m_auditEnsureLoggingLevelObject,
         m_auditEnsurePermissionsOnEtcIssueObject,
         m_auditEnsurePermissionsOnEtcIssueNetObject,
         m_auditEnsurePermissionsOnEtcHostsAllowObject,
@@ -501,7 +504,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         FREE_MEMORY(payloadString);
         SecurityBaselineMmiFree(payload);
     }
-    
+
     SecurityBaselineMmiClose(handle);
 }
 
@@ -535,7 +538,7 @@ TEST_F(SecurityBaselineTest, MmiGetInvalidComponent)
     EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, "Test123", m_securityBaselineComponentName, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     SecurityBaselineMmiClose(handle);
 }
 
@@ -550,7 +553,7 @@ TEST_F(SecurityBaselineTest, MmiGetInvalidObject)
     EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, "Test123", &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     SecurityBaselineMmiClose(handle);
 }
 

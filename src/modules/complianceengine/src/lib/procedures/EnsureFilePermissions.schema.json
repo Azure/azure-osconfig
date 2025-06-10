@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureFilePermissions"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureFilePermissions": {
+              "type": "object",
+              "required": [
+                "filename"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "filename": {
+                  "type": "string",
+                  "description": "Path to the file"
+                },
+                "owner": {
+                  "type": "string",
+                  "description": "Required owner of the file"
+                },
+                "group": {
+                  "type": "string",
+                  "description": "Required group of the file"
+                },
+                "permissions": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "mask": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file - mask",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "EnsureFilePermissionsCollection"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureFilePermissionsCollection": {
+              "type": "object",
+              "required": [
+                "directory",
+                "ext"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "directory": {
+                  "type": "string",
+                  "description": "Directory path"
+                },
+                "ext": {
+                  "type": "string",
+                  "description": "File pattern"
+                },
+                "owner": {
+                  "type": "string",
+                  "description": "Required owner of the file"
+                },
+                "group": {
+                  "type": "string",
+                  "description": "Required group of the file"
+                },
+                "permissions": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "mask": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file - mask",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureFilePermissions"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureFilePermissions": {
+              "type": "object",
+              "required": [
+                "filename"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "filename": {
+                  "type": "string",
+                  "description": "Path to the file"
+                },
+                "owner": {
+                  "type": "string",
+                  "description": "Required owner of the file"
+                },
+                "group": {
+                  "type": "string",
+                  "description": "Required group of the file"
+                },
+                "permissions": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "mask": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file - mask",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "EnsureFilePermissionsCollection"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureFilePermissionsCollection": {
+              "type": "object",
+              "required": [
+                "directory",
+                "ext"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "directory": {
+                  "type": "string",
+                  "description": "Directory path"
+                },
+                "ext": {
+                  "type": "string",
+                  "description": "File pattern"
+                },
+                "owner": {
+                  "type": "string",
+                  "description": "Required owner of the file"
+                },
+                "group": {
+                  "type": "string",
+                  "description": "Required group of the file"
+                },
+                "permissions": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                },
+                "mask": {
+                  "type": "string",
+                  "description": "Required octal permissions of the file - mask",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([0-7]{3,4})$|(^[0-7]{3,4}$))"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

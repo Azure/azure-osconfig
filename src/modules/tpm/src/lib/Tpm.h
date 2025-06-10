@@ -17,7 +17,7 @@
 class TpmLog
 {
 public:
-    static OSCONFIG_LOG_HANDLE Get()
+    static OsConfigLogHandle Get()
     {
         return m_logTpm;
     }
@@ -33,7 +33,7 @@ public:
     }
 
 private:
-    static OSCONFIG_LOG_HANDLE m_logTpm;
+    static OsConfigLogHandle m_logTpm;
 };
 
 class Tpm

@@ -66,7 +66,7 @@ const std::string g_spaceString = " ";
 const char* g_templateWithDots = R"""({"interfaceTypes":"..","macAddresses":"..","ipAddresses":"..","subnetMasks":"..","defaultGateways":"..","dnsServers":"..","dhcpEnabled":"..","enabled":"..","connected":".."})""";
 
 const char* g_ipv4 = "(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])";
-const char* g_ipv6 =  
+const char* g_ipv6 =
     "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}"
     ":[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}"
     "|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}"
@@ -96,7 +96,7 @@ const unsigned int g_twoDotsSize = strlen(g_twoDots);
 const unsigned int g_templateWithDotsSize = strlen(g_templateWithDots);
 const unsigned int g_templateSize = (g_templateWithDotsSize > (g_numFields * g_twoDotsSize)) ? (g_templateWithDotsSize - (g_numFields * g_twoDotsSize)) : 0;
 
-OSCONFIG_LOG_HANDLE NetworkingLog::m_logNetworking = nullptr;
+OsConfigLogHandle NetworkingLog::m_logNetworking = nullptr;
 
 NetworkingObject::NetworkingObject(unsigned int maxPayloadSizeBytes)
 {
@@ -115,7 +115,7 @@ std::string NetworkingObject::RunCommand(const char* command)
     {
         commandOutputToReturn = (nullptr != textResult) ? std::string(textResult) : g_emptyString;
     }
-    else if (IsFullLoggingEnabled())
+    else if (IsDebugLoggingEnabled())
     {
         OsConfigLogError(NetworkingLog::Get(), "Failed to execute command '%s': %d, '%s'", command, status, (nullptr != textResult) ? textResult : g_dash);
     }
@@ -170,7 +170,7 @@ void NetworkingObjectBase::GetIpAddresses(const std::string& interfaceName, std:
     if (this->m_ipSettingsMap.find(interfaceName) != this->m_ipSettingsMap.end())
     {
         std::stringstream ipSettingsData(this->m_ipSettingsMap[interfaceName]);
-        ParseInterfaceDataForSettings(true, g_ipAddressesPrefix, ipSettingsData, interfaceSettings);  
+        ParseInterfaceDataForSettings(true, g_ipAddressesPrefix, ipSettingsData, interfaceSettings);
         size_t size = interfaceSettings.size();
         for (size_t i = 0; i < size; i++)
         {
@@ -273,7 +273,7 @@ void NetworkingObjectBase::GetEnabled(const std::string& interfaceName, std::vec
             }
         }
     }
-    
+
     if (interfaceSettings.empty())
     {
         interfaceSettings.push_back(g_unknown);
@@ -350,7 +350,7 @@ void NetworkingObjectBase::GenerateInterfaceSettingsString(const std::string& in
 void NetworkingObjectBase::UpdateSettingsString(NetworkingSettingType settingType, std::string& settingsString)
 {
     settingsString.clear();
-    std::vector<std::tuple<std::string, std::string>> settings; 
+    std::vector<std::tuple<std::string, std::string>> settings;
     for (size_t i = 0; i < this->m_interfaceNames.size(); i++)
     {
         std::string interfaceSettingsString;
@@ -468,7 +468,7 @@ void NetworkingObjectBase::GetInterfaceTypesFromSystemdNetworkd()
                     }
                     while(token.empty());
 
-                    std::string interfaceType = token;        
+                    std::string interfaceType = token;
                     if ((!interfaceName.empty()) && (!interfaceType.empty()))
                     {
                         std::map<std::string, std::string>::iterator interfaceTypesMapIterator = this->m_interfaceTypesMap.find(interfaceName);
@@ -506,7 +506,7 @@ void NetworkingObjectBase::GenerateInterfaceTypesMap()
     }
     if (this->m_networkManagementService == NetworkManagementService::Unknown)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(NetworkingLog::Get(), "Network interface management service not found");
         }
@@ -519,7 +519,7 @@ void NetworkingObjectBase::GenerateIpSettingsMap()
     std::string ipData = RunCommand(g_getIpAddressDetails);
     std::regex interfaceDataPrefixPattern(g_interfaceDataPrefix);
     std::smatch interfaceDataPrefixMatch;
-    while (std::regex_search(ipData, interfaceDataPrefixMatch, interfaceDataPrefixPattern)) 
+    while (std::regex_search(ipData, interfaceDataPrefixMatch, interfaceDataPrefixPattern))
     {
         std::string interfaceDataPrefix = interfaceDataPrefixMatch.str(0);
         size_t interfaceNamePrefixBack = interfaceDataPrefix.find(g_spaceString);
@@ -626,7 +626,7 @@ void NetworkingObjectBase::GetGlobalDnsServers(std::string dnsServersData, std::
     {
         dnsServersData = globalDnsServersPrefixMatch.suffix().str();
         std::smatch globalDnsServersSuffixMatch;
-        std::string globalDnsServersData = std::regex_search(dnsServersData, globalDnsServersSuffixMatch, g_interfaceNamePrefixPatternDnsServers) ? dnsServersData.substr(0, globalDnsServersSuffixMatch.position(0)) : dnsServersData; 
+        std::string globalDnsServersData = std::regex_search(dnsServersData, globalDnsServersSuffixMatch, g_interfaceNamePrefixPatternDnsServers) ? dnsServersData.substr(0, globalDnsServersSuffixMatch.position(0)) : dnsServersData;
 
         std::smatch dnsServersPrefixMatch;
         if (std::regex_search(globalDnsServersData, dnsServersPrefixMatch, g_dnsServersPrefixPattern))
@@ -684,7 +684,7 @@ void NetworkingObjectBase::GenerateDnsServersMap()
         }
 
         dnsServersData = interfaceNameData;
-        std::string interfaceData = std::regex_search(dnsServersData, interfaceNamePrefixMatch, g_interfaceNamePrefixPatternDnsServers) ? dnsServersData.substr(0, interfaceNamePrefixMatch.position(0)) : dnsServersData; 
+        std::string interfaceData = std::regex_search(dnsServersData, interfaceNamePrefixMatch, g_interfaceNamePrefixPatternDnsServers) ? dnsServersData.substr(0, interfaceNamePrefixMatch.position(0)) : dnsServersData;
 
         if (IsKnownInterfaceName(interfaceName))
         {
@@ -895,7 +895,7 @@ int NetworkingObjectBase::Get(
 
     if ((nullptr == componentName) || (0 != std::strcmp(componentName, NETWORKING)))
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(NetworkingLog::Get(), "NetworkingObjectBase::Get(%s, %s, %.*s, %d) componentName %s is invalid, %s is expected",
                 componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), componentName, NETWORKING);
@@ -904,7 +904,7 @@ int NetworkingObjectBase::Get(
     }
     else if ((nullptr == objectName) || (0 != std::strcmp(objectName, NETWORK_CONFIGURATION)))
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(NetworkingLog::Get(), "NetworkingObjectBase::Get(%s, %s, %.*s, %d) objectName %s is invalid, %s is expected",
                 componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), objectName, NETWORK_CONFIGURATION);
@@ -913,7 +913,7 @@ int NetworkingObjectBase::Get(
     }
     else if (nullptr == payload)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(NetworkingLog::Get(), "NetworkingObjectBase::Get(%s, %s, %.*s, %d) payload %.*s is null",
                 componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), (payloadSizeBytes ? *payloadSizeBytes : 0), *payload);
@@ -922,7 +922,7 @@ int NetworkingObjectBase::Get(
     }
     else if (nullptr == payloadSizeBytes)
     {
-        if (IsFullLoggingEnabled())
+        if (IsDebugLoggingEnabled())
         {
             OsConfigLogError(NetworkingLog::Get(), "NetworkingObjectBase::Get(%s, %s, %.*s, %d) payloadSizeBytes %d is null",
                 componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), (payloadSizeBytes ? *payloadSizeBytes : 0));

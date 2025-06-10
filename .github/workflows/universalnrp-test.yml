@@ -46,24 +46,23 @@ jobs:
           DEFAULT_POLICYPACKAGES: |
             [
               { "name": "LinuxSshServerSecurityBaseline", "short-name": "SSH", "resource-count": 20 },
-              { "name": "AzureLinuxBaseline", "short-name": "ASB", "resource-count": 168 }
+              { "name": "AzureLinuxBaseline", "short-name": "ASB", "resource-count": 169 }
             ]
           TARGETS: |
             [
               { "os": "almalinux", "version": "9" },
+              { "os": "azurelinux", "version": "3" },
               { "os": "debian", "version": "11" },
               { "os": "debian", "version": "12" },
               { "os": "mariner", "version": "2" },
               { "os": "oraclelinux", "version": "8" },
               { "os": "rhel", "version": "8" },
               { "os": "rhel", "version": "9" },
-              { "os": "rockylinux", "version": "9" },
               { "os": "sles", "version": "15" },
               { "os": "ubuntu", "version": "20.04" },
-              { "os": "ubuntu", "version": "22.04" }
+              { "os": "ubuntu", "version": "22.04" },
+              { "os": "ubuntu", "version": "24.04" }
             ]
-          # { "os": "amazonlinux", "version": "2" }, [TODO: Onboard]
-          # { "os": "azurelinux", "version": "3" }, [TODO: Onboard]
         run: |
           # If no explicit packages defined, use the default packages
           if [[ '${{ inputs.policy_packages }}' == '[]' || '${{ inputs.policy_packages }}' == '' ]]; then
@@ -184,6 +183,13 @@ jobs:
               Rename-Item -Path $_.Name -NewName "$name.zip"
           }
 
+      - name: Check package size
+        if: success() || failure()
+        uses: ./.github/actions/check-size
+        with:
+          package: '${{ steps.normalize.outputs.path }}'
+          limit: 350
+
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
         run: |
@@ -221,6 +227,13 @@ jobs:
 
           sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/omi/lib/ pwsh -Command $script
           stat *testResults.xml
+
+      - name: Check performance
+        if: success() || failure()
+        uses: ./.github/actions/check-perf
+        with:
+          perflog: /var/log/osconfig_asb_perf.log
+          mark: "is longer than"
 
       - name: Stage OSConfig Logs
         if: success() || failure()
@@ -267,6 +280,9 @@ jobs:
           sudo mkdir -p /etc/osconfig
           sudo cp -r ${{ steps.download.outputs.download-path }}/modules/test/osconfig.json /etc/osconfig/osconfig.json
 
+      - name: Defer test execution
+        uses: ./.github/actions/defer-tests
+
       - name: Run moduletest
         working-directory: ${{ steps.download.outputs.download-path }}/modules/test
         run: |
@@ -291,6 +307,13 @@ jobs:
           echo "$output" > ../../$name.log
 
           exit $result
+
+      - name: Check performance
+        if: success() || failure()
+        uses: ./.github/actions/check-perf
+        with:
+          perflog: /var/log/osconfig_asb_perf.log
+          mark: "is longer than"
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()

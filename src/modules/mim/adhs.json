@@ -14,7 +14,7 @@
             "type": "enum",
             "valueSchema": "integer",
             "enumValues": [
-              { 
+              {
                 "name": "none",
                 "enumValue": 0
               },
@@ -37,7 +37,7 @@
             "type": "enum",
             "valueSchema": "integer",
             "enumValues": [
-              { 
+              {
                 "name": "none",
                 "enumValue": 0
               },

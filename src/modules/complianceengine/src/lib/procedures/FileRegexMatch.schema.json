@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "FileRegexMatch"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "FileRegexMatch": {
+              "type": "object",
+              "required": [
+                "path",
+                "filenamePattern",
+                "matchPattern"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A directory name contining files to check"
+                },
+                "filenamePattern": {
+                  "type": "string",
+                  "description": "A pattern to match file names in the provided path"
+                },
+                "matchOperation": {
+                  "type": "string",
+                  "description": "Operation to perform on the file contents",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(pattern match)$|(^pattern match$))"
+                },
+                "matchPattern": {
+                  "type": "string",
+                  "description": "The pattern to match against the file contents"
+                },
+                "stateOperation": {
+                  "type": "string",
+                  "description": "Operation to perform on each line that matches the 'matchPattern'",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(pattern match)$|(^pattern match$))"
+                },
+                "statePattern": {
+                  "type": "string",
+                  "description": "The pattern to match against each line that matches the 'statePattern'"
+                },
+                "ignoreCase": {
+                  "type": "string",
+                  "description": "Determine whether the a match or state should be ignore case sensitivity  'matchPattern' and 'statePattern' or none when empty'",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((matchPattern\\sstatePattern|matchPattern|statePattern).*)$|(^(matchPattern\\sstatePattern|matchPattern|statePattern)))"
+                },
+                "behavior": {
+                  "type": "string",
+                  "description": "Determine the function behavior",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((all_exist|any_exist|at_least_one_exists|none_exist))$|(^(all_exist|any_exist|at_least_one_exists|none_exist)$))"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}

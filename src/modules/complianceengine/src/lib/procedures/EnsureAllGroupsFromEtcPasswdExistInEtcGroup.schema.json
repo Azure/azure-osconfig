@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureAllGroupsFromEtcPasswdExistInEtcGroup"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureAllGroupsFromEtcPasswdExistInEtcGroup": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureAllGroupsFromEtcPasswdExistInEtcGroup"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureAllGroupsFromEtcPasswdExistInEtcGroup": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

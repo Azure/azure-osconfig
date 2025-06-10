@@ -61,6 +61,7 @@ char* FormatAllocateString(const char* format, ...)
             }
         }
     }
+
     return stringToReturn;
 }
 
@@ -89,20 +90,20 @@ char* ConcatenateStrings(const char* first, const char* second)
 int SleepMilliseconds(long milliseconds)
 {
     struct timespec remaining = {0};
-    struct timespec interval = {0}; 
-    
+    struct timespec interval = {0};
+
     if ((milliseconds < 0) || (milliseconds > 999999999))
     {
         return EINVAL;
     }
-    
-    interval.tv_sec = (int)(milliseconds / 1000); 
+
+    interval.tv_sec = (int)(milliseconds / 1000);
     interval.tv_nsec = (milliseconds % 1000) * 1000000;
 
     return nanosleep(&interval, &remaining);
 }
 
-char* GetHttpProxyData(void* log)
+char* GetHttpProxyData(OsConfigLogHandle log)
 {
     const char* proxyVariables[] = {
         "http_proxy",
@@ -197,7 +198,7 @@ char* RepairBrokenEolCharactersIfAny(const char* value)
     return result;
 }
 
-int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, void* log)
+int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, int base, OsConfigLogHandle log)
 {
     const char space = ' ';
     char* value = NULL;
@@ -254,9 +255,9 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
             }
             else
             {
-                (*integers)[(*numIntegers) - 1] = atoi(value);
+                (*integers)[(*numIntegers) - 1] = strtol(value, NULL, base);
             }
-            
+
             FREE_MEMORY(value);
         }
     }
@@ -267,19 +268,19 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
         *numIntegers = 0;
     }
 
-    OsConfigLogInfo(log, "ConvertStringToIntegers: %d (%d integers converted from '%s' separated with '%c')", status, *numIntegers, source, separator);
+    OsConfigLogInfo(log, "ConvertStringToIntegers: %d (%d integers converted from '%s' separated with '%c' in base %d)", status, *numIntegers, source, separator, base);
 
     return status;
 }
 
-int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
+int CheckAllWirelessInterfacesAreDisabled(char** reason, OsConfigLogHandle log)
 {
     const char* command = "iwconfig 2>&1 | egrep -v 'no wireless extensions|not found' | grep Frequency";
     int status = 0;
 
-    if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log)))
+    if (0 == ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log))
     {
-        OsConfigLogError(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
+        OsConfigLogInfo(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
         OsConfigCaptureReason(reason, "At least one active wireless interface is present");
         status = EEXIST;
     }
@@ -293,14 +294,14 @@ int CheckAllWirelessInterfacesAreDisabled(char** reason, void* log)
     return status;
 }
 
-int DisableAllWirelessInterfaces(void* log)
+int DisableAllWirelessInterfaces(OsConfigLogHandle log)
 {
     const char* nmcli = "nmcli";
     const char* rfkill = "rfkill";
     const char* nmCliRadioAllOff = "nmcli radio wifi off";
     const char* rfKillBlockAll = "rfkill block all";
     int status = 0;
-   
+
     if (0 == CheckAllWirelessInterfacesAreDisabled(NULL, log))
     {
         OsConfigLogInfo(log, "DisableAllWirelessInterfaces: no active wireless interfaces are present");
@@ -312,7 +313,7 @@ int DisableAllWirelessInterfaces(void* log)
         OsConfigLogInfo(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed", nmcli, rfkill);
         if (0 != (status = InstallOrUpdatePackage(rfkill, log)))
         {
-            OsConfigLogError(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed, also failed "
+            OsConfigLogInfo(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed, also failed "
                 "to install '%s', automatic remediation is not possible", nmcli, rfkill, rfkill);
             status = ENOENT;
         }
@@ -324,7 +325,7 @@ int DisableAllWirelessInterfaces(void* log)
         {
             if (0 != (status = ExecuteCommand(NULL, nmCliRadioAllOff, true, false, 0, 0, NULL, NULL, log)))
             {
-                OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", nmCliRadioAllOff, status);
+                OsConfigLogInfo(log, "DisableAllWirelessInterfaces: '%s' failed with %d", nmCliRadioAllOff, status);
             }
         }
 
@@ -332,17 +333,17 @@ int DisableAllWirelessInterfaces(void* log)
         {
             if (0 != (status = ExecuteCommand(NULL, rfKillBlockAll, true, false, 0, 0, NULL, NULL, log)))
             {
-                OsConfigLogError(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
+                OsConfigLogInfo(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
             }
         }
     }
 
-    OsConfigLogInfo(log, "DisableAllWirelessInterfaces completed with %d", status);
+    OsConfigLogInfo(log, "DisableAllWirelessInterfaces returned %d", status);
 
     return status;
 }
 
-int SetDefaultDenyFirewallPolicy(void* log)
+int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log)
 {
     const char* acceptInput = "iptables -A INPUT -j ACCEPT";
     const char* acceptForward = "iptables -A FORWARD -j ACCEPT";
@@ -355,15 +356,15 @@ int SetDefaultDenyFirewallPolicy(void* log)
     // First, ensure all current traffic is accepted:
     if (0 != (status = ExecuteCommand(NULL, acceptInput, true, false, 0, 0, NULL, NULL, log)))
     {
-        OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptInput, status);
+        OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptInput, status);
     }
     else if (0 != (status = ExecuteCommand(NULL, acceptForward, true, false, 0, 0, NULL, NULL, log)))
     {
-        OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptForward, status);
+        OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptForward, status);
     }
     else if (0 != (status = ExecuteCommand(NULL, acceptOutput, true, false, 0, 0, NULL, NULL, log)))
     {
-        OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptOutput, status);
+        OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptOutput, status);
     }
 
     if (0 == status)
@@ -371,24 +372,24 @@ int SetDefaultDenyFirewallPolicy(void* log)
         // Then set default to drop:
         if (0 != (status = ExecuteCommand(NULL, dropInput, true, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropInput, status);
+            OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropInput, status);
         }
         else if (0 != (status = ExecuteCommand(NULL, dropForward, true, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropForward, status);
+            OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropForward, status);
         }
         else if (0 != (status = ExecuteCommand(NULL, dropOutput, true, false, 0, 0, NULL, NULL, log)))
         {
-            OsConfigLogError(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropOutput, status);
+            OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropOutput, status);
         }
     }
 
-    OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy completed with %d", status);
+    OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy returned %d", status);
 
     return 0;
 }
 
-char* RemoveCharacterFromString(const char* source, char what, void* log)
+char* RemoveCharacterFromString(const char* source, char what, OsConfigLogHandle log)
 {
     char* target = NULL;
     size_t sourceLength = 0, i = 0, j = 0;
@@ -421,7 +422,7 @@ char* RemoveCharacterFromString(const char* source, char what, void* log)
     return target;
 }
 
-char* ReplaceEscapeSequencesInString(const char* source, const char* escapes, unsigned int numEscapes, char replacement, void* log)
+char* ReplaceEscapeSequencesInString(const char* source, const char* escapes, unsigned int numEscapes, char replacement, OsConfigLogHandle log)
 {
     char* target = NULL;
     size_t sourceLength = 0, i = 0, j = 0, k = 0;
@@ -476,20 +477,20 @@ char* ReplaceEscapeSequencesInString(const char* source, const char* escapes, un
     return target;
 }
 
-typedef struct PATH_LOCATIONS
+typedef struct PathLocations
 {
     const char* location;
     const char* path;
-} PATH_LOCATIONS;
+} PathLocations;
 
-int RemoveDotsFromPath(void* log)
+int RemoveDotsFromPath(OsConfigLogHandle log)
 {
     const char* path = "PATH";
     const char* dot = ".";
     const char* printenv = "printenv PATH";
     const char* setenvTemplate = "setenv PATH '%s'";
 
-    PATH_LOCATIONS pathLocations[] = {
+    PathLocations pathLocations[] = {
         { "/etc/sudoers", "secure_path" },
         { "/etc/environment", "PATH" },
         { "/etc/profile", "PATH" },
@@ -515,7 +516,7 @@ int RemoveDotsFromPath(void* log)
                     }
                     else
                     {
-                        OsConfigLogError(log, "RemoveDotsFromPath: '%s failed with %d", setenv, status);
+                        OsConfigLogInfo(log, "RemoveDotsFromPath: '%s failed with %d", setenv, status);
                     }
 
                     FREE_MEMORY(setenv);
@@ -530,7 +531,7 @@ int RemoveDotsFromPath(void* log)
             }
             else
             {
-                OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '%c' from '%s'", dot[0], currentPath);
+                OsConfigLogInfo(log, "RemoveDotsFromPath: cannot remove '%c' from '%s'", dot[0], currentPath);
                 status = EINVAL;
             }
 
@@ -538,7 +539,7 @@ int RemoveDotsFromPath(void* log)
         }
         else
         {
-            OsConfigLogError(log, "RemoveDotsFromPath: '%s' failed with %d", printenv, status);
+            OsConfigLogInfo(log, "RemoveDotsFromPath: '%s' failed with %d", printenv, status);
         }
     }
 
@@ -557,7 +558,7 @@ int RemoveDotsFromPath(void* log)
                 {
                     if (0 == (_status = SetEtcConfValue(pathLocations[i].location, pathLocations[i].path, newPath, log)))
                     {
-                        OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set '%s' to '%s' in '%s'", 
+                        OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set '%s' to '%s' in '%s'",
                             pathLocations[i].path, pathLocations[i].location, newPath);
                     }
 
@@ -565,7 +566,7 @@ int RemoveDotsFromPath(void* log)
                 }
                 else
                 {
-                    OsConfigLogError(log, "RemoveDotsFromPath: cannot remove '%c' from '%s' for '%s'", 
+                    OsConfigLogInfo(log, "RemoveDotsFromPath: cannot remove '%c' from '%s' for '%s'",
                         dot[0], currentPath, pathLocations[i].location);
                     _status = EINVAL;
                 }
@@ -583,7 +584,7 @@ int RemoveDotsFromPath(void* log)
     return status;
 }
 
-int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, unsigned int numEscapes, char replacement, void* log)
+int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, unsigned int numEscapes, char replacement, OsConfigLogHandle log)
 {
     char* fileContents = NULL;
     char* newFileContents = NULL;
@@ -609,16 +610,16 @@ int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, uns
     {
         if (false == SecureSaveToFile(fileName, newFileContents, strlen(newFileContents), log))
         {
-            OsConfigLogInfo(log, "ReplaceEscapesFromFile: failed saving '%s'", fileName);
+            OsConfigLogInfo(log, "ReplaceEscapesFromFile: cannot save '%s' (%d)", fileName, errno);
             status = ENOENT;
         }
     }
     else
     {
-        OsConfigLogInfo(log, "ReplaceEscapesFromFile: failed to replace desired characters in '%s'", fileName);
+        OsConfigLogInfo(log, "ReplaceEscapesFromFile: cannot replace desired characters in '%s'", fileName);
         status = ENOENT;
     }
-    
+
     FREE_MEMORY(fileContents);
     FREE_MEMORY(newFileContents);
 

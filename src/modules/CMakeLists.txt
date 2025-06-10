@@ -18,7 +18,7 @@ set(MODULES_BUILD_BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin" CACHE FILEPATH "Dire
 file(MAKE_DIRECTORY ${MODULES_BUILD_BIN_DIR})
 
 set(MIM_SCHEMA ${CMAKE_CURRENT_SOURCE_DIR}/schema/mim.schema.json)
-find_program(JSONSCHEMA_EXEC jsonschema)
+find_program(JSONSCHEMA_EXEC  check-jsonschema)
 
 function(add_module directory)
     get_filename_component(MODULE ${directory} NAME)
@@ -28,7 +28,7 @@ function(add_module directory)
     if (EXISTS ${MODULE_INTERFACE})
         if(JSONSCHEMA_EXEC)
             execute_process(
-                COMMAND ${JSONSCHEMA_EXEC} -i ${MODULE_INTERFACE} ${MIM_SCHEMA}
+                COMMAND ${JSONSCHEMA_EXEC} --schemafile ${MIM_SCHEMA} ${MODULE_INTERFACE}
                 ERROR_VARIABLE SCHEMA_ERROR
             )
             if(SCHEMA_ERROR)
@@ -67,6 +67,7 @@ endif()
 add_module(securitybaseline)
 add_module(configuration)
 add_module(deviceinfo)
+add_module(complianceengine)
 
 if (BUILD_MODULETEST)
     add_subdirectory(test)

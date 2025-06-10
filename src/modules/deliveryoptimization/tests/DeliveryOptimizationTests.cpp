@@ -30,7 +30,7 @@ class DeliveryOptimizationTest : public ::testing::Test
         const char* m_desiredDeliveryOptimizationPoliciesObjectName = "desiredDeliveryOptimizationPolicies";
 
         const char* m_deliveryOptimizationConfigFile = "test-config.json";
-        
+
         const char* m_clientName = "Test";
 
         int m_normalMaxPayloadSizeBytes = 1024;
@@ -50,7 +50,7 @@ class DeliveryOptimizationTest : public ::testing::Test
 char* CopyPayloadToString(const char* payload, int payloadSizeBytes)
 {
     char* output = nullptr;
-    
+
     EXPECT_NE(nullptr, payload);
     EXPECT_NE(0, payloadSizeBytes);
     EXPECT_NE(nullptr, output = (char*)malloc(payloadSizeBytes + 1));
@@ -280,7 +280,7 @@ TEST_F(DeliveryOptimizationTest, MmiGetInvalidComponent)
     EXPECT_EQ(EINVAL, DeliveryOptimizationMmiGet(handle, "Test123", m_reportedCacheHostObjectName, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     DeliveryOptimizationMmiClose(handle);
 }
 
@@ -295,7 +295,7 @@ TEST_F(DeliveryOptimizationTest, MmiGetInvalidObject)
     EXPECT_EQ(EINVAL, DeliveryOptimizationMmiGet(handle, m_deliveryOptimizationComponentName, "Test123", &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-    
+
     DeliveryOptimizationMmiClose(handle);
 }
 
@@ -319,7 +319,7 @@ TEST_F(DeliveryOptimizationTest, MmiGetOutsideSession)
 
 TEST_F(DeliveryOptimizationTest, MmiSetAllSettings)
 {
-    const char* expectedFileContent = 
+    const char* expectedFileContent =
     "{\n"
     "    \"DOCacheHost\": \"10.0.0.0:80,host.com:8080\",\n"
     "    \"DOCacheHostSource\": 1,\n"
@@ -345,7 +345,7 @@ TEST_F(DeliveryOptimizationTest, MmiSetAllSettings)
 
 TEST_F(DeliveryOptimizationTest, MmiSetOneSetting)
 {
-    const char* expectedFileContent = 
+    const char* expectedFileContent =
     "{\n"
     "    \"DOCacheHost\": \"10.0.0.0:80,host.com:8080\"\n"
     "}";

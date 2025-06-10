@@ -46,7 +46,7 @@ static const char* g_deviceInfoModuleInfo = "{\"Name\": \"DeviceInfo\","
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-static OSCONFIG_LOG_HANDLE g_log = NULL;
+static OsConfigLogHandle g_log = NULL;
 
 static char* g_osName = NULL;
 static char* g_osVersion = NULL;
@@ -72,7 +72,7 @@ static int g_referenceCount = 0;
 
 static unsigned int g_maxPayloadSizeBytes = 0;
 
-static OSCONFIG_LOG_HANDLE DeviceInfoGetLog(void)
+static OsConfigLogHandle DeviceInfoGetLog(void)
 {
     return g_log;
 }
@@ -84,7 +84,7 @@ void DeviceInfoInitialize(void)
     g_osName = GetOsName(DeviceInfoGetLog());
     g_osVersion = GetOsVersion(DeviceInfoGetLog());
     g_cpuType = GetCpuType(DeviceInfoGetLog());
-    g_cpuVendor = GetCpuVendor(DeviceInfoGetLog()); 
+    g_cpuVendor = GetCpuVendor(DeviceInfoGetLog());
     g_cpuModel = GetCpuModel(DeviceInfoGetLog());
     g_totalMemory = GetTotalMemory(DeviceInfoGetLog());
     g_freeMemory = GetFreeMemory(DeviceInfoGetLog());
@@ -96,7 +96,7 @@ void DeviceInfoInitialize(void)
     g_productVersion = GetProductVersion(DeviceInfoGetLog());
     g_systemCapabilities = GetSystemCapabilities(DeviceInfoGetLog());
     g_systemConfiguration = GetSystemConfiguration(DeviceInfoGetLog());
-        
+
     OsConfigLogInfo(DeviceInfoGetLog(), "%s initialized", g_deviceInfoModuleName);
 }
 
@@ -115,9 +115,9 @@ void DeviceInfoShutdown(void)
     FREE_MEMORY(g_productVersion);
     FREE_MEMORY(g_systemCapabilities);
     FREE_MEMORY(g_systemConfiguration);
-    
+
     OsConfigLogInfo(DeviceInfoGetLog(), "%s shutting down", g_deviceInfoModuleName);
-    
+
     CloseLog(&g_log);
 }
 
@@ -156,10 +156,10 @@ int DeviceInfoMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* 
     {
         return status;
     }
-    
+
     *payload = NULL;
     *payloadSizeBytes = (int)strlen(g_deviceInfoModuleInfo);
-    
+
     *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
     if (*payload)
     {
@@ -172,11 +172,8 @@ int DeviceInfoMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* 
         *payloadSizeBytes = 0;
         status = ENOMEM;
     }
-    
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(DeviceInfoGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
-    }
+
+    OsConfigLogDebug(DeviceInfoGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     return status;
 }
@@ -203,13 +200,13 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-    
+
     if ((MMI_OK == status) && (strcmp(componentName, g_deviceInfoComponentName)))
     {
         OsConfigLogError(DeviceInfoGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
         status = EINVAL;
     }
-    
+
     if (MMI_OK == status)
     {
         if (0 == strcmp(objectName, g_osNameObject))
@@ -242,7 +239,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         {
             // Refresh this one at every MmiGet
             g_freeMemory = GetFreeMemory(DeviceInfoGetLog());
-            
+
             isStringValue = false;
             snprintf(buffer, sizeof(buffer), "%lu", g_freeMemory);
             value = buffer;
@@ -315,12 +312,9 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
             *payloadSizeBytes = 0;
             status = ENOMEM;
         }
-    }    
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(DeviceInfoGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
+
+    OsConfigLogDebug(DeviceInfoGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     return status;
 }
@@ -328,13 +322,13 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 int DeviceInfoMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     OsConfigLogInfo(DeviceInfoGetLog(), "No desired objects, MmiSet not implemented");
-    
+
     UNUSED(clientSession);
     UNUSED(componentName);
     UNUSED(objectName);
     UNUSED(payload);
     UNUSED(payloadSizeBytes);
-    
+
     return EPERM;
 }
 

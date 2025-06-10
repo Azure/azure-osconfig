@@ -26,7 +26,7 @@
 
 static int g_iotHubProtocol = PROTOCOL_AUTO;
 
-static REPORTED_PROPERTY* g_reportedProperties = NULL;
+static ReportedProperty* g_reportedProperties = NULL;
 static int g_numReportedProperties = 0;
 
 static unsigned int g_lastTime = 0;
@@ -85,7 +85,7 @@ static HTTP_PROXY_OPTIONS g_proxyOptions = {0};
 MPI_HANDLE g_mpiHandle = NULL;
 static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
 
-static OSCONFIG_LOG_HANDLE g_agentLog = NULL;
+static OsConfigLogHandle g_agentLog = NULL;
 
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_reportingInterval = DEFAULT_REPORTING_INTERVAL;
@@ -105,7 +105,7 @@ static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s "
     "\"product_vendor\"=\"%s\"&\"product_name\"=\"%s\")";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
 
-OSCONFIG_LOG_HANDLE GetLog()
+OsConfigLogHandle GetLog()
 {
     return g_agentLog;
 }
@@ -122,9 +122,6 @@ static void SignalInterrupt(int signal)
 {
     int logDescriptor = -1;
     char* errorMessage = NULL;
-    ssize_t writeResult = -1;
-
-    UNUSED(writeResult);
 
     if (SIGSEGV == signal)
     {
@@ -156,7 +153,9 @@ static void SignalInterrupt(int signal)
     {
         if (0 < (logDescriptor = open(LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
         {
+            ssize_t writeResult = -1;
             writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
+            UNUSED(writeResult);
             close(logDescriptor);
         }
         _exit(signal);
@@ -166,7 +165,7 @@ static void SignalInterrupt(int signal)
 static void SignalReloadConfiguration(int incomingSignal)
 {
     g_refreshSignal = incomingSignal;
-    
+
     // Reset the handler
     signal(SIGHUP, SignalReloadConfiguration);
 }
@@ -174,7 +173,7 @@ static void SignalReloadConfiguration(int incomingSignal)
 static IOTHUB_DEVICE_CLIENT_LL_HANDLE CallIotHubInitialize(void)
 {
     IOTHUB_DEVICE_CLIENT_LL_HANDLE moduleHandle = NULL;
-    
+
     if (g_isIotHubEnabled)
     {
         if (NULL == (moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, g_x509PrivateKeyHandle,
@@ -365,7 +364,7 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
 
 static bool InitializeAgent(void)
 {
-    bool status = true; 
+    bool status = true;
 
     g_lastTime = (unsigned int)time(NULL);
 
@@ -411,7 +410,7 @@ void CloseAgent(void)
     }
 
     FREE_MEMORY(g_reportedProperties);
-    
+
     OsConfigLogInfo(GetLog(), "The OSConfig Agent session is closed");
 }
 
@@ -516,8 +515,9 @@ int main(int argc, char *argv[])
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        SetCommandLogging(IsCommandLoggingEnabledInJsonConfig(jsonConfiguration));
-        SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
+        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetLog()));
+        SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetLog()));
+        SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, GetLog()));
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -537,9 +537,9 @@ int main(int argc, char *argv[])
     OsConfigLogInfo(GetLog(), "OSConfig Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
-    if (IsCommandLoggingEnabled() || IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "WARNING: verbose logging (command and/or full) is enabled. To disable verbose logging edit %s and restart OSConfig", CONFIG_FILE);
+        OsConfigLogWarning(GetLog(), "Debug logging is enabled. To disable debug logging, set 'LoggingLevel' to 6 in '%s' and restart OSConfig", CONFIG_FILE);
     }
 
     // Load remaining configuration
@@ -554,7 +554,7 @@ int main(int argc, char *argv[])
     }
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
-    
+
     snprintf(g_productName, sizeof(g_productName), g_productNameTemplate, g_modelVersion, OSCONFIG_VERSION);
     OsConfigLogInfo(GetLog(), "Product name: %s", g_productName);
 
@@ -574,31 +574,31 @@ int main(int argc, char *argv[])
     productVendor = GetProductVendor(GetLog());
     productName = GetProductName(GetLog());
 
-    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion, 
+    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion,
         cpuType, cpuVendor, cpuModel, totalMemory, freeMemory, kernelName, kernelRelease, kernelVersion, productVendor, productName);
-        
+
     if (NULL != (encodedProductInfo = UrlEncode(g_productInfo)))
     {
         if (strlen(encodedProductInfo) >= sizeof(g_productInfo))
         {
-            OsConfigLogError(GetLog(), "Encoded product info string is too long (%d bytes, over maximum of %d bytes) and will be truncated", 
+            OsConfigLogError(GetLog(), "Encoded product info string is too long (%d bytes, over maximum of %d bytes) and will be truncated",
                 (int)strlen(encodedProductInfo), (int)sizeof(g_productInfo));
-        } 
-        
+        }
+
         memset(g_productInfo, 0, sizeof(g_productInfo));
         memcpy(g_productInfo, encodedProductInfo, sizeof(g_productInfo) - 1);
     }
-    
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
-    }
+
+    OsConfigLogDebug(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
 
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);
     FREE_MEMORY(cpuType);
     FREE_MEMORY(cpuVendor);
     FREE_MEMORY(cpuModel);
+    FREE_MEMORY(kernelName);
+    FREE_MEMORY(kernelRelease);
+    FREE_MEMORY(kernelVersion);
     FREE_MEMORY(productName);
     FREE_MEMORY(productVendor);
     FREE_MEMORY(encodedProductInfo);
@@ -698,7 +698,7 @@ int main(int argc, char *argv[])
     while (0 == g_stopSignal)
     {
         AgentDoWork();
-        
+
         SleepMilliseconds(DOWORK_SLEEP);
 
         if (0 != g_refreshSignal)
@@ -711,15 +711,16 @@ int main(int argc, char *argv[])
 done:
     OsConfigLogInfo(GetLog(), "OSConfig Agent (PID: %d) exiting with %d", pid, g_stopSignal);
 
+    FREE_MEMORY(jsonConfiguration);
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
     FREE_MEMORY(connectionString);
     FREE_MEMORY(g_iotHubConnectionString);
 
     WatcherCleanup(GetLog());
-    
+
     CloseAgent();
-    
+
     StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog());
 
     CloseLog(&g_agentLog);
