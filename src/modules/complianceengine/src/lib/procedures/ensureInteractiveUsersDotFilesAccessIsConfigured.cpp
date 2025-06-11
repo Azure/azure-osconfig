@@ -4,6 +4,7 @@
 
 #include <CommonUtils.h>
 #include <Evaluator.h>
+#include <FilePermissionsHelpers.h>
 #include <FileTreeWalk.h>
 #include <Result.h>
 #include <fcntl.h>
@@ -23,9 +24,6 @@ using std::map;
 using std::ostringstream;
 using std::set;
 using std::string;
-
-Result<Status> AuditEnsureFilePermissions(map<string, string>, IndicatorsTree&, ContextInterface&);
-Result<Status> RemediateEnsureFilePermissions(map<string, string>, IndicatorsTree&, ContextInterface&);
 
 namespace
 {
@@ -110,9 +108,9 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
 
             // Performs a file permissions check and updates the result in case of error or non-compliance
             auto checkFile = [pwd, group, &path, &indicators, &context, &result](std::string mask) {
-                map<string, string> arguments = {{"filename", path}, {"owner", pwd->pw_name}, {"group", group->gr_name}, {"mask", std::move(mask)}};
-                indicators.Push("EnsureFilePermissions");
-                auto subResult = AuditEnsureFilePermissions(arguments, indicators, context);
+                map<string, string> arguments = {{"owner", pwd->pw_name}, {"group", group->gr_name}, {"mask", std::move(mask)}};
+                indicators.Push("AuditEnsureFilePermissionsHelper");
+                auto subResult = AuditEnsureFilePermissionsHelper(path, arguments, indicators, context);
                 indicators.Pop();
                 if (!subResult.HasValue())
                 {
@@ -201,9 +199,9 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
 
             // Performs a file permissions check and updates the result in case of error or non-compliance
             auto remediateFile = [pwd, group, &path, &indicators, &context, &result](std::string mask) {
-                map<string, string> arguments = {{"filename", path}, {"owner", pwd->pw_name}, {"group", group->gr_name}, {"mask", std::move(mask)}};
-                indicators.Push("EnsureFilePermissions");
-                auto subResult = RemediateEnsureFilePermissions(arguments, indicators, context);
+                map<string, string> arguments = {{"owner", pwd->pw_name}, {"group", group->gr_name}, {"mask", std::move(mask)}};
+                indicators.Push("RemediateEnsureFilePermissionsHelper");
+                auto subResult = RemediateEnsureFilePermissionsHelper(path, arguments, indicators, context);
                 indicators.Pop();
                 if (!subResult.HasValue())
                 {
