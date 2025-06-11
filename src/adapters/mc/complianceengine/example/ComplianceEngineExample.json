@@ -4,7 +4,7 @@
         "key": "/cis/Ubuntu/24.04/v1.0.0/2/2/1",
         "audit": {
             "not": {
-                "packageInstalled": {
+                "PackageInstalled": {
                     "packageName": "nis"
                 }
             }
@@ -17,15 +17,15 @@
             "anyOf": [
                 {
                     "not": {
-                        "packageInstalled": {
+                        "PackageInstalled": {
                             "packageName": "$CRON_PKG_NAME:cron"
                         }
                     }
                 },
                 {
-                    "ensureFilePermissions": {
+                    "EnsureFilePermissions": {
                         "filename": "/etc/crontab",
-                        "user": "root",
+                        "owner": "root",
                         "group": "root",
                         "permissions": "600"
                     }
@@ -36,15 +36,15 @@
                 "anyOf": [
                     {
                         "not": {
-                            "packageInstalled": {
+                            "PackageInstalled": {
                                 "packageName": "$CRON_PKG_NAME"
                             }
                         }
                     },
                     {
-                        "ensureFilePermissions": {
+                        "EnsureFilePermissions": {
                             "filename": "/etc/crontab",
-                            "user": "root",
+                            "owner": "root",
                             "group": "root",
                             "permissions": "600"
                         }
@@ -61,12 +61,12 @@
                     "not": {
                         "anyOf": [
                             {
-                                "packageInstalled": {
+                                "PackageInstalled": {
                                     "packageName": "$CRON_PKG_NAME:cron"
                                 }
                             },
                             {
-                                "packageInstalled": {
+                                "PackageInstalled": {
                                     "packageName": "cronie"
                                 }
                             }
@@ -74,9 +74,9 @@
                     }
                 },
                 {
-                    "ensureFilePermissions": {
+                    "EnsureFilePermissions": {
                         "filename": "/etc/cron.hourly",
-                        "user": "root",
+                        "owner": "root",
                         "group": "root",
                         "permissions": "600"
                     }
