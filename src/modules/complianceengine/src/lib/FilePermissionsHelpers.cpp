@@ -106,7 +106,7 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         auto permissions = std::move(it->second);
         char* endptr = nullptr;
         perms = strtol(permissions.c_str(), &endptr, 8);
-        if ('\0' != *endptr)
+        if ((nullptr == endptr) || ('\0' != *endptr))
         {
             OsConfigLogError(log, "Invalid permissions: %s", permissions.c_str());
             return Error("Invalid permissions argument: " + permissions, EINVAL);
@@ -120,7 +120,7 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         auto maskArg = std::move(it->second);
         char* endptr = nullptr;
         mask = strtol(maskArg.c_str(), &endptr, 8);
-        if ('\0' != *endptr)
+        if ((nullptr == endptr) || ('\0' != *endptr))
         {
             OsConfigLogError(log, "Invalid mask argument: %s", maskArg.c_str());
             return Error("Invalid mask argument: " + maskArg, EINVAL);
@@ -284,7 +284,7 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
         auto permissions = std::move(it->second);
         char* endptr = nullptr;
         perms = strtol(permissions.c_str(), &endptr, 8);
-        if ('\0' != *endptr)
+        if ((nullptr == endptr) || ('\0' != *endptr))
         {
             OsConfigLogError(log, "Invalid permissions argument: %s", permissions.c_str());
             return Error("Invalid permissions argument: " + permissions);
@@ -299,7 +299,7 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
         auto maskArg = std::move(it->second);
         char* endptr = nullptr;
         mask = strtol(maskArg.c_str(), &endptr, 8);
-        if ('\0' != *endptr)
+        if ((nullptr == endptr) || ('\0' != *endptr))
         {
             OsConfigLogError(log, "Invalid mask argument: %s", maskArg.c_str());
             return Error("Invalid mask argument: " + maskArg, EINVAL);
@@ -323,9 +323,7 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
             return Error(std::string("Chmod error: ") + strerror(status), status);
         }
 
-        std::ostringstream oss;
-        oss << std::oct << new_perms;
-        indicators.Compliant(filename + " permissions changed to " + oss.str());
+        indicators.Compliant(filename + " permissions changed to " + std::to_string(new_perms));
     }
 
     OsConfigLogDebug(log, "File '%s' remediation succeeded", filename.c_str());
