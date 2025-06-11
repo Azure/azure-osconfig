@@ -1,10 +1,11 @@
 {
-  "CommandLogging": 0,
-  "FullLogging": 0,
   "GitManagement": 0,
   "GitRepositoryUrl": " ",
   "GitBranch": " ",
   "LocalManagement": 1,
+  "LoggingLevel": 6,
+  "MaxLogSize": 1048576,
+  "MaxLogSizeDebugMultiplier": 5,
   "ModelVersion": 20,
   "IotHubManagement": 0,
   "IotHubProtocol": 2,
@@ -15,11 +16,7 @@
     },
     {
       "ComponentName": "Configuration",
-      "ObjectName": "commandLoggingEnabled"
-    },
-    {
-      "ComponentName": "Configuration",
-      "ObjectName": "fullLoggingEnabled"
+      "ObjectName": "debugLoggingEnabled"
     },
     {
       "ComponentName": "Configuration",

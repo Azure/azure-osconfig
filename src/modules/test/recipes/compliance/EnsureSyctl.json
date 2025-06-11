@@ -1,0 +1,42 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "complianceengine.so"
+  },
+  // We cannot assume anything about the settings on the test machine, but anyOf [x, not x] should always PASS unless there's an error.
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "anyOf": [
+          {
+            "EnsureSysctl": {
+              "sysctlName": "net.ipv4.conf.default.log_martians",
+              "value": "1"
+            }
+          },
+          {
+            "not": {
+              "EnsureSysctl": {
+                "sysctlName": "net.ipv4.conf.default.log_martians",
+                "value": "1"
+              }
+            }
+          }
+        ]
+      },
+      "parameters": {}
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS*"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]

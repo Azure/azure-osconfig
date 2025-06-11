@@ -4,7 +4,7 @@
         {
             "name": "linux-bash-command",
             "parameters": {
-                "command": "sudo apt update"
+                "command": "sudo apt update -y && sudo apt upgrade -y"
             }
         },
         {
@@ -40,11 +40,17 @@
         {
             "name": "linux-install-packages",
             "parameters": {
-                "packages": "dotnet-sdk-6.0 jq powershell omi"
+                "packages": "jq powershell omi"
             }
         },
         {
             "name": "linux-azcli"
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "apt list --installed"
+            }
         }
     ]
 }

@@ -1,50 +1,50 @@
-{ 
-  "name": "ZtsiModel", 
+{
+  "name": "ZtsiModel",
   "type": "mimModel",
-  "contents": [ 
-    { 
-      "name": "ZtsiAgentConfiguration", 
-      "type": "mimComponent", 
+  "contents": [
+    {
+      "name": "ZtsiAgentConfiguration",
+      "type": "mimComponent",
       "contents": [
-        { 
-          "name": "desiredMaxScheduledAttestationsPerDay", 
-          "type": "mimObject", 
+        {
+          "name": "desiredMaxScheduledAttestationsPerDay",
+          "type": "mimObject",
           "desired": true,
           "schema": "integer"
         },
-        { 
-          "name": "desiredMaxManualAttestationsPerDay", 
-          "type": "mimObject", 
+        {
+          "name": "desiredMaxManualAttestationsPerDay",
+          "type": "mimObject",
           "desired": true,
           "schema": "integer"
         },
-        { 
-          "name": "desiredEnabled", 
-          "type": "mimObject", 
+        {
+          "name": "desiredEnabled",
+          "type": "mimObject",
           "desired": true,
           "schema": "boolean"
         },
-        { 
-          "name": "maxScheduledAttestationsPerDay", 
-          "type": "mimObject", 
+        {
+          "name": "maxScheduledAttestationsPerDay",
+          "type": "mimObject",
           "desired": false,
           "schema": "integer"
         },
-        { 
-          "name": "maxManualAttestationsPerDay", 
-          "type": "mimObject", 
+        {
+          "name": "maxManualAttestationsPerDay",
+          "type": "mimObject",
           "desired": false,
           "schema": "integer"
         },
-        { 
-          "name": "enabled", 
-          "type": "mimObject", 
+        {
+          "name": "enabled",
+          "type": "mimObject",
           "desired": false,
           "schema": {
              "type": "enum",
              "valueSchema": "integer",
              "enumValues": [
-               { 
+               {
                  "name": "unknown",
                  "enumValue": 0
                },
@@ -62,4 +62,4 @@
       ]
     }
   ]
-} 
+}

@@ -29,7 +29,7 @@ static void RemoveProxyStringEscaping(char* value)
     }
 }
 
-bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* proxyPort, char** proxyUsername, char** proxyPassword, void* log)
+bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* proxyPort, char** proxyUsername, char** proxyPassword, OsConfigLogHandle log)
 {
     // We accept the proxy data string to be in one of two following formats:
     //
@@ -108,10 +108,10 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         OsConfigLogError(log, "Unsupported proxy data (%s), no %s prefix", proxyData, httpPrefix);
         return NULL;
     }
-    
+
     for (i = 0; i < proxyDataLength; i++)
     {
-        if (('.' == proxyData[i]) || ('/' == proxyData[i]) || ('\\' == proxyData[i]) || ('_' == proxyData[i]) || 
+        if (('.' == proxyData[i]) || ('/' == proxyData[i]) || ('\\' == proxyData[i]) || ('_' == proxyData[i]) ||
             ('-' == proxyData[i]) || ('$' == proxyData[i]) || ('!' == proxyData[i]) || (isalnum(proxyData[i])))
         {
             continue;
@@ -173,7 +173,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     afterPrefix = (char*)(proxyData + prefixLength);
     firstColumn = strchr(afterPrefix, ':');
     lastColumn = strrchr(afterPrefix, ':');
-    
+
     // If the '@' credentials separator is not already found, try the first one if any
     if (NULL == credentialsSeparator)
     {
@@ -314,22 +314,19 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
 
             *proxyHostAddress = hostAddress;
             *proxyPort = portNumber;
-                        
+
             if (proxyUsername && proxyPassword)
             {
                 *proxyUsername = username;
                 *proxyPassword = password;
-                
+
             }
 
             OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
             OsConfigLogInfo(log, "HTTP proxy port: %d", *proxyPort);
-            
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
-                OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", *proxyPassword, passwordLength);
-            }
+
+            OsConfigLogDebug(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
+            OsConfigLogDebug(log, "HTTP proxy password: %s (%d)", *proxyPassword, passwordLength);
 
             FREE_MEMORY(port);
 

@@ -1,0 +1,68 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "complianceengine.so"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "ExecuteCommandGrep": {
+          "command": "uname",
+          "regex": "Linux"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ ExecuteCommandGrep: Output of command 'uname' matches regex 'Linux' } == TRUE"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "ExecuteCommandGrep": {
+          "command": "uname",
+          "regex": "SunOS"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "{ ExecuteCommandGrep: No match found } == FALSE"
+  },
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "ExecuteCommandGrep": {
+          "command": "useradd evilhacker",
+          "regex": "dontcare"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "Command useradd evilhacker is not allowed"
+  },
+
+  {
+    "Action": "UnloadModule"
+  }
+]

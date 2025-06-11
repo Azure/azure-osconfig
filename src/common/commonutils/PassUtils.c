@@ -6,10 +6,11 @@
 static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
 static const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
 static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
+static const char* g_etcPamdSystemPassword = "/etc/pam.d/system-password";
 static const char* g_pamUnixSo = "pam_unix.so";
 static const char* g_remember = "remember";
 
-static char* FindPamModule(const char* pamModule, void* log)
+static char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
 {
     const char* paths[] = {
         "/usr/lib/x86_64-linux-gnu/security/%s",
@@ -19,7 +20,7 @@ static char* FindPamModule(const char* pamModule, void* log)
         "/lib/x86_64-linux-gnu/security/%s" };
     int numPaths = ARRAY_SIZE(paths);
     char* result = NULL;
-    int status = 0, i = 0;
+    int i = 0;
 
     if (NULL == pamModule)
     {
@@ -31,7 +32,7 @@ static char* FindPamModule(const char* pamModule, void* log)
     {
         if (NULL != (result = FormatAllocateString(paths[i], pamModule)))
         {
-            if (0 == (status = CheckFileExists(result, NULL, log)))
+            if (0 == CheckFileExists(result, NULL, log))
             {
                 break;
             }
@@ -53,13 +54,13 @@ static char* FindPamModule(const char* pamModule, void* log)
     }
     else
     {
-        OsConfigLogError(log, "FindPamModule: the PAM module '%s' is not present on this system", pamModule);
+        OsConfigLogInfo(log, "FindPamModule: the PAM module '%s' is not present on this system", pamModule);
     }
 
     return result;
 }
 
-int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
+int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHandle log)
 {
     int status = ENOENT;
     char* pamModule = NULL;
@@ -76,10 +77,16 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
         status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, reason, log)) &&
             (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
     }
+    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
+    {
+        // On Azure Linux '/etc/pam.d/system-password' is expected to exist
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemPassword, '#', g_remember, reason, log)) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemPassword, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
+    }
     else
     {
-        OsConfigCaptureReason(reason, "Neither '%s' or '%s' found, unable to check for '%s' option being set",
-            g_etcPamdCommonPassword, g_etcPamdSystemAuth, g_remember);
+        OsConfigCaptureReason(reason, "Neither '%s' or '%s' or '%s' found, unable to check for '%s' option being set",
+            g_etcPamdCommonPassword, g_etcPamdSystemAuth, g_etcPamdSystemPassword, g_remember);
     }
 
     if (status)
@@ -94,7 +101,7 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, void* log)
     return status;
 }
 
-static void EnsurePamModulePackagesAreInstalled(void* log)
+static void EnsurePamModulePackagesAreInstalled(OsConfigLogHandle log)
 {
     const char* pamPackages[] = {"pam", "libpam-modules", "pam_pwquality", "libpam-pwquality", "libpam-cracklib"};
     int numPamPackages = ARRAY_SIZE(pamPackages);
@@ -106,7 +113,7 @@ static void EnsurePamModulePackagesAreInstalled(void* log)
     }
 }
 
-int SetEnsurePasswordReuseIsLimited(int remember, void* log)
+int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log)
 {
     // This configuration line is used in the PAM (Pluggable Authentication Module) configuration
     // to set the number of previous passwords to remember in order to prevent password reuse.
@@ -124,7 +131,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
     //
     // const char* endsHereIfSucceedsTemplate = "password sufficient pam_unix.so sha512 shadow %s=%d retry=3\n";
     //
-    // Where 'sufficient' says that if this module succeeds other modules are not invoked. 
+    // Where 'sufficient' says that if this module succeeds other modules are not invoked.
     // While 'required'  says that if this module fails, authentication fails.
 
     const char* endsHereIfFailsTemplate = "password required %s sha512 shadow %s=%d retry=3\n";
@@ -136,7 +143,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
 
     if (NULL == (pamModulePath = FindPamModule(g_pamUnixSo, log)))
     {
-        OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: cannot proceed without %s being present", g_pamUnixSo);
+        OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited: cannot proceed without %s being present", g_pamUnixSo);
         return ENOENT;
     }
 
@@ -154,22 +161,30 @@ int SetEnsurePasswordReuseIsLimited(int remember, void* log)
                 status = _status;
             }
         }
+
+        if (0 == CheckFileExists(g_etcPamdSystemPassword, NULL, log))
+        {
+            if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdSystemPassword, g_remember, newline, '#', true, log))) && (0 == status))
+            {
+                status = _status;
+            }
+        }
     }
     else
     {
         OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
         status = ENOMEM;
     }
-    
+
     FREE_MEMORY(newline);
     FREE_MEMORY(pamModulePath);
 
-    OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited(%d) complete with %d", remember, status);
+    OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited(%d) returning %d", remember, status);
 
     return status;
 }
 
-int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, void* log)
+int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, OsConfigLogHandle log)
 {
     const char* auth = "auth";
     const char* required = "required";
@@ -203,7 +218,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
 
     if (NULL == (fileHandle = fopen(fileName, "r")))
     {
-        OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: cannot read from '%s'", fileName);
+        OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: cannot read from '%s' (errno: %d)", fileName, errno);
         status = EACCES;
     }
     else
@@ -212,7 +227,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
 
         while (NULL != fgets(line, lineMax + 1, fileHandle))
         {
-            // Example of valid lines: 
+            // Example of valid lines:
             //
             // 'auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900'
             // 'auth required pam_faillock.so preauth silent audit deny=3 unlock_time=900'
@@ -223,7 +238,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                 status = 0;
                 continue;
             }
-            else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) && 
+            else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) &&
                 (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) &&
                 (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny <= 5) &&
                 (0 < (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))))
@@ -232,7 +247,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                     auth, required, pamSo, deny, unlockTime, fileName);
                 OsConfigCaptureSuccessReason(reason, "'%s %s %s' found uncommented with 'deny' set to %d and 'unlock_time' set to %d in '%s'",
                     auth, required, pamSo, deny, unlockTime, fileName);
-                
+
                 status = 0;
                 FREE_MEMORY(authValue);
                 break;
@@ -245,29 +260,29 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
 
             memset(line, 0, lineMax + 1);
         }
-        
+
         if (status)
         {
             if (INT_ENOENT == deny)
             {
-                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'deny' not found in '%s' for '%s'", fileName, pamSo);
+                OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'deny' not found in '%s' for '%s'", fileName, pamSo);
                 OsConfigCaptureReason(reason, "'deny' not found in '%s' for '%s'", fileName, pamSo);
             }
             else
             {
-                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5", 
+                OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5",
                     deny, fileName, pamSo);
                 OsConfigCaptureReason(reason, "'deny' found set to %d in '%s' for '%s' instead of a value between 0 and 5", deny, fileName, pamSo);
             }
-        
+
             if (INT_ENOENT == unlockTime)
             {
-                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
+                OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
                 OsConfigCaptureReason(reason, "'unlock_time' not found in '%s' for '%s'", fileName, pamSo);
             }
             else
             {
-                OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' found set to %d in '%s' for '%s' instead of a positive value",
+                OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: 'unlock_time' found set to %d in '%s' for '%s' instead of a positive value",
                     unlockTime, fileName, pamSo);
                 OsConfigCaptureReason(reason, "'unlock_time' found set to %d in '%s' for '%s' instead of a positive value", unlockTime, fileName, pamSo);
             }
@@ -281,7 +296,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     return status;
 }
 
-int SetLockoutForFailedPasswordAttempts(void* log)
+int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
 {
     // These configuration lines are used in the PAM (Pluggable Authentication Module) settings to count
     // number of attempted accesses and lock user accounts after a specified number of failed login attempts.
@@ -340,7 +355,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
                 {
                     _status = ENOMEM;
                 }
-                
+
                 FREE_MEMORY(pamModulePath);
             }
             else if (NULL != (pamModulePath = FindPamModule(pamTally2So, log)))
@@ -357,7 +372,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
 
                 FREE_MEMORY(pamModulePath);
             }
-            else if ((NULL != (pamModulePath = FindPamModule(pamTallySo, log))) && 
+            else if ((NULL != (pamModulePath = FindPamModule(pamTallySo, log))) &&
                 (NULL != (pamModulePath2 = FindPamModule(pamDenySo, log))))
             {
                 if (NULL != (line = FormatAllocateString(pamTallyDenyLineTemplate, pamModulePath, pamModulePath2)))
@@ -390,7 +405,7 @@ int SetLockoutForFailedPasswordAttempts(void* log)
     return status;
 }
 
-static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log)
+static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
     const char* pamPwQualitySo = "pam_pwquality.so";
     const char* pamCrackLibSo = "pam_cracklib.so";
@@ -411,7 +426,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
 
     if (false == FileExists(g_etcPamdCommonPassword))
     {
-        OsConfigLogError(log, "CheckRequirementsForCommonPassword: '%s' does not exist", g_etcPamdCommonPassword);
+        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s' does not exist", g_etcPamdCommonPassword);
         OsConfigCaptureReason(reason, "%s' does not exist", g_etcPamdCommonPassword);
         return ENOENT;
     }
@@ -427,7 +442,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
 
     if (NULL == (fileHandle = fopen(g_etcPamdCommonPassword, "r")))
     {
-        OsConfigLogError(log, "CheckRequirementsForCommonPassword: cannot read from '%s'", g_etcPamdCommonPassword);
+        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: cannot read from '%s'", g_etcPamdCommonPassword);
         OsConfigCaptureReason(reason, "Cannot read from '%s'", g_etcPamdCommonPassword);
         status = EACCES;
     }
@@ -437,19 +452,19 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
 
         while (NULL != fgets(line, lineMax + 1, fileHandle))
         {
-            // Example of valid line: 
+            // Example of valid line:
             // 'password requisite pam_pwquality.so retry=3 minlen=14 lcredit=-1 ucredit=1 ocredit=-1 dcredit=-1'
-            
+
             if ((commentCharacter == line[0]) || (EOL == line[0]))
             {
                 status = 0;
                 continue;
             }
-            else if ((NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) && 
+            else if ((NULL != strstr(line, password)) && (NULL != strstr(line, requisite)) &&
                 ((NULL != strstr(line, pamPwQualitySo)) || (NULL != strstr(line, pamCrackLibSo)) || (NULL != strstr(line, g_pamUnixSo))))
             {
                 found = true;
-                
+
                 if ((retry == (retryOption = GetIntegerOptionFromBuffer(line, "retry", '=', log))) &&
                     (minlen == (minlenOption = GetIntegerOptionFromBuffer(line, "minlen", '=', log))) &&
                     (dcredit == (dcreditOption = GetIntegerOptionFromBuffer(line, "dcredit", '=', log))) &&
@@ -458,7 +473,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                     (lcredit == (lcreditOption = GetIntegerOptionFromBuffer(line, "lcredit", '=', log))))
                 {
                     OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s' contains uncommented '%s %s' with "
-                        "the expected password creation requirements (retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", 
+                        "the expected password creation requirements (retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)",
                         g_etcPamdCommonPassword, password, requisite, retryOption, minlenOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
                     OsConfigCaptureSuccessReason(reason, "'%s' contains uncommented '%s %s' with the expected password creation requirements "
                         "(retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", g_etcPamdCommonPassword, password, requisite,
@@ -470,72 +485,72 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                 {
                     if (INT_ENOENT == retryOption)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'retry' is missing", g_etcPamdCommonPassword);
+                        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: in '%s' 'retry' is missing", g_etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'retry' is missing", g_etcPamdCommonPassword);
                     }
                     else if (retryOption != retry)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'retry' is set to %d instead of %d",
+                        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: in '%s' 'retry' is set to %d instead of %d",
                             g_etcPamdCommonPassword, retryOption, retry);
                         OsConfigCaptureReason(reason, "In '%s' 'retry' is set to %d instead of %d", g_etcPamdCommonPassword, retryOption, retry);
                     }
 
                     if (INT_ENOENT == minlenOption)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'minlen' is missing", g_etcPamdCommonPassword);
+                        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: in '%s' 'minlen' is missing", g_etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'minlen' is missing", g_etcPamdCommonPassword);
                     }
                     else if (minlenOption != minlen)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'minlen' is set to %d instead of %d",
+                        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: in '%s' 'minlen' is set to %d instead of %d",
                             g_etcPamdCommonPassword, minlenOption, minlen);
                         OsConfigCaptureReason(reason, "In '%s' 'minlen' is set to %d instead of %d", g_etcPamdCommonPassword, minlenOption, minlen);
                     }
 
                     if (INT_ENOENT == dcreditOption)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'dcredit' is missing", g_etcPamdCommonPassword);
+                        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: in '%s' 'dcredit' is missing", g_etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'dcredit' is missing", g_etcPamdCommonPassword);
                     }
                     else if (dcreditOption != dcredit)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'dcredit' is set to '%d' instead of %d",
+                        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: in '%s' 'dcredit' is set to '%d' instead of %d",
                             g_etcPamdCommonPassword, dcreditOption, dcredit);
                         OsConfigCaptureReason(reason, "In '%s' 'dcredit' is set to '%d' instead of %d", g_etcPamdCommonPassword, dcreditOption, dcredit);
                     }
 
                     if (INT_ENOENT == ucreditOption)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'ucredit' missing", g_etcPamdCommonPassword);
+                        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: in '%s' 'ucredit' missing", g_etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'ucredit' missing", g_etcPamdCommonPassword);
                     }
                     else if (ucreditOption != ucredit)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'ucredit' set to '%d' instead of %d",
+                        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: in '%s' 'ucredit' set to '%d' instead of %d",
                             g_etcPamdCommonPassword, ucreditOption, ucredit);
                         OsConfigCaptureReason(reason, "In '%s' 'ucredit' set to '%d' instead of %d", g_etcPamdCommonPassword, ucreditOption, ucredit);
                     }
 
                     if (INT_ENOENT == ocreditOption)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'ocredit' missing", g_etcPamdCommonPassword);
+                        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: in '%s' 'ocredit' missing", g_etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'ocredit' missing", g_etcPamdCommonPassword);
                     }
                     else if (ocreditOption != ocredit)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'ocredit' set to '%d' instead of %d",
+                        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: in '%s' 'ocredit' set to '%d' instead of %d",
                             g_etcPamdCommonPassword, ocreditOption, ocredit);
                         OsConfigCaptureReason(reason, "In '%s' 'ocredit' set to '%d' instead of %d", g_etcPamdCommonPassword, ocreditOption, ocredit);
                     }
 
                     if (INT_ENOENT == lcreditOption)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'lcredit' missing", g_etcPamdCommonPassword);
+                        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: in '%s' 'lcredit' missing", g_etcPamdCommonPassword);
                         OsConfigCaptureReason(reason, "In '%s' 'lcredit' missing", g_etcPamdCommonPassword);
                     }
                     else if (lcreditOption != lcredit)
                     {
-                        OsConfigLogError(log, "CheckRequirementsForCommonPassword: in '%s' 'lcredit' set to '%d' instead of %d",
+                        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: in '%s' 'lcredit' set to '%d' instead of %d",
                             g_etcPamdCommonPassword, lcreditOption, lcredit);
                         OsConfigCaptureReason(reason, "In '%s' 'lcredit' set to '%d' instead of %d", g_etcPamdCommonPassword, lcreditOption, lcredit);
                     }
@@ -554,7 +569,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
 
     if (false == found)
     {
-        OsConfigLogError(log, "CheckRequirementsForCommonPassword: '%s' does not contain a line '%s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
+        OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s' does not contain a line '%s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
             g_etcPamdCommonPassword, password, requisite);
         OsConfigCaptureReason(reason, "'%s' does not contain a line '%s %s' with retry, minlen, dcredit, ucredit, ocredit, lcredit password creation options",
             g_etcPamdCommonPassword, password, requisite);
@@ -564,7 +579,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
     return status;
 }
 
-static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* option, const char* fileName, char separator, char comment, int desired, char** reason, void* log)
+static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* option, const char* fileName, char separator, char comment, int desired, char** reason, OsConfigLogHandle log)
 {
     int value = INT_ENOENT;
     int status = ENOENT;
@@ -579,7 +594,7 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
     {
         if (comment == buffer[0])
         {
-            OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: '%s' is set to correct value %d in '%s' but it's commented out", option, value, fileName);
+            OsConfigLogInfo(log, "CheckPasswordRequirementFromBuffer: '%s' is set to correct value %d in '%s' but it's commented out", option, value, fileName);
             OsConfigCaptureReason(reason, "'%s' is set to correct value %d in '%s' but it's commented out", option, value, fileName);
         }
         else
@@ -593,12 +608,12 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
     {
         if (comment == buffer[0])
         {
-            OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: '%s' is set to %d instead of %d in '%s' and it's commented out", option, value, desired, fileName);
+            OsConfigLogInfo(log, "CheckPasswordRequirementFromBuffer: '%s' is set to %d instead of %d in '%s' and it's commented out", option, value, desired, fileName);
             OsConfigCaptureReason(reason, "'%s' is set to %d instead of %d in '%s' and it's commented out", option, value, desired, fileName);
         }
         else
         {
-            OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: '%s' is set to %d instead of %d in '%s'", option, value, desired, fileName);
+            OsConfigLogInfo(log, "CheckPasswordRequirementFromBuffer: '%s' is set to %d instead of %d in '%s'", option, value, desired, fileName);
             OsConfigCaptureReason(reason, "'%s' is set to %d instead of %d in '%s'", option, value, desired, fileName);
         }
     }
@@ -606,7 +621,7 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
     return status;
 }
 
-static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log)
+static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
     FILE* fileHandle = NULL;
     char* line = NULL;
@@ -615,7 +630,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
     if (false == FileExists(g_etcSecurityPwQualityConf))
     {
-        OsConfigLogError(log, "CheckRequirementsForPwQualityConf: '%s' does not exist", g_etcSecurityPwQualityConf);
+        OsConfigLogInfo(log, "CheckRequirementsForPwQualityConf: '%s' does not exist", g_etcSecurityPwQualityConf);
         OsConfigCaptureReason(reason, "'%s' does not exist", g_etcSecurityPwQualityConf);
         return ENOENT;
     }
@@ -631,7 +646,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
     if (NULL == (fileHandle = fopen(g_etcSecurityPwQualityConf, "r")))
     {
-        OsConfigLogError(log, "CheckRequirementsForPwQualityConf: cannot read from '%s'", g_etcSecurityPwQualityConf);
+        OsConfigLogInfo(log, "CheckRequirementsForPwQualityConf: cannot read from '%s'", g_etcSecurityPwQualityConf);
         OsConfigCaptureReason(reason, "Cannot read from '%s'", g_etcSecurityPwQualityConf);
         status = EACCES;
     }
@@ -641,7 +656,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
         while (NULL != fgets(line, lineMax + 1, fileHandle))
         {
-            // Example of typical lines coming by default commented out: 
+            // Example of typical lines coming by default commented out:
             //
             //# retry = 3
             //# minlen = 8
@@ -696,7 +711,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
     return status;
 }
 
-int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, void* log)
+int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
     int status = ENOENT;
 
@@ -710,20 +725,20 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     }
     else
     {
-        OsConfigLogError(log, "CheckPasswordCreationRequirements: neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
+        OsConfigLogInfo(log, "CheckPasswordCreationRequirements: neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
         OsConfigCaptureReason(reason, "Neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
     }
 
     return status;
 }
 
-typedef struct PASSWORD_CREATION_REQUIREMENTS
+typedef struct PasswordCreationRequirements
 {
     const char* name;
     int value;
-} PASSWORD_CREATION_REQUIREMENTS;
+} PasswordCreationRequirements;
 
-int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, void* log)
+int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, OsConfigLogHandle log)
 {
     // These lines are used for password creation requirements configuration.
     //
@@ -739,10 +754,10 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     //
     // 'retry = 3'
     // 'minlen = 14'
-    // 'minclass = 4' 
+    // 'minclass = 4'
     // 'dcredit = -1'
     // 'ucredit = -1'
-    // 'ocredit = -1' 
+    // 'ocredit = -1'
     // 'lcredit = -1'
     //
     // Where:
@@ -755,12 +770,12 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     // - ucredit: the minimum number of uppercase letters required in the password (negative means no requirement)
     // - ocredit: the minimum number of other (non-alphanumeric) characters required in the password (negative means none)
     // - dcredit: the minimum number of digits required in the password  (negative means no requirement)
-    
+
     const char* etcPamdCommonPasswordLineTemplate = "password requisite %s retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
     const char* etcSecurityPwQualityConfLineTemplate = "%s = %d\n";
     const char* pamPwQualitySo = "pam_pwquality.so";
     const char* pamCrackLibSo = "pam_cracklib.so";
-    PASSWORD_CREATION_REQUIREMENTS entries[] = {{"retry", 0}, {"minlen", 0}, {"minclass", 0}, {"dcredit", 0}, {"ucredit", 0}, {"ocredit", 0}, {"lcredit", 0}};
+    PasswordCreationRequirements entries[] = {{"retry", 0}, {"minlen", 0}, {"minclass", 0}, {"dcredit", 0}, {"ucredit", 0}, {"ocredit", 0}, {"lcredit", 0}};
     int numEntries = ARRAY_SIZE(entries);
     bool pamPwQualitySoExists = false;
     bool pamCrackLibSoExists = false;
@@ -781,7 +796,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
 
         if (pamPwQualitySoExists || pamCrackLibSoExists || pamUnixSoExists)
         {
-            if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate, 
+            if (NULL != (line = FormatAllocateString(etcPamdCommonPasswordLineTemplate,
                 pamPwQualitySoExists ? pamModulePath : (pamCrackLibSoExists ? pamModulePath2 : pamModulePath3),
                 retry, minlen, lcredit, ucredit, ocredit, dcredit)))
             {
@@ -812,7 +827,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         entries[4].value = ucredit;
         entries[5].value = ocredit;
         entries[6].value = lcredit;
-        
+
         for (i = 0; i < numEntries; i++)
         {
             if (NULL != (line = FormatAllocateString(etcSecurityPwQualityConfLineTemplate, entries[i].name, entries[i].value)))

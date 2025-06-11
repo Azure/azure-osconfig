@@ -27,7 +27,7 @@ int HostName::RunCommand(const char* command, bool replaceEol, std::string* text
             *textResult = buffer;
         }
     }
-    else if (IsFullLoggingEnabled())
+    else if (IsDebugLoggingEnabled())
     {
         OsConfigLogError(HostNameLog::Get(), "Failed to run command: %d, '%s'", status, buffer);
     }

@@ -7,6 +7,12 @@
       "type": "mimComponent",
       "contents": [
         {
+          "name": "auditEnsureLoggingLevel",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
           "name": "auditEnsurePermissionsOnEtcIssue",
           "type": "mimObject",
           "desired": false,
@@ -1006,6 +1012,12 @@
           "name": "auditEnsureUnnecessaryAccountsAreRemoved",
           "type": "mimObject",
           "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureLoggingLevel",
+          "type": "mimObject",
+          "desired": true,
           "schema": "string"
         },
         {
@@ -2012,6 +2024,12 @@
         },
         {
           "name": "remediateEnsureUnnecessaryAccountsAreRemoved",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureLoggingLevel",
           "type": "mimObject",
           "desired": true,
           "schema": "string"

@@ -46,9 +46,9 @@ static const char* g_deliveryOptimizationConfigFile = NULL;
 static const char* g_deliveryOptimizationLogFile = "/var/log/osconfig_deliveryoptimization.log";
 static const char* g_deliveryOptimizationRolledLogFile = "/var/log/osconfig_deliveryoptimization.bak";
 
-static OSCONFIG_LOG_HANDLE g_log = NULL;
+static OsConfigLogHandle g_log = NULL;
 
-static OSCONFIG_LOG_HANDLE DeliveryOptimizationGetLog()
+static OsConfigLogHandle DeliveryOptimizationGetLog()
 {
     return g_log;
 }
@@ -57,7 +57,7 @@ void DeliveryOptimizationInitialize(const char* configFile)
 {
     g_deliveryOptimizationConfigFile = configFile;
     g_log = OpenLog(g_deliveryOptimizationLogFile, g_deliveryOptimizationRolledLogFile);
-        
+
     OsConfigLogInfo(DeliveryOptimizationGetLog(), "%s initialized", g_deliveryOptimizationModuleName);
 }
 
@@ -90,7 +90,7 @@ void DeliveryOptimizationMmiClose(MMI_HANDLE clientSession)
         --g_referenceCount;
         OsConfigLogInfo(DeliveryOptimizationGetLog(), "MmiClose(%p)", clientSession);
     }
-    else 
+    else
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiClose() called outside of a valid session");
     }
@@ -105,7 +105,7 @@ int DeliveryOptimizationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payl
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGetInfo(%s, %p, %p) called with invalid arguments", clientName, payload, payloadSizeBytes);
         return status;
     }
-    
+
     *payloadSizeBytes = (int)strlen(g_deliveryOptimizationModuleInfo);
     *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
     if (*payload)
@@ -120,8 +120,8 @@ int DeliveryOptimizationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payl
         *payloadSizeBytes = 0;
         status = ENOMEM;
     }
-    
-    if (IsFullLoggingEnabled())
+
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(DeliveryOptimizationGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
@@ -217,7 +217,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
                         memset(*payload, 0, *payloadSizeBytes);
                         memcpy(*payload, json, *payloadSizeBytes);
                     }
-                    else 
+                    else
                     {
                         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to allocate %d bytes", *payloadSizeBytes + 1);
                         *payloadSizeBytes = 0;
@@ -226,27 +226,27 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
 
                     json_free_serialized_string(json);
                 }
-                else 
+                else
                 {
-                    if (IsFullLoggingEnabled())
+                    if (IsDebugLoggingEnabled())
                     {
                         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to serialize JSON property '%s'", jsonPropertyName);
                     }
                     status = EINVAL;
                 }
             }
-            else 
+            else
             {
-                if (IsFullLoggingEnabled())
+                if (IsDebugLoggingEnabled())
                 {
                     OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to find JSON property '%s'", jsonPropertyName);
                 }
                 status = EINVAL;
             }
         }
-        else 
+        else
         {
-            if (IsFullLoggingEnabled())
+            if (IsDebugLoggingEnabled())
             {
                 OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to parse JSON file '%s'", g_deliveryOptimizationConfigFile);
             }
@@ -279,7 +279,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
                 strncpy(*payload, emptyJsonPayload, *payloadSizeBytes);
                 status = MMI_OK;
             }
-            else 
+            else
             {
                 OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to allocate %d bytes", *payloadSizeBytes + 1);
                 *payloadSizeBytes = 0;
@@ -288,7 +288,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
         }
     }
 
-    if (IsFullLoggingEnabled())
+    if (IsDebugLoggingEnabled())
     {
         OsConfigLogInfo(DeliveryOptimizationGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
@@ -332,7 +332,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called for an unsupported object name '%s'", objectName);
         status = EINVAL;
     }
-    else 
+    else
     {
         // Copy payload to local buffer with null terminator for json_parse_string.
         buffer = malloc(payloadSizeBytes + 1);
@@ -368,7 +368,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
                         {
                             json_object_set_number(newObject, g_cacheHostSourceConfigName, cacheHostSource);
                         }
-                        else 
+                        else
                         {
                             OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called with invalid cacheHostSource %d", cacheHostSource);
                             status = EINVAL;
@@ -386,7 +386,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
                         {
                             json_object_set_number(newObject, g_percentageDownloadThrottleConfigName, percentageDownloadThrottle);
                         }
-                        else 
+                        else
                         {
                             OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called with invalid percentageDownloadThrottle %d", percentageDownloadThrottle);
                             status = EINVAL;
@@ -410,7 +410,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
 
             json_value_free(rootValue);
         }
-        else 
+        else
         {
             OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet failed to allocate %d bytes", payloadSizeBytes + 1);
             status = ENOMEM;
@@ -418,7 +418,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
     }
 
     OsConfigLogInfo(DeliveryOptimizationGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
-    
+
     FREE_MEMORY(buffer);
 
     return status;

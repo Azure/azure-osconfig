@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 3 * * *' # Every day at 7pm PST/4am CET
+  pull_request:
 
 jobs:
   fuzzer-execution:
@@ -22,3 +23,4 @@ jobs:
       arch: ${{ matrix.arch }}
       package-type: ${{ matrix.target.package-type }}
       timeout-seconds: 3600
+      execute: ${{ contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) }}

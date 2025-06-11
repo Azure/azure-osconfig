@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureFilesystemOption"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureFilesystemOption": {
+              "type": "object",
+              "required": [
+                "mountpoint"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "mountpoint": {
+                  "type": "string",
+                  "description": "Filesystem mount point"
+                },
+                "optionsSet": {
+                  "type": "string",
+                  "description": "Comma-separated list of options that must be set"
+                },
+                "optionsNotSet": {
+                  "type": "string",
+                  "description": "Comma-separated list of options that must not be set"
+                },
+                "test_fstab": {
+                  "type": "string",
+                  "description": "Location of the fstab file"
+                },
+                "test_mtab": {
+                  "type": "string",
+                  "description": "Location of the mtab file"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureFilesystemOption"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureFilesystemOption": {
+              "type": "object",
+              "required": [
+                "mountpoint"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "mountpoint": {
+                  "type": "string",
+                  "description": "Filesystem mount point"
+                },
+                "optionsSet": {
+                  "type": "string",
+                  "description": "Comma-separated list of options that must be set"
+                },
+                "optionsNotSet": {
+                  "type": "string",
+                  "description": "Comma-separated list of options that must not be set"
+                },
+                "test_fstab": {
+                  "type": "string",
+                  "description": "Location of the fstab file"
+                },
+                "test_mtab": {
+                  "type": "string",
+                  "description": "Location of the mtab file"
+                },
+                "test_mount": {
+                  "type": "string",
+                  "description": "Location of the mount binary"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

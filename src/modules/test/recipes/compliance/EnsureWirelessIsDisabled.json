@@ -1,0 +1,30 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "compliance.so"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Compliance",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "EnsureWirelessIsDisabled": {
+        }
+      },
+      "parameters": {
+      }
+    }
+  },
+  // Blindly assume no wireless module is loaded
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Compliance",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ EnsureWirelessIsDisabled: No wireless kernel module found } == TRUE"
+  },
+
+   {
+     "Action": "UnloadModule"
+   }
+]

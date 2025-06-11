@@ -22,7 +22,7 @@
 class PmcLog
 {
 public:
-    static OSCONFIG_LOG_HANDLE Get()
+    static OsConfigLogHandle Get()
     {
         return m_log;
     }
@@ -38,7 +38,7 @@ public:
     }
 
 private:
-    static OSCONFIG_LOG_HANDLE m_log;
+    static OsConfigLogHandle m_log;
 };
 
 class PmcBase

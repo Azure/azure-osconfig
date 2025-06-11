@@ -8,7 +8,7 @@
 Our packages are distributed via the [Microsoft repository](https://packages.microsoft.com/). The following instructions will guide you through the installation of the `osconfig` package on our supported Linux distributions. Additionally, you can find our MSDN documentation on package installation at [docs.microsoft.com](https://learn.microsoft.com/azure/osconfig/howto-install?tabs=package).
 
 Channels | Description
------|-----  
+-----|-----
 `insiders-fast` | The latest and greatest features and bug fixes, represents current work-in-progress so things might not work as expected. This channel is updated frequently.
 `prod` | The stable channel. This channel is updated less frequently and is recommended for production use.
 

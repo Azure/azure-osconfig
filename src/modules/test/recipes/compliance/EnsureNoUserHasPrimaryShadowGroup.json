@@ -1,0 +1,98 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "complianceengine.so"
+  },
+
+  // If the shadow group does not exist, create it (it does not exist on few distros)
+  {
+    "RunCommand": "if [ -z \"$(grep shadow /etc/group)\" ]; then groupadd -g 42 shadow && touch /tmp/.remove_shadow_group; fi"
+  },
+
+
+
+  // Create a test user which has shadow as primary group
+  {
+    "RunCommand": "useradd -g shadow securitybaselinetest && id securitybaselinetest"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "allOf": [
+          {
+            "EnsureNoUserHasPrimaryShadowGroup": {}
+          }
+        ]
+      },
+      "remediate": {
+        "allOf": [
+          {
+            "EnsureNoUserHasPrimaryShadowGroup": {}
+          }
+        ]
+      }
+    }
+  },
+
+
+  // Audit must fail as the user has shadow as primary group
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: User's 'securitybaselinetest' primary group is 'shadow' } == FALSE]} == FALSE"
+  },
+
+
+
+  // Re-create the test user, but this time with default primary group
+  {
+    "RunCommand": "userdel -f -r securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "useradd securitybaselinetest && id securitybaselinetest"
+  },
+
+
+  // This is expected to pass as the user has default primary group
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: No user has 'shadow' as primary group } == TRUE]} == TRUE"
+  },
+
+
+
+  // Add the user to the supplementary shadow group
+  {
+    "RunCommand": "usermod -G shadow securitybaselinetest && id securitybaselinetest"
+  },
+
+
+  // This is expected to succeed as shadow is only a supplementary group for the test user
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ allOf: [{ EnsureNoUserHasPrimaryShadowGroup: No user has 'shadow' as primary group } == TRUE]} == TRUE"
+  },
+
+
+  // Cleanup
+  {
+    "RunCommand": "userdel -f -r securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "if [ -f /tmp/.remove_shadow_group ]; then groupdel shadow && rm -f /tmp/.remove_shadow_group; fi"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]

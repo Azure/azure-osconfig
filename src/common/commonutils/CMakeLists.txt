@@ -3,7 +3,7 @@
 
 project(commonutils)
 
-add_library(commonutils STATIC 
+add_library(commonutils STATIC
     CommandUtils.c
     ConfigUtils.c
     DaemonUtils.c
@@ -13,6 +13,7 @@ add_library(commonutils STATIC
     OtherUtils.c
     PackageUtils.c
     PassUtils.c
+    PerfUtils.c
     ProxyUtils.c
     SocketUtils.c
     SshUtils.c
@@ -25,7 +26,10 @@ target_include_directories(commonutils
         ${RAPIDJSON_INCLUDE_DIRS}
 )
 
-target_link_libraries(commonutils PRIVATE 
-    logging 
-    parsonlib
-    m)
+target_link_libraries(commonutils
+    PUBLIC
+        logging
+    PRIVATE
+        parsonlib
+        m
+)

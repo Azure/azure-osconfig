@@ -5,6 +5,11 @@
 #include "SecurityBaseline.h"
 #include "CommonUtils.h"
 #include "UserUtils.h"
+#include "Evaluator.h"
+#include "Optional.h"
+#include "parson.h"
+#include "Base64.h"
+#include "Procedure.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdint>
@@ -15,6 +20,13 @@
 #include <stdexcept>
 #include <limits>
 #include <vector>
+#include <sstream>
+
+using ComplianceEngine::Optional;
+using ComplianceEngine::Result;
+using ComplianceEngine::Error;
+using ComplianceEngine::Evaluator;
+using ComplianceEngine::action_func_t;
 
 // Tells libfuzzer to skip the input when it doesn't contain a valid target
 static const int c_skip_input = -1;
@@ -639,7 +651,7 @@ static int ConvertStringToIntegers_target(const char* data, std::size_t size) no
     auto source = std::string(data, size);
     int* values = nullptr;
     int count = 0;
-    ConvertStringToIntegers(source.c_str(), separator.at(0), &values, &count, nullptr);
+    ConvertStringToIntegers(source.c_str(), separator.at(0), &values, &count, 10,  nullptr);
     free(values);
     return 0;
 }
@@ -823,17 +835,24 @@ static int RemoveEscapeSequencesFromFile_target(const char* data, std::size_t si
     return 0;
 }
 
-static int IsCommandLoggingEnabledInJsonConfig_target(const char* data, std::size_t size) noexcept
+static int GetLoggingLevelFromJsonConfig_target(const char* data, std::size_t size) noexcept
 {
     auto json = std::string(data, size);
-    IsCommandLoggingEnabledInJsonConfig(json.c_str());
+    GetLoggingLevelFromJsonConfig(json.c_str(), nullptr);
     return 0;
 }
 
-static int IsFullLoggingEnabledInJsonConfig_target(const char* data, std::size_t size) noexcept
+static int GetMaxLogSizeFromJsonConfig_target(const char* data, std::size_t size) noexcept
 {
     auto json = std::string(data, size);
-    IsFullLoggingEnabledInJsonConfig(json.c_str());
+    GetMaxLogSizeFromJsonConfig(json.c_str(), nullptr);
+    return 0;
+}
+
+static int GetMaxLogSizeDebugMultiplierFromJsonConfig_target(const char* data, std::size_t size) noexcept
+{
+    auto json = std::string(data, size);
+    GetMaxLogSizeDebugMultiplierFromJsonConfig(json.c_str(), nullptr);
     return 0;
 }
 
@@ -875,7 +894,7 @@ static int GetIotHubProtocolFromJsonConfig_target(const char* data, std::size_t 
 static int LoadReportedFromJsonConfig_target(const char* data, std::size_t size) noexcept
 {
     auto json = std::string(data, size);
-    REPORTED_PROPERTY* reported = nullptr;
+    ReportedProperty* reported = nullptr;
     LoadReportedFromJsonConfig(json.c_str(), &reported, nullptr);
     free(reported);
     return 0;
@@ -917,6 +936,91 @@ static int CheckUserAccountsNotFound_target(const char* data, std::size_t size) 
     char* reason = nullptr;
     CheckUserAccountsNotFound(usernames.c_str(), &reason, nullptr);
     free(reason);
+    return 0;
+}
+
+static Result<bool> ComplianceEngineFailure(std::map<std::string, std::string>, std::ostringstream&)
+{
+    return false;
+}
+
+static Result<bool> ComplianceEngineSuccess(std::map<std::string, std::string>, std::ostringstream&)
+{
+    return true;
+}
+
+static Result<bool> ComplianceEngineParametrized(std::map<std::string, std::string> arguments, std::ostringstream&)
+{
+    auto it = arguments.find("result");
+    if (it == arguments.end())
+    {
+        return Error("Missing 'result' parameter");
+    }
+
+    if (it->second == "success")
+    {
+        return true;
+    }
+    else if (it->second == "failure")
+    {
+        return false;
+    }
+
+    return Error("Invalid 'result' parameter");
+}
+
+static Optional<std::map<std::string, std::string>> parseComplianceEngineParams(const std::string& input)
+{
+    std::map<std::string, std::string> result;
+    std::istringstream stream(input);
+    std::string token;
+    while (std::getline(stream, token, ','))
+    {
+        auto delimiterPos = token.find('=');
+        if (delimiterPos == std::string::npos)
+        {
+            return {};
+        }
+
+        auto key = token.substr(0, delimiterPos);
+        auto value = token.substr(delimiterPos + 1);
+        result.emplace(std::move(key), std::move(value));
+    }
+
+    return result;
+}
+
+static int Base64Decode_target(const char* data, std::size_t size) noexcept
+{
+    ComplianceEngine::Base64Decode(std::string(data, size));
+    return c_valid_input;
+}
+
+static int ProcedureUpdateUserParameters_target(const char* data, std::size_t size) noexcept
+{
+    auto input = std::string(data, size);
+    for (auto& c : input)
+    {
+        if (!std::isspace(c) && !std::isprint(c))
+        {
+            return c_skip_input;
+        }
+    }
+    ComplianceEngine::Procedure proc;
+    proc.SetParameter("X", "1");
+    proc.SetParameter("Y", "2");
+    Optional<Error> error = proc.UpdateUserParameters(input);
+    if (error)
+    {
+        // printf("Error: %s\n", error->message.c_str());
+    }
+    else
+    {
+        for (auto& param : proc.Parameters())
+        {
+            // printf("Parameter: %s = %s\n", param.first.c_str(), param.second.c_str());
+        }
+    }
     return 0;
 }
 
@@ -968,8 +1072,9 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "IsDaemonActive.", IsDaemonActive_target },
     { "RepairBrokenEolCharactersIfAny.", RepairBrokenEolCharactersIfAny_target },
     { "RemoveEscapeSequencesFromFile.", RemoveEscapeSequencesFromFile_target },
-    { "IsCommandLoggingEnabledInJsonConfig.", IsCommandLoggingEnabledInJsonConfig_target },
-    { "IsFullLoggingEnabledInJsonConfig.", IsFullLoggingEnabledInJsonConfig_target },
+    { "GetLoggingLevelFromJsonConfig.", GetLoggingLevelFromJsonConfig_target },
+    { "GetMaxLogSizeFromJsonConfig.", GetMaxLogSizeFromJsonConfig_target },
+    { "GetMaxLogSizeDebugMultiplierFromJsonConfig.", GetMaxLogSizeDebugMultiplierFromJsonConfig_target },
     { "IsIotHubManagementEnabledInJsonConfig.", IsIotHubManagementEnabledInJsonConfig_target },
     { "GetReportingIntervalFromJsonConfig.", GetReportingIntervalFromJsonConfig_target },
     { "GetModelVersionFromJsonConfig.", GetModelVersionFromJsonConfig_target },
@@ -981,6 +1086,8 @@ static const std::map<std::string, int (*)(const char*, std::size_t)> g_targets 
     { "GetGitBranchFromJsonConfig.", GetGitBranchFromJsonConfig_target },
     { "CheckOrEnsureUsersDontHaveDotFiles.", CheckOrEnsureUsersDontHaveDotFiles_target },
     { "CheckUserAccountsNotFound.", CheckUserAccountsNotFound_target },
+    { "Base64Decode.", Base64Decode_target },
+    {"ProcedureUpdateUserParameters.", ProcedureUpdateUserParameters_target},
 };
 
 // libfuzzer entry point

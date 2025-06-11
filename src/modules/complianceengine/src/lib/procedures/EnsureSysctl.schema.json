@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureSysctl"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureSysctl": {
+              "type": "object",
+              "required": [
+                "sysctlName",
+                "value"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "sysctlName": {
+                  "type": "string",
+                  "description": "Name of the sysctl",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+))$|(^([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+)$))"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Regex that the value of sysctl has to match"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}

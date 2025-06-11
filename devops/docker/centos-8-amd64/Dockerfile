@@ -1,9 +1,9 @@
 # TODO: Add mcr.io retagged images
-FROM centos:latest
+FROM centos:8
 
-# CentOS Linux 8 had reached the End Of Life (EOL) on December 31st, 2021. 
+# CentOS Linux 8 had reached the End Of Life (EOL) on December 31st, 2021.
 # It means that CentOS 8 will no longer receive development resources from
-# the official CentOS project. After Dec 31st, 2021, if you need to update 
+# the official CentOS project. After Dec 31st, 2021, if you need to update
 # your CentOS, you need to change the mirrors to vault.centos.org where they
 # will be archived permanently
 RUN cd /etc/yum.repos.d/
@@ -20,7 +20,7 @@ RUN yum update -y && yum install -y \
     libtool \
     make \
     openssl-devel \
-    rpm-build 
+    rpm-build
 
 WORKDIR /git
 
@@ -33,5 +33,6 @@ RUN git clone https://github.com/google/googletest --recursive -b release-1.10.0
 RUN cd googletest && cmake . && cmake --build . --parallel --target install && rm -rf /git/googletest
 
 # rapidjson
-RUN git clone https://github.com/Tencent/rapidjson --recursive
-RUN cd rapidjson && cmake . && cmake --build . --parallel --target install && rm -rf /git/rapidjson
+RUN git clone --no-checkout https://github.com/Tencent/rapidjson
+RUN cd rapidjson && git checkout 24b5e7a8b27f42fa16b96fc70aade9106cf7102f && git submodule update --init --recursive
+RUN cd rapidjson && cmake . -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_TESTS=OFF && cmake --build . --parallel --target install && rm -rf /git/rapidjson
