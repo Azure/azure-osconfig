@@ -101,7 +101,7 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
 
         map<string, string> arguments = {{"filename", pwd->pw_dir}, {"mask", "027"}, {"owner", pwd->pw_name}, {"group", group->gr_name}};
         indicators.Push("EnsureFilePermissions");
-        auto subResult = ComplianceEngine::AuditEnsureFilePermissionsHelper(std::string(pwd->pw_dir), std::move(arguments), indicators, context);
+        auto subResult = AuditEnsureFilePermissionsHelper(std::string(pwd->pw_dir), std::move(arguments), indicators, context);
         indicators.Pop();
         if (!subResult.HasValue())
         {
