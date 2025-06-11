@@ -79,7 +79,7 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         }
 
         struct stat st;
-        if (stat(pwd->pw_dir, &st) != 0)
+        if (0 != stat(pwd->pw_dir, &st))
         {
             int status = errno;
             if (status == ENOENT)
