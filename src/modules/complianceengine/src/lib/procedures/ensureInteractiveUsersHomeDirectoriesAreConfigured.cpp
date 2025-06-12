@@ -78,7 +78,7 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         if (it == validShells->end())
         {
             OsConfigLogDebug(context.GetLogHandle(), "User '%s' has shell '%s' not listed in %s", pwd->pw_name, pwd->pw_shell, etcShellsPath);
-            return Status::Compliant;
+            continue;
         }
 
         struct stat st;

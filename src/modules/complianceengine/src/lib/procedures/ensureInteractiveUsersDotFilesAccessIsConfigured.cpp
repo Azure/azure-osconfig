@@ -241,7 +241,6 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
             return result;
         };
 
-        OsConfigLogError(context.GetLogHandle(), "FileTreeWalk  user %s id %d directory %s,", user->pw_name, user->pw_uid, user->pw_dir);
         if (FileTreeWalk(user->pw_dir, ftwCallback, BreakOnNonCompliant::False, context).Value() == Status::NonCompliant)
         {
             OsConfigLogError(context.GetLogHandle(), "Directory validation for user %s id %d returned NonCompliant, but continuing", user->pw_name, user->pw_uid);
