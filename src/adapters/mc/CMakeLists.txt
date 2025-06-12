@@ -5,4 +5,6 @@ add_compile_options("-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-
 
 add_subdirectory(ssh)
 add_subdirectory(asb)
-add_subdirectory(complianceengine)
+if (BUILD_COMPLIANCEENGINE)
+    add_subdirectory(complianceengine)
+endif()
