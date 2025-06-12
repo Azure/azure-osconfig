@@ -146,7 +146,8 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
             return result;
         };
 
-        if (FileTreeWalk(pwd->pw_dir, ftwCallback, BreakOnNonCompliant::False, context).Value() == Status::NonCompliant)
+        auto result = FileTreeWalk(pwd->pw_dir, ftwCallback, BreakOnNonCompliant::False, context);
+        if (!result.HasValue() || result.Value() == Status::NonCompliant)
         {
             OsConfigLogDebug(context.GetLogHandle(), "Directory validation for user %s id %d returned NonCompliant, but continuing", pwd->pw_name, pwd->pw_uid);
             status = Status::NonCompliant;
@@ -176,14 +177,14 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
         if (it == validShells->end())
         {
             OsConfigLogDebug(context.GetLogHandle(), "User '%s' has shell '%s' not listed in %s", user->pw_name, user->pw_shell, etcShellsPath);
-            return Status::Compliant;
+            continue;
         }
 
         const auto* group = getgrgid(user->pw_gid);
         if (nullptr == group)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to get group for user '%s': %s", user->pw_name, strerror(errno));
-            return Error(string("Failed to get group for user: ") + strerror(errno), errno);
+            status = Status::NonCompliant;
         }
 
         auto ftwCallback = [user, group, &indicators, &context](const string& directory, const std::string& filename, const struct stat& st) -> Result<Status> {
@@ -241,7 +242,8 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
             return result;
         };
 
-        if (FileTreeWalk(user->pw_dir, ftwCallback, BreakOnNonCompliant::False, context).Value() == Status::NonCompliant)
+        auto result = FileTreeWalk(user->pw_dir, ftwCallback, BreakOnNonCompliant::False, context);
+        if (!result.HasValue() || result.Value() == Status::NonCompliant)
         {
             OsConfigLogError(context.GetLogHandle(), "Directory validation for user %s id %d returned NonCompliant, but continuing", user->pw_name, user->pw_uid);
             status = Status::NonCompliant;
