@@ -176,7 +176,7 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
         if (it == validShells->end())
         {
             OsConfigLogDebug(context.GetLogHandle(), "User '%s' has shell '%s' not listed in %s", user->pw_name, user->pw_shell, etcShellsPath);
-            // return Status::Compliant;
+            return Status::Compliant;
         }
 
         const auto* group = getgrgid(user->pw_gid);
