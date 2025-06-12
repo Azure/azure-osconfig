@@ -1,0 +1,65 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "securitybaseline.so"
+  },
+
+
+  // Create a temporary user to test the remediateEnsureUnnecessaryAccountsAreRemoved function
+  {
+    "RunCommand": "useradd securitybaselinetest && id securitybaselinetest"
+  },
+
+
+  // Prior to PR #911, the following would fail because the audit improperly reported the securitybaselinetest user as matching games,test
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
+    "Payload": "games,test"
+  },
+  // The securitybaselinetest user should not be removed. Prior to PR #911, this would fail.
+  {
+    "RunCommand": "id securitybaselinetest"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "initEnsureUnnecessaryAccountsAreRemoved",
+    "Payload": "games,test"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
+  },
+
+
+
+  // The following is expected to remove the securitybaselinetest user
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved",
+    "Payload": "securitybaselinetest"
+  },
+  // Now the user should not exist anymore
+  {
+    "RunCommand": "! id securitybaselinetest"
+  },
+
+
+  // Cleanup
+  {
+    "RunCommand": "userdel securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "rm -rf /home/securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest || true"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]
