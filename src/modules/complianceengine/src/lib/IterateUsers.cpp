@@ -54,7 +54,7 @@ bool UsersIterator::operator!=(const UsersIterator& other) const
     return !(*this == other);
 }
 
-void UsersIterator::next()
+void UsersIterator::next() // NOLINT(*-readability-identifier-naming)
 {
     pwent = getpwent();
     if (pwent == nullptr)
@@ -63,11 +63,11 @@ void UsersIterator::next()
     }
 }
 
-UsersIterator UsersRange::begin()
+UsersIterator UsersRange::begin() // NOLINT(*-readability-identifier-naming)
 {
     return UsersIterator(true);
 }
-UsersIterator UsersRange::end()
+UsersIterator UsersRange::end() // NOLINT(*-readability-identifier-naming)
 {
     return UsersIterator();
 }

@@ -28,22 +28,20 @@ public:
     pointer operator->();
 
     UsersIterator& operator++();
-
     UsersIterator operator++(int);
-
     bool operator==(const UsersIterator& other) const;
-
     bool operator!=(const UsersIterator& other) const;
 
+    void Next(); // NOLINT(*-readability-identifier-naming)
+
 private:
-    void Next();
     struct passwd* pwent;
 };
 class UsersRange
 {
 public:
-    UsersIterator Begin();
-    UsersIterator End();
+    UsersIterator Begin(); // NOLINT(*-readability-identifier-naming)
+    UsersIterator End();   // NOLINT(*-readability-identifier-naming)
 };
 } // namespace ComplianceEngine
 
