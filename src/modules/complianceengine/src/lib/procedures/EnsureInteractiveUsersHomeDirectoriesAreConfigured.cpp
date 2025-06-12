@@ -111,7 +111,6 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for home directory '%s' for user '%s': %s", pwd->pw_dir, pwd->pw_name,
                 subResult.Error().message.c_str());
-            return subResult.Error();
         }
 
         if (subResult.Value() == Status::NonCompliant)
