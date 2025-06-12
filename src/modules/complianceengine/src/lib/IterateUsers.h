@@ -13,13 +13,38 @@
 
 namespace ComplianceEngine
 {
-using UserIterationCallback = std::function<Result<Status>(const struct passwd*)>;
-// Iterate over all users in the system and apply the provided callback function to each user.
-// The callback function should return a Result<Status> indicating the compliance status of the user.
-// If the callback returns a non-compliant status and breakOnNonCompliant is set to true, the iteration will stop.
-// The function returns a Result<Status> indicating the overall compliance status of all users.
-// If the iteration encounters an error, it will return an Error object with the error message and code.
-Result<Status> IterateUsers(UserIterationCallback callback, BreakOnNonCompliant breakOnNonCompliant, ContextInterface& context);
+class UsersIterator
+{
+public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = struct passwd*;
+    using difference_type = std::ptrdiff_t;
+    using pointer = struct passwd**;
+    using reference = struct passwd*&;
+    UsersIterator();
+    UsersIterator(bool);
+    ~UsersIterator();
+    reference operator*();
+    pointer operator->();
+
+    UsersIterator& operator++();
+
+    UsersIterator operator++(int);
+
+    bool operator==(const UsersIterator& other) const;
+
+    bool operator!=(const UsersIterator& other) const;
+
+private:
+    void Next();
+    struct passwd* pwent;
+};
+class UsersRange
+{
+public:
+    UsersIterator Begin();
+    UsersIterator End();
+};
 } // namespace ComplianceEngine
 
 #endif // COMPLIANCE_ITERATE_USERS_H

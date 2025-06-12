@@ -6,43 +6,70 @@
 
 namespace ComplianceEngine
 {
-Result<Status> IterateUsers(UserIterationCallback callback, BreakOnNonCompliant breakOnNonCompliant, ContextInterface& context)
+UsersIterator::UsersIterator()
+    : pwent(nullptr)
 {
-    auto result = Status::Compliant;
-    struct passwd* pwd = nullptr;
-    setpwent();
-    for (errno = 0, pwd = getpwent(); nullptr != pwd; errno = 0, pwd = getpwent())
-    {
-        auto callbackResult = callback(pwd);
-        if (!callbackResult.HasValue())
-        {
-            OsConfigLogDebug(context.GetLogHandle(), "Iteration failed");
-            endpwent();
-            return callbackResult.Error();
-        }
-
-        if (callbackResult.Value() != Status::Compliant)
-        {
-            result = Status::NonCompliant;
-            if (breakOnNonCompliant == BreakOnNonCompliant::True)
-            {
-                OsConfigLogDebug(context.GetLogHandle(), "Iteration stopped");
-                break;
-            }
-            else
-            {
-                OsConfigLogDebug(context.GetLogHandle(), "Callback returned false, but continuing");
-            }
-        }
-    }
-
-    int status = errno;
-    endpwent();
-    if (0 != status)
-    {
-        return Error(std::string("getpwent failed: ") + strerror(status), status);
-    }
-
-    return result;
 }
+UsersIterator::UsersIterator(bool)
+{
+    next();
+}
+UsersIterator::~UsersIterator()
+{
+    if (pwent != nullptr)
+    {
+        endpwent();
+    }
+}
+
+UsersIterator::reference UsersIterator::operator*()
+{
+    return pwent;
+}
+UsersIterator::pointer UsersIterator::operator->()
+{
+    return &pwent;
+}
+
+UsersIterator& UsersIterator::operator++()
+{
+    next();
+    return *this;
+}
+
+UsersIterator UsersIterator::operator++(int)
+{
+    UsersIterator tmp = *this;
+    next();
+    return tmp;
+}
+
+bool UsersIterator::operator==(const UsersIterator& other) const
+{
+    return pwent == other.pwent;
+}
+
+bool UsersIterator::operator!=(const UsersIterator& other) const
+{
+    return !(*this == other);
+}
+
+void UsersIterator::next()
+{
+    pwent = getpwent();
+    if (pwent == nullptr)
+    {
+        endpwent();
+    }
+}
+
+UsersIterator UsersRange::begin()
+{
+    return UsersIterator(true);
+}
+UsersIterator UsersRange::end()
+{
+    return UsersIterator();
+}
+
 } // namespace ComplianceEngine

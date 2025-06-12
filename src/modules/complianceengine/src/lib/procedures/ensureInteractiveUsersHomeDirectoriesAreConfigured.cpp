@@ -69,7 +69,10 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         return validShells.Error();
     }
 
-    auto cb = [&validShells, &indicators, &context](const passwd* pwd) -> Result<Status> {
+    auto result = Status::Compliant;
+    UsersRange users;
+    for (const auto& pwd : users)
+    {
         const auto shell = string(pwd->pw_shell);
         const auto it = validShells->find(shell);
         if (it == validShells->end())
@@ -109,19 +112,18 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for home directory '%s' for user '%s': %s", pwd->pw_dir, pwd->pw_name,
                 subResult.Error().message.c_str());
-            return subResult.Error();
+            result = Status::NonCompliant;
         }
 
         if (subResult.Value() == Status::NonCompliant)
         {
             OsConfigLogInfo(context.GetLogHandle(), "User '%s' has home directory '%s' with incorrect permissions", pwd->pw_name, pwd->pw_dir);
-            return indicators.NonCompliant(std::string("User's '") + pwd->pw_name + "' home directory '" + pwd->pw_dir + "' has incorrect permissions");
+            indicators.NonCompliant(std::string("User's '") + pwd->pw_name + "' home directory '" + pwd->pw_dir + "' has incorrect permissions");
+            result = Status::NonCompliant;
         }
+    }
 
-        return Status::Compliant;
-    };
-
-    return IterateUsers(cb, BreakOnNonCompliant::False, context);
+    return result;
 }
 
 REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
@@ -135,13 +137,16 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         return validShells.Error();
     }
 
-    auto cb = [&validShells, &indicators, &context](const passwd* pwd) -> Result<Status> {
+    auto result = Status::Compliant;
+    UsersRange users;
+    for (const auto& pwd : users)
+    {
         const auto shell = string(pwd->pw_shell);
         const auto it = validShells->find(shell);
         if (it == validShells->end())
         {
             OsConfigLogDebug(context.GetLogHandle(), "User '%s' has shell '%s' not in /etc/shells", pwd->pw_name, pwd->pw_shell);
-            return Status::Compliant;
+            continue;
         }
 
         struct stat st;
@@ -181,13 +186,10 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to remediate permissions for home directory '%s' for user '%s': %s", pwd->pw_dir,
                 pwd->pw_name, subResult.Error().message.c_str());
-            return subResult.Error();
+            result = Status::NonCompliant;
         }
-
-        return subResult.Value();
-    };
-
-    return IterateUsers(cb, BreakOnNonCompliant::False, context);
+    }
+    return result;
 }
 
 } // namespace ComplianceEngine
