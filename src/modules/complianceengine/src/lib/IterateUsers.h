@@ -32,7 +32,7 @@ public:
     bool operator==(const UsersIterator& other) const;
     bool operator!=(const UsersIterator& other) const;
 
-    void next(); // NOLINT(*-readability-identifier-naming)
+    void next(); // NOLINT(*-identifier-naming)
 
 private:
     struct passwd* pwent;
@@ -40,8 +40,8 @@ private:
 class UsersRange
 {
 public:
-    UsersIterator begin(); // NOLINT(*-readability-identifier-naming)
-    UsersIterator end();   // NOLINT(*-readability-identifier-naming)
+    UsersIterator begin(); // NOLINT(*-identifier-naming)
+    UsersIterator end();   // NOLINT(*-identifier-naming)
 };
 } // namespace ComplianceEngine
 
