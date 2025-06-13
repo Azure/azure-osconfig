@@ -13,6 +13,7 @@ Result<std::vector<OpenPort>> GetOpenPorts(ContextInterface& context)
     }
     std::vector<OpenPort> openPorts;
     std::istringstream stream(result.Value());
+    OsConfigLogError(context.GetLogHandle(), "ss command output: %s ", result.Value().c_str());
     std::string line;
     while (std::getline(stream, line))
     {
