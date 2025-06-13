@@ -6,33 +6,33 @@
         {
           "type": "object",
           "required": [
-            "ExecuteCommandGrep"
+            "SystemdParameter"
           ],
           "additionalProperties": false,
           "properties": {
-            "ExecuteCommandGrep": {
+            "SystemdParameter": {
               "type": "object",
               "required": [
-                "command",
-                "regex"
+                "parameter",
+                "valueRegex"
               ],
               "additionalProperties": false,
               "properties": {
-                "command": {
+                "parameter": {
                   "type": "string",
-                  "description": "Command to be executed"
+                  "description": "Parameter name"
                 },
-                "awk": {
+                "valueRegex": {
                   "type": "string",
-                  "description": "Awk transformation in the middle, optional"
+                  "description": "Regex for the value"
                 },
-                "regex": {
+                "file": {
                   "type": "string",
-                  "description": "Regex to be matched"
+                  "description": "Config filename"
                 },
-                "type": {
+                "dir": {
                   "type": "string",
-                  "description": "Type of regex, P for Perl (default) or E for Extended"
+                  "description": "Directory to search for config files"
                 }
               }
             }

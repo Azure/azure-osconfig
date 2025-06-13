@@ -33,7 +33,7 @@ static std::string EscapeForShell(const std::string& str)
 static const std::set<std::string> allowedCommands = {"nft list ruleset", "nft list chain", "nft list tables", "ip6tables -L -n",
     "ip6tables -L INPUT -v -n", "ip6tables -L OUTPUT -v -n", "iptables -L -n", "iptables -L INPUT -v -n", "iptables -L OUTPUT -v -n", "uname"};
 
-AUDIT_FN(ExecuteCommandGrep, "command:Command to be executed:M", "regex:Regex to be matched:M",
+AUDIT_FN(ExecuteCommandGrep, "command:Command to be executed:M", "awk:Awk transformation in the middle, optional", "regex:Regex to be matched:M",
     "type:Type of regex, P for Perl (default) or E for Extended")
 {
     auto it = args.find("command");
@@ -54,6 +54,14 @@ AUDIT_FN(ExecuteCommandGrep, "command:Command to be executed:M", "regex:Regex to
     }
     auto regexStr = std::move(it->second);
 
+    std::string awkStr;
+    it = args.find("awk");
+    if (it != args.end())
+    {
+        awkStr = std::move(it->second);
+        awkStr = EscapeForShell(awkStr);
+    }
+
     std::string type = "P";
     it = args.find("type");
     if (it != args.end())
@@ -66,7 +74,12 @@ AUDIT_FN(ExecuteCommandGrep, "command:Command to be executed:M", "regex:Regex to
     }
     regexStr = EscapeForShell(regexStr);
 
-    std::string fullCommand = command + " | grep -" + type + " -- \"" + regexStr + "\" || (echo -n 'No match found'; exit 1)";
+    std::string fullCommand = command;
+    if (awkStr != "")
+    {
+        fullCommand += " | awk \"" + awkStr + "\" ";
+    }
+    fullCommand += " | grep -" + type + " -- \"" + regexStr + "\" || (echo -n 'No match found'; exit 1)";
     Result<std::string> commandOutput = context.ExecuteCommand(fullCommand);
     if (!commandOutput.HasValue())
     {

@@ -45,7 +45,7 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
     if (it == args.end())
     {
         OsConfigLogError(log, "Error: EnsureSystemdUnit: missing 'unitName' parameter ");
-        return indicators.NonCompliant("Missing 'unitName' parameter");
+        return Error("Missing 'unitName' parameter");
     }
     auto unitName = std::move(it->second);
 
@@ -67,7 +67,7 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
         catch (const std::exception& e)
         {
             OsConfigLogError(log, "Regex error: %s", e.what());
-            return indicators.NonCompliant("Failed to compile regex '" + param.value + "' error: " + e.what());
+            return Error("Failed to compile regex '" + param.value + "' error: " + e.what());
         }
     }
     systemCtlCmd += unitName;
@@ -75,7 +75,7 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
     if (argFound == false)
     {
         OsConfigLogError(log, "Error: EnsureSystemdUnit: none of 'activeState loadState UnitFileState' parameters are present");
-        return indicators.NonCompliant("None of 'activeState loadState UnitFileState' parameters are present");
+        return Error("None of 'activeState loadState UnitFileState' parameters are present");
     }
 
     Result<std::string> systemCtlOutput = context.ExecuteCommand(systemCtlCmd);
