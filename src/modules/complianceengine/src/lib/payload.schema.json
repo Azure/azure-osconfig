@@ -140,6 +140,9 @@
           "$ref": "procedures/EnsureFilesystemOption.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/audit"
         },
         {
@@ -183,6 +186,12 @@
         },
         {
           "$ref": "procedures/UfwStatus.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/ensureInteractiveUsersDotFilesAccessIsConfigured.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/ensureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/audit"
         }
       ]
     },
@@ -196,6 +205,9 @@
         },
         {
           "$ref": "procedures/EnsureFilesystemOption.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/remediation"
@@ -241,6 +253,12 @@
         },
         {
           "$ref": "procedures/UfwStatus.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/ensureInteractiveUsersDotFilesAccessIsConfigured.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/ensureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/remediation"
         },
         {
           "$ref": "#definitions/auditProcedure"
