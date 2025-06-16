@@ -559,6 +559,7 @@ static const char* g_syslogNg = "syslog-ng";
 static const char* g_systemd = "systemd";
 static const char* g_postfix = "postfix";
 static const char* g_avahiDaemon = "avahi-daemon";
+static const char* g_avahiDaemonSocket = "avahi-daemon.socket";
 static const char* g_cups = "cups";
 static const char* g_rpcgssd = "rpcgssd";
 static const char* g_rpcGssd = "rpc-gssd";
@@ -3617,6 +3618,8 @@ static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, OsConfigLogH
 {
     int status = 0;
     UNUSED(value);
+    // avahi-daemon may be retriggered by avahi-daemon.socket:
+    StopAndDisableDaemon(g_avahiDaemonSocket, log);
     StopAndDisableDaemon(g_avahiDaemon, log);
     if (0 == (status = (CheckDaemonNotActive(g_avahiDaemon, NULL, log) ? 0 : ENOENT)))
     {
@@ -3624,8 +3627,8 @@ static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, OsConfigLogH
         {
             if (FileExists(g_etcSysconfigNetwork) && IsAFile(g_etcSysconfigNetwork, log) && IsDaemonActive(g_legacyNetworkService, log))
             {
-                // cloud-init regenerates the config file on every boot, and discards any changes before its header.
-                // So we need to add the NOZEROCONF line to the top of the file.
+                // cloud-init regenerates the config file on every boot, and discards any changes before its header,
+                // so we need to add the NOZEROCONF line to the top of the file.
                 status = ReplaceMarkedLinesInFilePrepend(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', true, log);
             }
         }
@@ -4016,6 +4019,7 @@ static int RemediateEnsureAppropriateCiphersForSsh(char* value, OsConfigLogHandl
 static int RemediateEnsureAvahiDaemonServiceIsDisabled(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
+    StopAndDisableDaemon(g_avahiDaemonSocket, log);
     StopAndDisableDaemon(g_avahiDaemon, log);
     return CheckDaemonNotActive(g_avahiDaemon, NULL, log) ? 0 : ENOENT;
 }
