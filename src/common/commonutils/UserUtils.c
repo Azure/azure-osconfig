@@ -865,6 +865,11 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
         OsConfigLogInfo(log, "RemoveUser: cannot remove user with uid 0 (%u, %u)", user->userId, user->groupId);
         return EPERM;
     }
+    else if (user->remoteOrFederated)
+    {
+        OsConfigLogInfo(log, "RemoveUser: cannot remove remote of federated user %u", user->userId);
+        return EPERM;
+    }
 
     if (NULL != (command = FormatAllocateString(commandTemplate, user->username)))
     {
