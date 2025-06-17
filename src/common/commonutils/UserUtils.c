@@ -191,7 +191,7 @@ static bool IsUserNonLogin(SimplifiedUser* user)
 // We do this in order to log in full clear deviant accounts (that for example use a no-login shell while having UID above 1000)
 static bool IsSystemAccount(SimplifiedUser* user)
 {
-    return (user && ((user->username && (0 == strcmp(user->username, g_root))) || IsUserNonLogin(user) || (user->userId < 1000) || user->remoteOrFederated)) ? true : false;
+    return (user && ((user->username && (0 == strcmp(user->username, g_root))) || IsUserNonLogin(user) || (user->userId < 1000))) ? true : false;
 }
 
 // Similar to determining if an user account is system, we identify a group to be system if either
@@ -414,7 +414,6 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
         status = EPERM;
     }
 
-
     if (0 != status)
     {
         OsConfigLogInfo(log, "EnumerateUsers failed with %d", status);
@@ -426,11 +425,9 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
 
         for (i = 0; i < *size; i++)
         {
-            //OsConfigLogDebug(log, "EnumerateUsers(user %u): uid %d, name '%s', gid %d, home '%s', shell '%s'", i, (*userList)[i].userId,
-            OsConfigLogInfo(log, "EnumerateUsers(user %u): uid %d, name '%s', gid %d, home '%s', shell '%s', remote or federated: %u", i, (*userList)[i].userId,
+            OsConfigLogDebug(log, "EnumerateUsers(user %u): uid %d, name '%s', gid %d, home '%s', shell '%s'", i, (*userList)[i].userId,
                 IsSystemAccount(&(*userList)[i]) ? (*userList)[i].username : g_redacted, (*userList)[i].groupId,
-                IsSystemAccount(&(*userList)[i]) ? (*userList)[i].home : g_redacted, (*userList)[i].shell,
-                (true == (*userList)[i].remoteOrFederated) ? 1 : 0);//
+                IsSystemAccount(&(*userList)[i]) ? (*userList)[i].home : g_redacted, (*userList)[i].shell);
         }
     }
 
