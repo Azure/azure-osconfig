@@ -6,7 +6,7 @@
     "RunCommand": "useradd securitybaselinetest2 && id securitybaselinetest2"
   },
   {
-    "RunCommand": "sudo useradd testuser_noshadow && sudo passwd -u testuser_noshadow && sudo sed -i '/^testuser_noshadow:/d' /etc/shadow && id testuser_noshadow"
+    "RunCommand": "sudo useradd testuser_noshadow && echo 'testuser_noshadow:DummyPass123!' | sudo chpasswd && sudo sed -i '/^testuser_noshadow:/d' /etc/shadow && id testuser_noshadow"
   },
   {
     "Action": "LoadModule",
