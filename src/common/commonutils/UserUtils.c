@@ -866,7 +866,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
     }
     else if (user->remoteOrFederated)
     {
-        OsConfigLogInfo(log, "RemoveUser: cannot remove remote of federated user %u", user->userId);
+        OsConfigLogInfo(log, "RemoveUser: cannot remove an user account that may be remote or federated (%u)", user->userId);
         return EPERM;
     }
 
@@ -1313,7 +1313,7 @@ int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
             }
             else if (userList[i].remoteOrFederated)
             {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') is remote or federated",
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') may be remote or federated",
                     userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
             }
             else
@@ -1366,7 +1366,7 @@ int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
             }
             else if (userList[i].remoteOrFederated)
             {
-                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u is a remote or federated user", userList[i].userId);
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u may be remote or federated", userList[i].userId);
             }
             else
             {
