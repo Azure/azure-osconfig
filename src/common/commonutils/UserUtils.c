@@ -426,9 +426,11 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
 
         for (i = 0; i < *size; i++)
         {
-            OsConfigLogDebug(log, "EnumerateUsers(user %u): uid %d, name '%s', gid %d, home '%s', shell '%s'", i, (*userList)[i].userId,
+            //OsConfigLogDebug(log, "EnumerateUsers(user %u): uid %d, name '%s', gid %d, home '%s', shell '%s'", i, (*userList)[i].userId,
+            OsConfigLogInfo(log, "EnumerateUsers(user %u): uid %d, name '%s', gid %d, home '%s', shell '%s', remote or federated: %u", i, (*userList)[i].userId,
                 IsSystemAccount(&(*userList)[i]) ? (*userList)[i].username : g_redacted, (*userList)[i].groupId,
-                IsSystemAccount(&(*userList)[i]) ? (*userList)[i].home : g_redacted, (*userList)[i].shell);
+                IsSystemAccount(&(*userList)[i]) ? (*userList)[i].home : g_redacted, (*userList)[i].shell,
+                *userList)[i].remoteOrFederated ? 1 : 0);//
         }
     }
 
