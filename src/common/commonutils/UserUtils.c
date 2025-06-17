@@ -1643,7 +1643,7 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || userList[i].notInShadow))
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || userList[i].notInShadow)
             {
                 continue;
             }
