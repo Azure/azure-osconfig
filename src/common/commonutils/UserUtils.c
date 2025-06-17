@@ -1314,6 +1314,11 @@ int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') cannot login with password",
                     userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
             }
+            else if (userList[i].remoteOrFederated)
+            {
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') is remote or federated",
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
+            }
             else
             {
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s')  not found to have a password set",
