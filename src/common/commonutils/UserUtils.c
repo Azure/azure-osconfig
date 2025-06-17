@@ -339,13 +339,13 @@ static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
             default:
                 OsConfigLogInfo(log, "CheckIfUserHasPassword: user %u appears to be missing password ('%c')", user->userId, control);
                 user->hasPassword = false;
-                user->remoteOrFederated = true;
         }
     }
     else if (0 == errno)
     {
         OsConfigLogInfo(log, "CheckIfUserHasPassword: user %u is not found in shadow database (/etc/shadow), this may indicate a remote or federated user, assuming user has no password", user->userId);
         user->hasPassword = false;
+        user->remoteOrFederated = true;
     }
     else
     {
