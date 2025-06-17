@@ -29,7 +29,7 @@ static void ResetUserEntry(SimplifiedUser* target)
         target->noLogin = false;
         target->cannotLogin = false;
         target->hasPassword = false;
-        target->remoteOrFederated = false;
+        target->notInShadow = false;
         target->passwordEncryption = unknown;
         target->lastPasswordChange = 0;
         target->minimumPasswordAge = 0;
@@ -345,7 +345,7 @@ static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
     {
         OsConfigLogInfo(log, "CheckIfUserHasPassword: user %u is not found in shadow database (/etc/shadow), this may indicate a remote or federated user, assuming user has no password", user->userId);
         user->hasPassword = false;
-        user->remoteOrFederated = true;
+        user->notInShadow = true;
     }
     else
     {
@@ -864,9 +864,9 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
         OsConfigLogInfo(log, "RemoveUser: cannot remove user with uid 0 (%u, %u)", user->userId, user->groupId);
         return EPERM;
     }
-    else if (user->remoteOrFederated)
+    else if (user->notInShadow)
     {
-        OsConfigLogInfo(log, "RemoveUser: cannot remove an user account that may be remote or federated (%u)", user->userId);
+        OsConfigLogInfo(log, "RemoveUser: cannot remove an user account that does not exist in the shadow database (%u)", user->userId);
         return EPERM;
     }
 
@@ -1311,9 +1311,9 @@ int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') cannot login with password",
                     userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
             }
-            else if (userList[i].remoteOrFederated)
+            else if (userList[i].notInShadow)
             {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') may be remote or federated",
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') does not exist in the shadow database",
                     userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
             }
             else
@@ -1364,9 +1364,9 @@ int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
             {
                 OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u cannot login with password", userList[i].userId);
             }
-            else if (userList[i].remoteOrFederated)
+            else if (userList[i].notInShadow)
             {
-                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u may be remote or federated", userList[i].userId);
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u does not exist in the shadow database", userList[i].userId);
             }
             else
             {
@@ -1515,7 +1515,7 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || userList[i].notInShadow)
             {
                 continue;
             }
@@ -1550,7 +1550,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || userList[i].notInShadow)
             {
                 continue;
             }
@@ -1643,7 +1643,7 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || userList[i].notInShadow))
             {
                 continue;
             }
@@ -1701,7 +1701,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || userList[i].notInShadow)
             {
                 continue;
             }
