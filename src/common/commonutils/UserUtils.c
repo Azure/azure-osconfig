@@ -340,6 +340,11 @@ static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
                 user->hasPassword = false;
         }
     }
+    else if (0 == errno)
+    {
+        OsConfigLogInfo(log, "CheckIfUserHasPassword: user %u is not found in shadow database (/etc/shadow), this may indicate a remote or federated user, assuming user has no password", user->userId);
+        user->hasPassword = false;
+    }
     else
     {
         OsConfigLogInfo(log, "CheckIfUserHasPassword: getspnam for user %u failed with %d (%s)", user->userId, errno, strerror(errno));

@@ -6,6 +6,9 @@
     "RunCommand": "useradd securitybaselinetest2 && id securitybaselinetest2"
   },
   {
+    "RunCommand": "sudo useradd testuser_noshadow && id testuser_noshadow"
+  },
+  {
     "Action": "LoadModule",
     "Module": "securitybaseline.so"
   },
@@ -2652,10 +2655,9 @@
   {
     "Action": "UnloadModule"
   },
-
-
-
-  // cleanup
+  // --------------------------------------------------------------------------------
+  // Clean-up
+  // --------------------------------------------------------------------------------
   {
     "RunCommand": "userdel -f -r securitybaselinetest || true"
   },
@@ -2673,5 +2675,14 @@
   },
   {
     "RunCommand": "groupdel securitybaselinetest2 || true"
+  },
+  {
+    "RunCommand": "userdel -f -r testuser_noshadow || true"
+  },
+  {
+    "RunCommand": "rm -rf /home/testuser_noshadow || true"
+  },
+  {
+    "RunCommand": "groupdel testuser_noshadow || true"
   }
 ]
