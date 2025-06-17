@@ -58,8 +58,7 @@ AUDIT_FN(ExecuteCommandGrep, "command:Command to be executed:M", "awk:Awk transf
     it = args.find("awk");
     if (it != args.end())
     {
-        awkStr = std::move(it->second);
-        awkStr = EscapeForShell(awkStr);
+        awkStr = EscapeForShell(it->second);
     }
 
     std::string type = "P";
@@ -77,7 +76,7 @@ AUDIT_FN(ExecuteCommandGrep, "command:Command to be executed:M", "awk:Awk transf
     std::string fullCommand = command;
     if (awkStr != "")
     {
-        fullCommand += " | awk \"" + awkStr + "\" ";
+        fullCommand += " | awk -S \"" + awkStr + "\" ";
     }
     fullCommand += " | grep -" + type + " -- \"" + regexStr + "\" || (echo -n 'No match found'; exit 1)";
     Result<std::string> commandOutput = context.ExecuteCommand(fullCommand);
