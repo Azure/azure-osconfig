@@ -191,7 +191,7 @@ static bool IsUserNonLogin(SimplifiedUser* user)
 // We do this in order to log in full clear deviant accounts (that for example use a no-login shell while having UID above 1000)
 static bool IsSystemAccount(SimplifiedUser* user)
 {
-    return (user && ((user->username && (0 == strcmp(user->username, g_root))) || IsUserNonLogin(user) || (user->userId < 1000) || (true == user->remoteOrFederated))) ? true : false;
+    return (user && ((user->username && (0 == strcmp(user->username, g_root))) || IsUserNonLogin(user) || (user->userId < 1000) || user->remoteOrFederated)) ? true : false;
 }
 
 // Similar to determining if an user account is system, we identify a group to be system if either
