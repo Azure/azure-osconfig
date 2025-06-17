@@ -29,6 +29,7 @@ static void ResetUserEntry(SimplifiedUser* target)
         target->noLogin = false;
         target->cannotLogin = false;
         target->hasPassword = false;
+        target->remoteOrFederated = false;
         target->passwordEncryption = unknown;
         target->lastPasswordChange = 0;
         target->minimumPasswordAge = 0;
@@ -338,6 +339,7 @@ static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
             default:
                 OsConfigLogInfo(log, "CheckIfUserHasPassword: user %u appears to be missing password ('%c')", user->userId, control);
                 user->hasPassword = false;
+                user->remoteOrFederated = true;
         }
     }
     else if (0 == errno)
@@ -1352,6 +1354,10 @@ int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
             else if (userList[i].cannotLogin)
             {
                 OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u cannot login with password", userList[i].userId);
+            }
+            else if (userList[i].remoteOrFederated)
+            {
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u is a remote or federated user", userList[i].userId);
             }
             else
             {
