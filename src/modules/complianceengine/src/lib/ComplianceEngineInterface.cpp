@@ -114,7 +114,8 @@ int ComplianceEngineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
             {
                 OsConfigLogError(engine.Log(), "ComplianceEngineMmiGet failed with a non-critical error: %s (errno: %d)",
                     result.Error().message.c_str(), result.Error().code);
-                result = ComplianceEngine::AuditResult(Status::NonCompliant, result.Error().message);
+                result =
+                    ComplianceEngine::AuditResult(Status::NonCompliant, "ComplianceEngineMmiGet failed with a non-critical error: " + result.Error().message);
             }
         }
 

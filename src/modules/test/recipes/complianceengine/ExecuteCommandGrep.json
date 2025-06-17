@@ -59,7 +59,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "Command useradd evilhacker is not allowed"
+    "Payload": "ComplianceEngineMmiGet failed with a non-critical error: Command useradd evilhacker is not allowed"
   },
 
   {
