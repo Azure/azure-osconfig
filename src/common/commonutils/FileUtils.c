@@ -556,14 +556,12 @@ bool UnlockFile(FILE* file, OsConfigLogHandle log)
     return LockUnlockFile(file, false, log);
 }
 
-static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, OsConfigLogHandle log)
+static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0;
     mode_t desiredMode = 0;
     int result = ENOENT;
-
-    UNUSED(rootCanOverwriteOwnership);
 
     if (NULL == name)
     {
