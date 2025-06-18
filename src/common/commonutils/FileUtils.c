@@ -569,6 +569,8 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     mode_t desiredMode = 0;
     int result = ENOENT;
 
+    UNUSED(rootCanOverwriteOwnership);
+
     if (NULL == name)
     {
         OsConfigLogError(log, "CheckAccess called with an invalid name argument");
