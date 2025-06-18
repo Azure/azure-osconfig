@@ -185,6 +185,9 @@
           "$ref": "procedures/SCE.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/SystemdConfig.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/SystemdUnitState.schema.json#/definitions/audit"
         },
         {
@@ -256,6 +259,9 @@
         },
         {
           "$ref": "procedures/SCE.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/SystemdConfig.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/SystemdUnitState.schema.json#/definitions/remediation"
