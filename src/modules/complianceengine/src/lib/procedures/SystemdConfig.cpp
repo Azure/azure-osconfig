@@ -39,7 +39,7 @@ Result<bool> GetSystemdConfig(SystemdConfigMap_t& config, const std::string& fil
         }
         if ('#' == line[0])
         {
-            if ((0 == line.find("# ", 0)) && (line.size() > strlen("# .conf")) && (".conf" == line.substr(line.size() - strlen(".conf"))))
+            if ((line.size() > strlen("# .conf")) && ('#' == line[0]) && (".conf" == line.substr(line.size() - strlen(".conf"))))
             {
                 currentConfig = line.substr(2);
             }
@@ -170,14 +170,14 @@ AUDIT_FN(SystemdParameter, "parameter:Parameter name:M", "valueRegex:Regex for t
     auto paramIt = config.find(parameter);
     if (paramIt == config.end())
     {
-        OsConfigLogError(log, "Parameter '%s' not found in file '%s'", parameter.c_str(), filename.c_str());
+        OsConfigLogInfo(log, "Parameter '%s' not found in file '%s'", parameter.c_str(), filename.c_str());
         return indicators.NonCompliant("Parameter '" + parameter + "' not found in file '" + filename + "'");
     }
 
     OsConfigLogDebug(log, "Parameter '%s' found in file '%s' with value '%s'", parameter.c_str(), paramIt->second.second.c_str(), paramIt->second.first.c_str());
     if (!regex_match(paramIt->second.first, valueRegexV))
     {
-        OsConfigLogError(log, "Parameter '%s' in file '%s' does not match regex '%s'", parameter.c_str(), paramIt->second.second.c_str(), valueRegex.c_str());
+        OsConfigLogInfo(log, "Parameter '%s' in file '%s' does not match regex '%s'", parameter.c_str(), paramIt->second.second.c_str(), valueRegex.c_str());
         return indicators.NonCompliant("Parameter '" + parameter + "' value '" + paramIt->second.first + "' in file '" + paramIt->second.second +
                                        "' does not match regex '" + valueRegex + "'");
     }
