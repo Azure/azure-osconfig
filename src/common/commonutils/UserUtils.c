@@ -343,7 +343,7 @@ static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
     }
     else if (0 == errno)
     {
-        OsConfigLogInfo(log, "CheckIfUserHasPassword: user %u is not found in shadow database (/etc/shadow), this may indicate a remote or federated user, we cannot check if this user has a password", user->userId);
+        OsConfigLogInfo(log, "CheckIfUserHasPassword: user %u is not found in shadow database (/etc/shadow), this may indicate a remote or federated user, assuming user has no password", user->userId);
         user->hasPassword = false;
         user->notInShadow = true;
     }
@@ -1515,7 +1515,7 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || userList[i].notInShadow)
             {
                 continue;
             }
@@ -1550,7 +1550,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || userList[i].notInShadow)
             {
                 continue;
             }
@@ -1643,7 +1643,7 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || userList[i].notInShadow)
             {
                 continue;
             }
@@ -1701,7 +1701,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || userList[i].notInShadow)
             {
                 continue;
             }

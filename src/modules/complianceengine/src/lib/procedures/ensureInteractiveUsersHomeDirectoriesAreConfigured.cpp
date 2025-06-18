@@ -4,7 +4,6 @@
 
 #include <CommonUtils.h>
 #include <Evaluator.h>
-#include <FilePermissionsHelpers.h>
 #include <Result.h>
 #include <fcntl.h>
 #include <fstream>
@@ -23,6 +22,9 @@ using std::ostringstream;
 using std::set;
 using std::string;
 
+Result<Status> AuditEnsureFilePermissions(map<string, string>, IndicatorsTree&, ContextInterface&);
+Result<Status> RemediateEnsureFilePermissions(map<string, string>, IndicatorsTree&, ContextInterface&);
+
 namespace
 {
 constexpr const char* etcShellsPath = "/etc/shells";
@@ -36,7 +38,7 @@ Result<set<string>> ListValidShells(ContextInterface& context)
         return Error(std::string("Failed to open ") + etcShellsPath + " file", EINVAL);
     }
     string line;
-    while (getline(shellsFile, line))
+    while (std::getline(shellsFile, line))
     {
         if (line.empty() || line[0] == '#')
         {
@@ -80,14 +82,13 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         }
 
         struct stat st;
-        if (stat(pwd->pw_dir, &st) != 0)
+        if (0 != stat(pwd->pw_dir, &st))
         {
             int status = errno;
             if (status == ENOENT)
             {
                 OsConfigLogDebug(context.GetLogHandle(), "User '%s' has home directory '%s' which does not exist", pwd->pw_name, pwd->pw_dir);
-                result = indicators.NonCompliant(std::string("User's '") + pwd->pw_name + "' home directory '" + pwd->pw_dir + "' does not exist");
-                continue;
+                return indicators.NonCompliant(std::string("User's '") + pwd->pw_name + "' home directory '" + pwd->pw_dir + "' does not exist");
             }
             else
             {
@@ -105,12 +106,13 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
 
         map<string, string> arguments = {{"filename", pwd->pw_dir}, {"mask", "027"}, {"owner", pwd->pw_name}, {"group", group->gr_name}};
         indicators.Push("EnsureFilePermissions");
-        auto subResult = AuditEnsureFilePermissionsHelper(std::string(pwd->pw_dir), std::move(arguments), indicators, context);
+        auto subResult = AuditEnsureFilePermissions(std::move(arguments), indicators, context);
         indicators.Pop();
         if (!subResult.HasValue())
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for home directory '%s' for user '%s': %s", pwd->pw_dir, pwd->pw_name,
                 subResult.Error().message.c_str());
+            result = Status::NonCompliant;
         }
 
         if (subResult.Value() == Status::NonCompliant)
@@ -120,6 +122,7 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
             result = Status::NonCompliant;
         }
     }
+
     return result;
 }
 
@@ -177,7 +180,7 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
 
         map<string, string> arguments = {{"filename", pwd->pw_dir}, {"mask", "027"}, {"owner", pwd->pw_name}, {"group", group->gr_name}};
         indicators.Push("EnsureFilePermissions");
-        auto subResult = RemediateEnsureFilePermissionsHelper(pwd->pw_dir, std::move(arguments), indicators, context);
+        auto subResult = RemediateEnsureFilePermissions(std::move(arguments), indicators, context);
         indicators.Pop();
         if (!subResult.HasValue())
         {
