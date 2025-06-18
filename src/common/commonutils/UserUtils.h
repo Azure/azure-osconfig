@@ -34,6 +34,7 @@ typedef struct SimplifiedUser
     bool noLogin;
     bool cannotLogin;
     bool hasPassword;
+    bool notInShadow;
 
     // Encryption algorithm (cypher) used for password
     PasswordEncryption passwordEncryption;
