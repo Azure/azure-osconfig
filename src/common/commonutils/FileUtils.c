@@ -653,7 +653,7 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
 
     if (directory ? DirectoryExists(name) : FileExists(name))
     {
-        if (0 == CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, false, NULL, log))
+        if (0 == CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, NULL, log))
         {
             OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access %03o) already set",
                 name, desiredOwnerId, desiredGroupId, desiredAccess);
