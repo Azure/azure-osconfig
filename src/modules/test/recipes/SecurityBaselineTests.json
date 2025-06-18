@@ -1,12 +1,12 @@
 [
   {
-    "RunCommand": "useradd -u securitybaselinetest1 && id securitybaselinetest1"
+    "RunCommand": "useradd securitybaselinetest1 && id securitybaselinetest1"
   },
   {
-    "RunCommand": "useradd -u securitybaselinetest2 && id securitybaselinetest2"
+    "RunCommand": "useradd securitybaselinetest2 && id securitybaselinetest2"
   },
   {
-    "RunCommand": "sudo useradd -u testuser_noshadow && echo 'testuser_noshadow:DummyPass123!' | sudo chpasswd && sudo sed -i '/^testuser_noshadow:/d' /etc/shadow && id testuser_noshadow"
+    "RunCommand": "sudo useradd testuser_noshadow && echo 'testuser_noshadow:DummyPass123!' | sudo chpasswd && sudo sed -i '/^testuser_noshadow:/d' /etc/shadow && id testuser_noshadow"
   },
   {
     "Action": "LoadModule",
@@ -2585,7 +2585,7 @@
   // Additional test for auditEnsureShadowGroupIsEmpty
   // --------------------------------------------------------------------------------
   {
-    "RunCommand": "useradd -u -g shadow securitybaselinetest && id securitybaselinetest"
+    "RunCommand": "useradd -g shadow securitybaselinetest && id securitybaselinetest"
   },
   {
     "ObjectType": "Reported",
@@ -2614,7 +2614,7 @@
   // Additional test for auditEnsureAllEtcPasswdGroupsExistInEtcGroup
   // --------------------------------------------------------------------------------
   {
-    "RunCommand": "useradd -u securitybaselinetest && id securitybaselinetest && sed -i '/securitybaselinetest/d' /etc/group"
+    "RunCommand": "useradd securitybaselinetest && id securitybaselinetest && sed -i '/securitybaselinetest/d' /etc/group"
   },
   {
     "ObjectType": "Reported",
