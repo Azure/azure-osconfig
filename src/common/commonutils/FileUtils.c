@@ -692,7 +692,7 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
 
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
-    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, reason, log);
+    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
 }
 
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
