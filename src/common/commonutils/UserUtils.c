@@ -1711,7 +1711,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], false, NULL, log))
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                     {
                         OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user %u has proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, modes[j]);
@@ -1773,7 +1773,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], false, NULL, log))
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u already has proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, modes[j]);

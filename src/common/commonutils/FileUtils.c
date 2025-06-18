@@ -702,9 +702,9 @@ int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned in
     return SetAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, OsConfigLogHandle log)
+int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
-    return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, reason, log);
+    return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
 }
 
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
