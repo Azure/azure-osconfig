@@ -563,6 +563,8 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     mode_t desiredMode = 0;
     int result = ENOENT;
 
+    UNUSED(rootCanOverwriteOwnership);
+
     if (NULL == name)
     {
         OsConfigLogError(log, "CheckAccess called with an invalid name argument");
@@ -573,8 +575,8 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     {
         if (0 == (result = stat(name, &statStruct)))
         {
-            if (((-1 != desiredOwnerId) && (((uid_t)desiredOwnerId != statStruct.st_uid) && (directory && rootCanOverwriteOwnership && ((0 != statStruct.st_uid))))) ||
-                ((-1 != desiredGroupId) && (((gid_t)desiredGroupId != statStruct.st_gid) && (directory && rootCanOverwriteOwnership && ((0 != statStruct.st_gid))))))
+            if (((-1 != desiredOwnerId) && (((uid_t)desiredOwnerId != statStruct.st_uid))) ||
+                ((-1 != desiredGroupId) && (((gid_t)desiredGroupId != statStruct.st_gid))))
             {
                 OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
                     name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
