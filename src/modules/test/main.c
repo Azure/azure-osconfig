@@ -512,8 +512,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                 }
                 else if (0 == json_value_equals(expectedJsonValue, actualJsonValue))
                 {
-                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'",
-                        json_serialize_to_string(expectedJsonValue), json_serialize_to_string(actualJsonValue));
+                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", test->payload, reason);
                     result = EFAULT;
                 }
             }
