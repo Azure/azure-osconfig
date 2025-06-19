@@ -143,6 +143,9 @@
           "$ref": "procedures/EnsureFirewallOpenPorts.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/audit"
         },
         {
@@ -195,12 +198,6 @@
         },
         {
           "$ref": "procedures/UfwStatus.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/ensureInteractiveUsersDotFilesAccessIsConfigured.schema.json#/definitions/audit"
-        },
-        {
-          "$ref": "procedures/ensureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/audit"
         }
       ]
     },
@@ -217,6 +214,9 @@
         },
         {
           "$ref": "procedures/EnsureFirewallOpenPorts.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/remediation"
@@ -271,12 +271,6 @@
         },
         {
           "$ref": "procedures/UfwStatus.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/ensureInteractiveUsersDotFilesAccessIsConfigured.schema.json#/definitions/remediation"
-        },
-        {
-          "$ref": "procedures/ensureInteractiveUsersHomeDirectoriesAreConfigured.schema.json#/definitions/remediation"
         },
         {
           "$ref": "#definitions/auditProcedure"
