@@ -1404,12 +1404,12 @@ TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
     for (int i = 0; i < numTestModes; i++)
     {
         EXPECT_EQ(0, SetDirectoryAccess("~test", 0, 0, testModes[i], nullptr));
-        EXPECT_EQ(0, CheckDirectoryAccess("~test", 0, 0, testModes[i], false, nullptr, nullptr));
+        EXPECT_EQ(0, CheckDirectoryAccess("~test", 0, 0, testModes[i], nullptr, nullptr));
     }
     EXPECT_EQ(0, ExecuteCommand(nullptr, "rm -r ~test", false, false, 0, 0, nullptr, nullptr, nullptr));
 
     EXPECT_EQ(EINVAL, SetDirectoryAccess(nullptr, 0, 0, 0777, nullptr));
-    EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 0777, false, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 0777, nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)

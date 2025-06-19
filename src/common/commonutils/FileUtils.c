@@ -556,14 +556,12 @@ bool UnlockFile(FILE* file, OsConfigLogHandle log)
     return LockUnlockFile(file, false, log);
 }
 
-static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, OsConfigLogHandle log)
+static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0;
     mode_t desiredMode = 0;
     int result = ENOENT;
-
-    UNUSED(rootCanOverwriteOwnership);
 
     if (NULL == name)
     {
@@ -655,7 +653,7 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
 
     if (directory ? DirectoryExists(name) : FileExists(name))
     {
-        if (0 == CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, false, NULL, log))
+        if (0 == CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, NULL, log))
         {
             OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access %03o) already set",
                 name, desiredOwnerId, desiredGroupId, desiredAccess);
@@ -694,7 +692,7 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
 
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
-    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, reason, log);
+    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
 }
 
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)
@@ -702,9 +700,9 @@ int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned in
     return SetAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, OsConfigLogHandle log)
+int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log)
 {
-    return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, reason, log);
+    return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, reason, log);
 }
 
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log)

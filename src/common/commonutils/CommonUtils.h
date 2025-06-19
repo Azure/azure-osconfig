@@ -83,7 +83,7 @@ int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned in
 int GetFileAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log);
 int RenameFileWithOwnerAndAccess(const char* original, const char* target, OsConfigLogHandle log);
 
-int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, OsConfigLogHandle log);
+int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, OsConfigLogHandle log);
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, OsConfigLogHandle log);
 int GetDirectoryAccess(const char* name, unsigned int* ownerId, unsigned int* groupId, unsigned int* mode, OsConfigLogHandle log);
 
