@@ -120,6 +120,7 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
                 {
                     OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for file '%s': %s", path.c_str(), subResult.Error().message.c_str());
                     result = subResult.Error();
+                    return;
                 }
 
                 if (subResult.Value() == Status::NonCompliant)
@@ -220,6 +221,7 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
                     OsConfigLogError(context.GetLogHandle(), "Failed to remediate permissions for file '%s': %s", path.c_str(),
                         subResult.Error().message.c_str());
                     result = subResult.Error();
+                    return;
                 }
 
                 if (subResult.Value() == Status::NonCompliant)

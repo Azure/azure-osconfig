@@ -36,7 +36,7 @@ Result<set<string>> ListValidShells(ContextInterface& context)
         return Error(std::string("Failed to open ") + etcShellsPath + " file", EINVAL);
     }
     string line;
-    while (getline(shellsFile, line))
+    while (std::getline(shellsFile, line))
     {
         if (line.empty() || line[0] == '#')
         {
@@ -80,7 +80,7 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         }
 
         struct stat st;
-        if (stat(pwd->pw_dir, &st) != 0)
+        if (0 != stat(pwd->pw_dir, &st))
         {
             int status = errno;
             if (status == ENOENT)
@@ -111,6 +111,7 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for home directory '%s' for user '%s': %s", pwd->pw_dir, pwd->pw_name,
                 subResult.Error().message.c_str());
+            return subResult;
         }
 
         if (subResult.Value() == Status::NonCompliant)
