@@ -6,8 +6,24 @@ project(compliancetests)
 include(CTest)
 find_package(GTest REQUIRED)
 
-# Temporary solution, until we stabilize the list of procedures.
-FILE(GLOB PROCEDURES procedures/*.cpp)
+set(PROCEDURES
+    procedures/EnsureFilePermissionsTest.cpp
+    procedures/EnsureFilesystemOptionTest.cpp
+    procedures/EnsureFirewallOpenPortsTest.cpp
+    procedures/EnsureKernelModuleTest.cpp
+    procedures/EnsureMountPointExistsTest.cpp
+    procedures/EnsureMTAsLocalOnlyTest.cpp
+    procedures/EnsureRootPathTest.cpp
+    procedures/EnsureSshdOptionTest.cpp
+    procedures/EnsureSysctlTest.cpp
+    procedures/EnsureWirelessIsDisabledTest.cpp
+    procedures/ExecuteCommandGrepTest.cpp
+    procedures/FileRegexMatchTest.cpp
+    procedures/PackageInstalledTest.cpp
+    procedures/SystemdConfigTest.cpp
+    procedures/SystemdUnitStateTest.cpp
+    procedures/ufwStatusTest.cpp
+)
 
 add_executable(complianceenginetests
     Base64Test.cpp
