@@ -351,7 +351,7 @@ jobs:
           echo "Starting local tests"
           # Start tests using built packages, use 2048MB of memory per VM and disable the GUI
           # The -n flag disables the GUI, which is needed in the headless environment
-          # The -p flag disables paralell image downloads
+          # The -p flag disables parallel image downloads
           sudo ./StartTests.sh -d ${{ steps.download.outputs.download-path }} -m ${{ env.vmDefaultMemory }} -n -p
 
       - name: Stage logs and reports
