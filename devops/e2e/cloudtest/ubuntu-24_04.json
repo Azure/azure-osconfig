@@ -16,7 +16,7 @@
         {
             "name": "linux-install-packages",
             "parameters": {
-                "packages": "jq omi powershell"
+                "packages": "jq omi powershell cloud-image-utils qemu-system-x86 bsdmainutils"
             }
         },
         {

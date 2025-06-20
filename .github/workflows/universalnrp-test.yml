@@ -15,6 +15,7 @@ env:
   storageAccountName: 'osconfigstorage'
   storageContainerName: 'policypackages'
   defaultSelfHostedImage: 'ubuntu-22.04'
+  vmDefaultMemory: '2048' # Default memory for local VMs in MB
 
 jobs:
   package:
@@ -321,24 +322,112 @@ jobs:
           name: ${{ matrix.target.os }}-${{ matrix.target.version }}_logs
           path: '*.log'
 
+  local-tests:
+    name: Local Tests
+    if: ${{ needs.setup-matrix.outputs.custom_download == 'false' }}
+    needs: package
+    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=ubuntu-24.04']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        id: download
+        with:
+          name: nrp-test
+
+      - uses: azure/login@v2
+        with:
+          auth-type: IDENTITY
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Run Local Tests
+        working-directory: src/tests/universal-nrp-e2e
+        run: |
+          echo "Copying Azure CLI configuration/tokens to root"
+          sudo mkdir -p /root/.azure
+          sudo cp -r ~/.azure/* /root/.azure/
+          echo "Starting local tests"
+          # Start tests using built packages, use 2048MB of memory per VM and disable the GUI
+          # The -n flag disables the GUI, which is needed in the headless environment
+          # The -p flag disables paralell image downloads
+          sudo ./StartTests.sh -d ${{ steps.download.outputs.download-path }} -m ${{ env.vmDefaultMemory }} -n -p
+
+      - name: Stage logs and reports
+        if: success() || failure()
+        working-directory: src/tests/universal-nrp-e2e
+        run: |
+          mkdir -p staging/reports
+          mkdir -p staging/logs
+
+          sudo find .cache -type f -name '*.tar.gz' | while read -r file; do
+            parent_dir=$(dirname "$file")
+            base_dir=$(basename "$parent_dir")
+            dest_dir="staging/reports/$base_dir"
+            mkdir -p "$dest_dir"
+            sudo cp "$file" "$dest_dir/"
+            pushd "$dest_dir"
+            sudo find . -name '*.tar.gz' -exec tar -xzf {} \; -exec rm -f {} \;
+            sudo find . -mindepth 2 -type f -exec mv -t . -- {} +
+            sudo find . -mindepth 1 -type d -exec rmdir --ignore-fail-on-non-empty {} +
+            sudo mkdir -p "../../logs/$base_dir"
+            sudo find . \( -name '*.log' -o -name '*.bak' \) -exec mv -t ../../logs/$base_dir -- {} +
+            popd
+          done
+          sudo chown -R $USER:$USER ./staging
+
+          echo "Listing reports:"
+          find ./staging/reports -type f -print | xargs ls -l
+          echo "Listing logs:"
+          find ./staging/logs -type f -print | xargs ls -l
+
+      - name: Upload Logs Artifact
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: local_tests_logs
+          path: 'src/tests/universal-nrp-e2e/staging/logs/**/*'
+
+      - name: Upload Test Reports Artifact
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: local_tests_reports
+          path: 'src/tests/universal-nrp-e2e/staging/reports/**/*testResults.xml'
+
+      - name: Cleanup root azure/login
+        if: always()
+        run: sudo rm -rf /root/.azure
+
   # See for more details: https://github.com/marketplace/actions/publish-test-results
   report:
     name: Report
-    needs: mc-test
+    needs: [mc-test, local-tests]
     runs-on: ubuntu-latest
     permissions:
       checks: write
       pull-requests: write
     if: always()
     steps:
-      - name: Download Test Report Artifacts
+      - name: Download CloudTest Report Artifacts
         uses: actions/download-artifact@v4
         with:
           path: universal-nrp-test
           pattern: '*_report'
           merge-multiple: true
 
-      - name: Publish Test Results
+      - name: Download Local Test Report Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: local_tests_reports
+
+      - name: Publish CloudTest Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: 'universal-nrp-test/*testResults.xml'
+
+      - name: Publish Local Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: 'local_tests_reports/**/*testResults.xml'
