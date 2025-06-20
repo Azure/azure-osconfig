@@ -29,6 +29,7 @@ static void ResetUserEntry(SimplifiedUser* target)
         target->noLogin = false;
         target->cannotLogin = false;
         target->hasPassword = false;
+        target->notInShadow = false;
         target->passwordEncryption = unknown;
         target->lastPasswordChange = 0;
         target->minimumPasswordAge = 0;
@@ -340,6 +341,12 @@ static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
                 user->hasPassword = false;
         }
     }
+    else if (0 == errno)
+    {
+        OsConfigLogInfo(log, "CheckIfUserHasPassword: user %u is not found in shadow database (/etc/shadow), this may indicate a remote or federated user, we cannot check if this user has a password", user->userId);
+        user->hasPassword = false;
+        user->notInShadow = true;
+    }
     else
     {
         OsConfigLogInfo(log, "CheckIfUserHasPassword: getspnam for user %u failed with %d (%s)", user->userId, errno, strerror(errno));
@@ -406,7 +413,6 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
         OsConfigLogInfo(log, "EnumerateUsers: cannot read %s", g_passwdFile);
         status = EPERM;
     }
-
 
     if (0 != status)
     {
@@ -858,6 +864,11 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
         OsConfigLogInfo(log, "RemoveUser: cannot remove user with uid 0 (%u, %u)", user->userId, user->groupId);
         return EPERM;
     }
+    else if (user->notInShadow)
+    {
+        OsConfigLogInfo(log, "RemoveUser: cannot remove an user account that does not exist in the shadow database (%u)", user->userId);
+        return EPERM;
+    }
 
     if (NULL != (command = FormatAllocateString(commandTemplate, user->username)))
     {
@@ -1300,6 +1311,11 @@ int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') cannot login with password",
                     userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
             }
+            else if (userList[i].notInShadow)
+            {
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s') does not exist in the shadow database",
+                    userList[i].userId, IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted);
+            }
             else
             {
                 OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user %u ('%s')  not found to have a password set",
@@ -1347,6 +1363,10 @@ int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
             else if (userList[i].cannotLogin)
             {
                 OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u cannot login with password", userList[i].userId);
+            }
+            else if (userList[i].notInShadow)
+            {
+                OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: user %u does not exist in the shadow database", userList[i].userId);
             }
             else
             {
@@ -1691,7 +1711,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], true, NULL, log))
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                     {
                         OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user %u has proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, modes[j]);
@@ -1753,7 +1773,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], true, NULL, log))
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u already has proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, modes[j]);

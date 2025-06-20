@@ -2168,7 +2168,7 @@ static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(OsConfigLogHan
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_systemd, &reason, log));
-    CheckDirectoryAccess(g_varLogJournal, 0, -1, g_varLogJournalMode, false, &reason, log);
+    CheckDirectoryAccess(g_varLogJournal, 0, -1, g_varLogJournalMode, &reason, log);
     return reason;
 }
 
