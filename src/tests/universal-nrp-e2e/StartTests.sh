@@ -197,14 +197,31 @@ azure_login() {
     az account set --subscription $subscriptionId
 }
 
+retry() {
+    local max_attempts="${1:-5}"
+    local delay="${2:-5}"
+    shift 2
+    local attempt=1
+
+    until "$@"; do
+        if (( attempt >= max_attempts )); then
+            echo "ERROR: Command failed after $attempt attempts." >&2
+            return 1
+        fi
+        echo "ERROR: Attempt $attempt failed. Retrying in $delay seconds..." >&2
+        sleep "$delay"
+        attempt=$((attempt + 1))
+    done
+}
+
 get_pipeline_run_id() {
     local runId=""
     runId=$(az pipelines runs list --organization $azdevopsOrg --project $azdevopsProject --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
     if [[ -z "$runId" ]]; then
         failedLogin=true
-        echo "Unable to retreive pipeline run id, running \"az login\"" >&2
+        echo "ERROR: Unable to retreive pipeline run id, running \"az login\"" >&2
         if ! az login; then
-            echo "Failed to login to Azure. Please check your credentials and try again." >&2
+            echo "ERROR: Failed to login to Azure. Please check your credentials and try again." >&2
         else
             azure_login
             failedLogin=false
@@ -252,9 +269,9 @@ download_image() {
     local imageFile=$1
     local_file_md5=$(md5sum "$cacheDir/$imageFile" 2>/dev/null | awk '{ print $1 }')
     blob_md5=$(az storage blob show --account-name "$storageAccount" --container-name "$containerName" --name "$imageFile" --auth-mode login --subscription $subscriptionId --query properties.contentSettings.contentMd5 --output tsv)
-    if [[ "$blob_md5" != "$local_file_md5" ]]; then
-        echo "MD5 hash mismatch for $imageFile, downloading image"
-        az storage blob download --account-name $storageAccount --container-name $containerName --name $imageFile --file $cacheDir/$imageFile --auth-mode login --subscription $subscriptionId > /dev/null
+    if [[ -z "$local_file_md5" || "$blob_md5" != "$local_file_md5" ]]; then
+        echo "MD5 hash mismatch or local file missing for $imageFile, downloading image"
+        retry 5 30 az storage blob download --account-name $storageAccount --container-name $containerName --name $imageFile --file $cacheDir/$imageFile --auth-mode login --subscription $subscriptionId
     fi
 }
 
