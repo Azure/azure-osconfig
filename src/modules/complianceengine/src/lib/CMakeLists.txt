@@ -5,22 +5,88 @@ project(complianceenginelib)
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow=local")
 endif()
-# Temporary solution, until we stabilize the list of procedures.
-file(GLOB PROCEDURES procedures/*.cpp)
-file(GLOB SCHEMAS procedures/*.schema.json)
+
+set(PROCEDURES
+    procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.cpp
+    procedures/EnsureFilePermissions.cpp
+    procedures/EnsureFilesystemOption.cpp
+    procedures/EnsureFirewallOpenPorts.cpp
+    procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.cpp
+    procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.cpp
+    procedures/EnsureKernelModule.cpp
+    procedures/EnsureMountPointExists.cpp
+    procedures/EnsureMTAsLocalOnly.cpp
+    procedures/EnsureNoDuplicateEntriesExist.cpp
+    procedures/EnsureNoUserHasPrimaryShadowGroup.cpp
+    procedures/EnsureRootPath.cpp
+    procedures/EnsureSshdOption.cpp
+    procedures/EnsureSysctl.cpp
+    procedures/EnsureWirelessIsDisabled.cpp
+    procedures/ExecuteCommandGrep.cpp
+    procedures/FileRegexMatch.cpp
+    procedures/PackageInstalled.cpp
+    procedures/SCE.cpp
+    procedures/SystemdConfig.cpp
+    procedures/SystemdUnitState.cpp
+    procedures/TestingProcedures.cpp
+    procedures/UfwStatus.cpp
+)
+set(SCHEMAS
+    procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json
+    procedures/EnsureFilePermissions.schema.json
+    procedures/EnsureFilesystemOption.schema.json
+    procedures/EnsureFirewallOpenPorts.schema.json
+    procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.schema.json
+    procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json
+    procedures/EnsureKernelModule.schema.json
+    procedures/EnsureMountPointExists.schema.json
+    procedures/EnsureMTAsLocalOnly.schema.json
+    procedures/EnsureNoDuplicateEntriesExist.schema.json
+    procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json
+    procedures/EnsureRootPath.schema.json
+    procedures/EnsureSshdOption.schema.json
+    procedures/EnsureSysctl.schema.json
+    procedures/EnsureWirelessIsDisabled.schema.json
+    procedures/ExecuteCommandGrep.schema.json
+    procedures/FileRegexMatch.schema.json
+    procedures/PackageInstalled.schema.json
+    procedures/SCE.schema.json
+    procedures/SystemdConfig.schema.json
+    procedures/SystemdUnitState.schema.json
+    procedures/TestingProcedures.schema.json
+    procedures/UfwStatus.schema.json
+)
+
+# Check that all globbed procedures are in the PROCEDURES list
+file(GLOB GLOBBED_PROCEDURES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} procedures/*.cpp)
+foreach(proc ${GLOBBED_PROCEDURES})
+    if (NOT proc IN_LIST PROCEDURES)
+        message(SEND_ERROR "Globbed procedure ${proc} is not in the PROCEDURES list.")
+    endif()
+endforeach()
+
+# Check that every procedure has a corresponding schema
+foreach(proc ${PROCEDURES})
+    get_filename_component(proc_name ${proc} NAME_WE)
+    set(schema_name "procedures/${proc_name}.schema.json")
+    if(NOT schema_name IN_LIST SCHEMAS)
+        message(SEND_ERROR "Procedure ${proc} does not have a corresponding schema file: ${schema_name}")
+    endif()
+endforeach()
 
 add_custom_target(complianceengineschema_prep
-	SOURCES ${SCHEMAS}
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/schema
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/schema/procedures
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/payload.schema.json ${CMAKE_CURRENT_BINARY_DIR}/schema
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SCHEMAS} ${CMAKE_CURRENT_BINARY_DIR}/schema/procedures)
+    SOURCES ${SCHEMAS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/schema
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/schema/procedures
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/payload.schema.json ${CMAKE_CURRENT_BINARY_DIR}/schema
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SCHEMAS} ${CMAKE_CURRENT_BINARY_DIR}/schema/procedures)
 
 add_custom_target(complianceengineschema
-	BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/ComplianceEngineSchema.zip
-	COMMAND ${CMAKE_COMMAND} -E tar "cvf" ${CMAKE_CURRENT_BINARY_DIR}/ComplianceEngineSchema.zip . --format=zip
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/schema
-	DEPENDS complianceengineschema_prep)
+    BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/ComplianceEngineSchema.zip
+    COMMAND ${CMAKE_COMMAND} -E tar "cvf" ${CMAKE_CURRENT_BINARY_DIR}/ComplianceEngineSchema.zip . --format=zip
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/schema
+    DEPENDS complianceengineschema_prep)
 set_property(TARGET complianceengineschema PROPERTY OUTPUT ComplianceEngineSchema.zip)
 
 add_library(complianceenginelib STATIC
