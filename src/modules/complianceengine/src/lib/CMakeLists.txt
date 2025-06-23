@@ -11,6 +11,7 @@ set(PROCEDURES
     procedures/EnsureFilePermissions.cpp
     procedures/EnsureFilesystemOption.cpp
     procedures/EnsureFirewallOpenPorts.cpp
+    procedures/EnsureGsettings.cpp
     procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.cpp
     procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.cpp
     procedures/EnsureKernelModule.cpp
@@ -38,6 +39,7 @@ set(SCHEMAS
     procedures/EnsureFilePermissions.schema.json
     procedures/EnsureFilesystemOption.schema.json
     procedures/EnsureFirewallOpenPorts.schema.json
+    procedures/EnsureGsettings.schema.json
     procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.schema.json
     procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json
     procedures/EnsureKernelModule.schema.json

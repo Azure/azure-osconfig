@@ -143,6 +143,9 @@
           "$ref": "procedures/EnsureFirewallOpenPorts.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureGsettings.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.schema.json#/definitions/audit"
         },
         {
@@ -220,6 +223,9 @@
         },
         {
           "$ref": "procedures/EnsureFirewallOpenPorts.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureGsettings.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.schema.json#/definitions/remediation"
