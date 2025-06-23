@@ -6,6 +6,7 @@
 
 #include "TypeTraits.h"
 
+#include <stdexcept>
 #include <string>
 
 namespace ComplianceEngine
@@ -226,44 +227,68 @@ public:
         return std::move(*mPointer.value);
     }
 
-    const T& Value() const& noexcept(NoexceptCopyable<T>())
+    const T& Value() const&
     {
+        CheckValue();
         return *mPointer.value;
     }
 
-    T Value() && noexcept(NoexceptMovable<T>())
+    T Value() &&
     {
+        CheckValue();
         return std::move(*mPointer.value);
     }
 
     T& Value() &
     {
+        CheckValue();
         return *mPointer.value;
     }
 
     const T* operator->() const&
     {
+        CheckValue();
         return mPointer.value;
     }
 
     T* operator->() &
     {
+        CheckValue();
         return mPointer.value;
     }
 
     const ComplianceEngine::Error& Error() const&
     {
+        CheckError();
         return *mPointer.error;
     }
 
     ComplianceEngine::Error Error() &&
     {
+        CheckError();
         return std::move(*mPointer.error);
     }
 
     ComplianceEngine::Error& Error() &
     {
+        CheckError();
         return *mPointer.error;
+    }
+
+private:
+    void CheckError() const
+    {
+        if (mTag != Tag::Error)
+        {
+            throw std::logic_error("Result: unchecked access to Error");
+        }
+    }
+    void CheckValue() const
+    {
+        if (mTag != Tag::Value)
+        {
+            throw std::logic_error("Result: unchecked access to Value");
+        }
     }
 };
 } // namespace ComplianceEngine
