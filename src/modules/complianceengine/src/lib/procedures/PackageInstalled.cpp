@@ -23,7 +23,7 @@ typedef struct
 {
     time_t lastUpdateTime;
     std::string packageManager;
-    std::set<std::string> packageNames;
+    std::map<std::string, std::string> packages;
 } PackageCache;
 
 static constexpr long PACKAGELIST_TTL = 3000L;        // just shy of an hours
@@ -80,7 +80,7 @@ Result<PackageCache> LoadPackageCache(const std::string& path)
     const std::string pkgCacheHeader = "# PackageCache "; // "# PackageCache <packageManager>@<timestamp>\n"
     cache.lastUpdateTime = 0;
     cache.packageManager = "";
-    cache.packageNames.clear();
+    cache.packages.clear();
     std::ifstream cacheFile(path);
     if (!cacheFile.is_open())
     {
@@ -109,12 +109,19 @@ Result<PackageCache> LoadPackageCache(const std::string& path)
         return Error("Invalid timestamp in cache file header");
     }
 
-    std::string packageName;
-    while (std::getline(cacheFile, packageName))
+    std::string line;
+    while (std::getline(cacheFile, line))
     {
-        if (!packageName.empty())
+        if (!line.empty())
         {
-            cache.packageNames.insert(packageName);
+            auto sepPos = line.find(' ');
+            if (sepPos == std::string::npos)
+            {
+                continue; // Skip lines without a space
+            }
+            std::string packageName = line.substr(0, sepPos);
+            std::string packageVersion = line.substr(sepPos + 1);
+            cache.packages[packageName] = packageVersion;
         }
     }
 
@@ -154,9 +161,9 @@ Result<int> SavePackageCache(const PackageCache& cache, const std::string& path)
         return Error("Failed to write header to temporary file");
     }
 
-    for (const auto& packageName : cache.packageNames)
+    for (const auto& package : cache.packages)
     {
-        tempFile << packageName << "\n";
+        tempFile << package.first << " " << package.second << "\n";
         if (!tempFile)
         {
             return Error("Failed to write package name to temporary file");
@@ -182,7 +189,7 @@ Result<PackageCache> GetInstalledPackagesRpm(ContextInterface& context)
     cache.packageManager = "rpm";
     cache.lastUpdateTime = time(NULL);
 
-    const std::string cmd = "rpm -qa --qf='%{NAME}\n'";
+    const std::string cmd = "rpm -qa --qf='%{NAME} %{EVR}\n'";
 
     auto rpmqa = context.ExecuteCommand(cmd);
     if (!rpmqa.HasValue())
@@ -191,13 +198,21 @@ Result<PackageCache> GetInstalledPackagesRpm(ContextInterface& context)
     }
 
     std::istringstream stream(rpmqa.Value());
-    std::string packageName;
-    while (std::getline(stream, packageName))
+    std::string line;
+    while (std::getline(stream, line))
     {
-        if (!packageName.empty())
+        if (line.empty())
         {
-            cache.packageNames.insert(packageName);
+            continue;
         }
+        auto separatorPos = line.find(' ');
+        if (separatorPos == std::string::npos)
+        {
+            continue;
+        }
+        std::string packageName = line.substr(0, separatorPos);
+        std::string packageVersion = line.substr(separatorPos + 1);
+        cache.packages[packageName] = packageVersion;
     }
     return cache;
 }
@@ -234,17 +249,177 @@ Result<PackageCache> GetInstalledPackagesDpkg(ContextInterface& context)
         if (line.size() >= 3 && line.substr(0, 3) == "ii ")
         {
             std::istringstream lineStream(line);
-            std::string status, name;
-            lineStream >> status >> name;
+            std::string status, name, version;
+            lineStream >> status >> name >> version;
             if (!name.empty())
             {
                 // some packages have arch after a colon (e.g. "foo:amd64"), get rid of it
                 name = name.substr(0, name.find(':'));
-                cache.packageNames.insert(name);
+                cache.packages[name] = version;
             }
         }
     }
     return cache;
+}
+
+int VersionCompare(const std::string& v1, const std::string& v2)
+{
+    auto evrSplit = [](const std::string& ver) {
+        // Split version into epoch, version, and release parts.
+        std::vector<std::string> evr;
+        size_t pos = 0;
+        size_t colonPos = ver.find_first_of(":", pos);
+        if (colonPos != std::string::npos)
+        {
+            evr.push_back(ver.substr(pos, colonPos - pos));
+            pos = colonPos + 1;
+        }
+        else
+        {
+            evr.push_back("0");
+        }
+        size_t dashPos = ver.find_last_of("-", pos);
+        if (dashPos != std::string::npos)
+        {
+            evr.push_back(ver.substr(pos, dashPos - pos));
+            pos = dashPos + 1;
+            evr.push_back(ver.substr(pos));
+        }
+        else
+        {
+            evr.push_back(ver.substr(pos));
+            evr.push_back("0");
+        }
+        return evr;
+    };
+
+    auto compareParts = [](const std::string& p1, const std::string& p2) {
+        auto split = [](const std::string& ver) {
+            std::vector<std::string> parts;
+            for (size_t i = 0; i < ver.size();)
+            {
+                if (!isalnum(ver[i]))
+                {
+                    i++;
+                    continue;
+                }
+                size_t j = i;
+                if (isdigit(ver[j]))
+                {
+                    while ((j < ver.size()) && isdigit(ver[j]))
+                    {
+                        j++;
+                    }
+                }
+                else
+                {
+                    while ((j < ver.size()) && !isdigit(ver[j]))
+                    {
+                        j++;
+                    }
+                }
+                parts.push_back(ver.substr(i, j - i));
+                i = j;
+            }
+            return parts;
+        };
+        auto parts1 = split(p1);
+        auto parts2 = split(p2);
+        size_t len = std::max(parts1.size(), parts2.size());
+        for (size_t i = 0; i < len; i++)
+        {
+            if (i >= parts1.size())
+            {
+                return -1;
+            }
+            if (i >= parts2.size())
+            {
+                return 1;
+            }
+            // Split guarantees that parts are non-empty, so we can safely access parts1[i] and parts2[i].
+            bool n1 = isdigit(parts1[i][0]);
+            bool n2 = isdigit(parts2[i][0]);
+            if (n1 && n2)
+            {
+                // Both parts are numeric, compare as integers.
+                // Do it semi-manually to avoid overflows - strip leading zeroes, then compare lengths and then compare as strings.
+                auto zeroPos1 = parts1[i].find_first_not_of("0");
+                if (std::string::npos == zeroPos1)
+                {
+                    zeroPos1 = parts1[i].size() - 1;
+                }
+                auto zeroPos2 = parts2[i].find_first_not_of("0");
+                if (std::string::npos == zeroPos2)
+                {
+                    zeroPos2 = parts2[i].size() - 1;
+                }
+
+                parts1[i] = parts1[i].substr(zeroPos1);
+                parts2[i] = parts2[i].substr(zeroPos2);
+                int cmp = parts1[i].size() - parts2[i].size();
+                if (cmp < 0)
+                {
+                    return -1;
+                }
+                if (cmp > 0)
+                {
+                    return 1;
+                }
+
+                cmp = parts1[i].compare(parts2[i]);
+                if (cmp < 0)
+                {
+                    return -1;
+                }
+                if (cmp > 0)
+                {
+                    return 1;
+                }
+            }
+            else if (!n1 && !n2)
+            {
+                // Both parts are non-numeric, compare as strings.
+                int cmp = parts1[i].compare(parts2[i]);
+                if (cmp < 0)
+                {
+                    return -1;
+                }
+                if (cmp > 0)
+                {
+                    return 1;
+                }
+            }
+            else
+            {
+                // One part is numeric, the other is not, the numeric part is more.
+                if (n1)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+        }
+        return 0;
+    };
+
+    auto evr1 = evrSplit(v1);
+    auto evr2 = evrSplit(v2);
+    for (size_t i = 0; i < 3; i++)
+    {
+        int cmp = compareParts(evr1[i], evr2[i]);
+        if (cmp < 0)
+        {
+            return -1;
+        }
+        if (cmp > 0)
+        {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 Result<PackageCache> GetInstalledPackages(const std::string& packageManager, ContextInterface& context)
@@ -265,8 +440,8 @@ Result<PackageCache> GetInstalledPackages(const std::string& packageManager, Con
 namespace ComplianceEngine
 {
 
-AUDIT_FN(PackageInstalled, "packageName:Package name:M", "packageManager:Package manager, autodetected by default::^(rpm|dpkg)$",
-    "test_cachePath:Cache path")
+AUDIT_FN(PackageInstalled, "packageName:Package name:M", "minPackageVersion:Minimum package version to check against (optional)",
+    "packageManager:Package manager, autodetected by default::^(rpm|dpkg)$", "test_cachePath:Cache path")
 {
     auto log = context.GetLogHandle();
 
@@ -294,6 +469,16 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "packageManager:Package
 
     auto cachePathIt = args.find("test_cachePath");
     std::string cachePath = cachePathIt != args.end() ? std::move(cachePathIt->second) : PACKAGE_CACHE_PATH;
+
+    auto minPackageVersionIt = args.find("minPackageVersion");
+    std::string minPackageVersion;
+    if (minPackageVersionIt != args.end())
+    {
+        minPackageVersion = std::move(minPackageVersionIt->second);
+    }
+
+    OsConfigLogInfo(log, "Checking if package %s is installed with minimum version %s using package manager %s", packageName.c_str(),
+        minPackageVersion.c_str(), packageManager.c_str());
 
     PackageCache cache;
     auto cacheResult = LoadPackageCache(cachePath);
@@ -359,13 +544,30 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "packageManager:Package
         }
     }
 
-    if (cache.packageNames.find(packageName) != cache.packageNames.end())
+    auto packageIt = cache.packages.find(packageName);
+    if (packageIt == cache.packages.end())
     {
-        return indicators.Compliant("Package " + packageName + " is installed");
-    }
-    else
-    {
+        OsConfigLogInfo(log, "Package %s is not installed", packageName.c_str());
         return indicators.NonCompliant("Package " + packageName + " is not installed");
     }
+    if (!minPackageVersion.empty())
+    {
+        auto installedVersion = packageIt->second;
+        if (VersionCompare(installedVersion, minPackageVersion) < 0)
+        {
+            OsConfigLogInfo(log, "Package %s is installed but version %s is less than minimum required version %s", packageName.c_str(),
+                installedVersion.c_str(), minPackageVersion.c_str());
+            return indicators.NonCompliant("Package " + packageName + " is installed but version " + installedVersion +
+                                           " is less than minimum required version " + minPackageVersion);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "Package %s is installed with version %s, which meets or exceeds the minimum required version %s", packageName.c_str(),
+                installedVersion.c_str(), minPackageVersion.c_str());
+            return indicators.Compliant("Package " + packageName + " is installed with version " + installedVersion +
+                                        ", which meets or exceeds the minimum required version " + minPackageVersion);
+        }
+    }
+    return indicators.Compliant("Package " + packageName + " is installed");
 }
 } // namespace ComplianceEngine
