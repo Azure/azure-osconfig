@@ -3,11 +3,15 @@
 # StartTests.sh
 # Description: This Microsoft internal only script is used to download the latest Azure Policy packages from internal pipelines
 #              and run the tests on the specified test data provided.
-# Usage: ./StartTests.sh [-r run-id] [-m vm-memory-mb] [-j max-concurrent-jobs]
+# Usage: ./StartTests.sh [-r run-id] [-m vm-memory-mb] [-j max-concurrent-jobs] [-d policy-package-directory] [-n no-gui]
+# Options:
 #        -r run-id: Specify the run-id of the pipeline run to download the packages from (Default: latest-succeeded-run-id)
 #        -m vm-memory-mb: Specify the memory in MB to be used for the VMs (Default: 512)
 #        -j max-concurrent-jobs: Specify the maximum number of concurrent jobs to run the tests (Default: 5)
-# Dependencies: cloud-localds, qemu-system-x86, jq, az
+#        -d policy-package-directory: Specify the directory containing the policy packages to use (Default: download from Azure DevOps pipeline)
+#        -n no-gui: Disable GUI for the VMs (Default: false)
+#        -p no-parallel-downloads: Disable downloading images in paralell (Default: false)
+# Dependencies: cloud-localds, qemu-system-x86, jq, az, bsdmainutils
 
 test_data='[
     {"distroName": "amazonlinux-2", "imageFile": "amazonlinux-2.qcow2", "policyPackage": "AzureLinuxBaseline.zip"},
@@ -37,11 +41,14 @@ storageAccount="osconfigstorage"
 containerName="diskimages"
 pipelineId=394569
 pipelineRunId=""
+policyDirectory=""
 azdevopsOrg="https://dev.azure.com/msazure/"
 azdevopsProject="One"
 azdevopsArtifactName="drop_package_mc_packages"
 vmmemory=512
 maxConcurrentJobs=5
+nogui=false
+noParallelDownload=false
 
 cacheDir=".cache"
 packageDir="$cacheDir/packages"
@@ -52,11 +59,11 @@ countTotalTests=0
 waitInterval=2
 
 usage() {
-    echo "Usage: $0 [-r run-id] [-m vm-memory-mb] [-j max-concurrent-jobs]" >&2
+    echo "Usage: $0 [[-r run-id] | [-d policy-package-directory]] [-m vm-memory-mb] [-j max-concurrent-jobs] [-n no-gui] [-p no-parallel-downloads]" >&2
     exit 1
 }
 
-OPTSTRING=":j:m:r:"
+OPTSTRING=":j:m:r:d:np"
 
 while getopts ${OPTSTRING} opt; do
     case ${opt} in
@@ -71,6 +78,18 @@ while getopts ${OPTSTRING} opt; do
         r)
             pipelineRunId=${OPTARG}
             echo "Using pipeline run id: $pipelineRunId"
+            ;;
+        d)
+            policyDirectory=${OPTARG}
+            echo "Using policy directory: $policyDirectory"
+            ;;
+        n)
+            nogui=true
+            echo "No GUI mode enabled."
+            ;;
+        p)
+            noParallelDownload=true
+            echo "No parallel downloads enabled."
             ;;
         :)
             echo "Option -${OPTARG} requires an argument."
@@ -104,10 +123,10 @@ print_test_summary() {
         distroName=$(echo $test | awk -F'--' '{print $1}')
         policyPackage=$(echo $test | awk -F'--' '{print $2}')
         result="Pass"
-        logArchive="$(find $logDir -name *.tar.gz)"
+        logArchive="$(find $logDir -name '*.tar.gz')"
         tempDir=$(mktemp -d)
         tar -xzf $logArchive -C $tempDir &> /dev/null
-        testReport="$(find $tempDir -name *.xml)"
+        testReport="$(find $tempDir -name '*.xml')"
         # If there is no test report, consider the test as failed
         if [ ! -f "$testReport" ]; then
             result="Fail"
@@ -148,8 +167,8 @@ print_test_summary() {
 
 trap print_test_summary SIGINT
 
-# Ensure local dependencies are installed [cloud-localds, qemu-system-x86_64, jq, az]
-dependencies=(cloud-localds qemu-system-x86_64 jq az)
+# Ensure local dependencies are installed [cloud-localds, qemu-system-x86_64, jq, az, column]
+dependencies=(cloud-localds qemu-system-x86_64 jq az column)
 for dep in "${dependencies[@]}"; do
     if ! command -v $dep &> /dev/null; then
         echo "$dep not found. Please install it and try again." >&2
@@ -157,28 +176,54 @@ for dep in "${dependencies[@]}"; do
     fi
 done
 
-# Check if the Azure DevOps extension is already installed
-if ! az extension list --output table | grep -q azure-devops; then
-    echo "Azure DevOps extension not found. Installing..."
-    az extension add --name azure-devops
-fi
-
 if command -v sudo &> /dev/null; then
     if [ "$(id -u)" -ne 0 ]; then
         sudo echo -n
     fi
 fi
 
+# Check if the Azure DevOps extension is already installed
+if ! az extension list --output table | grep -q azure-devops; then
+    echo "Azure DevOps extension not found. Installing..."
+    az extension add --name azure-devops
+fi
+
+azure_login() {
+    if ! az account show --subscription "$subscriptionId" &> /dev/null; then
+        echo "ERROR: Subscription '$subscriptionId' is not available in this Azure context." >&2
+        az account list --output table
+        exit 1
+    fi
+    az account set --subscription $subscriptionId
+}
+
+retry() {
+    local max_attempts="${1:-5}"
+    local delay="${2:-5}"
+    shift 2
+    local attempt=1
+
+    until "$@"; do
+        if (( attempt >= max_attempts )); then
+            echo "ERROR: Command failed after $attempt attempts." >&2
+            return 1
+        fi
+        echo "ERROR: Attempt $attempt failed. Retrying in $delay seconds..." >&2
+        sleep "$delay"
+        attempt=$((attempt + 1))
+    done
+}
+
 get_pipeline_run_id() {
     local runId=""
     runId=$(az pipelines runs list --organization $azdevopsOrg --project $azdevopsProject --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
     if [[ -z "$runId" ]]; then
         failedLogin=true
-        echo "Unable to retreive pipeline run id, running \"az login\"" >&2
+        echo "ERROR: Unable to retreive pipeline run id, running \"az login\"" >&2
         if ! az login; then
-            echo "Failed to login to Azure. Please check your credentials and try again." >&2
+            echo "ERROR: Failed to login to Azure. Please check your credentials and try again." >&2
         else
-            az account set --subscription $subscriptionId
+            azure_login
             failedLogin=false
             runId=$(az pipelines runs list --organization $azdevopsOrg --project $azdevopsProject --pipeline-id $pipelineId --status completed --result succeeded --top 1 --query '[0].id' -o tsv)
         fi
@@ -187,24 +232,36 @@ get_pipeline_run_id() {
     echo $runId
 }
 
-echo "Downloading latest Azure Policy packages from OneBranch pipeline..."
+download_policy_packages() {
+    echo "Downloading latest Azure Policy packages from OneBranch pipeline..."
+    pipelineRunId=$(get_pipeline_run_id)
+    echo "Using latest succeeded run:$pipelineRunId"
+    az pipelines runs artifact download --organization $azdevopsOrg --project $azdevopsProject --artifact-name $azdevopsArtifactName --path $packageDir --run-id $pipelineRunId
+}
+
 mkdir -p $packageDir
-pipelineRunId=$(get_pipeline_run_id)
-echo "Using latest succeeded run:$pipelineRunId"
-az pipelines runs artifact download --organization $azdevopsOrg --project $azdevopsProject --artifact-name $azdevopsArtifactName --path $packageDir --run-id $pipelineRunId
+if [[ -z "$policyDirectory" ]]; then
+    # If no policy directory provided, download the latest policy packages from Azure DevOps pipeline
+    download_policy_packages
+else
+    # If policy directory is provided, copy the packages from the specified directory
+    cp -r "$policyDirectory"/* $packageDir
+    azure_login
+fi
 
 run_test() {
     local imageFile=$1
     local policyPackage=$2
     local vmMemory=$3
     local logDirectory=$4
-    local qemuArgs=$5
+    local distroName=$5
+    local qemuArgs=$6
 
     local curtime=$(date +%Y%m%d_%H%M%S)
     local tempImage="${curtime}_${imageFile}"
     cp $cacheDir/$imageFile $cacheDir/$tempImage
     # Start tests with given policy package and remediation enabled
-    ./StartVMTest.sh -i $cacheDir/$tempImage -p $packageDir/$policyPackage -m $vmMemory -r -l $logDirectory ${qemuArgs:+-a "$qemuArgs"} > /dev/null
+    ./StartVMTest.sh -i $cacheDir/$tempImage -p $packageDir/$policyPackage -m $vmMemory -r -l $logDirectory -h $distroName-osconfige2etest ${qemuArgs:+-a "$qemuArgs"} > /dev/null
     rm $cacheDir/$tempImage
 }
 
@@ -212,9 +269,9 @@ download_image() {
     local imageFile=$1
     local_file_md5=$(md5sum "$cacheDir/$imageFile" 2>/dev/null | awk '{ print $1 }')
     blob_md5=$(az storage blob show --account-name "$storageAccount" --container-name "$containerName" --name "$imageFile" --auth-mode login --subscription $subscriptionId --query properties.contentSettings.contentMd5 --output tsv)
-    if [[ "$blob_md5" != "$local_file_md5" ]]; then
-        echo "MD5 hash mismatch for $imageFile, downloading image"
-        az storage blob download --account-name $storageAccount --container-name $containerName --name $imageFile --file $cacheDir/$imageFile --auth-mode login --subscription $subscriptionId > /dev/null
+    if [[ -z "$local_file_md5" || "$blob_md5" != "$local_file_md5" ]]; then
+        echo "MD5 hash mismatch or local file missing for $imageFile, downloading image"
+        retry 5 30 az storage blob download --account-name $storageAccount --container-name $containerName --name $imageFile --file $cacheDir/$imageFile --auth-mode login --subscription $subscriptionId
     fi
 }
 
@@ -228,8 +285,12 @@ for row in $(echo "${test_data}" | jq -r '.[] | @base64'); do
     imageFile=$(_jq '.imageFile')
     countTotalTests=$((countTotalTests + 1))
     if [[ -z "${downloaded_images[$imageFile]}" ]]; then
-        download_image $imageFile &
-        pids+=($!)
+        if [ "$noParallelDownload" = true ]; then
+            download_image $imageFile
+        else
+            download_image $imageFile &
+            pids+=($!)
+        fi
         downloaded_images[$imageFile]=1
     fi
 done
@@ -272,6 +333,10 @@ for row in $(echo "${test_data}" | jq -r '.[] | @base64'); do
     if [ "$qemuArgs" = "null" ]; then
         qemuArgs=""
     fi
+    # if nogui is true, append -display none to qemuArgs
+    if [ "$nogui" = true ]; then
+        qemuArgs="${qemuArgs} -display none"
+    fi
 
     # Wait for a slot if the number of concurrent jobs reaches the limit
     showWaitingMessage=true
@@ -300,7 +365,7 @@ for row in $(echo "${test_data}" | jq -r '.[] | @base64'); do
 
     curtime=$(date +%Y%m%d_%H%M%S)
     logDir="$cacheDir/${curtime}_${imageFile%.*}"
-    run_test $imageFile $policyPackage $vmmemory $logDir "$qemuArgs" &
+    run_test $imageFile $policyPackage $vmmemory $logDir $distroName "$qemuArgs" &
     testPid=$!
     pids+=($testPid)
 

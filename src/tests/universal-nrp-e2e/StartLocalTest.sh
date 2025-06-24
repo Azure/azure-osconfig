@@ -198,7 +198,7 @@ param (
     TestResult = @{
         Enabled      = \$true
         OutputFormat = 'JUnitXml'
-        OutputPath   = 'testResults.xml'
+        OutputPath   = "\$(hostname)-testResults.xml"
     }
     Should = @{
         ErrorAction = 'Continue'
