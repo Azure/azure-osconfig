@@ -107,7 +107,7 @@ AUDIT_FN(SystemdUnitState, "unitName:Name of the systemd unit:M", "ActiveState:v
             }
             if (!regex_match(value, param.valueRegex.Value()))
             {
-                OsConfigLogInfo(log, "Failed to match systemctl unit name '%s' for name '%s' for pattern '%s'  for value '%s' ", unitName.c_str(),
+                OsConfigLogDebug(log, "Failed to match systemctl unit name '%s' for name '%s' for pattern '%s'  for value '%s' ", unitName.c_str(),
                     name.c_str(), param.value.c_str(), value.c_str());
                 return indicators.NonCompliant("Failed to match systemctl unit name '" + unitName + "' field '" + name + "' value '" + value +
                                                "' with pattern '" + param.value + "'");
