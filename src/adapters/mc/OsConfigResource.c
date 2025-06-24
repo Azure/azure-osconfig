@@ -518,8 +518,10 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     const char* auditPassed = "Audit passed";
     const char* auditFailed = "Audit failed. See /var/log/osconfig_nrp.*";
 
-    const char* auditPassedInvalidResourceOrRuleId = "Audit passed for an invalid resource and/or rule id. See /var/log/osconfig_nrp.*";
-    const char* auditFailedInvalidResourceOrRuleId = "Audit failed for an invalid resource and/or rule id. See /var/log/osconfig_nrp.*";
+    // const char* auditPassedInvalidResourceOrRuleId = "Audit passed for an invalid resource and/or rule id. See /var/log/osconfig_nrp.*";
+    // const char* auditFailedInvalidResourceOrRuleId = "Audit failed for an invalid resource and/or rule id. See /var/log/osconfig_nrp.*";
+
+    const char* auditSkipInvalidResourceOrRuleId = "Audit skipped for an invalid resource and/or rule id. See /var/log/osconfig_nrp.*";
 
     const char* auditPassedCodeTemplate = "BaselineSettingCompliant:{%s}";
     const char* auditFailedCodeTemplate = "BaselineSettingNotCompliant:{%s}";
@@ -725,28 +727,38 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         }
     }
 
-    // Read the reported MIM object value from the local device
-    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", g_componentName, context)))
+    if (0 != BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
     {
-        goto Exit;
-    }
-
-    // Read the expected MIM object value from the input resource values, we'll use this to determine compliance
-    if ((in->InputResource.value->ExpectedObjectValue.exists == MI_TRUE) && (in->InputResource.value->ExpectedObjectValue.value != NULL))
-    {
-        FREE_MEMORY(g_expectedObjectValue);
-        if (NULL == (g_expectedObjectValue = DuplicateString(in->InputResource.value->ExpectedObjectValue.value)))
-        {
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ExpectedObjectValue.value);
-            g_expectedObjectValue = DuplicateString(g_passValue);
-        }
+        OsConfigLogInfo(GetLog(), "[OsConfigResource.Get] BaselineIsValidResourceIdRuleId(%s, %s, %s) failed", g_resourceId, g_ruleId, g_payloadKey);
+        // TODO(robertwoj-microsoft): Fix the messages
+        reasonCode = DuplicateString(auditSkipInvalidResourceOrRuleId);
+        reasonPhrase = DuplicateString(auditSkipInvalidResourceOrRuleId);
     }
     else
     {
-        LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no ExpectedObjectValue, assuming '%s' is expected", g_payloadKey, g_passValue);
-    }
+        // Read the reported MIM object value from the local device
+        if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", g_componentName, context)))
+        {
+            goto Exit;
+        }
 
-    isCompliant = (g_expectedObjectValue && (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue)))) ? MI_TRUE : MI_FALSE;
+        // Read the expected MIM object value from the input resource values, we'll use this to determine compliance
+        if ((in->InputResource.value->ExpectedObjectValue.exists == MI_TRUE) && (in->InputResource.value->ExpectedObjectValue.value != NULL))
+        {
+            FREE_MEMORY(g_expectedObjectValue);
+            if (NULL == (g_expectedObjectValue = DuplicateString(in->InputResource.value->ExpectedObjectValue.value)))
+            {
+                LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ExpectedObjectValue.value);
+                g_expectedObjectValue = DuplicateString(g_passValue);
+            }
+        }
+        else
+        {
+            LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no ExpectedObjectValue, assuming '%s' is expected", g_payloadKey, g_passValue);
+        }
+
+        isCompliant = (g_expectedObjectValue && (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue)))) ? MI_TRUE : MI_FALSE;
+    }
 
     // Create the output resource
 
@@ -886,15 +898,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     if (MI_TRUE == isCompliant)
     {
-        if (0 == BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
-        {
-            reasonCode = FormatAllocateString(auditPassedCodeTemplate, g_ruleId);
-        }
-        else
-        {
-            reasonCode = DuplicateString(auditPassedInvalidResourceOrRuleId);
-        }
-
+        reasonCode = FormatAllocateString(auditPassedCodeTemplate, g_ruleId);
         if ((0 == strcmp(g_reportedObjectValue, g_expectedObjectValue)) ||
             ((strlen(g_reportedObjectValue) > strlen(g_expectedObjectValue)) && (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue + strlen(g_expectedObjectValue))))))
         {
@@ -903,15 +907,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
     else
     {
-        if (0 == BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
-        {
-            reasonCode = FormatAllocateString(auditFailedCodeTemplate, g_ruleId);
-        }
-        else
-        {
-            reasonCode = DuplicateString(auditFailedInvalidResourceOrRuleId);
-        }
-
+        reasonCode = FormatAllocateString(auditFailedCodeTemplate, g_ruleId);
         if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue))))
         {
             reasonPhrase = DuplicateString(auditFailed);
