@@ -65,7 +65,7 @@ Result<AuditResult> Engine::MmiGet(const char* objectName)
         return Error("Invalid argument", EINVAL);
     }
 
-    OsConfigLogInfo(Log(), "Engine::mmiGet(%s)", objectName);
+    OsConfigLogDebug(Log(), "Engine::mmiGet(%s)", objectName);
     auto ruleName = std::string(objectName);
     constexpr const char* auditPrefix = "audit";
     if (ruleName.find(auditPrefix) != 0)
@@ -264,7 +264,7 @@ Result<Status> Engine::MmiSet(const char* objectName, const std::string& payload
         return Error("Invalid argument", EINVAL);
     }
 
-    OsConfigLogInfo(Log(), "Engine::MmiSet(%s, %s)", objectName, payload.c_str());
+    OsConfigLogDebug(Log(), "Engine::MmiSet(%s, %s)", objectName, payload.c_str());
     constexpr const char* remediatePrefix = "remediate";
     constexpr const char* initPrefix = "init";
     constexpr const char* procedurePrefix = "procedure";
