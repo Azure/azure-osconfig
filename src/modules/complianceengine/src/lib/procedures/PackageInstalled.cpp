@@ -278,8 +278,8 @@ int VersionCompare(const std::string& v1, const std::string& v2)
         {
             evr.push_back("0");
         }
-        size_t dashPos = ver.find_last_of("-", pos);
-        if (dashPos != std::string::npos)
+        size_t dashPos = ver.find_last_of("-");
+        if ((dashPos != std::string::npos) && (dashPos > pos))
         {
             evr.push_back(ver.substr(pos, dashPos - pos));
             pos = dashPos + 1;
