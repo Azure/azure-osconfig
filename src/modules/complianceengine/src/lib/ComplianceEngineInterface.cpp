@@ -130,7 +130,7 @@ int ComplianceEngineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
             return ENOMEM;
         }
         *payloadSizeBytes = static_cast<int>(strlen(*payload));
-        OsConfigLogInfo(engine.Log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
+        OsConfigLogDebug(engine.Log(), "MmiGet(%p, %s, %s, %.*s)", clientSession, componentName, objectName, *payloadSizeBytes, *payload);
         return MMI_OK;
     }
     catch (const std::exception& e)
@@ -199,7 +199,7 @@ int ComplianceEngineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
             }
         }
 
-        OsConfigLogInfo(engine.Log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload,
+        OsConfigLogDebug(engine.Log(), "MmiSet(%p, %s, %s, %.*s, %d) returned %s", clientSession, componentName, objectName, payloadSizeBytes, payload,
             payloadSizeBytes, result.Value() == Status::Compliant ? "compliant" : "non-compliant");
         return MMI_OK;
     }
