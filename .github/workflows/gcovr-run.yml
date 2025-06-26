@@ -27,6 +27,7 @@ jobs:
       package-type: ${{ inputs.package-type }}
       build-coverage: true
       test: true
+      build-type: Debug
 
   test:
     needs: package
