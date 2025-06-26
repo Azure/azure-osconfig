@@ -1,0 +1,118 @@
+name: Code coverage testing
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      arch:
+        required: true
+        type: string
+      package-type:
+        required: true
+        type: string
+      excluded-tests:
+        required: false
+        description: 'A regex pattern of tests to exclude.'
+        type: string
+
+jobs:
+  package:
+    uses: ./.github/workflows/package-build.yml
+    with:
+      target: ${{ inputs.target }}
+      arch: ${{ inputs.arch }}
+      artifact: ${{ inputs.target }}
+      package-type: ${{ inputs.package-type }}
+      build-coverage: true
+      test: true
+      build-type: Debug
+
+  test:
+    needs: package
+    runs-on: [self-hosted, 1ES.Pool=e2e-pool, '1ES.ImageOverride=${{ inputs.target }}']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        id: download
+        with:
+          name: ${{ inputs.target }}
+
+      - name: Create osconfig.json
+        run: |
+          sudo mkdir -p /etc/osconfig
+          sudo cp -r ./src/adapters/pnp/daemon/osconfig.json /etc/osconfig/osconfig.json
+
+      - name: Defer test execution
+        uses: ./.github/actions/defer-tests
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcovr
+
+      - name: Run moduletest
+        working-directory: ${{ steps.download.outputs.download-path }}/modules/test
+        run: |
+          sudo chmod +x ./moduletest
+
+          result=0
+          recipes=$(find ../../src/modules/test/recipes/ -name "*.json")
+
+          for recipe in $recipes; do
+            modules=$(cat $recipe | grep '\.so' | awk -F'"' '{print $4}')
+            if [ -z "$modules" ]; then
+              echo "no modules found in $recipe"
+              continue
+            fi
+
+            skip=
+            for module in $modules; do
+              echo "module: $module"
+              if [ ! -f ../bin/$module ]; then
+                echo "module $module lodaed in recipe $recipe not found"
+                skip=1
+                break
+              fi
+            done
+
+            if [ ! -z "$skip" ]; then
+              echo "skipping recipe $recipe"
+              continue
+            fi
+
+            name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
+            echo -n "testing $name ... "
+
+            if output=$(sudo ./moduletest $recipe --bin ../bin); then
+              echo passed
+            else
+              echo failed
+              result=1
+              echo "::warning file=$name.log::Error(s) in module-test for '$name'"
+            fi
+
+            echo "$output"
+            echo "$output" > ../../$name.log
+          done
+
+          exit $result
+
+      - name: Run gcovr
+        working-directory: ${{ steps.download.outputs.download-path }}
+        run: |
+          gcovr --root ${{ steps.download.outputs.download-path }} --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html --xml-pretty --xml ${{ steps.download.outputs.download-path }}/coverage.xml --gcov-executable gcov --exclude '.*test.*' --exclude azure-iot-sdk-c --gcov-ignore-parse-errors
+
+      - uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: ${{ inputs.target }}-logs
+          path: '*.log'
+
+      - uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: ${{ inputs.target }}-coverage
+          path: 'coverage.*'
