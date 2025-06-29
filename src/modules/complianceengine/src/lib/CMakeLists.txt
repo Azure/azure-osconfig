@@ -94,6 +94,7 @@ add_library(complianceenginelib STATIC
     CommonContext.cpp
     ComplianceEngineInterface.cpp
     ContextInterface.cpp
+    DirectoryEntry.cpp
     Engine.cpp
     Evaluator.cpp
     KernelModuleTools.cpp
