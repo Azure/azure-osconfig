@@ -162,3 +162,11 @@ jobs:
             ./build/modules/test/recipes/*.json
             ./build/modules/bin/*.so
             ./build/tests/fuzzer/osconfig-fuzzer
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ inputs.test == true }}
+        id: upload-test-artifact
+        with:
+          name: ${{ inputs.artifact }}-full
+          path: |
+            ./build/*

@@ -38,7 +38,7 @@ jobs:
       - uses: actions/download-artifact@v4
         id: download
         with:
-          name: ${{ inputs.target }}
+          name: ${{ inputs.target }}-full
 
       - name: Create osconfig.json
         run: |
@@ -105,7 +105,7 @@ jobs:
         run: |
           find . -name '*\.gcda' -exec echo "GCDA file: {}" \;
           find . -name '*\.gcno' -exec echo "GCNO file: {}" \;
-          gcovr --root ${{ steps.download.outputs.download-path }} --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html --xml-pretty --xml ${{ steps.download.outputs.download-path }}/coverage.xml --gcov-executable gcov --exclude '.*test.*' --exclude azure-iot-sdk-c
+          gcovr --root ${{ steps.download.outputs.download-path }} --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html --xml-pretty --xml ${{ steps.download.outputs.download-path }}/coverage.xml --gcov-executable gcov --exclude '.*test.*' --exclude azure-iot-sdk-c --gcov-ignore-parse-errors
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
