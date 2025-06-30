@@ -51,7 +51,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcovr
+          sudo apt-get install -y gcovr gcc
 
       - name: Run moduletest
         working-directory: ${{ steps.download.outputs.download-path }}/modules/test
