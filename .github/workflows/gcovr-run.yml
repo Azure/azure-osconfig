@@ -22,19 +22,19 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  package:
-    uses: ./.github/workflows/package-build.yml
-    with:
-      target: ${{ inputs.target }}
-      arch: ${{ inputs.arch }}
-      artifact: ${{ inputs.target }}
-      package-type: ${{ inputs.package-type }}
-      build-coverage: true
-      test: true
-      build-type: Debug
+  # package:
+  #   uses: ./.github/workflows/package-build.yml
+  #   with:
+  #     target: ${{ inputs.target }}
+  #     arch: ${{ inputs.arch }}
+  #     artifact: ${{ inputs.target }}
+  #     package-type: ${{ inputs.package-type }}
+  #     build-coverage: true
+  #     test: true
+  #     build-type: Debug
 
   test:
-    needs: package
+    # needs: package
     runs-on: [self-hosted, 1ES.Pool=e2e-pool, '1ES.ImageOverride=${{ inputs.target }}']
     steps:
       - uses: actions/checkout@v4
