@@ -103,7 +103,9 @@ jobs:
       - name: Run gcovr
         working-directory: ${{ steps.download.outputs.download-path }}
         run: |
-          gcovr --root ${{ steps.download.outputs.download-path }} --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html --xml-pretty --xml ${{ steps.download.outputs.download-path }}/coverage.xml --gcov-executable gcov --exclude '.*test.*' --exclude azure-iot-sdk-c --gcov-ignore-parse-errors
+          find build -name '*\.gcda' -exec echo "GCDA file: {}" \;
+          find build -name '*\.gcno' -exec echo "GCNO file: {}" \;
+          gcovr --root ${{ steps.download.outputs.download-path }} --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html --xml-pretty --xml ${{ steps.download.outputs.download-path }}/coverage.xml --gcov-executable gcov --exclude '.*test.*' --exclude azure-iot-sdk-c
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
