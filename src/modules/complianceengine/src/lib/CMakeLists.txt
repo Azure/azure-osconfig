@@ -23,6 +23,7 @@ set(PROCEDURES
     procedures/EnsureSshdOption.cpp
     procedures/EnsureSysctl.cpp
     procedures/EnsureWirelessIsDisabled.cpp
+    procedures/EnsureXdmcp.cpp
     procedures/ExecuteCommandGrep.cpp
     procedures/FileRegexMatch.cpp
     procedures/PackageInstalled.cpp
@@ -49,6 +50,7 @@ set(SCHEMAS
     procedures/EnsureSshdOption.schema.json
     procedures/EnsureSysctl.schema.json
     procedures/EnsureWirelessIsDisabled.schema.json
+    procedures/EnsureXdmcp.schema.json
     procedures/ExecuteCommandGrep.schema.json
     procedures/FileRegexMatch.schema.json
     procedures/PackageInstalled.schema.json

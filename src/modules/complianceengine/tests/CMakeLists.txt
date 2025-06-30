@@ -18,6 +18,7 @@ set(PROCEDURES
     procedures/EnsureSshdOptionTest.cpp
     procedures/EnsureSysctlTest.cpp
     procedures/EnsureWirelessIsDisabledTest.cpp
+    procedures/EnsureXdmcpTest.cpp
     procedures/ExecuteCommandGrepTest.cpp
     procedures/FileRegexMatchTest.cpp
     procedures/PackageInstalledTest.cpp

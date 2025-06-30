@@ -179,6 +179,9 @@
           "$ref": "procedures/EnsureWirelessIsDisabled.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureXdmcp.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/ExecuteCommandGrep.schema.json#/definitions/audit"
         },
         {
@@ -253,6 +256,9 @@
         },
         {
           "$ref": "procedures/EnsureWirelessIsDisabled.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureXdmcp.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/ExecuteCommandGrep.schema.json#/definitions/remediation"
