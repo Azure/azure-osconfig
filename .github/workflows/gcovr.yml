@@ -3,7 +3,7 @@ name: Code coverage
 on:
   workflow_dispatch:
   pull_request:
-  push:
+  # push:
   # schedule:
     # - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
 
