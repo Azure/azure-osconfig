@@ -17,6 +17,10 @@ on:
         description: 'A regex pattern of tests to exclude.'
         type: string
 
+env:
+  MOUNT: /azure-osconfig
+  REGISTRY: ghcr.io
+
 jobs:
   package:
     uses: ./.github/workflows/package-build.yml
@@ -34,11 +38,44 @@ jobs:
     runs-on: [self-hosted, 1ES.Pool=e2e-pool, '1ES.ImageOverride=${{ inputs.target }}']
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/download-artifact@v4
-        id: download
         with:
-          name: ${{ inputs.target }}-full
+          submodules: recursive
+          clean: true
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      # - name: Setup QEMU
+      #   if: ${{ matrix.target.arch != 'amd64' }}
+      #   uses: docker/setup-qemu-action@v3
+
+      - name: Run container
+        id: container
+        uses: ./.github/actions/container-run
+        with:
+          registry: ${{ env.REGISTRY }}
+          container: azure/azure-osconfig/${{ inputs.target }}-amd64
+          mount: ${{ github.workspace }}:${{ env.MOUNT }}
+          tag: latest
+
+      - name: Generate build
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          cmd: |
+            mkdir build && cd build
+            cmake ../src -DCMAKE_C_COMPILER="/usr/bin/gcc" -DCMAKE_CXX_COMPILER="/usr/bin/g++" -DCMAKE_build-type=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -Duse_default_uuid=ON -DCOVERAGE=ON -DBUILD_TESTS=ON
+
+      - name: Build azure-osconfig
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: cmake --build . --config Debug --parallel
 
       - name: Create osconfig.json
         run: |
