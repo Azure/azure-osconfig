@@ -21,6 +21,10 @@
                   "type": "string",
                   "description": "Package name"
                 },
+                "minPackageVersion": {
+                  "type": "string",
+                  "description": "Minimum package version to check against (optional)"
+                },
                 "packageManager": {
                   "type": "string",
                   "description": "Package manager, autodetected by default",
