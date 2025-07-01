@@ -118,12 +118,13 @@ jobs:
       - name: Run gcovr
         working-directory: /azure-osconfig
         run: |
+          sudo rm -rf build
           echo "GCOV files:"
-          find . -name '*.gcov' -print
+          sudo find . -name '*.gcov' -print
           echo "GCDA files:"
-          find . -name '*.gcda' -print
+          sudo find . -name '*.gcda' -print
           echo "GCNO files:"
-          find . -name '*.gcno' -print
+          sudo find . -name '*.gcno' -print
           sudo gcovr --root /azure-osconfig \
             --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html \
             --json-pretty --json ${{ steps.download.outputs.download-path }}/coverage.json \
