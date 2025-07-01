@@ -98,6 +98,12 @@ Result<Status> ProcessLogfile(const std::string& path, const std::string& filena
         return result.Error();
     }
 
+    if (result.Value() != Status::Compliant)
+    {
+        OsConfigLogInfo(context.GetLogHandle(), "Logfile %s is non-compliant", fullPath.c_str());
+        return Status::NonCompliant;
+    }
+
     return result.Value();
 }
 
