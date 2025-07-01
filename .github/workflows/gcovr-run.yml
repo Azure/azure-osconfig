@@ -119,12 +119,12 @@ jobs:
         working-directory: /azure-osconfig
         run: |
           echo "GCOV files:"
-          sudo find . -name '*.gcov' -print
+          find . -name '*.gcov' -print
           echo "GCDA files:"
-          sudo find . -name '*.gcda' -print
+          find . -name '*.gcda' -print
           echo "GCNO files:"
-          sudo find . -name '*.gcno' -print
-          sudo for src in `find ./build -name '*.gcda'`; do dest=$(echo $src | sed -e "s@./build/@./@"); echo "$src -> $dest"; done
+          find . -name '*.gcno' -print
+          for src in `find ./build -name '*.gcda'`; do echo $src | sed -e "s@./build/@./@"; done
           sudo gcovr --root /azure-osconfig \
             --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html \
             --json-pretty --json ${{ steps.download.outputs.download-path }}/coverage.json \

@@ -1,7 +1,7 @@
 name: CI
 
 on:
-  pull_request:
+  # pull_request:
   schedule:
     - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
 
