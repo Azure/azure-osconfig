@@ -101,10 +101,14 @@ jobs:
           exit $result
 
       - name: Run gcovr
-        # working-directory: ${{ steps.download.outputs.download-path }}
+        working-directory: ${{ steps.download.outputs.download-path }}
         run: |
+          echo "WORKSPACE: ${{ github.workspace }}"
+          echo "DOWNLOAD PATH: ${{ steps.download.outputs.download-path }}"
           ls -la .
-          gcovr --root ${{ steps.download.outputs.download-path }} --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html --xml-pretty --xml ${{ steps.download.outputs.download-path }}/coverage.xml --gcov-executable gcov --exclude '.*test.*' --exclude azure-iot-sdk-c --gcov-ignore-parse-errors --gcov-ignore-errors=no_working_dir_found
+          echo "SOURCES: ${{ github.workspace }}/src"
+          ls -la ${{ github.workspace }}/src
+          gcovr --root ${{ github.workspace }} --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html --xml-pretty --xml ${{ steps.download.outputs.download-path }}/coverage.xml --gcov-executable gcov --exclude '.*test.*' --exclude azure-iot-sdk-c --gcov-ignore-parse-errors --gcov-ignore-errors=no_working_dir_found
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
