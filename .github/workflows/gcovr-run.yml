@@ -51,7 +51,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcovr gcc g++ cmake
+          sudo apt-get install -y gcovr gcc g++ cmake googletest google-mock libgmock-dev libgtest-dev
 
       - name: Run moduletest
         working-directory: ${{ steps.download.outputs.download-path }}/modules/test
@@ -116,7 +116,7 @@ jobs:
           ls -l ${{ github.workspace }}
 
       - name: Run gcovr
-        working-directory: /azure-osconfig/build
+        working-directory: /azure-osconfig
         run: |
           echo "GCOV files:"
           find . -name '*.gcov' -print
