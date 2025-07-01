@@ -606,7 +606,7 @@ static int CheckSshMaxAuthTries(const char* value, char** reason, OsConfigLogHan
         }
     }
 
-    FREE_MEMORY(loginGraceTime);
+    FREE_MEMORY(maxAuthTries);
 
     OsConfigLogInfo(log, "CheckSshMaxAuthTries returning %d", status);
 
