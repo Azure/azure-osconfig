@@ -107,8 +107,8 @@ jobs:
       - name: Link sources directory
         run: |
           echo "Linking sources directory ${{ steps.download.outputs.download-path }} to /azure-osconfig"
-          sudo ln -s ${{ github.workspace }} /azure-osconfig
-          ls -l /azure-osconfig/src
+          sudo ln -s ${{ steps.download.outputs.download-path }} /azure-osconfig
+          ls -l /azure-osconfig
 
       - name: Run gcovr
         working-directory: /azure-osconfig
