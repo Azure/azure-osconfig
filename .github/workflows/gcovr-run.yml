@@ -108,12 +108,17 @@ jobs:
         run: |
           echo "Linking sources directory ${{ steps.download.outputs.download-path }} to /azure-osconfig"
           sudo ln -s ${{ github.workspace }} /azure-osconfig
+          ls -l /azure-osconfig/src
 
       - name: Run gcovr
-        working-directory: ${{ steps.download.outputs.download-path }}
+        working-directory: /azure-osconfig
         run: |
           echo "GCOV files:"
           find . -name '*.gcov' -print
+          echo "GCDA files:"
+          find . -name '*.gcda' -print
+          echo "GCNO files:"
+          find . -name '*.gcno' -print
           sudo gcovr --root /azure-osconfig \
             --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html \
             --json-pretty --json ${{ steps.download.outputs.download-path }}/coverage.json \
