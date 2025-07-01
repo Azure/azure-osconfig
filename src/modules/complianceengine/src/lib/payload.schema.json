@@ -134,6 +134,9 @@
           "$ref": "procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureDconf.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureFilePermissions.schema.json#/definitions/audit"
         },
         {
@@ -214,6 +217,9 @@
       "anyOf": [
         {
           "$ref": "procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureDconf.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureFilePermissions.schema.json#/definitions/remediation"

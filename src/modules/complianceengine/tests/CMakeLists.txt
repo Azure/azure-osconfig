@@ -7,6 +7,7 @@ include(CTest)
 find_package(GTest REQUIRED)
 
 set(PROCEDURES
+    procedures/EnsureDconfTest.cpp
     procedures/EnsureFilePermissionsTest.cpp
     procedures/EnsureFilesystemOptionTest.cpp
     procedures/EnsureFirewallOpenPortsTest.cpp
