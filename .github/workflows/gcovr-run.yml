@@ -108,7 +108,7 @@ jobs:
         run: |
           echo "Linking sources directory ${{ steps.download.outputs.download-path }} to /azure-osconfig"
           # sudo ln -s ${{ steps.download.outputs.download-path }} /azure-osconfig
-          sudo mkdir /azure-osconfig
+          sudo mkdir -p /azure-osconfig
           sudo cp -r ${{ steps.download.outputs.download-path }} /azure-osconfig
           sudo chown -R $USER:$USER /azure-osconfig
           ls -l /azure-osconfig
