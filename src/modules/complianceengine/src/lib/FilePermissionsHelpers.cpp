@@ -46,12 +46,23 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         const struct passwd* pwd = getpwuid(statbuf.st_uid);
         if (nullptr == pwd)
         {
-            OsConfigLogDebug(log, "No user with UID %d", statbuf.st_gid);
+            OsConfigLogDebug(log, "No user with UID %d", statbuf.st_uid);
             return indicators.NonCompliant("No user with uid " + std::to_string(statbuf.st_uid));
         }
-        if (owner != pwd->pw_name)
+        std::istringstream iss(owner);
+        std::string ownerName;
+        bool ownerOk = false;
+        while (std::getline(iss, ownerName, '|'))
         {
-            OsConfigLogDebug(log, "Invalid '%s' owner - is '%s' should be '%s'", filename.c_str(), pwd->pw_name, owner.c_str());
+            if (ownerName == pwd->pw_name)
+            {
+                OsConfigLogDebug(log, "Matched owner '%s' to '%s'", ownerName.c_str(), pwd->pw_name);
+                ownerOk = true;
+                break;
+            }
+        }
+        if (!ownerOk)
+        {
             return indicators.NonCompliant("Invalid owner on '" + filename + "' - is '" + std::string(pwd->pw_name) + "' should be '" + owner + "'");
         }
         else
@@ -197,20 +208,44 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
     if (it != args.end())
     {
         owner = std::move(it->second);
-        const struct passwd* pwd = getpwnam(owner.c_str());
-        if (pwd == nullptr)
+        std::istringstream iss(owner);
+        std::string ownerName;
+        std::string firstOwner;
+        bool ownerOk = false;
+        const struct passwd* pwd = getpwuid(statbuf.st_uid);
+        if (nullptr != pwd)
         {
-            OsConfigLogDebug(log, "No user with UID %d", statbuf.st_gid);
-            return indicators.NonCompliant("No user with name " + owner);
+            while (std::getline(iss, ownerName, '|'))
+            {
+                if (firstOwner.empty())
+                {
+                    firstOwner = ownerName;
+                }
+                if (ownerName == pwd->pw_name)
+                {
+                    OsConfigLogDebug(log, "Matched owner '%s' to '%s'", ownerName.c_str(), pwd->pw_name);
+                    ownerOk = true;
+                    break;
+                }
+            }
         }
-        uid = pwd->pw_uid;
-        if (uid != statbuf.st_uid)
+        if (!ownerOk)
         {
-            owner_changed = true;
-        }
-        else
-        {
-            OsConfigLogDebug(log, "Matched owner '%s' to '%s'", owner.c_str(), pwd->pw_name);
+            pwd = getpwnam(firstOwner.c_str());
+            if (pwd == nullptr)
+            {
+                OsConfigLogDebug(log, "No user with name %s", firstOwner.c_str());
+                return indicators.NonCompliant("No user with name " + firstOwner);
+            }
+            uid = pwd->pw_uid;
+            if (uid != statbuf.st_uid)
+            {
+                owner_changed = true;
+            }
+            else
+            {
+                OsConfigLogDebug(log, "Matched owner '%s' to '%s'", owner.c_str(), pwd->pw_name);
+            }
         }
     }
 
