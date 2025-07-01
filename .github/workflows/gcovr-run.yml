@@ -35,17 +35,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Link sources directory
-        run: |
-          echo "Linking sources directory ${{ github.workspace }} to /azure-osconfig"
-          # sudo ln -s ${{ github.workspace }} /azure-osconfig
-          sudo mkdir -p /azure-osconfig
-          sudo cp -r ${{ github.workspace }}/* /azure-osconfig
-          sudo chown -R $USER:$USER /azure-osconfig
-          ls -l /azure-osconfig
-          echo "workdir:"
-          ls -l ${{ github.workspace }}
-
       - uses: actions/download-artifact@v4
         id: download
         with:
@@ -115,6 +104,17 @@ jobs:
       #   run: |
       #     echo "Running ctest in ${{ steps.download.outputs.download-path }}"
       #     ctest ${{ steps.download.outputs.download-path }}
+      - name: Link sources directory
+        run: |
+          echo "Linking sources directory ${{ github.workspace }} to /azure-osconfig"
+          # sudo ln -s ${{ github.workspace }} /azure-osconfig
+          sudo mkdir -p /azure-osconfig
+          sudo cp -r ${{ github.workspace }}/* /azure-osconfig
+          sudo chown -R $USER:$USER /azure-osconfig
+          ls -l /azure-osconfig
+          echo "workdir:"
+          ls -l ${{ github.workspace }}
+
       - name: Run gcovr
         working-directory: /azure-osconfig
         run: |
