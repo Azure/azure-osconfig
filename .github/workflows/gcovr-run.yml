@@ -116,7 +116,7 @@ jobs:
           ls -l ${{ github.workspace }}
 
       - name: Run gcovr
-        working-directory: /azure-osconfig/build
+        working-directory: /azure-osconfig
         run: |
           echo "GCOV files:"
           sudo find . -name '*.gcov' -print
