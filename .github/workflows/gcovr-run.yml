@@ -114,7 +114,14 @@ jobs:
         run: |
           echo "GCOV files:"
           find . -name '*.gcov' -print
-          gcovr --root /azure-osconfig --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html --xml-pretty --xml ${{ steps.download.outputs.download-path }}/coverage.xml --gcov-executable gcov --exclude '.*test.*' --exclude azure-iot-sdk-c --gcov-ignore-parse-errors --gcov-ignore-errors=no_working_dir_found
+          sudo gcovr --root /azure-osconfig \
+            --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html \
+            --json-pretty --json ${{ steps.download.outputs.download-path }}/coverage.json \
+            --json-summary-pretty --json-summary ${{ steps.download.outputs.download-path }}/coverage.summary.json \
+            --exclude '.*test.*' \
+            --exclude '.*/azure-iot-sdk-c/.*' \
+            --gcov-ignore-parse-errors \
+            --gcov-ignore-errors=no_working_dir_found
 
       - name: Write to workflow job summary
         if: success() || failure()
