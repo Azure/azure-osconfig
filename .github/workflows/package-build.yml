@@ -169,4 +169,4 @@ jobs:
         with:
           name: ${{ inputs.artifact }}-full
           path: |
-            ./build/*
+            ./build
