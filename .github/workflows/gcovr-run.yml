@@ -109,18 +109,14 @@ jobs:
           echo "Linking sources directory ${{ steps.download.outputs.download-path }} to /azure-osconfig"
           # sudo ln -s ${{ steps.download.outputs.download-path }} /azure-osconfig
           sudo mkdir -p /azure-osconfig
-          sudo cp -r ${{ steps.download.outputs.download-path }} /azure-osconfig
+          sudo cp -r ${{ steps.download.outputs.download-path }}/* /azure-osconfig
           sudo chown -R $USER:$USER /azure-osconfig
           ls -l /azure-osconfig
           echo "workdir:"
           ls -l ${{ github.workspace }}
-          echo "download path:"
-          ls -l ${{ steps.download.outputs.download-path }}
-          echo "df"
-          df -h
 
       - name: Run gcovr
-        working-directory: /azure-osconfig
+        working-directory: /azure-osconfig/build
         run: |
           echo "GCOV files:"
           find . -name '*.gcov' -print
