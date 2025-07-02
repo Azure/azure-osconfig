@@ -14,6 +14,7 @@ set(PROCEDURES
     procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.cpp
     procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.cpp
     procedures/EnsureKernelModule.cpp
+    procedures/EnsureLogfileAccess.cpp
     procedures/EnsureMountPointExists.cpp
     procedures/EnsureMTAsLocalOnly.cpp
     procedures/EnsureNoDuplicateEntriesExist.cpp
@@ -39,6 +40,7 @@ set(SCHEMAS
     procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.schema.json
     procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json
     procedures/EnsureKernelModule.schema.json
+    procedures/EnsureLogfileAccess.schema.json
     procedures/EnsureMountPointExists.schema.json
     procedures/EnsureMTAsLocalOnly.schema.json
     procedures/EnsureNoDuplicateEntriesExist.schema.json

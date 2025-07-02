@@ -152,6 +152,9 @@
           "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureLogfileAccess.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureMTAsLocalOnly.schema.json#/definitions/audit"
         },
         {
@@ -223,6 +226,9 @@
         },
         {
           "$ref": "procedures/EnsureKernelModule.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureLogfileAccess.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureMTAsLocalOnly.schema.json#/definitions/remediation"

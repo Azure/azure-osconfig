@@ -46,10 +46,22 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         const struct passwd* pwd = getpwuid(statbuf.st_uid);
         if (nullptr == pwd)
         {
-            OsConfigLogDebug(log, "No user with UID %d", statbuf.st_gid);
+            OsConfigLogDebug(log, "No user with UID %d", statbuf.st_uid);
             return indicators.NonCompliant("No user with uid " + std::to_string(statbuf.st_uid));
         }
-        if (owner != pwd->pw_name)
+        std::istringstream iss(owner);
+        std::string ownerName;
+        bool ownerOk = false;
+        while (std::getline(iss, ownerName, '|'))
+        {
+            if (ownerName == pwd->pw_name)
+            {
+                OsConfigLogDebug(log, "Matched owner '%s' to '%s'", ownerName.c_str(), pwd->pw_name);
+                ownerOk = true;
+                break;
+            }
+        }
+        if (!ownerOk)
         {
             OsConfigLogDebug(log, "Invalid '%s' owner - is '%s' should be '%s'", filename.c_str(), pwd->pw_name, owner.c_str());
             return indicators.NonCompliant("Invalid owner on '" + filename + "' - is '" + std::string(pwd->pw_name) + "' should be '" + owner + "'");
@@ -86,6 +98,7 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         }
         if (!groupOk)
         {
+            OsConfigLogDebug(log, "Invalid group on '%s' - is '%s' should be '%s'", filename.c_str(), grp->gr_name, groupName.c_str());
             return indicators.NonCompliant("Invalid group on '" + filename + "' - is '" + std::string(grp->gr_name) + "' should be '" + groupName + "'");
         }
         else
@@ -197,20 +210,41 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
     if (it != args.end())
     {
         owner = std::move(it->second);
-        const struct passwd* pwd = getpwnam(owner.c_str());
-        if (pwd == nullptr)
+        std::istringstream iss(owner);
+        std::string ownerName;
+        std::string firstOwner;
+        bool ownerOk = false;
+        const struct passwd* pwd = getpwuid(statbuf.st_uid);
+        while (std::getline(iss, ownerName, '|'))
         {
-            OsConfigLogDebug(log, "No user with UID %d", statbuf.st_gid);
-            return indicators.NonCompliant("No user with name " + owner);
+            if (firstOwner.empty())
+            {
+                firstOwner = ownerName;
+            }
+            if ((nullptr != pwd) && (ownerName == pwd->pw_name))
+            {
+                OsConfigLogDebug(log, "Matched owner '%s' to '%s'", ownerName.c_str(), pwd->pw_name);
+                ownerOk = true;
+                break;
+            }
         }
-        uid = pwd->pw_uid;
-        if (uid != statbuf.st_uid)
+        if (!ownerOk)
         {
-            owner_changed = true;
-        }
-        else
-        {
-            OsConfigLogDebug(log, "Matched owner '%s' to '%s'", owner.c_str(), pwd->pw_name);
+            pwd = getpwnam(firstOwner.c_str());
+            if (pwd == nullptr)
+            {
+                OsConfigLogDebug(log, "No user with name %s", firstOwner.c_str());
+                return indicators.NonCompliant("No user with name " + firstOwner);
+            }
+            uid = pwd->pw_uid;
+            if (uid != statbuf.st_uid)
+            {
+                owner_changed = true;
+            }
+            else
+            {
+                OsConfigLogDebug(log, "Matched owner '%s' to '%s'", owner.c_str(), pwd->pw_name);
+            }
         }
     }
 
@@ -219,11 +253,6 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
     {
         groupName = std::move(it->second);
         const struct group* grp = getgrgid(statbuf.st_gid);
-        if (nullptr == grp)
-        {
-            OsConfigLogDebug(log, "No group with GID %d", statbuf.st_gid);
-            return indicators.NonCompliant("No group with gid " + std::to_string(statbuf.st_gid));
-        }
         std::istringstream iss(groupName);
         std::string group;
         std::string firstGroup;
@@ -234,7 +263,7 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
             {
                 firstGroup = group;
             }
-            if (group == grp->gr_name)
+            if ((nullptr != grp) && (group == grp->gr_name))
             {
                 OsConfigLogDebug(log, "Matched group '%s' to '%s'", group.c_str(), grp->gr_name);
                 groupOk = true;
