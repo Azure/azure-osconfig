@@ -63,6 +63,7 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         }
         if (!ownerOk)
         {
+            OsConfigLogDebug(log, "Invalid '%s' owner - is '%s' should be '%s'", filename.c_str(), pwd->pw_name, owner.c_str());
             return indicators.NonCompliant("Invalid owner on '" + filename + "' - is '" + std::string(pwd->pw_name) + "' should be '" + owner + "'");
         }
         else

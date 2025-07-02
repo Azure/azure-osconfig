@@ -85,8 +85,9 @@ Result<Status> EnsureFilePermissionsCollectionHelper(const std::map<std::string,
     }
 }
 
-AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
-    "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
+AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file, single or | separated",
+    "group:Required group of the file, single or | separated", "permissions:Required octal permissions of the file::^[0-7]{3,4}$",
+    "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
     auto log = context.GetLogHandle();
     auto it = args.find("filename");
@@ -99,7 +100,9 @@ AUDIT_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required o
     return AuditEnsureFilePermissionsHelper(filename, args, indicators, context);
 }
 
-REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M", "owner:Required owner of the file", "group:Required group of the file",
+REMEDIATE_FN(EnsureFilePermissions, "filename:Path to the file:M",
+    "owner:Required owner of the file, single or | separated, first one is used for remediation",
+    "group:Required group of the file, single or | separated, first one is used for remediation",
     "permissions:Required octal permissions of the file::^[0-7]{3,4}$", "mask:Required octal permissions of the file - mask::^[0-7]{3,4}$")
 {
     auto log = context.GetLogHandle();
