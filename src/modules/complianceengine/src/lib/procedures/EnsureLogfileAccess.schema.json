@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureLogfileAccess"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureLogfileAccess": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Path to log directory to check, default /var/log"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureLogfileAccess"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureLogfileAccess": {
+              "type": "object",
+              "required": [],
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Path to log directory to remediate, default /var/log"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
