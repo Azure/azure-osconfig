@@ -213,20 +213,17 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
         std::string firstOwner;
         bool ownerOk = false;
         const struct passwd* pwd = getpwuid(statbuf.st_uid);
-        if (nullptr != pwd)
+        while (std::getline(iss, ownerName, '|'))
         {
-            while (std::getline(iss, ownerName, '|'))
+            if (firstOwner.empty())
             {
-                if (firstOwner.empty())
-                {
-                    firstOwner = ownerName;
-                }
-                if (ownerName == pwd->pw_name)
-                {
-                    OsConfigLogDebug(log, "Matched owner '%s' to '%s'", ownerName.c_str(), pwd->pw_name);
-                    ownerOk = true;
-                    break;
-                }
+                firstOwner = ownerName;
+            }
+            if ((nullptr != pwd) && (ownerName == pwd->pw_name))
+            {
+                OsConfigLogDebug(log, "Matched owner '%s' to '%s'", ownerName.c_str(), pwd->pw_name);
+                ownerOk = true;
+                break;
             }
         }
         if (!ownerOk)
@@ -254,11 +251,6 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
     {
         groupName = std::move(it->second);
         const struct group* grp = getgrgid(statbuf.st_gid);
-        if (nullptr == grp)
-        {
-            OsConfigLogDebug(log, "No group with GID %d", statbuf.st_gid);
-            return indicators.NonCompliant("No group with gid " + std::to_string(statbuf.st_gid));
-        }
         std::istringstream iss(groupName);
         std::string group;
         std::string firstGroup;
@@ -269,7 +261,7 @@ Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename,
             {
                 firstGroup = group;
             }
-            if (group == grp->gr_name)
+            if ((nullptr != grp) && (group == grp->gr_name))
             {
                 OsConfigLogDebug(log, "Matched group '%s' to '%s'", group.c_str(), grp->gr_name);
                 groupOk = true;
