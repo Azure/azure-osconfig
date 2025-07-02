@@ -11,6 +11,7 @@ set(PROCEDURES
     procedures/EnsureFilesystemOptionTest.cpp
     procedures/EnsureFirewallOpenPortsTest.cpp
     procedures/EnsureKernelModuleTest.cpp
+    procedures/EnsureLogfileAccessTest.cpp
     procedures/EnsureMountPointExistsTest.cpp
     procedures/EnsureMTAsLocalOnlyTest.cpp
     procedures/EnsureRootPathTest.cpp

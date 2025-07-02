@@ -63,11 +63,11 @@ Result<Status> FileTreeWalk(const std::string& path, FtwCallback callback, Break
         struct stat sb;
         std::string directory = path + "/" + entry->d_name;
         OsConfigLogDebug(context.GetLogHandle(), "Checking file: '%s'", directory.c_str());
-        if (0 != stat(directory.c_str(), &sb))
+        if (0 != lstat(directory.c_str(), &sb))
         {
             int status = errno;
-            OsConfigLogError(context.GetLogHandle(), "Failed to stat '%s': %s", directory.c_str(), strerror(status));
-            result = Error("Failed to stat '" + directory + "': " + strerror(status), status);
+            OsConfigLogError(context.GetLogHandle(), "Failed to lstat '%s': %s", directory.c_str(), strerror(status));
+            result = Error("Failed to lstat '" + directory + "': " + strerror(status), status);
             break;
         }
 
