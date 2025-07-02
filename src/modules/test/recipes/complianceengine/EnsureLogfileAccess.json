@@ -28,13 +28,14 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "FAIL*"
+    "Payload": "^PASS*"
   },
 
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateTest"
+    "ObjectName": "remediateTest",
+    "Payload": ""
   },
 
   {
