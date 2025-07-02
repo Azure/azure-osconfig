@@ -8,6 +8,7 @@ endif()
 
 set(PROCEDURES
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.cpp
+    procedures/EnsureApparmorProfiles.cpp
     procedures/EnsureFilePermissions.cpp
     procedures/EnsureFilesystemOption.cpp
     procedures/EnsureFirewallOpenPorts.cpp
@@ -34,6 +35,7 @@ set(PROCEDURES
 )
 set(SCHEMAS
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json
+    procedures/EnsureApparmorProfiles.schema.json
     procedures/EnsureFilePermissions.schema.json
     procedures/EnsureFilesystemOption.schema.json
     procedures/EnsureFirewallOpenPorts.schema.json
