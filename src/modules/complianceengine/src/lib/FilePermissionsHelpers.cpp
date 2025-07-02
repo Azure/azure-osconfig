@@ -97,6 +97,7 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         }
         if (!groupOk)
         {
+            OsConfigLogDebug(log, "Invalid group on '%s' - is '%s' should be '%s'", filename.c_str(), grp->gr_name, groupName.c_str());
             return indicators.NonCompliant("Invalid group on '" + filename + "' - is '" + std::string(grp->gr_name) + "' should be '" + groupName + "'");
         }
         else
