@@ -24,6 +24,7 @@ set(PROCEDURES
     procedures/SystemdConfigTest.cpp
     procedures/SystemdUnitStateTest.cpp
     procedures/ufwStatusTest.cpp
+    procedures/EnsureShadowContainsTest.cpp
 )
 
 add_executable(complianceenginetests
