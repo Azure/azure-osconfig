@@ -7,17 +7,20 @@ include(CTest)
 find_package(GTest REQUIRED)
 
 set(PROCEDURES
+    procedures/EnsureDconfTest.cpp
     procedures/EnsureFilePermissionsTest.cpp
     procedures/EnsureFilesystemOptionTest.cpp
     procedures/EnsureFirewallOpenPortsTest.cpp
     procedures/EnsureKernelModuleTest.cpp
     procedures/EnsureLogfileAccessTest.cpp
+    procedures/EnsureGsettingsTest.cpp
     procedures/EnsureMountPointExistsTest.cpp
     procedures/EnsureMTAsLocalOnlyTest.cpp
     procedures/EnsureRootPathTest.cpp
     procedures/EnsureSshdOptionTest.cpp
     procedures/EnsureSysctlTest.cpp
     procedures/EnsureWirelessIsDisabledTest.cpp
+    procedures/EnsureXdmcpTest.cpp
     procedures/ExecuteCommandGrepTest.cpp
     procedures/FileRegexMatchTest.cpp
     procedures/PackageInstalledTest.cpp

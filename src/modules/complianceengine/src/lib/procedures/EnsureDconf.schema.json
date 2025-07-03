@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "audit": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "EnsureDconf"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "EnsureDconf": {
+              "type": "object",
+              "required": [
+                "key",
+                "value",
+                "operation"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "Name of the dconf to value"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "value of operation to check acording to operation"
+                },
+                "operation": {
+                  "type": "string",
+                  "description": "Type of operation to perform on variable one of equal, not equal",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((eq|ne))$|(^(eq|ne)$))"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "remediation": {
+      "anyOf": []
+    }
+  }
+}
