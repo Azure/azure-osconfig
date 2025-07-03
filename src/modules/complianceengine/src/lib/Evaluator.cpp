@@ -514,28 +514,12 @@ void MmiFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstre
             first = false;
         }
         result << "]} == ";
-        if (node.status == Status::Compliant)
-        {
-            result << "TRUE";
-        }
-        else
-        {
-            result << "FALSE";
-        }
     }
     else if (node.procedureName == "not")
     {
         result << "{ " << node.procedureName << ": ";
         FormatNode(*node.children[0].get(), result);
         result << "} == ";
-        if (node.status == Status::Compliant)
-        {
-            result << "FALSE";
-        }
-        else
-        {
-            result << "TRUE";
-        }
     }
     else
     {
@@ -552,14 +536,15 @@ void MmiFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstre
             first = false;
         }
         result << " } == ";
-        if (node.status == Status::Compliant)
-        {
-            result << "TRUE";
-        }
-        else
-        {
-            result << "FALSE";
-        }
+    }
+
+    if (node.status == Status::Compliant)
+    {
+        result << "TRUE";
+    }
+    else
+    {
+        result << "FALSE";
     }
 }
 
