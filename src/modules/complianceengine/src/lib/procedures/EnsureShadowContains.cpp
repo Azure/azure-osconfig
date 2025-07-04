@@ -174,23 +174,6 @@ Result<bool> IntegerComparison(const int lhs, const int rhs, Operation operation
     return ComplianceEngine::Error("Unsupported comparison operation for an integer type", EINVAL);
 }
 
-// Result<bool> GenericComparison(const string& value, const string& expected, Operation operation)
-// {
-//     auto lhs = AsInt(value);
-//     if (!lhs.HasValue())
-//     {
-//         return StringComparison(value, expected, operation);
-//     }
-
-//     auto rhs = AsInt(expected);
-//     if (!rhs.HasValue())
-//     {
-//         return StringComparison(expected, value, operation);
-//     }
-
-//     return IntegerComparison(lhs.Value(), rhs.Value(), operation);
-// }
-
 enum PasswordEncryptionMethod
 {
     DES,

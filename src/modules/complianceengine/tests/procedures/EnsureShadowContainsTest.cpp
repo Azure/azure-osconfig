@@ -6,14 +6,6 @@
 #include "MockContext.h"
 #include "ProcedureMap.h"
 
-#include <dirent.h>
-#include <fstream>
-#include <gtest/gtest.h>
-#include <linux/limits.h>
-#include <regex>
-#include <string>
-#include <unistd.h>
-
 using ComplianceEngine::AuditEnsureShadowContains;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
