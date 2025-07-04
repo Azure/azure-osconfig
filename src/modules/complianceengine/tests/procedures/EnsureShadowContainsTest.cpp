@@ -114,6 +114,18 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_7)
     ASSERT_EQ(result.Error().code, EINVAL);
 }
 
+TEST_F(EnsureShadowContainsTest, InvalidArguments_8)
+{
+    std::map<std::string, std::string> args;
+    args["field"] = "encryption_method";
+    args["value"] = "asdf";
+    args["operation"] = "match";
+    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().message, "Username field comparison is not supported");
+    ASSERT_EQ(result.Error().code, EINVAL);
+}
+
 TEST_F(EnsureShadowContainsTest, SpecificUser_1)
 {
     std::map<std::string, std::string> args;

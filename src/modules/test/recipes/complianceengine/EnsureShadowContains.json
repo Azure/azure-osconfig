@@ -13,7 +13,7 @@
           "username": "securitybaselinetest",
           "username_operation": "eq",
           "field": "password",
-          "value": "^\\$y\\$.*$",
+          "value": "^\\$.*\\$.*$",
           "operation": "match"
         }
       }
