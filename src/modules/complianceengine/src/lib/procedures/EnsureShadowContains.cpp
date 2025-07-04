@@ -1,6 +1,7 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <Regex.h>
+#include <ScopeGuard.h>
 #include <shadow.h>
 
 using std::map;
@@ -294,7 +295,7 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
 
     // Iterate over all users
     setspent();
-    std::unique_ptr<spwd, void (*)(spwd*)> endspentGuard(nullptr, [](spwd*) { endspent(); });
+    ScopeGuard endspentGuard([]() { endspent(); });
 
     spwd* entry = nullptr;
     while (nullptr != (entry = getspent()))
@@ -322,15 +323,15 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
         }
         if (!result.Value())
         {
-            return indicators.NonCompliant(PrettyFieldName(field.Value()) + " does not match expected value for user '" + entry->sp_namp + "'.");
+            return indicators.NonCompliant(PrettyFieldName(field.Value()) + " does not match expected value for user '" + entry->sp_namp + "'");
         }
 
         if (username.HasValue())
         {
-            indicators.Compliant(PrettyFieldName(field.Value()) + " matches expected value for user '" + entry->sp_namp + "'.");
+            indicators.Compliant(PrettyFieldName(field.Value()) + " matches expected value for user '" + entry->sp_namp + "'");
         }
     }
 
-    return indicators.Compliant(PrettyFieldName(field.Value()) + " matches expected value for all tested users.");
+    return indicators.Compliant(PrettyFieldName(field.Value()) + " matches expected value for all tested users");
 }
 } // namespace ComplianceEngine
