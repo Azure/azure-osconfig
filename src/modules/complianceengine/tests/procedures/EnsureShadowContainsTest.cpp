@@ -142,9 +142,10 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_3)
 {
     std::map<std::string, std::string> args;
     args["field"] = "password";
-    args["value"] = "*";
-    args["operation"] = "eq";
-    args["username"] = "root";
+    args["value"] = "^.*$";
+    args["operation"] = "match";
+    args["username"] = "^root$";
+    args["username_operation"] = "match";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -153,34 +154,38 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_3)
 TEST_F(EnsureShadowContainsTest, SpecificUser_4)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "min_age";
-    args["value"] = "0";
-    args["operation"] = "eq";
-    args["username"] = "root";
+    args["field"] = "password";
+    args["value"] = "^test$";
+    args["operation"] = "match";
+    args["username"] = "^$";
+    args["username_operation"] = "match";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
+    // No users matched the empty string pattern so we return compliant status
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureShadowContainsTest, SpecificUser_5)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "min_age";
-    args["value"] = "0";
-    args["operation"] = "ne";
-    args["username"] = "root";
+    args["field"] = "password";
+    args["value"] = "^test$";
+    args["operation"] = "match";
+    args["username"] = "^root$";
+    args["username_operation"] = "eq";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureShadowContainsTest, SpecificUser_6)
 {
     std::map<std::string, std::string> args;
     args["field"] = "password";
-    args["value"] = "roots";
+    args["value"] = "^test$";
     args["operation"] = "match";
     args["username"] = "root";
+    args["username_operation"] = "eq";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);

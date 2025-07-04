@@ -242,13 +242,13 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
     UNUSED(context);
 
     Optional<string> username;
-    auto usernameOperation = Operation::Equal;
     auto it = args.find("username");
     if (it != args.end())
     {
         username = std::move(it->second);
     }
 
+    auto usernameOperation = Operation::Equal;
     it = args.find("username_operation");
     if (it != args.end())
     {
