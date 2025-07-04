@@ -90,23 +90,35 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_5)
     ASSERT_EQ(result.Error().code, EINVAL);
 }
 
-TEST_F(EnsureShadowContainsTest, RootUser_1)
+TEST_F(EnsureShadowContainsTest, InvalidArguments_6)
+{
+    std::map<std::string, std::string> args;
+    args["field"] = "chg_lst";
+    args["value"] = "42";
+    args["operation"] = "match";
+    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().message, "Unsupported comparison operation for an integer type");
+    ASSERT_EQ(result.Error().code, EINVAL);
+}
+
+TEST_F(EnsureShadowContainsTest, InvalidArguments_7)
 {
     std::map<std::string, std::string> args;
     args["field"] = "username";
-    args["value"] = "42";
+    args["value"] = "test";
     args["operation"] = "match";
-    args["username"] = "root";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
-    ASSERT_TRUE(result.HasValue());
-    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().message, "Username field comparison is not supported");
+    ASSERT_EQ(result.Error().code, EINVAL);
 }
 
 TEST_F(EnsureShadowContainsTest, SpecificUser_1)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "username";
-    args["value"] = "42";
+    args["field"] = "password";
+    args["value"] = "test";
     args["operation"] = "match";
     args["username"] = "root";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
@@ -117,8 +129,8 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_1)
 TEST_F(EnsureShadowContainsTest, SpecificUser_2)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "username";
-    args["value"] = "root";
+    args["field"] = "password";
+    args["value"] = "^.*$";
     args["operation"] = "match";
     args["username"] = "root";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
@@ -129,9 +141,9 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_2)
 TEST_F(EnsureShadowContainsTest, SpecificUser_3)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "username";
-    args["value"] = "^root$";
-    args["operation"] = "match";
+    args["field"] = "password";
+    args["value"] = "*";
+    args["operation"] = "eq";
     args["username"] = "root";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -141,9 +153,9 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_3)
 TEST_F(EnsureShadowContainsTest, SpecificUser_4)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "username";
-    args["value"] = "oo";
-    args["operation"] = "match";
+    args["field"] = "chg_allow";
+    args["value"] = "0";
+    args["operation"] = "eq";
     args["username"] = "root";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -153,9 +165,9 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_4)
 TEST_F(EnsureShadowContainsTest, SpecificUser_5)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "username";
-    args["value"] = "roots";
-    args["operation"] = "match";
+    args["field"] = "chg_allow";
+    args["value"] = "0";
+    args["operation"] = "ne";
     args["username"] = "root";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
@@ -168,7 +180,7 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_6)
     args["field"] = "password";
     args["value"] = "roots";
     args["operation"] = "match";
-    args["username"] = "robert";
+    args["username"] = "root";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
