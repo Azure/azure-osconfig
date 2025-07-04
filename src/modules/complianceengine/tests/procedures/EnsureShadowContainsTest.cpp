@@ -60,7 +60,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_2)
 TEST_F(EnsureShadowContainsTest, InvalidArguments_3)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "chg_lst";
+    args["field"] = "last_change";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Missing 'value' parameter");
@@ -70,7 +70,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_3)
 TEST_F(EnsureShadowContainsTest, InvalidArguments_4)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "chg_lst";
+    args["field"] = "last_change";
     args["value"] = "42";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
@@ -81,7 +81,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_4)
 TEST_F(EnsureShadowContainsTest, InvalidArguments_5)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "chg_lst";
+    args["field"] = "last_change";
     args["value"] = "42";
     args["operation"] = "invalid_op";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
@@ -93,7 +93,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_5)
 TEST_F(EnsureShadowContainsTest, InvalidArguments_6)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "chg_lst";
+    args["field"] = "last_change";
     args["value"] = "42";
     args["operation"] = "match";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
@@ -153,7 +153,7 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_3)
 TEST_F(EnsureShadowContainsTest, SpecificUser_4)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "chg_allow";
+    args["field"] = "min_age";
     args["value"] = "0";
     args["operation"] = "eq";
     args["username"] = "root";
@@ -165,7 +165,7 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_4)
 TEST_F(EnsureShadowContainsTest, SpecificUser_5)
 {
     std::map<std::string, std::string> args;
-    args["field"] = "chg_allow";
+    args["field"] = "min_age";
     args["value"] = "0";
     args["operation"] = "ne";
     args["username"] = "root";
