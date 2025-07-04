@@ -122,7 +122,7 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_8)
     args["operation"] = "match";
     auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Username field comparison is not supported");
+    ASSERT_EQ(result.Error().message, "Unsupported comparison operation for encryption method");
     ASSERT_EQ(result.Error().code, EINVAL);
 }
 
