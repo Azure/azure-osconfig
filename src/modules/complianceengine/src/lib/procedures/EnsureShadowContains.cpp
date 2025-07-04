@@ -232,7 +232,12 @@ Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& valu
 
 namespace ComplianceEngine
 {
-AUDIT_FN(EnsureShadowContains)
+AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames against",
+    "username_operation:A comparison operation for the username parameter::(eq|ne|lt|le|gt|ge|match)",
+    "field:The /etc/shadow entry field to match "
+    "against:M:(password|last_change|min_age|max_age|warn_period|inactivity_period|expiration_date|encryption_method)",
+    "value:A pattern or value to match against the specified field:M",
+    "operation:A comparison operation for the value parameter:M:(eq|ne|lt|le|gt|ge|match)")
 {
     UNUSED(context);
 
