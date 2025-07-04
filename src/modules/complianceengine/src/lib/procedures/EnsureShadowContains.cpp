@@ -191,6 +191,102 @@ Result<bool> IntegerComparison(const int lhs, const int rhs, Operation operation
 //     return IntegerComparison(lhs.Value(), rhs.Value(), operation);
 // }
 
+enum PasswordEncryptionMethod
+{
+    DES,
+    BSDi,
+    MD5,
+    Blowfish,
+    SHA256,
+    SHA512,
+    YesCrypt,
+    None, // Used for entries without a password
+};
+
+Result<PasswordEncryptionMethod> ParseEncryptionMethod(const string& method)
+{
+    // Follows the OVAL specification, adds YesCrypt for future reference
+    // https://oval.mitre.org/language/version5.10/ovaldefinition/documentation/unix-definitions-schema.html#EntityStateEncryptMethodType
+    static const map<string, PasswordEncryptionMethod> encryptionMap = {
+        {"DES", PasswordEncryptionMethod::DES},
+        {"BSDi", PasswordEncryptionMethod::BSDi},
+        {"MD5", PasswordEncryptionMethod::MD5},
+        {"Blowfish", PasswordEncryptionMethod::Blowfish},
+        {"Sun MD5", PasswordEncryptionMethod::MD5},
+        {"SHA-256", PasswordEncryptionMethod::SHA256},
+        {"SHA-512", PasswordEncryptionMethod::SHA512},
+        // Not defined in OVAL, but commonly used
+        {"YesCrypt", PasswordEncryptionMethod::YesCrypt},
+    };
+
+    auto it = encryptionMap.find(method);
+    if (it == encryptionMap.end())
+    {
+        return Error("Invalid encryption method: " + method, EINVAL);
+    }
+
+    return it->second;
+}
+
+Result<PasswordEncryptionMethod> ParseEncryptionMethod(const spwd& shadowEntry)
+{
+    if (nullptr == shadowEntry.sp_pwdp)
+    {
+        return Error("Shadow entry does not contain a valid password field", EINVAL);
+    }
+
+    const string entry = shadowEntry.sp_pwdp;
+    if (entry.empty())
+    {
+        return PasswordEncryptionMethod::None; // No password set
+    }
+
+    if (entry[0] == '_')
+    {
+        // If the password starts with '_', it is likely a legacy BSDi format
+        return PasswordEncryptionMethod::BSDi;
+    }
+
+    if (entry[0] == '!' || entry[0] == '*')
+    {
+        // If the password starts with '!', it is locked
+        // If it starts with '*', it is not set
+        return PasswordEncryptionMethod::None; // No password set
+    }
+
+    if (entry[0] != '$')
+    {
+        // If the password does not start with a '$', it is likely a legacy DES format
+        return PasswordEncryptionMethod::DES;
+    }
+
+    auto index = entry.find('$', 1);
+    if (index == std::string::npos)
+    {
+        return Error("Invalid password format in shadow entry", EINVAL);
+    }
+
+    static const map<string, PasswordEncryptionMethod> methodMap = {
+        {"1", PasswordEncryptionMethod::MD5},
+        {"2", PasswordEncryptionMethod::Blowfish},
+        {"2a", PasswordEncryptionMethod::Blowfish},
+        {"2y", PasswordEncryptionMethod::Blowfish},
+        {"md5", PasswordEncryptionMethod::MD5},
+        {"5", PasswordEncryptionMethod::SHA256},
+        {"6", PasswordEncryptionMethod::SHA512},
+        {"y", PasswordEncryptionMethod::YesCrypt},
+    };
+
+    const auto prefix = entry.substr(1, index - 1); // Extract the prefix between the first and second '$'
+    const auto it = methodMap.find(prefix);
+    if (it == methodMap.end())
+    {
+        return Error("Unsupported password encryption method: " + prefix, EINVAL);
+    }
+
+    return it->second;
+}
+
 Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& value, Operation operation)
 {
     switch (field)
@@ -199,6 +295,33 @@ Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& valu
             return Error("Username field comparison is not supported", EINVAL);
         case Field::Password:
             return StringComparison(value, entry.sp_pwdp, operation);
+        case Field::EncryptionMethod: {
+            if (operation != Operation::Equal && operation != Operation::NotEqual)
+            {
+                return Error("Unsupported comparison operation for encryption method", EINVAL);
+            }
+
+            auto suppliedMethod = ParseEncryptionMethod(value);
+            if (!suppliedMethod.HasValue())
+            {
+                return suppliedMethod.Error();
+            }
+
+            auto entryMethod = ParseEncryptionMethod(entry);
+            if (!entryMethod.HasValue())
+            {
+                return entryMethod.Error();
+            }
+
+            OsConfigLogDebug(nullptr, "Comparing encryption methods: entry='%d', supplied='%d'", (int)entryMethod.Value(), (int)suppliedMethod.Value());
+            if (operation == Operation::Equal)
+            {
+                return entryMethod.Value() == suppliedMethod.Value();
+            }
+
+            // NotEqual
+            return entryMethod.Value() != suppliedMethod.Value();
+        }
         default:
             break;
     }
