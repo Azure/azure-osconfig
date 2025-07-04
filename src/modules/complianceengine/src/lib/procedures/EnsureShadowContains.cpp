@@ -16,13 +16,13 @@ enum class Field
     Username,
     Password,
     LastChange,
-    Minimum,
-    Maximum,
-    Warn,
-    Inactive,
-    Expire,
+    MinAge,
+    MaxAge,
+    WarnPeriod,
+    InactivityPeriod,
+    ExpirationDate,
     Reserved,
-    EncryptMethod,
+    EncryptionMethod,
 };
 
 Result<Field> ParseFieldName(const string& field)
@@ -30,14 +30,14 @@ Result<Field> ParseFieldName(const string& field)
     static const map<string, Field> fieldMap = {
         {"username", Field::Username},
         {"password", Field::Password},
-        {"chg_lst", Field::LastChange},
-        {"chg_allow", Field::Minimum},
-        {"chg_req", Field::Maximum},
-        {"exp_warn", Field::Warn},
-        {"exp_inact", Field::Inactive},
-        {"exp_date", Field::Expire},
+        {"last_change", Field::LastChange},
+        {"min_age", Field::MinAge},
+        {"max_age", Field::MaxAge},
+        {"warn_period", Field::WarnPeriod},
+        {"inactivity_period", Field::InactivityPeriod},
+        {"expiration_date", Field::ExpirationDate},
         {"flag", Field::Reserved},
-        {"encrypt_method", Field::EncryptMethod},
+        {"encryption_method", Field::EncryptionMethod},
     };
 
     auto it = fieldMap.find(field);
@@ -55,13 +55,13 @@ const std::string& PrettyFieldName(Field field)
         {Field::Username, "login name"},
         {Field::Password, "encrypted password"},
         {Field::LastChange, "last password change date"},
-        {Field::Minimum, "minimum password age"},
-        {Field::Maximum, "maximum password age"},
-        {Field::Warn, "password warning period"},
-        {Field::Inactive, "password inactivity period"},
-        {Field::Expire, "account expiration date"},
+        {Field::MinAge, "minimum password age"},
+        {Field::MaxAge, "maximum password age"},
+        {Field::WarnPeriod, "password warning period"},
+        {Field::InactivityPeriod, "password inactivity period"},
+        {Field::ExpirationDate, "account expiration date"},
         {Field::Reserved, "reserved field"},
-        {Field::EncryptMethod, "password encryption method"},
+        {Field::EncryptionMethod, "password encryption method"},
     };
 
     assert(fieldNames.find(field) != fieldNames.end());
@@ -212,15 +212,15 @@ Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& valu
     {
         case Field::LastChange:
             return IntegerComparison(entry.sp_lstchg, intValue.Value(), operation);
-        case Field::Minimum:
+        case Field::MinAge:
             return IntegerComparison(entry.sp_min, intValue.Value(), operation);
-        case Field::Maximum:
+        case Field::MaxAge:
             return IntegerComparison(entry.sp_max, intValue.Value(), operation);
-        case Field::Warn:
+        case Field::WarnPeriod:
             return IntegerComparison(entry.sp_warn, intValue.Value(), operation);
-        case Field::Inactive:
+        case Field::InactivityPeriod:
             return IntegerComparison(entry.sp_inact, intValue.Value(), operation);
-        case Field::Expire:
+        case Field::ExpirationDate:
             return IntegerComparison(entry.sp_expire, intValue.Value(), operation);
         default:
             break;
