@@ -1,0 +1,178 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "complianceengine.so"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "EnsureShadowContains": {
+          "username": "securitybaselinetest",
+          "username_operation": "eq",
+          "field": "password",
+          "value": "^\\$.*\\$.*$",
+          "operation": "match"
+        }
+      }
+    }
+  },
+
+
+
+  // Make sure there are no residues of other module tests
+  {
+    "RunCommand": "! stat /home/securitybaselinetest"
+  },
+
+  // No securitybaselintetest user, we expect compliance
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ EnsureShadowContains: encrypted password matches expected value for all tested users } == TRUE"
+  },
+
+  // Create the securitybaselinetest user and group
+  {
+    "RunCommand": "groupadd -g 8888 securitybaselinetest"
+  },
+  {
+    "RunCommand": "useradd -g 8888 securitybaselinetest && id securitybaselinetest"
+  },
+  {
+    "RunCommand": "cat /etc/shadow | grep securitybaselinetest"
+  },
+
+  // Now we have a user without a password, we expect incompliance
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "{ EnsureShadowContains: encrypted password does not match expected value for user 'securitybaselinetest' } == FALSE"
+  },
+
+  // Set a password for the user, inactivity period and expiration date
+  {
+    "RunCommand": "usermod securitybaselinetest -f 3 -e 2025-01-01"
+  },
+  {
+    "RunCommand": "printf \"DFC&Dhduf9823ds!@#$\nDFC&Dhduf9823ds!@#$\" | passwd securitybaselinetest"
+  },
+  {
+    "RunCommand": "cat /etc/shadow | grep securitybaselinetest"
+  },
+
+  // Match the encrypted password
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ EnsureShadowContains: encrypted password matches expected value for user 'securitybaselinetest', encrypted password matches expected value for all tested users } == TRUE"
+  },
+
+  // Test the previously set inactivity period
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "EnsureShadowContains": {
+          "username": "securitybaselinetest",
+          "username_operation": "eq",
+          "field": "inactivity_period",
+          "value": "3",
+          "operation": "eq"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ EnsureShadowContains: password inactivity period matches expected value for user 'securitybaselinetest', password inactivity period matches expected value for all tested users } == TRUE"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "EnsureShadowContains": {
+          "username": "securitybaselinetest",
+          "username_operation": "eq",
+          "field": "inactivity_period",
+          "value": "3",
+          "operation": "ge"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ EnsureShadowContains: password inactivity period matches expected value for user 'securitybaselinetest', password inactivity period matches expected value for all tested users } == TRUE"
+  },
+
+  // Test the previously set expiration date
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "EnsureShadowContains": {
+          "username": "securitybaselinetest",
+          "username_operation": "eq",
+          "field": "expiration_date",
+          "value": "20089",
+          "operation": "eq"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ EnsureShadowContains: account expiration date matches expected value for user 'securitybaselinetest', account expiration date matches expected value for all tested users } == TRUE"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "EnsureShadowContains": {
+          "username": "securitybaselinetest",
+          "username_operation": "eq",
+          "field": "expiration_date",
+          "value": "20089",
+          "operation": "lt"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "{ EnsureShadowContains: account expiration date does not match expected value for user 'securitybaselinetest' } == FALSE"
+  },
+
+  // cleanup
+  {
+    "RunCommand": "userdel -f -r securitybaselinetest || true"
+  },
+  {
+    "RunCommand": "groupdel securitybaselinetest || true"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]
