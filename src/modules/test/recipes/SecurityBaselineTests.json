@@ -231,13 +231,13 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "initEnsureSshMaxAuthTriesIsSet",
-    "Payload": "6"
+    "Payload": "4"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureSshMaxAuthTriesIsSet",
-    "Payload": "6"
+    "Payload": "4"
   },
   {
     "ObjectType": "Desired",
