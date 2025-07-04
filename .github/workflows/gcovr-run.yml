@@ -124,7 +124,7 @@ jobs:
           find . -name '*.gcda' -print
           echo "GCNO files:"
           find . -name '*.gcno' -print
-          for src in `find ./build -name '*.gcda'`; do echo "src: $src d: ${src#./build}"; cp $src ${src#./build}; done
+          for src in `find ./build -name '*.gcda'`; do echo "src: $src d: ./${src#./build/}"; cp $src ./${src#./build/}; done
           sudo gcovr --root /azure-osconfig \
             --html-details -o ${{ steps.download.outputs.download-path }}/coverage.html \
             --json-pretty --json ${{ steps.download.outputs.download-path }}/coverage.json \
