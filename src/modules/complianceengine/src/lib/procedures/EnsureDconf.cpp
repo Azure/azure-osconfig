@@ -12,7 +12,7 @@
 namespace ComplianceEngine
 {
 
-AUDIT_FN(EnsureDconf, "key:Name of the dconf to value:M", "value:value of operation to check acording to operation:M",
+AUDIT_FN(EnsureDconf, "key:dconf key name to be checked:M", "value:Value to be verified using the operation:M",
     "operation:Type of operation to perform on variable one of equal, not equal:M:^(eq|ne)$")
 {
     // auto log = context.GetLogHandle();
