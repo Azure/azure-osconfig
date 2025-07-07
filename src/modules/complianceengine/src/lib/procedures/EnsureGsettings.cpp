@@ -77,7 +77,7 @@ AUDIT_FN(EnsureGsettings, "schema:Name of the gsettings schema to get:M", "key:N
     }
 
     Result<std::string> gsettingsType = context.ExecuteCommand("gsettings range \"" + schema + "\" \"" + keyName + "\"");
-    if (!gsettingsType.HasValue())
+    if (!gsettingsType.HasValue() || gsettingsType.Value().empty())
     {
         return Error("Failed to execute gsettings range command " + keyName + " error: " + gsettingsType.Error().message, gsettingsType.Error().code);
     }
@@ -111,7 +111,7 @@ AUDIT_FN(EnsureGsettings, "schema:Name of the gsettings schema to get:M", "key:N
     }
 
     Result<std::string> gsettingsOutput = context.ExecuteCommand("gsettings get \"" + schema + "\" \"" + keyName + "\"");
-    if (!gsettingsOutput.HasValue())
+    if (!gsettingsOutput.HasValue() || gsettingsOutput.Value().empty())
     {
         return Error("Failed to execute gsettings get command " + schema + " " + keyName + " error: " + gsettingsOutput.Error().message,
             gsettingsOutput.Error().code);
