@@ -34,12 +34,12 @@ protected:
 
     std::string GsettingsRangeCmd()
     {
-        return gsettingsRangeCmd + args["schema"] + " " + args["key"];
+        return gsettingsRangeCmd + "\"" + args["schema"] + "\" \"" + args["key"] + "\"";
     }
 
     std::string GsettingsGetCmd()
     {
-        return gsettingsGetCmd + args["schema"] + " " + args["key"];
+        return gsettingsGetCmd + "\"" + args["schema"] + "\" \"" + args["key"] + "\"";
     }
     void SetUp() override
     {

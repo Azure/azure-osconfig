@@ -24,14 +24,14 @@ AUDIT_FN(EnsureGsettings, "schema:Name of the gsettings schema to get:M", "key:N
     {
         return Error("No schema arg provided", EINVAL);
     }
-    auto schema = std::move(it->second);
+    auto schema = EscapeForShell(it->second);
 
     it = args.find("key");
     if (it == args.end())
     {
         return Error("No key arg provided", EINVAL);
     }
-    auto keyName = std::move(it->second);
+    auto keyName = EscapeForShell(it->second);
 
     it = args.find("keyType");
     if (it == args.end())
@@ -83,7 +83,7 @@ AUDIT_FN(EnsureGsettings, "schema:Name of the gsettings schema to get:M", "key:N
         }
     }
 
-    Result<std::string> gsettingsType = context.ExecuteCommand("gsettings range " + schema + " " + keyName);
+    Result<std::string> gsettingsType = context.ExecuteCommand("gsettings range \"" + schema + "\" \"" + keyName + "\"");
     if (!gsettingsType.HasValue())
     {
         return Error("Failed to execute gsettings range command " + keyName + " error: " + gsettingsType.Error().message, gsettingsType.Error().code);
@@ -117,7 +117,7 @@ AUDIT_FN(EnsureGsettings, "schema:Name of the gsettings schema to get:M", "key:N
         valuePrefixedByUint32 = true;
     }
 
-    Result<std::string> gsettingsOutput = context.ExecuteCommand("gsettings get " + schema + " " + keyName);
+    Result<std::string> gsettingsOutput = context.ExecuteCommand("gsettings get \"" + schema + "\" \"" + keyName + "\"");
     if (!gsettingsOutput.HasValue())
     {
         return Error("Failed to execute gsettings get command " + schema + " " + keyName + " error: " + gsettingsOutput.Error().message,
