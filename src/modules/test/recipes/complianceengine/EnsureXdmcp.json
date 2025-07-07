@@ -1,0 +1,59 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "complianceengine.so"
+  },
+  {
+    "RunCommand": "test -d /etc/gdm3 && true || mkdir /etc/gdm3"
+  },
+  // Fail etc/gdm3 exist and xdmcp enabled
+  {
+    "RunCommand": "test -f /etc/gdm3/custom.conf && { mv /etc/gdm3/custom.conf /etc/gdm3/custom.conf.bak ; } || true ; printf '[xdmcp]\nEnable=true\n' >> /etc/gdm3/custom.conf"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "EnsureXdmcp": {
+        }
+      },
+      "parameters": {
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "{ EnsureXdmcp: Found xdmcp Enabled block } == FALSE"
+  },
+  {
+    "RunCommand": "test -f /etc/gdm3/custom.conf.bak && mv /etc/gdm3/custom.conf.bak /etc/gdm3/custom.conf || rm /etc/gdm3/custom.conf "
+  },
+
+  // EMPTY system should not have gdm installed
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "EnsureXdmcp": {
+        }
+      },
+      "parameters": {
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ EnsureXdmcp: Did not found xdmcp Enabled block } == TRUE"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]
