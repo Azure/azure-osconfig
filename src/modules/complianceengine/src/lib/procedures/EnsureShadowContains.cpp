@@ -99,6 +99,9 @@ static const map<string, PasswordEncryptionMethod> encryptionTypeMap = {
     {"SHA-512", PasswordEncryptionMethod::SHA512},
     // Not defined in OVAL, but commonly used
     {"YesCrypt", PasswordEncryptionMethod::YesCrypt},
+
+    // Allows to test against no pasword, e.g. !/*, used in tests
+    {"None", PasswordEncryptionMethod::None},
 };
 
 static const map<string, PasswordEncryptionMethod> encryptionMethodMap = {
@@ -281,24 +284,27 @@ Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& valu
         case Field::Password:
             return StringComparison(value, entry.sp_pwdp, operation);
         case Field::EncryptionMethod: {
+            OsConfigLogInfo(nullptr, "Comparing encryption methods: entry='%s', supplied='%s'", entry.sp_pwdp, value.c_str());
             if (operation != Operation::Equal && operation != Operation::NotEqual)
             {
                 return Error("Unsupported comparison operation for encryption method", EINVAL);
             }
 
+            OsConfigLogInfo(nullptr, "Comparing encryption methods: entry='%s', supplied='%s'", entry.sp_pwdp, value.c_str());
             auto suppliedMethod = ParseEncryptionMethod(value);
             if (!suppliedMethod.HasValue())
             {
                 return suppliedMethod.Error();
             }
 
+            OsConfigLogInfo(nullptr, "Supplied encryption method: '%d'", (int)suppliedMethod.Value());
             auto entryMethod = ParseEncryptionMethod(entry);
             if (!entryMethod.HasValue())
             {
                 return entryMethod.Error();
             }
 
-            OsConfigLogDebug(nullptr, "Comparing encryption methods: entry='%d', supplied='%d'", (int)entryMethod.Value(), (int)suppliedMethod.Value());
+            OsConfigLogInfo(nullptr, "Comparing encryption methods: entry='%d', supplied='%d'", (int)entryMethod.Value(), (int)suppliedMethod.Value());
             if (operation == Operation::Equal)
             {
                 return entryMethod.Value() == suppliedMethod.Value();
@@ -409,6 +415,7 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
     auto stream = fopen(etcShadowPath.c_str(), "r");
     if (nullptr == stream)
     {
+        OsConfigLogError(context.GetLogHandle(), "Failed to open /etc/shadow file: %s", strerror(errno));
         return Error("Failed to open /etc/shadow file: " + string(strerror(errno)), errno);
     }
     ScopeGuard closeGuard([stream]() { fclose(stream); });
@@ -416,12 +423,12 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
     // Iterate over all users
     spwd fgetspentEntry;
     vector<char> fgetspentBuffer(1024);
-    struct spwd* entry = nullptr;
-    int status = 0;
     while (true)
     {
+        spwd* entry = nullptr;
         // fgetspent_r return 0 on success, -1 and sets errno on failure
-        status = fgetspent_r(stream, &fgetspentEntry, fgetspentBuffer.data(), fgetspentBuffer.size(), &entry);
+        auto status = fgetspent_r(stream, &fgetspentEntry, fgetspentBuffer.data(), fgetspentBuffer.size(), &entry);
+        OsConfigLogInfo(context.GetLogHandle(), "fgetspent_r returned %d, entry %p", status, entry);
         if (0 != status || nullptr == entry)
         {
             status = errno;
