@@ -470,3 +470,99 @@ TEST_F(EnsureShadowContainsTest, EncryptionMethod_13)
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
+
+TEST_F(EnsureShadowContainsTest, IntegerFields_1)
+{
+    map<string, string> args;
+    const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
+    args["field"] = "last_change";
+    args["value"] = "1";
+    args["operation"] = "eq";
+    args["username"] = "testuser";
+    args["username_operation"] = "eq";
+    args["test_etcShadowPath"] = path;
+    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    RemoveTestShadowFile(path);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureShadowContainsTest, IntegerFields_2)
+{
+    map<string, string> args;
+    const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
+    args["field"] = "min_age";
+    args["value"] = "2";
+    args["operation"] = "eq";
+    args["username"] = "testuser";
+    args["username_operation"] = "eq";
+    args["test_etcShadowPath"] = path;
+    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    RemoveTestShadowFile(path);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureShadowContainsTest, IntegerFields_3)
+{
+    map<string, string> args;
+    const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
+    args["field"] = "max_age";
+    args["value"] = "3";
+    args["operation"] = "eq";
+    args["username"] = "testuser";
+    args["username_operation"] = "eq";
+    args["test_etcShadowPath"] = path;
+    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    RemoveTestShadowFile(path);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureShadowContainsTest, IntegerFields_4)
+{
+    map<string, string> args;
+    const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
+    args["field"] = "warn_period";
+    args["value"] = "4";
+    args["operation"] = "eq";
+    args["username"] = "testuser";
+    args["username_operation"] = "eq";
+    args["test_etcShadowPath"] = path;
+    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    RemoveTestShadowFile(path);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureShadowContainsTest, IntegerFields_5)
+{
+    map<string, string> args;
+    const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
+    args["field"] = "inactivity_period";
+    args["value"] = "5";
+    args["operation"] = "eq";
+    args["username"] = "testuser";
+    args["username_operation"] = "eq";
+    args["test_etcShadowPath"] = path;
+    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    RemoveTestShadowFile(path);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureShadowContainsTest, IntegerFields_6)
+{
+    map<string, string> args;
+    const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
+    args["field"] = "expiration_date";
+    args["value"] = "6";
+    args["operation"] = "eq";
+    args["username"] = "testuser";
+    args["username_operation"] = "eq";
+    args["test_etcShadowPath"] = path;
+    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    RemoveTestShadowFile(path);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}

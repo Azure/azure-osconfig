@@ -284,27 +284,23 @@ Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& valu
         case Field::Password:
             return StringComparison(value, entry.sp_pwdp, operation);
         case Field::EncryptionMethod: {
-            OsConfigLogInfo(nullptr, "Comparing encryption methods: entry='%s', supplied='%s'", entry.sp_pwdp, value.c_str());
             if (operation != Operation::Equal && operation != Operation::NotEqual)
             {
                 return Error("Unsupported comparison operation for encryption method", EINVAL);
             }
 
-            OsConfigLogInfo(nullptr, "Comparing encryption methods: entry='%s', supplied='%s'", entry.sp_pwdp, value.c_str());
             auto suppliedMethod = ParseEncryptionMethod(value);
             if (!suppliedMethod.HasValue())
             {
                 return suppliedMethod.Error();
             }
 
-            OsConfigLogInfo(nullptr, "Supplied encryption method: '%d'", (int)suppliedMethod.Value());
             auto entryMethod = ParseEncryptionMethod(entry);
             if (!entryMethod.HasValue())
             {
                 return entryMethod.Error();
             }
 
-            OsConfigLogInfo(nullptr, "Comparing encryption methods: entry='%d', supplied='%d'", (int)entryMethod.Value(), (int)suppliedMethod.Value());
             if (operation == Operation::Equal)
             {
                 return entryMethod.Value() == suppliedMethod.Value();
@@ -428,7 +424,6 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
         spwd* entry = nullptr;
         // fgetspent_r return 0 on success, -1 and sets errno on failure
         auto status = fgetspent_r(stream, &fgetspentEntry, fgetspentBuffer.data(), fgetspentBuffer.size(), &entry);
-        OsConfigLogInfo(context.GetLogHandle(), "fgetspent_r returned %d, entry %p", status, entry);
         if (0 != status || nullptr == entry)
         {
             status = errno;
