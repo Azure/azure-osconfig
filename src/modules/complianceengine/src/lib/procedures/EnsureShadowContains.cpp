@@ -73,7 +73,7 @@ static const map<Field, string> fieldNamesMap = {
     {Field::WarnPeriod, "password warning period"},
     {Field::InactivityPeriod, "password inactivity period"},
     {Field::ExpirationDate, "account expiration date"},
-    {Field::Reserved, "reserved field"},
+    {Field::Reserved, "reserved"},
     {Field::EncryptionMethod, "password encryption method"},
 };
 
@@ -316,7 +316,7 @@ Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& valu
     auto intValue = AsInt(value);
     if (!intValue.HasValue())
     {
-        return Error("Invalid integer value: " + value, EINVAL);
+        return Error("invalid " + PrettyFieldName(field) + " parameter value", EINVAL);
     }
 
     switch (field)

@@ -74,7 +74,6 @@ protected:
             OsConfigLogError(mContext.GetLogHandle(), "Failed to create test shadow file %s: %s", shadowFilePath.c_str(), strerror(errno));
             return string();
         }
-        OsConfigLogInfo(mContext.GetLogHandle(), "Creating test shadow file %s with content: %s", shadowFilePath.c_str(), content.c_str());
         shadowFile << std::move(content);
         shadowFile.close();
         return shadowFilePath;
@@ -180,6 +179,22 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_8)
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Unsupported comparison operation for encryption method");
     ASSERT_EQ(result.Error().code, EINVAL);
+}
+
+TEST_F(EnsureShadowContainsTest, InvalidArguments_9)
+{
+    map<string, string> args;
+    const auto path = CreateTestShadowFile("testuser::0::::::");
+    args["field"] = "last_change";
+    args["value"] = "x";
+    args["operation"] = "eq";
+    args["username"] = "testuser";
+    args["username_operation"] = "eq";
+    args["test_etcShadowPath"] = path;
+    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    RemoveTestShadowFile(path);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().message, string("invalid last password change date parameter value"));
 }
 
 TEST_F(EnsureShadowContainsTest, SpecificUser_1)
@@ -565,4 +580,20 @@ TEST_F(EnsureShadowContainsTest, IntegerFields_6)
     RemoveTestShadowFile(path);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureShadowContainsTest, FeatureFlag)
+{
+    map<string, string> args;
+    const auto path = CreateTestShadowFile("testuser", string("$y$"), 1, 2, 3, 4, 5, 6);
+    args["field"] = "flag";
+    args["value"] = "6";
+    args["operation"] = "eq";
+    args["username"] = "testuser";
+    args["username_operation"] = "eq";
+    args["test_etcShadowPath"] = path;
+    auto result = AuditEnsureShadowContains(args, mIndicators, mContext);
+    RemoveTestShadowFile(path);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().message, string("reserved field comparison is not supported"));
 }
