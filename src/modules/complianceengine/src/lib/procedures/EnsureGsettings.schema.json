@@ -31,12 +31,12 @@
                 },
                 "keyType": {
                   "type": "string",
-                  "description": "Type of key, possible options string,number less then greater than operation are only for numberic types",
+                  "description": "Type of key, possible options string,number",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:((number|string))$|(^(number|string)$))"
                 },
                 "operation": {
                   "type": "string",
-                  "description": "Type of operation to perform on variable one of equal, not equal, lower than, greater than",
+                  "description": "Type of operation to perform on variable one of eq, ne, lt, gt",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:((eq|ne|lt|gt).*)$|(^(eq|ne|lt|gt)))"
                 },
                 "value": {

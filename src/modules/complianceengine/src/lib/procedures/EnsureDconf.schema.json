@@ -21,15 +21,15 @@
               "properties": {
                 "key": {
                   "type": "string",
-                  "description": "Name of the dconf to value"
+                  "description": "dconf key name to be checked"
                 },
                 "value": {
                   "type": "string",
-                  "description": "value of operation to check acording to operation"
+                  "description": "Value to be verified using the operation"
                 },
                 "operation": {
                   "type": "string",
-                  "description": "Type of operation to perform on variable one of equal, not equal",
+                  "description": "Type of operation, one of eq, ne",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:((eq|ne))$|(^(eq|ne)$))"
                 }
               }

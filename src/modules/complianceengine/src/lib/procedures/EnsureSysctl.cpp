@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "StringTools.h"
+
 #include <Evaluator.h>
 #include <Regex.h>
 #include <algorithm>
@@ -13,19 +15,6 @@
 
 namespace ComplianceEngine
 {
-namespace
-{
-std::string TrimWhiteSpaces(const std::string& str)
-{
-    auto start = std::find_if_not(str.begin(), str.end(), ::isspace);
-    auto end = std::find_if_not(str.rbegin(), str.rend(), ::isspace).base();
-    if (start < end)
-    {
-        return std::string(start, end);
-    }
-    return std::string();
-}
-} // anonymous namespace
 
 AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-Z0-9_-]+)$", "value:Regex that the value of sysctl has to match:M")
 {

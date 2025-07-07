@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include "StringTools.h"
+
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <iostream>
@@ -9,26 +11,6 @@
 
 namespace ComplianceEngine
 {
-
-static std::string EscapeForShell(const std::string& str)
-{
-    std::string escapedStr;
-    for (char c : str)
-    {
-        switch (c)
-        {
-            case '\\':
-            case '"':
-            case '`':
-            case '$':
-                escapedStr += '\\';
-                // fall through
-            default:
-                escapedStr += c;
-        }
-    }
-    return escapedStr;
-}
 
 static const std::set<std::string> allowedCommands = {"nft list ruleset", "nft list chain", "nft list tables", "ip6tables -L -n",
     "ip6tables -L INPUT -v -n", "ip6tables -L OUTPUT -v -n", "iptables -L -n", "iptables -L INPUT -v -n", "iptables -L OUTPUT -v -n", "uname"};

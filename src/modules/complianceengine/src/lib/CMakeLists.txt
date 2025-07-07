@@ -114,6 +114,7 @@ add_library(complianceenginelib STATIC
     Procedure.cpp
     ProcedureMap.cpp
     Result.cpp
+    StringTools.cpp
     ${PROCEDURES}
     )
 

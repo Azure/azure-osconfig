@@ -13,8 +13,8 @@ namespace ComplianceEngine
 {
 
 AUDIT_FN(EnsureGsettings, "schema:Name of the gsettings schema to get:M", "key:Nam of gsettings key to get:M",
-    "keyType:Type of key, possible options string,number less then greater than operation are only for numberic types:M:^(number|string)$",
-    "operation:Type of operation to perform on variable one of equal, not equal, lower than, greater than:M:^(eq|ne|lt|gt)",
+    "keyType:Type of key, possible options string,number:M:^(number|string)$",
+    "operation:Type of operation to perform on variable one of eq, ne, lt, gt:M:^(eq|ne|lt|gt)",
     "value:value of operation to check acording to operation:M")
 {
     auto log = context.GetLogHandle();
