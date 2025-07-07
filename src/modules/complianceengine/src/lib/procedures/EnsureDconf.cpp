@@ -13,7 +13,7 @@ namespace ComplianceEngine
 {
 
 AUDIT_FN(EnsureDconf, "key:dconf key name to be checked:M", "value:Value to be verified using the operation:M",
-    "operation:Type of operation to perform on variable one of equal, not equal:M:^(eq|ne)$")
+    "operation:Type of operation, one of eq, ne:M:^(eq|ne)$")
 {
     // auto log = context.GetLogHandle();
     auto it = args.find("key");
