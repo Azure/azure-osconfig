@@ -46,24 +46,17 @@ AUDIT_FN(EnsureGsettings, "schema:Name of the gsettings schema to get:M", "key:N
         return Error("No operation arg provided", EINVAL);
     }
     auto operation = std::move(it->second);
-    auto operations = {std::string("eq"), std::string("ne"), std::string("lt"), std::string("gt")};
-    bool supported = false;
-    for (auto op : operations)
-    {
-        if (op == operation)
-        {
-            if (keyType != "number" && (operation == "lt" || operation == "gt"))
-            {
-                supported = false;
-                break;
-            }
-            supported = true;
-        }
-    }
-    if (!supported)
+    std::map<std::string, std::pair<std::function<bool(const int&, const int&)>, std::function<bool(const std::string&, const std::string&)>>> operations{
+        {"lt", std::make_pair([](const int& x, const int& y) { return x < y; }, [](const std::string&, const std::string&) { return false; })},
+        {"gt", std::make_pair([](const int& x, const int& y) { return x > y; }, [](const std::string&, const std::string&) { return false; })},
+        {"eq", std::make_pair([](const int& x, const int& y) { return x == y; }, [](const std::string& x, const std::string& y) { return x == y; })},
+        {"ne", std::make_pair([](const int& x, const int& y) { return x != y; }, [](const std::string& x, const std::string& y) { return x != y; })}};
+    auto genericOp = operations.find(operation);
+    if (genericOp == operations.end() || (keyType != "number" && (genericOp->first == "lt" || genericOp->first == "gt")))
     {
         return Error("Not supported operation " + operation, EINVAL);
     }
+
     it = args.find("value");
     if (it == args.end())
     {
@@ -151,16 +144,6 @@ AUDIT_FN(EnsureGsettings, "schema:Name of the gsettings schema to get:M", "key:N
             OsConfigLogError(log, "Invalid keyValue value not a number: %s", value.c_str());
             return Error("Invalid operation value: not a number " + value, EINVAL);
         }
-    }
-    std::map<std::string, std::pair<std::function<bool(const int&, const int&)>, std::function<bool(const std::string&, const std::string&)>>> numStrComparisons{
-        {"lt", std::make_pair([](const int& x, const int& y) { return x < y; }, [](const std::string&, const std::string&) { return false; })},
-        {"gt", std::make_pair([](const int& x, const int& y) { return x > y; }, [](const std::string&, const std::string&) { return false; })},
-        {"eq", std::make_pair([](const int& x, const int& y) { return x == y; }, [](const std::string& x, const std::string& y) { return x == y; })},
-        {"ne", std::make_pair([](const int& x, const int& y) { return x != y; }, [](const std::string& x, const std::string& y) { return x != y; })}};
-    auto genericOp = numStrComparisons.find(operation);
-    if (genericOp == numStrComparisons.end())
-    {
-        return Error("Not supported operation " + operation, EINVAL);
     }
     bool isCompliant = false;
     if (keyType == "number")
