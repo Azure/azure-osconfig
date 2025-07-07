@@ -3,6 +3,7 @@
 
 #include <CommonUtils.h>
 #include <Evaluator.h>
+#include <StringTools.h>
 #include <algorithm>
 #include <cctype>
 #include <cstdint>
