@@ -41,6 +41,11 @@
                   "type": "string",
                   "description": "A comparison operation for the value parameter",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:(.*(eq|ne|lt|le|gt|ge|match).*)$|((eq|ne|lt|le|gt|ge|match)))"
+                },
+                "test_etcShadowPath": {
+                  "type": "string",
+                  "description": "Path to the /etc/shadow file to test against",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(.*/etc/shadow.*)$|(/etc/shadow))"
                 }
               }
             }

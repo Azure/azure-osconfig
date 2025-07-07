@@ -3,9 +3,11 @@
 #include <Regex.h>
 #include <ScopeGuard.h>
 #include <shadow.h>
+#include <vector>
 
 using std::map;
 using std::string;
+using std::vector;
 
 namespace
 {
@@ -26,49 +28,6 @@ enum class Field
     EncryptionMethod,
 };
 
-Result<Field> ParseFieldName(const string& field)
-{
-    static const map<string, Field> fieldMap = {
-        {"username", Field::Username},
-        {"password", Field::Password},
-        {"last_change", Field::LastChange},
-        {"min_age", Field::MinAge},
-        {"max_age", Field::MaxAge},
-        {"warn_period", Field::WarnPeriod},
-        {"inactivity_period", Field::InactivityPeriod},
-        {"expiration_date", Field::ExpirationDate},
-        {"flag", Field::Reserved},
-        {"encryption_method", Field::EncryptionMethod},
-    };
-
-    auto it = fieldMap.find(field);
-    if (it == fieldMap.end())
-    {
-        return Error("Invalid field name: " + field, EINVAL);
-    }
-
-    return it->second;
-}
-
-const std::string& PrettyFieldName(Field field)
-{
-    static const map<Field, string> fieldNames = {
-        {Field::Username, "login name"},
-        {Field::Password, "encrypted password"},
-        {Field::LastChange, "last password change date"},
-        {Field::MinAge, "minimum password age"},
-        {Field::MaxAge, "maximum password age"},
-        {Field::WarnPeriod, "password warning period"},
-        {Field::InactivityPeriod, "password inactivity period"},
-        {Field::ExpirationDate, "account expiration date"},
-        {Field::Reserved, "reserved field"},
-        {Field::EncryptionMethod, "password encryption method"},
-    };
-
-    assert(fieldNames.find(field) != fieldNames.end());
-    return fieldNames.at(field);
-}
-
 enum class Operation
 {
     Equal,
@@ -80,20 +39,100 @@ enum class Operation
     PatternMatch,
 };
 
+enum PasswordEncryptionMethod
+{
+    DES,
+    BSDi,
+    MD5,
+    Blowfish,
+    SHA256,
+    SHA512,
+    YesCrypt,
+    None, // Used for entries without a password
+};
+
+static const map<string, Field> fieldMap = {
+    {"username", Field::Username},
+    {"password", Field::Password},
+    {"last_change", Field::LastChange},
+    {"min_age", Field::MinAge},
+    {"max_age", Field::MaxAge},
+    {"warn_period", Field::WarnPeriod},
+    {"inactivity_period", Field::InactivityPeriod},
+    {"expiration_date", Field::ExpirationDate},
+    {"flag", Field::Reserved},
+    {"encryption_method", Field::EncryptionMethod},
+};
+
+static const map<Field, string> fieldNamesMap = {
+    {Field::Username, "login name"},
+    {Field::Password, "encrypted password"},
+    {Field::LastChange, "last password change date"},
+    {Field::MinAge, "minimum password age"},
+    {Field::MaxAge, "maximum password age"},
+    {Field::WarnPeriod, "password warning period"},
+    {Field::InactivityPeriod, "password inactivity period"},
+    {Field::ExpirationDate, "account expiration date"},
+    {Field::Reserved, "reserved field"},
+    {Field::EncryptionMethod, "password encryption method"},
+};
+
+static const map<string, Operation> comparisonOperationMap = {
+    {"eq", Operation::Equal},
+    {"ne", Operation::NotEqual},
+    {"lt", Operation::LessThan},
+    {"le", Operation::LessOrEqual},
+    {"gt", Operation::GreaterThan},
+    {"ge", Operation::GreaterOrEqual},
+    {"match", Operation::PatternMatch},
+};
+
+// Follows the OVAL specification, adds YesCrypt for future reference
+// https://oval.mitre.org/language/version5.10/ovaldefinition/documentation/unix-definitions-schema.html#EntityStateEncryptMethodType
+static const map<string, PasswordEncryptionMethod> encryptionTypeMap = {
+    {"DES", PasswordEncryptionMethod::DES},
+    {"BSDi", PasswordEncryptionMethod::BSDi},
+    {"MD5", PasswordEncryptionMethod::MD5},
+    {"Blowfish", PasswordEncryptionMethod::Blowfish},
+    {"Sun MD5", PasswordEncryptionMethod::MD5},
+    {"SHA-256", PasswordEncryptionMethod::SHA256},
+    {"SHA-512", PasswordEncryptionMethod::SHA512},
+    // Not defined in OVAL, but commonly used
+    {"YesCrypt", PasswordEncryptionMethod::YesCrypt},
+};
+
+static const map<string, PasswordEncryptionMethod> encryptionMethodMap = {
+    {"1", PasswordEncryptionMethod::MD5},
+    {"2", PasswordEncryptionMethod::Blowfish},
+    {"2a", PasswordEncryptionMethod::Blowfish},
+    {"2y", PasswordEncryptionMethod::Blowfish},
+    {"md5", PasswordEncryptionMethod::MD5},
+    {"5", PasswordEncryptionMethod::SHA256},
+    {"6", PasswordEncryptionMethod::SHA512},
+    {"y", PasswordEncryptionMethod::YesCrypt},
+};
+
+Result<Field> ParseFieldName(const string& field)
+{
+    auto it = fieldMap.find(field);
+    if (it == fieldMap.end())
+    {
+        return Error("Invalid field name: " + field, EINVAL);
+    }
+
+    return it->second;
+}
+
+const string& PrettyFieldName(Field field)
+{
+    assert(fieldNamesMap.find(field) != fieldNamesMap.end());
+    return fieldNamesMap.at(field);
+}
+
 Result<Operation> ParseOperation(const string& operation)
 {
-    static const map<string, Operation> operationMap = {
-        {"eq", Operation::Equal},
-        {"ne", Operation::NotEqual},
-        {"lt", Operation::LessThan},
-        {"le", Operation::LessOrEqual},
-        {"gt", Operation::GreaterThan},
-        {"ge", Operation::GreaterOrEqual},
-        {"match", Operation::PatternMatch},
-    };
-
-    auto it = operationMap.find(operation);
-    if (it == operationMap.end())
+    auto it = comparisonOperationMap.find(operation);
+    if (it == comparisonOperationMap.end())
     {
         return Error("Invalid operation: '" + operation + "'", EINVAL);
     }
@@ -174,36 +213,10 @@ Result<bool> IntegerComparison(const int lhs, const int rhs, Operation operation
     return ComplianceEngine::Error("Unsupported comparison operation for an integer type", EINVAL);
 }
 
-enum PasswordEncryptionMethod
-{
-    DES,
-    BSDi,
-    MD5,
-    Blowfish,
-    SHA256,
-    SHA512,
-    YesCrypt,
-    None, // Used for entries without a password
-};
-
 Result<PasswordEncryptionMethod> ParseEncryptionMethod(const string& method)
 {
-    // Follows the OVAL specification, adds YesCrypt for future reference
-    // https://oval.mitre.org/language/version5.10/ovaldefinition/documentation/unix-definitions-schema.html#EntityStateEncryptMethodType
-    static const map<string, PasswordEncryptionMethod> encryptionMap = {
-        {"DES", PasswordEncryptionMethod::DES},
-        {"BSDi", PasswordEncryptionMethod::BSDi},
-        {"MD5", PasswordEncryptionMethod::MD5},
-        {"Blowfish", PasswordEncryptionMethod::Blowfish},
-        {"Sun MD5", PasswordEncryptionMethod::MD5},
-        {"SHA-256", PasswordEncryptionMethod::SHA256},
-        {"SHA-512", PasswordEncryptionMethod::SHA512},
-        // Not defined in OVAL, but commonly used
-        {"YesCrypt", PasswordEncryptionMethod::YesCrypt},
-    };
-
-    auto it = encryptionMap.find(method);
-    if (it == encryptionMap.end())
+    auto it = encryptionTypeMap.find(method);
+    if (it == encryptionTypeMap.end())
     {
         return Error("Invalid encryption method: " + method, EINVAL);
     }
@@ -244,25 +257,14 @@ Result<PasswordEncryptionMethod> ParseEncryptionMethod(const spwd& shadowEntry)
     }
 
     auto index = entry.find('$', 1);
-    if (index == std::string::npos)
+    if (index == string::npos)
     {
         return Error("Invalid password format in shadow entry", EINVAL);
     }
 
-    static const map<string, PasswordEncryptionMethod> methodMap = {
-        {"1", PasswordEncryptionMethod::MD5},
-        {"2", PasswordEncryptionMethod::Blowfish},
-        {"2a", PasswordEncryptionMethod::Blowfish},
-        {"2y", PasswordEncryptionMethod::Blowfish},
-        {"md5", PasswordEncryptionMethod::MD5},
-        {"5", PasswordEncryptionMethod::SHA256},
-        {"6", PasswordEncryptionMethod::SHA512},
-        {"y", PasswordEncryptionMethod::YesCrypt},
-    };
-
     const auto prefix = entry.substr(1, index - 1); // Extract the prefix between the first and second '$'
-    const auto it = methodMap.find(prefix);
-    if (it == methodMap.end())
+    const auto it = encryptionMethodMap.find(prefix);
+    if (it == encryptionMethodMap.end())
     {
         return Error("Unsupported password encryption method: " + prefix, EINVAL);
     }
@@ -344,7 +346,8 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
     "field:The /etc/shadow entry field to match "
     "against:M:(password|last_change|min_age|max_age|warn_period|inactivity_period|expiration_date|encryption_method)",
     "value:A pattern or value to match against the specified field:M",
-    "operation:A comparison operation for the value parameter:M:(eq|ne|lt|le|gt|ge|match)")
+    "operation:A comparison operation for the value parameter:M:(eq|ne|lt|le|gt|ge|match)",
+    "test_etcShadowPath:Path to the /etc/shadow file to test against::/etc/shadow")
 {
     UNUSED(context);
 
@@ -396,16 +399,49 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
         return operation.Error();
     }
 
-    assert(field.HasValue());
-    assert(operation.HasValue());
+    auto etcShadowPath = string("/etc/shadow");
+    it = args.find("test_etcShadowPath");
+    if (it != args.end())
+    {
+        etcShadowPath = std::move(it->second);
+    }
+
+    auto stream = fopen(etcShadowPath.c_str(), "r");
+    if (nullptr == stream)
+    {
+        return Error("Failed to open /etc/shadow file: " + string(strerror(errno)), errno);
+    }
+    ScopeGuard closeGuard([stream]() { fclose(stream); });
 
     // Iterate over all users
-    setspent();
-    ScopeGuard endspentGuard([]() { endspent(); });
-
-    spwd* entry = nullptr;
-    while (nullptr != (entry = getspent()))
+    spwd fgetspentEntry;
+    vector<char> fgetspentBuffer(1024);
+    struct spwd* entry = nullptr;
+    int status = 0;
+    while (true)
     {
+        // fgetspent_r return 0 on success, -1 and sets errno on failure
+        status = fgetspent_r(stream, &fgetspentEntry, fgetspentBuffer.data(), fgetspentBuffer.size(), &entry);
+        if (0 != status || nullptr == entry)
+        {
+            status = errno;
+            if (ERANGE == status)
+            {
+                OsConfigLogInfo(context.GetLogHandle(), "Buffer size too small for /etc/shadow entry, resizing to %zu bytes", fgetspentBuffer.size() * 2);
+                fgetspentBuffer.resize(fgetspentBuffer.size() * 2);
+                continue; // Retry with a larger buffer
+            }
+
+            if (ENOENT == status)
+            {
+                OsConfigLogDebug(context.GetLogHandle(), "End of /etc/shadow file reached.");
+                break;
+            }
+
+            OsConfigLogInfo(context.GetLogHandle(), "Failed to read /etc/shadow entry: %s (%d)", strerror(status), status);
+            return Error("Failed to read /etc/shadow entry: " + string(strerror(status)), status);
+        }
+
         if (username.HasValue())
         {
             OsConfigLogDebug(context.GetLogHandle(), "Checking user '%s' for username match with '%s'.", entry->sp_namp, username.Value().c_str());
@@ -420,6 +456,8 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
             }
         }
 
+        assert(field.HasValue());
+        assert(operation.HasValue());
         OsConfigLogDebug(context.GetLogHandle(), "Checking user '%s' for %s field with value '%s' and operation '%d'.", entry->sp_namp,
             PrettyFieldName(field.Value()).c_str(), value.c_str(), (int)operation.Value());
         auto result = CompareUserEntry(*entry, field.Value(), value, operation.Value());
