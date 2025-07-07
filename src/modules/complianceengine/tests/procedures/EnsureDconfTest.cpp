@@ -23,7 +23,7 @@ protected:
 
     std::string DconfRead()
     {
-        return "dconf read " + args["key"];
+        return "dconf read \"" + args["key"] + "\"";
     }
 
     void SetUp() override

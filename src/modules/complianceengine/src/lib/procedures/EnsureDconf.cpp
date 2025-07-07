@@ -23,7 +23,7 @@ AUDIT_FN(EnsureDconf, "key:dconf key name to be checked:M", "value:Value to be v
     {
         return Error("No key arg provided", EINVAL);
     }
-    auto key = std::move(it->second);
+    auto key = EscapeForShell(it->second);
 
     it = args.find("operation");
     if (it == args.end())
@@ -47,7 +47,7 @@ AUDIT_FN(EnsureDconf, "key:dconf key name to be checked:M", "value:Value to be v
     }
     auto value = std::move(it->second);
 
-    Result<std::string> dconfRead = context.ExecuteCommand("dconf read " + key);
+    Result<std::string> dconfRead = context.ExecuteCommand("dconf read \"" + key + "\"");
     if (!dconfRead.HasValue())
     {
         return Error("Failed to execute dconf read " + key + " error: " + dconfRead.Error().message, dconfRead.Error().code);
