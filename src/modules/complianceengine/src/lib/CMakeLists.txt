@@ -8,9 +8,11 @@ endif()
 
 set(PROCEDURES
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.cpp
+    procedures/EnsureDconf.cpp
     procedures/EnsureFilePermissions.cpp
     procedures/EnsureFilesystemOption.cpp
     procedures/EnsureFirewallOpenPorts.cpp
+    procedures/EnsureGsettings.cpp
     procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.cpp
     procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.cpp
     procedures/EnsureKernelModule.cpp
@@ -23,6 +25,7 @@ set(PROCEDURES
     procedures/EnsureSshdOption.cpp
     procedures/EnsureSysctl.cpp
     procedures/EnsureWirelessIsDisabled.cpp
+    procedures/EnsureXdmcp.cpp
     procedures/ExecuteCommandGrep.cpp
     procedures/FileRegexMatch.cpp
     procedures/PackageInstalled.cpp
@@ -34,9 +37,11 @@ set(PROCEDURES
 )
 set(SCHEMAS
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json
+    procedures/EnsureDconf.schema.json
     procedures/EnsureFilePermissions.schema.json
     procedures/EnsureFilesystemOption.schema.json
     procedures/EnsureFirewallOpenPorts.schema.json
+    procedures/EnsureGsettings.schema.json
     procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.schema.json
     procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json
     procedures/EnsureKernelModule.schema.json
@@ -49,6 +54,7 @@ set(SCHEMAS
     procedures/EnsureSshdOption.schema.json
     procedures/EnsureSysctl.schema.json
     procedures/EnsureWirelessIsDisabled.schema.json
+    procedures/EnsureXdmcp.schema.json
     procedures/ExecuteCommandGrep.schema.json
     procedures/FileRegexMatch.schema.json
     procedures/PackageInstalled.schema.json
@@ -108,6 +114,7 @@ add_library(complianceenginelib STATIC
     Procedure.cpp
     ProcedureMap.cpp
     Result.cpp
+    StringTools.cpp
     ${PROCEDURES}
     )
 
