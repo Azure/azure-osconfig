@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "StringTools.h"
-
 #include <Evaluator.h>
 #include <Regex.h>
+#include <StringTools.h>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
