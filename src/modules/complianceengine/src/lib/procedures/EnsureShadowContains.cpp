@@ -240,20 +240,20 @@ Result<PasswordEncryptionMethod> ParseEncryptionMethod(const spwd& shadowEntry)
         return PasswordEncryptionMethod::None; // No password set
     }
 
-    if (entry[0] == '_')
+    if ('_' == entry[0])
     {
         // If the password starts with '_', it is likely a legacy BSDi format
         return PasswordEncryptionMethod::BSDi;
     }
 
-    if (entry[0] == '!' || entry[0] == '*')
+    if (('!' == entry[0]) || ('*' == entry[0]))
     {
         // If the password starts with '!', it is locked
         // If it starts with '*', it is not set
         return PasswordEncryptionMethod::None; // No password set
     }
 
-    if (entry[0] != '$')
+    if ('$' != entry[0])
     {
         // If the password does not start with a '$', it is likely a legacy DES format
         return PasswordEncryptionMethod::DES;
@@ -424,7 +424,7 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
         spwd* entry = nullptr;
         // fgetspent_r return 0 on success, -1 and sets errno on failure
         auto status = fgetspent_r(stream, &fgetspentEntry, fgetspentBuffer.data(), fgetspentBuffer.size(), &entry);
-        if (0 != status || nullptr == entry)
+        if ((0 != status) || (nullptr == entry))
         {
             status = errno;
             if (ERANGE == status)
