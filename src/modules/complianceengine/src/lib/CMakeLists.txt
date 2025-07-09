@@ -34,6 +34,7 @@ set(PROCEDURES
     procedures/SystemdUnitState.cpp
     procedures/TestingProcedures.cpp
     procedures/UfwStatus.cpp
+    procedures/EnsureShadowContains.cpp
 )
 set(SCHEMAS
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json
@@ -63,6 +64,7 @@ set(SCHEMAS
     procedures/SystemdUnitState.schema.json
     procedures/TestingProcedures.schema.json
     procedures/UfwStatus.schema.json
+    procedures/EnsureShadowContains.schema.json
 )
 
 # Check that all globbed procedures are in the PROCEDURES list
