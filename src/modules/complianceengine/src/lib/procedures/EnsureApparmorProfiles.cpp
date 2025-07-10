@@ -33,19 +33,47 @@ AUDIT_FN(EnsureApparmorProfiles, "enforce:Set for enforce (L2) mode, complain (L
     {
         if (line.find("profiles are in enforce mode") != std::string::npos)
         {
-            profilesEnforce = std::stoi(line.substr(0, line.find(' ')));
+            try
+            {
+                profilesEnforce = std::stoi(line.substr(0, line.find(' ')));
+            }
+            catch (const std::exception& e)
+            {
+                return Error(std::string("Failed to parse apparmor status output: ") + e.what(), EINVAL);
+            }
         }
         else if (line.find("profiles are in complain mode") != std::string::npos)
         {
-            profilesComplain = std::stoi(line.substr(0, line.find(' ')));
+            try
+            {
+                profilesComplain = std::stoi(line.substr(0, line.find(' ')));
+            }
+            catch (const std::exception& e)
+            {
+                return Error(std::string("Failed to parse apparmor status output: ") + e.what(), EINVAL);
+            }
         }
         else if (line.find("profiles are loaded") != std::string::npos)
         {
-            profilesLoaded = std::stoi(line.substr(0, line.find(' ')));
+            try
+            {
+                profilesLoaded = std::stoi(line.substr(0, line.find(' ')));
+            }
+            catch (const std::exception& e)
+            {
+                return Error(std::string("Failed to parse apparmor status output: ") + e.what(), EINVAL);
+            }
         }
         else if (line.find("processes are unconfined but have a profile defined") != std::string::npos)
         {
-            processesProfileUndefined = std::stoi(line.substr(0, line.find(' ')));
+            try
+            {
+                processesProfileUndefined = std::stoi(line.substr(0, line.find(' ')));
+            }
+            catch (const std::exception& e)
+            {
+                return Error(std::string("Failed to parse apparmor status output: ") + e.what(), EINVAL);
+            }
         }
     }
 
