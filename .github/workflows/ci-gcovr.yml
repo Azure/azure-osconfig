@@ -224,14 +224,6 @@ jobs:
                 -H "Authorization: Bearer $GITHUB_TOKEN" \
                 -H "Accept: application/vnd.github.v3+json" \
                 https://api.github.com/repos/$REPO/pulls/$PR_NUMBER/comments \
-                -d @- <<EOF
-              {
-                "body": "TEST COMMENT: \`$COMMENT\`",
-                "commit_id": "$COMMIT_SHA",
-                "path": "$FILE",
-                "line": $LINE_NUM,
-                "side": "RIGHT"
-              }
-              EOF
+                -d '{"body": "TEST COMMENT: `$COMMENT`", "commit_id": "$COMMIT_SHA", "path": "$FILE", "side": "RIGHT"}'
             fi
-          done < todos.txt
+          done < ${{ matrix.target.name }}-${{ matrix.target.arch }}-pr.diff
