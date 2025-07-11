@@ -194,3 +194,10 @@ jobs:
                   printf "No uncovered files found\n"
               }
           }' > $GITHUB_STEP_SUMMARY
+
+      - name: Fetch PR diff
+        id: find_todos
+        run: |                                                                                                                                 echo "Scanning for TODOs in PR diff..."
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          git diff origin/${{ github.event.pull_request.base.ref }}...HEAD > pr.diff                                                                                                                                                                                                # Extract TODOs with file, line, and content
+          cat pr.diff >> $GITHUB_STEP_SUMMARY
