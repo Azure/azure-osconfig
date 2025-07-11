@@ -27,6 +27,10 @@ protected:
     NestedListFormatter mFormatter;
     string mTempDir;
 
+    // test
+    // comment
+    // test
+
     void SetUp() override
     {
         mIndicators.Push("UfwStatus");
