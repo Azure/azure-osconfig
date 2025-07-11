@@ -46,6 +46,13 @@ jobs:
           submodules: recursive
           clean: true
 
+      - name: Fetch PR diff
+        run: |
+          echo "Scanning for TODOs in PR diff..."
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          git diff origin/${{ github.event.pull_request.base.ref }}...HEAD > pr.diff
+          cat pr.diff >> $GITHUB_STEP_SUMMARY
+
       - name: Docker login
         uses: docker/login-action@v3
         with:
@@ -117,14 +124,14 @@ jobs:
               --gcov-ignore-parse-errors
             cp module-test.log ../${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
 
-      - name: Fetch PR diff
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.MOUNT }}
-          cmd: |
-            git fetch origin ${{ github.event.pull_request.base.ref }}
-            git diff origin/${{ github.event.pull_request.base.ref }}...HEAD > ${{ matrix.target.name }}-${{ matrix.target.arch }}-pr.diff
+      # - name: Fetch PR diff
+      #   uses: ./.github/actions/container-exec
+      #   with:
+      #     container: ${{ steps.container.outputs.id }}
+      #     working-directory: ${{ env.MOUNT }}
+      #     cmd: |
+      #       git fetch origin ${{ github.event.pull_request.base.ref }}
+      #       git diff origin/${{ github.event.pull_request.base.ref }}...HEAD > ${{ matrix.target.name }}-${{ matrix.target.arch }}-pr.diff
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
@@ -134,8 +141,8 @@ jobs:
             ${{ matrix.target.name }}-${{ matrix.target.arch }}-ctest.log
             ${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
             ${{ matrix.target.name }}-${{ matrix.target.arch }}-gcovr.log
-            ${{ matrix.target.name }}-${{ matrix.target.arch }}-pr.diff
             ${{ matrix.target.name }}-${{ matrix.target.arch }}/*
+            pr.diff
 
   report:
     name: Code coverage
