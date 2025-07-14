@@ -19,6 +19,9 @@ while IFS= read -r line; do
     LINE_NUM=$((LINE_NUM + 1))
     if [[ "$line" == diff* ]]; then
         FILE=$(echo "$line" | cut -d' ' -f4 | sed 's|^b/||')
+    elif [[ "$line" == @@*@@ ]]; then
+      echo "Hunk found at line $LINE_NUM for file $FILE"
+      LINE_NUM=0
     elif [[ "$line" =~ \+*TODO* ]]; then
         COMMENT=$(echo "$line" | sed 's/^+//' | xargs)
         ESCAPED_COMMENT=$(jq -r -n --arg str "$COMMENT" '$str')
