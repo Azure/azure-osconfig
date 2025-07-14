@@ -92,7 +92,7 @@ void PasswordEntryIterator::next() // NOLINT(*-identifier-naming)
         status = errno;
         if (ERANGE == status)
         {
-            OsConfigLogInfo(mRange->GetLogHandle(), "Buffer size too small for /etc/shadow entry, resizing to %zu bytes", mFgetspentBuffer.size() * 2);
+            OsConfigLogDebug(mRange->GetLogHandle(), "Buffer size too small for /etc/shadow entry, resizing to %zu bytes", mFgetspentBuffer.size() * 2);
             mFgetspentBuffer.resize(mFgetspentBuffer.size() * 2);
             return next(); // Retry with a larger buffer
         }
@@ -104,7 +104,7 @@ void PasswordEntryIterator::next() // NOLINT(*-identifier-naming)
             return;
         }
 
-        OsConfigLogInfo(mRange->GetLogHandle(), "Failed to read /etc/shadow entry: %s (%d)", strerror(status), status);
+        OsConfigLogError(mRange->GetLogHandle(), "Failed to read /etc/shadow entry: %s (%d)", strerror(status), status);
         throw std::runtime_error("Failed to read /etc/shadow entry: " + string(strerror(status)) + ", errno: " + std::to_string(status));
     }
 }
