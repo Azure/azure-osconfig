@@ -136,9 +136,6 @@ if (BUILD_MODULES)
     add_subdirectory(modules)
 endif()
 
-message(STATUS "CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
-message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(CPACK_PACKAGE_VENDOR ${OsConfigProjectVendor})
