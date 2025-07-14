@@ -1,5 +1,6 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
+#include <PasswordEntriesIterator.h>
 #include <Regex.h>
 #include <ScopeGuard.h>
 #include <shadow.h>
@@ -351,8 +352,6 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
     "operation:A comparison operation for the value parameter:M:(eq|ne|lt|le|gt|ge|match)",
     "test_etcShadowPath:Path to the /etc/shadow file to test against::/etc/shadow")
 {
-    UNUSED(context);
-
     Optional<string> username;
     auto it = args.find("username");
     if (it != args.end())
@@ -408,46 +407,18 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
         etcShadowPath = std::move(it->second);
     }
 
-    auto stream = fopen(etcShadowPath.c_str(), "r");
-    if (nullptr == stream)
+    auto range = PasswordEntryRange::Create(etcShadowPath, context.GetLogHandle());
+    if (!range.HasValue())
     {
-        OsConfigLogError(context.GetLogHandle(), "Failed to open /etc/shadow file: %s", strerror(errno));
-        return Error("Failed to open /etc/shadow file: " + string(strerror(errno)), errno);
+        return range.Error();
     }
-    ScopeGuard closeGuard([stream]() { fclose(stream); });
 
-    // Iterate over all users
-    spwd fgetspentEntry;
-    vector<char> fgetspentBuffer(1024);
-    while (true)
+    for (const auto& entry : range.Value())
     {
-        spwd* entry = nullptr;
-        // fgetspent_r return 0 on success, -1 and sets errno on failure
-        auto status = fgetspent_r(stream, &fgetspentEntry, fgetspentBuffer.data(), fgetspentBuffer.size(), &entry);
-        if ((0 != status) || (nullptr == entry))
-        {
-            status = errno;
-            if (ERANGE == status)
-            {
-                OsConfigLogInfo(context.GetLogHandle(), "Buffer size too small for /etc/shadow entry, resizing to %zu bytes", fgetspentBuffer.size() * 2);
-                fgetspentBuffer.resize(fgetspentBuffer.size() * 2);
-                continue; // Retry with a larger buffer
-            }
-
-            if (ENOENT == status)
-            {
-                OsConfigLogDebug(context.GetLogHandle(), "End of /etc/shadow file reached.");
-                break;
-            }
-
-            OsConfigLogInfo(context.GetLogHandle(), "Failed to read /etc/shadow entry: %s (%d)", strerror(status), status);
-            return Error("Failed to read /etc/shadow entry: " + string(strerror(status)), status);
-        }
-
         if (username.HasValue())
         {
-            OsConfigLogDebug(context.GetLogHandle(), "Checking user '%s' for username match with '%s'.", entry->sp_namp, username.Value().c_str());
-            auto result = StringComparison(username.Value(), entry->sp_namp, usernameOperation);
+            OsConfigLogInfo(context.GetLogHandle(), "Checking user '%s' for username match with '%s'.", entry.sp_namp, username.Value().c_str());
+            auto result = StringComparison(username.Value(), entry.sp_namp, usernameOperation);
             if (!result.HasValue())
             {
                 return result.Error();
@@ -460,21 +431,21 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
 
         assert(field.HasValue());
         assert(operation.HasValue());
-        OsConfigLogDebug(context.GetLogHandle(), "Checking user '%s' for %s field with value '%s' and operation '%d'.", entry->sp_namp,
+        OsConfigLogInfo(context.GetLogHandle(), "Checking user '%s' for %s field with value '%s' and operation '%d'.", entry.sp_namp,
             PrettyFieldName(field.Value()).c_str(), value.c_str(), (int)operation.Value());
-        auto result = CompareUserEntry(*entry, field.Value(), value, operation.Value());
+        auto result = CompareUserEntry(entry, field.Value(), value, operation.Value());
         if (!result.HasValue())
         {
             return result.Error();
         }
         if (!result.Value())
         {
-            return indicators.NonCompliant(PrettyFieldName(field.Value()) + " does not match expected value for user '" + entry->sp_namp + "'");
+            return indicators.NonCompliant(PrettyFieldName(field.Value()) + " does not match expected value for user '" + entry.sp_namp + "'");
         }
 
         if (username.HasValue())
         {
-            indicators.Compliant(PrettyFieldName(field.Value()) + " matches expected value for user '" + entry->sp_namp + "'");
+            indicators.Compliant(PrettyFieldName(field.Value()) + " matches expected value for user '" + entry.sp_namp + "'");
         }
     }
 

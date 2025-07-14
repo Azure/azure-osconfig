@@ -17,6 +17,7 @@ set(PROCEDURES
     procedures/EnsureGsettingsTest.cpp
     procedures/EnsureMountPointExistsTest.cpp
     procedures/EnsureMTAsLocalOnlyTest.cpp
+    procedures/EnsurePasswordChangeIsInPastTest.cpp
     procedures/EnsureRootPathTest.cpp
     procedures/EnsureSshdOptionTest.cpp
     procedures/EnsureSysctlTest.cpp
