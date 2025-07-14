@@ -232,4 +232,4 @@ jobs:
                 https://api.github.com/repos/$REPO/pulls/$PR_NUMBER/comments \
                 -d '{"body": "TEST COMMENT: `$COMMENT`", "commit_id": "$COMMIT_SHA", "path": "$FILE", "side": "RIGHT"}'
             fi
-          done < pr.diff
+          done < gcovr-${{ matrix.target.name }}-${{ matrix.target.arch }}/pr.diff
