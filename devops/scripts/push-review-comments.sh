@@ -19,10 +19,11 @@ while IFS= read -r line; do
         FILE=$(echo "$line" | cut -d' ' -f4 | sed 's|^b/||')
     elif [[ "$line" =~ \+*TODO* ]]; then
         COMMENT=$(echo "$line" | sed 's/^+//' | xargs)
+        ESCAPED_COMMENT=$(jq -Rn --arg str "$COMMENT" '$str')
         LINE_NUM=$(grep -n "$line" "$diff_file" | head -n1 | cut -d: -f1)
         echo "[$FILE:$LINE_NUM] $COMMENT"
         body="{ \
-          \"body\": \"TEST COMMENT: \`$COMMENT\`\", \
+          \"body\": \"TEST COMMENT: \`$ESCAPED_COMMENT\`\", \
           \"commit_id\": \"$COMMIT_SHA\", \
           \"path\": \"$FILE\", \
           \"line\": $LINE_NUM, \
