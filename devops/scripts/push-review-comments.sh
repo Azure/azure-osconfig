@@ -27,8 +27,7 @@ while IFS= read -r line; do
           \"body\": \"TEST COMMENT: \`$ESCAPED_COMMENT\`\", \
           \"commit_id\": \"$COMMIT_SHA\", \
           \"path\": \"$FILE\", \
-          \"line\": $LINE_NUM, \
-          \"subject_type\": \"line\", \
+          \"position\": $LINE_NUM, \
           \"side\": \"RIGHT\" \
         }"
         # mkdir -p "/tmp/$FILE"
