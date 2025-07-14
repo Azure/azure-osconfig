@@ -21,7 +21,7 @@ while IFS= read -r line; do
         COMMENT=$(echo "$line" | sed 's/^+//' | xargs)
         LINE_NUM=$(grep -n "$line" "$diff_file" | head -n1 | cut -d: -f1)
         echo "[$FILE:$LINE_NUM] $COMMENT"
-        body = "{ \
+        body="{ \
           \"body\": \"TEST COMMENT: \`$COMMENT\`\", \
           \"commit_id\": \"$COMMIT_SHA\", \
           \"path\": \"$FILE\", \
