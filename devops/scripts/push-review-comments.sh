@@ -23,7 +23,7 @@ while IFS= read -r line; do
         LINE_NUM=$(grep -n "$line" "$diff_file" | head -n1 | cut -d: -f1)
         echo "[$FILE:$LINE_NUM] $COMMENT"
         body="{ \
-          \"body\": \"TEST COMMENT: \`$ESCAPED_COMMENT\`\", \
+          \"body\": \"TEST COMMENT: \`TEST\`\", \
           \"commit_id\": \"$COMMIT_SHA\", \
           \"path\": \"$FILE\", \
           \"line\": $LINE_NUM, \
