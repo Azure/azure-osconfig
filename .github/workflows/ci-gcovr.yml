@@ -45,6 +45,7 @@ jobs:
         with:
           submodules: recursive
           clean: true
+          fetch-depth: 0
 
       - name: Fetch PR diff
         run: |
