@@ -156,6 +156,8 @@ jobs:
       pull-requests: write
     if: success() || failure()
     steps:
+      - uses: actions/checkout@v4
+
       - name: Download gcovr artifacts
         uses: actions/download-artifact@v4
         with:
