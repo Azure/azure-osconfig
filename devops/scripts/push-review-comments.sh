@@ -20,7 +20,7 @@ while IFS= read -r line; do
     if [[ "$line" == diff* ]]; then
         FILE=$(echo "$line" | cut -d' ' -f4 | sed 's|^b/||')
         echo "FILE: $FILE"
-    elif [[ "$line" =~ @@*@@* ]]; then
+    elif [[ "$line" =~ ^@@*@@* ]]; then
         LINE_NUM=0
         echo "Hunk: $line for file $FILE"
     elif [[ "$line" =~ \+*TODO* ]]; then
