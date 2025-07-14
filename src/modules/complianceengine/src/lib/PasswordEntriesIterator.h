@@ -23,9 +23,9 @@ public:
     explicit PasswordEntryIterator(const PasswordEntryRange* range);
     ~PasswordEntryIterator() = default;
     PasswordEntryIterator(const PasswordEntryIterator&) = default;
-    PasswordEntryIterator(PasswordEntryIterator&&) noexcept noexcept;
+    PasswordEntryIterator(PasswordEntryIterator&&) noexcept;
     PasswordEntryIterator& operator=(const PasswordEntryIterator&) = default;
-    PasswordEntryIterator& operator=(PasswordEntryIterator&&) noexcept noexcept;
+    PasswordEntryIterator& operator=(PasswordEntryIterator&&) noexcept;
     reference operator*();
     pointer operator->();
 
@@ -53,8 +53,8 @@ public:
     ~PasswordEntryRange();
     PasswordEntryRange(const PasswordEntryRange&) = delete;
     PasswordEntryRange& operator=(const PasswordEntryRange&) = delete;
-    PasswordEntryRange(PasswordEntryRange&&) noexcept noexcept;
-    PasswordEntryRange& operator=(PasswordEntryRange&&) noexcept noexcept;
+    PasswordEntryRange(PasswordEntryRange&&) noexcept;
+    PasswordEntryRange& operator=(PasswordEntryRange&&) noexcept;
 
     static Result<PasswordEntryRange> Create(OsConfigLogHandle log = nullptr);
     static Result<PasswordEntryRange> Create(const std::string& path, OsConfigLogHandle log = nullptr);
