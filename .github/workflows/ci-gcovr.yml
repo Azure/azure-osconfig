@@ -217,19 +217,4 @@ jobs:
           REPO: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          while IFS= read -r line; do
-            if [[ "$line" == diff* ]]; then
-              FILE=$(echo "$line" | cut -d' ' -f3 | sed 's|b/||')
-            elif [[ "$line" == +*TODO* ]]; then
-              COMMENT=$(echo "$line" | sed 's/^+//')
-              LINE_NUM=$(grep -n "$line" ${{ matrix.target.name }}-${{ matrix.target.arch }}-pr.diff | head -n1 | cut -d: -f1)
-              echo "Commenting on $FILE:$LINE_NUM -> $COMMENT"
-
-              curl -s -X POST \
-                -H "Authorization: Bearer $GITHUB_TOKEN" \
-                -H "Accept: application/vnd.github.v3+json" \
-                https://api.github.com/repos/$REPO/pulls/$PR_NUMBER/comments \
-                -d '{"body": "TEST COMMENT: `$COMMENT`", "commit_id": "$COMMIT_SHA", "path": "$FILE", "side": "RIGHT"}'
-            fi
-          done < gcovr-${{ matrix.target.name }}-${{ matrix.target.arch }}/pr.diff
+        run: bash ./devops/scripts/push-review-comments.sh gcovr-${{ matrix.target.name }}-${{ matrix.target.arch }}/pr.diff
