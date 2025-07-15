@@ -15,7 +15,7 @@ namespace ComplianceEngine
 
 AUDIT_FN(EnsureGsettings, "schema:Name of the gsettings schema to get:M", "key:Nam of gsettings key to get:M",
     "keyType:Type of key, possible options string,number:M:^(number|string)$",
-    "operation:Type of operation to perform on variable one of eq, ne, lt, gt:M:^(eq|ne|lt|gt)",
+    "operation:Type of operation to perform on variable one of eq, ne, lt, gt,is-unlocked:M:^(eq|ne|lt|gt|is-unlocked)",
     "value:value of operation to check acording to operation:M")
 {
     auto log = context.GetLogHandle();
@@ -50,11 +50,16 @@ AUDIT_FN(EnsureGsettings, "schema:Name of the gsettings schema to get:M", "key:N
         {"lt", std::make_pair([](const int& x, const int& y) { return x < y; }, [](const std::string&, const std::string&) { return false; })},
         {"gt", std::make_pair([](const int& x, const int& y) { return x > y; }, [](const std::string&, const std::string&) { return false; })},
         {"eq", std::make_pair([](const int& x, const int& y) { return x == y; }, [](const std::string& x, const std::string& y) { return x == y; })},
-        {"ne", std::make_pair([](const int& x, const int& y) { return x != y; }, [](const std::string& x, const std::string& y) { return x != y; })}};
+        {"ne", std::make_pair([](const int& x, const int& y) { return x != y; }, [](const std::string& x, const std::string& y) { return x != y; })},
+        {"is-unlocked", std::make_pair([](const int&, const int&) { return false; }, [](const std::string& x, const std::string& y) { return x == y; })}};
     auto genericOp = operations.find(operation);
     if (genericOp == operations.end() || (keyType != "number" && (genericOp->first == "lt" || genericOp->first == "gt")))
     {
         return Error("Not supported operation " + operation, EINVAL);
+    }
+    if (operation == "is-unlocked" && keyType != "string")
+    {
+        return Error("Not supported keyType " + keyType + " for is-unlocked operation", EINVAL);
     }
 
     it = args.find("value");
@@ -109,8 +114,13 @@ AUDIT_FN(EnsureGsettings, "schema:Name of the gsettings schema to get:M", "key:N
     {
         valuePrefixedByUint32 = true;
     }
+    auto gsettingsCmd = std::string("gsettings get \"") + schema + "\" \"" + keyName + "\"";
+    if (operation == "is-unlocked")
+    {
+        gsettingsCmd = std::string("gsettings writable \"" + schema + "\" \"" + keyName + "\"");
+    }
 
-    Result<std::string> gsettingsOutput = context.ExecuteCommand("gsettings get \"" + schema + "\" \"" + keyName + "\"");
+    Result<std::string> gsettingsOutput = context.ExecuteCommand(gsettingsCmd);
     if (!gsettingsOutput.HasValue() || gsettingsOutput.Value().empty())
     {
         return Error("Failed to execute gsettings get command " + schema + " " + keyName + " error: " + gsettingsOutput.Error().message,
@@ -153,13 +163,16 @@ AUDIT_FN(EnsureGsettings, "schema:Name of the gsettings schema to get:M", "key:N
     }
     else
     {
-        auto quote = *gsettingsValue.begin();
-        auto endQuote = *gsettingsValue.rbegin();
-        if (quote != '"' && quote != '\'' && quote != endQuote)
+        if (keyType == "string" && operation != "is-unlocked")
         {
-            return indicators.NonCompliant("Gsettings key " + schema + " " + keyName + " " + operation + " value " + value);
+            auto quote = *gsettingsValue.begin();
+            auto endQuote = *gsettingsValue.rbegin();
+            if (quote != '"' && quote != '\'' && quote != endQuote)
+            {
+                return indicators.NonCompliant("Gsettings key " + schema + " " + keyName + " " + operation + " value " + value);
+            }
+            gsettingsValue = gsettingsValue.substr(1, gsettingsValue.length() - 2);
         }
-        gsettingsValue = gsettingsValue.substr(1, gsettingsValue.length() - 2);
         auto op = genericOp->second.second;
         isCompliant = op(gsettingsValue, value);
     }
