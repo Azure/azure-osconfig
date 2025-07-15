@@ -276,7 +276,7 @@ TEST_F(EnsureGsettings, AuditFailureReturnedNotNumber)
     ASSERT_EQ(result.Error().message, "Invalid operation value: not a number " + args["value"]);
 }
 
-TEST_F(EnsureGsettings, AuditSuccessIsLockedTrue)
+TEST_F(EnsureGsettings, AuditSuccessIsUnlockedTrue)
 {
     args["schema"] = "org.gnome.desktop.interface";
     args["key"] = "cursor-theme";
@@ -291,13 +291,28 @@ TEST_F(EnsureGsettings, AuditSuccessIsLockedTrue)
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
-TEST_F(EnsureGsettings, AuditSuccessIsLockedFalse)
+TEST_F(EnsureGsettings, AuditSuccessIsUnlockedFalse)
 {
     args["schema"] = "org.gnome.desktop.interface";
     args["key"] = "cursor-theme";
     args["keyType"] = "string";
     args["operation"] = "is-unlocked";
-    args["value"] = "true";
+    args["value"] = "false";
+
+    EXPECT_CALL(mContext, ExecuteCommand(GsettingsRangeCmd())).WillOnce(::testing::Return(Result<std::string>(gsettingsTypeS)));
+    EXPECT_CALL(mContext, ExecuteCommand(GsettingsWritableCmd())).WillOnce(::testing::Return(Result<std::string>("true\n")));
+    auto result = AuditEnsureGsettings(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(EnsureGsettings, AuditSuccessIsUnlockedValueChrzaszczyrzewoszyce)
+{
+    args["schema"] = "org.gnome.desktop.interface";
+    args["key"] = "cursor-theme";
+    args["keyType"] = "string";
+    args["operation"] = "is-unlocked";
+    args["value"] = "chrzaszczyrzewoszyce";
 
     EXPECT_CALL(mContext, ExecuteCommand(GsettingsRangeCmd())).WillOnce(::testing::Return(Result<std::string>(gsettingsTypeS)));
     EXPECT_CALL(mContext, ExecuteCommand(GsettingsWritableCmd())).WillOnce(::testing::Return(Result<std::string>("false\n")));
@@ -306,7 +321,7 @@ TEST_F(EnsureGsettings, AuditSuccessIsLockedFalse)
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(EnsureGsettings, AuditFailureIsLockedKeyTypeNumberU)
+TEST_F(EnsureGsettings, AuditFailureIsUnlockedKeyTypeNumberU)
 {
     args["schema"] = "org.gnome.desktop.interface";
     args["key"] = "cursor-theme";
@@ -319,7 +334,7 @@ TEST_F(EnsureGsettings, AuditFailureIsLockedKeyTypeNumberU)
     ASSERT_EQ(result.Error().message, "Not supported keyType " + args["keyType"] + " for is-unlocked operation");
 }
 
-TEST_F(EnsureGsettings, AuditFailureIsLockedKeyTypeNumberI)
+TEST_F(EnsureGsettings, AuditFailureIsUnlockedKeyTypeNumberI)
 {
     args["schema"] = "org.gnome.desktop.interface";
     args["key"] = "cursor-theme";
