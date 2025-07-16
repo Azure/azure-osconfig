@@ -36,8 +36,8 @@
                 },
                 "operation": {
                   "type": "string",
-                  "description": "Type of operation to perform on variable one of eq, ne, lt, gt",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:((eq|ne|lt|gt).*)$|(^(eq|ne|lt|gt)))"
+                  "description": "Type of operation to perform on variable one of eq, ne, lt, gt,is-unlocked",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((eq|ne|lt|gt|is-unlocked).*)$|(^(eq|ne|lt|gt|is-unlocked)))"
                 },
                 "value": {
                   "type": "string",
