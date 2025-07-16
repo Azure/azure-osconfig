@@ -26,6 +26,7 @@ protected:
 
     const std::string gsettingsRangeCmd = "gsettings range ";
     const std::string gsettingsGetCmd = "gsettings get ";
+    const std::string gsettingsWritableCmd = "gsettings writable ";
     std::map<std::string, std::string> args;
 
     const std::string gsettingsTypeS = "type s\n";
@@ -41,6 +42,12 @@ protected:
     {
         return gsettingsGetCmd + "\"" + args["schema"] + "\" \"" + args["key"] + "\"";
     }
+
+    std::string GsettingsWritableCmd()
+    {
+        return gsettingsWritableCmd + "\"" + args["schema"] + "\" \"" + args["key"] + "\"";
+    }
+
     void SetUp() override
     {
         mIndicators.Push("EnsureGsettings");
@@ -267,4 +274,75 @@ TEST_F(EnsureGsettings, AuditFailureReturnedNotNumber)
     auto result = AuditEnsureGsettings(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Invalid operation value: not a number " + args["value"]);
+}
+
+TEST_F(EnsureGsettings, AuditSuccessIsUnlockedTrue)
+{
+    args["schema"] = "org.gnome.desktop.interface";
+    args["key"] = "cursor-theme";
+    args["keyType"] = "string";
+    args["operation"] = "is-unlocked";
+    args["value"] = "true";
+
+    EXPECT_CALL(mContext, ExecuteCommand(GsettingsRangeCmd())).WillOnce(::testing::Return(Result<std::string>(gsettingsTypeS)));
+    EXPECT_CALL(mContext, ExecuteCommand(GsettingsWritableCmd())).WillOnce(::testing::Return(Result<std::string>("true\n")));
+    auto result = AuditEnsureGsettings(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+}
+
+TEST_F(EnsureGsettings, AuditSuccessIsUnlockedFalse)
+{
+    args["schema"] = "org.gnome.desktop.interface";
+    args["key"] = "cursor-theme";
+    args["keyType"] = "string";
+    args["operation"] = "is-unlocked";
+    args["value"] = "false";
+
+    EXPECT_CALL(mContext, ExecuteCommand(GsettingsRangeCmd())).WillOnce(::testing::Return(Result<std::string>(gsettingsTypeS)));
+    EXPECT_CALL(mContext, ExecuteCommand(GsettingsWritableCmd())).WillOnce(::testing::Return(Result<std::string>("true\n")));
+    auto result = AuditEnsureGsettings(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(EnsureGsettings, AuditSuccessIsUnlockedValueChrzaszczyrzewoszyce)
+{
+    args["schema"] = "org.gnome.desktop.interface";
+    args["key"] = "cursor-theme";
+    args["keyType"] = "string";
+    args["operation"] = "is-unlocked";
+    args["value"] = "chrzaszczyrzewoszyce";
+
+    EXPECT_CALL(mContext, ExecuteCommand(GsettingsRangeCmd())).WillOnce(::testing::Return(Result<std::string>(gsettingsTypeS)));
+    EXPECT_CALL(mContext, ExecuteCommand(GsettingsWritableCmd())).WillOnce(::testing::Return(Result<std::string>("false\n")));
+    auto result = AuditEnsureGsettings(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(EnsureGsettings, AuditFailureIsUnlockedKeyTypeNumberU)
+{
+    args["schema"] = "org.gnome.desktop.interface";
+    args["key"] = "cursor-theme";
+    args["keyType"] = "number";
+    args["operation"] = "is-unlocked";
+    args["value"] = "42";
+
+    auto result = AuditEnsureGsettings(args, mIndicators, mContext);
+    ASSERT_TRUE(!result.HasValue());
+    ASSERT_EQ(result.Error().message, "Not supported keyType " + args["keyType"] + " for is-unlocked operation");
+}
+
+TEST_F(EnsureGsettings, AuditFailureIsUnlockedKeyTypeNumberI)
+{
+    args["schema"] = "org.gnome.desktop.interface";
+    args["key"] = "cursor-theme";
+    args["keyType"] = "number";
+    args["operation"] = "is-unlocked";
+    args["value"] = "42";
+
+    auto result = AuditEnsureGsettings(args, mIndicators, mContext);
+    ASSERT_TRUE(!result.HasValue());
+    ASSERT_EQ(result.Error().message, "Not supported keyType " + args["keyType"] + " for is-unlocked operation");
 }
