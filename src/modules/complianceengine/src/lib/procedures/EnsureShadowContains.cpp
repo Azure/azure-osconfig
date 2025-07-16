@@ -407,7 +407,7 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
         etcShadowPath = std::move(it->second);
     }
 
-    auto range = PasswordEntryRange::Create(etcShadowPath, context.GetLogHandle());
+    auto range = PasswordEntryRange::Make(etcShadowPath, context.GetLogHandle());
     if (!range.HasValue())
     {
         return range.Error();

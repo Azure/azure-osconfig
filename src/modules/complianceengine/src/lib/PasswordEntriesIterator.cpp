@@ -141,12 +141,12 @@ PasswordEntryRange& PasswordEntryRange::operator=(PasswordEntryRange&& other) no
     return *this;
 }
 
-Result<PasswordEntryRange> PasswordEntryRange::Create(OsConfigLogHandle log)
+Result<PasswordEntryRange> PasswordEntryRange::Make(OsConfigLogHandle log)
 {
-    return Create("/etc/shadow", log);
+    return Make("/etc/shadow", log);
 }
 
-Result<PasswordEntryRange> PasswordEntryRange::Create(const std::string& path, OsConfigLogHandle log)
+Result<PasswordEntryRange> PasswordEntryRange::Make(const std::string& path, OsConfigLogHandle log)
 {
     OsConfigLogDebug(log, "Creating PasswordEntryRange for path: %s", path.c_str());
     auto stream = fopen(path.c_str(), "r");

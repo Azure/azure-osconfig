@@ -21,7 +21,7 @@ AUDIT_FN(EnsurePasswordChangeIsInPast, "test_etcShadowPath:Path to the /etc/shad
         etcShadowPath = std::move(it->second);
     }
 
-    auto range = PasswordEntryRange::Create(etcShadowPath, context.GetLogHandle());
+    auto range = PasswordEntryRange::Make(etcShadowPath, context.GetLogHandle());
     if (!range.HasValue())
     {
         return range.Error();
