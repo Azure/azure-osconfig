@@ -30,9 +30,9 @@ public:
     ~ReentrantIterator() = default;
     ReentrantIterator() = delete;
     ReentrantIterator(const ReentrantIterator&) = default;
-    ReentrantIterator(ReentrantIterator&&) noexcept = default;
+    ReentrantIterator(ReentrantIterator&&) = default;
     ReentrantIterator& operator=(const ReentrantIterator&) = default;
-    ReentrantIterator& operator=(ReentrantIterator&&) noexcept = default;
+    ReentrantIterator& operator=(ReentrantIterator&&) = default;
 
     reference operator*()
     {
