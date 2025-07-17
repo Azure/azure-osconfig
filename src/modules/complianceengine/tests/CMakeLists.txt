@@ -37,8 +37,10 @@ set(PROCEDURES
 
 add_executable(complianceenginetests
     Base64Test.cpp
+    BenchmarkInfoTest.cpp
     CommonContextTest.cpp
     ComplianceEngineTest.cpp
+    DistributionInfoTest.cpp
     EngineTest.cpp
     EvaluatorTest.cpp
     NetworkToolsTest.cpp
@@ -46,7 +48,6 @@ add_executable(complianceenginetests
     RegexFallbackTest.cpp
     RegexTest.cpp
     ResultTest.cpp
-    Base64Test.cpp
     ${PROCEDURES}
 )
 # for ProcedureMap.h

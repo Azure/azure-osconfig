@@ -109,9 +109,11 @@ set_property(TARGET complianceengineschema PROPERTY OUTPUT ComplianceEngineSchem
 
 add_library(complianceenginelib STATIC
     Base64.cpp
+    BenchmarkInfo.cpp
     CommonContext.cpp
     ComplianceEngineInterface.cpp
     ContextInterface.cpp
+    DistributionInfo.cpp
     Engine.cpp
     Evaluator.cpp
     GroupsIterator.cpp
