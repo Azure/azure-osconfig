@@ -1,0 +1,196 @@
+name: Code coverage
+
+on:
+  workflow_dispatch:
+  pull_request:
+  # schedule:
+  #   - cron: '0 20 * * *' # Every day at 12pm PST (UTC-8)
+
+env:
+  BUILD_TYPE: Debug
+  MOUNT: /azure-osconfig
+  REGISTRY: ghcr.io
+
+jobs:
+  create-ci-matrix:
+    name: Build CI distro matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.get-matrix.outputs.matrix }}
+    steps:
+      - name: Get matrix
+        id: get-matrix
+        run: |
+          matrix="$(cat <<'EOL'
+          [
+            { "name": "ubuntu-22.04", "arch": "amd64", "tag": "latest" }
+          ]
+          EOL
+          )"
+
+          echo Distros to perform CI on: $matrix
+          echo matrix=$matrix >> $GITHUB_OUTPUT
+
+  unit-test:
+    name: Execute tests and gcovr
+    needs: create-ci-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.create-ci-matrix.outputs.matrix) }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          clean: true
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Run container
+        id: container
+        uses: ./.github/actions/container-run
+        with:
+          registry: ${{ env.REGISTRY }}
+          container: azure/azure-osconfig/${{ matrix.target.name }}-${{ matrix.target.arch }}
+          mount: ${{ github.workspace }}:${{ env.MOUNT }}
+          tag: ${{ matrix.target.tag }}
+
+      - name: Generate build
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          cmd: |
+            mkdir build && cd build
+            cmake ../src -DCMAKE_C_COMPILER='/usr/bin/gcc' -DCMAKE_CXX_COMPILER='/usr/bin/g++' -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -Duse_default_uuid=ON -DCOVERAGE=ON
+
+      - name: Build Azure OSConfig
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
+
+      - name: Install dependencies
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          cmd: |
+            apt-get update
+            apt-get install -y gcovr
+
+      - name: Run ctest
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: ctest --verbose | tee ../${{ matrix.target.name }}-${{ matrix.target.arch }}-ctest.log || true
+
+      - name: Run moduletest
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: bash ${{ env.MOUNT }}/devops/scripts/run-module-tests-action.sh ${{ env.MOUNT }} ${{ env.MOUNT }}/build || true
+
+      - name: Run gcovr
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: |
+            mkdir -p ../${{ matrix.target.name }}-${{ matrix.target.arch }}
+            gcovr --root ../ \
+              --html-details -o ../${{ matrix.target.name }}-${{ matrix.target.arch }}/coverage.html \
+              --json-summary-pretty --json-summary ../${{ matrix.target.name }}-${{ matrix.target.arch }}/coverage.summary.json \
+              --json-pretty --json ../${{ matrix.target.name }}-${{ matrix.target.arch }}/coverage.json \
+              --exclude '.*/adapters/.*' \
+              --exclude '.*/azure-iot-sdk-c/.*' \
+              --exclude '.*/modules/test/.*' \
+              --exclude '.*/tests/.*' \
+              --gcov-ignore-parse-errors
+            cp module-test.log ../${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
+
+      - uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: gcovr-${{ matrix.target.name }}-${{ matrix.target.arch }}
+          path: |
+            ${{ matrix.target.name }}-${{ matrix.target.arch }}-ctest.log
+            ${{ matrix.target.name }}-${{ matrix.target.arch }}-module-test.log
+            ${{ matrix.target.name }}-${{ matrix.target.arch }}-gcovr.log
+            ${{ matrix.target.name }}-${{ matrix.target.arch }}/*
+
+  report:
+    name: Code coverage
+    needs: [ unit-test, create-ci-matrix ]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.create-ci-matrix.outputs.matrix) }}
+    permissions:
+      checks: write
+      pull-requests: write
+    if: success() || failure()
+    steps:
+      - name: Download gcovr artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*"
+
+      - name: Show gcovr summary
+        run: |
+          jq -r '.files[] | "\(.filename) \(.line_covered) \(.line_total)"' gcovr-${{ matrix.target.name }}-${{ matrix.target.arch }}/${{ matrix.target.name }}-${{ matrix.target.arch }}/coverage.summary.json | awk '
+          {
+              filename = $1
+              covered = $2
+              total = $3
+
+              if (filename ~ /^src\/common\//) {
+                  group = "src/common"
+              } else if (filename ~ /^src\/modules\//) {
+                  match(filename, /^src\/modules\/[^\/]+/)
+                  group = substr(filename, RSTART, RLENGTH)
+              } else {
+                  group = "other directories"
+              }
+
+              covered_sum[group] += covered
+              total_sum[group] += total
+              covered_overall += covered
+              total_overall += total
+              if (covered == 0 && total > 0) {
+                uncovered_files[uncovered_count++] = filename
+              }
+          }
+          END {
+              printf "\n### Overall coverage\n"
+              printf "| covered | total | ratio |\n"
+              printf "| :-: | :-: | :-: |\n"
+              printf "| %d | %d | %.2f%% |\n", covered_overall, total_overall, 100 * covered_overall / total_overall
+
+              printf "\n### Coverage by directory\n"
+              printf "| directory | covered | total | ratio |\n"
+              printf "| :- | :-: | :-: | :-: |\n"
+              for (g in covered_sum) {
+                  printf "| %s | %d | %d | %.2f%% |\n", g, covered_sum[g], total_sum[g], 100 * covered_sum[g] / total_sum[g]
+              }
+
+              printf "\n### Uncovered files\n"
+              if (uncovered_count > 0) {
+                  printf "| filename |\n"
+                  printf "| :- |\n"
+                  for (i = 0; i < uncovered_count; i++) {
+                      printf "| %s |\n", uncovered_files[i]
+                  }
+              } else {
+                  printf "No uncovered files found\n"
+              }
+          }' > $GITHUB_STEP_SUMMARY
