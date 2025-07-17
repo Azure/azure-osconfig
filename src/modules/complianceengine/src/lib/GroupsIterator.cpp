@@ -23,8 +23,9 @@ Result<GroupsRange> GroupsRange::Make(std::string path, OsConfigLogHandle logHan
     auto stream = fopen(path.c_str(), "r");
     if (nullptr == stream)
     {
-        OsConfigLogError(logHandle, "Failed to open file '%s': %s", path.c_str(), strerror(errno));
-        return Error("Failed to create GroupsRange: " + std::string(strerror(errno)), errno);
+        int status = errno;
+        OsConfigLogError(logHandle, "Failed to open file '%s': %s", path.c_str(), strerror(status));
+        return Error("Failed to create GroupsRange: " + std::string(strerror(status)), status);
     }
 
     return GroupsRange(stream, logHandle);
