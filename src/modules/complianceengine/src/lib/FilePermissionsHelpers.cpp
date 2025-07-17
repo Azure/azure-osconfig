@@ -154,11 +154,8 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
                 << std::oct << perms;
             return indicators.NonCompliant(oss.str());
         }
-        else
-        {
-            OsConfigLogDebug(log, "Permissions are correct");
-        }
 
+        OsConfigLogDebug(log, "Permissions are correct");
         std::ostringstream oss;
         oss << filename << " matches expected permissions " << std::oct << perms;
         indicators.Compliant(oss.str());
@@ -172,16 +169,15 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
                 << " should not be set";
             return indicators.NonCompliant(oss.str());
         }
-        else
-        {
-            OsConfigLogDebug(log, "Mask is correct");
-        }
+
+        OsConfigLogDebug(log, "Mask is correct");
+        std::ostringstream oss;
+        oss << filename << " mask matches expected mask " << std::oct << mask;
+        indicators.Compliant(oss.str());
     }
 
     OsConfigLogDebug(log, "File '%s' has correct permissions", filename.c_str());
-    std::ostringstream oss;
-    oss << filename << " mask matches expected mask " << std::oct << mask;
-    return indicators.Compliant(oss.str());
+    return indicators.Compliant("File '" + filename + "' has correct permissions and ownership");
 }
 
 Result<Status> RemediateEnsureFilePermissionsHelper(const std::string& filename, const std::map<std::string, std::string>& args,
