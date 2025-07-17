@@ -10,11 +10,7 @@ static const char gComponentName[] = "ComplianceEngine";
 
 int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log)
 {
-    UNUSED(resourceId);
-    UNUSED(ruleId);
-    UNUSED(payloadKey);
-    UNUSED(log);
-    return 0;
+    return ComplianceEngineValidatePayload(gComplianceEngine, resourceId, ruleId, payloadKey, log);
 }
 
 void BaselineInitialize(OsConfigLogHandle log)

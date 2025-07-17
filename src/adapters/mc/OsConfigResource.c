@@ -518,9 +518,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     const char* auditPassed = "Audit passed";
     const char* auditFailed = "Audit failed. See /var/log/osconfig_nrp.*";
 
-    const char* auditPassedInvalidResourceOrRuleId = "Audit passed for an invalid resource and/or rule id. See /var/log/osconfig_nrp.*";
-    const char* auditFailedInvalidResourceOrRuleId = "Audit failed for an invalid resource and/or rule id. See /var/log/osconfig_nrp.*";
-
     const char* auditPassedCodeTemplate = "BaselineSettingCompliant:{%s}";
     const char* auditFailedCodeTemplate = "BaselineSettingNotCompliant:{%s}";
 
@@ -725,6 +722,13 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         }
     }
 
+    if (0 != BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
+    {
+        OsConfigLogInfo(GetLog(), "[OsConfigResource.Get] BaselineIsValidResourceIdRuleId(%s, %s, %s) failed", g_resourceId, g_ruleId, g_payloadKey);
+        miResult = MI_RESULT_NOT_SUPPORTED;
+        goto Exit;
+    }
+
     // Read the reported MIM object value from the local device
     if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", g_componentName, context)))
     {
@@ -745,7 +749,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     {
         LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no ExpectedObjectValue, assuming '%s' is expected", g_payloadKey, g_passValue);
     }
-
     isCompliant = (g_expectedObjectValue && (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue)))) ? MI_TRUE : MI_FALSE;
 
     // Create the output resource
@@ -886,15 +889,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     if (MI_TRUE == isCompliant)
     {
-        if (0 == BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
-        {
-            reasonCode = FormatAllocateString(auditPassedCodeTemplate, g_ruleId);
-        }
-        else
-        {
-            reasonCode = DuplicateString(auditPassedInvalidResourceOrRuleId);
-        }
-
+        reasonCode = FormatAllocateString(auditPassedCodeTemplate, g_ruleId);
         if ((0 == strcmp(g_reportedObjectValue, g_expectedObjectValue)) ||
             ((strlen(g_reportedObjectValue) > strlen(g_expectedObjectValue)) && (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue + strlen(g_expectedObjectValue))))))
         {
@@ -903,15 +898,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
     else
     {
-        if (0 == BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
-        {
-            reasonCode = FormatAllocateString(auditFailedCodeTemplate, g_ruleId);
-        }
-        else
-        {
-            reasonCode = DuplicateString(auditFailedInvalidResourceOrRuleId);
-        }
-
+        reasonCode = FormatAllocateString(auditFailedCodeTemplate, g_ruleId);
         if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue))))
         {
             reasonPhrase = DuplicateString(auditFailed);
@@ -999,13 +986,16 @@ Exit:
         LogInfo(context, GetLog(), "[OsConfigResource.Get] GetTargetResource_Destruct failed with %d", miCleanup);
     }
 
-    // Post MI result back to MI to finish
-
-    if (MI_RESULT_OK != miResult)
+    if (MI_RESULT_NOT_SUPPORTED == miResult)
+    {
+        LogInfo(context, GetLog(), "The benchmark is not suitable to be executed on this system.");
+    }
+    else if (MI_RESULT_OK != miResult)
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] Get complete with miResult %d", miResult);
     }
 
+    // Post MI result back to MI to finish
     MI_Context_PostResult(context, miResult);
 }
 
@@ -1427,6 +1417,13 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         // Not an error
         LogInfo(context, GetLog(), "[OsConfigResource.Test] No ProcedureObjectName");
         FREE_MEMORY(g_procedureObjectName);
+    }
+
+    if (0 != BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
+    {
+        OsConfigLogInfo(GetLog(), "[OsConfigResource.Get] BaselineIsValidResourceIdRuleId(%s, %s, %s) failed", g_resourceId, g_ruleId, g_payloadKey);
+        miResult = MI_RESULT_NOT_SUPPORTED;
+        goto Exit;
     }
 
     SetDesiredObjectValueToDevice("OsConfigResource.Set", g_componentName, g_desiredObjectName, g_desiredObjectValue, context);
