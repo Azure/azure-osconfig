@@ -3,6 +3,7 @@
 #include <PasswordEntriesIterator.h>
 #include <Regex.h>
 #include <ScopeGuard.h>
+#include <pwd.h>
 #include <shadow.h>
 #include <vector>
 
@@ -41,7 +42,15 @@ AUDIT_FN(EnsurePasswordChangeIsInPast, "test_etcShadowPath:Path to the /etc/shad
         OsConfigLogDebug(context.GetLogHandle(), "User %s has a password change date in the future: %ld", item.sp_namp, item.sp_lstchg);
         if (invalidUsersCount < maxInvalidUsers)
         {
-            indicators.NonCompliant("User " + string(item.sp_namp) + " has a password change date in the future");
+            const auto* pwd = getpwnam(item.sp_namp);
+            if (pwd)
+            {
+                indicators.NonCompliant("User " + std::to_string(pwd->pw_uid) + " has a password change date in the future");
+            }
+            else
+            {
+                indicators.NonCompliant("Some user has a password change date in the future and is not present in password database");
+            }
         }
         invalidUsersCount++;
         if (invalidUsersCount >= maxInvalidUsers)
