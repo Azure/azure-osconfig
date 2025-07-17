@@ -2,6 +2,7 @@
 #include <Evaluator.h>
 #include <Regex.h>
 #include <ScopeGuard.h>
+#include <StringTools.h>
 #include <UsersIterator.h>
 #include <shadow.h>
 #include <vector>
@@ -13,7 +14,7 @@ using std::vector;
 namespace ComplianceEngine
 {
 AUDIT_FN(EnsureUserIsOnlyAccountWith, "username:A pattern or value to match usernames against", "uid:A value to match the UID against::d+",
-    "test_etcPasswdPath:Alternative path to the /etc/passwd file to test against")
+    "gid:A value to match the GID against::d+", "test_etcPasswdPath:Alternative path to the /etc/passwd file to test against")
 {
     auto it = args.find("username");
     if (it == args.end())
@@ -34,18 +35,12 @@ AUDIT_FN(EnsureUserIsOnlyAccountWith, "username:A pattern or value to match user
     it = args.find("uid");
     if (it != args.end())
     {
-        try
+        auto parsedUID = TryStringToInt(std::move(it->second));
+        if (!parsedUID.HasValue())
         {
-            uid = std::stoi(it->second);
+            return parsedUID.Error();
         }
-        catch (const std::invalid_argument&)
-        {
-            return Error("Invalid UID value: " + it->second, EINVAL);
-        }
-        catch (const std::out_of_range&)
-        {
-            return Error("UID value out of range: " + it->second, ERANGE);
-        }
+        uid = parsedUID.Value();
     }
 
     Optional<decltype(passwd::pw_gid)> gid;
@@ -53,18 +48,12 @@ AUDIT_FN(EnsureUserIsOnlyAccountWith, "username:A pattern or value to match user
     it = args.find("gid");
     if (it != args.end())
     {
-        try
+        auto parsedGID = TryStringToInt(std::move(it->second));
+        if (!parsedGID.HasValue())
         {
-            gid = std::stoi(it->second);
+            return parsedGID.Error();
         }
-        catch (const std::invalid_argument&)
-        {
-            return Error("Invalid GID value: " + it->second, EINVAL);
-        }
-        catch (const std::out_of_range&)
-        {
-            return Error("GID value out of range: " + it->second, ERANGE);
-        }
+        gid = parsedGID.Value();
     }
 
     auto users = UsersRange::Make(passwdPath, context.GetLogHandle());
@@ -77,10 +66,10 @@ AUDIT_FN(EnsureUserIsOnlyAccountWith, "username:A pattern or value to match user
     {
         if (uid.HasValue() && item.pw_uid == uid.Value())
         {
-            if (hasUid && item.pw_name != username)
+            if (item.pw_name != username)
             {
                 OsConfigLogDebug(context.GetLogHandle(), "User '%s' has UID %d, but expected '%s'.", item.pw_name, item.pw_uid, username.c_str());
-                return indicators.NonCompliant("User '" + string(item.pw_name) + "' has UID " + std::to_string(item.pw_uid));
+                return indicators.NonCompliant("A user other than '" + username + "' has UID " + std::to_string(item.pw_uid));
             }
 
             hasUid = true;
@@ -88,10 +77,10 @@ AUDIT_FN(EnsureUserIsOnlyAccountWith, "username:A pattern or value to match user
 
         if (gid.HasValue() && item.pw_gid == gid.Value())
         {
-            if (hasGid && item.pw_name != username)
+            if (item.pw_name != username)
             {
                 OsConfigLogDebug(context.GetLogHandle(), "User '%s' has GID %d, but expected '%s'.", item.pw_name, item.pw_gid, username.c_str());
-                return indicators.NonCompliant("User '" + string(item.pw_name) + "' has GID " + std::to_string(item.pw_gid));
+                return indicators.NonCompliant("A user other than '" + username + "' has GID " + std::to_string(item.pw_gid));
             }
 
             hasGid = true;

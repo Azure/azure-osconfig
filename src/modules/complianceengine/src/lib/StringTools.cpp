@@ -1,5 +1,6 @@
 #include <StringTools.h>
 #include <algorithm>
+#include <stdexcept>
 
 namespace ComplianceEngine
 {
@@ -34,4 +35,19 @@ std::string TrimWhiteSpaces(const std::string& str)
     return std::string();
 }
 
+Result<int> TryStringToInt(const std::string& str)
+{
+    try
+    {
+        return std::stoi(str);
+    }
+    catch (const std::invalid_argument&)
+    {
+        return Error("Invalid integer value: " + str, EINVAL);
+    }
+    catch (const std::out_of_range&)
+    {
+        return Error("Integer value out of range: " + str, ERANGE);
+    }
+}
 } // namespace ComplianceEngine

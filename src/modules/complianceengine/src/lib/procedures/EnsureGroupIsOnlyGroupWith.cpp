@@ -1,6 +1,7 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <GroupsIterator.h>
+#include <StringTools.h>
 #include <vector>
 
 using std::map;
@@ -9,7 +10,7 @@ using std::vector;
 
 namespace ComplianceEngine
 {
-AUDIT_FN(EnsureGroupIsOnlyGroupWith, "group:A pattern or value to match usernames against", "gid:A value to match the UID against::d+",
+AUDIT_FN(EnsureGroupIsOnlyGroupWith, "group:A pattern or value to match group names against", "gid:A value to match the GID against::d+",
     "test_etcGroupPath:Alternative path to the /etc/group file to test against")
 {
     auto it = args.find("group");
@@ -31,34 +32,28 @@ AUDIT_FN(EnsureGroupIsOnlyGroupWith, "group:A pattern or value to match username
     it = args.find("gid");
     if (it != args.end())
     {
-        try
+        auto parsedGID = TryStringToInt(std::move(it->second));
+        if (!parsedGID.HasValue())
         {
-            gid = std::stoi(it->second);
+            return parsedGID.Error();
         }
-        catch (const std::invalid_argument&)
-        {
-            return Error("Invalid UID value: " + it->second, EINVAL);
-        }
-        catch (const std::out_of_range&)
-        {
-            return Error("UID value out of range: " + it->second, ERANGE);
-        }
+        gid = parsedGID.Value();
     }
 
-    auto users = GroupsRange::Make(groupPath, context.GetLogHandle());
-    if (!users.HasValue())
+    auto groups = GroupsRange::Make(groupPath, context.GetLogHandle());
+    if (!groups.HasValue())
     {
-        return users.Error();
+        return groups.Error();
     }
 
-    for (const auto& item : users.Value())
+    for (const auto& item : groups.Value())
     {
         if (gid.HasValue() && item.gr_gid == gid.Value())
         {
-            if (hasGid && item.gr_name != groupName)
+            if (item.gr_name != groupName)
             {
-                OsConfigLogDebug(context.GetLogHandle(), "User '%s' has UID %d, but expected '%s'.", item.gr_name, item.gr_gid, groupName.c_str());
-                return indicators.NonCompliant("User '" + string(item.gr_name) + "' has UID " + std::to_string(item.gr_gid));
+                OsConfigLogDebug(context.GetLogHandle(), "Group '%s' has GID %d, but expected '%s'.", item.gr_name, item.gr_gid, groupName.c_str());
+                return indicators.NonCompliant("A group other than '" + groupName + "' has GID " + std::to_string(item.gr_gid));
             }
 
             hasGid = true;
@@ -67,10 +62,10 @@ AUDIT_FN(EnsureGroupIsOnlyGroupWith, "group:A pattern or value to match username
 
     if (gid.HasValue() && !hasGid)
     {
-        OsConfigLogDebug(context.GetLogHandle(), "No user with UID %d found.", gid.Value());
-        return indicators.NonCompliant("No user with UID " + std::to_string(gid.Value()) + " found");
+        OsConfigLogDebug(context.GetLogHandle(), "No group with GID %d found.", gid.Value());
+        return indicators.NonCompliant("No group with GID " + std::to_string(gid.Value()) + " found");
     }
 
-    return indicators.Compliant("All criteria has been met for user '" + groupName + "'");
+    return indicators.Compliant("All criteria has been met for group '" + groupName + "'");
 }
 } // namespace ComplianceEngine
