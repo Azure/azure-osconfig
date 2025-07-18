@@ -8,7 +8,7 @@
 #define DEFAULT_BIN_PATH "/usr/lib/osconfig"
 #define OSCONFIG_CONFIG_FILE "/etc/osconfig/osconfig.json"
 
-#define AZURE_OSCONFIG "Azure OSConfig"
+#define CLIENT_NAME "ModuleTestClient"
 
 #define RECIPE_ACTION "Action"
 #define RECIPE_LOAD_MODULE "LoadModule"
@@ -801,7 +801,7 @@ int GetClientName(char** client)
     }
     else
     {
-        *client = (char*)calloc(strlen(AZURE_OSCONFIG) + strlen(OSCONFIG_VERSION) + 5, sizeof(char));
+        *client = (char*)calloc(strlen(CLIENT_NAME) +1, sizeof(char));
         if (NULL == *client)
         {
             LOG_ERROR("Failed to allocate memory for client name\n");
@@ -809,7 +809,7 @@ int GetClientName(char** client)
         }
         else
         {
-            sprintf(*client, "%s %d;%s", AZURE_OSCONFIG, version, OSCONFIG_VERSION);
+            strcpy(*client, CLIENT_NAME);
         }
     }
 

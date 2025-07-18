@@ -24,6 +24,8 @@ using ComplianceEngine::Status;
 
 namespace
 {
+static constexpr const char* cModuleTestClientName = "ModuleTestClient";
+static constexpr const char* cNRPClientName = "ComplianceEngineNRP";
 OsConfigLogHandle g_log = nullptr;
 static const std::set<int> g_criticalErrors = {ENOMEM};
 } // namespace
@@ -46,7 +48,23 @@ MMI_HANDLE ComplianceEngineMmiOpen(const char* clientName, const unsigned int ma
         OsConfigLogError(g_log, "ComplianceEngineMmiOpen(%s, %u): failed to create context", clientName, maxPayloadSizeBytes);
         return nullptr;
     }
-    auto* result = reinterpret_cast<void*>(new Engine(std::move(context)));
+    std::unique_ptr<ComplianceEngine::PayloadFormatter> formatter;
+    if (!strcmp(clientName, cModuleTestClientName))
+    {
+        OsConfigLogInfo(g_log, "ComplianceEngineMmiOpen(%s) using DebugFormatter", clientName);
+        formatter = std::unique_ptr<ComplianceEngine::PayloadFormatter>(new ComplianceEngine::DebugFormatter());
+    }
+    else if (!strcmp(clientName, cNRPClientName))
+    {
+        OsConfigLogInfo(g_log, "ComplianceEngineMmiOpen(%s) using NestedListFormatter", clientName);
+        formatter = std::unique_ptr<ComplianceEngine::PayloadFormatter>(new ComplianceEngine::NestedListFormatter());
+    }
+    else
+    {
+        OsConfigLogInfo(g_log, "ComplianceEngineMmiOpen(%s) using JsonFormatter", clientName);
+        formatter = std::unique_ptr<ComplianceEngine::PayloadFormatter>(new ComplianceEngine::JsonFormatter());
+    }
+    auto* result = reinterpret_cast<void*>(new Engine(std::move(context), std::move(formatter)));
     OsConfigLogInfo(g_log, "ComplianceEngineMmiOpen(%s, %u) returning %p", clientName, maxPayloadSizeBytes, result);
     return result;
 }
@@ -118,7 +136,13 @@ int ComplianceEngineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
             }
         }
 
-        auto json = JSONFromString(result.Value().payload.c_str());
+        auto payloadString = result.Value().payload;
+        if (result.Value().status == Status::Compliant)
+        {
+            payloadString = "PASS" + payloadString;
+        }
+
+        auto json = JSONFromString(payloadString.c_str());
         if (NULL == json)
         {
             OsConfigLogError(engine.Log(), "ComplianceEngineMmiGet failed: Failed to create JSON object from string");

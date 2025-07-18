@@ -312,9 +312,9 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
     {
         for (int i = 0; i < depth; ++i)
         {
-            result << "  ";
+            result << "\t";
         }
-        result << "[Begin] " << child->procedureName << "\n";
+        result << (child->status == Status::Compliant ? "✅ " : "❌ ") << child->procedureName << "\n";
         assert(child);
         FormatNode(*child.get(), result, depth + 1);
     }
@@ -323,23 +323,17 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
     {
         for (int i = 0; i < depth; ++i)
         {
-            result << "  ";
+            result << "\t";
         }
         if (indicator.status == Status::Compliant)
         {
-            result << "[Compliant] " << indicator.message << "\n";
+            result << "✅ " << indicator.message << "\n";
         }
         else
         {
-            result << "[NonCompliant] " << indicator.message << "\n";
+            result << "❌ " << indicator.message << "\n";
         }
     }
-
-    for (int i = 0; i < depth - 1; ++i)
-    {
-        result << "  ";
-    }
-    result << (node.status == Status::Compliant ? "[Compliant] " : "[NonCompliant] ") << node.procedureName << "\n";
 }
 
 Result<std::string> NestedListFormatter::Format(const IndicatorsTree& indicators) const
@@ -347,7 +341,7 @@ Result<std::string> NestedListFormatter::Format(const IndicatorsTree& indicators
     std::ostringstream result;
     const auto* node = indicators.GetRootNode();
     assert(nullptr != node);
-    result << "[Begin] " << node->procedureName << "\n";
+    result << (node->status == Status::Compliant ? "✅ " : "❌ ") << node->procedureName << "\n";
     FormatNode(*node, result, 1);
     return result.str();
 }
@@ -498,7 +492,7 @@ Result<std::string> JsonFormatter::Format(const IndicatorsTree& indicators) cons
     return result;
 }
 
-void MmiFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result) const
+void DebugFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result) const
 {
     if (node.procedureName == "anyOf" || node.procedureName == "allOf")
     {
@@ -548,7 +542,7 @@ void MmiFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstre
     }
 }
 
-Result<std::string> MmiFormatter::Format(const IndicatorsTree& indicators) const
+Result<std::string> DebugFormatter::Format(const IndicatorsTree& indicators) const
 {
     std::ostringstream result;
     const auto* node = indicators.GetRootNode();
@@ -560,7 +554,39 @@ Result<std::string> MmiFormatter::Format(const IndicatorsTree& indicators) const
     node = node->children[0].get();
     assert(nullptr != node);
     FormatNode(*node, result);
-    return (indicators.GetRootNode()->status == Status::Compliant ? SECURITY_AUDIT_PASS : "") + result.str();
+    return result.str();
+}
+
+void LastIncomplianceFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result) const
+{
+    if (!node.children.empty())
+    {
+        const auto* child = node.children.back().get();
+        assert(child);
+        return FormatNode(*child, result);
+    }
+
+    if (node.indicators.empty())
+    {
+        result << "No indicators found for " << node.procedureName;
+        return;
+    }
+
+    const auto& indicator = node.indicators.back();
+    result << indicator.message;
+}
+
+Result<std::string> LastIncomplianceFormatter::Format(const IndicatorsTree& indicators) const
+{
+    std::ostringstream result;
+    const auto* node = indicators.GetRootNode();
+    assert(nullptr != node);
+    FormatNode(*node, result);
+    if (node->status == Status::Compliant)
+    {
+        return std::string("Audit passed");
+    }
+    return result.str();
 }
 
 } // namespace ComplianceEngine
