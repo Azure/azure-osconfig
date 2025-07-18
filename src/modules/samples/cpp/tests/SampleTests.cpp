@@ -63,7 +63,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(MMI_OK, session->Get(componentName, reportedStringObjectName, &payload, &payloadSizeBytes));
 
         std::string payloadString(payload, payloadSizeBytes);
-        delete[] payload;
+        session->MmiFree(payload);
         ASSERT_STREQ(jsonPayload, payloadString.c_str());
     }
 
@@ -77,7 +77,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(MMI_OK, session->Get(componentName, reportedIntegerObjectName, &payload, &payloadSizeBytes));
 
         std::string payloadString(payload, payloadSizeBytes);
-        delete[] payload;
+        session->MmiFree(payload);
         ASSERT_STREQ(jsonPayload, payloadString.c_str());
     }
 
@@ -91,7 +91,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(MMI_OK, session->Get(componentName, reportedBooleanObjectName, &payload, &payloadSizeBytes));
 
         std::string payloadString(payload, payloadSizeBytes);
-        delete[] payload;
+        session->MmiFree(payload);
         ASSERT_STREQ(jsonPayload, payloadString.c_str());
     }
 
@@ -121,7 +121,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(MMI_OK, session->Get(componentName, reportedObjectName, &payload, &payloadSizeBytes));
 
         std::string payloadString(payload, payloadSizeBytes);
-        delete[] payload;
+        session->MmiFree(payload);
         ASSERT_STREQ(jsonPayload, payloadString.c_str());
     }
 
@@ -168,14 +168,14 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(MMI_OK, session->Get(componentName, reportedObjectName, &payload, &payloadSizeBytes));
 
         std::string payloadString(payload, payloadSizeBytes);
-        delete[] payload;
+        session->MmiFree(payload);
         ASSERT_STREQ(jsonPayload, payloadString.c_str());
 
         ASSERT_EQ(MMI_OK, session->Set(componentName, desiredObjectName, jsonPayloadWithNullMapValues, strlen(jsonPayloadWithNullMapValues)));
         ASSERT_EQ(MMI_OK, session->Get(componentName, reportedObjectName, &payload, &payloadSizeBytes));
 
         std::string payloadStringWithNullMapValues(payload, payloadSizeBytes);
-        delete[] payload;
+        session->MmiFree(payload);
         ASSERT_STREQ(jsonPayloadWithNullMapValues, payloadStringWithNullMapValues.c_str());
     }
 
@@ -207,7 +207,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(MMI_OK, session->Get(componentName, reportedArrayObjectName, &payload, &payloadSizeBytes));
 
         std::string payloadString(payload, payloadSizeBytes);
-        delete[] payload;
+        session->MmiFree(payload);
         ASSERT_STREQ(jsonPayload, payloadString.c_str());
     }
 
@@ -219,12 +219,12 @@ namespace OSConfig::Platform::Tests
         MMI_JSON_STRING payload = nullptr;
 
         ASSERT_EQ(EINVAL, session->Set(invalidName.c_str(), desiredStringObjectName, jsonPayload, strlen(jsonPayload)));
-        delete[] payload;
+        session->MmiFree(payload);
         ASSERT_EQ(EINVAL, session->Set(componentName, invalidName.c_str(), jsonPayload, strlen(jsonPayload)));
 
         ASSERT_EQ(EINVAL, session->Get(invalidName.c_str(), reportedStringObjectName, &payload, &payloadSizeBytes));
         ASSERT_EQ(EINVAL, session->Get(componentName, invalidName.c_str(), &payload, &payloadSizeBytes));
-        delete[] payload;
+        session->MmiFree(payload);
     }
 
     TEST_F(CppSampleTests, SetInvalidPayloadString)
