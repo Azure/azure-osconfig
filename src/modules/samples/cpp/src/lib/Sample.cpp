@@ -783,3 +783,11 @@ unsigned int Sample::GetMaxPayloadSizeBytes()
 {
     return m_maxPayloadSizeBytes;
 }
+
+void Sample::MmiFree(MMI_JSON_STRING payload)
+{
+    if (nullptr != payload)
+    {
+        delete[] payload;
+    }
+}
