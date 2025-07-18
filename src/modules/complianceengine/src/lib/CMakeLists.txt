@@ -13,6 +13,7 @@ set(PROCEDURES
     procedures/EnsureFilePermissions.cpp
     procedures/EnsureFilesystemOption.cpp
     procedures/EnsureFirewallOpenPorts.cpp
+    procedures/EnsureGroupIsOnlyGroupWith.cpp
     procedures/EnsureGsettings.cpp
     procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.cpp
     procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.cpp
@@ -26,6 +27,7 @@ set(PROCEDURES
     procedures/EnsureRootPath.cpp
     procedures/EnsureSshdOption.cpp
     procedures/EnsureSysctl.cpp
+    procedures/EnsureUserIsOnlyAccountWith.cpp
     procedures/EnsureWirelessIsDisabled.cpp
     procedures/EnsureXdmcp.cpp
     procedures/ExecuteCommandGrep.cpp
@@ -45,6 +47,7 @@ set(SCHEMAS
     procedures/EnsureFilePermissions.schema.json
     procedures/EnsureFilesystemOption.schema.json
     procedures/EnsureFirewallOpenPorts.schema.json
+    procedures/EnsureGroupIsOnlyGroupWith.schema.json
     procedures/EnsureGsettings.schema.json
     procedures/EnsureInteractiveUsersDotFilesAccessIsConfigured.schema.json
     procedures/EnsureInteractiveUsersHomeDirectoriesAreConfigured.schema.json
@@ -58,6 +61,7 @@ set(SCHEMAS
     procedures/EnsureRootPath.schema.json
     procedures/EnsureSshdOption.schema.json
     procedures/EnsureSysctl.schema.json
+    procedures/EnsureUserIsOnlyAccountWith.schema.json
     procedures/EnsureWirelessIsDisabled.schema.json
     procedures/EnsureXdmcp.schema.json
     procedures/ExecuteCommandGrep.schema.json
@@ -110,11 +114,11 @@ add_library(complianceenginelib STATIC
     ContextInterface.cpp
     Engine.cpp
     Evaluator.cpp
+    GroupsIterator.cpp
     KernelModuleTools.cpp
     FilePermissionsHelpers.cpp
     FileTreeWalk.cpp
     Indicators.cpp
-    IterateUsers.cpp
     JsonWrapper.cpp
     NetworkTools.cpp
     PasswordEntriesIterator.cpp
@@ -122,6 +126,7 @@ add_library(complianceenginelib STATIC
     ProcedureMap.cpp
     Result.cpp
     StringTools.cpp
+    UsersIterator.cpp
     ${PROCEDURES}
     )
 

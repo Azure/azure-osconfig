@@ -149,6 +149,9 @@
           "$ref": "procedures/EnsureFirewallOpenPorts.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureGroupIsOnlyGroupWith.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureGsettings.schema.json#/definitions/audit"
         },
         {
@@ -189,6 +192,9 @@
         },
         {
           "$ref": "procedures/EnsureSysctl.schema.json#/definitions/audit"
+        },
+        {
+          "$ref": "procedures/EnsureUserIsOnlyAccountWith.schema.json#/definitions/audit"
         },
         {
           "$ref": "procedures/EnsureWirelessIsDisabled.schema.json#/definitions/audit"
@@ -243,6 +249,9 @@
           "$ref": "procedures/EnsureFirewallOpenPorts.schema.json#/definitions/remediation"
         },
         {
+          "$ref": "procedures/EnsureGroupIsOnlyGroupWith.schema.json#/definitions/remediation"
+        },
+        {
           "$ref": "procedures/EnsureGsettings.schema.json#/definitions/remediation"
         },
         {
@@ -283,6 +292,9 @@
         },
         {
           "$ref": "procedures/EnsureSysctl.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureUserIsOnlyAccountWith.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureWirelessIsDisabled.schema.json#/definitions/remediation"

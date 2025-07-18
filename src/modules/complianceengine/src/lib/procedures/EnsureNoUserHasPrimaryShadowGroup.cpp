@@ -3,13 +3,9 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <Result.h>
-#include <fcntl.h>
+#include <UsersIterator.h>
 #include <grp.h>
-#include <pwd.h>
-#include <set>
 #include <string>
-#include <sys/stat.h>
-#include <unistd.h>
 
 namespace ComplianceEngine
 {
@@ -24,21 +20,18 @@ AUDIT_FN(EnsureNoUserHasPrimaryShadowGroup)
         return Error("Group 'shadow' not found", EINVAL);
     }
 
-    setpwent();
-    struct passwd* pwd = nullptr;
-    for (errno = 0, pwd = getpwent(); nullptr != pwd; errno = 0, pwd = getpwent())
+    auto users = UsersRange::Make(context.GetLogHandle());
+    if (!users.HasValue())
     {
-        if (shadow->gr_gid == pwd->pw_gid)
-        {
-            endpwent();
-            return indicators.NonCompliant("User's '" + std::string(pwd->pw_name) + "' primary group is 'shadow'");
-        }
+        return users.Error();
     }
-    int status = errno;
-    endpwent();
-    if (0 != errno)
+
+    for (const auto& pwd : users.Value())
     {
-        return Error(std::string("getpwent failed: ") + strerror(status), status);
+        if (shadow->gr_gid == pwd.pw_gid)
+        {
+            return indicators.NonCompliant("User's '" + std::string(pwd.pw_name) + "' primary group is 'shadow'");
+        }
     }
 
     return indicators.Compliant("No user has 'shadow' as primary group");

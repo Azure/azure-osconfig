@@ -110,6 +110,7 @@ public:
     virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
     virtual int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     virtual unsigned int GetMaxPayloadSizeBytes();
+    void MmiFree(MMI_JSON_STRING payload);
 
 private:
     static int SerializeStringEnumeration(rapidjson::Writer<rapidjson::StringBuffer>& writer, StringEnumeration value);
