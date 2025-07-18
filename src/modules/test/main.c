@@ -6,7 +6,6 @@
 #include <math.h>
 
 #define DEFAULT_BIN_PATH "/usr/lib/osconfig"
-#define OSCONFIG_CONFIG_FILE "/etc/osconfig/osconfig.json"
 
 #define CLIENT_NAME "ModuleTestClient"
 
@@ -779,46 +778,20 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
 
 int GetClientName(char** client)
 {
-    int status = 0;
-    int version = 0;
-    JSON_Value* config = NULL;
-    JSON_Object* configObject = NULL;
-
-    if (NULL == (config = json_parse_file(OSCONFIG_CONFIG_FILE)))
+    if (NULL == client)
     {
-        LOG_ERROR("Failed to parse %s\n", OSCONFIG_CONFIG_FILE);
-        status = EINVAL;
-    }
-    else if (NULL == (configObject = json_value_get_object(config)))
-    {
-        LOG_ERROR("Failed to get config object\n");
-        status = EINVAL;
-    }
-    else if (0 == (version = json_object_get_number(configObject, "ModelVersion")))
-    {
-        LOG_ERROR("Failed to get model version\n");
-        status = EINVAL;
-    }
-    else
-    {
-        *client = (char*)calloc(strlen(CLIENT_NAME) +1, sizeof(char));
-        if (NULL == *client)
-        {
-            LOG_ERROR("Failed to allocate memory for client name\n");
-            status = ENOMEM;
-        }
-        else
-        {
-            strcpy(*client, CLIENT_NAME);
-        }
+        LOG_ERROR("Invalid (null) client pointer");
+        return EINVAL;
     }
 
-    if (config != NULL)
+    *client = strdup(CLIENT_NAME);
+    if (NULL == *client)
     {
-        json_value_free(config);
+        LOG_ERROR("Failed to allocate memory for client name\n");
+        return ENOMEM;
     }
 
-    return status;
+    return 0;
 }
 
 void Usage(const char* executable)
