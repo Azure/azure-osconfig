@@ -23,6 +23,7 @@ set(PROCEDURES
     procedures/EnsureMTAsLocalOnly.cpp
     procedures/EnsureNoDuplicateEntriesExist.cpp
     procedures/EnsureNoUserHasPrimaryShadowGroup.cpp
+    procedures/EnsurePasswordChangeIsInPast.cpp
     procedures/EnsureRootPath.cpp
     procedures/EnsureSshdOption.cpp
     procedures/EnsureSysctl.cpp
@@ -56,6 +57,7 @@ set(SCHEMAS
     procedures/EnsureMTAsLocalOnly.schema.json
     procedures/EnsureNoDuplicateEntriesExist.schema.json
     procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json
+    procedures/EnsurePasswordChangeIsInPast.schema.json
     procedures/EnsureRootPath.schema.json
     procedures/EnsureSshdOption.schema.json
     procedures/EnsureSysctl.schema.json
@@ -119,6 +121,7 @@ add_library(complianceenginelib STATIC
     Indicators.cpp
     JsonWrapper.cpp
     NetworkTools.cpp
+    PasswordEntriesIterator.cpp
     Procedure.cpp
     ProcedureMap.cpp
     Result.cpp

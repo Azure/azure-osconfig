@@ -179,6 +179,9 @@
           "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsurePasswordChangeIsInPast.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureRootPath.schema.json#/definitions/audit"
         },
         {
@@ -274,6 +277,9 @@
         },
         {
           "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsurePasswordChangeIsInPast.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureRootPath.schema.json#/definitions/remediation"
