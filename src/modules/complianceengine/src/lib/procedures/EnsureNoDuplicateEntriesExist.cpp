@@ -51,7 +51,7 @@ AUDIT_FN(EnsureNoDuplicateEntriesExist, "filename:The file to be checked for dup
         column = std::stoi(it->second);
         if (column < 0)
         {
-            return Error("Column must be a non-negative integer");
+            return Error("Column must be a non-negative integer", EINVAL);
         }
     }
     catch (const std::exception& e)

@@ -14,12 +14,15 @@ set(PROCEDURES
     procedures/EnsureFirewallOpenPortsTest.cpp
     procedures/EnsureKernelModuleTest.cpp
     procedures/EnsureLogfileAccessTest.cpp
+    procedures/EnsureGroupIsOnlyGroupWithTest.cpp
     procedures/EnsureGsettingsTest.cpp
     procedures/EnsureMountPointExistsTest.cpp
     procedures/EnsureMTAsLocalOnlyTest.cpp
+    procedures/EnsureNoDuplicateEntriesExistTest.cpp
     procedures/EnsureRootPathTest.cpp
     procedures/EnsureSshdOptionTest.cpp
     procedures/EnsureSysctlTest.cpp
+    procedures/EnsureUserIsOnlyAccountWithTest.cpp
     procedures/EnsureWirelessIsDisabledTest.cpp
     procedures/EnsureXdmcpTest.cpp
     procedures/ExecuteCommandGrepTest.cpp
