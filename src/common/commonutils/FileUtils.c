@@ -125,6 +125,12 @@ bool FileEndsInEol(const char* fileName, OsConfigLogHandle log)
     int status = 0;
     bool result = false;
 
+    if (NULL == fileName)
+    {
+        OsConfigLogError(log, "FileEndsInEol: invalid argument");
+        return false;
+    }
+
     if (0 == (status = stat(fileName, &statStruct)))
     {
         if (statStruct.st_size > 0)
