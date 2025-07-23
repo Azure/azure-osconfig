@@ -9,6 +9,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <iostream>
+#include <map>
 #include <vector>
 
 struct MockContext : public ComplianceEngine::ContextInterface
@@ -54,7 +55,24 @@ struct MockContext : public ComplianceEngine::ContextInterface
         return filename;
     }
 
+    std::string GetSpecialFilePath(const std::string& path) const override
+    {
+        auto it = mSpecialFilesMap.find(path);
+        if (it != mSpecialFilesMap.end())
+        {
+            return it->second;
+        }
+
+        return path;
+    }
+
+    void SetSpecialFilePath(const std::string& path, const std::string& overridden)
+    {
+        mSpecialFilesMap[path] = overridden;
+    }
+
 private:
     char mTempdir[PATH_MAX];
     std::vector<std::string> mTempfiles;
+    std::map<std::string, std::string> mSpecialFilesMap;
 };
