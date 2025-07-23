@@ -6,30 +6,42 @@
 
 static MMI_HANDLE gComplianceEngine = NULL;
 
-static const char gComponentName[] = "ComplianceEngine";
-
-int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log)
+static MMI_HANDLE GetHandle()
 {
-    return ComplianceEngineValidatePayload(gComplianceEngine, resourceId, ruleId, payloadKey, log);
+    static const char sComponentName[] = "ComplianceEngine";
+    if(NULL == gComplianceEngine)
+    {
+        gComplianceEngine = ComplianceEngineMmiOpen(sComponentName, -1);
+    }
+    return gComplianceEngine;
 }
 
-void BaselineInitialize(OsConfigLogHandle log)
+static void FreeHandle()
 {
-    ComplianceEngineInitialize(log);
-    gComplianceEngine = ComplianceEngineMmiOpen(gComponentName, -1);
-}
-
-void BaselineShutdown(OsConfigLogHandle log)
-{
-    UNUSED(log);
-    if (NULL == gComplianceEngine)
+    if(NULL == gComplianceEngine)
     {
         return;
     }
 
     ComplianceEngineMmiClose(gComplianceEngine);
-    ComplianceEngineShutdown();
     gComplianceEngine = NULL;
+}
+
+int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log)
+{
+    return ComplianceEngineValidatePayload(GetHandle(), resourceId, ruleId, payloadKey, log);
+}
+
+void BaselineInitialize(OsConfigLogHandle log)
+{
+    ComplianceEngineInitialize(log);
+}
+
+void BaselineShutdown(OsConfigLogHandle log)
+{
+    UNUSED(log);
+    FreeHandle();
+    ComplianceEngineShutdown();
 }
 
 int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log)
@@ -40,7 +52,7 @@ int BaselineMmiGet(const char* componentName, const char* objectName, char** pay
         return EINVAL;
     }
 
-    int result = ComplianceEngineMmiGet(gComplianceEngine, componentName, objectName, payload, payloadSizeBytes);
+    int result = ComplianceEngineMmiGet(GetHandle(), componentName, objectName, payload, payloadSizeBytes);
     if (MMI_OK != result)
     {
         OsConfigLogError(log, "BaselineMmiGet(%s, %s) failed: %d", componentName, objectName, result);
@@ -60,5 +72,5 @@ int BaselineMmiGet(const char* componentName, const char* objectName, char** pay
 int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     UNUSED(log);
-    return ComplianceEngineMmiSet(gComplianceEngine, componentName, objectName, payload, payloadSizeBytes);
+    return ComplianceEngineMmiSet(GetHandle(), componentName, objectName, payload, payloadSizeBytes);
 }
