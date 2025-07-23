@@ -7,7 +7,6 @@
 #include <array>
 #include <dirent.h>
 #include <fstream>
-#include <iostream>
 #include <pwd.h>
 #include <shadow.h>
 #include <sys/stat.h>
@@ -176,8 +175,6 @@ AUDIT_FN(EnsureDefaultShellTimeoutIsConfigured, "")
     bool found = false;
     for (const auto& location : locations)
     {
-        std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                  << "location: " << location << std::endl;
         struct stat st;
         if (0 != stat(location.c_str(), &st))
         {
@@ -193,7 +190,6 @@ AUDIT_FN(EnsureDefaultShellTimeoutIsConfigured, "")
         auto result = MultilineMatch(location, valueRegex.Value(), readonlyRegex.Value(), exportRegex.Value(), context);
         if (!result.HasValue())
         {
-            std::cerr << "[" << __func__ << ":" << __LINE__ << "] " << std::endl;
             return result.Error();
         }
 
@@ -201,47 +197,33 @@ AUDIT_FN(EnsureDefaultShellTimeoutIsConfigured, "")
         {
             if (result->correct)
             {
-                std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                          << "TMOUT is set to a correct value in " << location << std::endl;
                 indicators.Compliant(string("TMOUT is set to a correct value in ") + location);
             }
             else
             {
-                std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                          << "TMOUT is set to an incorrect value in " << location << std::endl;
                 return indicators.NonCompliant(string("TMOUT is set to an incorrect value in ") + location);
             }
 
             if (result->multiple)
             {
-                std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                          << "TMOUT is set multiple times in " << location << std::endl;
                 return indicators.NonCompliant(string("TMOUT is set multiple times in ") + location);
             }
 
             if (result->readonly)
             {
-                std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                          << "TMOUT is set readonly in " << location << std::endl;
                 indicators.Compliant(string("TMOUT is set readonly in ") + location);
             }
             else
             {
-                std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                          << "TMOUT is not readonly in " << location << std::endl;
                 return indicators.NonCompliant(string("TMOUT is not readonly in ") + location);
             }
 
             if (result->exported)
             {
-                std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                          << "TMOUT is exported in " << location << std::endl;
                 indicators.Compliant(string("TMOUT is exported in ") + location);
             }
             else
             {
-                std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                          << "TMOUT is not exported in " << location << std::endl;
                 return indicators.NonCompliant(string("TMOUT is not exported in ") + location);
             }
 
@@ -255,13 +237,9 @@ AUDIT_FN(EnsureDefaultShellTimeoutIsConfigured, "")
 
     if (!found)
     {
-        std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                  << "TMOUT is not set" << std::endl;
         return indicators.NonCompliant("TMOUT is not set");
     }
 
-    std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-              << "TMOUT variable is properly defined" << std::endl;
     return indicators.Compliant("TMOUT variable is properly defined");
 }
 } // namespace ComplianceEngine
