@@ -25,7 +25,7 @@ Result<regex> CompileRegex(const std::string& pattern, const ContextInterface& c
 {
     try
     {
-        return regex(pattern);
+        return regex(pattern, std::regex_constants::ECMAScript);
     }
     catch (const regex_error& e)
     {
@@ -109,9 +109,9 @@ Result<MatchResult> MultilineMatch(const std::string& filename, const regex& val
 AUDIT_FN(EnsureDefaultShellTimeoutIsConfigured, "")
 {
     UNUSED(args);
-    static const auto valuePattern = R"(^[[:space:]]*([^#\n\r]+[[:space:]]+)?TMOUT=(\d+)\b)";
-    static const auto readonlyPattern = R"(^[[:space:]]*([^#\n\r]+[[:space:]]+)?readonly[[:space:]]+TMOUT\b)";
-    static const auto exportPattern = R"(^([[:space:]]*|[[:space:]]*[^#\n\r]+[[:space:]]*;[[:space:]]*)export[[:space:]]+TMOUT\b)";
+    static const auto valuePattern = R"(^[ \\t]*([^#\n\r]+[ \\t]+)?TMOUT=([[:alnum:]]+)\b)";
+    static const auto readonlyPattern = R"(^[ \\t]*([^#\n]+[ \\t]+)?readonly[ \\t]+TMOUT\b)";
+    static const auto exportPattern = R"(^([ \\t]*|[ \\t]*[^#\n]+[ \\t]*;[ \\t]*)export[ \\t]+TMOUT\b)";
 
     static const auto valueRegex = CompileRegex(valuePattern, context);
     if (!valueRegex.HasValue())
