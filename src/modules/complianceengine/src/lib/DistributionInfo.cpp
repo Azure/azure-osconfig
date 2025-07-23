@@ -18,22 +18,34 @@ namespace ComplianceEngine
 using std::map;
 using std::string;
 
-static const map<string, OSType> sOSTypeMap = {
-    {"Linux", OSType::Linux},
-    // Add more OS types as needed
-};
+static const map<string, OSType> GetOSTypeMap()
+{
+    static const map<string, OSType> sOSTypeMap = {
+        {"Linux", OSType::Linux},
+        // Add more OS types as needed
+    };
+    return sOSTypeMap;
+}
 
-static const map<string, Architecture> sArchitectureMap = {
-    {"x86_64", Architecture::x86_64},
-    // Add more architectures as needed
-};
+static const map<string, Architecture> GetArchitectureMap()
+{
+    static const map<string, Architecture> sArchitectureMap = {
+        {"x86_64", Architecture::x86_64},
+        // Add more architectures as needed
+    };
+    return sArchitectureMap;
+}
 
-static const map<string, LinuxDistribution> sDistributionMap = {
-    {"ubuntu", LinuxDistribution::Ubuntu}, {"centos", LinuxDistribution::Centos}, {"rhel", LinuxDistribution::RHEL}, {"sles", LinuxDistribution::SUSE},
-    {"ol", LinuxDistribution::OracleLinux}, {"mariner", LinuxDistribution::Mariner}, {"debian", LinuxDistribution::Debian},
-    {"azurelinux", LinuxDistribution::AzureLinux}, {"amzn", LinuxDistribution::AmazonLinux}, {"almalinux", LinuxDistribution::AlmaLinux},
-    // Add more distributions as needed
-};
+const map<string, LinuxDistribution>& GetDistributionMap()
+{
+    static const map<string, LinuxDistribution> sDistributionMap = {
+        {"ubuntu", LinuxDistribution::Ubuntu}, {"centos", LinuxDistribution::Centos}, {"rhel", LinuxDistribution::RHEL}, {"sles", LinuxDistribution::SUSE},
+        {"ol", LinuxDistribution::OracleLinux}, {"mariner", LinuxDistribution::Mariner}, {"debian", LinuxDistribution::Debian},
+        {"azurelinux", LinuxDistribution::AzureLinux}, {"amzn", LinuxDistribution::AmazonLinux}, {"almalinux", LinuxDistribution::AlmaLinux},
+        // Add more distributions as needed
+    };
+    return sDistributionMap;
+}
 
 namespace
 {
@@ -198,8 +210,9 @@ Result<map<string, string>> ParseDistributionInfoFile(const string& etcOsRelease
 
 Result<OSType> ParseOSType(const string& osTypeStr)
 {
-    auto it = sOSTypeMap.find(osTypeStr);
-    if (it != sOSTypeMap.end())
+    const auto& osTypeMap = GetOSTypeMap();
+    auto it = osTypeMap.find(osTypeStr);
+    if (it != osTypeMap.end())
     {
         return it->second;
     }
@@ -209,8 +222,9 @@ Result<OSType> ParseOSType(const string& osTypeStr)
 
 Result<Architecture> ParseArchitecture(const string& architectureStr)
 {
-    auto it = sArchitectureMap.find(architectureStr);
-    if (it != sArchitectureMap.end())
+    const auto& architectureMap = GetArchitectureMap();
+    auto it = architectureMap.find(architectureStr);
+    if (it != architectureMap.end())
     {
         return it->second;
     }
@@ -221,8 +235,9 @@ Result<Architecture> ParseArchitecture(const string& architectureStr)
 
 Result<LinuxDistribution> DistributionInfo::ParseLinuxDistribution(const string& distributionStr)
 {
-    auto it = sDistributionMap.find(distributionStr);
-    if (it != sDistributionMap.end())
+    const auto& distributionMap = GetDistributionMap();
+    auto it = distributionMap.find(distributionStr);
+    if (it != distributionMap.end())
     {
         return it->second;
     }
@@ -355,7 +370,7 @@ using ComplianceEngine::RevertMap;
 
 string to_string(LinuxDistribution distribution) noexcept(false)
 {
-    static const auto distributionMap = RevertMap(ComplianceEngine::sDistributionMap);
+    static const auto distributionMap = RevertMap(ComplianceEngine::GetDistributionMap());
     auto it = distributionMap.find(distribution);
     if (it != distributionMap.end())
     {
@@ -367,7 +382,7 @@ string to_string(LinuxDistribution distribution) noexcept(false)
 
 string to_string(OSType osType) noexcept(false)
 {
-    static const auto osTypeMap = RevertMap(ComplianceEngine::sOSTypeMap);
+    static const auto osTypeMap = RevertMap(ComplianceEngine::GetOSTypeMap());
     auto it = osTypeMap.find(osType);
     if (it != osTypeMap.end())
     {
@@ -379,7 +394,7 @@ string to_string(OSType osType) noexcept(false)
 
 string to_string(Architecture architecture) noexcept(false)
 {
-    static const auto architectureMap = RevertMap(ComplianceEngine::sArchitectureMap);
+    static const auto architectureMap = RevertMap(ComplianceEngine::GetArchitectureMap());
     auto it = architectureMap.find(architecture);
     if (it != architectureMap.end())
     {
