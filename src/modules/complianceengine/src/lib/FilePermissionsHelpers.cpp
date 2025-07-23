@@ -155,7 +155,7 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
             return indicators.NonCompliant(oss.str());
         }
 
-        OsConfigLogDebug(log, "Permissions are correct");
+        OsConfigLogDebug(log, "%s permissions are correct", filename.c_str());
         std::ostringstream oss;
         oss << filename << " matches expected permissions " << std::oct << perms;
         indicators.Compliant(oss.str());
@@ -170,7 +170,7 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
             return indicators.NonCompliant(oss.str());
         }
 
-        OsConfigLogDebug(log, "Mask is correct");
+        OsConfigLogDebug(log, "%s mask is correct", filename.c_str());
         std::ostringstream oss;
         oss << filename << " mask matches expected mask " << std::oct << mask;
         indicators.Compliant(oss.str());
