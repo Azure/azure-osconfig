@@ -240,7 +240,8 @@ int ComplianceEngineValidatePayload(MMI_HANDLE clientSession, const char* resour
     // the payloadKey is formatted as a path: /<benchmark>/<benchmark_specific_format>
     // In case the payloadKey starts with /cis, it becomes: /cis/<distribution>/<version>/<benchmark_version>/<section1>/<section2>/...
     UNUSED(resourceId);
-    if ((nullptr == clientSession) || (nullptr == ruleId) || (nullptr == payloadKey))
+    UNUSED(ruleId);
+    if ((nullptr == clientSession) || (nullptr == payloadKey))
     {
         OsConfigLogError(log, "ComplianceEngineValidatePayload called with invalid arguments");
         return EINVAL;
@@ -264,6 +265,7 @@ int ComplianceEngineValidatePayload(MMI_HANDLE clientSession, const char* resour
     if (!benchmark->Match(distributionInfo.Value()))
     {
         OsConfigLogInfo(log, "This benchmark is not applicable for the current distribution");
+        OsConfigLogInfo(log, "Current system identification: %s", std::to_string(distributionInfo.Value()).c_str());
         auto overridden = distributionInfo.Value();
         overridden.distribution = benchmark->distribution;
         overridden.version = benchmark->version;
