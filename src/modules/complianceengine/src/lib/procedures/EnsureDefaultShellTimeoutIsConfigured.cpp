@@ -140,6 +140,12 @@ AUDIT_FN(EnsureDefaultShellTimeoutIsConfigured, "")
 
     const auto& profiledPath = context.GetSpecialFilePath("/etc/profile.d/");
     auto* dir = opendir(profiledPath.c_str());
+    ScopeGuard guard([dir]() {
+        if (dir)
+        {
+            closedir(dir);
+        }
+    });
     if (!dir)
     {
         int status = errno;
@@ -151,7 +157,6 @@ AUDIT_FN(EnsureDefaultShellTimeoutIsConfigured, "")
     }
     else
     {
-        ScopeGuard guard([dir]() { closedir(dir); });
         for (dirent* entry = readdir(dir); entry != nullptr; entry = readdir(dir))
         {
             // Skip "." and ".."
