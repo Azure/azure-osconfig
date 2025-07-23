@@ -1183,6 +1183,13 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         FREE_MEMORY(g_procedureObjectName);
     }
 
+    if (0 != BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog()))
+    {
+        OsConfigLogInfo(GetLog(), "[OsConfigResource.Get] BaselineIsValidResourceIdRuleId(%s, %s, %s) failed", g_resourceId, g_ruleId, g_payloadKey);
+        miResult = MI_RESULT_NOT_SUPPORTED;
+        goto Exit;
+    }
+
     // Read the reported MIM object value from the local device
     if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Test", g_componentName, context)))
     {
