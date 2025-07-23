@@ -178,9 +178,8 @@ TEST_F(ComplianceEngineTest, ComplianceEngineMmiGet_2)
 
 TEST_F(ComplianceEngineTest, ValidatePayload_1)
 {
-    ASSERT_EQ(EINVAL, ComplianceEngineValidatePayload(nullptr, nullptr, "test", "/cis/ubuntu/22.04/v1.1.1/x/y/z", nullptr));
-    ASSERT_EQ(EINVAL, ComplianceEngineValidatePayload(mHandle, nullptr, nullptr, "/cis/ubuntu/22.04/v1.1.1/x/y/z", nullptr));
-    ASSERT_EQ(EINVAL, ComplianceEngineValidatePayload(mHandle, nullptr, "test", nullptr, nullptr));
+    ASSERT_EQ(EINVAL, ComplianceEngineValidatePayload(nullptr, nullptr, nullptr, "/cis/ubuntu/22.04/v1.1.1/x/y/z", nullptr));
+    ASSERT_EQ(EINVAL, ComplianceEngineValidatePayload(mHandle, nullptr, nullptr, nullptr, nullptr));
 }
 
 TEST_F(ComplianceEngineTest, ValidatePayload_2)
