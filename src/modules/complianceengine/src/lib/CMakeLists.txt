@@ -11,6 +11,7 @@ set(PROCEDURES
     procedures/EnsureApparmorProfiles.cpp
     procedures/EnsureDconf.cpp
     procedures/EnsureDefaultShellTimeoutIsConfigured.cpp
+    procedures/EnsureDefaultUserUmaskIsConfigured.cpp
     procedures/EnsureFilePermissions.cpp
     procedures/EnsureFilesystemOption.cpp
     procedures/EnsureFirewallOpenPorts.cpp
@@ -46,6 +47,7 @@ set(SCHEMAS
     procedures/EnsureApparmorProfiles.schema.json
     procedures/EnsureDconf.schema.json
     procedures/EnsureDefaultShellTimeoutIsConfigured.schema.json
+    procedures/EnsureDefaultUserUmaskIsConfigured.schema.json
     procedures/EnsureFilePermissions.schema.json
     procedures/EnsureFilesystemOption.schema.json
     procedures/EnsureFirewallOpenPorts.schema.json
