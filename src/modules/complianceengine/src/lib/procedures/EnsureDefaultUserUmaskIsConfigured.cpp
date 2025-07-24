@@ -7,7 +7,6 @@
 #include <array>
 #include <dirent.h>
 #include <fstream>
-#include <iostream>
 #include <pwd.h>
 #include <shadow.h>
 #include <sys/stat.h>
@@ -103,18 +102,10 @@ Result<MatchResult> MultilineMatch(const std::string& filename, const regex& val
         lineNumber++;
         smatch match;
 
-        std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                  << "line: " << line << std::endl;
         if (regex_search(line, match, valuePattern))
         {
             OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line.c_str());
             assert(match.ready());
-            std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                      << "matches: " << match.size() << std::endl;
-            for (const auto& m : match)
-            {
-                std::cerr << "  match: " << m.str() << std::endl;
-            }
 
             if (match.size() != 7)
             {
@@ -131,7 +122,6 @@ Result<MatchResult> MultilineMatch(const std::string& filename, const regex& val
                     return octal.Error();
                 }
 
-                std::cerr << "[" << __func__ << ":" << __LINE__ << "] " << std::oct << "octal: " << octal.Value() << std::dec << std::endl;
                 if ((expected & octal.Value()) != expected)
                 {
                     return MatchResult::Incorrect;
@@ -142,7 +132,6 @@ Result<MatchResult> MultilineMatch(const std::string& filename, const regex& val
 
             // We have a match, but not on the numeric result - we need to parse the symbolic mask
             auto symbolic = ParseSymbolicValue(match[3].str(), match[4].str(), match[5].str());
-            std::cerr << "[" << __func__ << ":" << __LINE__ << "] " << std::oct << "symbolic: " << symbolic << std::dec << std::endl;
             if ((expected & symbolic) != expected)
             {
                 return MatchResult::Incorrect;
@@ -153,12 +142,6 @@ Result<MatchResult> MultilineMatch(const std::string& filename, const regex& val
         if (regex_search(line, match, pamPattern))
         {
             OsConfigLogDebug(context.GetLogHandle(), "Matched line %d: %s", lineNumber, line.c_str());
-            std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                      << "matches: " << match.size() << std::endl;
-            for (const auto& m : match)
-            {
-                std::cerr << "  match: " << m.str() << std::endl;
-            }
 
             if (match.size() != 4)
             {
@@ -171,7 +154,7 @@ Result<MatchResult> MultilineMatch(const std::string& filename, const regex& val
                 // We expect an octal number as it's been sucessfully matched by the regex
                 return octal.Error();
             }
-            std::cerr << "[" << __func__ << ":" << __LINE__ << "] " << std::oct << "octal: " << octal.Value() << std::dec << std::endl;
+
             if ((expected & octal.Value()) != expected)
             {
                 return MatchResult::Incorrect;
@@ -248,8 +231,6 @@ AUDIT_FN(EnsureDefaultUserUmaskIsConfigured, "")
     bool found = false;
     for (const auto& location : umaskLocations)
     {
-        std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
-                  << "location: " << location << std::endl;
         struct stat st;
         if (0 != stat(location.c_str(), &st))
         {
