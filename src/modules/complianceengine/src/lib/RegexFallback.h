@@ -321,16 +321,9 @@ private:
     friend bool regexMatch(const std::string& s, MatchResults& m, const Regex& r);
     MatchResults(std::string target, std::unique_ptr<regmatch_t[]> matches, std::size_t size)
         : mTarget(std::move(target)),
+          mSize(size),
           mPmatch(std::move(matches))
     {
-        mSize = 0;
-        for (mSize = 0; mSize < size; ++mSize)
-        {
-            if (mPmatch[mSize].rm_so == -1)
-            {
-                break;
-            }
-        }
     }
 
     std::string mTarget;

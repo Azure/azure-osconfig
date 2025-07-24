@@ -4,6 +4,7 @@
 #include "CommonContext.h"
 
 #include "CommonUtils.h"
+#include "ContextInterface.h"
 
 namespace ComplianceEngine
 {
@@ -34,6 +35,11 @@ Result<std::string> CommonContext::GetFileContents(const std::string& filePath) 
     std::string result(output);
     free(output);
     return result;
+}
+
+std::string CommonContext::GetSpecialFilePath(const std::string& path) const
+{
+    return path;
 }
 
 } // namespace ComplianceEngine

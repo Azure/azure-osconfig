@@ -9,6 +9,7 @@ find_package(GTest REQUIRED)
 set(PROCEDURES
     procedures/EnsureApparmorProfilesTest.cpp
     procedures/EnsureDconfTest.cpp
+    procedures/EnsureDefaultShellTimeoutIsConfiguredTest.cpp
     procedures/EnsureFilePermissionsTest.cpp
     procedures/EnsureFilesystemOptionTest.cpp
     procedures/EnsureFirewallOpenPortsTest.cpp
