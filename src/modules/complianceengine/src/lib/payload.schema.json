@@ -131,6 +131,9 @@
     "auditProcedure": {
       "anyOf": [
         {
+          "$ref": "procedures/EnsureAccountsWithoutShellAreLocked.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/audit"
         },
         {
@@ -236,6 +239,9 @@
     },
     "remediationProcedure": {
       "anyOf": [
+        {
+          "$ref": "procedures/EnsureAccountsWithoutShellAreLocked.schema.json#/definitions/remediation"
+        },
         {
           "$ref": "procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json#/definitions/remediation"
         },

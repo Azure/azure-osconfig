@@ -7,6 +7,7 @@ if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
 endif()
 
 set(PROCEDURES
+    procedures/EnsureAccountsWithoutShellAreLocked.cpp
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.cpp
     procedures/EnsureApparmorProfiles.cpp
     procedures/EnsureDconf.cpp
@@ -43,6 +44,7 @@ set(PROCEDURES
     procedures/EnsureShadowContains.cpp
 )
 set(SCHEMAS
+    procedures/EnsureAccountsWithoutShellAreLocked.schema.json
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json
     procedures/EnsureApparmorProfiles.schema.json
     procedures/EnsureDconf.schema.json
@@ -120,12 +122,13 @@ add_library(complianceenginelib STATIC
     DistributionInfo.cpp
     Engine.cpp
     Evaluator.cpp
-    GroupsIterator.cpp
-    KernelModuleTools.cpp
     FilePermissionsHelpers.cpp
     FileTreeWalk.cpp
+    GroupsIterator.cpp
     Indicators.cpp
     JsonWrapper.cpp
+    KernelModuleTools.cpp
+    ListValidShells.cpp
     NetworkTools.cpp
     PasswordEntriesIterator.cpp
     Procedure.cpp
