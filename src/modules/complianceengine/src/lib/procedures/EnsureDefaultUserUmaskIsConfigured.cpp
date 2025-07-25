@@ -249,23 +249,22 @@ AUDIT_FN(EnsureDefaultUserUmaskIsConfigured, "")
             return result.Error();
         }
 
-        switch (result.Value())
+        if (result.Value() == MatchResult::NotFound)
         {
-            case MatchResult::Correct: {
-                found = true;
-                return indicators.Compliant("umask is correctly set in " + location);
-            }
+            continue;
+        }
+        found = true;
 
-            case MatchResult::Incorrect: {
-                found = true;
-                // We follow CIS guidance here and don't break early on incompmliance
-                // to keep consistence with precedence.
-                indicators.NonCompliant("umask is incorrectly set in " + location);
-                break;
-            }
+        if (result.Value() == MatchResult::Correct)
+        {
+            return indicators.Compliant("umask is correctly set in " + location);
+        }
 
-            default:
-                break;
+        if (result.Value() == MatchResult::Incorrect)
+        {
+            // We follow CIS guidance here and don't break early on incompmliance
+            // to keep consistence with precedence.
+            indicators.NonCompliant("umask is incorrectly set in " + location);
         }
     }
 
