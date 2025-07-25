@@ -6,7 +6,7 @@
 
 static MMI_HANDLE gComplianceEngine = NULL;
 
-static const char gNRPComponentName[] = "ComplianceEngineNRP";
+static const char gComponentName[] = "ComplianceEngine";
 
 int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log)
 {
@@ -20,7 +20,7 @@ int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, 
 void BaselineInitialize(OsConfigLogHandle log)
 {
     ComplianceEngineInitialize(log);
-    gComplianceEngine = ComplianceEngineMmiOpen(gNRPComponentName, -1);
+    gComplianceEngine = ComplianceEngineMmiOpen(gComponentName, -1);
 }
 
 void BaselineShutdown(OsConfigLogHandle log)
