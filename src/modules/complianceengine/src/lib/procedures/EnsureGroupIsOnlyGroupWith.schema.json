@@ -22,7 +22,7 @@
                 "gid": {
                   "type": "string",
                   "description": "A value to match the GID against",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:(.*d+.*)$|(d+))"
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:(.*\\d+.*)$|(\\d+))"
                 },
                 "test_etcGroupPath": {
                   "type": "string",
