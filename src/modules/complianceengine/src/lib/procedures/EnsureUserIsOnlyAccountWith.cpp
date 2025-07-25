@@ -13,8 +13,8 @@ using std::vector;
 
 namespace ComplianceEngine
 {
-AUDIT_FN(EnsureUserIsOnlyAccountWith, "username:A pattern or value to match usernames against", "uid:A value to match the UID against::d+",
-    "gid:A value to match the GID against::d+", "test_etcPasswdPath:Alternative path to the /etc/passwd file to test against")
+AUDIT_FN(EnsureUserIsOnlyAccountWith, "username:A pattern or value to match usernames against", "uid:A value to match the UID against::\\d+",
+    "gid:A value to match the GID against::\\d+", "test_etcPasswdPath:Alternative path to the /etc/passwd file to test against")
 {
     auto it = args.find("username");
     if (it == args.end())

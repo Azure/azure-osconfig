@@ -10,7 +10,7 @@ using std::vector;
 
 namespace ComplianceEngine
 {
-AUDIT_FN(EnsureGroupIsOnlyGroupWith, "group:A pattern or value to match group names against", "gid:A value to match the GID against::d+",
+AUDIT_FN(EnsureGroupIsOnlyGroupWith, "group:A pattern or value to match group names against", "gid:A value to match the GID against::\\d+",
     "test_etcGroupPath:Alternative path to the /etc/group file to test against")
 {
     auto it = args.find("group");
