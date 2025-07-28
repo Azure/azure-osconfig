@@ -306,11 +306,18 @@ Result<Status> Evaluator::EvaluateBuiltinProcedure(const string& procedureName, 
     return result.Value();
 }
 
+static constexpr std::size_t cMaxNodeIndicators = 5;
 void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostringstream& result, int depth) const
 {
-    for (const auto& child : node.children)
+    for (std::size_t i = 0; i < node.children.size(); i++)
     {
-        for (int i = 0; i < depth; ++i)
+        if (i >= cMaxNodeIndicators)
+        {
+            break;
+        }
+
+        const auto& child = node.children[i];
+        for (int j = 0; j < depth; ++j)
         {
             result << "\t";
         }
@@ -319,9 +326,15 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
         FormatNode(*child.get(), result, depth + 1);
     }
 
-    for (const auto& indicator : node.indicators)
+    for (size_t i = 0; i < node.indicators.size(); i++)
     {
-        for (int i = 0; i < depth; ++i)
+        if (i >= cMaxNodeIndicators)
+        {
+            break;
+        }
+
+        const auto& indicator = node.indicators[i];
+        for (int j = 0; j < depth; ++j)
         {
             result << "\t";
         }
