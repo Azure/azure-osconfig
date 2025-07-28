@@ -311,12 +311,12 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
 {
     for (std::size_t i = 0; i < node.children.size(); i++)
     {
-        if (i >= cMaxNodeIndicators)
+        const auto& child = node.children[i];
+        if ((i >= cMaxNodeIndicators) && (Status::Compliant == child->status))
         {
-            break;
+            continue;
         }
 
-        const auto& child = node.children[i];
         for (int j = 0; j < depth; ++j)
         {
             result << "\t";
@@ -328,12 +328,12 @@ void NestedListFormatter::FormatNode(const IndicatorsTree::Node& node, std::ostr
 
     for (size_t i = 0; i < node.indicators.size(); i++)
     {
-        if (i >= cMaxNodeIndicators)
+        const auto& indicator = node.indicators[i];
+        if ((i >= cMaxNodeIndicators) && (Status::Compliant == indicator.status))
         {
-            break;
+            continue;
         }
 
-        const auto& indicator = node.indicators[i];
         for (int j = 0; j < depth; ++j)
         {
             result << "\t";
