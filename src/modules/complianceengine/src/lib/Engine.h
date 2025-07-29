@@ -37,7 +37,7 @@ private:
 
 public:
     explicit Engine(std::unique_ptr<ContextInterface> context,
-        std::unique_ptr<PayloadFormatter> payloadFormatter = std::unique_ptr<PayloadFormatter>(new MmiFormatter())) noexcept;
+        std::unique_ptr<PayloadFormatter> payloadFormatter = std::unique_ptr<PayloadFormatter>(new DebugFormatter())) noexcept;
     ~Engine() = default;
     Engine(const Engine&) = delete;
     Engine& operator=(const Engine&) = delete;

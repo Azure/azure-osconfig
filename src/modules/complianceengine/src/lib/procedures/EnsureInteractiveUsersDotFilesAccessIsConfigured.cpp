@@ -119,13 +119,14 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
                 map<string, string> arguments = {{"owner", pwd.pw_name}, {"group", group->gr_name}, {"mask", std::move(mask)}};
                 indicators.Push("AuditEnsureFilePermissionsHelper");
                 auto subResult = AuditEnsureFilePermissionsHelper(path, arguments, indicators, context);
-                indicators.Pop();
                 if (!subResult.HasValue())
                 {
                     OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for file '%s': %s", path.c_str(), subResult.Error().message.c_str());
                     result = subResult.Error();
                     return;
                 }
+                indicators.Back().status = subResult.Value();
+                indicators.Pop();
 
                 if (subResult.Value() == Status::NonCompliant)
                 {
@@ -151,7 +152,7 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
             return result;
         };
 
-        auto result = FileTreeWalk(pwd.pw_dir, ftwCallback, BreakOnNonCompliant::False, context);
+        auto result = FileTreeWalk(pwd.pw_dir, ftwCallback, BreakOnNonCompliant::True, context);
         if (!result.HasValue() || result.Value() == Status::NonCompliant)
         {
             OsConfigLogDebug(context.GetLogHandle(), "Directory validation for user %s id %d returned NonCompliant, but continuing", pwd.pw_name, pwd.pw_uid);
@@ -224,7 +225,6 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
                 map<string, string> arguments = {{"owner", user.pw_name}, {"group", group->gr_name}, {"mask", std::move(mask)}};
                 indicators.Push("RemediateEnsureFilePermissionsHelper");
                 auto subResult = RemediateEnsureFilePermissionsHelper(path, arguments, indicators, context);
-                indicators.Pop();
                 if (!subResult.HasValue())
                 {
                     OsConfigLogError(context.GetLogHandle(), "Failed to remediate permissions for file '%s': %s", path.c_str(),
@@ -232,6 +232,8 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
                     result = subResult.Error();
                     return;
                 }
+                indicators.Back().status = subResult.Value();
+                indicators.Pop();
 
                 if (subResult.Value() == Status::NonCompliant)
                 {

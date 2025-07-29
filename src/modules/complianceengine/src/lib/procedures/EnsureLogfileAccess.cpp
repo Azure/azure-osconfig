@@ -88,15 +88,14 @@ Result<Status> ProcessLogfile(const std::string& path, const std::string& filena
 
     Result<Status> result = remediate ? RemediateEnsureFilePermissionsHelper(fullPath, args, indicators, context) :
                                         AuditEnsureFilePermissionsHelper(fullPath, args, indicators, context);
-
-    indicators.Pop();
-
     if (!result.HasValue())
     {
         OsConfigLogError(context.GetLogHandle(), "Failed to %s permissions for logfile '%s': %s", remediate ? "remediate" : "audit", fullPath.c_str(),
             result.Error().message.c_str());
         return result.Error();
     }
+    indicators.Back().status = result.Value();
+    indicators.Pop();
 
     if (result.Value() != Status::Compliant)
     {

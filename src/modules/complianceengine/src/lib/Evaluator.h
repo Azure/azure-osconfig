@@ -81,12 +81,22 @@ public:
     Result<std::string> Format(const IndicatorsTree& indicators) const override;
 };
 
-class MmiFormatter : public PayloadFormatter
+class DebugFormatter : public PayloadFormatter
 {
     void FormatNode(const IndicatorsTree::Node& node, std::ostringstream& output) const;
 
 public:
-    ~MmiFormatter() override = default;
+    ~DebugFormatter() override = default;
+    Result<std::string> Format(const IndicatorsTree& indicators) const override;
+};
+
+class LastIncomplianceFormatter : public PayloadFormatter
+{
+    void FormatNode(const IndicatorsTree::Node& node, std::ostringstream& output) const;
+
+public:
+    ~LastIncomplianceFormatter() override = default;
+
     Result<std::string> Format(const IndicatorsTree& indicators) const override;
 };
 
