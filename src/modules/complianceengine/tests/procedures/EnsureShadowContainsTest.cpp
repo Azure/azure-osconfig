@@ -147,6 +147,10 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_5)
 
 TEST_F(EnsureShadowContainsTest, InvalidArguments_6)
 {
+    if (0 != getuid())
+    {
+        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
+    }
     map<string, string> args;
     args["field"] = "last_change";
     args["value"] = "42";
@@ -159,6 +163,10 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_6)
 
 TEST_F(EnsureShadowContainsTest, InvalidArguments_7)
 {
+    if (0 != getuid())
+    {
+        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
+    }
     map<string, string> args;
     args["field"] = "username";
     args["value"] = "test";
@@ -171,6 +179,10 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_7)
 
 TEST_F(EnsureShadowContainsTest, InvalidArguments_8)
 {
+    if (0 != getuid())
+    {
+        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
+    }
     map<string, string> args;
     args["field"] = "encryption_method";
     args["value"] = "asdf";
@@ -199,6 +211,10 @@ TEST_F(EnsureShadowContainsTest, InvalidArguments_9)
 
 TEST_F(EnsureShadowContainsTest, SpecificUser_1)
 {
+    if (0 != getuid())
+    {
+        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
+    }
     map<string, string> args;
     args["field"] = "password";
     args["value"] = "test";
@@ -211,6 +227,10 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_1)
 
 TEST_F(EnsureShadowContainsTest, SpecificUser_2)
 {
+    if (0 != getuid())
+    {
+        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
+    }
     map<string, string> args;
     args["field"] = "password";
     args["value"] = "^.*$";
@@ -223,6 +243,10 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_2)
 
 TEST_F(EnsureShadowContainsTest, SpecificUser_3)
 {
+    if (0 != getuid())
+    {
+        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
+    }
     map<string, string> args;
     args["field"] = "password";
     args["value"] = "^.*$";
@@ -236,6 +260,10 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_3)
 
 TEST_F(EnsureShadowContainsTest, SpecificUser_4)
 {
+    if (0 != getuid())
+    {
+        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
+    }
     map<string, string> args;
     args["field"] = "password";
     args["value"] = "^test$";
@@ -250,6 +278,10 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_4)
 
 TEST_F(EnsureShadowContainsTest, SpecificUser_5)
 {
+    if (0 != getuid())
+    {
+        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
+    }
     map<string, string> args;
     args["field"] = "password";
     args["value"] = "^test$";
@@ -263,6 +295,10 @@ TEST_F(EnsureShadowContainsTest, SpecificUser_5)
 
 TEST_F(EnsureShadowContainsTest, SpecificUser_6)
 {
+    if (0 != getuid())
+    {
+        GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
+    }
     map<string, string> args;
     args["field"] = "password";
     args["value"] = "^test$";
