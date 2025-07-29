@@ -110,13 +110,14 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         map<string, string> arguments = {{"filename", pwd.pw_dir}, {"mask", "027"}, {"owner", pwd.pw_name}, {"group", group->gr_name}};
         indicators.Push("EnsureFilePermissions");
         auto subResult = AuditEnsureFilePermissionsHelper(std::string(pwd.pw_dir), std::move(arguments), indicators, context);
-        indicators.Pop();
         if (!subResult.HasValue())
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for home directory '%s' for user '%s': %s", pwd.pw_dir, pwd.pw_name,
                 subResult.Error().message.c_str());
             return subResult;
         }
+        indicators.Back().status = subResult.Value();
+        indicators.Pop();
 
         if (subResult.Value() == Status::NonCompliant)
         {
@@ -188,13 +189,14 @@ REMEDIATE_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         map<string, string> arguments = {{"filename", pwd.pw_dir}, {"mask", "027"}, {"owner", pwd.pw_name}, {"group", group->gr_name}};
         indicators.Push("EnsureFilePermissions");
         auto subResult = RemediateEnsureFilePermissionsHelper(pwd.pw_dir, std::move(arguments), indicators, context);
-        indicators.Pop();
         if (!subResult.HasValue())
         {
             OsConfigLogError(context.GetLogHandle(), "Failed to remediate permissions for home directory '%s' for user '%s': %s", pwd.pw_dir,
                 pwd.pw_name, subResult.Error().message.c_str());
             result = Status::NonCompliant;
         }
+        indicators.Back().status = subResult.Value();
+        indicators.Pop();
     }
     return result;
 }
