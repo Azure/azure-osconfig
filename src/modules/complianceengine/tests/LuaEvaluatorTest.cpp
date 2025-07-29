@@ -508,7 +508,7 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ThrowsErrorOnMissingParameter)
         if success then
             return false, "Expected procedure to throw error for missing parameter"
         else
-            if string.find(message, "Missing 'result' parameter") then
+            if string.find(message, "Missing required 'result' parameter") then
                 return true, "Procedure correctly threw error for missing parameter"
             else
                 return false, "Unexpected error message: " .. message

@@ -58,6 +58,7 @@ add_executable(complianceenginetests
 )
 # for ProcedureMap.h
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../src/lib)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/../src/lib/procedures)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(complianceenginetests
     GTest::gtest

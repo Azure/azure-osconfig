@@ -26,12 +26,12 @@
                 "username_operation": {
                   "type": "string",
                   "description": "A comparison operation for the username parameter",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:(.*(eq|ne|lt|le|gt|ge|match).*)$|((eq|ne|lt|le|gt|ge|match)))"
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((eq|ne|lt|le|gt|ge|match))$|(^(eq|ne|lt|le|gt|ge|match)$))"
                 },
                 "field": {
                   "type": "string",
                   "description": "The /etc/shadow entry field to match against",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:(.*(password|last_change|min_age|max_age|warn_period|inactivity_period|expiration_date|encryption_method).*)$|((password|last_change|min_age|max_age|warn_period|inactivity_period|expiration_date|encryption_method)))"
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((password|last_change|min_age|max_age|warn_period|inactivity_period|expiration_date|encryption_method))$|(^(password|last_change|min_age|max_age|warn_period|inactivity_period|expiration_date|encryption_method)$))"
                 },
                 "value": {
                   "type": "string",
@@ -40,12 +40,11 @@
                 "operation": {
                   "type": "string",
                   "description": "A comparison operation for the value parameter",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:(.*(eq|ne|lt|le|gt|ge|match).*)$|((eq|ne|lt|le|gt|ge|match)))"
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((eq|ne|lt|le|gt|ge|match))$|(^(eq|ne|lt|le|gt|ge|match)$))"
                 },
                 "test_etcShadowPath": {
                   "type": "string",
-                  "description": "Path to the /etc/shadow file to test against",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:(.*/etc/shadow.*)$|(/etc/shadow))"
+                  "description": "Path to the /etc/shadow file to test against"
                 }
               }
             }

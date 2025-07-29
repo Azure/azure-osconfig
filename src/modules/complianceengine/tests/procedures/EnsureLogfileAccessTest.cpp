@@ -3,8 +3,8 @@
 
 #include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureLogfileAccess.h>
 #include <dirent.h>
 #include <fstream>
 #include <grp.h>
@@ -17,6 +17,7 @@
 #include <vector>
 
 using ComplianceEngine::AuditEnsureLogfileAccess;
+using ComplianceEngine::EnsureLogfileAccessParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::RemediateEnsureLogfileAccess;
@@ -117,10 +118,10 @@ protected:
 // Test audit with missing directory
 TEST_F(EnsureLogfileAccessTest, AuditMissingDirectory)
 {
-    std::map<std::string, std::string> args;
-    args["path"] = "/nonexistent/log/directory";
+    EnsureLogfileAccessParams params;
+    params.path = "/nonexistent/log/directory";
 
-    auto result = AuditEnsureLogfileAccess(args, indicators, mContext);
+    auto result = AuditEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant); // Missing directory should be compliant
 }
@@ -128,10 +129,10 @@ TEST_F(EnsureLogfileAccessTest, AuditMissingDirectory)
 // Test audit with default path (using test directory)
 TEST_F(EnsureLogfileAccessTest, AuditEmptyDirectory)
 {
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = AuditEnsureLogfileAccess(args, indicators, mContext);
+    auto result = AuditEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -148,10 +149,10 @@ TEST_F(EnsureLogfileAccessTest, AuditCorrectPermissions)
     CreateLogFile("wtmp", "root", "utmp", 0664);      // matches wtmp pattern
     CreateLogFile("lastlog", "root", "utmp", 0664);   // matches lastlog pattern
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = AuditEnsureLogfileAccess(args, indicators, mContext);
+    auto result = AuditEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -162,10 +163,10 @@ TEST_F(EnsureLogfileAccessTest, AuditIncorrectPermissions)
     // Create file with wrong mask
     CreateLogFile("auth.log", "bin", "bin", 0777); // Wrong owner, group, and mask
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = AuditEnsureLogfileAccess(args, indicators, mContext);
+    auto result = AuditEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -181,10 +182,10 @@ TEST_F(EnsureLogfileAccessTest, AuditMixedPermissions)
     CreateLogFile("auth.log", "bin", "bin", 0777);
     CreateLogFile("secure", "bin", "bin", 0666);
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = AuditEnsureLogfileAccess(args, indicators, mContext);
+    auto result = AuditEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -195,10 +196,10 @@ TEST_F(EnsureLogfileAccessTest, AuditIgnoresDirectories)
     CreateSubdir("subdir");
     CreateLogFile("syslog", "syslog", "adm", 0640);
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = AuditEnsureLogfileAccess(args, indicators, mContext);
+    auto result = AuditEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -209,10 +210,10 @@ TEST_F(EnsureLogfileAccessTest, AuditIgnoresSymlinks)
     CreateLogFile("real.log", "syslog", "adm", 0640);
     CreateSymlink("link.log", "real.log");
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = AuditEnsureLogfileAccess(args, indicators, mContext);
+    auto result = AuditEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -228,10 +229,10 @@ TEST_F(EnsureLogfileAccessTest, AuditPatternMatching)
     CreateLogFile("journal.journal", "root", "systemd-journal", 0640); // Should match *.journal pattern
     CreateLogFile("random_file", "syslog", "adm", 0640);               // Should match default pattern
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = AuditEnsureLogfileAccess(args, indicators, mContext);
+    auto result = AuditEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -246,10 +247,10 @@ TEST_F(EnsureLogfileAccessTest, AuditRecursiveDirectories)
     CreateSubdir("mail");
     CreateLogFile("mail/mail.log", "syslog", "adm", 0640);
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = AuditEnsureLogfileAccess(args, indicators, mContext);
+    auto result = AuditEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -260,10 +261,10 @@ TEST_F(EnsureLogfileAccessTest, RemediateIncorrectPermissions)
     // Create file with wrong mask
     CreateLogFile("auth.log", "bin", "bin", 0777);
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = RemediateEnsureLogfileAccess(args, indicators, mContext);
+    auto result = RemediateEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 
@@ -283,10 +284,10 @@ TEST_F(EnsureLogfileAccessTest, RemediateIncorrectPermissions)
 // Test remediation with missing directory
 TEST_F(EnsureLogfileAccessTest, RemediateMissingDirectory)
 {
-    std::map<std::string, std::string> args;
-    args["path"] = "/nonexistent/log/directory";
+    EnsureLogfileAccessParams params;
+    params.path = "/nonexistent/log/directory";
 
-    auto result = RemediateEnsureLogfileAccess(args, indicators, mContext);
+    auto result = RemediateEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant); // Missing directory should be compliant
 }
@@ -296,10 +297,10 @@ TEST_F(EnsureLogfileAccessTest, RemediateAlreadyCorrect)
 {
     CreateLogFile("syslog", "syslog", "adm", 0640);
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = RemediateEnsureLogfileAccess(args, indicators, mContext);
+    auto result = RemediateEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 
@@ -320,10 +321,10 @@ TEST_F(EnsureLogfileAccessTest, RemediateMultipleFiles)
     CreateLogFile("syslog", "bin", "bin", 0644);
     CreateLogFile("test.log", "bin", "bin", 0755);
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = RemediateEnsureLogfileAccess(args, indicators, mContext);
+    auto result = RemediateEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 
@@ -345,10 +346,10 @@ TEST_F(EnsureLogfileAccessTest, RemediateIgnoresSpecialFiles)
     CreateSymlink("link.log", "/tmp/target");
     CreateLogFile("regular.log", "bin", "bin", 0777); // This should be fixed
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = RemediateEnsureLogfileAccess(args, indicators, mContext);
+    auto result = RemediateEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 
@@ -376,13 +377,13 @@ TEST_F(EnsureLogfileAccessTest, RemediateIgnoresSpecialFiles)
 // Test default path behavior
 TEST_F(EnsureLogfileAccessTest, DefaultPath)
 {
-    std::map<std::string, std::string> args; // No path specified, should use /var/log
+    EnsureLogfileAccessParams params; // No path specified, should use /var/log
 
     // Since we can't create files in /var/log in tests, this should just not crash
-    auto auditResult = AuditEnsureLogfileAccess(args, indicators, mContext);
+    auto auditResult = AuditEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(auditResult.HasValue()); // Should handle missing /var/log gracefully
 
-    auto remediateResult = RemediateEnsureLogfileAccess(args, indicators, mContext);
+    auto remediateResult = RemediateEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(remediateResult.HasValue()); // Should handle missing /var/log gracefully
 }
 
@@ -394,10 +395,10 @@ TEST_F(EnsureLogfileAccessTest, SpecificPatternEdgeCases)
     CreateLogFile("SECURE", "syslog", "adm", 0640);
     CreateLogFile("TEST.LOG", "syslog", "adm", 0640);
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = AuditEnsureLogfileAccess(args, indicators, mContext);
+    auto result = AuditEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -410,10 +411,10 @@ TEST_F(EnsureLogfileAccessTest, SpecialSystemLogFiles)
     CreateLogFile("lastlog", "root", "utmp", 0664); // root:root|utmp:664
     CreateLogFile("faillog", "root", "adm", 0640);  // root:adm:640 (uses default pattern)
 
-    std::map<std::string, std::string> args;
-    args["path"] = testDir;
+    EnsureLogfileAccessParams params;
+    params.path = testDir;
 
-    auto result = AuditEnsureLogfileAccess(args, indicators, mContext);
+    auto result = AuditEnsureLogfileAccess(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }

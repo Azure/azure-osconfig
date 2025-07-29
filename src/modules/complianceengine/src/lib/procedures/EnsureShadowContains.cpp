@@ -1,4 +1,5 @@
 #include <CommonUtils.h>
+#include <EnsureShadowContains.h>
 #include <Evaluator.h>
 #include <PasswordEntriesIterator.h>
 #include <Regex.h>
@@ -10,35 +11,12 @@ using std::map;
 using std::string;
 using std::vector;
 
+namespace ComplianceEngine
+{
 namespace
 {
 using ComplianceEngine::Error;
 using ComplianceEngine::Result;
-
-enum class Field
-{
-    Username,
-    Password,
-    LastChange,
-    MinAge,
-    MaxAge,
-    WarnPeriod,
-    InactivityPeriod,
-    ExpirationDate,
-    Reserved,
-    EncryptionMethod,
-};
-
-enum class Operation
-{
-    Equal,
-    NotEqual,
-    LessThan,
-    LessOrEqual,
-    GreaterThan,
-    GreaterOrEqual,
-    PatternMatch,
-};
 
 enum PasswordEncryptionMethod
 {
@@ -52,19 +30,6 @@ enum PasswordEncryptionMethod
     None, // Used for entries without a password
 };
 
-static const map<string, Field> fieldMap = {
-    {"username", Field::Username},
-    {"password", Field::Password},
-    {"last_change", Field::LastChange},
-    {"min_age", Field::MinAge},
-    {"max_age", Field::MaxAge},
-    {"warn_period", Field::WarnPeriod},
-    {"inactivity_period", Field::InactivityPeriod},
-    {"expiration_date", Field::ExpirationDate},
-    {"flag", Field::Reserved},
-    {"encryption_method", Field::EncryptionMethod},
-};
-
 static const map<Field, string> fieldNamesMap = {
     {Field::Username, "login name"},
     {Field::Password, "encrypted password"},
@@ -76,16 +41,6 @@ static const map<Field, string> fieldNamesMap = {
     {Field::ExpirationDate, "account expiration date"},
     {Field::Reserved, "reserved"},
     {Field::EncryptionMethod, "password encryption method"},
-};
-
-static const map<string, Operation> comparisonOperationMap = {
-    {"eq", Operation::Equal},
-    {"ne", Operation::NotEqual},
-    {"lt", Operation::LessThan},
-    {"le", Operation::LessOrEqual},
-    {"gt", Operation::GreaterThan},
-    {"ge", Operation::GreaterOrEqual},
-    {"match", Operation::PatternMatch},
 };
 
 // Follows the OVAL specification, adds YesCrypt for future reference
@@ -116,32 +71,10 @@ static const map<string, PasswordEncryptionMethod> encryptionMethodMap = {
     {"y", PasswordEncryptionMethod::YesCrypt},
 };
 
-Result<Field> ParseFieldName(const string& field)
-{
-    auto it = fieldMap.find(field);
-    if (it == fieldMap.end())
-    {
-        return Error("Invalid field name: " + field, EINVAL);
-    }
-
-    return it->second;
-}
-
 const string& PrettyFieldName(Field field)
 {
     assert(fieldNamesMap.find(field) != fieldNamesMap.end());
     return fieldNamesMap.at(field);
-}
-
-Result<Operation> ParseOperation(const string& operation)
-{
-    auto it = comparisonOperationMap.find(operation);
-    if (it == comparisonOperationMap.end())
-    {
-        return Error("Invalid operation: '" + operation + "'", EINVAL);
-    }
-
-    return std::move(it->second);
 }
 
 Result<int> AsInt(const string& value)
@@ -160,11 +93,11 @@ Result<int> AsInt(const string& value)
     }
 }
 
-Result<bool> StringComparison(const string& lhs, const string& rhs, Operation operation)
+Result<bool> StringComparison(const string& lhs, const string& rhs, ComparisonOperation operation)
 {
     switch (operation)
     {
-        case Operation::PatternMatch:
+        case ComparisonOperation::PatternMatch:
             try
             {
                 OsConfigLogDebug(nullptr, "Performing regex match: '%s' against '%s'", lhs.c_str(), rhs.c_str());
@@ -175,17 +108,17 @@ Result<bool> StringComparison(const string& lhs, const string& rhs, Operation op
                 return Error("Pattern match failed: " + string(e.what()), EINVAL);
             }
             break;
-        case Operation::Equal:
+        case ComparisonOperation::Equal:
             return lhs == rhs;
-        case Operation::NotEqual:
+        case ComparisonOperation::NotEqual:
             return lhs != rhs;
-        case Operation::LessThan:
+        case ComparisonOperation::LessThan:
             return lhs < rhs;
-        case Operation::LessOrEqual:
+        case ComparisonOperation::LessOrEqual:
             return lhs <= rhs;
-        case Operation::GreaterThan:
+        case ComparisonOperation::GreaterThan:
             return lhs > rhs;
-        case Operation::GreaterOrEqual:
+        case ComparisonOperation::GreaterOrEqual:
             return lhs >= rhs;
         default:
             break;
@@ -194,21 +127,21 @@ Result<bool> StringComparison(const string& lhs, const string& rhs, Operation op
     return ComplianceEngine::Error("Unsupported comparison operation for a string type", EINVAL);
 }
 
-Result<bool> IntegerComparison(const int lhs, const int rhs, Operation operation)
+Result<bool> IntegerComparison(const int lhs, const int rhs, ComparisonOperation operation)
 {
     switch (operation)
     {
-        case Operation::Equal:
+        case ComparisonOperation::Equal:
             return lhs == rhs;
-        case Operation::NotEqual:
+        case ComparisonOperation::NotEqual:
             return lhs != rhs;
-        case Operation::LessThan:
+        case ComparisonOperation::LessThan:
             return lhs < rhs;
-        case Operation::LessOrEqual:
+        case ComparisonOperation::LessOrEqual:
             return lhs <= rhs;
-        case Operation::GreaterThan:
+        case ComparisonOperation::GreaterThan:
             return lhs > rhs;
-        case Operation::GreaterOrEqual:
+        case ComparisonOperation::GreaterOrEqual:
             return lhs >= rhs;
         default:
             break;
@@ -276,7 +209,7 @@ Result<PasswordEncryptionMethod> ParseEncryptionMethod(const spwd& shadowEntry)
     return it->second;
 }
 
-Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& value, Operation operation)
+Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& value, ComparisonOperation operation)
 {
     switch (field)
     {
@@ -285,7 +218,7 @@ Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& valu
         case Field::Password:
             return StringComparison(value, entry.sp_pwdp, operation);
         case Field::EncryptionMethod: {
-            if (operation != Operation::Equal && operation != Operation::NotEqual)
+            if (operation != ComparisonOperation::Equal && operation != ComparisonOperation::NotEqual)
             {
                 return Error("Unsupported comparison operation for encryption method", EINVAL);
             }
@@ -302,7 +235,7 @@ Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& valu
                 return entryMethod.Error();
             }
 
-            if (operation == Operation::Equal)
+            if (operation == ComparisonOperation::Equal)
             {
                 return entryMethod.Value() == suppliedMethod.Value();
             }
@@ -342,72 +275,11 @@ Result<bool> CompareUserEntry(const spwd& entry, Field field, const string& valu
 }
 } // anonymous namespace
 
-namespace ComplianceEngine
+Result<Status> AuditEnsureShadowContains(const EnsureShadowContainsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames against",
-    "username_operation:A comparison operation for the username parameter::(eq|ne|lt|le|gt|ge|match)",
-    "field:The /etc/shadow entry field to match "
-    "against:M:(password|last_change|min_age|max_age|warn_period|inactivity_period|expiration_date|encryption_method)",
-    "value:A pattern or value to match against the specified field:M",
-    "operation:A comparison operation for the value parameter:M:(eq|ne|lt|le|gt|ge|match)",
-    "test_etcShadowPath:Path to the /etc/shadow file to test against::/etc/shadow")
-{
-    Optional<string> username;
-    auto it = args.find("username");
-    if (it != args.end())
-    {
-        username = std::move(it->second);
-    }
-
-    auto usernameOperation = Operation::Equal;
-    it = args.find("username_operation");
-    if (it != args.end())
-    {
-        auto operation = ParseOperation(it->second);
-        if (!operation.HasValue())
-        {
-            return operation.Error();
-        }
-        usernameOperation = operation.Value();
-    }
-
-    it = args.find("field");
-    if (it == args.end())
-    {
-        return Error("Missing 'field' parameter", EINVAL);
-    }
-    auto field = ParseFieldName(it->second);
-    if (!field.HasValue())
-    {
-        return field.Error();
-    }
-
-    it = args.find("value");
-    if (it == args.end())
-    {
-        return Error("Missing 'value' parameter", EINVAL);
-    }
-    auto value = std::move(it->second);
-
-    it = args.find("operation");
-    if (it == args.end())
-    {
-        return Error("Missing 'operation' parameter", EINVAL);
-    }
-    auto operation = ParseOperation(it->second);
-    if (!operation.HasValue())
-    {
-        return operation.Error();
-    }
-
-    auto etcShadowPath = string("/etc/shadow");
-    it = args.find("test_etcShadowPath");
-    if (it != args.end())
-    {
-        etcShadowPath = std::move(it->second);
-    }
-
-    auto range = PasswordEntryRange::Make(etcShadowPath, context.GetLogHandle());
+    assert(params.test_etcShadowPath.HasValue());
+    assert(params.username_operation.HasValue());
+    auto range = PasswordEntryRange::Make(params.test_etcShadowPath.Value(), context.GetLogHandle());
     if (!range.HasValue())
     {
         return range.Error();
@@ -415,10 +287,10 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
 
     for (const auto& entry : range.Value())
     {
-        if (username.HasValue())
+        if (params.username.HasValue())
         {
-            OsConfigLogInfo(context.GetLogHandle(), "Checking user '%s' for username match with '%s'.", entry.sp_namp, username.Value().c_str());
-            auto result = StringComparison(username.Value(), entry.sp_namp, usernameOperation);
+            OsConfigLogInfo(context.GetLogHandle(), "Checking user '%s' for username match with '%s'.", entry.sp_namp, params.username.Value().c_str());
+            auto result = StringComparison(params.username.Value(), entry.sp_namp, params.username_operation.Value());
             if (!result.HasValue())
             {
                 return result.Error();
@@ -429,26 +301,24 @@ AUDIT_FN(EnsureShadowContains, "username:A pattern or value to match usernames a
             }
         }
 
-        assert(field.HasValue());
-        assert(operation.HasValue());
         OsConfigLogInfo(context.GetLogHandle(), "Checking user '%s' for %s field with value '%s' and operation '%d'.", entry.sp_namp,
-            PrettyFieldName(field.Value()).c_str(), value.c_str(), (int)operation.Value());
-        auto result = CompareUserEntry(entry, field.Value(), value, operation.Value());
+            PrettyFieldName(params.field).c_str(), params.value.c_str(), (int)params.operation);
+        auto result = CompareUserEntry(entry, params.field, params.value, params.operation);
         if (!result.HasValue())
         {
             return result.Error();
         }
         if (!result.Value())
         {
-            return indicators.NonCompliant(PrettyFieldName(field.Value()) + " does not match expected value for user '" + entry.sp_namp + "'");
+            return indicators.NonCompliant(PrettyFieldName(params.field) + " does not match expected value for user '" + entry.sp_namp + "'");
         }
 
-        if (username.HasValue())
+        if (params.username.HasValue())
         {
-            indicators.Compliant(PrettyFieldName(field.Value()) + " matches expected value for user '" + entry.sp_namp + "'");
+            indicators.Compliant(PrettyFieldName(params.field) + " matches expected value for user '" + entry.sp_namp + "'");
         }
     }
 
-    return indicators.Compliant(PrettyFieldName(field.Value()) + " matches expected value for all tested users");
+    return indicators.Compliant(PrettyFieldName(params.field) + " matches expected value for all tested users");
 }
 } // namespace ComplianceEngine

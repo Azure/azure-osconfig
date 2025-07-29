@@ -2,10 +2,9 @@
 // Licensed under the MIT License.
 
 #include "CommonUtils.h"
-#include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureAccountsWithoutShellAreLocked.h>
 #include <Optional.h>
 #include <fstream>
 
@@ -63,7 +62,7 @@ protected:
 TEST_F(EnsureAccountsWithoutShellAreLockedTest, NoEtcShadowFile)
 {
     mContext.SetSpecialFilePath("/etc/shadow", "/tmp/somenonexistentfilename");
-    auto result = AuditEnsureAccountsWithoutShellAreLocked({}, mIndicators, mContext);
+    auto result = AuditEnsureAccountsWithoutShellAreLocked(mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
 }
 
@@ -71,7 +70,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, NoEtcPasswdFile)
 {
     mContext.SetSpecialFilePath("/etc/shadow", "/tmp/somenonexistentfilename");
     mContext.SetSpecialFilePath("/etc/passwd", "/tmp/somenonexistentfilename");
-    auto result = AuditEnsureAccountsWithoutShellAreLocked({}, mIndicators, mContext);
+    auto result = AuditEnsureAccountsWithoutShellAreLocked(mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
 }
 
@@ -79,7 +78,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, ValidShell_RegularPassword)
 {
     auto filename = CreateTestShadowFile("testuser", "$y$");
     mContext.SetSpecialFilePath("/etc/shadow", filename);
-    auto result = AuditEnsureAccountsWithoutShellAreLocked({}, mIndicators, mContext);
+    auto result = AuditEnsureAccountsWithoutShellAreLocked(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -90,7 +89,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, ValidShell_NoPassword)
     mContext.SetSpecialFilePath("/etc/passwd", filename);
     filename = CreateTestShadowFile("testuser", "");
     mContext.SetSpecialFilePath("/etc/shadow", filename);
-    auto result = AuditEnsureAccountsWithoutShellAreLocked({}, mIndicators, mContext);
+    auto result = AuditEnsureAccountsWithoutShellAreLocked(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -99,7 +98,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, ValidShell_LockedUser_1)
 {
     auto filename = CreateTestShadowFile("testuser", "!");
     mContext.SetSpecialFilePath("/etc/shadow", filename);
-    auto result = AuditEnsureAccountsWithoutShellAreLocked({}, mIndicators, mContext);
+    auto result = AuditEnsureAccountsWithoutShellAreLocked(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -108,7 +107,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, ValidShell_LockedUser_2)
 {
     auto filename = CreateTestShadowFile("testuser", "*");
     mContext.SetSpecialFilePath("/etc/shadow", filename);
-    auto result = AuditEnsureAccountsWithoutShellAreLocked({}, mIndicators, mContext);
+    auto result = AuditEnsureAccountsWithoutShellAreLocked(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -119,7 +118,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, InvalidShell_RegularPassword)
     mContext.SetSpecialFilePath("/etc/shadow", filename);
     filename = CreateTestPasswdFile("testuser", "$y$", "/bin/x");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureAccountsWithoutShellAreLocked({}, mIndicators, mContext);
+    auto result = AuditEnsureAccountsWithoutShellAreLocked(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 
@@ -135,7 +134,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, InvalidShell_NoPassword)
     mContext.SetSpecialFilePath("/etc/shadow", filename);
     filename = CreateTestPasswdFile("testuser", "$y$", "/bin/x");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureAccountsWithoutShellAreLocked({}, mIndicators, mContext);
+    auto result = AuditEnsureAccountsWithoutShellAreLocked(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 
@@ -151,7 +150,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, InvalidShell_LockedUser_1)
     mContext.SetSpecialFilePath("/etc/shadow", filename);
     filename = CreateTestPasswdFile("testuser", "$y$", "/bin/x");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureAccountsWithoutShellAreLocked({}, mIndicators, mContext);
+    auto result = AuditEnsureAccountsWithoutShellAreLocked(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 
@@ -168,7 +167,7 @@ TEST_F(EnsureAccountsWithoutShellAreLockedTest, InvalidShell_LockedUser_2)
     mContext.SetSpecialFilePath("/etc/shadow", filename);
     filename = CreateTestPasswdFile("testuser", "$y$", "/bin/x");
     mContext.SetSpecialFilePath("/etc/passwd", filename);
-    auto result = AuditEnsureAccountsWithoutShellAreLocked({}, mIndicators, mContext);
+    auto result = AuditEnsureAccountsWithoutShellAreLocked(mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 
