@@ -10,6 +10,7 @@
 #include "MmiResults.h"
 #include "Result.h"
 
+#include <Bindings.h>
 #include <Optional.h>
 #include <map>
 #include <sstream>
@@ -33,7 +34,31 @@ struct json_value_t;
 // "myOtherParameter:Another parameter, mandatory:M"
 // "yetanotherparameter:This one is validated::^[0-9]+$"
 
-#define AUDIT_FN(fn_name, parameters...)                                                                                                               \
+// Intented to replace the AUDIT_FN, but cannot be replaced partially due to codegen
+#define AUDIT_FN2(fn_name, ...)                                                                                                                                           \
+    namespace                                                                                                                                                             \
+    {                                                                                                                                                                     \
+    const std::set<std::string>& GetFieldList()                                                                                                                           \
+    {                                                                                                                                                                     \
+        static const std::set<std::string> sList = ExtractFieldNames({__VA_ARGS__});                                                                                      \
+        return sList;                                                                                                                                                     \
+    }                                                                                                                                                                     \
+    }                                                                                                                                                                     \
+    ::ComplianceEngine::Result<::ComplianceEngine::Status> Audit##fn_name_impl(const Audit##fn_name##Params& params, IndicatorsTree& indicators,                          \
+        ContextInterface& context);                                                                                                                                       \
+    ::ComplianceEngine::Result<::ComplianceEngine::Status> Audit##fn_name(std::map<std::string, std::string> args, IndicatorsTree& indicators, ContextInterface& context) \
+    {                                                                                                                                                                     \
+        auto __params = ParseArguments<Audit##fn_name##Params>(args, GetFieldList());                                                                                     \
+        if (!__params.HasValue())                                                                                                                                         \
+        {                                                                                                                                                                 \
+            return __params.Error();                                                                                                                                      \
+        }                                                                                                                                                                 \
+        return Audit##fn_name_impl(std::move(__params).Value(), indicators, context);                                                                                     \
+    }                                                                                                                                                                     \
+    ::ComplianceEngine::Result<::ComplianceEngine::Status> Audit##fn_name_impl(const Audit##fn_name##Params& params, IndicatorsTree& indicators,                          \
+        ContextInterface& context)
+
+#define AUDIT_FN(fn_name, ...)                                                                                                                         \
     ::ComplianceEngine::Result<::ComplianceEngine::Status> Audit##fn_name(std::map<std::string, std::string> args, IndicatorsTree& indicators, ContextInterface& context)
 
 #define REMEDIATE_FN(fn_name, parameters...)                                                                                                           \
@@ -150,6 +175,8 @@ private:
     // List of indicators which determine the final state of the evaluation
     IndicatorsTree mIndicators;
 };
+
+std::set<std::string> ExtractFieldNames(const std::set<std::string>& descriptors);
 } // namespace ComplianceEngine
 
 #endif // COMPLIANCEENGINE_EVALUATOR_H

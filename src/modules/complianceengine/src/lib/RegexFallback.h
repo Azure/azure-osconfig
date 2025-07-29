@@ -101,16 +101,43 @@ class Regex
 
 public:
     Regex() = default;
-    Regex(const Regex&) = delete;
-    Regex(Regex&&) noexcept = default;
-    Regex& operator=(Regex&&) noexcept = default;
+    Regex(const Regex& other)
+        : Regex(other.pattern, other.options)
+    {
+    }
+    Regex(Regex&& other) noexcept
+        : pattern(std::move(other.pattern)),
+          options(other.options),
+          preg(std::move(other.preg))
+    {
+    }
+    Regex& operator=(const Regex& other)
+    {
+        *this = Regex(other.pattern, other.options);
+        return *this;
+    }
+    Regex& operator=(Regex&& other) noexcept
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        pattern = std::move(other.pattern);
+        options = other.options;
+        preg = std::move(other.preg);
+        return *this;
+    }
+
     Regex(const std::string& r, std::regex_constants::syntax_option_type options = std::regex_constants::extended)
+        : pattern(r),
+          options(options)
     {
         preg = std::unique_ptr<regex_t>(new regex_t);
         std::string newR;
-        newR.reserve(r.size() + 1);
+        newR.reserve(pattern.size() + 1);
         bool escapeNext = false;
-        for (const char& c : r)
+        for (const char& c : pattern)
         {
             if (escapeNext)
             {
@@ -163,6 +190,8 @@ public:
             regfree(preg.get());
         }
     }
+    std::string pattern;
+    std::regex_constants::syntax_option_type options;
     std::unique_ptr<regex_t> preg;
 };
 

@@ -602,4 +602,23 @@ Result<std::string> LastIncomplianceFormatter::Format(const IndicatorsTree& indi
     return result.str();
 }
 
+std::set<std::string> ExtractFieldNames(const std::set<std::string>& descriptors)
+{
+    std::set<std::string> result;
+    for (auto&& descriptor : descriptors)
+    {
+        auto it = descriptor.find(':');
+        if (it != std::string::npos)
+        {
+            result.insert(descriptor.substr(0, it));
+        }
+        else
+        {
+            result.insert(std::move(descriptor));
+        }
+    }
+
+    return result;
+}
+
 } // namespace ComplianceEngine
