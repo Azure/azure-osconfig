@@ -13,31 +13,38 @@ namespace ComplianceEngine
 template <typename T>
 class Optional
 {
-    std::unique_ptr<T> mValue;
+    char mBuffer[sizeof(T)];
+    T* mValue = nullptr;
 
 public:
     Optional() = default;
-    Optional(T value)
+    Optional(T mValue)
+        : mValue(new (mBuffer) T(std::move(mValue)))
     {
-        mValue.reset(new T(std::move(value)));
     }
-    ~Optional() = default;
+
+    ~Optional()
+    {
+        Reset();
+    }
 
     Optional(const Optional& other)
     {
-        if (other.mValue != nullptr)
+        Reset();
+        if (nullptr != other.mValue)
         {
-            mValue.reset(new T(*other.mValue));
+            mValue = new (mBuffer) T(*other.mValue);
         }
         else
         {
-            mValue.reset();
+            mValue = nullptr;
         }
     }
 
     Optional(Optional&& other) noexcept
-        : mValue(std::move(other.mValue))
+        : mValue(other.mValue)
     {
+        other.mValue = nullptr;
     }
 
     Optional& operator=(const Optional& other)
@@ -47,13 +54,14 @@ public:
             return *this;
         }
 
-        if (other.mValue != nullptr)
+        Reset();
+        if (nullptr != other.mValue)
         {
-            mValue.reset(new T(*other.mValue));
+            mValue = new (mBuffer) T(*other.mValue);
         }
         else
         {
-            mValue.reset();
+            mValue = nullptr;
         }
 
         return *this;
@@ -61,14 +69,8 @@ public:
 
     Optional& operator=(T value)
     {
-        if (mValue != nullptr)
-        {
-            *mValue = std::move(value);
-        }
-        else
-        {
-            mValue.reset(new T(std::move(value)));
-        }
+        Reset();
+        mValue = new (mBuffer) T(std::move(value));
         return *this;
     }
 
@@ -79,7 +81,9 @@ public:
             return *this;
         }
 
-        mValue = std::move(other.mValue);
+        Reset();
+        mValue = other.mValue;
+        other.mValue = nullptr;
         return *this;
     }
 
@@ -90,7 +94,7 @@ public:
 
     T ValueOr(T default_value) const noexcept(NoexceptCopyable<T>())
     {
-        if (mValue == nullptr)
+        if (nullptr == mValue)
         {
             return default_value;
         }
@@ -115,12 +119,12 @@ public:
 
     const T* operator->() const&
     {
-        return mValue.get();
+        return mValue;
     }
 
     T* operator->() &
     {
-        return mValue.get();
+        return mValue;
     }
 
     operator bool() const noexcept
@@ -130,7 +134,11 @@ public:
 
     void Reset()
     {
-        mValue.reset();
+        if (nullptr != mValue)
+        {
+            mValue->~T();
+        }
+        mValue = nullptr;
     }
 };
 } // namespace ComplianceEngine
