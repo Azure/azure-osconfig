@@ -13,13 +13,13 @@ namespace ComplianceEngine
 template <typename T>
 class Optional
 {
-    char mBuffer[sizeof(T)];
+    alignas(T) char mBuffer[sizeof(T)];
     T* mValue = nullptr;
 
 public:
     Optional() = default;
-    Optional(T mValue)
-        : mValue(new (mBuffer) T(std::move(mValue)))
+    Optional(T value)
+        : mValue(new (mBuffer) T(std::move(value)))
     {
     }
 
@@ -41,10 +41,10 @@ public:
         }
     }
 
-    Optional(Optional&& other) noexcept
+    Optional(Optional&& other) noexcept(NoexceptMovable<T>())
         : mValue(other.mValue)
     {
-        other.mValue = nullptr;
+        other.Reset();
     }
 
     Optional& operator=(const Optional& other)
@@ -74,7 +74,7 @@ public:
         return *this;
     }
 
-    Optional& operator=(Optional&& other) noexcept
+    Optional& operator=(Optional&& other) noexcept(NoexceptMovable<T>())
     {
         if (this == &other)
         {
@@ -83,7 +83,7 @@ public:
 
         Reset();
         mValue = other.mValue;
-        other.mValue = nullptr;
+        other.Reset();
         return *this;
     }
 
