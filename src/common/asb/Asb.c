@@ -1810,7 +1810,7 @@ static char* AuditEnsureAuditdServiceIsRunning(OsConfigLogHandle log)
     bool auditdActive = CheckDaemonActive(g_auditd, &reason, log);
     bool auomsActive = CheckDaemonNotActive(g_auoms, &reason, log);
 
-    if (auditActive && auomsActive)
+    if (auditdActive && auomsActive)
     {
         FREE_MEMORY(reason);
         reason = FormatAllocateString("'%s' is active and collides with '%s', %s", g_auoms, g_auditd, g_remediationIsNotPossible);
