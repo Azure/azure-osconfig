@@ -154,7 +154,8 @@ struct Bindings<T, Arg1, Args...>
 
     Optional<Error> ParseArguments(T& result, const std::map<std::string, std::string>& args, std::set<std::string>::const_iterator field) const
     {
-        std::cerr << "[" << __func__ << ":" << __LINE__ << "] " << std::endl;
+        std::cerr << "[" << __func__ << ":" << __LINE__ << "] "
+                  << "field: '" << *field << "'" << std::endl;
         auto error = ParseValue(args, *field, result.*member);
         if (error.HasValue())
         {
@@ -181,14 +182,21 @@ struct Bindings<T, Arg1, Args...>
 template <typename T, typename... Args>
 Result<T> ParseArguments(const std::map<std::string, std::string>& args, const std::set<std::string>& fields)
 {
-    static_assert(HasBindings<T>::value, "The parameters object must provide a GetBinding() static method");
+    static_assert(std::is_default_constructible<T>::value, "The parameters structure must be default constructible");
+    static_assert(HasBindings<T>::value, "The parameters structure must provide a GetBinding() static method");
 
+    // Static as the bindings are immutable and we don't need to recreate them all the time
     static const auto bindings = T::GetBindings();
+
+    // Number of fields must match the number of available bindings
+    // If this is generated, then a simple C assert should be used,
+    // otherwise it'll be dead code.
     if (fields.size() != bindings.Size())
     {
         return Error("Fileds list size mismatch: " + std::to_string(fields.size()) + ", " + std::to_string(sizeof...(Args)), EINVAL);
     }
 
+    // Find arguments that are unsupported
     for (const auto& arg : args)
     {
         if (fields.end() == fields.find(arg.first))
@@ -197,7 +205,9 @@ Result<T> ParseArguments(const std::map<std::string, std::string>& args, const s
         }
     }
 
+    // T must be default constructible for this feature to work
     T result;
+    // Recursively consume arguments
     auto error = bindings.ParseArguments(result, args, fields.cbegin());
     if (error.HasValue())
     {
