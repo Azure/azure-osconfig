@@ -630,7 +630,7 @@ static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
         if (0 == strcmp(bannerPath, none))
         {
             OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' found in SSH Server response set to '%s', which means no banner is set", banner, bannerPath);
-            OsConfigCaptureReason(reason, "'%s' is set to '%' in SSH Server response, which means no batter is set", banner, bannerPath);
+            OsConfigCaptureReason(reason, "'%s' is set to '%' in SSH Server response, which means no banner is set", banner, bannerPath);
             status = ENOENT;
         }
         else
