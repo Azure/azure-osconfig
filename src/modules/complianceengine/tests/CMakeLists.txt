@@ -39,6 +39,8 @@ add_executable(complianceenginetests
     Base64Test.cpp
     CommonContextTest.cpp
     ComplianceEngineTest.cpp
+    DirectoryIterationTest.cpp
+    DirectoryIterationIntegrationTest.cpp
     EngineTest.cpp
     EvaluatorTest.cpp
     NetworkToolsTest.cpp
