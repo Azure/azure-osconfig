@@ -1815,7 +1815,7 @@ static char* AuditEnsureAuditdServiceIsRunning(OsConfigLogHandle log)
         FREE_MEMORY(reason);
         reason = FormatAllocateString("'%s' is active and collides with '%s', %s", g_auoms, g_auditd, g_remediationIsNotPossible);
     }
-    
+
     return reason;
 }
 
