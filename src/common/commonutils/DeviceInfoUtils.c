@@ -966,6 +966,10 @@ int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandl
                 OsConfigCaptureReason(reason, "'*hard core 0' is not present in any file, or is commented out under '/etc/security/limits.d/'");
             }
         }
+        else
+        {
+            OsConfigCaptureReason(reason, "'*hard core 0' is not present uncommented in in '/etc/security/limits.conf' or in a file under '/etc/security/limits.d/'");
+        }
 
         FREE_MEMORY(textResult);
     }
