@@ -42,7 +42,7 @@ public:
     }
 
     Optional(Optional&& other) noexcept(NoexceptMovable<T>())
-        : mValue(other.mValue)
+        : mValue(new (mBuffer) T(std::move(*other.mValue)))
     {
         other.Reset();
     }
@@ -82,7 +82,7 @@ public:
         }
 
         Reset();
-        mValue = other.mValue;
+        mValue = new (mBuffer) T(std::move(*other.mValue));
         other.Reset();
         return *this;
     }
