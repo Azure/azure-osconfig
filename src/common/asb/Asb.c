@@ -1807,8 +1807,15 @@ static char* AuditEnsureLocalLoginWarningBannerIsConfigured(OsConfigLogHandle lo
 static char* AuditEnsureAuditdServiceIsRunning(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckDaemonActive(g_auditd, &reason, log);
-    CheckDaemonNotActive(g_auoms, &reason, log);
+    bool auditdActive = CheckDaemonActive(g_auditd, &reason, log);
+    bool auomsActive = CheckDaemonNotActive(g_auoms, &reason, log);
+
+    if (auditActive && auomsActive)
+    {
+        FREE_MEMORY(reason);
+        reason = FormatAllocateString("'%s' is active and collides with '%s', %s", g_auoms, g_auditd, g_remediationIsNotPossible);
+    }
+    
     return reason;
 }
 
