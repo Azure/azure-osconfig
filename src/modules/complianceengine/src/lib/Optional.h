@@ -42,8 +42,15 @@ public:
     }
 
     Optional(Optional&& other) noexcept(NoexceptMovable<T>())
-        : mValue(new (mBuffer) T(std::move(*other.mValue)))
     {
+        if (nullptr != other.mValue)
+        {
+            mValue = new (mBuffer) T(std::move(*other.mValue));
+        }
+        else
+        {
+            mValue = nullptr;
+        }
         other.Reset();
     }
 
@@ -82,7 +89,14 @@ public:
         }
 
         Reset();
-        mValue = new (mBuffer) T(std::move(*other.mValue));
+        if (nullptr != other.mValue)
+        {
+            mValue = new (mBuffer) T(std::move(*other.mValue));
+        }
+        else
+        {
+            mValue = nullptr;
+        }
         other.Reset();
         return *this;
     }
