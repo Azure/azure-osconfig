@@ -7,6 +7,7 @@
 #include "TypeTraits.h"
 
 #include <memory>
+#include <stdexcept>
 
 namespace ComplianceEngine
 {
@@ -118,16 +119,19 @@ public:
 
     const T& Value() const&
     {
+        CheckValue();
         return *mValue;
     }
 
     T Value() && noexcept(NoexceptMovable<T>())
     {
+        CheckValue();
         return std::move(*mValue);
     }
 
     T& Value() &
     {
+        CheckValue();
         return *mValue;
     }
 
@@ -146,13 +150,22 @@ public:
         return HasValue();
     }
 
-    void Reset()
+    void Reset() noexcept(NoexceptDestructible<T>())
     {
         if (nullptr != mValue)
         {
             mValue->~T();
         }
         mValue = nullptr;
+    }
+
+private:
+    void CheckValue() const
+    {
+        if (nullptr == mValue)
+        {
+            throw std::logic_error("Optional: unchecked access to Value");
+        }
     }
 };
 } // namespace ComplianceEngine
