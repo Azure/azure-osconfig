@@ -616,6 +616,7 @@ static int CheckSshMaxAuthTries(const char* value, char** reason, OsConfigLogHan
 static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
 {
     const char* banner = "banner";
+    const char* none = "none";
     char* bannerPath = NULL;
     int status = 0;
 
@@ -626,8 +627,18 @@ static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
 
     if (NULL != (bannerPath = GetSshServerState(banner, log)))
     {
-        OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' found in SSH Server response set to '%s'", banner, bannerPath);
-        status = CheckFileExists(bannerPath, reason, log);
+        if (0 == strcmp(bannerPath, none))
+        {
+            OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' found in SSH Server response set to '%s', which means no banner is set", banner, bannerPath);
+            OsConfigCaptureReason(reason, "'%s' is set to '%' in SSH Server response, which means no batter is set", banner, bannerPath);
+            status = ENOENT;
+        }
+        else
+        {
+            OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' found in SSH Server response set to '%s'", banner, bannerPath);
+            status = CheckFileExists(bannerPath, reason, log);
+        }
+
         FREE_MEMORY(bannerPath);
     }
     else
