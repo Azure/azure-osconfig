@@ -30,6 +30,7 @@ add_custom_target(stage_create_ssh_zip
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.metaconfig.json" ${PROJECT_BINARY_DIR}/Staging/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.mof" ${PROJECT_BINARY_DIR}/Staging/
+    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/Staging/SetLinuxSshServerSecurityBaseline.mof
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceSsh> ${PROJECT_BINARY_DIR}/Staging/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
     DEPENDS OsConfigResourceSsh)
 
