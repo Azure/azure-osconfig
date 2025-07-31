@@ -22,9 +22,9 @@ target_link_libraries(OsConfigResourceSsh
 # SO binary name must match the universal class name in MOF with a "lib" prefix added
 set_target_properties(OsConfigResourceSsh PROPERTIES OUTPUT_NAME libOsConfigResource)
 
-# Create the policy artifacts ZIP packages for SSH Posture Control
+# Create the policy artifacts ZIP packages for SSH Posture Control (Get and Set)
 
-# For Audit:
+# For Audit (Get):
 
 add_custom_target(stage_create_ssh_zip
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
@@ -40,7 +40,7 @@ add_custom_target(create_ssh_zip ALL
     DEPENDS stage_create_ssh_zip
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/Staging/)
 
-# For Remediation:
+# For Remediation (Set):
 
 add_custom_target(stage_create_ssh_zip_set
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
