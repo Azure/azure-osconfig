@@ -143,6 +143,9 @@
           "$ref": "procedures/EnsureDefaultShellTimeoutIsConfigured.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureDefaultUserUmaskIsConfigured.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureFilePermissions.schema.json#/definitions/audit"
         },
         {
@@ -244,6 +247,9 @@
         },
         {
           "$ref": "procedures/EnsureDefaultShellTimeoutIsConfigured.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureDefaultUserUmaskIsConfigured.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureFilePermissions.schema.json#/definitions/remediation"
