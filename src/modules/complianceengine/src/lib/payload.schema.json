@@ -140,6 +140,9 @@
           "$ref": "procedures/EnsureDconf.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureDefaultShellTimeoutIsConfigured.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureFilePermissions.schema.json#/definitions/audit"
         },
         {
@@ -238,6 +241,9 @@
         },
         {
           "$ref": "procedures/EnsureDconf.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureDefaultShellTimeoutIsConfigured.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureFilePermissions.schema.json#/definitions/remediation"

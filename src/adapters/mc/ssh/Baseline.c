@@ -9,6 +9,13 @@ int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, 
     return AsbIsValidResourceIdRuleId(resourceId, ruleId, payloadKey, log);
 }
 
+int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log)
+{
+    UNUSED(payloadKey);
+    UNUSED(log);
+    return 0;
+}
+
 void BaselineInitialize(OsConfigLogHandle log)
 {
     AsbInitialize(log);
