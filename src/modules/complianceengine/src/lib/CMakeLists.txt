@@ -10,6 +10,7 @@ set(PROCEDURES
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.cpp
     procedures/EnsureApparmorProfiles.cpp
     procedures/EnsureDconf.cpp
+    procedures/EnsureDefaultShellTimeoutIsConfigured.cpp
     procedures/EnsureFilePermissions.cpp
     procedures/EnsureFilesystemOption.cpp
     procedures/EnsureFirewallOpenPorts.cpp
@@ -44,6 +45,7 @@ set(SCHEMAS
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json
     procedures/EnsureApparmorProfiles.schema.json
     procedures/EnsureDconf.schema.json
+    procedures/EnsureDefaultShellTimeoutIsConfigured.schema.json
     procedures/EnsureFilePermissions.schema.json
     procedures/EnsureFilesystemOption.schema.json
     procedures/EnsureFirewallOpenPorts.schema.json
@@ -109,9 +111,11 @@ set_property(TARGET complianceengineschema PROPERTY OUTPUT ComplianceEngineSchem
 
 add_library(complianceenginelib STATIC
     Base64.cpp
+    BenchmarkInfo.cpp
     CommonContext.cpp
     ComplianceEngineInterface.cpp
     ContextInterface.cpp
+    DistributionInfo.cpp
     Engine.cpp
     Evaluator.cpp
     GroupsIterator.cpp

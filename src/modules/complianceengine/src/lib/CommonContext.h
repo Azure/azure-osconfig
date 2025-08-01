@@ -29,6 +29,8 @@ public:
         return mLog;
     }
 
+    std::string GetSpecialFilePath(const std::string& path) const override;
+
 private:
     OsConfigLogHandle mLog;
 };
