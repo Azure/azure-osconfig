@@ -3,20 +3,28 @@
 
 #include "ComplianceEngineInterface.h"
 
+#include "BenchmarkInfo.h"
 #include "CommonContext.h"
 #include "CommonUtils.h"
+#include "DistributionInfo.h"
 #include "Engine.h"
 #include "JsonWrapper.h"
 #include "Logging.h"
 #include "Mmi.h"
+#include "Result.h"
 
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
 #include <exception>
+#include <fstream>
 #include <parson.h>
 #include <set>
+#include <sstream>
+#include <sys/stat.h>
 
+using ComplianceEngine::CISBenchmarkInfo;
+using ComplianceEngine::DistributionInfo;
 using ComplianceEngine::Engine;
 using ComplianceEngine::JSONFromString;
 using ComplianceEngine::ParseJson;
@@ -30,12 +38,14 @@ OsConfigLogHandle g_log = nullptr;
 static const std::set<int> g_criticalErrors = {ENOMEM};
 } // namespace
 
+// This function is called in library constructor by BaselineInitialize
 void ComplianceEngineInitialize(OsConfigLogHandle log)
 {
     UNUSED(log);
     g_log = log;
 }
 
+// This function is called in library destructor by BaselineInitialize
 void ComplianceEngineShutdown(void)
 {
 }
@@ -64,7 +74,17 @@ MMI_HANDLE ComplianceEngineMmiOpen(const char* clientName, const unsigned int ma
         OsConfigLogInfo(g_log, "ComplianceEngineMmiOpen(%s) using JsonFormatter", clientName);
         formatter.reset(new ComplianceEngine::JsonFormatter());
     }
-    auto* result = reinterpret_cast<void*>(new Engine(std::move(context), std::move(formatter)));
+
+    auto* engine = new Engine(std::move(context), std::move(formatter));
+    auto error = engine->LoadDistributionInfo();
+    if (error)
+    {
+        OsConfigLogError(g_log, "ComplianceEngineMmiOpen(%s, %u): failed to load distribution info: %s", clientName, maxPayloadSizeBytes, error->message.c_str());
+        delete engine;
+        return nullptr;
+    }
+
+    auto* result = reinterpret_cast<void*>(engine);
     OsConfigLogInfo(g_log, "ComplianceEngineMmiOpen(%s, %u) returning %p", clientName, maxPayloadSizeBytes, result);
     return result;
 }
@@ -238,4 +258,45 @@ int ComplianceEngineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
 void ComplianceEngineMmiFree(char* payload)
 {
     FREE_MEMORY(payload);
+}
+
+int ComplianceEngineCheckApplicability(MMI_HANDLE clientSession, const char* payloadKey, OsConfigLogHandle log)
+{
+    // parse the /etc/os-release and check whether the payloadKey defines the same distribution as the one in the file
+    // the payloadKey is formatted as a path: /<benchmark>/<benchmark_specific_format>
+    // In case the payloadKey starts with /cis, it becomes: /cis/<distribution>/<version>/<benchmark_version>/<section1>/<section2>/...
+    if ((nullptr == clientSession) || (nullptr == payloadKey))
+    {
+        OsConfigLogError(log, "ComplianceEngineValidatePayload called with invalid arguments");
+        return EINVAL;
+    }
+
+    const auto& engine = *reinterpret_cast<Engine*>(clientSession);
+    const auto& distributionInfo = engine.GetDistributionInfo();
+    if (!distributionInfo.HasValue())
+    {
+        OsConfigLogError(log, "ComplianceEngineValidatePayload: Distribution info is not available");
+        return EINVAL;
+    }
+
+    auto benchmark = CISBenchmarkInfo::Parse(payloadKey);
+    if (!benchmark.HasValue())
+    {
+        OsConfigLogError(log, "ComplianceEngineValidatePayload failed to parse benchmark: %s", benchmark.Error().message.c_str());
+        return EINVAL;
+    }
+
+    if (!benchmark->Match(distributionInfo.Value()))
+    {
+        OsConfigLogInfo(log, "This benchmark is not applicable for the current distribution");
+        OsConfigLogInfo(log, "Current system identification: %s", std::to_string(distributionInfo.Value()).c_str());
+        auto overridden = distributionInfo.Value();
+        overridden.distribution = benchmark->distribution;
+        overridden.version = benchmark->version;
+        OsConfigLogInfo(log, "To override this detection, place the following line inside the '%s' file: %s",
+            DistributionInfo::cDefaultOverrideFilePath, std::to_string(overridden).c_str());
+        return EINVAL;
+    }
+
+    return 0;
 }
