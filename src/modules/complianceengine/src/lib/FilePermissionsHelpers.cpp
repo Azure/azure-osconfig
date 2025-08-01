@@ -9,6 +9,7 @@
 #include <fnmatch.h>
 #include <fts.h>
 #include <grp.h>
+#include <iomanip>
 #include <iostream>
 #include <pwd.h>
 #include <string.h>
@@ -166,7 +167,7 @@ Result<Status> AuditEnsureFilePermissionsHelper(const std::string& filename, con
         {
             std::ostringstream oss;
             oss << "Invalid permissions on '" << filename << "' - are " << std::oct << (statbuf.st_mode & displayMask) << " should be set to "
-                << std::oct << (statbuf.st_mode & ~mask & displayMask) << " or more restrictive";
+                << std::oct << std::setw(3) << std::setfill('0') << (statbuf.st_mode & ~mask & displayMask) << " or a more restrictive value";
             return indicators.NonCompliant(oss.str());
         }
 
