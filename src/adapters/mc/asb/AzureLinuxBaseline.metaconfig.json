@@ -1,4 +1,5 @@
 {
   "Type": "AuditAndSet",
+  "configurationModeFrequencyMins": 60,
   "Version": "1.0.0"
 }
