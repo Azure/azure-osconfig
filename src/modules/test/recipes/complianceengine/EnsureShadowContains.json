@@ -59,7 +59,7 @@
     "RunCommand": "usermod securitybaselinetest -f 3 -e 2025-01-01"
   },
   {
-    "RunCommand": "printf \"DFC&Dhduf9823ds!@#$\nDFC&Dhduf9823ds!@#$\" | passwd securitybaselinetest"
+    "RunCommand": "echo \"securitybaselinetest:DFC&Dhduf9823ds!@#$\" | chpasswd"
   },
   {
     "RunCommand": "cat /etc/shadow | grep securitybaselinetest"
