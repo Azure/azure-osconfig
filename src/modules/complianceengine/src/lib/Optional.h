@@ -7,37 +7,52 @@
 #include "TypeTraits.h"
 
 #include <memory>
+#include <stdexcept>
 
 namespace ComplianceEngine
 {
 template <typename T>
 class Optional
 {
-    std::unique_ptr<T> mValue;
+    alignas(T) char mBuffer[sizeof(T)];
+    T* mValue = nullptr;
 
 public:
     Optional() = default;
     Optional(T value)
+        : mValue(new (mBuffer) T(std::move(value)))
     {
-        mValue.reset(new T(std::move(value)));
     }
-    ~Optional() = default;
+
+    ~Optional()
+    {
+        Reset();
+    }
 
     Optional(const Optional& other)
     {
-        if (other.mValue != nullptr)
+        Reset();
+        if (nullptr != other.mValue)
         {
-            mValue.reset(new T(*other.mValue));
+            mValue = new (mBuffer) T(*other.mValue);
         }
         else
         {
-            mValue.reset();
+            mValue = nullptr;
         }
     }
 
-    Optional(Optional&& other) noexcept
-        : mValue(std::move(other.mValue))
+    Optional(Optional&& other) noexcept(NoexceptMovable<T>())
     {
+        if (nullptr != other.mValue)
+        {
+            mValue = new (mBuffer) T(std::move(*other.mValue));
+        }
+        else
+        {
+            mValue = nullptr;
+        }
+        other.Reset();
     }
 
     Optional& operator=(const Optional& other)
@@ -47,13 +62,14 @@ public:
             return *this;
         }
 
-        if (other.mValue != nullptr)
+        Reset();
+        if (nullptr != other.mValue)
         {
-            mValue.reset(new T(*other.mValue));
+            mValue = new (mBuffer) T(*other.mValue);
         }
         else
         {
-            mValue.reset();
+            mValue = nullptr;
         }
 
         return *this;
@@ -61,25 +77,28 @@ public:
 
     Optional& operator=(T value)
     {
-        if (mValue != nullptr)
-        {
-            *mValue = std::move(value);
-        }
-        else
-        {
-            mValue.reset(new T(std::move(value)));
-        }
+        Reset();
+        mValue = new (mBuffer) T(std::move(value));
         return *this;
     }
 
-    Optional& operator=(Optional&& other) noexcept
+    Optional& operator=(Optional&& other) noexcept(NoexceptMovable<T>())
     {
         if (this == &other)
         {
             return *this;
         }
 
-        mValue = std::move(other.mValue);
+        Reset();
+        if (nullptr != other.mValue)
+        {
+            mValue = new (mBuffer) T(std::move(*other.mValue));
+        }
+        else
+        {
+            mValue = nullptr;
+        }
+        other.Reset();
         return *this;
     }
 
@@ -90,7 +109,7 @@ public:
 
     T ValueOr(T default_value) const noexcept(NoexceptCopyable<T>())
     {
-        if (mValue == nullptr)
+        if (nullptr == mValue)
         {
             return default_value;
         }
@@ -100,27 +119,30 @@ public:
 
     const T& Value() const&
     {
+        CheckValue();
         return *mValue;
     }
 
     T Value() && noexcept(NoexceptMovable<T>())
     {
+        CheckValue();
         return std::move(*mValue);
     }
 
     T& Value() &
     {
+        CheckValue();
         return *mValue;
     }
 
     const T* operator->() const&
     {
-        return mValue.get();
+        return mValue;
     }
 
     T* operator->() &
     {
-        return mValue.get();
+        return mValue;
     }
 
     operator bool() const noexcept
@@ -128,9 +150,22 @@ public:
         return HasValue();
     }
 
-    void Reset()
+    void Reset() noexcept(NoexceptDestructible<T>())
     {
-        mValue.reset();
+        if (nullptr != mValue)
+        {
+            mValue->~T();
+        }
+        mValue = nullptr;
+    }
+
+private:
+    void CheckValue() const
+    {
+        if (nullptr == mValue)
+        {
+            throw std::logic_error("Optional: unchecked access to Value");
+        }
     }
 };
 } // namespace ComplianceEngine
