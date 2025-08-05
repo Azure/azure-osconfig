@@ -62,7 +62,7 @@ TEST_F(UfwStatusTest, MissingRegexParameter)
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'statusRegex' parameter");
+    ASSERT_EQ(result.Error().message, "Missing required 'statusRegex' parameter");
     ASSERT_EQ(result.Error().code, EINVAL);
 }
 
@@ -159,5 +159,20 @@ TEST_F(UfwStatusTest, InvalidRegex)
 
     auto result = AuditUfwStatus(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Failed to compile regex") != std::string::npos);
+    ASSERT_EQ(0, result.Error().message.find("Regular expression 'Status:*[' compilation failed"));
+}
+
+namespace ComplianceEngine
+{
+Result<Status> AuditUfwStatus2(std::map<std::string, std::string> args, IndicatorsTree& indicators, ContextInterface& context);
+}
+TEST_F(UfwStatusTest, Foo)
+{
+    std::map<std::string, std::string> args;
+    args["statusRegex"] = "Status:\\s*active";
+    args["foo"] = 123;
+
+    auto result = ComplianceEngine::AuditUfwStatus2(args, mIndicators, mContext);
+    ASSERT_FALSE(result.HasValue());
+    ASSERT_EQ(result.Error().message, "Unknown parameter 'foo'");
 }
