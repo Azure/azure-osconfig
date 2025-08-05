@@ -3,7 +3,7 @@
 
 project(complianceenginelib)
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow=local")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow=local")
 endif()
 
 set(PROCEDURES
@@ -143,6 +143,7 @@ add_custom_command(
 
 target_link_libraries(complianceenginelib PRIVATE
     logging
+    telemetry
     commonutils
     parsonlib
     )

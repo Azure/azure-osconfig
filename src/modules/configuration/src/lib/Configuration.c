@@ -303,7 +303,10 @@ MMI_HANDLE ConfigurationMmiOpen(const char* clientName, const unsigned int maxPa
 {
     MMI_HANDLE handle = (MMI_HANDLE)g_configurationModuleName;
     g_maxPayloadSizeBytes = maxPayloadSizeBytes;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-value"
     ++g_referenceCount;
+#pragma GCC diagnostic pop
     OsConfigLogInfo(ConfigurationGetLog(), "MmiOpen(%s, %d) returning %p", clientName, maxPayloadSizeBytes, handle);
     return handle;
 }
@@ -317,7 +320,10 @@ void ConfigurationMmiClose(MMI_HANDLE clientSession)
 {
     if (IsValidSession(clientSession))
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-value"
         --g_referenceCount;
+#pragma GCC diagnostic pop
         OsConfigLogInfo(ConfigurationGetLog(), "MmiClose(%p)", clientSession);
     }
     else

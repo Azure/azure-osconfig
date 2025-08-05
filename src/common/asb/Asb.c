@@ -14,6 +14,7 @@
 #include <Logging.h>
 #include <Reasons.h>
 #include <Asb.h>
+#include <telemetry.h>
 
 #define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_asb_perf.bak"
@@ -1101,18 +1102,25 @@ void AsbShutdown(OsConfigLogHandle log)
 
     PackageUtilsCleanup();
 
+    OsConfigLogCritical(log, "TESTING!!!!");
+    InitializeTelemetry();
+    OsConfigLogCritical(log, "Completed init");
     if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
     {
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
 
         // For telemetry:
-        OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f",
-            g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
+        TelemetryEventWrite_CompletedBaseline(g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
+
+        OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f", g_prettyName, g_asbName,
+            g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
     }
 
     FREE_MEMORY(g_prettyName);
 
     CloseLog(&g_perfLog);
+    OsConfigLogCritical(log, "Shutting down telemetry");
+    ShutdownTelemetry();
 
     // When done, allow others access to read the performance log
     SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);

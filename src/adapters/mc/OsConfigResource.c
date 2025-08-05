@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "Baseline.h"
 #include <version.h>
+#include <telemetry.h>
 
 // The log file for the NRP
 #define LOG_FILE "/var/log/osconfig_nrp.log"
@@ -73,6 +74,7 @@ void __attribute__((constructor)) Initialize()
         g_mpiHandle = NULL;
     }
 
+    // InitializeTelemetry();
     SetConsoleLoggingEnabled(false);
 
     BaselineInitialize(GetLog());
@@ -98,6 +100,7 @@ void __attribute__((destructor)) Destroy()
 
         RestartDaemon(IsDaemonActive(g_osconfig, GetLog()) ? g_osconfig : g_mpiServer, NULL);
     }
+    // ShutdownTelemetry();
 
     FREE_MEMORY(g_resourceId);
     FREE_MEMORY(g_ruleId);

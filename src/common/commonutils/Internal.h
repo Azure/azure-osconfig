@@ -8,6 +8,11 @@
 #define _GNU_SOURCE
 #endif
 
+#define _POSIX_C_SOURCE 200809L   /* enable open(), O_CREAT, etc. */
+#include <unistd.h>               /* declares open(), close(), unlink(), etc. */
+#include <fcntl.h>                /* declares O_CREAT, O_EXCL, O_WRONLY, mode flags */
+#include <sys/stat.h>             /* declares S_IRUSR, S_IWUSR, S_IRGRP, etc. */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>

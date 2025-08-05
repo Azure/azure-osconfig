@@ -15,6 +15,8 @@
 #include <UserUtils.h>
 #include <SshUtils.h>
 #include <Asb.h>
+#include <telemetry.h>
+#include <Enums.hpp>
 
 using namespace std;
 
@@ -2824,4 +2826,11 @@ TEST_F(CommonUtilsTest, LoggingOptions)
     EXPECT_FALSE(IsConsoleLoggingEnabled());
 
     EXPECT_FALSE(IsDaemon());
+}
+
+TEST_F(CommonUtilsTest, Telemetry)
+{
+    InitializeTelemetry();
+    TelemetryEventWrite_CompletedBaseline("unit", "test", "test", 0.0);
+    ShutdownTelemetry();
 }

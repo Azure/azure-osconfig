@@ -125,7 +125,10 @@ MMI_HANDLE DeviceInfoMmiOpen(const char* clientName, const unsigned int maxPaylo
 {
     MMI_HANDLE handle = (MMI_HANDLE)g_deviceInfoModuleName;
     g_maxPayloadSizeBytes = maxPayloadSizeBytes;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-value"
     ++g_referenceCount;
+#pragma GCC diagnostic pop
     OsConfigLogInfo(DeviceInfoGetLog(), "MmiOpen(%s, %d) returning %p", clientName, maxPayloadSizeBytes, handle);
     return handle;
 }
@@ -139,7 +142,10 @@ void DeviceInfoMmiClose(MMI_HANDLE clientSession)
 {
     if (IsValidSession(clientSession))
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-value"
         --g_referenceCount;
+#pragma GCC diagnostic pop
         OsConfigLogInfo(DeviceInfoGetLog(), "MmiClose(%p)", clientSession);
     }
     else

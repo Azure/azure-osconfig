@@ -14,5 +14,6 @@ target_include_directories(asb PUBLIC
 
 target_link_libraries(asb PRIVATE
     logging
+    telemetry
     commonutils
     parsonlib)

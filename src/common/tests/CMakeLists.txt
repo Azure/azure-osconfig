@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 
 project(commontests)
-
 cmake_minimum_required(VERSION 3.2.0)
 
 include(CTest)
@@ -21,6 +20,7 @@ target_link_libraries(commontests
     gmock_main
     pthread
     logging
+    telemetry
     commonutils
     asb
     parsonlib
