@@ -26,6 +26,7 @@ set(PROCEDURES
     procedures/EnsureRootPathTest.cpp
     procedures/EnsureSshdOptionTest.cpp
     procedures/EnsureSysctlTest.cpp
+    procedures/EnsureSystemAccountsDoNotHaveValidShellTest.cpp
     procedures/EnsureUserIsOnlyAccountWithTest.cpp
     procedures/EnsureWirelessIsDisabledTest.cpp
     procedures/EnsureXdmcpTest.cpp
