@@ -179,7 +179,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', Invalid permissions on '\/tmp\/testfile' - are 777 while 177 should not be set } == FALSE"
+    "Payload": "{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', Invalid permissions on '\/tmp\/testfile' - are 777 should be set to 600 or a more restrictive value } == FALSE"
   },
 
 
@@ -336,7 +336,7 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile matches expected permissions 0, Invalid permissions on '\/tmp\/testfile' - are 777 while 777 should not be set } == FALSE"
+    "Payload": "{ EnsureFilePermissions: \/tmp\/testfile owner matches expected value 'root', \/tmp\/testfile group matches expected value 'root', \/tmp\/testfile matches expected permissions 0, Invalid permissions on '\/tmp\/testfile' - are 777 should be set to 000 or a more restrictive value } == FALSE"
   },
 
 
