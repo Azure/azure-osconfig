@@ -43,47 +43,47 @@ enum class MatchResult
 
 int ParseSymbolicValue(const std::string& user, const std::string& group, const std::string& other)
 {
-    auto value = 0777;
+    auto value = 0;
     if (user.find("r") != string::npos)
     {
-        value &= ~(1 << 8);
+        value |= S_IRUSR;
     }
     if (user.find("w") != string::npos)
     {
-        value &= ~(1 << 7);
+        value |= S_IWUSR;
     }
     if (user.find("x") != string::npos)
     {
-        value &= ~(1 << 6);
+        value |= S_IXUSR;
     }
 
     if (group.find("r") != string::npos)
     {
-        value &= ~(1 << 5);
+        value |= S_IRGRP;
     }
     if (group.find("w") != string::npos)
     {
-        value &= ~(1 << 4);
+        value |= S_IWGRP;
     }
     if (group.find("x") != string::npos)
     {
-        value &= ~(1 << 3);
+        value |= S_IXGRP;
     }
 
     if (other.find("r") != string::npos)
     {
-        value &= ~(1 << 2);
+        value |= S_IROTH;
     }
     if (other.find("w") != string::npos)
     {
-        value &= ~(1 << 1);
+        value |= S_IWOTH;
     }
     if (other.find("x") != string::npos)
     {
-        value &= ~1;
+        value |= S_IXOTH;
     }
 
-    return value;
+    return ~value;
 }
 
 Result<MatchResult> MultilineMatch(const std::string& filename, const regex& valuePattern, const regex& pamPattern, ContextInterface& context)
