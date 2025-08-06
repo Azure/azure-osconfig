@@ -46,13 +46,18 @@ struct MockContext : public ComplianceEngine::ContextInterface
         }
     }
 
-    std::string MakeTempfile(const std::string& content)
+    std::string MakeTempfile(const std::string& content, const std::string& extension = "")
     {
-        std::string filename = std::string(mTempdir) + "/" + std::to_string(mTempfiles.size() + 1);
+        std::string filename = std::string(mTempdir) + "/" + std::to_string(mTempfiles.size() + 1) + extension;
         std::ofstream file(filename);
         file << content;
         mTempfiles.push_back(filename);
         return filename;
+    }
+
+    std::string GetTempdirPath() const
+    {
+        return mTempdir;
     }
 
     std::string GetSpecialFilePath(const std::string& path) const override
