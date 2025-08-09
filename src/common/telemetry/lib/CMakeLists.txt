@@ -9,8 +9,11 @@ endif()
 include(ExternalProject)
 ExternalProject_Add(
     1dscpplib
-    SOURCE_DIR
-        ${EXTERNAL_SRC_DIR}/cpp_client_telemetry
+    GIT_REPOSITORY
+        https://github.com/microsoft/cpp_client_telemetry.git
+    GIT_TAG
+        v3.9.205.1
+    GIT_SUBMODULES ""  # This disables submodule checkout
     CMAKE_ARGS
         ${CMAKE_ARGS}
         -DBUILD_FUNC_TESTS=OFF
