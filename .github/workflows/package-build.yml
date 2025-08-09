@@ -2,6 +2,9 @@ name: Build Azure OSConfig Package
 
 on:
   workflow_call:
+    secrets:
+      onedstenant:
+        required: false
     inputs:
       artifact:
         description: The artifact name containing the packages from this workflow.
@@ -50,9 +53,6 @@ on:
         type: boolean
         required: false
         default: false
-    secrets:
-      1dstenant:
-        required: false
 
 env:
   BUILD_TYPE: Release
@@ -118,8 +118,8 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
           cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
-          env:
-            1dstenant: ${{ secrets.ONEDS_TENANT_NONPROD }}
+        env:
+          OsConfigTelemetryApiKey: ${{ secrets.onedstenant }}
 
       - name: Run cpack
         if: ${{ inputs.package-type }}
