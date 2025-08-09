@@ -68,6 +68,7 @@ jobs:
           submodules: recursive
           clean: true
           ref: ${{ inputs.ref }}
+          fetch-depth: 0
 
       - name: Setup QEMU
         if: ${{ inputs.arch != 'amd64' }}
