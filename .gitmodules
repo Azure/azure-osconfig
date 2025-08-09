@@ -1,3 +1,6 @@
 [submodule "src/adapters/pnp/azure-iot-sdk-c"]
 	path = src/adapters/pnp/azure-iot-sdk-c
 	url = https://github.com/Azure/azure-iot-sdk-c
+[submodule "external/cpp_client_telemetry"]
+	path = external/cpp_client_telemetry
+	url = https://github.com/microsoft/cpp_client_telemetry.git

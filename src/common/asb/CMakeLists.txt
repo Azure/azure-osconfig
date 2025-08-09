@@ -13,6 +13,7 @@ target_include_directories(asb PUBLIC
     ${PLATFORM_INC_DIR})
 
 target_link_libraries(asb PRIVATE
+    dl
     logging
     commonutils
     parsonlib)

@@ -61,6 +61,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     endif()
 endif()
 
+project(osconfig)
 find_package(Git QUIET)
 
 if(TWEAK_VERSION)
@@ -105,6 +106,10 @@ endif()
 
 set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform/inc)
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
+
+set(CMAKE_TOOLCHAIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/toolchains")
+set(COMMON_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/common")
+set(EXTERNAL_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../external")
 
 if (BUILD_TESTS)
     enable_testing()
