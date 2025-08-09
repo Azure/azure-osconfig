@@ -50,8 +50,8 @@ on:
         type: boolean
         required: false
         default: false
+    secrets:
       1dstenant:
-        type: string
         required: false
 
 env:
