@@ -19,3 +19,4 @@ jobs:
       artifact: policy-packages
       machine-config: true
       release: true
+      1dstenant: ${{ secrets.ONEDS_TENANT_NONPROD }}

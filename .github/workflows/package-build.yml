@@ -50,6 +50,9 @@ on:
         type: boolean
         required: false
         default: false
+      1dstenant:
+        type: string
+        required: false
 
 env:
   BUILD_TYPE: Release
