@@ -65,7 +65,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: ${{ inputs.machine-config == false && 'recursive' || '' }}
+          submodules: recursive
           clean: true
           ref: ${{ inputs.ref }}
 
@@ -118,6 +118,8 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
           cmd: cmake --build . --config ${{ env.BUILD_TYPE }} --parallel
+          env:
+            1dstenant: ${{ secrets.ONEDS_TENANT_NONPROD }}
 
       - name: Run cpack
         if: ${{ inputs.package-type }}
