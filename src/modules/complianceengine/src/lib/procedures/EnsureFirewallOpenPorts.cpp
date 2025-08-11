@@ -9,7 +9,6 @@
 
 namespace ComplianceEngine
 {
-
 AUDIT_FN(EnsureIptablesOpenPorts)
 {
     UNUSED(args);
@@ -77,14 +76,44 @@ AUDIT_FN(EnsureUfwOpenPorts)
     std::istringstream ufwStream(ufwResult.Value());
     std::string line;
     bool foundSeparator = false;
+    Optional<bool> isActive;
     while (std::getline(ufwStream, line))
     {
+        static const std::string statusPrefix = "Status: ";
+        if (0 == line.find(statusPrefix))
+        {
+            if (statusPrefix.size() == line.find("active", statusPrefix.size()))
+            {
+                isActive = true;
+            }
+            else if (statusPrefix.size() == line.find("inactive", statusPrefix.size()))
+            {
+                isActive = false;
+            }
+            else
+            {
+                return Error("Invalid output from ufw command, unrecognized status section '" + line + "'", EINVAL);
+            }
+            continue;
+        }
+
         if (line == "--")
         {
             foundSeparator = true;
             break;
         }
     }
+
+    if (!isActive.HasValue())
+    {
+        return Error("Invalid output from ufw command, missing status section", EINVAL);
+    }
+
+    if (!isActive.Value())
+    {
+        return indicators.NonCompliant("UFW is inactive");
+    }
+
     if (!foundSeparator)
     {
         return Error("Invalid output from ufw command, expected separator '--' not found");
