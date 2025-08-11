@@ -147,7 +147,7 @@ jobs:
 
   mc-test:
     name: MC Test
-    if: ${{ always() }}
+    if: ${{ always() && needs.setup-matrix.result == 'success' && (needs.package.result == 'success' || needs.custom-download.result == 'success') }}
     needs: [setup-matrix, package, custom-download]
     runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
     strategy:
