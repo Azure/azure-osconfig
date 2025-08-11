@@ -487,3 +487,31 @@ TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_MalformedUfwLines_SkippedGracef
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
+
+TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_UFW_Inactive)
+{
+    std::string ssOutput = CreateSSOutput({"tcp   LISTEN  0       128           0.0.0.0:80       0.0.0.0:*      users:((\"httpd\",pid=1234,fd=3))"});
+    std::string ufwOutput = "Status: inactive\n";
+
+    EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
+    EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
+
+    std::map<std::string, std::string> args;
+    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+
+    ASSERT_TRUE(result.HasValue());
+    EXPECT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(EnsureFirewallOpenPortsTest, UfwOpenPorts_UFW_InvalidStatus)
+{
+    std::string ssOutput = CreateSSOutput({"tcp   LISTEN  0       128           0.0.0.0:80       0.0.0.0:*      users:((\"httpd\",pid=1234,fd=3))"});
+    std::string ufwOutput = "Status: ?\n";
+
+    EXPECT_CALL(mockContext, ExecuteCommand("ss -ptuln")).WillOnce(Return(Result<std::string>(ssOutput)));
+    EXPECT_CALL(mockContext, ExecuteCommand("ufw status verbose")).WillOnce(Return(Result<std::string>(ufwOutput)));
+
+    std::map<std::string, std::string> args;
+    auto result = AuditEnsureUfwOpenPorts(args, indicators, mockContext);
+    ASSERT_FALSE(result.HasValue());
+}
