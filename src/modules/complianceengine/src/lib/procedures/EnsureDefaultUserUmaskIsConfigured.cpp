@@ -41,9 +41,9 @@ enum class MatchResult
     NotFound
 };
 
-int ParseSymbolicValue(const std::string& user, const std::string& group, const std::string& other)
+mode_t ParseSymbolicValue(const std::string& user, const std::string& group, const std::string& other)
 {
-    auto value = 0;
+    mode_t value = 0;
     if (user.find("r") != string::npos)
     {
         value |= S_IRUSR;
@@ -98,7 +98,7 @@ Result<MatchResult> MultilineMatch(const std::string& filename, const regex& val
     string line;
     while (getline(input, line))
     {
-        const auto expected = 027;
+        const mode_t expected = 027;
         lineNumber++;
         smatch match;
 
