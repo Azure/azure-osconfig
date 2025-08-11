@@ -9,15 +9,6 @@
 
 namespace ComplianceEngine
 {
-
-namespace
-{
-enum class UfwStatus
-{
-    Active,
-    Inactive
-};
-} // anonymous namespace
 AUDIT_FN(EnsureIptablesOpenPorts)
 {
     UNUSED(args);
@@ -85,7 +76,7 @@ AUDIT_FN(EnsureUfwOpenPorts)
     std::istringstream ufwStream(ufwResult.Value());
     std::string line;
     bool foundSeparator = false;
-    Optional<UfwStatus> status;
+    Optional<bool> isActive;
     while (std::getline(ufwStream, line))
     {
         static const std::string statusPrefix = "Status: ";
@@ -93,11 +84,11 @@ AUDIT_FN(EnsureUfwOpenPorts)
         {
             if (statusPrefix.size() == line.find("active", statusPrefix.size()))
             {
-                status = UfwStatus::Active;
+                isActive = true;
             }
             else if (statusPrefix.size() == line.find("inactive", statusPrefix.size()))
             {
-                status = UfwStatus::Inactive;
+                isActive = false;
             }
             else
             {
@@ -113,12 +104,12 @@ AUDIT_FN(EnsureUfwOpenPorts)
         }
     }
 
-    if (!status.HasValue())
+    if (!isActive.HasValue())
     {
         return Error("Invalid output from ufw command, missing status section", EINVAL);
     }
 
-    if (status.Value() == UfwStatus::Inactive)
+    if (!isActive.Value())
     {
         return indicators.NonCompliant("UFW is inactive");
     }
