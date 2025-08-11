@@ -1186,7 +1186,7 @@ void AsbShutdown(OsConfigLogHandle log)
             fprintf(telemetryFile, "  \"baselineName\": \"%s\",", g_asbName);
             fprintf(telemetryFile, "  \"mode\": \"%s\",", g_auditOnly ? auditOnly : automaticRemediation);
             fprintf(telemetryFile, "  \"durationSeconds\": %.02f,", GetPerfClockTime(&g_perfClock, log) / 1000000.0);
-            fprintf(telemetryFile, "  \"version\": \"%s\",", OSCONFIG_VERSION);
+            fprintf(telemetryFile, "  \"version\": \"%s\"", OSCONFIG_VERSION);
             fprintf(telemetryFile, "}\n");
             fclose(telemetryFile);
             // OsConfigLogInfo(log, "Telemetry event written to /tmp/telemetry.json");
