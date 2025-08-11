@@ -66,7 +66,7 @@ namespace
 {
 constexpr std::size_t Max(std::size_t a, std::size_t b)
 {
-    return a < b ? b : a;
+    return (a < b) ? b : a;
 }
 } // anonymous namespace
 
