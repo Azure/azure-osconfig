@@ -32,7 +32,7 @@ Result<std::vector<OpenPort>> GetOpenPorts(ContextInterface& context)
     }
     std::vector<OpenPort> openPorts;
     std::istringstream stream(result.Value());
-    OsConfigLogError(context.GetLogHandle(), "ss command output: %s ", result.Value().c_str());
+    OsConfigLogDebug(context.GetLogHandle(), "ss command output: %s ", result.Value().c_str());
     std::string line;
     while (std::getline(stream, line))
     {
@@ -57,7 +57,7 @@ Result<std::vector<OpenPort>> GetOpenPorts(ContextInterface& context)
         }
         else
         {
-            OsConfigLogError(context.GetLogHandle(), "Unsupported netid: %s", netid.c_str());
+            OsConfigLogInfo(context.GetLogHandle(), "Unsupported netid: %s", netid.c_str());
             continue;
         }
         size_t pos = local.rfind(':');
