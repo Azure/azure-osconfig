@@ -31,6 +31,8 @@ jobs:
       test: true
       machine-config: true
       release: ${{ github.event_name == 'pull_request' && false || true }}
+    secrets:
+      onedstenant: ${{ secrets.ONEDS_TENANT_NONPROD }}
 
   setup-matrix:
     name: Setup Matrix
