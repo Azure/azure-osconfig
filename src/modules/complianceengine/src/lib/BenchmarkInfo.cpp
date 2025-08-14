@@ -2,12 +2,10 @@
 // Licensed under the MIT License.
 
 #include <BenchmarkInfo.h>
-#include <CommonUtils.h>
-#include <Logging.h>
+#include <Regex.h>
 #include <Result.h>
 #include <RevertMap.h>
 #include <fstream>
-#include <iostream>
 #include <iterator>
 #include <map>
 #include <sstream>
@@ -25,8 +23,6 @@ static const map<string, BenchmarkType> sBenchmarkTypeMap = {
 
 namespace
 {
-using FileIterator = std::istream_iterator<char>;
-
 Result<BenchmarkType> ParseBenchmarkType(const string& benchmarkType)
 {
     auto it = sBenchmarkTypeMap.find(benchmarkType);
@@ -75,6 +71,14 @@ Result<CISBenchmarkInfo> CISBenchmarkInfo::Parse(const string& payloadKey)
     {
         return Error("Invalid CIS benchmark payload key format: missing distribution version", EINVAL);
     }
+
+    const auto pos = result.version.find('.');
+    if (pos != string::npos)
+    {
+        // If the version contains a dot, we consider only the major version part
+        result.version = result.version.substr(0, pos);
+    }
+
     if (!std::getline(ss, result.benchmarkVersion, '/') || result.benchmarkVersion.empty())
     {
         return Error("Invalid CIS benchmark payload key format: missing benchmark version", EINVAL);

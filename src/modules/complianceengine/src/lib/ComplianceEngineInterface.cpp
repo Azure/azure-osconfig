@@ -290,11 +290,7 @@ int ComplianceEngineCheckApplicability(MMI_HANDLE clientSession, const char* pay
     {
         OsConfigLogInfo(log, "This benchmark is not applicable for the current distribution");
         OsConfigLogInfo(log, "Current system identification: %s", std::to_string(distributionInfo.Value()).c_str());
-        auto overridden = distributionInfo.Value();
-        overridden.distribution = benchmark->distribution;
-        overridden.version = benchmark->version;
-        OsConfigLogInfo(log, "To override this detection, place the following line inside the '%s' file: %s",
-            DistributionInfo::cDefaultOverrideFilePath, std::to_string(overridden).c_str());
+        OsConfigLogInfo(log, "Benchmark identification: %s", std::to_string(benchmark.Value()).c_str());
         return EINVAL;
     }
 

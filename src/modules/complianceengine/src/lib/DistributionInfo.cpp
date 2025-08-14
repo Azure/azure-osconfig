@@ -275,6 +275,12 @@ Result<DistributionInfo> DistributionInfo::ParseEtcOsRelease(const string& etcOs
         return Error(etcOsReleasePath + " does not contain 'VERSION_ID' field", EINVAL);
     }
     result.version = std::move(it->second);
+    const auto pos = result.version.find(".");
+    if (pos != string::npos)
+    {
+        // If the version contains a dot, we take only the part before it
+        result.version = result.version.substr(0, pos);
+    }
 
     utsname unameData;
     if (0 != uname(&unameData))

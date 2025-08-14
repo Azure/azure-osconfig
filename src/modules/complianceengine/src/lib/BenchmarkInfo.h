@@ -5,6 +5,7 @@
 #define COMPLIANCEENGINE_BENCHMARK_INFO_H
 
 #include <DistributionInfo.h>
+#include <Regex.h>
 #include <Result.h>
 #include <string>
 
@@ -25,7 +26,7 @@ struct CISBenchmarkInfo
     // Defines the Linux distribution, e.g., Ubuntu, CentOS
     LinuxDistribution distribution;
 
-    // Defines the version of the Linux distribution, e.g., 20.04, 8
+    // Defines the major version of the Linux distribution, e.g., 20, 8, 5
     std::string version;
 
     // Defines the version of the benchmark, e.g., v1.0.0

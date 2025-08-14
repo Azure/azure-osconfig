@@ -91,7 +91,7 @@ TEST_F(BenchmarkInfoTest, Invalid_9)
 
 TEST_F(BenchmarkInfoTest, Invalid_10)
 {
-    auto result = CISBenchmarkInfo::Parse("/cis/ubuntu/20.04/v1.0.0");
+    auto result = CISBenchmarkInfo::Parse("/cis/ubuntu/20/v1.0.0");
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().code, EINVAL);
     ASSERT_EQ(result.Error().message, "Invalid CIS benchmark payload key format: missing benchmark section");
@@ -99,7 +99,7 @@ TEST_F(BenchmarkInfoTest, Invalid_10)
 
 TEST_F(BenchmarkInfoTest, Invalid_11)
 {
-    auto result = CISBenchmarkInfo::Parse("/cis/ubuntu/20.04/v1.0.0/");
+    auto result = CISBenchmarkInfo::Parse("/cis/ubuntu/20/v1.0.0/");
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().code, EINVAL);
     ASSERT_EQ(result.Error().message, "Invalid CIS benchmark payload key format: missing benchmark section");
@@ -107,18 +107,18 @@ TEST_F(BenchmarkInfoTest, Invalid_11)
 
 TEST_F(BenchmarkInfoTest, Valid_1)
 {
-    auto result = CISBenchmarkInfo::Parse("/cis/ubuntu/20.04/v1.0.0/x/y/z");
+    auto result = CISBenchmarkInfo::Parse("/cis/ubuntu/20/v1.0.0/x/y/z");
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value().distribution, LinuxDistribution::Ubuntu);
-    EXPECT_EQ(result.Value().version, std::string("20.04"));
+    EXPECT_EQ(result.Value().version, std::string("20"));
     EXPECT_EQ(result.Value().benchmarkVersion, std::string("v1.0.0"));
     EXPECT_EQ(result.Value().section, "x/y/z");
-    EXPECT_EQ(std::to_string(result.Value()), "/cis/ubuntu/20.04/v1.0.0/x/y/z");
+    EXPECT_EQ(std::to_string(result.Value()), "/cis/ubuntu/20/v1.0.0/x/y/z");
 }
 
 TEST_F(BenchmarkInfoTest, Match_1)
 {
-    auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/ubuntu/20.04/v1.0.0/x/y/z");
+    auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/ubuntu/20/v1.0.0/x/y/z");
     ASSERT_TRUE(benchmarkInfo.HasValue());
     auto filePath = mContext.MakeTempfile("ID=ubuntu\nVERSION_ID=20.04");
     auto distributionInfo = DistributionInfo::ParseEtcOsRelease(filePath);
@@ -128,7 +128,7 @@ TEST_F(BenchmarkInfoTest, Match_1)
 
 TEST_F(BenchmarkInfoTest, Match_2)
 {
-    auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/ubuntu/20.04/v1.0.0/x/y/z");
+    auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/ubuntu/20/v1.0.0/x/y/z");
     ASSERT_TRUE(benchmarkInfo.HasValue());
     auto filePath = mContext.MakeTempfile("ID=ubuntu\nVERSION_ID=16.04");
     auto distributionInfo = DistributionInfo::ParseEtcOsRelease(filePath);
@@ -144,4 +144,14 @@ TEST_F(BenchmarkInfoTest, Match_3)
     auto distributionInfo = DistributionInfo::ParseEtcOsRelease(filePath);
     ASSERT_TRUE(distributionInfo.HasValue());
     EXPECT_FALSE(benchmarkInfo.Value().Match(distributionInfo.Value()));
+}
+
+TEST_F(BenchmarkInfoTest, Match_4)
+{
+    auto benchmarkInfo = CISBenchmarkInfo::Parse("/cis/ubuntu/22.04/v1.0.0/x/y/z");
+    ASSERT_TRUE(benchmarkInfo.HasValue());
+    auto filePath = mContext.MakeTempfile("ID=ubuntu\nVERSION_ID=22.1124");
+    auto distributionInfo = DistributionInfo::ParseEtcOsRelease(filePath);
+    ASSERT_TRUE(distributionInfo.HasValue());
+    EXPECT_TRUE(benchmarkInfo.Value().Match(distributionInfo.Value()));
 }
