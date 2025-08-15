@@ -2140,9 +2140,10 @@ static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OsConfigLogH
 {
     const char* password = "password";
     char* reason = NULL;
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut("/boot/grub/grub.conf", '#', password, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut("/boot/grub2/grub.conf", '#', password, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut("/boot/grub/grub.cfg", '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubConf, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubConf, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubCfg, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubCfg, '#', password, &reason, log));
     FREE_MEMORY(reason);
     reason = DuplicateString("Manually set a boot loader password for GRUB. Automatic remediation is not possible");
     return reason;
