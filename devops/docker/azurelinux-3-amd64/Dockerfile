@@ -15,6 +15,7 @@ RUN tdnf install -y \
     openssl-devel \
     rapidjson-devel \
     rpm-build \
+    shadow-utils \
     tar \
     tmux \
     tree \
