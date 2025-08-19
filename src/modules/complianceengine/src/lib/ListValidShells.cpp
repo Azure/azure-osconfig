@@ -12,6 +12,7 @@ constexpr const char* etcShellsPath = "/etc/shells";
 Result<set<string>> ListValidShells(ContextInterface& context)
 {
     set<string> validShells;
+    OsConfigLogDebug(context.GetLogHandle(), "Listing valid shells from %s", context.GetSpecialFilePath(etcShellsPath).c_str());
     std::ifstream shellsFile(context.GetSpecialFilePath(etcShellsPath));
     if (!shellsFile.is_open())
     {
