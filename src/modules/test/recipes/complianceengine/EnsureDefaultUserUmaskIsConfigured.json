@@ -1,0 +1,151 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "complianceengine.so"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "EnsureDefaultUserUmaskIsConfigured": {
+        }
+      }
+    }
+  },
+
+
+
+  // Back up the original /etc/bashrc file
+  {
+    "RunCommand": "[ -f /etc/bashrc ] && mv -v /etc/bashrc /etc/bashrc.bak"
+  },
+  {
+    "RunCommand": "[ -f /etc/bash.bashrc ] && mv -v /etc/bash.bashrc /etc/bash.bashrc.bak"
+  },
+  {
+    "RunCommand": "[ -f /etc/profile ] && mv -v /etc/profile /etc/profile.bak"
+  },
+  {
+    "RunCommand": "for f in `find /etc/profile.d -name '*.sh'`; do mv -v \"$f\" \"$f.bak\"; done"
+  },
+  {
+    "RunCommand": "[ -f /etc/login.defs ] && mv -v /etc/login.defs /etc/login.defs.bak"
+  },
+  {
+    "RunCommand": "[ -f /etc/default/login ] && mv -v /etc/default/login /etc/default/login.bak"
+  },
+  {
+    "RunCommand": "[ -f /etc/pam.d/postlogin ] && mv -v /etc/pam.d/postlogin /etc/pam.d/postlogin.bak"
+  },
+
+  // All the rc files are gone now, the audit should fail
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "{ EnsureDefaultUserUmaskIsConfigured: umask is not set } == FALSE"
+  },
+
+  // Invalid octal umask
+  {
+    "RunCommand": "echo 'umask 017' > /etc/bashrc"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "{ EnsureDefaultUserUmaskIsConfigured: umask is incorrectly set in /etc/bashrc } == FALSE"
+  },
+
+  // Valid octal umask
+  {
+    "RunCommand": "echo 'umask 037' > /etc/bashrc"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ EnsureDefaultUserUmaskIsConfigured: umask is correctly set in /etc/bashrc } == TRUE"
+  },
+
+  // Invalid symbolic mask
+  {
+    "RunCommand": "echo 'umask u=rwx,g=rx,o=rw' > /etc/bashrc"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "{ EnsureDefaultUserUmaskIsConfigured: umask is incorrectly set in /etc/bashrc } == FALSE"
+  },
+
+  // Valid symbolic mask
+  {
+    "RunCommand": "echo 'umask  u=rwx,g=rx,o=' > /etc/bashrc"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ EnsureDefaultUserUmaskIsConfigured: umask is correctly set in /etc/bashrc } == TRUE"
+  },
+
+  // Precedence check - /etc/profile comes first and reports compliance early
+  {
+    "RunCommand": "echo 'umask  u=rwx,g=rx,o=' > /etc/profile"
+  },
+  {
+    "RunCommand": "echo 'umask  u=rwx,g=rx,o=' > /etc/default/login"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ EnsureDefaultUserUmaskIsConfigured: umask is correctly set in /etc/profile } == TRUE"
+  },
+
+  // Precedence check - /etc/profile comes first, but reports incompliance.
+  // /etc/default/login comes next. The message is different than in the previous test.
+  {
+    "RunCommand": "echo 'umask  u=rwx,g=rx,o=x' > /etc/profile"
+  },
+  {
+    "RunCommand": "echo 'umask  u=rwx,g=rx,o=' > /etc/default/login"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ EnsureDefaultUserUmaskIsConfigured: umask is incorrectly set in /etc/profile, umask is correctly set in /etc/bashrc } == TRUE"
+  },
+
+  // Cleanup
+  {
+    "RunCommand":"[ -f /etc/bashrc.bak ] && mv -v /etc/bashrc.bak /etc/bashrc"
+  },
+  {
+    "RunCommand":"[ -f /etc/bash.bashrc.bak ] && mv -v /etc/bash.bashrc.bak /etc/bash.bashrc"
+  },
+  {
+    "RunCommand":"[ -f /etc/profile.bak ] && mv -v /etc/profile.bak /etc/profile"
+  },
+  {
+    "RunCommand": "for f in `find /etc/profile.d -name '*.sh.bak'`; do mv -v \"$f\" \"${f%.bak}\"; done"
+  },
+  {
+    "RunCommand":"[ -f /etc/login.defs.bak ] && mv -v /etc/login.defs.bak /etc/login.defs"
+  },
+  {
+    "RunCommand":"[ -f /etc/default/login.bak ] && mv -v /etc/default/login.bak /etc/default/login"
+  },
+  {
+    "RunCommand": "[ -f /etc/pam.d/postlogin.bak ] && mv -v /etc/pam.d/postlogin.bak /etc/pam.d/postlogin"
+  },
+
+
+  {
+    "Action": "UnloadModule"
+  }
+]

@@ -35,11 +35,11 @@ std::string TrimWhiteSpaces(const std::string& str)
     return std::string();
 }
 
-Result<int> TryStringToInt(const std::string& str)
+Result<int> TryStringToInt(const std::string& str, int base)
 {
     try
     {
-        return std::stoi(str);
+        return std::stoi(str, nullptr, base);
     }
     catch (const std::invalid_argument&)
     {
