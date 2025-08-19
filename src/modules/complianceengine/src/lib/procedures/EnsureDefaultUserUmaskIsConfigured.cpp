@@ -4,6 +4,7 @@
 #include <Regex.h>
 #include <ScopeGuard.h>
 #include <StringTools.h>
+#include <algorithm>
 #include <array>
 #include <dirent.h>
 #include <fstream>
@@ -221,12 +222,10 @@ AUDIT_FN(EnsureDefaultUserUmaskIsConfigured, "")
         }
     }
 
-    umaskLocations.push_back(context.GetSpecialFilePath("/etc/profile"));
-    umaskLocations.push_back(context.GetSpecialFilePath("/etc/bashrc"));
-    umaskLocations.push_back(context.GetSpecialFilePath("/etc/bash.bashrc"));
-    umaskLocations.push_back(context.GetSpecialFilePath("/etc/pam.d/postlogin"));
-    umaskLocations.push_back(context.GetSpecialFilePath("/etc/login.defs"));
-    umaskLocations.push_back(context.GetSpecialFilePath("/etc/default/login"));
+    const std::array<string, 6> standardLocations = {
+        "/etc/profile", "/etc/bashrc", "/etc/bash.bashrc", "/etc/pam.d/postlogin", "/etc/login.defs", "/etc/default/login"};
+    std::transform(standardLocations.begin(), standardLocations.end(), std::back_inserter(umaskLocations),
+        [&context](const string& path) { return context.GetSpecialFilePath(path); });
 
     bool found = false;
     for (const auto& location : umaskLocations)
