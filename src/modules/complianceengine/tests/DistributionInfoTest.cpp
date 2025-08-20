@@ -42,8 +42,8 @@ TEST_F(DistributionInfoTest, ValidEtcOsReleaseFile)
     EXPECT_EQ(result.Value().osType, ComplianceEngine::OSType::Linux);
     EXPECT_EQ(result.Value().architecture, ComplianceEngine::Architecture::x86_64);
     EXPECT_EQ(result.Value().distribution, ComplianceEngine::LinuxDistribution::Ubuntu);
-    EXPECT_EQ(result.Value().version, "20");
-    EXPECT_EQ(std::to_string(result.Value()), R"(OS="Linux" ARCH="x86_64" DISTRO="ubuntu" VERSION="20")");
+    EXPECT_EQ(result.Value().version, "20.04");
+    EXPECT_EQ(std::to_string(result.Value()), R"(OS="Linux" ARCH="x86_64" DISTRO="ubuntu" VERSION="20.04")");
 }
 
 TEST_F(DistributionInfoTest, ValidEtcOsReleaseFile_WithComments)
@@ -56,8 +56,8 @@ TEST_F(DistributionInfoTest, ValidEtcOsReleaseFile_WithComments)
     EXPECT_EQ(result.Value().osType, ComplianceEngine::OSType::Linux);
     EXPECT_EQ(result.Value().architecture, ComplianceEngine::Architecture::x86_64);
     EXPECT_EQ(result.Value().distribution, ComplianceEngine::LinuxDistribution::Ubuntu);
-    EXPECT_EQ(result.Value().version, "20");
-    EXPECT_EQ(std::to_string(result.Value()), R"(OS="Linux" ARCH="x86_64" DISTRO="ubuntu" VERSION="20")");
+    EXPECT_EQ(result.Value().version, "20.04");
+    EXPECT_EQ(std::to_string(result.Value()), R"(OS="Linux" ARCH="x86_64" DISTRO="ubuntu" VERSION="20.04")");
 }
 
 TEST_F(DistributionInfoTest, InvalidKey_1)

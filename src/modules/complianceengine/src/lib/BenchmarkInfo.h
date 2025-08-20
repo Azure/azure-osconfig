@@ -40,6 +40,28 @@ struct CISBenchmarkInfo
     // Match the benchmark information against detected distribution information.
     // Returns true in case of a match.
     bool Match(const DistributionInfo& distributionInfo) const;
+
+    std::string SanitizedVersion() const
+    {
+        std::string result;
+        for (auto it = version.begin(); it != version.end(); ++it)
+        {
+            if (*it == '*')
+            {
+                continue;
+            }
+
+            if (*it == '?')
+            {
+                result += 'x'; // Escape special globbing characters
+                continue;
+            }
+
+            result += *it;
+        }
+
+        return result;
+    }
 };
 
 } // namespace ComplianceEngine

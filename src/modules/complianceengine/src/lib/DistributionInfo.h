@@ -49,7 +49,8 @@ struct DistributionInfo
     // Defines the Linux distribution, e.g., Ubuntu, CentOS
     LinuxDistribution distribution = LinuxDistribution::Ubuntu;
 
-    // Defines the version of the Linux distribution, e.g., 20.04, 8
+    // Defines the version of the Linux distribution, e.g., 20.04, 8, 15*
+    // The value is a globbing pattern and fnmatch is used for comparison.
     std::string version;
 
     static Result<DistributionInfo> ParseEtcOsRelease(const std::string& etcOsReleasePath);

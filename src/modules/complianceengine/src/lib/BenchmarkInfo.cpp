@@ -2,8 +2,11 @@
 // Licensed under the MIT License.
 
 #include <BenchmarkInfo.h>
+#include <Optional.h>
 #include <Result.h>
 #include <RevertMap.h>
+#include <cstring>
+#include <fnmatch.h>
 #include <fstream>
 #include <iterator>
 #include <map>
@@ -30,6 +33,19 @@ Result<BenchmarkType> ParseBenchmarkType(const string& benchmarkType)
         return it->second;
     }
     return Error("Unsupported benchmark type: '" + benchmarkType + "'", EINVAL);
+}
+
+Optional<Error> ValidateGlobbing(const string& benchmarkVersion)
+{
+    for (auto c : benchmarkVersion)
+    {
+        if (strchr("[]{}", c) != nullptr)
+        {
+            return Error("Invalid benchmark version: " + benchmarkVersion + ". Globbing characters [ ] { } are not allowed.", EINVAL);
+        }
+    }
+
+    return Optional<Error>();
 }
 } // namespace
 
@@ -70,12 +86,10 @@ Result<CISBenchmarkInfo> CISBenchmarkInfo::Parse(const string& payloadKey)
     {
         return Error("Invalid CIS benchmark payload key format: missing distribution version", EINVAL);
     }
-
-    const auto pos = result.version.find('.');
-    if (pos != string::npos)
+    auto error = ValidateGlobbing(result.version);
+    if (error.HasValue())
     {
-        // If the version contains a dot, we consider only the major version part
-        result.version = result.version.substr(0, pos);
+        return error.Value();
     }
 
     if (!std::getline(ss, result.benchmarkVersion, '/') || result.benchmarkVersion.empty())
@@ -92,7 +106,18 @@ Result<CISBenchmarkInfo> CISBenchmarkInfo::Parse(const string& payloadKey)
 
 bool CISBenchmarkInfo::Match(const DistributionInfo& distributionInfo) const
 {
-    return distributionInfo.distribution == distribution && distributionInfo.version == version;
+    if (distributionInfo.distribution != distribution)
+    {
+        return false;
+    }
+
+    const int status = fnmatch(version.c_str(), distributionInfo.version.c_str(), 0);
+    if (0 != status)
+    {
+        return false;
+    }
+
+    return true;
 }
 } // namespace ComplianceEngine
 
