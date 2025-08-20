@@ -5,7 +5,6 @@
 #define COMPLIANCEENGINE_BENCHMARK_INFO_H
 
 #include <DistributionInfo.h>
-#include <Regex.h>
 #include <Result.h>
 #include <string>
 

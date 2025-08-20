@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <BenchmarkInfo.h>
-#include <Regex.h>
 #include <Result.h>
 #include <RevertMap.h>
 #include <fstream>
