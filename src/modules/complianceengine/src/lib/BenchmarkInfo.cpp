@@ -2,12 +2,12 @@
 // Licensed under the MIT License.
 
 #include <BenchmarkInfo.h>
-#include <CommonUtils.h>
-#include <Logging.h>
+#include <Optional.h>
 #include <Result.h>
 #include <RevertMap.h>
+#include <cstring>
+#include <fnmatch.h>
 #include <fstream>
-#include <iostream>
 #include <iterator>
 #include <map>
 #include <sstream>
@@ -25,8 +25,6 @@ static const map<string, BenchmarkType> sBenchmarkTypeMap = {
 
 namespace
 {
-using FileIterator = std::istream_iterator<char>;
-
 Result<BenchmarkType> ParseBenchmarkType(const string& benchmarkType)
 {
     auto it = sBenchmarkTypeMap.find(benchmarkType);
@@ -35,6 +33,19 @@ Result<BenchmarkType> ParseBenchmarkType(const string& benchmarkType)
         return it->second;
     }
     return Error("Unsupported benchmark type: '" + benchmarkType + "'", EINVAL);
+}
+
+Optional<Error> ValidateGlobbing(const string& benchmarkVersion)
+{
+    for (auto c : benchmarkVersion)
+    {
+        if (strchr("[]{}", c) != nullptr)
+        {
+            return Error("Invalid benchmark version: " + benchmarkVersion + ". Globbing characters [ ] { } are not allowed.", EINVAL);
+        }
+    }
+
+    return Optional<Error>();
 }
 } // namespace
 
@@ -75,6 +86,12 @@ Result<CISBenchmarkInfo> CISBenchmarkInfo::Parse(const string& payloadKey)
     {
         return Error("Invalid CIS benchmark payload key format: missing distribution version", EINVAL);
     }
+    auto error = ValidateGlobbing(result.version);
+    if (error.HasValue())
+    {
+        return error.Value();
+    }
+
     if (!std::getline(ss, result.benchmarkVersion, '/') || result.benchmarkVersion.empty())
     {
         return Error("Invalid CIS benchmark payload key format: missing benchmark version", EINVAL);
@@ -89,7 +106,18 @@ Result<CISBenchmarkInfo> CISBenchmarkInfo::Parse(const string& payloadKey)
 
 bool CISBenchmarkInfo::Match(const DistributionInfo& distributionInfo) const
 {
-    return distributionInfo.distribution == distribution && distributionInfo.version == version;
+    if (distributionInfo.distribution != distribution)
+    {
+        return false;
+    }
+
+    const int status = fnmatch(version.c_str(), distributionInfo.version.c_str(), 0);
+    if (0 != status)
+    {
+        return false;
+    }
+
+    return true;
 }
 } // namespace ComplianceEngine
 
