@@ -39,9 +39,10 @@ const map<string, Architecture>& GetArchitectureMap()
 const map<string, LinuxDistribution>& GetDistributionMap()
 {
     static const map<string, LinuxDistribution> sDistributionMap = {
-        {"ubuntu", LinuxDistribution::Ubuntu}, {"centos", LinuxDistribution::Centos}, {"rhel", LinuxDistribution::RHEL}, {"sles", LinuxDistribution::SUSE},
-        {"ol", LinuxDistribution::OracleLinux}, {"mariner", LinuxDistribution::Mariner}, {"debian", LinuxDistribution::Debian},
-        {"azurelinux", LinuxDistribution::AzureLinux}, {"amzn", LinuxDistribution::AmazonLinux}, {"almalinux", LinuxDistribution::AlmaLinux},
+        {"ubuntu", LinuxDistribution::Ubuntu}, {"centos", LinuxDistribution::Centos}, {"rhel", LinuxDistribution::RHEL},
+        {"sles", LinuxDistribution::SUSE}, {"ol", LinuxDistribution::OracleLinux}, {"mariner", LinuxDistribution::Mariner},
+        {"debian", LinuxDistribution::Debian}, {"azurelinux", LinuxDistribution::AzureLinux}, {"amzn", LinuxDistribution::AmazonLinux},
+        {"almalinux", LinuxDistribution::AlmaLinux}, {"rocky", LinuxDistribution::RockyLinux},
         // Add more distributions as needed
     };
     return sDistributionMap;
