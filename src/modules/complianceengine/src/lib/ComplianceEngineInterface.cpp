@@ -292,7 +292,7 @@ int ComplianceEngineCheckApplicability(MMI_HANDLE clientSession, const char* pay
         OsConfigLogInfo(log, "Current system identification: %s", std::to_string(distributionInfo.Value()).c_str());
         auto overridden = distributionInfo.Value();
         overridden.distribution = benchmark->distribution;
-        overridden.version = benchmark->version;
+        overridden.version = benchmark->SanitizedVersion();
         OsConfigLogInfo(log, "To override this detection, place the following line inside the '%s' file: %s",
             DistributionInfo::cDefaultOverrideFilePath, std::to_string(overridden).c_str());
         return EINVAL;

@@ -25,7 +25,7 @@ struct CISBenchmarkInfo
     // Defines the Linux distribution, e.g., Ubuntu, CentOS
     LinuxDistribution distribution;
 
-    // Defines the version of the Linux distribution, e.g., 20.04, 8
+    // Defines the major version of the Linux distribution, e.g., 20, 8, 5
     std::string version;
 
     // Defines the version of the benchmark, e.g., v1.0.0
@@ -40,6 +40,28 @@ struct CISBenchmarkInfo
     // Match the benchmark information against detected distribution information.
     // Returns true in case of a match.
     bool Match(const DistributionInfo& distributionInfo) const;
+
+    std::string SanitizedVersion() const
+    {
+        std::string result;
+        for (auto it = version.begin(); it != version.end(); ++it)
+        {
+            if (*it == '*')
+            {
+                continue;
+            }
+
+            if (*it == '?')
+            {
+                result += 'x'; // Escape special globbing characters
+                continue;
+            }
+
+            result += *it;
+        }
+
+        return result;
+    }
 };
 
 } // namespace ComplianceEngine
