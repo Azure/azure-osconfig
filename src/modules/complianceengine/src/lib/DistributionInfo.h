@@ -28,6 +28,7 @@ enum class LinuxDistribution
     AzureLinux,
     AmazonLinux,
     AlmaLinux,
+    RockyLinux,
 };
 
 // Defines the system architecture, e.g., x86_64, arm64
