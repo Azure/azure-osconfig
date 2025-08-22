@@ -131,6 +131,9 @@
     "auditProcedure": {
       "anyOf": [
         {
+          "$ref": "procedures/AuditdRulesCheck.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureAccountsWithoutShellAreLocked.schema.json#/definitions/audit"
         },
         {
@@ -239,6 +242,9 @@
     },
     "remediationProcedure": {
       "anyOf": [
+        {
+          "$ref": "procedures/AuditdRulesCheck.schema.json#/definitions/remediation"
+        },
         {
           "$ref": "procedures/EnsureAccountsWithoutShellAreLocked.schema.json#/definitions/remediation"
         },

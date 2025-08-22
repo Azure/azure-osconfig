@@ -8,6 +8,7 @@ endif()
 
 set(PROCEDURES
     procedures/EnsureAccountsWithoutShellAreLocked.cpp
+    procedures/AuditdRulesCheck.cpp
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.cpp
     procedures/EnsureApparmorProfiles.cpp
     procedures/EnsureDconf.cpp
@@ -45,6 +46,7 @@ set(PROCEDURES
 )
 set(SCHEMAS
     procedures/EnsureAccountsWithoutShellAreLocked.schema.json
+    procedures/AuditdRulesCheck.schema.json
     procedures/EnsureAllGroupsFromEtcPasswdExistInEtcGroup.schema.json
     procedures/EnsureApparmorProfiles.schema.json
     procedures/EnsureDconf.schema.json
