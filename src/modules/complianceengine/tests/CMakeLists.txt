@@ -47,6 +47,7 @@ add_executable(complianceenginetests
     DistributionInfoTest.cpp
     EngineTest.cpp
     EvaluatorTest.cpp
+    LuaEvaluatorTest.cpp
     NetworkToolsTest.cpp
     OptionalTest.cpp
     RegexFallbackTest.cpp
