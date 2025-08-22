@@ -3,6 +3,7 @@
 #include <CommonUtils.h>
 #include <Evaluator.h>
 #include <FilePermissionsHelpers.h>
+#include <ListValidShells.h>
 #include <Result.h>
 #include <UsersIterator.h>
 #include <fcntl.h>
@@ -21,39 +22,6 @@ using std::map;
 using std::ostringstream;
 using std::set;
 using std::string;
-
-namespace
-{
-constexpr const char* etcShellsPath = "/etc/shells";
-Result<set<string>> ListValidShells(ContextInterface& context)
-{
-    set<string> validShells;
-    ifstream shellsFile("/etc/shells");
-    if (!shellsFile.is_open())
-    {
-        OsConfigLogError(context.GetLogHandle(), "Failed to open %s file", etcShellsPath);
-        return Error(std::string("Failed to open ") + etcShellsPath + " file", EINVAL);
-    }
-    string line;
-    while (std::getline(shellsFile, line))
-    {
-        if (line.empty() || line[0] == '#')
-        {
-            OsConfigLogDebug(context.GetLogHandle(), "Ignoring %s entry: %s", etcShellsPath, line.c_str());
-            continue;
-        }
-        const auto pos = line.find("nologin");
-        if (pos != std::string::npos)
-        {
-            OsConfigLogDebug(context.GetLogHandle(), "Ignoring %s entry: %s", etcShellsPath, line.c_str());
-            continue;
-        }
-
-        validShells.insert(line);
-    }
-    return validShells;
-}
-} // anonymous namespace
 
 AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
 {
@@ -79,7 +47,7 @@ AUDIT_FN(EnsureInteractiveUsersHomeDirectoriesAreConfigured)
         const auto it = validShells->find(shell);
         if (it == validShells->end())
         {
-            OsConfigLogDebug(context.GetLogHandle(), "User '%s' has shell '%s' not listed in %s", pwd.pw_name, pwd.pw_shell, etcShellsPath);
+            OsConfigLogDebug(context.GetLogHandle(), "User '%s' has shell '%s' not listed in /etc/shells", pwd.pw_name, pwd.pw_shell);
             continue;
         }
 
