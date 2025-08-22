@@ -10,19 +10,9 @@ on:
     paths:
       - devops/docker/**/Dockerfile
   workflow_dispatch:
-    inputs:
-      distro_list:
-        description: 'Comma separated list of distros to build. eg. ubuntu-20.04-amd64,ubuntu-20.04-arm64'
-        type: string
-      rebuild_all:
-        description: 'Rebuild all containers'
-        default: false
-        type: boolean
 
 env:
   REGISTRY: ghcr.io
-  BUILD_TYPE: Release
-  MOUNT: /azure-osconfig
 
 jobs:
   modified-containers:
@@ -42,8 +32,69 @@ jobs:
           echo containers=$containers >> $GITHUB_OUTPUT
 
   docker-build:
-    name: Docker
+    name: Docker build
     needs: modified-containers
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        container: ${{ fromJson(needs.modified-containers.outputs.containers) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup image
+        id: image
+        run: |
+          dockerfile=${{ matrix.container }}
+          image=${dockerfile#devops/docker/}
+          image=${image%/*}
+          distro=${image%-*}
+
+          repo=$(echo ${{ github.repository }} | awk '{print tolower($0)}')
+
+          echo name=$(echo -n $repo/$image) >> $GITHUB_OUTPUT
+          echo path=$(dirname ${dockerfile}) >> $GITHUB_OUTPUT
+          echo distro=$(echo -n $distro) >> $GITHUB_OUTPUT
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # - name: Docker login (ghcr.io)
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ${{ env.REGISTRY }}
+      #     username: ${{ github.actor }}
+      #     password: ${{ github.token }}
+
+      # - name: Docker meta
+      #   id: meta
+      #   uses: docker/metadata-action@v4
+      #   with:
+      #     images: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
+      #     tags: |
+      #       type=raw,value=latest
+      #       type=raw,value=${{ github.run_number }}
+      #       type=sha
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: ${{ steps.image.outputs.path }}
+          push: false
+          # tags: ${{ steps.meta.outputs.tags }}
+          # labels: ${{ steps.meta.outputs.labels }}
+
+  docker-push:
+    name: Docker push
+    needs:
+      - docker-build
+      - modified-containers
     runs-on: ubuntu-latest
     permissions:
       contents: read
