@@ -281,6 +281,26 @@ public:
         return nullptr != mPmatch;
     }
 
+    std::size_t position(std::size_t i) const
+    {
+        assert(ready());
+        if (i < mSize)
+        {
+            return mPmatch[i].rm_so;
+        }
+        return std::string::npos;
+    }
+
+    std::size_t length(std::size_t i) const
+    {
+        assert(ready());
+        if (i < mSize)
+        {
+            return mPmatch[i].rm_eo - mPmatch[i].rm_so;
+        }
+        return 0;
+    }
+
     SubMatch operator[](std::size_t i) const
     {
         assert(ready());
