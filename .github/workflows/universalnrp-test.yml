@@ -18,6 +18,33 @@ env:
   vmDefaultMemory: '2048' # Default memory for local VMs in MB
 
 jobs:
+  local-tests:
+    name: Local Tests
+    if: ${{ needs.check-changes.outputs.run_local_tests == 'true' && needs.setup-matrix.outputs.custom_download == 'false' }}
+    needs: [package, check-changes]
+    runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=ubuntu-24.04']
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      run_local_tests: ${{ steps.set-output.outputs.run_local_tests }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: set-output
+        run: |
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          ## DO NOT RUN local test only if files changed are in src/adapters/complianceengine/
+          ## NOTE --invert-match and comand output negagtion
+          if ! echo "$CHANGED_FILES" | grep --invert-match --quiet '^src/adapters/complianceengine/'; then
+            echo "run_local_tests=false" >> $GITHUB_OUTPUT
+          else
+            echo "run_local_tests=true" >> $GITHUB_OUTPUT
+          fi
+
   package:
     name: Package
     if: ${{ inputs.policy_packages == '[]' || inputs.policy_packages == '' }}
