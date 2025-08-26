@@ -3,7 +3,6 @@
 #define _GNU_SOURCE
 #include <errno.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include <version.h>
@@ -15,7 +14,7 @@
 #include <Logging.h>
 #include <Reasons.h>
 #include <Asb.h>
-// #include <telemetry.h>
+#include <telemetryjson.h>
 #include <dlfcn.h>
 
 #define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
@@ -665,6 +664,8 @@ static bool g_auditOnly = true;
 
 static OsConfigLogHandle g_perfLog = NULL;
 
+static TelemetryJsonHandle g_telemetry = NULL;
+
 OsConfigLogHandle GetPerfLog(void)
 {
     return g_perfLog;
@@ -939,6 +940,7 @@ void AsbInitialize(OsConfigLogHandle log)
     unsigned short freeMemoryPercentage = 0;
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
+    g_telemetry = TelemetryJson_Open();
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
@@ -1087,36 +1089,6 @@ static char* GetModuleDirectory()
     return directory; // Caller must free this memory
 }
 
-void RunTelemetryProxy(OsConfigLogHandle log, const char* moduleDirectory, const char* telemetryJSONFile) {
-    pid_t pid = fork();
-
-    if (pid == 0)
-    {
-        // Change working directory
-        if (chdir(moduleDirectory) != 0) {
-            OsConfigLogError(log, "RunTelemetryDetached: failed to change directory to '%s'", moduleDirectory);
-            exit(1);
-        }
-
-        // Execute telemetry application
-        // Usage: telemetry [OPTIONS] <json_file_path> [teardown_time_seconds]
-        // json_file_path         - Path to the JSON file to process
-        // teardown_time_seconds  - Optional: Teardown time in seconds (default: 5s)
-        //
-        // Options:
-        // -v, --verbose          - Enable debug mode
-        execl("./telemetry", "telemetry", "-v", telemetryJSONFile, "5", (char*)NULL);
-
-        OsConfigLogError(log, "RunTelemetryDetached: execl failed");
-        exit(errno);
-    }
-    else if (pid > 0)
-    {
-        // Parent process waits for child to exit
-        waitpid(pid, NULL, 0);
-    }
-}
-
 void AsbShutdown(OsConfigLogHandle log)
 {
     const char* auditOnly = "audit-only";
@@ -1176,25 +1148,37 @@ void AsbShutdown(OsConfigLogHandle log)
         // OsConfigLogCritical(log, "Telemetry initialized");
 
         // write the following telemetry event, just write json key/value pairs to /tmp/telemetry.json`
-        FILE* telemetryFile = NULL;
-        // telemetryFile = fopen(filename, "a");
-        if (NULL != (telemetryFile = fopen(filename, "a")))
-        {
-            fprintf(telemetryFile, "{");
-            fprintf(telemetryFile, "  \"eventName\": \"CompletedBaseline\",");
-            fprintf(telemetryFile, "  \"targetName\": \"%s\",", g_prettyName ? g_prettyName : "unknown");
-            fprintf(telemetryFile, "  \"baselineName\": \"%s\",", g_asbName);
-            fprintf(telemetryFile, "  \"mode\": \"%s\",", g_auditOnly ? auditOnly : automaticRemediation);
-            fprintf(telemetryFile, "  \"durationSeconds\": %.02f,", GetPerfClockTime(&g_perfClock, log) / 1000000.0);
-            fprintf(telemetryFile, "  \"version\": \"%s\"", OSCONFIG_VERSION);
-            fprintf(telemetryFile, "}\n");
-            fclose(telemetryFile);
-            // OsConfigLogInfo(log, "Telemetry event written to /tmp/telemetry.json");
-        }
-        else
-        {
-            OsConfigLogError(log, "Failed to write telemetry event to %s", filename);
-        }
+        // FILE* telemetryFile = NULL;
+        // // telemetryFile = fopen(filename, "a");
+        // if (NULL != (telemetryFile = fopen(filename, "a")))
+        // {
+        //     fprintf(telemetryFile, "{");
+        //     fprintf(telemetryFile, "  \"eventName\": \"CompletedBaseline\",");
+        //     fprintf(telemetryFile, "  \"targetName\": \"%s\",", g_prettyName ? g_prettyName : "unknown");
+        //     fprintf(telemetryFile, "  \"baselineName\": \"%s\",", g_asbName);
+        //     fprintf(telemetryFile, "  \"mode\": \"%s\",", g_auditOnly ? auditOnly : automaticRemediation);
+        //     fprintf(telemetryFile, "  \"durationSeconds\": %.02f,", GetPerfClockTime(&g_perfClock, log) / 1000000.0);
+        //     fprintf(telemetryFile, "  \"version\": \"%s\"", OSCONFIG_VERSION);
+        //     fprintf(telemetryFile, "}\n");
+        //     fclose(telemetryFile);
+        //     // OsConfigLogInfo(log, "Telemetry event written to /tmp/telemetry.json");
+        // }
+        // else
+        // {
+        //     OsConfigLogError(log, "Failed to write telemetry event to %s", filename);
+        // }
+        // fprintf(telemetryFile, "  \"durationSeconds\": %.02f,", GetPerfClockTime(&g_perfClock, log) / 1000000.0);
+        char* durationSeconds = NULL;
+        asprintf(&durationSeconds, "%.02f", GetPerfClockTime(&g_perfClock, log) / 1000000.0);
+        const char* keyValuePairs[] = {
+            "targetName", g_prettyName ? g_prettyName : "unknown",
+            "baselineName", g_asbName,
+            "mode", g_auditOnly ? auditOnly : automaticRemediation,
+            "durationSeconds", durationSeconds,
+            "version", OSCONFIG_VERSION
+        };
+        TelemetryJson_LogEvent(g_telemetry, "CompletedBaseline",
+            keyValuePairs, sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2);
 
         // TelemetryEventWrite_CompletedBaseline(g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
         // OsConfigLogCritical(log, "Shutting down telemetry");
@@ -1211,7 +1195,8 @@ void AsbShutdown(OsConfigLogHandle log)
     if (moduleDirectory)
     {
         OsConfigLogInfo(log, "AsbShutdown: running app telemetry in module directory '%s'", moduleDirectory);
-        RunTelemetryProxy(log, moduleDirectory, filename);
+        TelemetryJson_SetBinaryDirectory(g_telemetry, moduleDirectory);
+        TelemetryJson_Close(&g_telemetry);
     }
     FREE_MEMORY(moduleDirectory);
 

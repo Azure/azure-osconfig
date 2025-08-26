@@ -141,6 +141,19 @@ if (BUILD_MODULES)
     add_subdirectory(modules)
 endif()
 
+# Include External projects with tests
+ExternalProject_Get_Property(telemetry BINARY_DIR)
+set(TELEMETRY_TESTS_DIR ${BINARY_DIR}/tests)
+configure_file(
+    ${CMAKE_SOURCE_DIR}/cmake/ExternalTests.cmake.in
+    ${CMAKE_BINARY_DIR}/ExternalTests.cmake
+    @ONLY
+)
+set_property(DIRECTORY APPEND PROPERTY
+    TEST_INCLUDE_FILES
+        ${CMAKE_BINARY_DIR}/ExternalTests.cmake
+)
+
 message(STATUS "CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
 message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 

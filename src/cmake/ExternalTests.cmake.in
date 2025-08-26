@@ -1,0 +1,3 @@
+# CTest understands "subdirs()" in the CTestTestfile.cmake context.
+# One call per external project's binary dir.
+subdirs("@TELEMETRY_TESTS_DIR@")

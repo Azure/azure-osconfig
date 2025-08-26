@@ -12,28 +12,35 @@ ExternalProject_Add(
     GIT_REPOSITORY
         https://github.com/microsoft/cpp_client_telemetry.git
     GIT_TAG
-        v3.9.205.1
-    GIT_SUBMODULES ""  # This disables submodule checkout
+        3.9.22.1
+    GIT_SUBMODULES ""           # This disables submodule checkout
     CMAKE_ARGS
         ${CMAKE_ARGS}
         -DBUILD_FUNC_TESTS=OFF
         -DBUILD_UNIT_TESTS=OFF
+        -DCMAKE_CXX_FLAGS="-w"    # Suppress all warnings
+        -DCMAKE_C_FLAGS="-w"      # Suppress all warnings
 )
 
 # Set 1DS SDK includes/libs
 set(MAT_SDK_LIB /usr/local/lib/)
 set(MAT_SDK_INCLUDE	/usr/local/include/mat)
 
-set(CURL_USE_STATIC_LIBS TRUE)
-find_package(CURL REQUIRED)
+# set(CURL_USE_STATIC_LIBS TRUE)
+# find_package(CURL REQUIRED)
+find_package(PkgConfig REQUIRED)
+set(PKG_CONFIG_USE_STATIC_LIBS ON)
+pkg_check_modules(LIBCURL_PKG REQUIRED IMPORTED_TARGET libcurl)
+
 find_package(Threads REQUIRED)
 find_package(SQLite3 REQUIRED)
 find_package(ZLIB REQUIRED)
 
 add_subdirectory(../../parson ${CMAKE_CURRENT_BINARY_DIR}/parson)
 
-if(DEFINED ENV{OsConfigTelemetryApiKey})
+if(DEFINED ENV{OsConfigTelemetryApiKey} AND NOT "$ENV{OsConfigTelemetryApiKey}" STREQUAL "")
     set(OsConfigTelemetryApiKey $ENV{OsConfigTelemetryApiKey})
+    message(STATUS "Using OsConfigTelemetryApiKey from environment variable")
 else()
     message(WARNING "OsConfigTelemetryApiKey not set, using default value")
     set(OsConfigTelemetryApiKey "999999999999999999999999999999999-999999999-9999-9999-9999-999999999999-9999")
@@ -53,7 +60,8 @@ target_link_libraries(telemetrylib
     PRIVATE
         ${MAT_SDK_LIB}/libmat.a
         SQLite::SQLite3
-        CURL::libcurl
+        # CURL::libcurl
+        PkgConfig::LIBCURL_PKG
         ZLIB::ZLIB
 )
 

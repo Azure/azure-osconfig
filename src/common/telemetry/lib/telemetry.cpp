@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <algorithm>
 
 using namespace MAT;
 
@@ -14,19 +15,39 @@ LOGMANAGER_INSTANCE
 namespace Telemetry
 {
 
+// Define parameter sets for each EventWrite_ method
+const std::set<std::string> TelemetryManager::BASELINE_COMPLETE_REQUIRED_PARAMS = {
+    "targetName",
+    "baselineName",
+    "mode",
+    "durationSeconds",
+    "timestamp",    // TODO:  include common params
+    "eventName"
+};
+
+const std::set<std::string> TelemetryManager::BASELINE_COMPLETE_OPTIONAL_PARAMS = {
+    "version"
+};
+
+// Map event names to their parameter sets (required, optional)
+const std::unordered_map<std::string, std::pair<std::set<std::string>, std::set<std::string>>>
+TelemetryManager::EVENT_PARAMETER_SETS = {
+    {"CompletedBaseline", {BASELINE_COMPLETE_REQUIRED_PARAMS, BASELINE_COMPLETE_OPTIONAL_PARAMS}}
+};
+
 TelemetryManager::TelemetryManager()
     : m_logger(nullptr),
       m_initialized(false)
 {
 }
 
-TelemetryManager::~TelemetryManager()
-{
-    if (m_initialized)
-    {
-        Shutdown();
-    }
-}
+// TelemetryManager::~TelemetryManager()
+// {
+//     if (m_initialized)
+//     {
+//         Shutdown();
+//     }
+// }
 
 TelemetryManager& TelemetryManager::GetInstance()
 {
@@ -81,21 +102,15 @@ bool TelemetryManager::IsInitialized() const
     return m_initialized;
 }
 
-void TelemetryManager::LogEvent(const std::string& eventName)
+void TelemetryManager::EventWrite(Microsoft::Applications::Events::EventProperties event)
 {
     if (!m_initialized || !m_logger)
     {
         return;
     }
 
-    try
-    {
-        m_logger->LogEvent(eventName);
-    }
-    catch (const std::exception& e)
-    {
-        std::cerr << "Failed to log event '" << eventName << "': " << e.what() << std::endl;
-    }
+    m_logger->LogEvent(event);
+
 }
 
 void TelemetryManager::Shutdown()
@@ -180,6 +195,44 @@ bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
     return success;
 }
 
+bool TelemetryManager::ValidateEventParameters(const std::string& eventName, const std::set<std::string>& jsonKeys) const
+{
+    auto it = EVENT_PARAMETER_SETS.find(eventName);
+    if (it == EVENT_PARAMETER_SETS.end())
+    {
+        std::cerr << "Unknown event type: " << eventName << std::endl;
+        return false;
+    }
+
+    const auto& requiredParams = it->second.first;
+    const auto& optionalParams = it->second.second;
+
+    // Check that all required parameters are present
+    for (const auto& requiredParam : requiredParams)
+    {
+        if (jsonKeys.find(requiredParam) == jsonKeys.end())
+        {
+            std::cerr << "Missing required parameter '" << requiredParam << "' for event '" << eventName << "'" << std::endl;
+            return false;
+        }
+    }
+
+    // Check that no unexpected parameters are present
+    for (const auto& jsonKey : jsonKeys)
+    {
+        if (jsonKey == "eventName") continue; // Skip the event name field
+
+        if (requiredParams.find(jsonKey) == requiredParams.end() &&
+            optionalParams.find(jsonKey) == optionalParams.end())
+        {
+            std::cerr << "Unexpected parameter '" << jsonKey << "' for event '" << eventName << "'" << std::endl;
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
 {
     if (!m_logger)
@@ -217,13 +270,32 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
             return;
         }
 
+        // Collect all JSON keys for validation
+        std::set<std::string> jsonKeys;
+        size_t count = json_object_get_count(jsonObject);
+        for (size_t i = 0; i < count; i++)
+        {
+            const char* key = json_object_get_name(jsonObject, i);
+            if (key)
+            {
+                jsonKeys.insert(std::string(key));
+            }
+        }
+
+        // Validate parameters against the event's parameter set
+        if (!ValidateEventParameters(std::string(eventName), jsonKeys))
+        {
+            std::cerr << "Parameter validation failed for event '" << eventName << "': " << jsonLine << std::endl;
+            json_value_free(jsonValue);
+            return;
+        }
+
         // Create event with the event name
         std::string fullEventName = std::string("OSConfig.") + eventName;
         std::cout << "Processing event: " << fullEventName << std::endl;
         EventProperties event(fullEventName);
 
         // Iterate over all key/value pairs in the JSON object
-        size_t count = json_object_get_count(jsonObject);
         for (size_t i = 0; i < count; i++)
         {
             const char* key = json_object_get_name(jsonObject, i);
@@ -303,6 +375,26 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
     {
         json_value_free(jsonValue);
     }
+}
+
+void TelemetryManager::EventWrite_BaselineComplete(const std::string& targetName, const std::string& baselineName,
+            const std::string& mode, int durationSeconds)
+{
+    if (!m_initialized || !m_logger)
+    {
+        return;
+    }
+
+    // Create event with the event name "BaselineComplete"
+    Microsoft::Applications::Events::EventProperties event("BaselineComplete");
+
+    // Set the properties based on the provided parameters
+    event.SetProperty("TargetName", targetName);
+    event.SetProperty("BaselineName", baselineName);
+    event.SetProperty("Mode", mode);
+    event.SetProperty("DurationSeconds", durationSeconds);
+
+    EventWrite(event);
 }
 
 } // namespace Telemetry
