@@ -31,6 +31,7 @@ set(PROCEDURES
     procedures/EnsureRootPath.cpp
     procedures/EnsureSshdOption.cpp
     procedures/EnsureSysctl.cpp
+    procedures/EnsureSystemAccountsDoNotHaveValidShell.cpp
     procedures/EnsureUserIsOnlyAccountWith.cpp
     procedures/EnsureWirelessIsDisabled.cpp
     procedures/EnsureXdmcp.cpp
@@ -69,6 +70,7 @@ set(SCHEMAS
     procedures/EnsureRootPath.schema.json
     procedures/EnsureSshdOption.schema.json
     procedures/EnsureSysctl.schema.json
+    procedures/EnsureSystemAccountsDoNotHaveValidShell.schema.json
     procedures/EnsureUserIsOnlyAccountWith.schema.json
     procedures/EnsureWirelessIsDisabled.schema.json
     procedures/EnsureXdmcp.schema.json
