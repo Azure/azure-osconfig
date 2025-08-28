@@ -11,7 +11,10 @@ RUN yum install -y \
     libtool \
     make \
     openssl-devel \
-    rpm-build
+    rpm-build \
+    tar \
+    unzip \
+    zip
 
 WORKDIR /git
 
