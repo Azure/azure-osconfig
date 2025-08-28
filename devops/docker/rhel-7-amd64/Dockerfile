@@ -17,12 +17,16 @@ COPY --from=centos /elfutils*.rpm /elfutils.rpm
 RUN yum-config-manager --enable ubi-7-server-devtools-rpms
 RUN yum install -y --disableplugin=subscription-manager \
     autoconf \
+    curl \
     gcc \
     gcc-c++ \
     git \
     libtool \
     make \
-    openssl-devel
+    openssl-devel \
+    tar \
+    unzip \
+    zip
 
 WORKDIR /git
 
