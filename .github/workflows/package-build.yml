@@ -62,7 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: ${{ inputs.machine-config == false && 'recursive' || '' }}
+          submodules: recursive
           clean: true
           ref: ${{ inputs.ref }}
 
