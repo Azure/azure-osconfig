@@ -121,7 +121,7 @@ Result<Status> LuaEvaluator::Evaluate(const string& script, IndicatorsTree& indi
             error += lua_tostring(L, -1);
         }
         OsConfigLogError(log, "%s", error.c_str());
-        lua_pop(L, 1);
+        lua_settop(L, 0);
         return Error(error);
     }
 
