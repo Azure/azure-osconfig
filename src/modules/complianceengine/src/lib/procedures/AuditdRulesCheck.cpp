@@ -13,6 +13,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <sys/stat.h>
 #include <vector>
 
 namespace ComplianceEngine
@@ -55,7 +56,7 @@ int GetUidMin(ContextInterface& context)
 
 std::string ReplaceAuidPlaceholder(const std::string& option, int uidMin)
 {
-    regex auidRegex(R"(\bauid>=\d+\b)");
+    regex auidRegex(R"(-F auid>=\d+\b)");
     smatch m;
     std::string replaced = option;
     // Replace all matches of auidRegex with the new value
@@ -110,6 +111,15 @@ Result<std::vector<std::string>> GetRulesFromRunningConfig(ContextInterface& con
 Result<std::vector<std::string>> GetRulesFromFilesAtPath(ContextInterface& context, const std::string& directory)
 {
     std::vector<std::string> rules;
+
+    // First check if directory exists
+    struct stat statbuf;
+    if (stat(directory.c_str(), &statbuf) != 0 || !S_ISDIR(statbuf.st_mode))
+    {
+        OsConfigLogWarning(context.GetLogHandle(), "Directory does not exist or is not accessible: %s", directory.c_str());
+        return Error("Failed to access audit rules directory: " + directory, errno);
+    }
+
     char* paths[] = {const_cast<char*>(directory.c_str()), nullptr};
     FTS* fts = fts_open(paths, FTS_NOCHDIR | FTS_PHYSICAL, nullptr);
     if (fts == nullptr)
@@ -306,6 +316,7 @@ AUDIT_FN(AuditdRulesCheck, "searchItem:Item being audited:M", "excludeOption:Opt
                 return fileResult;
             }
         }
+        return indicators.Compliant("All syscall rules found and properly configured");
     }
     else if (searchItem.find("SUDOLOGFILE") == 0)
     {
@@ -314,17 +325,18 @@ AUDIT_FN(AuditdRulesCheck, "searchItem:Item being audited:M", "excludeOption:Opt
         {
             return logfileResult.Error();
         }
-        searchItem = "-w " + logfileResult.Value();
-        auto runningResult = CheckRuleInList(runningRules, searchItem, excludeOption, requiredOptions, indicators);
+        std::string actualSearchItem = "-w " + logfileResult.Value();
+        auto runningResult = CheckRuleInList(runningRules, actualSearchItem, excludeOption, requiredOptions, indicators);
         if (runningResult != Status::Compliant)
         {
             return runningResult;
         }
-        auto fileResult = CheckRuleInList(filesRules, searchItem, excludeOption, requiredOptions, indicators);
+        auto fileResult = CheckRuleInList(filesRules, actualSearchItem, excludeOption, requiredOptions, indicators);
         if (fileResult != Status::Compliant)
         {
             return fileResult;
         }
+        return indicators.Compliant("Sudo logfile rule found and properly configured");
     }
     else if (searchItem.find("-e 2") == 0)
     {
@@ -344,7 +356,6 @@ AUDIT_FN(AuditdRulesCheck, "searchItem:Item being audited:M", "excludeOption:Opt
         }
         return indicators.Compliant("Rule found: " + searchItem + " and is properly configured");
     }
-    return Error("Unreachable");
 }
 
 } // namespace ComplianceEngine
