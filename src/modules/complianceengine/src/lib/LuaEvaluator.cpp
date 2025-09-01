@@ -1,13 +1,12 @@
 #include "LuaEvaluator.h"
 
-#include <CommonUtils.h>
-#include <Result.h>
-extern "C"
-{
 #include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
-}
+
+#include <CommonUtils.h>
+#include <Result.h>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
@@ -261,6 +260,7 @@ int LuaEvaluator::LuaProcedureWrapper(lua_State* L)
     if (!callContext)
     {
         lua_pushstring(L, "Failed to get call context");
+        // lua_error doesn't return (throws)
         lua_error(L);
         return 0;
     }
