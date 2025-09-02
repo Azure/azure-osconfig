@@ -2141,6 +2141,7 @@ static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(OsConfigLogHandle lo
 
 static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OsConfigLogHandle log)
 {
+    // GRUB (legacy) uses 'password', GRUB2 uses 'password_pbkdf2' and either can be in any of the checked files
     const char* password = "password";
     char* reason = NULL;
     RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubCfg, '#', password, &reason, log));
@@ -2153,7 +2154,6 @@ static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OsConfigLogH
     reason = DuplicateString("Manually set a boot loader password for GRUB. Automatic remediation is not possible");
     return reason;
 }
-
 
 static char* AuditEnsureLoggingIsConfigured(OsConfigLogHandle log)
 {
