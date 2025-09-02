@@ -2143,7 +2143,7 @@ static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OsConfigLogH
 {
     const char* password = "password";
     char* reason = NULL;
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubCfg, '#', /*password*/"color", &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubCfg, '#', password, &reason, log));
     RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubConf, '#', password, &reason, log));
     RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubCfg, '#', password, &reason, log));
     RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubConf, '#', password, &reason, log));
