@@ -333,7 +333,7 @@ int LuaEvaluator::LuaProcedureWrapper(lua_State* L)
 
     if (result.HasValue())
     {
-        OsConfigLogInfo(callContext->context.GetLogHandle(), "Successfull call of lua function, result %scompliant",
+        OsConfigLogInfo(callContext->context.GetLogHandle(), "Successful call of lua function, result %scompliant",
             (result.Value() == Status::NonCompliant) ? "non-" : "");
         lua_pushboolean(L, result.Value() == ComplianceEngine::Status::Compliant);
 
