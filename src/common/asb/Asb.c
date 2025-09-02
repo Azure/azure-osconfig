@@ -599,6 +599,8 @@ static const char* g_bootGrubGrubCfg = "/boot/grub/grub.cfg";
 static const char* g_bootGrubGrubConf = "/boot/grub/grub.conf";
 static const char* g_bootGrub2GrubCfg = "/boot/grub2/grub.cfg";
 static const char* g_bootGrub2GrubConf = "/boot/grub2/grub.conf";
+static const char* g_bootGrubUserCfg = "/boot/grub/user.cfg";
+static const char* g_bootGrub2UserCfg = "/boot/grub2/user.cfg";
 static const char* g_minSambaProtocol = "min protocol = SMB2";
 static const char* g_login = "login";
 
@@ -2020,8 +2022,9 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(OsConfigLogHandle log)
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubCfg, 0, 0, mode, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubConf, 0, 0, mode, &reason, log));
     RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, &reason, log));
-    CheckFileAccess(g_bootGrub2GrubConf, 0, 0, mode, &reason, log);
-
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrub2GrubConf, 0, 0, mode, &reason, log));
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubUserCfg, 0, 0, mode, &reason, log));
+    CheckFileAccess(g_bootGrub2UserCfg, 0, 0, mode, &reason, log);
     return reason;
 }
 
@@ -2138,11 +2141,15 @@ static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(OsConfigLogHandle lo
 
 static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OsConfigLogHandle log)
 {
+    // GRUB (legacy) uses 'password', GRUB2 uses 'password_pbkdf2' and either can be in any of the checked files
     const char* password = "password";
     char* reason = NULL;
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut("/boot/grub/grub.conf", '#', password, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut("/boot/grub2/grub.conf", '#', password, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut("/boot/grub/grub.cfg", '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubCfg, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubConf, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubUserCfg, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubCfg, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubConf, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2UserCfg, '#', password, &reason, log));
     FREE_MEMORY(reason);
     reason = DuplicateString("Manually set a boot loader password for GRUB. Automatic remediation is not possible");
     return reason;
@@ -3652,6 +3659,8 @@ static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, OsConfigLog
     return ((FileExists(g_bootGrubGrubCfg) && (0 == SetFileAccess(g_bootGrubGrubCfg, 0, 0, mode, log))) ||
         (FileExists(g_bootGrubGrubConf) && (0 == SetFileAccess(g_bootGrubGrubConf, 0, 0, mode, log))) ||
         (FileExists(g_bootGrub2GrubCfg) && (0 == SetFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, log))) ||
+        (FileExists(g_bootGrubUserCfg) && (0 == SetFileAccess(g_bootGrubUserCfg, 0, 0, mode, log))) ||
+        (FileExists(g_bootGrub2UserCfg) && (0 == SetFileAccess(g_bootGrub2UserCfg, 0, 0, mode, log))) ||
         (FileExists(g_bootGrub2GrubConf) && (0 == SetFileAccess(g_bootGrub2GrubConf, 0, 0, mode, log)))) ? 0 : ENOENT;
 }
 
