@@ -713,20 +713,41 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
 int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
+    // First, check if at least one of the following files exists :
+    // - /etc/pam.d/common-password
+    // - /etc/security/pwquality.conf
+    // If neither exists, the audit fails early.
+    //
+    // If /etc/pam.d/common-password exists:
+    // - Audit inline parameters (e.g., minlen, dcredit, ucredit, etc.).
+    // - If all required parameters are present and valid, the audit passes.
+    //
+    // If the audit fails for common-password and /etc/security/pwquality.conf is present :
+    // - Audit pwquality.conf for the required parameters.
+    // - If valid, the audit passes.
+    //
+    // This logic ensures compatibility across distros and PAM module configurations and supports both common-password and pwquality.conf setups.
+
+    bool etcPamdCommonPasswordExists = (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log)) ? true : false;
+    bool etcSecurityPwQualityConfExists = (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log)) ? true : false;
     int status = ENOENT;
 
-    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
-    {
-        status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
-    }
-    else if (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log))
-    {
-        status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);
-    }
-    else
+    if ((false == etcPamdCommonPasswordExists) && (false == etcSecurityPwQualityConfExists))
     {
         OsConfigLogInfo(log, "CheckPasswordCreationRequirements: neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
         OsConfigCaptureReason(reason, "Neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
+    }
+    else
+    {
+        if (etcPamdCommonPasswordExists)
+        {
+            status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
+        }
+
+        if ((0 != status) && etcSecurityPwQualityConfExists)
+        {
+            status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);
+        }
     }
 
     return status;
@@ -766,10 +787,10 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     // - retry: the user will be prompted at most this times to enter a valid password before an error is returned
     // - minlen: the minlen parameter sets the minimum acceptable length for a password to 14 characters
     // - minclass: the minimum number of character types that must be used (e.g., uppercase, lowercase, digits, other)
-    // - lcredit: the minimum number of lowercase letters required in the password (negative means no requirement)
-    // - ucredit: the minimum number of uppercase letters required in the password (negative means no requirement)
-    // - ocredit: the minimum number of other (non-alphanumeric) characters required in the password (negative means none)
-    // - dcredit: the minimum number of digits required in the password  (negative means no requirement)
+    // - lcredit: the minimum number of lowercase letters required in the password (-1 means at least one required)
+    // - ucredit: the minimum number of uppercase letters required in the password (-1 means at least one required)
+    // - ocredit: the minimum number of other (non-alphanumeric) characters required in the password (-1 means at least one required)
+    // - dcredit: the minimum number of digits required in the password  (-1 means at least one required)
 
     const char* etcPamdCommonPasswordLineTemplate = "password requisite %s retry=%d minlen=%d lcredit=%d ucredit=%d ocredit=%d dcredit=%d\n";
     const char* etcSecurityPwQualityConfLineTemplate = "%s = %d\n";
