@@ -113,9 +113,9 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
         return result.Value();
     }
 
-    if (!strcmp(name, "lua"))
+    if (!strcmp(name, "Lua"))
     {
-        mIndicators.Push("lua");
+        mIndicators.Push("Lua");
         const auto result = EvaluateLua(value, action);
         if (!result.HasValue())
         {
@@ -226,7 +226,7 @@ Result<Status> Evaluator::EvaluateNot(const json_value_t* value, const Action ac
 
 Result<Status> Evaluator::EvaluateLua(const json_value_t* value, const Action action)
 {
-    OsConfigLogDebug(mContext.GetLogHandle(), "Evaluating lua operator");
+    OsConfigLogDebug(mContext.GetLogHandle(), "Evaluating Lua operator");
 
     if (nullptr == value)
     {
@@ -236,8 +236,8 @@ Result<Status> Evaluator::EvaluateLua(const json_value_t* value, const Action ac
 
     if (json_value_get_type(value) != JSONObject)
     {
-        OsConfigLogError(mContext.GetLogHandle(), "lua value is not an object");
-        return Error("lua value is not an object", EINVAL);
+        OsConfigLogError(mContext.GetLogHandle(), "Lua value is not an object");
+        return Error("Lua value is not an object", EINVAL);
     }
 
     // Lua can be used for both audit and remediation
@@ -245,7 +245,7 @@ Result<Status> Evaluator::EvaluateLua(const json_value_t* value, const Action ac
     auto arguments = GetBuiltinProcedureArguments(value);
     if (!arguments.HasValue())
     {
-        OsConfigLogError(mContext.GetLogHandle(), "Failed to get lua arguments: %s", arguments.Error().message.c_str());
+        OsConfigLogError(mContext.GetLogHandle(), "Failed to get Lua arguments: %s", arguments.Error().message.c_str());
         return arguments.Error();
     }
 
