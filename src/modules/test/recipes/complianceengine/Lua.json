@@ -25,13 +25,12 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "PASS{ Audit OK } == TRUE"
+    "Payload": "PASS{ Lua: Audit OK } == TRUE"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateTest",
-    "Payload": "Remediation OK"
+    "ObjectName": "remediateTest"
   },
 
   {
@@ -55,14 +54,13 @@
     "ObjectType": "Reported",
     "ComponentName": "ComplianceEngine",
     "ObjectName": "auditTest",
-    "Payload": "{ Audit FAIL } == FALSE"
+    "Payload": "{ Lua: Audit FAIL } == FALSE"
   },
 
   {
     "ObjectType": "Desired",
     "ComponentName": "ComplianceEngine",
-    "ObjectName": "remediateTest",
-    "Payload": "Remediation FAIL"
+    "ObjectName": "remediateTest"
   },
 
   {
