@@ -2138,13 +2138,8 @@ static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(OsConfigLogHandle lo
 
 static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OsConfigLogHandle log)
 {
-    const char* password = "password";
     char* reason = NULL;
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut("/boot/grub/grub.conf", '#', password, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut("/boot/grub2/grub.conf", '#', password, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut("/boot/grub/grub.cfg", '#', password, &reason, log));
-    FREE_MEMORY(reason);
-    reason = DuplicateString("Manually set a boot loader password for GRUB. Automatic remediation is not possible");
+    CheckAllBootloadersHavePasswordProtectionEnabled(&reason, log);
     return reason;
 }
 
