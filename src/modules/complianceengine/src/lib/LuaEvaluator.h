@@ -69,7 +69,7 @@ private:
     void SecureLuaEnvironment();
 
     // Lua C function that wraps compliance procedure calls.
-    // Returns (boolean, string) on success or throws Lua error on failure.
+    // Returns - on lua stack - (boolean, string) on success or throws Lua error on failure.
     static int LuaProcedureWrapper(lua_State* L);
 };
 

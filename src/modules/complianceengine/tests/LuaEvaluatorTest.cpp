@@ -23,17 +23,11 @@ class LuaEvaluatorTest : public ::testing::Test
 protected:
     void SetUp() override
     {
-        indicators = std::unique_ptr<IndicatorsTree>(new IndicatorsTree());
-        indicators->Push("LuaEvaluatorTest");
+        mIndicators.Push("LuaEvaluatorTest");
     }
 
-    void TearDown() override
-    {
-        indicators.reset();
-    }
-
-    std::unique_ptr<IndicatorsTree> indicators;
-    MockContext context;
+    IndicatorsTree mIndicators;
+    MockContext mContext;
 };
 
 // Test basic LuaEvaluator construction and destruction
@@ -48,7 +42,7 @@ TEST_F(LuaEvaluatorTest, BasicScript_ReturnTrue)
     LuaEvaluator evaluator;
     const std::string script = "return true";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
@@ -60,7 +54,7 @@ TEST_F(LuaEvaluatorTest, BasicScript_ReturnFalse)
     LuaEvaluator evaluator;
     const std::string script = "return false";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
@@ -72,10 +66,11 @@ TEST_F(LuaEvaluatorTest, BasicScript_ReturnBooleanWithMessage)
     LuaEvaluator evaluator;
     const std::string script = "return true, 'Custom success message'";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
 
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
+    EXPECT_EQ(mIndicators.GetRootNode()->indicators.back().message, "Custom success message");
 }
 
 // Test script execution returning error string
@@ -84,7 +79,7 @@ TEST_F(LuaEvaluatorTest, BasicScript_ReturnErrorString)
     LuaEvaluator evaluator;
     const std::string script = "return 'This is an error message'";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_EQ(result.Error().message, "This is an error message");
@@ -96,7 +91,7 @@ TEST_F(LuaEvaluatorTest, BasicScript_NoReturn)
     LuaEvaluator evaluator;
     const std::string script = "local x = 42"; // No return statement
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_EQ(result.Error().message, "Lua script did not return a value");
@@ -108,7 +103,7 @@ TEST_F(LuaEvaluatorTest, InvalidScript_CompilationError)
     LuaEvaluator evaluator;
     const std::string script = "return true end"; // Syntax error
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_THAT(result.Error().message, ::testing::HasSubstr("Lua script compilation failed"));
@@ -120,7 +115,7 @@ TEST_F(LuaEvaluatorTest, InvalidScript_RuntimeError)
     LuaEvaluator evaluator;
     const std::string script = "error('Runtime error test')";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_THAT(result.Error().message, ::testing::HasSubstr("Lua script execution failed"));
@@ -133,7 +128,7 @@ TEST_F(LuaEvaluatorTest, InvalidScript_InvalidReturnType)
     LuaEvaluator evaluator;
     const std::string script = "return 42"; // Invalid return type (number)
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
 
     ASSERT_FALSE(result.HasValue());
     EXPECT_EQ(result.Error().message, "Invalid return type from LUA script");
@@ -146,25 +141,25 @@ TEST_F(LuaEvaluatorTest, Security_DangerousFunctionsBlocked)
 
     // Test that io.open is not available
     std::string script = "if io.open then return 'io.open available' else return true end";
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
     // Test that os.execute is not available
     script = "if os.execute then return 'os.execute available' else return true end";
-    result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
     // Test that load is not available
     script = "if load then return 'load available' else return true end";
-    result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 
     // Test that dofile is not available
     script = "if dofile then return 'dofile available' else return true end";
-    result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -189,7 +184,7 @@ TEST_F(LuaEvaluatorTest, Security_SafeFunctionsAvailable)
         return result
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -216,7 +211,7 @@ TEST_F(LuaEvaluatorTest, Security_SafeStringFunctionsAvailable)
         return result
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -235,7 +230,7 @@ TEST_F(LuaEvaluatorTest, Security_SafeTableFunctionsAvailable)
         return result
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -256,7 +251,7 @@ TEST_F(LuaEvaluatorTest, Security_SafeMathFunctionsAvailable)
         return result
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -275,7 +270,7 @@ TEST_F(LuaEvaluatorTest, Security_SafeOsFunctionsAvailable)
         return result
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -299,7 +294,7 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_AuditFunction)
         end
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -328,7 +323,7 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ReturnValueFormat)
         end
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -357,7 +352,7 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_AuditModeRestriction)
         end
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -379,7 +374,7 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_RemediationMode)
         end
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Remediate);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Remediate);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -415,7 +410,7 @@ TEST_F(LuaEvaluatorTest, ComplexScript_MultipleOperations)
         return check_compliance()
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant); // Should fail due to 66% pass rate
 }
@@ -447,7 +442,7 @@ TEST_F(LuaEvaluatorTest, ComplexScript_TableOperations)
         return all_secure, "Security configuration check completed"
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant); // Should fail due to db.secure = false
 }
@@ -466,7 +461,7 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ErrorHandling)
         end
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -494,7 +489,7 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ThrowsErrorOnProcedureFailure)
         end
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Remediate);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Remediate);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -521,7 +516,7 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ThrowsErrorOnMissingParameter)
         end
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Remediate);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Remediate);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -550,7 +545,7 @@ TEST_F(LuaEvaluatorTest, ProcedureWrapper_ThrowsErrorOnRemediationRestriction)
         end
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -564,7 +559,7 @@ TEST_F(LuaEvaluatorTest, MultipleReturnValues)
         return false, "Custom non-compliance message", "extra value"
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -585,7 +580,7 @@ TEST_F(LuaEvaluatorTest, Performance_MultipleEvaluations)
     // Run the same script multiple times to test performance and stability
     for (int i = 0; i < 10; ++i)
     {
-        auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+        auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
         ASSERT_TRUE(result.HasValue());
         EXPECT_EQ(result.Value(), Status::Compliant);
     }
@@ -610,11 +605,11 @@ TEST_F(LuaEvaluatorTest, Movable)
     ASSERT_NE(evaluator, nullptr);
 
     const std::string script = "return true";
-    IndicatorsTree indicators;
-    indicators.Push("MovableTest");
-    MockContext context;
+    IndicatorsTree mIndicators;
+    mIndicators.Push("MovableTest");
+    MockContext mContext;
 
-    auto result = evaluator->Evaluate(script, indicators, context, Action::Audit);
+    auto result = evaluator->Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -625,7 +620,7 @@ TEST_F(LuaEvaluatorTest, EdgeCase_EmptyScript)
     LuaEvaluator evaluator;
     const std::string script = "";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
 
     // Empty script should return an error as nothing is returned.
     ASSERT_FALSE(result.HasValue());
@@ -645,7 +640,7 @@ TEST_F(LuaEvaluatorTest, EdgeCase_LongScript)
     }
     script += "return result";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
@@ -660,7 +655,7 @@ TEST_F(LuaEvaluatorTest, EdgeCase_UnicodeScript)
         return true, message
     )";
 
-    auto result = evaluator.Evaluate(script, *indicators, context, Action::Audit);
+    auto result = evaluator.Evaluate(script, mIndicators, mContext, Action::Audit);
     ASSERT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), Status::Compliant);
 }
