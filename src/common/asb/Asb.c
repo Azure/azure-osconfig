@@ -601,7 +601,6 @@ static const char* g_bootGrub2GrubCfg = "/boot/grub2/grub.cfg";
 static const char* g_bootGrub2GrubConf = "/boot/grub2/grub.conf";
 static const char* g_bootGrubUserCfg = "/boot/grub/user.cfg";
 static const char* g_bootGrub2UserCfg = "/boot/grub2/user.cfg";
-
 static const char* g_minSambaProtocol = "min protocol = SMB2";
 static const char* g_login = "login";
 
@@ -2142,10 +2141,19 @@ static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(OsConfigLogHandle lo
 
 static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OsConfigLogHandle log)
 {
+    const char* password = "password";
     char* reason = NULL;
-    CheckAllBootloadersHavePasswordProtectionEnabled(&reason, log);
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubCfg, '#', /*password*/"color", &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubConf, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubCfg, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubConf, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubUserCfg, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2UserCfg, '#', password, &reason, log));
+    FREE_MEMORY(reason);
+    reason = DuplicateString("Manually set a boot loader password for GRUB. Automatic remediation is not possible");
     return reason;
 }
+
 
 static char* AuditEnsureLoggingIsConfigured(OsConfigLogHandle log)
 {

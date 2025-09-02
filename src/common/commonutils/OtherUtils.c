@@ -625,24 +625,3 @@ int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, uns
 
     return status;
 }
-
-int CheckAllBootloadersHavePasswordProtectionEnabled(char** reason, OsConfigLogHandle log)
-{
-    //const char* command = "FILES=$(ls /boot/grub*/grub*.cfg /boot/grub*/user.cfg 2>/dev/null); [ -n '$FILES' ] && grep -H '^[^#]*password\\|^[^#]*password_pbkdf2\\|^[^#]*set superusers' $FILES";
-    const char* command = "FILES=$(ls /boot/grub*/grub*.cfg /boot/grub*/user.cfg 2>/dev/null); [ -n '$FILES' ] && grep -H '^[^#]*function\\|^[^#]*password_pbkdf2\\|^[^#]*set superusers' $FILES";
-    int status = 0;
-
-    if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log)))
-    {
-        OsConfigLogInfo(log, "CheckBootloaderPasswordForGrubIsSet: boot loader password appears to be set for GRUB");
-        OsConfigCaptureSuccessReason(reason, "Boot loader password appears to be set for GRUB");
-    }
-    else
-    {
-        OsConfigLogInfo(log, "CheckBootloaderPasswordForGrubIsSet: no boot loader password is set for GRUB. Manually set a boot loader password for GRUB. Automatic remediation is not possible");
-        OsConfigCaptureReason(reason, "Manually set a boot loader password for GRUB. Automatic remediation is not possible");
-        status = EEXIST;
-    }
-
-    return status;
-}
