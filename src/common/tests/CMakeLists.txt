@@ -3,8 +3,6 @@
 
 project(commontests)
 
-cmake_minimum_required(VERSION 3.2.0)
-
 include(CTest)
 find_package(GTest REQUIRED)
 

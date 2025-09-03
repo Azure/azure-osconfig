@@ -23,18 +23,16 @@ target_link_libraries(OsConfigResourceComplianceEngine
         parsonlib
         complianceenginelib)
 
-add_custom_target(stage_create_compliance_engine_shell_zip
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/ComplianceEngineShell.metaconfig.json" ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/ComplianceEngineShell.mof" ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceComplianceEngine> ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_PROPERTY:complianceengineschema,BINARY_DIR>/$<TARGET_PROPERTY:complianceengineschema,OUTPUT> ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/
-    DEPENDS OsConfigResourceComplianceEngine ComplianceEngineShell.mof complianceengineschema)
-
-add_custom_target(create_compliance_engine_shell_zip ALL
-    BYPRODUCTS ${OsConfigRootBinaryDir}/ComplianceEngineShell.zip
-    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/ComplianceEngineShell.zip" --format=zip .
-    DEPENDS stage_create_compliance_engine_shell_zip
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/)
+add_mc_package(
+    TARGET_NAME OsConfigResourceComplianceEngine
+    MOF_FILE ${CMAKE_CURRENT_SOURCE_DIR}/ComplianceEngineShell.mof
+    META_CONFIG_JSON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/ComplianceEngineShell.metaconfig.json
+    DESTINATION_FILE ComplianceEngineShell
+    ADDITIONAL_COMMANDS_GET
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_PROPERTY:complianceengineschema,BINARY_DIR>/$<TARGET_PROPERTY:complianceengineschema,OUTPUT> ${PROJECT_BINARY_DIR}/GetStaging/
+    ADDITIONAL_COMMANDS_SET
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_PROPERTY:complianceengineschema,BINARY_DIR>/$<TARGET_PROPERTY:complianceengineschema,OUTPUT> ${PROJECT_BINARY_DIR}/SetStaging/
+    ADDITIONAL_DEPENDS
+        complianceengineschema ComplianceEngineShell.mof)
 
 add_subdirectory(example)

@@ -2,6 +2,9 @@ name: Build Azure OSConfig Package
 
 on:
   workflow_call:
+    secrets:
+      onedstenant:
+        required: false
     inputs:
       artifact:
         description: The artifact name containing the packages from this workflow.
@@ -78,6 +81,7 @@ jobs:
           container: azure/azure-osconfig/${{ inputs.target }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ inputs.container-tag }}
+          args: -e OsConfigTelemetryApiKey=${{ secrets.onedstenant }}
 
       - name: Set tweak
         id: version

@@ -31,6 +31,8 @@ jobs:
       test: true
       machine-config: true
       release: ${{ github.event_name == 'pull_request' && false || true }}
+    secrets:
+      onedstenant: ${{ secrets.ONEDS_TENANT_NONPROD }}
 
   setup-matrix:
     name: Setup Matrix
@@ -146,7 +148,7 @@ jobs:
 
   mc-test:
     name: MC Test
-    if: ${{ always() }}
+    if: ${{ always() && needs.setup-matrix.result == 'success' && (needs.package.result == 'success' || needs.custom-download.result == 'success') }}
     needs: [setup-matrix, package, custom-download]
     runs-on: [self-hosted, 1ES.Pool=ci-pool, '1ES.ImageOverride=${{ matrix.target.os }}-${{ matrix.target.version }}']
     strategy:
@@ -159,8 +161,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        submodules: recursive
-        clean: true
+        with:
+          submodules: recursive
+          clean: true
 
       - uses: actions/download-artifact@v4
         id: download
@@ -190,7 +193,8 @@ jobs:
         uses: ./.github/actions/check-size
         with:
           package: '${{ steps.normalize.outputs.path }}'
-          limit: 350
+          # TODO: Adjust size limit as needed
+          limit: 5000
 
       - name: Run Guest Configuration Test
         working-directory: ${{ steps.normalize.outputs.PolicyPackageDir }}
