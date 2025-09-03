@@ -1,9 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
+
 project(complianceenginelib)
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow=local")
 endif()
+
+# Find Lua via vcpkg
+find_package(Lua REQUIRED)
 
 set(PROCEDURES
     procedures/EnsureAccountsWithoutShellAreLocked.cpp
@@ -132,6 +136,7 @@ add_library(complianceenginelib STATIC
     JsonWrapper.cpp
     KernelModuleTools.cpp
     ListValidShells.cpp
+    LuaEvaluator.cpp
     NetworkTools.cpp
     PasswordEntriesIterator.cpp
     Procedure.cpp
@@ -157,8 +162,11 @@ target_link_libraries(complianceenginelib PRIVATE
     logging
     commonutils
     parsonlib
+    ${LUA_LIBRARIES}
     )
 
 target_include_directories(complianceenginelib PUBLIC
     ${MODULES_INC_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR})
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${LUA_INCLUDE_DIR}
+    )

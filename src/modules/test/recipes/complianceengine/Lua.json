@@ -1,0 +1,69 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "complianceengine.so"
+  },
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "Lua": {
+          "script": "return true, 'Audit OK'"
+        }
+      },
+      "remediate": {
+        "Lua": {
+          "script": "return true, 'Remediation OK'"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "PASS{ Lua: Audit OK } == TRUE"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "remediateTest"
+  },
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "procedureTest",
+    "Payload": {
+      "audit": {
+        "Lua": {
+          "script": "return false, 'Audit FAIL'"
+        }
+      },
+      "remediate": {
+        "Lua": {
+          "script": "return false, 'Remediation FAIL'"
+        }
+      }
+    }
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "auditTest",
+    "Payload": "{ Lua: Audit FAIL } == FALSE"
+  },
+
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "ComplianceEngine",
+    "ObjectName": "remediateTest"
+  },
+
+  {
+    "Action": "UnloadModule"
+  }
+]
