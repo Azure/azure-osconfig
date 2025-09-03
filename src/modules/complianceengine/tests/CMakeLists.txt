@@ -7,6 +7,7 @@ include(CTest)
 find_package(GTest REQUIRED)
 
 set(PROCEDURES
+    procedures/AuditdRulesCheckTest.cpp
     procedures/EnsureAccountsWithoutShellAreLockedTest.cpp
     procedures/EnsureApparmorProfilesTest.cpp
     procedures/EnsureDconfTest.cpp
