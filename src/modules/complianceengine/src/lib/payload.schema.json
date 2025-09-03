@@ -73,6 +73,28 @@
           }
         },
         {
+          "type": "object",
+          "required": [
+            "Lua"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "Lua": {
+              "type": "object",
+              "required": [
+                "script"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "script": {
+                  "type": "string",
+                  "description": "Script content"
+                }
+              }
+            }
+          }
+        },
+        {
           "$ref": "#/definitions/auditProcedure"
         }
       ]
