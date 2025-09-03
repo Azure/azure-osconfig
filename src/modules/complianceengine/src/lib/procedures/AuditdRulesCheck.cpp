@@ -56,7 +56,7 @@ int GetUidMin(ContextInterface& context)
 
 std::string ReplaceAuidPlaceholder(const std::string& option, int uidMin)
 {
-    regex auidRegex(R"(-F auid>=\d+\b)");
+    regex auidRegex(R"(-F auid>=[0-9]+\b)");
     smatch m;
     std::string replaced = option;
     // Replace all matches of auidRegex with the new value
@@ -170,7 +170,7 @@ Result<std::string> FindSudoLogfile(ContextInterface& context)
     auto sudoersResult = context.ExecuteCommand("grep -E '^[[:space:]]*[Dd]efaults.*logfile' /etc/sudoers 2>/dev/null | tail -1");
     if (sudoersResult.HasValue() && !sudoersResult.Value().empty())
     {
-        regex logfileRegex(R"(logfile\s*=\s*([^,\s]+))");
+        regex logfileRegex(R"(logfile[[:space:]]*=[[:space:]]*([^,[[:space:]]+))");
         smatch match;
         if (regex_search(sudoersResult.Value(), match, logfileRegex))
         {
@@ -186,7 +186,7 @@ Result<std::string> FindSudoLogfile(ContextInterface& context)
     auto sudoersDResult = context.ExecuteCommand("grep -h -E '^[[:space:]]*[Dd]efaults.*logfile' /etc/sudoers.d/* 2>/dev/null | tail -1");
     if (sudoersDResult.HasValue() && !sudoersDResult.Value().empty())
     {
-        regex logfileRegex(R"(logfile\s*=\s*([^,\s]+))");
+        regex logfileRegex(R"(logfile[[:space:]]*=[[:space:]]*([^,[[:space:]]+))");
         smatch match;
         if (regex_search(sudoersDResult.Value(), match, logfileRegex))
         {
