@@ -97,8 +97,10 @@ Result<Status> LuaEvaluator::Evaluate(const string& script, IndicatorsTree& indi
         const char* upvalueName = lua_setupvalue(L, -2, 1);
         if (!upvalueName)
         {
-            OsConfigLogWarning(log, "Could not set restricted environment, script may have access to global functions");
+            OsConfigLogError(log, "Could not set restricted Lua environment");
             lua_pop(L, 1);
+            lua_settop(L, 0);
+            return Error("Could not set restricted Lua environment");
         }
         else
         {
@@ -108,7 +110,9 @@ Result<Status> LuaEvaluator::Evaluate(const string& script, IndicatorsTree& indi
     else
     {
         lua_pop(L, 1);
-        OsConfigLogError(log, "Restricted environment not found, script will run with global environment");
+        lua_settop(L, 0);
+        OsConfigLogError(log, "Restricted Lua environment not found");
+        return Error("Restricted Lua environment not found");
     }
 
     int result = lua_pcall(L, 0, LUA_MULTRET, 0);
@@ -130,6 +134,7 @@ Result<Status> LuaEvaluator::Evaluate(const string& script, IndicatorsTree& indi
     if (numReturns == 0)
     {
         lua_settop(L, 0);
+        OsConfigLogError(log, "Lua script did not return a value");
         return Error("Lua script did not return a value");
     }
 
