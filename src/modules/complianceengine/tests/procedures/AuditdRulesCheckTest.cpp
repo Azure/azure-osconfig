@@ -102,7 +102,7 @@ TEST_F(AuditdRulesCheckTest, InvalidExcludeOptionsRegexReturnsError)
     std::map<std::string, std::string> args;
     args["searchItem"] = "-w /etc/sudoers";
     args["requiredOptions"] = "-p wa";
-    args["excludeOptions"] = "[*"; // invalid regex
+    args["excludeOption"] = "[*"; // invalid regex
 
     auto result = AuditAuditdRulesCheck(args, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
@@ -277,7 +277,7 @@ TEST_F(AuditdRulesCheckTest, ExcludeOptionsSkipsMatchingRules)
     std::map<std::string, std::string> args;
     args["searchItem"] = "-w /var/log/secure";
     args["requiredOptions"] = "-p wa";
-    args["excludeOptions"] = "-k badkey";
+    args["excludeOption"] = "-k badkey";
 
     auto result = AuditAuditdRulesCheck(args, indicators, mContext);
 
