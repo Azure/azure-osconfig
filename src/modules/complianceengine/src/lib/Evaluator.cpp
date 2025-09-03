@@ -5,6 +5,7 @@
 
 #include "JsonWrapper.h"
 #include "Logging.h"
+#include "LuaEvaluator.h"
 #include "Reasons.h"
 #include "Result.h"
 
@@ -25,10 +26,13 @@ using std::string;
 Evaluator::Evaluator(std::string ruleName, const struct json_object_t* json, const ParameterMap& parameters, ContextInterface& context)
     : mJson(json),
       mParameters(parameters),
-      mContext(context)
+      mContext(context),
+      mLuaEvaluator(std::unique_ptr<LuaEvaluator>(new LuaEvaluator()))
 {
     mIndicators.Push(std::move(ruleName));
 }
+
+Evaluator::~Evaluator() = default;
 
 Result<AuditResult> Evaluator::ExecuteAudit(const PayloadFormatter& formatter)
 {
@@ -99,6 +103,20 @@ Result<Status> Evaluator::EvaluateProcedure(const JSON_Object* object, const Act
     {
         mIndicators.Push("not");
         const auto result = EvaluateNot(value, action);
+        if (!result.HasValue())
+        {
+            OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
+            return result;
+        }
+        mIndicators.Back().status = result.Value();
+        mIndicators.Pop();
+        return result.Value();
+    }
+
+    if (!strcmp(name, "Lua"))
+    {
+        mIndicators.Push("Lua");
+        const auto result = EvaluateLua(value, action);
         if (!result.HasValue())
         {
             OsConfigLogError(mContext.GetLogHandle(), "Evaluation failed: %s", result.Error().message.c_str());
@@ -204,6 +222,49 @@ Result<Status> Evaluator::EvaluateNot(const json_value_t* value, const Action ac
 
     OsConfigLogDebug(mContext.GetLogHandle(), "Evaluation returned non-compliant status");
     return Status::Compliant;
+}
+
+Result<Status> Evaluator::EvaluateLua(const json_value_t* value, const Action action)
+{
+    OsConfigLogDebug(mContext.GetLogHandle(), "Evaluating Lua operator");
+
+    if (nullptr == value)
+    {
+        OsConfigLogError(mContext.GetLogHandle(), "invalid argument");
+        return Error("invalid argument", EINVAL);
+    }
+
+    if (json_value_get_type(value) != JSONObject)
+    {
+        OsConfigLogError(mContext.GetLogHandle(), "Lua value is not an object");
+        return Error("Lua value is not an object", EINVAL);
+    }
+
+    // Lua can be used for both audit and remediation
+    // Get the arguments from the JSON object
+    auto arguments = GetBuiltinProcedureArguments(value);
+    if (!arguments.HasValue())
+    {
+        OsConfigLogError(mContext.GetLogHandle(), "Failed to get Lua arguments: %s", arguments.Error().message.c_str());
+        return arguments.Error();
+    }
+
+    // Call the lua evaluation function using our LuaEvaluator instance
+    auto scriptIt = arguments.Value().find("script");
+    if (scriptIt == arguments.Value().end())
+    {
+        OsConfigLogError(mContext.GetLogHandle(), "No script content provided");
+        return Error("No script content provided", EINVAL);
+    }
+
+    auto result = mLuaEvaluator->Evaluate(scriptIt->second, mIndicators, mContext, action);
+    if (!result.HasValue())
+    {
+        OsConfigLogError(mContext.GetLogHandle(), "Lua evaluation failed: %s", result.Error().message.c_str());
+        return result.Error();
+    }
+
+    return result.Value();
 }
 
 Result<map<string, string>> Evaluator::GetBuiltinProcedureArguments(const json_value_t* value) const
