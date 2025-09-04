@@ -42,9 +42,6 @@ namespace Telemetry {
         // Shutdown telemetry system
         void Shutdown();
 
-        // Destructor
-        // ~TelemetryManager();
-
     private:
         // Private constructor for singleton
         TelemetryManager();
