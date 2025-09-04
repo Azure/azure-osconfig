@@ -581,6 +581,7 @@ static const char* g_systemdJournald = "systemd-journald";
 static const char* g_allTelnetd = "*telnetd*";
 static const char* g_samba = "samba";
 static const char* g_smbd = "smbd";
+static const char* g_smb = "smb";
 static const char* g_rpcSvcgssd = "rpc.svcgssd";
 static const char* g_needSvcgssd = "NEED_SVCGSSD = yes";
 static const char* g_inetInterfacesLocalhost = "inet_interfaces localhost";
@@ -2536,7 +2537,7 @@ static char* AuditEnsureRshClientNotInstalled(OsConfigLogHandle log)
 static char* AuditEnsureSmbWithSambaIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    if (IsDaemonActive(g_smbd, log))
+    if (IsDaemonActive(g_smbd, log) || IsDaemonActive(g_smb, log))
     {
         RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcSambaConf, '#', g_minSambaProtocol, &reason, log));
         CheckLineFoundNotCommentedOut(g_etcSambaConf, ';', g_minSambaProtocol, &reason, log);
@@ -4163,7 +4164,7 @@ static int RemediateEnsureSmbWithSambaIsDisabled(char* value, OsConfigLogHandle 
 
     UNUSED(value);
 
-    if (IsDaemonActive(g_smbd, log))
+    if (IsDaemonActive(g_smbd, log) || IsDaemonActive(g_smb, log))
     {
         if (0 == (status = ReplaceMarkedLinesInFile(g_etcSambaConf, smb1, NULL, '#', true, log)))
         {
