@@ -225,7 +225,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     {
         if (0 == GetDirectoryAccess(fileDirectory, &ownerId, &groupId, &access, log))
         {
-            OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists, is owned by user (%u, %u) and has access mode %03o",
+            OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists, is owned by user (%u, %u) and has access mode 0%04o",
                 fileDirectory, ownerId, groupId, access);
         }
     }
@@ -608,8 +608,8 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
 
                 if (currentMode != desiredMode)
                 {
-                    OsConfigLogInfo(log, "CheckAccess: access to '%s' (%03o) does not match expected (%03o)", name, currentMode, desiredMode);
-                    OsConfigCaptureReason(reason, "Access to '%s' (%03o) does not match expected (%03o)", name, currentMode, desiredMode);
+                    OsConfigLogInfo(log, "CheckAccess: access to '%s' (0%04o) does not match expected (0%04o)", name, currentMode, desiredMode);
+                    OsConfigCaptureReason(reason, "Access to '%s' (0%04o) does not match expected (0%04o)", name, currentMode, desiredMode);
                     result = ENOENT;
                 }
                 else
@@ -617,10 +617,10 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     // Special case for the MPI Client
                     if (NULL != log)
                     {
-                        OsConfigLogInfo(log, "CheckAccess: access to '%s' (%03o) matches expected (%03o)", name, currentMode, desiredMode);
+                        OsConfigLogInfo(log, "CheckAccess: access to '%s' (0%04o) matches expected (0%04o)", name, currentMode, desiredMode);
                     }
 
-                    OsConfigCaptureSuccessReason(reason, "'%s' has required access (%03o) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
+                    OsConfigCaptureSuccessReason(reason, "'%s' has required access (0%04o) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
                     result = 0;
                 }
             }
@@ -661,7 +661,7 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
     {
         if (0 == CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, NULL, log))
         {
-            OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access %03o) already set",
+            OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access 0%04o) already set",
                 name, desiredOwnerId, desiredGroupId, desiredAccess);
             result = 0;
         }
@@ -673,12 +673,12 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
 
                 if (0 == (result = chmod(name, desiredAccess)))
                 {
-                    OsConfigLogInfo(log, "SetAccess: successfully set access to '%s' to %03o", name, desiredAccess);
+                    OsConfigLogInfo(log, "SetAccess: successfully set access to '%s' to 0%04o", name, desiredAccess);
                 }
                 else
                 {
                     result = errno ? errno : ENOENT;
-                    OsConfigLogInfo(log, "SetAccess: 'chmod %03o %s' failed with %d", desiredAccess, name, result);
+                    OsConfigLogInfo(log, "SetAccess: 'chmod 0%04o %s' failed with %d", desiredAccess, name, result);
                 }
             }
             else
@@ -924,7 +924,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, OsCon
         }
         else
         {
-            OsConfigLogDebug(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode %03o",
+            OsConfigLogDebug(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode 0%04o",
                 original, target, ownerId, groupId, mode);
         }
 
@@ -1749,14 +1749,14 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     return result;
 }
 
-int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, OsConfigLogHandle log)
+int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, int base, OsConfigLogHandle log)
 {
     char* stringValue = NULL;
     int value = INT_ENOENT;
 
     if (NULL != (stringValue = GetStringOptionFromBuffer(buffer, option, separator, log)))
     {
-        value = atoi(stringValue);
+        value = strtol(stringValue, NULL, base);
         FREE_MEMORY(stringValue);
     }
 
@@ -1792,7 +1792,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
     return result;
 }
 
-int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, OsConfigLogHandle log)
+int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, int base, OsConfigLogHandle log)
 {
     char* contents = NULL;
     int result = INT_ENOENT;
@@ -1805,9 +1805,16 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
         }
         else
         {
-            if (INT_ENOENT != (result = GetIntegerOptionFromBuffer(contents, option, separator, log)))
+            if (INT_ENOENT != (result = GetIntegerOptionFromBuffer(contents, option, separator, base, log)))
             {
-                OsConfigLogInfo(log, "GetIntegerOptionFromFile: found '%d' in '%s' for '%s'", result, fileName, option);
+                if (8 == base)
+                {
+                    OsConfigLogInfo(log, "GetIntegerOptionFromFile: found '0%04o' in '%s' for '%s'", result, fileName, option);
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "GetIntegerOptionFromFile: found '%d' in '%s' for '%s'", result, fileName, option);
+                }
             }
             else
             {
@@ -1821,7 +1828,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
     return result;
 }
 
-int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, OsConfigLogHandle log)
+int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, int base, OsConfigLogHandle log)
 {
     int valueFromFile = INT_ENOENT;
     int i = 0;
@@ -1833,13 +1840,20 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
         return EINVAL;
     }
 
-    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
+    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, base, log)))
     {
         for (i = 0; i < numberOfValues; i++)
         {
             if (valueFromFile == values[i])
             {
-                OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of '%d'", option, fileName, values[i]);
+                if (8 == base)
+                {
+                    OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of '0%04o'", option, fileName, values[i]);
+                }
+                else
+                {
+                    OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of '%d'", option, fileName, values[i]);
+                }
                 result = 0;
                 break;
             }
@@ -1847,7 +1861,14 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
 
         if (ENOENT == result)
         {
-            OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found or found set to '%d'", option, fileName, valueFromFile);
+            if (8 == base)
+            {
+                OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found or found set to '0%04o'", option, fileName, valueFromFile);
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found or found set to '%d'", option, fileName, valueFromFile);
+            }
         }
     }
     else
@@ -1858,21 +1879,35 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
     return result;
 }
 
-int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, OsConfigLogHandle log)
+int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, int base, OsConfigLogHandle log)
 {
     int valueFromFile = INT_ENOENT;
     int result = ENOENT;
 
-    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
+    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, base, log)))
     {
         if (valueFromFile <= value)
         {
-            OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' value of '%d' is less or equal with '%d'", option, fileName, valueFromFile, value);
+            if (8 == base)
+            {
+                OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' value of '0%04o' is less or equal with '0%04o'", option, fileName, valueFromFile, value);
+            }
+            else
+            {
+                OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' value of '%d' is less or equal with '%d'", option, fileName, valueFromFile, value);
+            }
             result = 0;
         }
         else
         {
-            OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found ('%d') or not less or equal with '%d'", option, fileName, valueFromFile, value);
+            if (8 == base)
+            {
+                OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found ('0%04o') or not less or equal with '0%04o'", option, fileName, valueFromFile, value);
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found ('%d') or not less or equal with '%d'", option, fileName, valueFromFile, value);
+            }
         }
     }
     else
@@ -1942,11 +1977,11 @@ int DisablePostfixNetworkListening(OsConfigLogHandle log)
         OsConfigLogInfo(log, "DisablePostfixNetworkListening: directory '%s' does not exist", etcPostfix);
         if (0 == (status = mkdir(etcPostfix, mode)))
         {
-            OsConfigLogInfo(log, "DisablePostfixNetworkListening: created directory '%s' with %03o access", etcPostfix, mode);
+            OsConfigLogInfo(log, "DisablePostfixNetworkListening: created directory '%s' with 0%04o access", etcPostfix, mode);
         }
         else
         {
-            OsConfigLogInfo(log, "DisablePostfixNetworkListening: cannot create directory '%s' with %d access (%03o)", etcPostfix, mode, errno);
+            OsConfigLogInfo(log, "DisablePostfixNetworkListening: cannot create directory '%s' with %d access (0%04o)", etcPostfix, mode, errno);
         }
     }
 
