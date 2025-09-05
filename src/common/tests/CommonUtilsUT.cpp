@@ -1883,7 +1883,7 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
         "abc Test4 0456 # rt 4 $"
         "Test2:     12 $!    test test\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
-        "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1\n"
         "$FileCreateMode 0644";
 
     char* value = nullptr;
