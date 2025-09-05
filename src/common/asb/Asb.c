@@ -3832,34 +3832,12 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OsCo
 
     InitEnsureFilePermissionsForAllRsyslogLogFiles(value);
 
-    /*--------------------------------------------------------------------------------
-    [2025-09-05 11:39:01][INFO][main.c:641] Step 176 of 504
-    [2025-09-05 11:39:01][INFO][main.c:651] Running desired test 'SecurityBaseline.remediateEnsureFilePermissionsForAllRsyslogLogFiles'
-    [2025-09-05 11:39:01][INFO][Asb.c:3835] ########### $FileCreateMode default expected: '0600,0640' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< OK
-    [2025-09-05 11:39:01][INFO][OtherUtils.c:271] ConvertStringToIntegers: 0 (2 integers converted from '0600,0640' separated with ',' in base 8) <<<<<<< OK
-    [2025-09-05 11:39:01][INFO][Asb.c:3843] ########### $FileCreateMode to write line: '0416' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< BAD!!!!!
-    [2025-09-05 11:39:01][INFO][FileUtils.c:596] CheckAccess: ownership of '/etc/rsyslog.conf' (0, 0) matches expected (0, 0)
-    [2025-09-05 11:39:01][INFO][FileUtils.c:611] CheckAccess: access to '/etc/rsyslog.conf' (0600) does not match expected (0640)
-    [2025-09-05 11:39:01][INFO][FileUtils.c:672] SetAccess: successfully set ownership of '/etc/rsyslog.conf' to owner 0, group 0
-    [2025-09-05 11:39:01][INFO][FileUtils.c:676] SetAccess: successfully set access to '/etc/rsyslog.conf' to 0640
-    [2025-09-05 11:39:01][INFO][FileUtils.c:1111] ReplaceMarkedLinesInFile('/etc/rsyslog.conf', '$FileCreateMode') returning 0
-    [2025-09-05 11:39:01][INFO][FileUtils.c:1945] SetEtcConfValue: successfully set '$FileCreateMode' to '0416' in '/etc/rsyslog.conf'
-    [2025-09-05 11:39:01][INFO][Asb.c:5995] AsbMmiSet(SecurityBaseline, remediateEnsureFilePermissionsForAllRsyslogLogFiles, "0600,0640", 11) returning 0
-    [2025-09-05 11:39:01][INFO][PerfUtils.c:98] SecurityBaseline.remediateEnsureFilePermissionsForAllRsyslogLogFiles completed in 672 microseconds
-    [2025-09-05 11:39:01][CRITICAL][Asb.c:6014] TargetName: 'Ubuntu 22.04.5 LTS', ComponentName: 'SecurityBaseline', 'ObjectName:'remediateEnsureFilePermissionsForAllRsyslogLogFiles', ObjectResult:'Success (0)', Microseconds: 672
-    [2025-09-05 11:39:01][INFO][SecurityBaseline.c:166] MmiSet(0x7bd05fd510c0, SecurityBaseline, remediateEnsureFilePermissionsForAllRsyslogLogFiles, "0600,0640", 11) returning 0
-    --------------------------------------------------------------------------------*/
-
-    OsConfigLogInfo(log, "########### %s default expected: '%s'", g_fileCreateMode, g_desiredEnsureFilePermissionsForAllRsyslogLogFiles);/////////////////
-
     if (0 == (status = ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, 8, log)))
     {
         if (numberOfModes > 0)
         {
             if (NULL != (formattedMode = FormatAllocateString(formatTemplate, modes[numberOfModes - 1])))
             {
-                OsConfigLogInfo(log, "########### %s to write line: '%s'", g_fileCreateMode, formattedMode);/////////////////////////
-
                 status = SetEtcConfValue(g_etcRsyslogConf, g_fileCreateMode, formattedMode, log);
                 FREE_MEMORY(formattedMode);
             }
