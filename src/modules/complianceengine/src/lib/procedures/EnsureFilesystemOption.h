@@ -24,7 +24,7 @@ struct EnsureFilesystemOptionParams
     Optional<std::string> test_fstab = std::string("/etc/fstab");
 
     /// Location of the mtab file
-    Optional<std::string> test_mtab = std::string("/etc/mstab");
+    Optional<std::string> test_mtab = std::string("/etc/mtab");
 
     /// Location of the mount binary
     Optional<std::string> test_mount = std::string("/sbin/mount");

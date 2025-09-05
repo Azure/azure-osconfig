@@ -81,7 +81,7 @@ public:
 
 namespace std
 {
-inline string to_string(const ComplianceEngine::Pattern& pattern)
+inline string ToString(const ComplianceEngine::Pattern& pattern)
 {
     return pattern.GetPattern();
 }

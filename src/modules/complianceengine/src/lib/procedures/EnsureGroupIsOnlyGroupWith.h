@@ -8,10 +8,6 @@
 
 namespace ComplianceEngine
 {
-// "group:A pattern or value to match group names against",
-// "gid:A value to match the GID against::\\d+",
-// "test_etcGroupPath:Alternative path to the /etc/group file to test against")
-
 struct EnsureGroupIsOnlyGroupWithParams
 {
     /// A pattern or value to match group names against

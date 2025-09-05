@@ -19,7 +19,6 @@ enum class RegexType
     Extended,
 };
 
-//"type:Type of regex, P for Perl (default) or E for Extended"
 struct ExecuteCommandGrepParams
 {
     /// Command to be executed

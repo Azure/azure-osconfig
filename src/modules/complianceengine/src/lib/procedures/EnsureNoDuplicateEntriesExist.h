@@ -8,7 +8,6 @@
 
 namespace ComplianceEngine
 {
-
 struct EnsureNoDuplicateEntriesExistParams
 {
     /// The file to be checked for duplicate entries

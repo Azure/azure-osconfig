@@ -23,7 +23,7 @@ const char* Bindings<EnsureFilePermissionsCollectionParams>::names[] = {"directo
 // EnsureFilesystemOption.h:31
 const char* Bindings<EnsureFilesystemOptionParams>::names[] = {"mountpoint", "optionsSet", "optionsNotSet", "test_fstab", "test_mtab", "test_mount"};
 
-// EnsureGroupIsOnlyGroupWith.h:26
+// EnsureGroupIsOnlyGroupWith.h:22
 const char* Bindings<EnsureGroupIsOnlyGroupWithParams>::names[] = {"group", "gid", "test_etcGroupPath"};
 
 // EnsureGsettings.h:56
@@ -38,7 +38,7 @@ const char* Bindings<EnsureLogfileAccessParams>::names[] = {"path"};
 // EnsureMountPointExists.h:15
 const char* Bindings<EnsureMountPointExistsParams>::names[] = {"mountPoint"};
 
-// EnsureNoDuplicateEntriesExist.h:25
+// EnsureNoDuplicateEntriesExist.h:24
 const char* Bindings<EnsureNoDuplicateEntriesExistParams>::names[] = {"filename", "delimiter", "column", "context"};
 
 // EnsurePasswordChangeIsInPast.h:15
@@ -62,7 +62,7 @@ const char* Bindings<EnsureUserIsOnlyAccountWithParams>::names[] = {"username", 
 // EnsureWirelessIsDisabled.h:15
 const char* Bindings<EnsureWirelessIsDisabledParams>::names[] = {"test_sysfs_class_net"};
 
-// ExecuteCommandGrep.h:36
+// ExecuteCommandGrep.h:35
 const char* Bindings<ExecuteCommandGrepParams>::names[] = {"command", "awk", "regex", "type"};
 
 // FileRegexMatch.h:83
