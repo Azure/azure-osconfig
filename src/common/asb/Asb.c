@@ -3832,12 +3832,16 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OsCo
 
     InitEnsureFilePermissionsForAllRsyslogLogFiles(value);
 
+    OsConfigLogInfo(log, "########### %s default expected: '%s'", g_fileCreateMode, g_desiredEnsureFilePermissionsForAllRsyslogLogFiles);/////////////////
+
     if (0 == (status = ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, 8, log)))
     {
         if (numberOfModes > 0)
         {
             if (NULL != (formattedMode = FormatAllocateString(formatTemplate, modes[numberOfModes - 1])))
             {
+                OsConfigLogInfo(log, "########### %s to write line: '%s'", g_fileCreateMode, formattedMode);/////////////////////////
+                
                 status = SetEtcConfValue(g_etcRsyslogConf, g_fileCreateMode, formattedMode, log);
                 FREE_MEMORY(formattedMode);
             }
