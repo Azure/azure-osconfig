@@ -1884,7 +1884,7 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
         "Test2:     12 $!    test test\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1\n"
-        "$FileCreateMode 0644";
+        "$FileCreateMode 00644";
 
     char* value = nullptr;
 
@@ -1942,8 +1942,9 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     FREE_MEMORY(value);
     EXPECT_EQ(-1, GetIntegerOptionFromFile(m_path, "remembering", '=', 10, nullptr));
 
-    EXPECT_STREQ("0644", value = GetStringOptionFromFile(m_path, "$FileCreateMode", ' ', nullptr));
+    EXPECT_STREQ("00644", value = GetStringOptionFromFile(m_path, "$FileCreateMode", ' ', nullptr));
     FREE_MEMORY(value);
+    EXPECT_EQ(00644, GetIntegerOptionFromFile(m_path, "$FileCreateMode", ' ', 8, nullptr));
     EXPECT_EQ(0644, GetIntegerOptionFromFile(m_path, "$FileCreateMode", ' ', 8, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
