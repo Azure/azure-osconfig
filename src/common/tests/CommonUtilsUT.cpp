@@ -2288,6 +2288,12 @@ TEST_F(CommonUtilsTest, ConvertStringToIntegers)
     EXPECT_EQ(0xabc, integers[1]);
     EXPECT_EQ(0xdef, integers[2]);
     FREE_MEMORY(integers);
+
+    EXPECT_EQ(0, ConvertStringToIntegers("0600, 0640", ' ', &integers, &numIntegers, 8, nullptr));
+    EXPECT_EQ(2, numIntegers);
+    EXPECT_EQ(0600, integers[0]);
+    EXPECT_EQ(0640, integers[1]);
+    FREE_MEMORY(integers);
 }
 
 TEST_F(CommonUtilsTest, ReplaceMarkedLinesInFile)
