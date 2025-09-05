@@ -1749,14 +1749,14 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     return result;
 }
 
-int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, OsConfigLogHandle log)
+int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, int base, OsConfigLogHandle log)
 {
     char* stringValue = NULL;
     int value = INT_ENOENT;
 
     if (NULL != (stringValue = GetStringOptionFromBuffer(buffer, option, separator, log)))
     {
-        value = atoi(stringValue);
+        value = strtol(stringValue, NULL, base);
         FREE_MEMORY(stringValue);
     }
 
@@ -1792,7 +1792,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
     return result;
 }
 
-int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, OsConfigLogHandle log)
+int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, int base, OsConfigLogHandle log)
 {
     char* contents = NULL;
     int result = INT_ENOENT;
@@ -1805,9 +1805,16 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
         }
         else
         {
-            if (INT_ENOENT != (result = GetIntegerOptionFromBuffer(contents, option, separator, log)))
+            if (INT_ENOENT != (result = GetIntegerOptionFromBuffer(contents, option, separator, base, log)))
             {
-                OsConfigLogInfo(log, "GetIntegerOptionFromFile: found '%d' in '%s' for '%s'", result, fileName, option);
+                if (8 == base)
+                {
+                    OsConfigLogInfo(log, "GetIntegerOptionFromFile: found '0%03o' in '%s' for '%s'", result, fileName, option);
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "GetIntegerOptionFromFile: found '%d' in '%s' for '%s'", result, fileName, option);
+                }
             }
             else
             {
@@ -1821,7 +1828,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
     return result;
 }
 
-int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, OsConfigLogHandle log)
+int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, int base, OsConfigLogHandle log)
 {
     int valueFromFile = INT_ENOENT;
     int i = 0;
@@ -1833,13 +1840,20 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
         return EINVAL;
     }
 
-    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
+    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, base, log)))
     {
         for (i = 0; i < numberOfValues; i++)
         {
             if (valueFromFile == values[i])
             {
-                OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of '%d'", option, fileName, values[i]);
+                if (8 == base)
+                {
+                    OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of '0%03o'", option, fileName, values[i]);
+                }
+                else
+                {
+                    OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' set to expected value of '%d'", option, fileName, values[i]);
+                }
                 result = 0;
                 break;
             }
@@ -1847,7 +1861,14 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
 
         if (ENOENT == result)
         {
-            OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found or found set to '%d'", option, fileName, valueFromFile);
+            if (8 == base)
+            {
+                OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found or found set to '0%03o'", option, fileName, valueFromFile);
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found or found set to '%d'", option, fileName, valueFromFile);
+            }
         }
     }
     else
@@ -1858,21 +1879,35 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
     return result;
 }
 
-int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, OsConfigLogHandle log)
+int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, int base, OsConfigLogHandle log)
 {
     int valueFromFile = INT_ENOENT;
     int result = ENOENT;
 
-    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, log)))
+    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, base, log)))
     {
         if (valueFromFile <= value)
         {
-            OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' value of '%d' is less or equal with '%d'", option, fileName, valueFromFile, value);
+            if (8 == base)
+            {
+                OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' value of '0%03o' is less or equal with '0%03o'", option, fileName, valueFromFile, value);
+            }
+            else
+            {
+                OsConfigCaptureSuccessReason(reason, "Option '%s' from file '%s' value of '%d' is less or equal with '%d'", option, fileName, valueFromFile, value);
+            }
             result = 0;
         }
         else
         {
-            OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found ('%d') or not less or equal with '%d'", option, fileName, valueFromFile, value);
+            if (8 == base)
+            {
+                OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found ('0%03o') or not less or equal with '0%03o'", option, fileName, valueFromFile, value);
+            }
+            else
+            {
+                OsConfigCaptureReason(reason, "Option '%s' from file '%s' not found ('%d') or not less or equal with '%d'", option, fileName, valueFromFile, value);
+            }
         }
     }
     else

@@ -2208,7 +2208,7 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(OsConfigLogHandle l
     if ((0 == ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles ? g_desiredEnsureFilePermissionsForAllRsyslogLogFiles :
         g_defaultEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, 8, log)) && (numberOfModes > 0))
     {
-        CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, g_fileCreateMode, ' ', modes, numberOfModes, &reason, log);
+        CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, g_fileCreateMode, ' ', modes, numberOfModes, &reason, 8, log);
     }
     else
     {
@@ -3832,16 +3832,12 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OsCo
 
     InitEnsureFilePermissionsForAllRsyslogLogFiles(value);
 
-    OsConfigLogInfo(log, "g_desiredEnsureFilePermissionsForAllRsyslogLogFiles: '%s'", g_desiredEnsureFilePermissionsForAllRsyslogLogFiles); ////////////////////
-
     if (0 == (status = ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, 8, log)))
     {
         if (numberOfModes > 0)
         {
             if (NULL != (formattedMode = FormatAllocateString(formatTemplate, modes[numberOfModes - 1])))
             {
-                OsConfigLogInfo(log, "RemediateEnsureFilePermissionsForAllRsyslogLogFiles: <<< %s >>>", formattedMode); /////////////////////////
-                
                 status = SetEtcConfValue(g_etcRsyslogConf, g_fileCreateMode, formattedMode, log);
                 FREE_MEMORY(formattedMode);
             }
