@@ -43,6 +43,7 @@ set(PROCEDURES
 add_executable(complianceenginetests
     Base64Test.cpp
     BenchmarkInfoTest.cpp
+    BindingsTest.cpp
     CommonContextTest.cpp
     ComplianceEngineTest.cpp
     DistributionInfoTest.cpp
