@@ -225,7 +225,7 @@ static bool InternalSecureSaveToFile(const char* fileName, const char* mode, con
     {
         if (0 == GetDirectoryAccess(fileDirectory, &ownerId, &groupId, &access, log))
         {
-            OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists, is owned by user (%u, %u) and has access mode %03o",
+            OsConfigLogInfo(log, "InternalSecureSaveToFile: directory '%s' exists, is owned by user (%u, %u) and has access mode 0%03o",
                 fileDirectory, ownerId, groupId, access);
         }
     }
@@ -608,8 +608,8 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
 
                 if (currentMode != desiredMode)
                 {
-                    OsConfigLogInfo(log, "CheckAccess: access to '%s' (%03o) does not match expected (%03o)", name, currentMode, desiredMode);
-                    OsConfigCaptureReason(reason, "Access to '%s' (%03o) does not match expected (%03o)", name, currentMode, desiredMode);
+                    OsConfigLogInfo(log, "CheckAccess: access to '%s' (0%03o) does not match expected (0%03o)", name, currentMode, desiredMode);
+                    OsConfigCaptureReason(reason, "Access to '%s' (0%03o) does not match expected (0%03o)", name, currentMode, desiredMode);
                     result = ENOENT;
                 }
                 else
@@ -617,10 +617,10 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     // Special case for the MPI Client
                     if (NULL != log)
                     {
-                        OsConfigLogInfo(log, "CheckAccess: access to '%s' (%03o) matches expected (%03o)", name, currentMode, desiredMode);
+                        OsConfigLogInfo(log, "CheckAccess: access to '%s' (0%03o) matches expected (0%03o)", name, currentMode, desiredMode);
                     }
 
-                    OsConfigCaptureSuccessReason(reason, "'%s' has required access (%03o) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
+                    OsConfigCaptureSuccessReason(reason, "'%s' has required access (0%03o) and ownership (uid: %d, gid: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
                     result = 0;
                 }
             }
@@ -661,7 +661,7 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
     {
         if (0 == CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, NULL, log))
         {
-            OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access %03o) already set",
+            OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access 0%03o) already set",
                 name, desiredOwnerId, desiredGroupId, desiredAccess);
             result = 0;
         }
@@ -673,12 +673,12 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
 
                 if (0 == (result = chmod(name, desiredAccess)))
                 {
-                    OsConfigLogInfo(log, "SetAccess: successfully set access to '%s' to %03o", name, desiredAccess);
+                    OsConfigLogInfo(log, "SetAccess: successfully set access to '%s' to 0%03o", name, desiredAccess);
                 }
                 else
                 {
                     result = errno ? errno : ENOENT;
-                    OsConfigLogInfo(log, "SetAccess: 'chmod %03o %s' failed with %d", desiredAccess, name, result);
+                    OsConfigLogInfo(log, "SetAccess: 'chmod 0%03o %s' failed with %d", desiredAccess, name, result);
                 }
             }
             else
@@ -924,7 +924,7 @@ int RenameFileWithOwnerAndAccess(const char* original, const char* target, OsCon
         }
         else
         {
-            OsConfigLogDebug(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode %03o",
+            OsConfigLogDebug(log, "RenameFileWithOwnerAndAccess: '%s' renamed to '%s' with restored original owner %u, group %u and access mode 0%03o",
                 original, target, ownerId, groupId, mode);
         }
 
@@ -1942,11 +1942,11 @@ int DisablePostfixNetworkListening(OsConfigLogHandle log)
         OsConfigLogInfo(log, "DisablePostfixNetworkListening: directory '%s' does not exist", etcPostfix);
         if (0 == (status = mkdir(etcPostfix, mode)))
         {
-            OsConfigLogInfo(log, "DisablePostfixNetworkListening: created directory '%s' with %03o access", etcPostfix, mode);
+            OsConfigLogInfo(log, "DisablePostfixNetworkListening: created directory '%s' with 0%03o access", etcPostfix, mode);
         }
         else
         {
-            OsConfigLogInfo(log, "DisablePostfixNetworkListening: cannot create directory '%s' with %d access (%03o)", etcPostfix, mode, errno);
+            OsConfigLogInfo(log, "DisablePostfixNetworkListening: cannot create directory '%s' with %d access (0%03o)", etcPostfix, mode, errno);
         }
     }
 
