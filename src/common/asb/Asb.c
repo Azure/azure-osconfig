@@ -437,26 +437,26 @@ static const char* g_initEnsureDefaultDenyFirewallPolicyIsSetObject = "initEnsur
 
 // Default values for checks that support configuration (and initialization)
 static const char* g_defaultLoggingLevel = "Informational";
-static const char* g_defaultEnsurePermissionsOnEtcIssue = "0644";
-static const char* g_defaultEnsurePermissionsOnEtcIssueNet = "0644";
-static const char* g_defaultEnsurePermissionsOnEtcHostsAllow = "0644";
-static const char* g_defaultEnsurePermissionsOnEtcHostsDeny = "0644";
-static const char* g_defaultEnsurePermissionsOnEtcShadow = "0400";
-static const char* g_defaultEnsurePermissionsOnEtcShadowDash = "0400";
-static const char* g_defaultEnsurePermissionsOnEtcGShadow = "0400";
-static const char* g_defaultEnsurePermissionsOnEtcGShadowDash = "0400";
-static const char* g_defaultEnsurePermissionsOnEtcPasswd = "0644";
-static const char* g_defaultEnsurePermissionsOnEtcPasswdDash = "0644";
-static const char* g_defaultEnsurePermissionsOnEtcGroup = "0644";
-static const char* g_defaultEnsurePermissionsOnEtcGroupDash = "0644";
-static const char* g_defaultEnsurePermissionsOnEtcAnacronTab = "0600";
-static const char* g_defaultEnsurePermissionsOnEtcCronD = "0700";
-static const char* g_defaultEnsurePermissionsOnEtcCronDaily = "0700";
-static const char* g_defaultEnsurePermissionsOnEtcCronHourly = "0700";
-static const char* g_defaultEnsurePermissionsOnEtcCronMonthly = "0700";
-static const char* g_defaultEnsurePermissionsOnEtcCronWeekly = "0700";
-static const char* g_defaultEnsurePermissionsOnEtcMotd = "0644";
-static const char* g_defaultEnsureRestrictedUserHomeDirectories = "0700,0750";
+static const char* g_defaultEnsurePermissionsOnEtcIssue = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcIssueNet = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcHostsAllow = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcHostsDeny = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcShadow = "00400";
+static const char* g_defaultEnsurePermissionsOnEtcShadowDash = "00400";
+static const char* g_defaultEnsurePermissionsOnEtcGShadow = "00400";
+static const char* g_defaultEnsurePermissionsOnEtcGShadowDash = "00400";
+static const char* g_defaultEnsurePermissionsOnEtcPasswd = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcPasswdDash = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcGroup = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcGroupDash = "00644";
+static const char* g_defaultEnsurePermissionsOnEtcAnacronTab = "00600";
+static const char* g_defaultEnsurePermissionsOnEtcCronD = "00700";
+static const char* g_defaultEnsurePermissionsOnEtcCronDaily = "00700";
+static const char* g_defaultEnsurePermissionsOnEtcCronHourly = "00700";
+static const char* g_defaultEnsurePermissionsOnEtcCronMonthly = "00700";
+static const char* g_defaultEnsurePermissionsOnEtcCronWeekly = "00700";
+static const char* g_defaultEnsurePermissionsOnEtcMotd = "00644";
+static const char* g_defaultEnsureRestrictedUserHomeDirectories = "00700,00750";
 static const char* g_defaultEnsurePasswordHashingAlgorithm = "6";
 static const char* g_defaultEnsureMinDaysBetweenPasswordChanges = "7";
 static const char* g_defaultEnsureInactivePasswordLockPeriod = "30";
@@ -464,11 +464,11 @@ static const char* g_defaultEnsureMaxDaysBetweenPasswordChanges = "365";
 static const char* g_defaultEnsurePasswordExpiration = "365";
 static const char* g_defaultEnsurePasswordExpirationWarning = "7";
 static const char* g_defaultEnsureDefaultUmaskForAllUsers = "077";
-static const char* g_defaultEnsurePermissionsOnBootloaderConfig = "0400";
+static const char* g_defaultEnsurePermissionsOnBootloaderConfig = "00400";
 static const char* g_defaultEnsurePasswordReuseIsLimited = "5";
 static const char* g_defaultEnsurePasswordCreationRequirements = "1,14,4,-1,-1,-1,-1";
-static const char* g_defaultEnsureFilePermissionsForAllRsyslogLogFiles = "0600,0640";
-static const char* g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable = "0600,0644,0664,0700,0744";
+static const char* g_defaultEnsureFilePermissionsForAllRsyslogLogFiles = "00600,00640";
+static const char* g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable = "00600,00644,00664,00700,00744";
 static const char* g_defaultEnsureUnnecessaryAccountsAreRemoved = "games,test";
 static const char* g_defaultEnsureDefaultDenyFirewallPolicyIsSet = "0"; //zero: audit-only, non-zero: add forced remediation
 
@@ -3824,7 +3824,7 @@ static int RemediateEnsureALoggingServiceIsEnabled(char* value, OsConfigLogHandl
 
 static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OsConfigLogHandle log)
 {
-    const char* formatTemplate = "0%03o";
+    const char* formatTemplate = "0%04o";
     int* modes = NULL;
     int numberOfModes = 0;
     char* formattedMode = NULL;
