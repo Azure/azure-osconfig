@@ -407,7 +407,7 @@ static int GetIntegerOptionFromBuffer_target(const char* data, std::size_t size)
     }
 
     auto buffer = std::string(data, size);
-    GetIntegerOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), nullptr);
+    GetIntegerOptionFromBuffer(buffer.c_str(), option.c_str(), separator.at(0), 10, nullptr);
     return 0;
 }
 
@@ -526,7 +526,7 @@ static int GetIntegerOptionFromFile_target(const char* data, std::size_t size) n
     }
 
     auto filename = g_context.MakeTemporaryFile(data, size);
-    GetIntegerOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), nullptr);
+    GetIntegerOptionFromFile(filename.c_str(), option.c_str(), separator.at(0), 10, nullptr);
     g_context.Remove(filename);
     return 0;
 }
@@ -568,7 +568,7 @@ static int CheckIntegerOptionFromFileEqualWithAny_target(const char* data, std::
 
     auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
-    CheckIntegerOptionFromFileEqualWithAny(filename.c_str(), option.c_str(), separator.at(0), values, count, &reason, nullptr);
+    CheckIntegerOptionFromFileEqualWithAny(filename.c_str(), option.c_str(), separator.at(0), values, count, &reason, 10, nullptr);
     g_context.Remove(filename);
     free(reason);
     delete[] values;
@@ -607,7 +607,7 @@ static int CheckIntegerOptionFromFileLessOrEqualWith_target(const char* data, st
 
     auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
-    CheckIntegerOptionFromFileLessOrEqualWith(filename.c_str(), option.c_str(), separator.at(0), value, &reason, nullptr);
+    CheckIntegerOptionFromFileLessOrEqualWith(filename.c_str(), option.c_str(), separator.at(0), value, &reason, 10, nullptr);
     g_context.Remove(filename);
     free(reason);
     return 0;
