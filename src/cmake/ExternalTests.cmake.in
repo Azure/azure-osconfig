@@ -1,0 +1,5 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+# CTest understands "subdirs()" in the CTestTestfile.cmake context.
+# One call per external project's binary dir.
+subdirs("@TELEMETRY_TESTS_DIR@")

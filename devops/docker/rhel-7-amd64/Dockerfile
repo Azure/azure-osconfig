@@ -1,11 +1,13 @@
 # ubi7 images are missing RPM devtools, copy from centos7
 FROM centos:centos7 as centos
 RUN rm /etc/yum.repos.d/*.repo
-COPY centos.repo /etc/yum.repos.d/centos.repo
+# Docker context is at the root of the project
+COPY ./devops/docker/rhel-7-amd64/centos.repo /etc/yum.repos.d/centos.repo
 
 RUN yum update -y
 RUN rm /etc/yum.repos.d/*.repo
-COPY centos.repo /etc/yum.repos.d/centos.repo
+# Docker context is at the root of the project
+COPY ./devops/docker/rhel-7-amd64/centos.repo /etc/yum.repos.d/centos.repo
 
 RUN yumdownloader rpm-build && yumdownloader elfutils
 

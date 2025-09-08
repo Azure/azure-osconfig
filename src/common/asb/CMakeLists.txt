@@ -12,7 +12,13 @@ target_include_directories(asb PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${PLATFORM_INC_DIR})
 
-target_link_libraries(asb PRIVATE
-    logging
-    commonutils
-    parsonlib)
+target_link_libraries(asb
+    PUBLIC
+        $<$<BOOL:${ENABLE_TELEMETRY}>:telemetryjsonlib>
+        $<$<NOT:$<BOOL:${ENABLE_TELEMETRY}>>:telemetrystublib>
+    PRIVATE
+        dl
+        logging
+        commonutils
+        parsonlib
+)

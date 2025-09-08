@@ -19,3 +19,6 @@ jobs:
       artifact: policy-packages
       machine-config: true
       release: true
+    secrets:
+      # TODO: Add PROD tenant when ready
+      onedstenant: ${{ secrets.ONEDS_TENANT_NONPROD }}
