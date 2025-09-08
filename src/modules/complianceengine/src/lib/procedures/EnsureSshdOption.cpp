@@ -185,7 +185,23 @@ static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string
         return indicators.NonCompliant("Option '" + option + "' not found in SSH daemon configuration");
     }
 
-    auto realValue = itOptions->second; // copy (no modification needed)
+    auto realValue = itOptions->second;
+
+    if (option == "maxstartups")
+    {
+        // special case
+        int val1 = 0, val2 = 0, val3 = 0, lim1 = 0, lim2 = 0, lim3 = 0;
+        std::istringstream valueStream(realValue);
+        valueStream >> val1 >> val2 >> val3;
+        std::istringstream limitStream(value);
+        limitStream >> lim1 >> lim2 >> lim3;
+
+        if ((val1 > lim1) || (val2 > lim2) || (val3 > lim3))
+        {
+            return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which exceeds limits");
+        }
+        return indicators.Compliant("Option '" + option + "' has a compliant value '" + realValue + "'");
+    }
 
     if (op == "match")
     {

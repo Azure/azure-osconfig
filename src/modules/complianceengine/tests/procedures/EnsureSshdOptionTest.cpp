@@ -22,6 +22,9 @@ static const char hostnameCommand[] = "hostname";
 static const char hostAddressCommand[] = "hostname -I | cut -d ' ' -f1";
 static const char sshdSimpleCommand[] = "sshd -T";
 static const char sshdComplexCommand[] = "sshd -T -C user=root -C host=testhost -C addr=1.2.3.4";
+static const char sshdMaxStartupsOutput[] =
+    "port 22\n"
+    "maxstartups 10 30 60\n"; // Using space-separated triplet to match current special-case parser
 
 static const char sshdWithoutMatchGroupOutput[] =
     "port 22\n"
@@ -358,6 +361,40 @@ TEST_F(EnsureSshdOptionTest, OperationNumericGe_NonCompliant)
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
+}
+
+TEST_F(EnsureSshdOptionTest, MaxStartups_Compliant)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdMaxStartupsOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdMaxStartupsOutput)));
+
+    std::map<std::string, std::string> args;
+    args["option"] = "maxstartups"; // special case
+    // Provide thresholds higher than actual values (10 30 60)
+    args["value"] = "15 40 70";
+
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Option 'maxstartups' has a compliant value '10 30 60'") != std::string::npos);
+}
+
+TEST_F(EnsureSshdOptionTest, MaxStartups_NonCompliant)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdMaxStartupsOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdMaxStartupsOutput)));
+
+    std::map<std::string, std::string> args;
+    args["option"] = "maxstartups";
+    // Set at least one threshold lower than actual (e.g., middle value 25 < 30)
+    args["value"] = "15 25 70";
+
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Option 'maxstartups' has value '10 30 60' which exceeds limits") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, OperationUnsupported)
