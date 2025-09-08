@@ -9,21 +9,20 @@
 
 namespace ComplianceEngine
 {
-AUDIT_FN(EnsureIptablesOpenPorts)
+Result<Status> AuditEnsureIptablesOpenPorts(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
     auto result = GetOpenPorts(context);
     if (!result.HasValue())
     {
         return result.Error();
     }
-    auto& openPorts = result.Value();
+    const auto& openPorts = result.Value();
     auto iptResult = context.ExecuteCommand("iptables -L INPUT -v -n");
     if (!iptResult.HasValue())
     {
         return Error("Failed to execute iptables command: " + iptResult.Error().message, iptResult.Error().code);
     }
-    auto& iptResultR = iptResult.Value();
+    const auto& iptResultR = iptResult.Value();
     for (const auto& port : openPorts)
     {
         if (!port.IsLocal() && (port.family == AF_INET) && (iptResultR.find("dpt:" + std::to_string(port.port)) == std::string::npos))
@@ -34,21 +33,20 @@ AUDIT_FN(EnsureIptablesOpenPorts)
     return indicators.Compliant("All open ports are listed in iptables");
 }
 
-AUDIT_FN(EnsureIp6tablesOpenPorts)
+Result<Status> AuditEnsureIp6tablesOpenPorts(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
     auto result = GetOpenPorts(context);
     if (!result.HasValue())
     {
         return result.Error();
     }
-    auto& openPorts = result.Value();
+    const auto& openPorts = result.Value();
     auto iptResult = context.ExecuteCommand("ip6tables -L INPUT -v -n");
     if (!iptResult.HasValue())
     {
         return Error("Failed to execute ip6tables command: " + iptResult.Error().message, iptResult.Error().code);
     }
-    auto& iptResultR = iptResult.Value();
+    const auto& iptResultR = iptResult.Value();
     for (const auto& port : openPorts)
     {
         if (!port.IsLocal() && (port.family == AF_INET6) && (iptResultR.find("dpt:" + std::to_string(port.port)) == std::string::npos))
@@ -59,15 +57,14 @@ AUDIT_FN(EnsureIp6tablesOpenPorts)
     return indicators.Compliant("All open ports are listed in iptables");
 }
 
-AUDIT_FN(EnsureUfwOpenPorts)
+Result<Status> AuditEnsureUfwOpenPorts(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
     auto result = GetOpenPorts(context);
     if (!result.HasValue())
     {
         return result.Error();
     }
-    auto& openPorts = result.Value();
+    const auto& openPorts = result.Value();
     auto ufwResult = context.ExecuteCommand("ufw status verbose");
     if (!ufwResult.HasValue())
     {

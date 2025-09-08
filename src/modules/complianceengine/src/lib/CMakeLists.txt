@@ -123,13 +123,13 @@ set_property(TARGET complianceengineschema PROPERTY OUTPUT ComplianceEngineSchem
 add_library(complianceenginelib STATIC
     Base64.cpp
     BenchmarkInfo.cpp
+    BindingParsers.cpp
     CommonContext.cpp
     ComplianceEngineInterface.cpp
     ContextInterface.cpp
     DistributionInfo.cpp
     Engine.cpp
     Evaluator.cpp
-    FilePermissionsHelpers.cpp
     FileTreeWalk.cpp
     GroupsIterator.cpp
     Indicators.cpp
@@ -139,6 +139,7 @@ add_library(complianceenginelib STATIC
     LuaEvaluator.cpp
     NetworkTools.cpp
     PasswordEntriesIterator.cpp
+    Pattern.cpp
     Procedure.cpp
     ProcedureMap.cpp
     Result.cpp
@@ -148,15 +149,6 @@ add_library(complianceenginelib STATIC
     )
 
 set_property(TARGET complianceenginelib PROPERTY POSITION_INDEPENDENT_CODE ON)
-
-add_custom_target(ProcedureMap
-    DEPENDS ProcedureMap.cpp ProcedureMap.h
-)
-add_custom_command(
-    OUTPUT ProcedureMap.cpp ProcedureMap.h
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/GenProcedureMap.sh ${CMAKE_CURRENT_SOURCE_DIR}/procedures/
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/GenProcedureMap.sh ${PROCEDURES}
-    VERBATIM)
 
 target_link_libraries(complianceenginelib PRIVATE
     logging
@@ -169,4 +161,5 @@ target_include_directories(complianceenginelib PUBLIC
     ${MODULES_INC_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${LUA_INCLUDE_DIR}
-    )
+    ${CMAKE_CURRENT_SOURCE_DIR}/procedures
+)

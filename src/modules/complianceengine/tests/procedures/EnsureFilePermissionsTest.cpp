@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureFilePermissions.h>
 #include <dirent.h>
 #include <fstream>
 #include <gtest/gtest.h>
@@ -15,11 +14,16 @@
 
 using ComplianceEngine::AuditEnsureFilePermissions;
 using ComplianceEngine::AuditEnsureFilePermissionsCollection;
+using ComplianceEngine::EnsureFilePermissionsCollectionParams;
+using ComplianceEngine::EnsureFilePermissionsParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
+using ComplianceEngine::Optional;
+using ComplianceEngine::Pattern;
 using ComplianceEngine::RemediateEnsureFilePermissions;
 using ComplianceEngine::RemediateEnsureFilePermissionsCollection;
 using ComplianceEngine::Result;
+using ComplianceEngine::Separated;
 using ComplianceEngine::Status;
 
 class EnsureFilePermissionsTest : public ::testing::Test
@@ -84,27 +88,38 @@ protected:
         ASSERT_EQ(chown(filePath.c_str(), owner, group), 0);
         files.push_back(filePath);
     }
+
+    static void MakeSeparatedList(const std::string& input, Optional<Separated<std::string, '|'>>& output)
+    {
+        auto result = Separated<std::string, '|'>::Parse(input);
+        ASSERT_TRUE(result.HasValue());
+        output = std::move(result.Value());
+    }
 };
 
 TEST_F(EnsureFilePermissionsTest, AuditFileMissing)
 {
-    std::map<std::string, std::string> args;
-    args["filename"] = "/this_doesnt_exist_for_sure";
+    EnsureFilePermissionsParams params;
+    params.filename = "/this_doesnt_exist_for_sure";
 
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditWrongOwner)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 1, 0, 0610);
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0400";
-    args["mask"] = "0066";
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 1, 0, 0610);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group.Value())}};
+    params.permissions = 0400;
+    params.mask = 0066;
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find("owner") != std::string::npos);
@@ -112,18 +127,21 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongOwner)
 
 TEST_F(EnsureFilePermissionsTest, RemediateWrongOwner)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 1, 0, 0610);
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0400";
-    args["mask"] = "0066";
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 1, 0, 0610);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.permissions = 0400;
+    params.mask = 0066;
 
-    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
+    auto result = RemediateEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
-    ASSERT_EQ(stat(args["filename"].c_str(), &st), 0);
+    ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0);
     ASSERT_EQ(st.st_gid, 0);
     ASSERT_EQ(st.st_mode & 0777, 0610);
@@ -131,14 +149,18 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongOwner)
 
 TEST_F(EnsureFilePermissionsTest, AuditWrongGroup)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 1, 0610);
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0400";
-    args["mask"] = "0066";
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 1, 0610);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group).Value()}};
+    params.permissions = 0400;
+    params.mask = 0066;
 
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find("Invalid group") != std::string::npos);
@@ -146,18 +168,22 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongGroup)
 
 TEST_F(EnsureFilePermissionsTest, RemediateWrongGroup)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 1, 0610);
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0400";
-    args["mask"] = "0066";
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 1, 0610);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group).Value()}};
+    params.permissions = 0400;
+    params.mask = 0066;
 
-    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
+    auto result = RemediateEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
-    ASSERT_EQ(stat(args["filename"].c_str(), &st), 0);
+    ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0);
     ASSERT_EQ(st.st_gid, 0);
     ASSERT_EQ(st.st_mode & 0777, 0610);
@@ -165,14 +191,18 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongGroup)
 
 TEST_F(EnsureFilePermissionsTest, AuditWrongPermissions)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 0, 0210);
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0400";
-    args["mask"] = "0066";
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 0, 0210);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group).Value()}};
+    params.permissions = 0400;
+    params.mask = 0066;
 
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find("Invalid permissions") != std::string::npos);
@@ -180,18 +210,22 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongPermissions)
 
 TEST_F(EnsureFilePermissionsTest, RemediateWrongPermissions)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 0, 0210);
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0400";
-    args["mask"] = "0066";
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 0, 0210);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group).Value()}};
+    params.permissions = 0400;
+    params.mask = 0066;
 
-    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
+    auto result = RemediateEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
-    ASSERT_EQ(stat(args["filename"].c_str(), &st), 0);
+    ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0);
     ASSERT_EQ(st.st_gid, 0);
     ASSERT_EQ(st.st_mode & 0777, 0610);
@@ -199,14 +233,18 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongPermissions)
 
 TEST_F(EnsureFilePermissionsTest, AuditWrongMask)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 0, 0654);
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0400";
-    args["mask"] = "0066";
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 0, 0654);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group).Value()}};
+    params.permissions = 0400;
+    params.mask = 0066;
 
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find("Invalid permissions") != std::string::npos);
@@ -214,18 +252,22 @@ TEST_F(EnsureFilePermissionsTest, AuditWrongMask)
 
 TEST_F(EnsureFilePermissionsTest, RemediateWrongMask)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 0, 0654);
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0400";
-    args["mask"] = "0066";
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 0, 0654);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group).Value()}};
+    params.permissions = 0400;
+    params.mask = 0066;
 
-    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
+    auto result = RemediateEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
-    ASSERT_EQ(stat(args["filename"].c_str(), &st), 0);
+    ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0);
     ASSERT_EQ(st.st_gid, 0);
     ASSERT_EQ(st.st_mode & 0777, 0610);
@@ -233,31 +275,39 @@ TEST_F(EnsureFilePermissionsTest, RemediateWrongMask)
 
 TEST_F(EnsureFilePermissionsTest, AuditAllWrong)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 1, 1, 0276);
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0400";
-    args["mask"] = "0066";
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 1, 1, 0276);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group).Value()}};
+    params.permissions = 0400;
+    params.mask = 0066;
 
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateAllWrong)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 1, 1, 0276);
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0400";
-    args["mask"] = "0066";
-    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 1, 1, 0276);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group).Value()}};
+    params.permissions = 0400;
+    params.mask = 0066;
+    auto result = RemediateEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
-    ASSERT_EQ(stat(args["filename"].c_str(), &st), 0);
+    ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0);
     ASSERT_EQ(st.st_gid, 0);
     ASSERT_EQ(st.st_mode & 0777, 0610);
@@ -265,147 +315,108 @@ TEST_F(EnsureFilePermissionsTest, RemediateAllWrong)
 
 TEST_F(EnsureFilePermissionsTest, AuditAllOk)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 0, 0610);
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0400";
-    args["mask"] = "0066";
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 0, 0610);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group).Value()}};
+    params.permissions = 0400;
+    params.mask = 0066;
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateAllOk)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 0, 0610);
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0400";
-    args["mask"] = "0066";
-    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 0, 0610);
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group).Value()}};
+    params.permissions = 0400;
+    params.mask = 0066;
+    auto result = RemediateEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     struct stat st;
-    ASSERT_EQ(stat(args["filename"].c_str(), &st), 0);
+    ASSERT_EQ(stat(params.filename.c_str(), &st), 0);
     ASSERT_EQ(st.st_uid, 0);
     ASSERT_EQ(st.st_gid, 0);
     ASSERT_EQ(st.st_mode & 0777, 0610);
 }
 
-TEST_F(EnsureFilePermissionsTest, AuditMissingFilename)
-{
-    std::map<std::string, std::string> args;
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "No filename provided");
-}
-
-TEST_F(EnsureFilePermissionsTest, RemediateMissingFilename)
-{
-    std::map<std::string, std::string> args;
-    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "No filename provided");
-}
-
 TEST_F(EnsureFilePermissionsTest, AuditBadFileOwner)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 15213, 0, 0600);
-    args["owner"] = "boohoonotarealuser";
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 15213, 0, 0600);
+    auto owner = Pattern::Make("boohoonotarealuser");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateBadFileOwner)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 15213, 0, 0600);
-    args["owner"] = "boohoonotarealuser";
-    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 15213, 0, 0600);
+    auto owner = Pattern::Make("boohoonotarealuser");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto result = RemediateEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, AuditBadFileGroup)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 15213, 0600);
-    args["group"] = "boohoonotarealgroup";
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 15213, 0600);
+    auto group = Pattern::Make("boohoonotarealgroup");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group.Value())}};
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateBadFileGroup)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 15213, 0600);
-    args["group"] = "boohoonotarealgroup";
-    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 15213, 0600);
+    auto group = Pattern::Make("boohoonotarealgroup");
+    ASSERT_TRUE(group.HasValue());
+    params.group = {{std::move(group.Value())}};
+    auto result = RemediateEnsureFilePermissions(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-TEST_F(EnsureFilePermissionsTest, AuditBadPermissions)
-{
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 0, 0600);
-    args["permissions"] = "999";
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Invalid permissions argument: 999");
-}
-
-TEST_F(EnsureFilePermissionsTest, RemediateBadPermissions)
-{
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 0, 0600);
-    args["permissions"] = "999";
-    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Invalid permissions argument: 999");
-}
-
-TEST_F(EnsureFilePermissionsTest, AuditBadMask)
-{
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 0, 0600);
-    args["mask"] = "999";
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Invalid mask argument: 999");
-}
-
-TEST_F(EnsureFilePermissionsTest, RemediateBadMask)
-{
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 0, 0600);
-    args["mask"] = "999";
-    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-}
-
 TEST_F(EnsureFilePermissionsTest, AuditSameBitsSet)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 0, 0600);
-    args["permissions"] = "600";
-    args["mask"] = "600";
-    auto result = AuditEnsureFilePermissions(args, indicators, mContext);
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 0, 0600);
+    params.permissions = 600;
+    params.mask = 600;
+    auto result = AuditEnsureFilePermissions(params, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
 }
 
 TEST_F(EnsureFilePermissionsTest, RemediateSameBitsSet)
 {
-    std::map<std::string, std::string> args;
-    CreateFile(args["filename"], 0, 0, 0600);
-    args["permissions"] = "600";
-    args["mask"] = "600";
-    auto result = RemediateEnsureFilePermissions(args, indicators, mContext);
+    EnsureFilePermissionsParams params;
+    CreateFile(params.filename, 0, 0, 0600);
+    params.permissions = 600;
+    params.mask = 600;
+    auto result = RemediateEnsureFilePermissions(params, indicators, mContext);
     ASSERT_FALSE(result.HasValue());
 }
 
@@ -414,14 +425,17 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionAllCompliant)
     CreateFileInDir("file1.txt", 0, 0, 0644);
     CreateFileInDir("file2.txt", 0, 0, 0644);
 
-    std::map<std::string, std::string> args;
-    args["directory"] = testDir;
-    args["ext"] = "*.txt";
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0644";
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt";
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.permissions = 0644;
 
-    auto result = AuditEnsureFilePermissionsCollection(args, indicators, mContext);
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find("file1.txt") != std::string::npos);
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -431,14 +445,17 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionExplicitFile)
 {
     CreateFileInDir("file1.txt", 0, 0, 0644);
 
-    std::map<std::string, std::string> args;
-    args["directory"] = testDir;
-    args["ext"] = "file1.txt";
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0644";
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "file1.txt";
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.permissions = 0644;
 
-    auto result = AuditEnsureFilePermissionsCollection(args, indicators, mContext);
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find("file1.txt owner") != std::string::npos);
     ASSERT_EQ(result.Value(), Status::Compliant);
@@ -451,14 +468,17 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionQuestionMark)
     CreateFileInDir("file1.log", 0, 0, 0644);
     CreateFileInDir("file13.txt", 0, 0, 0644);
 
-    std::map<std::string, std::string> args;
-    args["directory"] = testDir;
-    args["ext"] = "file?.txt";
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0644";
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "file?.txt";
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.permissions = 0644;
 
-    auto result = AuditEnsureFilePermissionsCollection(args, indicators, mContext);
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find("file1.txt") != std::string::npos);
     ASSERT_TRUE(mFormatter.Format(indicators).Value().find("file2.txt") != std::string::npos);
@@ -466,19 +486,23 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionQuestionMark)
     ASSERT_FALSE(mFormatter.Format(indicators).Value().find("file13.txt") != std::string::npos);
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
+
 TEST_F(EnsureFilePermissionsTest, AuditCollectionNonCompliantFile)
 {
     CreateFileInDir("file1.txt", 0, 0, 0644);
     CreateFileInDir("file2.txt", 1000, 0, 0644);
 
-    std::map<std::string, std::string> args;
-    args["directory"] = testDir;
-    args["ext"] = "*.txt";
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0644";
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt";
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.permissions = 0644;
 
-    auto result = AuditEnsureFilePermissionsCollection(args, indicators, mContext);
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -488,14 +512,17 @@ TEST_F(EnsureFilePermissionsTest, RemediateCollectionNonCompliantFile)
     CreateFileInDir("file1.txt", 0, 0, 0644);
     CreateFileInDir("file2.txt", 1000, 0, 0600);
 
-    std::map<std::string, std::string> args;
-    args["directory"] = testDir;
-    args["ext"] = "*.txt";
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0644";
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt";
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.permissions = 0644;
 
-    auto result = RemediateEnsureFilePermissionsCollection(args, indicators, mContext);
+    auto result = RemediateEnsureFilePermissionsCollection(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 
@@ -514,14 +541,17 @@ TEST_F(EnsureFilePermissionsTest, AuditCollectionNoMatchingFiles)
     CreateFileInDir("file1.log", 0, 0, 0644);
     CreateFileInDir("file2.log", 0, 0, 0644);
 
-    std::map<std::string, std::string> args;
-    args["directory"] = testDir;
-    args["ext"] = "*.txt";
-    args["owner"] = "root";
-    args["group"] = "root";
-    args["permissions"] = "0644";
+    EnsureFilePermissionsCollectionParams params;
+    params.directory = testDir;
+    params.ext = "*.txt";
+    auto owner = Pattern::Make("root");
+    ASSERT_TRUE(owner.HasValue());
+    params.owner = {{std::move(owner).Value()}};
+    auto group = Pattern::Make("root");
+    ASSERT_TRUE(group.HasValue());
+    params.permissions = 0644;
 
-    auto result = AuditEnsureFilePermissionsCollection(args, indicators, mContext);
+    auto result = AuditEnsureFilePermissionsCollection(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }

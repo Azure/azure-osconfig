@@ -3,8 +3,8 @@
 
 #include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureFilesystemOption.h>
 #include <dirent.h>
 #include <fstream>
 #include <gtest/gtest.h>
@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 using ComplianceEngine::AuditEnsureFilesystemOption;
+using ComplianceEngine::EnsureFilesystemOptionParams;
 using ComplianceEngine::Error;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::RemediateEnsureFilesystemOption;
@@ -61,14 +62,14 @@ protected:
 TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionSuccess)
 {
     CreateTabs();
-    std::map<std::string, std::string> args;
-    args["mountpoint"] = "/";
-    args["test_fstab"] = fstabFile;
-    args["test_mtab"] = mtabFile;
-    args["optionsSet"] = "rw,noatime";
-    args["optionsNotSet"] = "noreltime";
+    EnsureFilesystemOptionParams params;
+    params.mountpoint = "/";
+    params.test_fstab = fstabFile;
+    params.test_mtab = mtabFile;
+    params.optionsSet = {{"rw", "noatime"}};
+    params.optionsNotSet = {{"noreltime"}};
 
-    auto result = AuditEnsureFilesystemOption(args, indicators, mContext);
+    auto result = AuditEnsureFilesystemOption(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -76,14 +77,14 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionSuccess)
 TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionMissing)
 {
     CreateTabs();
-    std::map<std::string, std::string> args;
-    args["mountpoint"] = "/";
-    args["test_fstab"] = fstabFile;
-    args["test_mtab"] = mtabFile;
-    args["optionsSet"] = "rw,noatime,noexec";
-    args["optionsNotSet"] = "noreltime";
+    EnsureFilesystemOptionParams params;
+    params.mountpoint = "/";
+    params.test_fstab = fstabFile;
+    params.test_mtab = mtabFile;
+    params.optionsSet = {{"rw", "noatime", "noexec"}};
+    params.optionsNotSet = {{"noreltime"}};
 
-    auto result = AuditEnsureFilesystemOption(args, indicators, mContext);
+    auto result = AuditEnsureFilesystemOption(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -91,14 +92,14 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionMissing)
 TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionForbidden)
 {
     CreateTabs();
-    std::map<std::string, std::string> args;
-    args["mountpoint"] = "/";
-    args["test_fstab"] = fstabFile;
-    args["test_mtab"] = mtabFile;
-    args["optionsSet"] = "rw";
-    args["optionsNotSet"] = "nodev";
+    EnsureFilesystemOptionParams params;
+    params.mountpoint = "/";
+    params.test_fstab = fstabFile;
+    params.test_mtab = mtabFile;
+    params.optionsSet = {{"rw"}};
+    params.optionsNotSet = {{"nodev"}};
 
-    auto result = AuditEnsureFilesystemOption(args, indicators, mContext);
+    auto result = AuditEnsureFilesystemOption(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -106,15 +107,15 @@ TEST_F(EnsureFilesystemOptionTest, AuditEnsureFilesystemOptionForbidden)
 TEST_F(EnsureFilesystemOptionTest, RemediateEnsureFilesystemOption)
 {
     CreateTabs();
-    std::map<std::string, std::string> args;
-    args["mountpoint"] = "/home";
-    args["test_fstab"] = fstabFile;
-    args["test_mtab"] = mtabFile;
-    args["optionsSet"] = "rw,noatime";
-    args["optionsNotSet"] = "relatime";
-    args["test_mount"] = "touch " + dir + " /remounted;/bin/true ";
+    EnsureFilesystemOptionParams params;
+    params.mountpoint = "/home";
+    params.test_fstab = fstabFile;
+    params.test_mtab = mtabFile;
+    params.optionsSet = {{"rw", "noatime"}};
+    params.optionsNotSet = {{"relatime"}};
+    params.test_mount = "touch " + dir + " /remounted;/bin/true ";
 
-    auto result = RemediateEnsureFilesystemOption(args, indicators, mContext);
+    auto result = RemediateEnsureFilesystemOption(params, indicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 
@@ -128,9 +129,9 @@ TEST_F(EnsureFilesystemOptionTest, RemediateEnsureFilesystemOption)
     ASSERT_EQ(fstabContents, "# Leave the comment alone!\n/dev/sda1 / ext4 rw,nodev,noatime 0 1\n/dev/sda2 /home ext4 rw,data=ordered,noatime 0 2\n");
     DIR* d = opendir(dir.c_str());
     ASSERT_NE(d, nullptr);
-    struct dirent* de;
+    struct dirent* de = nullptr;
     std::string backupFilename;
-    while ((de = readdir(d)) != NULL)
+    while ((de = readdir(d)) != nullptr)
     {
         std::string filename = de->d_name;
         std::string prefix = "fstab.bak.";

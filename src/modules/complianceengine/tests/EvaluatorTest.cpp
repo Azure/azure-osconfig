@@ -412,7 +412,7 @@ TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_1)
 
     auto result = evaluator1.ExecuteRemediation();
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.Error().message, std::string("Missing 'result' parameter"));
+    EXPECT_EQ(result.Error().message, std::string("Unknown parameter 'foo'"));
 }
 
 TEST_F(EvaluatorTest, ExecuteRemediation_Parameters_2)

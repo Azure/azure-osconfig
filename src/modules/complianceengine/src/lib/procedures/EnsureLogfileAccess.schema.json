@@ -41,7 +41,7 @@
               "properties": {
                 "path": {
                   "type": "string",
-                  "description": "Path to log directory to remediate, default /var/log"
+                  "description": "Path to log directory to check, default /var/log"
                 }
               }
             }

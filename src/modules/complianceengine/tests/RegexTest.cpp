@@ -134,7 +134,9 @@ TEST_F(RegexTest, RegexMatch_1)
     smatch match;
     bool result = regex_match(target, match, r);
     EXPECT_FALSE(result);
-    EXPECT_FALSE(match.ready());
+    EXPECT_TRUE(match.ready());
+    EXPECT_EQ(match.size(), 0);
+    EXPECT_TRUE(match.empty());
 }
 
 TEST_F(RegexTest, RegexMatch_2)
@@ -145,7 +147,9 @@ TEST_F(RegexTest, RegexMatch_2)
     smatch match;
     bool result = regex_match(target, match, r);
     EXPECT_FALSE(result);
-    EXPECT_FALSE(match.ready());
+    EXPECT_TRUE(match.ready());
+    EXPECT_EQ(match.size(), 0);
+    EXPECT_TRUE(match.empty());
 }
 
 TEST_F(RegexTest, RegexMatch_3)

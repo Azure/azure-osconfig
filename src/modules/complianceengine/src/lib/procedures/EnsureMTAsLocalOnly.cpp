@@ -3,15 +3,13 @@
 
 #include "NetworkTools.h"
 
-#include <CommonUtils.h>
+#include <EnsureMTAsLocalOnly.h>
 #include <Evaluator.h>
 
 namespace ComplianceEngine
 {
-
-AUDIT_FN(EnsureMTAsLocalOnly)
+Result<Status> AuditEnsureMTAsLocalOnly(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
     auto result = GetOpenPorts(context);
     if (!result.HasValue())
     {

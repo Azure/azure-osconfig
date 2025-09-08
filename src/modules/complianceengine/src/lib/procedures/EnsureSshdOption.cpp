@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <CommonUtils.h>
-#include <Evaluator.h>
+#include <EnsureSshdOption.h>
 #include <Regex.h>
 #include <sstream>
 #include <string>
@@ -74,34 +74,10 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
 }
 } // namespace
 
-AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option:M", "value:Regex that the option value has to match:M")
+Result<Status> AuditEnsureSshdOption(const EnsureSshdOptionParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto log = context.GetLogHandle();
-
-    auto it = args.find("option");
-    if (it == args.end())
-    {
-        return Error("Missing 'option' parameter", EINVAL);
-    }
-    auto option = std::move(it->second);
+    auto option = params.option;
     std::transform(option.begin(), option.end(), option.begin(), ::tolower);
-
-    it = args.find("value");
-    if (it == args.end())
-    {
-        return Error("Missing 'value' parameter", EINVAL);
-    }
-    auto value = std::move(it->second);
-    regex valueRegex;
-    try
-    {
-        valueRegex = regex(value);
-    }
-    catch (const regex_error& e)
-    {
-        OsConfigLogError(log, "Regex error: %s", e.what());
-        return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
-    }
 
     auto result = GetSshdOptions(context);
     if (!result.HasValue())
@@ -117,34 +93,18 @@ AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option:M", "value:Rege
     }
 
     auto realValue = std::move(itOptions->second);
-    if (regex_search(realValue, valueRegex))
+    if (regex_search(realValue, params.value))
     {
         return indicators.Compliant("Option '" + option + "' has a compliant value '" + realValue + "'");
     }
     else
     {
-        return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which does not match required pattern '" + value + "'");
+        return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which does not match required pattern");
     }
 }
 
-AUDIT_FN(EnsureSshdNoOption, "options:Name of the SSH daemon options, comma separated:M", "values:Comma separated list of regexes:M")
+Result<Status> AuditEnsureSshdNoOption(const EnsureSshdNoOptionParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto log = context.GetLogHandle();
-
-    auto it = args.find("options");
-    if (it == args.end())
-    {
-        return Error("Missing 'options' parameter", EINVAL);
-    }
-    auto options = std::move(it->second);
-
-    it = args.find("values");
-    if (it == args.end())
-    {
-        return Error("Missing 'values' parameter", EINVAL);
-    }
-    auto values = std::move(it->second);
-
     auto result = GetSshdOptions(context);
     if (!result.HasValue())
     {
@@ -152,9 +112,7 @@ AUDIT_FN(EnsureSshdNoOption, "options:Name of the SSH daemon options, comma sepa
     }
     auto& sshdConfig = result.Value();
 
-    std::istringstream optionsStream(options);
-    std::string optionName;
-    while (std::getline(optionsStream, optionName, ','))
+    for (auto optionName : params.options.items)
     {
         std::transform(optionName.begin(), optionName.end(), optionName.begin(), ::tolower);
         auto itConfig = sshdConfig.find(optionName);
@@ -164,21 +122,9 @@ AUDIT_FN(EnsureSshdNoOption, "options:Name of the SSH daemon options, comma sepa
             continue;
         }
 
-        std::istringstream valueStream(values);
-        std::string value;
-        while (std::getline(valueStream, value, ','))
+        for (const auto& value : params.values.items)
         {
-            regex valueRegex;
-            try
-            {
-                valueRegex = regex(value);
-            }
-            catch (const regex_error& e)
-            {
-                OsConfigLogError(log, "Regex error: %s", e.what());
-                return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
-            }
-            if (regex_search(itConfig->second, valueRegex))
+            if (regex_search(itConfig->second, value))
             {
                 return indicators.NonCompliant("Option '" + optionName + "' has a compliant value '" + itConfig->second + "'");
             }

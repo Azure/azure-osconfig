@@ -47,13 +47,13 @@
                 },
                 "ignoreCase": {
                   "type": "string",
-                  "description": "Determine whether the a match or state should be ignore case sensitivity  'matchPattern' and 'statePattern' or none when empty'",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:((matchPattern\\sstatePattern|matchPattern|statePattern).*)$|(^(matchPattern\\sstatePattern|matchPattern|statePattern)))"
+                  "description": "Determine whether a match or state should ignore case sensitivity 'matchPattern' and 'statePattern' or none when empty'",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((matchPattern\\sstatePattern|matchPattern|statePattern))$|(^(matchPattern\\sstatePattern|matchPattern|statePattern)$))"
                 },
                 "behavior": {
                   "type": "string",
                   "description": "Determine the function behavior",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:((all_exist|any_exist|at_least_one_exists|none_exist))$|(^(all_exist|any_exist|at_least_one_exists|none_exist)$))"
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((all_exist|any_exist|at_least_one_exists|none_exist|only_one_exists))$|(^(all_exist|any_exist|at_least_one_exists|none_exist|only_one_exists)$))"
                 }
               }
             }

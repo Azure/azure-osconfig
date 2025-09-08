@@ -12,7 +12,9 @@
           "properties": {
             "EnsureGroupIsOnlyGroupWith": {
               "type": "object",
-              "required": [],
+              "required": [
+                "group"
+              ],
               "additionalProperties": false,
               "properties": {
                 "group": {
