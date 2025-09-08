@@ -175,7 +175,7 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
 }
 
 // Helper that evaluates a single sshd option against the provided operation/value.
-// valueRegexPtr is only used (and must be non-null) when op is match or not_match.
+// valueRegex is only used (and must be valid) when op is match or not_match.
 static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string>& sshdConfig, const std::string& option, const std::string& value,
     const std::string& op, const regex& valueRegex, bool useRegex, IndicatorsTree& indicators)
 {
