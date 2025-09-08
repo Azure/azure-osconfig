@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "telemetryjson.hpp"
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 
+#include <dlfcn.h>
 #include <chrono>
 #include <climits>
 #include <cstdlib>
@@ -17,6 +20,7 @@
 #include <utility>
 #include <vector>
 
+#include "telemetryjson.hpp"
 class TelemetryJsonLogger
 {
 private:
@@ -140,6 +144,12 @@ public:
         }
 
         isOpen = false;
+
+        if (binaryDirectory.empty())
+        {
+            binaryDirectory = TelemetryJson::Logger::getModuleDirectory();
+        }
+        RunTelemetryProxy(filename.c_str());
 
         // Call telemetry proxy if binary directory is set
         if (!binaryDirectory.empty())
@@ -400,6 +410,29 @@ const std::string& Logger::getBinaryDirectory() const
 {
     static const std::string empty;
     return m_impl ? m_impl->logger.getBinaryDirectory() : empty;
+}
+
+std::string Logger::getModuleDirectory()
+{
+    Dl_info dl_info;
+
+    // Get information about the current function's address
+    if (dladdr(reinterpret_cast<void*>(Logger::getModuleDirectory), &dl_info) != 0)
+    {
+        if (dl_info.dli_fname != nullptr)
+        {
+            std::string fullPath(dl_info.dli_fname);
+
+            // Find the last slash to get the directory path
+            auto lastSlashPos = fullPath.find_last_of('/');
+            if (lastSlashPos != std::string::npos)
+            {
+                return fullPath.substr(0, lastSlashPos);
+            }
+        }
+    }
+
+    return std::string{}; // Return empty string on failure
 }
 
 } // namespace TelemetryJson

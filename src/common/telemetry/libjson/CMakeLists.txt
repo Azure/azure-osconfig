@@ -12,6 +12,7 @@ add_library(telemetryjsonlib STATIC
 target_link_libraries(telemetryjsonlib
     PUBLIC
         parsonlib
+        dl
 )
 
 target_include_directories(telemetryjsonlib

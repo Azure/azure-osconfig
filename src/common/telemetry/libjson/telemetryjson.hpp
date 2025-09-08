@@ -91,6 +91,12 @@ public:
      */
     const std::string& getBinaryDirectory() const;
 
+    /**
+     * @brief Get the directory of the current module (shared library or executable)
+     * @return The directory path, or empty string on failure
+     */
+    static std::string getModuleDirectory();
+
 private:
     class Impl;
     std::unique_ptr<Impl> m_impl;
