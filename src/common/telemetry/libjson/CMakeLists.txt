@@ -18,7 +18,6 @@ target_link_libraries(telemetryjsonlib
 target_include_directories(telemetryjsonlib
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/../inc
-    PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

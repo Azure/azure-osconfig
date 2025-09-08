@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <telemetry.h>
+#include <telemetryjson.hpp>
 
 class TelemetryJsonTest : public ::testing::Test
 {
@@ -271,4 +272,26 @@ TEST_F(TelemetryJsonTest, GetFilepath_FileExists_Success)
     EXPECT_TRUE(S_ISREG(fileStat.st_mode)); // Should be a regular file
 
     EXPECT_EQ(0, Telemetry_Close(&handle));
+}
+
+TEST_F(TelemetryJsonTest, GetModuleDirectory_ReturnsValidPath)
+{
+    std::string moduleDir = TelemetryJson::Logger::getModuleDirectory();
+
+    // Should not be empty - dladdr should find the current module
+    EXPECT_FALSE(moduleDir.empty());
+
+    // Should be an absolute path (start with '/')
+    EXPECT_TRUE(moduleDir[0] == '/');
+
+    // Should not end with '/' (directory names typically don't)
+    if (!moduleDir.empty()) {
+        EXPECT_NE('/', moduleDir.back());
+    }
+
+    // The directory should exist
+    struct stat dirStat;
+    int statResult = stat(moduleDir.c_str(), &dirStat);
+    EXPECT_EQ(0, statResult);
+    EXPECT_TRUE(S_ISDIR(dirStat.st_mode));
 }
