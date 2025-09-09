@@ -25,7 +25,7 @@ set_target_properties(OsConfigResourceSsh PROPERTIES OUTPUT_NAME libOsConfigReso
 # Create the policy artifacts ZIP packages for SSH Posture Control (Get and Set)
 
 # Add telemetry binary if enabled
-if(ENABLE_TELEMETRY)
+if(BUILD_TELEMETRY)
     list(APPEND STAGING_COMMANDS_GET
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/exe/telemetry" ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/telemetry
     )
@@ -49,7 +49,7 @@ add_custom_target(stage_create_ssh_zip
 add_custom_target(create_ssh_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaseline.zip
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaseline.zip" --format=zip .
-    DEPENDS stage_create_ssh_zip $<$<BOOL:${ENABLE_TELEMETRY}>:telemetry>
+    DEPENDS stage_create_ssh_zip $<$<BOOL:${BUILD_TELEMETRY}>:telemetry>
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/)
 
 # For Remediation (Set):
@@ -67,5 +67,5 @@ add_custom_target(stage_create_ssh_zip_set
 add_custom_target(create_ssh_zip_set ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/SetLinuxSshServerSecurityBaseline.zip
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/SetLinuxSshServerSecurityBaseline.zip" --format=zip .
-    DEPENDS stage_create_ssh_zip_set $<$<BOOL:${ENABLE_TELEMETRY}>:telemetry>
+    DEPENDS stage_create_ssh_zip_set $<$<BOOL:${BUILD_TELEMETRY}>:telemetry>
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/)

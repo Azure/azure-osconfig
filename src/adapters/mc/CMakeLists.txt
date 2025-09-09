@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-if (ENABLE_TELEMETRY)
+if (BUILD_TELEMETRY)
     include(ExternalProject)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.5")
         find_program(GCC5_FOUND gcc-5)
