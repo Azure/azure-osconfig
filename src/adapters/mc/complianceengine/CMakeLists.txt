@@ -24,7 +24,7 @@ target_link_libraries(OsConfigResourceComplianceEngine
         complianceenginelib)
 
 # Add telemetry binary if enabled
-if(ENABLE_TELEMETRY)
+if(BUILD_TELEMETRY)
     list(APPEND STAGING_COMMANDS
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/exe/telemetry" ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/Modules/DscNativeResources/OsConfigResource/telemetry
     )
@@ -42,7 +42,7 @@ add_custom_target(stage_create_compliance_engine_shell_zip
 add_custom_target(create_compliance_engine_shell_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/ComplianceEngineShell.zip
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/ComplianceEngineShell.zip" --format=zip .
-    DEPENDS stage_create_compliance_engine_shell_zip $<$<BOOL:${ENABLE_TELEMETRY}>:telemetry>
+    DEPENDS stage_create_compliance_engine_shell_zip $<$<BOOL:${BUILD_TELEMETRY}>:telemetry>
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/StagingComplianceEngineShell/)
 
 add_subdirectory(example)
