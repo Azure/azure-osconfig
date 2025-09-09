@@ -87,7 +87,7 @@ private:
 extern "C" {
 #endif
 
-#include <telemetry.h>
+#include <Telemetry.h>
 
 #ifdef __cplusplus
 }

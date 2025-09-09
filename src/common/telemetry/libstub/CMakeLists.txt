@@ -5,7 +5,7 @@ project(telemetrystublib)
 set (CMAKE_C_STANDARD 11)
 
 add_library(telemetrystublib STATIC
-    telemetrystub.c
+    TelemetryStub.c
 )
 
 target_include_directories(telemetrystublib

@@ -6,7 +6,7 @@ set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
 
 add_library(telemetryjsonlib STATIC
-    telemetryjson.cpp
+    TelemetryJson.cpp
 )
 
 target_link_libraries(telemetryjsonlib

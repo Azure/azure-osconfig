@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <telemetry.h>
+#include <Telemetry.h>
 
 class TelemetryStubTest : public ::testing::Test
 {

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <telemetry.h>
+#include "Telemetry.h"
 
 // C interface implementations - all stub implementations
 

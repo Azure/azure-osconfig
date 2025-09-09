@@ -12,8 +12,8 @@
 #include <unistd.h>
 #include <vector>
 
-#include <telemetry.h>
-#include <telemetryjson.hpp>
+#include <Telemetry.h>
+#include <TelemetryJson.hpp>
 
 class TelemetryJsonTest : public ::testing::Test
 {
