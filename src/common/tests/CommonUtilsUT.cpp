@@ -2871,7 +2871,7 @@ TEST_F(CommonUtilsTest, CheckFilePermissionsForAllRsyslogLogFiles)
         "$FileCreateMode 00640\n"
         "$FileCreateMode  00640\n"
         "$FileCreateMode 0600\n"
-        "$FileCreateMode 600";
+        "$FileCreateMode 600"
         "$FileCreateMode     600";
     const char* list = "00600,00640";
 
@@ -2884,14 +2884,14 @@ TEST_F(CommonUtilsTest, CheckFilePermissionsForAllRsyslogLogFiles)
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
     EXPECT_EQ(0, CheckIntegerOptionFromFileEqualWithAny(m_path, "$FileCreateMode", ' ', modes, numberOfModes, nullptr, 8, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
-    
+
     FREE_MEMORY(modes);
 }
 
 TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
 {
     const char* list = "1,14,4,-1,-1,-1,-1";
-    
+
     int* values = NULL;
     int numberOfValues = 0;
 
@@ -2899,6 +2899,6 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
     EXPECT_EQ(7, numberOfValues);
 
     EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
-    
+
     FREE_MEMORY(values);
 }
