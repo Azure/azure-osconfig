@@ -2883,7 +2883,7 @@ TEST_F(CommonUtilsTest, CheckFilePermissionsForAllRsyslogLogFiles)
     EXPECT_EQ(0, ConvertStringToIntegers(list, ',', &modes, &numberOfModes, 8, nullptr));
     EXPECT_EQ(2, numberOfModes);
 
-    for (int == 0; i < testFilesSize; i++)
+    for (int i = 0; i < testFilesSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, testFiles[i]));
         EXPECT_EQ(0, CheckIntegerOptionFromFileEqualWithAny(m_path, "$FileCreateMode", ' ', modes, numberOfModes, nullptr, 8, nullptr));
