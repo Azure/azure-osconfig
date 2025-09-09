@@ -2854,14 +2854,14 @@ TEST_F(CommonUtilsTest, CheckBootloadersHavePasswordProtectionEnabled)
         " ### END /etc/grub.d/01_users ###\n";
 
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
-    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "password", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "superusers", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "password_pbkdf2", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "GRUB2_PASSWORD", nullptr, nullptr));
-    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "pa$$word", nullptr, nullptr));
-    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Test of a", nullptr, nullptr));
-    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "BEGIN", nullptr, nullptr));
-    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "END", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "password", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "superusers", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "password_pbkdf2", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "GRUB2_PASSWORD", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "pa$$word", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "Test of a", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "BEGIN", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "END", nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
