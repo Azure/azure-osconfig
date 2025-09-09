@@ -2837,3 +2837,68 @@ TEST_F(CommonUtilsTest, LoggingOptions)
 
     EXPECT_FALSE(IsDaemon());
 }
+
+TEST_F(CommonUtilsTest, CheckBootloadersHavePasswordProtectionEnabled)
+{
+    const char* testFile =
+        "### BEGIN /etc/grub.d/01_users ###\n"
+        "# Test of a pa$$word for GRUB2\n"
+        "    if[-f ${ prefix } / user.cfg]; then\n"
+        "        source ${ prefix } / user.cfg\n"
+        "    if[-n \"${GRUB2_PASSWORD}\"]; then\n"
+        "        set superusers = \"root\"\n"
+        "        export superusers\n"
+        "        password_pbkdf2 root ${ GRUB2_PASSWORD }\n"
+        "    fi\n"
+        "        fi\n"
+        " ### END /etc/grub.d/01_users ###\n";
+
+    EXPECT_TRUE(CreateTestFile(m_path, testFile));
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "password", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "superusers", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "password_pbkdf2", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "GRUB2_PASSWORD", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "pa$$word", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "Test of a", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "BEGIN", nullptr, nullptr));
+    EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "END", nullptr, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, CheckFilePermissionsForAllRsyslogLogFiles)
+{
+    const char* testFile =
+        "$FileCreateMode 00640\n"
+        "$FileCreateMode  00640\n"
+        "$FileCreateMode 0600\n"
+        "$FileCreateMode 600";
+        "$FileCreateMode     600";
+    const char* list = "00600,00640";
+
+    int* modes = NULL;
+    int numberOfModes = 0;
+
+    EXPECT_EQ(0, ConvertStringToIntegers(list, ',', &modes, &numberOfModes, 8, nullptr));
+    EXPECT_EQ(2, numberOfModes);
+
+    EXPECT_TRUE(CreateTestFile(m_path, testFile));
+    EXPECT_EQ(0, CheckIntegerOptionFromFileEqualWithAny(m_path, "$FileCreateMode", ' ', modes, numberOfModes, nullptr, 8, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    
+    FREE_MEMORY(modes);
+}
+
+TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
+{
+    const char* list = "1,14,4,-1,-1,-1,-1";
+    
+    int* values = NULL;
+    int numberOfValues = 0;
+
+    EXPECT_EQ(0, ConvertStringToIntegers(list, ',', &values, &numberOfValues, 10, nullptr));
+    EXPECT_EQ(7, numberOfValues);
+
+    EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
+    
+    FREE_MEMORY(values);
+}
