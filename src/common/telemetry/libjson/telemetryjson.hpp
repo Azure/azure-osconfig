@@ -30,71 +30,51 @@ public:
     Logger(Logger&& other) noexcept;
     Logger& operator=(Logger&& other) noexcept;
 
-    /**
-     * @brief Opens the logger for writing
-     * @return true on success, false on failure
-     */
+    // @brief Opens the logger for writing
+    // @return true on success, false on failure
     bool open();
 
-    /**
-     * @brief Closes the logger
-     * @return true on success, false on failure
-     */
+    // @brief Closes the logger
+    // @return true on success, false on failure
     bool close();
 
-    /**
-     * @brief Logs an event with key-value pairs
-     * @param eventName Name of the event to log
-     * @param keyValuePairs Array of key-value pair strings (must be even number of elements)
-     * @param pairCount Number of key-value pairs (keyValuePairs array size / 2)
-     * @return true on success, false on failure
-     */
+    // @brief Logs an event with key-value pairs
+    // @param eventName Name of the event to log
+    // @param keyValuePairs Array of key-value pair strings (must be even number of elements)
+    // @param pairCount Number of key-value pairs (keyValuePairs array size / 2)
+    // @return true on success, false on failure
     bool logEvent(const std::string& eventName, const char** keyValuePairs, int pairCount);
 
-    /**
-     * @brief Logs an event with key-value pairs using initializer list (string values only)
-     * @param eventName Name of the event to log
-     * @param keyValuePairs Initializer list of key-value pairs (string values)
-     * @return true on success, false on failure
-     */
+    // @brief Logs an event with key-value pairs using initializer list (string values only)
+    // @param eventName Name of the event to log
+    // @param keyValuePairs Initializer list of key-value pairs (string values)
+    // @return true on success, false on failure
     bool logEvent(const std::string& eventName,
                   std::initializer_list<std::pair<std::string, std::string>> keyValuePairs);
 
-    /**
-     * @brief Logs an event with no additional properties
-     * @param eventName Name of the event to log
-     * @return true on success, false on failure
-     */
+    // @brief Logs an event with no additional properties
+    // @param eventName Name of the event to log
+    // @return true on success, false on failure
     bool logEvent(const std::string& eventName);
 
-    /**
-     * @brief Check if the logger is open
-     * @return true if open, false otherwise
-     */
+    // @brief Check if the logger is open
+    // @return true if open, false otherwise
     bool isOpen() const;
 
-    /**
-     * @brief Get the filename being logged to
-     * @return The filename, or empty string if not open
-     */
+    // @brief Get the filename being logged to
+    // @return The filename, or empty string if not open
     const std::string& getFilename() const;
 
-    /**
-     * @brief Set the binary directory path for telemetry executable
-     * @param directory Path to the directory containing the telemetry binary
-     */
+    // @brief Set the binary directory path for telemetry executable
+    // @param directory Path to the directory containing the telemetry binary
     void setBinaryDirectory(const std::string& directory);
 
-    /**
-     * @brief Get the binary directory path
-     * @return The binary directory path, or empty string if not set
-     */
+    // @brief Get the binary directory path
+    // @return The binary directory path, or empty string if not set
     const std::string& getBinaryDirectory() const;
 
-    /**
-     * @brief Get the directory of the current module (shared library or executable)
-     * @return The directory path, or empty string on failure
-     */
+    // @brief Get the directory of the current module (shared library or executable)
+    // @return The directory path, or empty string on failure
     static std::string getModuleDirectory();
 
 private:

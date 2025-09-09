@@ -441,14 +441,14 @@ std::string Logger::getModuleDirectory()
 extern "C"
 {
 
-TelemetryHandle Telemetry_Open(void)
+OSConfigTelemetryHandle TelemetryOpen(void)
 {
     try
     {
         auto logger = new TelemetryJsonLogger();
         if (logger->open())
         {
-            return reinterpret_cast<TelemetryHandle>(logger);
+            return reinterpret_cast<OSConfigTelemetryHandle>(logger);
         }
         else
         {
@@ -462,7 +462,7 @@ TelemetryHandle Telemetry_Open(void)
     }
 }
 
-int Telemetry_Close(TelemetryHandle* handle)
+int TelemetryClose(OSConfigTelemetryHandle* handle)
 {
     if (handle == nullptr || *handle == nullptr)
     {
@@ -474,7 +474,7 @@ int Telemetry_Close(TelemetryHandle* handle)
     return 0;
 }
 
-int Telemetry_LogEvent(TelemetryHandle handle, const char* eventName,
+int TelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
                           const char** keyValuePairs, int pairCount)
 {
     if (handle == nullptr || eventName == nullptr)
@@ -494,7 +494,7 @@ int Telemetry_LogEvent(TelemetryHandle handle, const char* eventName,
     }
 }
 
-int Telemetry_SetBinaryDirectory(TelemetryHandle handle, const char* directory)
+int TelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory)
 {
     if (handle == nullptr || directory == nullptr)
     {
@@ -513,7 +513,7 @@ int Telemetry_SetBinaryDirectory(TelemetryHandle handle, const char* directory)
     }
 }
 
-const char* Telemetry_GetFilepath(TelemetryHandle handle)
+const char* TelemetryGetFilepath(OSConfigTelemetryHandle handle)
 {
     if (handle == nullptr)
     {
@@ -524,6 +524,19 @@ const char* Telemetry_GetFilepath(TelemetryHandle handle)
     {
         auto logger = reinterpret_cast<TelemetryJsonLogger*>(handle);
         return logger->getFilename().c_str();
+    }
+    catch (...)
+    {
+        return nullptr;
+    }
+}
+
+const char* TelemetryGetModuleDirectory()
+{
+    try
+    {
+        static std::string moduleDir = TelemetryJson::Logger::getModuleDirectory();
+        return moduleDir.c_str();
     }
     catch (...)
     {

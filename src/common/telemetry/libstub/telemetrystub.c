@@ -5,20 +5,20 @@
 
 // C interface implementations - all stub implementations
 
-TelemetryHandle Telemetry_Open(void)
+OSConfigTelemetryHandle TelemetryOpen(void)
 {
     // Stub implementation - return NULL to indicate failure
     return ((void*)0);
 }
 
-int Telemetry_Close(TelemetryHandle* handle)
+int TelemetryClose(OSConfigTelemetryHandle* handle)
 {
     // Stub implementation - return 0 to indicate success
     (void)handle;         // Suppress unused parameter warning
     return 0;
 }
 
-int Telemetry_LogEvent(TelemetryHandle handle, const char* eventName,
+int TelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
                           const char** keyValuePairs, int pairCount)
 {
     // Stub implementation - return 0 to indicate success
@@ -29,7 +29,7 @@ int Telemetry_LogEvent(TelemetryHandle handle, const char* eventName,
     return 0;
 }
 
-int Telemetry_SetBinaryDirectory(TelemetryHandle handle, const char* directory)
+int TelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory)
 {
     // Stub implementation - return 0 to indicate success
     (void)handle;         // Suppress unused parameter warning
@@ -37,9 +37,15 @@ int Telemetry_SetBinaryDirectory(TelemetryHandle handle, const char* directory)
     return 0;
 }
 
-const char* Telemetry_GetFilepath(TelemetryHandle handle)
+const char* TelemetryGetFilepath(OSConfigTelemetryHandle handle)
 {
     // Stub implementation - not implemented
     (void)handle;         // Suppress unused parameter warning
+    return ((void*)0);
+}
+
+const char* TelemetryGetModuleDirectory()
+{
+    // Stub implementation - not implemented
     return ((void*)0);
 }

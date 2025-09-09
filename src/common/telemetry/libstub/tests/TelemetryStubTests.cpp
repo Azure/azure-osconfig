@@ -12,59 +12,59 @@ protected:
 };
 
 // Test C interface functions
-TEST_F(TelemetryStubTest, Telemetry_Open_ReturnsNull)
+TEST_F(TelemetryStubTest, TelemetryOpen_ReturnsNull)
 {
-    TelemetryHandle handle = Telemetry_Open();
+    OSConfigTelemetryHandle handle = TelemetryOpen();
     EXPECT_EQ(NULL, handle);
 }
 
-TEST_F(TelemetryStubTest, Telemetry_Close_ReturnsSuccess)
+TEST_F(TelemetryStubTest, TelemetryClose_ReturnsSuccess)
 {
-    TelemetryHandle handle = NULL;
-    int result = Telemetry_Close(&handle);
+    OSConfigTelemetryHandle handle = NULL;
+    int result = TelemetryClose(&handle);
     EXPECT_EQ(0, result);
 }
 
-TEST_F(TelemetryStubTest, Telemetry_LogEvent_ReturnsSuccess)
+TEST_F(TelemetryStubTest, TelemetryLogEvent_ReturnsSuccess)
 {
-    TelemetryHandle handle = NULL;
+    OSConfigTelemetryHandle handle = NULL;
     const char* eventName = "test_event";
     const char* keyValuePairs[] = {"key1", "value1", "key2", "value2"};
     int pairCount = 2;
 
-    int result = Telemetry_LogEvent(handle, eventName, keyValuePairs, pairCount);
+    int result = TelemetryLogEvent(handle, eventName, keyValuePairs, pairCount);
     EXPECT_EQ(0, result);
 }
 
-TEST_F(TelemetryStubTest, Telemetry_LogEvent_NullParams_ReturnsSuccess)
+TEST_F(TelemetryStubTest, TelemetryLogEvent_NullParams_ReturnsSuccess)
 {
-    TelemetryHandle handle = NULL;
+    OSConfigTelemetryHandle handle = NULL;
 
-    int result = Telemetry_LogEvent(handle, NULL, NULL, 0);
+    int result = TelemetryLogEvent(handle, NULL, NULL, 0);
     EXPECT_EQ(0, result);
 }
 
-TEST_F(TelemetryStubTest, Telemetry_SetBinaryDirectory_ReturnsSuccess)
+TEST_F(TelemetryStubTest, TelemetrySetBinaryDirectory_ReturnsSuccess)
 {
-    TelemetryHandle handle = NULL;
+    OSConfigTelemetryHandle handle = NULL;
     const char* directory = "/tmp/test";
 
-    int result = Telemetry_SetBinaryDirectory(handle, directory);
+    int result = TelemetrySetBinaryDirectory(handle, directory);
     EXPECT_EQ(0, result);
 }
 
-TEST_F(TelemetryStubTest, Telemetry_SetBinaryDirectory_NullDirectory_ReturnsSuccess)
+TEST_F(TelemetryStubTest, TelemetrySetBinaryDirectory_NullDirectory_ReturnsSuccess)
 {
-    TelemetryHandle handle = NULL;
+    OSConfigTelemetryHandle handle = NULL;
 
-    int result = Telemetry_SetBinaryDirectory(handle, NULL);
+    int result = TelemetrySetBinaryDirectory(handle, NULL);
     EXPECT_EQ(0, result);
 }
 
-TEST_F(TelemetryStubTest, Telemetry_GetFilepath_ReturnsNull)
+TEST_F(TelemetryStubTest, TelemetryGetFilepath_ReturnsNull)
 {
-    TelemetryHandle handle = NULL;
+    OSConfigTelemetryHandle handle = NULL;
 
-    const char* result = Telemetry_GetFilepath(handle);
+    const char* result = TelemetryGetFilepath(handle);
     EXPECT_EQ(NULL, result);
 }
