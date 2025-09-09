@@ -189,31 +189,47 @@ void LuaEvaluator::RegisterProcedures()
         lua_setfield(L, LUA_REGISTRYINDEX, "restricted_env");
     }
 
+    // Create or fetch the 'ce' namespace table inside the restricted environment
+    lua_getfield(L, -1, "ce");
+    if (!lua_istable(L, -1))
+    {
+        lua_pop(L, 1);        // pop non-table (nil)
+        lua_newtable(L);      // create ce table
+        lua_pushvalue(L, -1); // duplicate for setting into parent
+        lua_setfield(L, -3, "ce");
+    }
+
+    int ceTableIndex = lua_gettop(L); // index of ce table
+
     for (const auto& procedureEntry : Evaluator::mProcedureMap)
     {
         const std::string& procedureName = procedureEntry.first;
         const ProcedureActions& actions = procedureEntry.second;
 
+        // Audit function exposed as ce.Audit<Procedure>
         if (actions.audit)
         {
             std::string auditFunctionName = "Audit" + procedureName;
-            lua_pushstring(L, auditFunctionName.c_str());
-            lua_pushlightuserdata(L, reinterpret_cast<void*>(actions.audit));
+            lua_pushstring(L, auditFunctionName.c_str());                     // upvalue 1: procedure name used for logging/messages
+            lua_pushlightuserdata(L, reinterpret_cast<void*>(actions.audit)); // upvalue 2: function pointer
             lua_pushcclosure(L, LuaEvaluator::LuaProcedureWrapper, 2);
-            lua_setfield(L, -2, auditFunctionName.c_str());
+            lua_setfield(L, ceTableIndex, auditFunctionName.c_str());
         }
 
+        // Remediation function exposed as ce.Remediate<Procedure>
         if (actions.remediate)
         {
             std::string remediateFunctionName = "Remediate" + procedureName;
-            lua_pushstring(L, procedureName.c_str());
-            lua_pushlightuserdata(L, reinterpret_cast<void*>(actions.remediate));
+            lua_pushstring(L, remediateFunctionName.c_str());                     // upvalue 1
+            lua_pushlightuserdata(L, reinterpret_cast<void*>(actions.remediate)); // upvalue 2
             lua_pushcclosure(L, LuaEvaluator::LuaProcedureWrapper, 2);
-            lua_setfield(L, -2, remediateFunctionName.c_str());
+            lua_setfield(L, ceTableIndex, remediateFunctionName.c_str());
         }
     }
 
-    lua_pop(L, 1);
+    // Pop ce table then restricted_env to leave stack clean
+    lua_pop(L, 1); // ce table
+    lua_pop(L, 1); // restricted_env
 }
 
 void LuaEvaluator::SecureLuaEnvironment()
@@ -338,7 +354,7 @@ int LuaEvaluator::LuaProcedureWrapper(lua_State* L)
 
     if (result.HasValue())
     {
-        OsConfigLogInfo(callContext->context.GetLogHandle(), "Successful call of lua function, result %scompliant",
+        OsConfigLogInfo(callContext->context.GetLogHandle(), "Lua procedure '%s' executed: %scompliant", procedureName.c_str(),
             (result.Value() == Status::NonCompliant) ? "non-" : "");
         lua_pushboolean(L, result.Value() == ComplianceEngine::Status::Compliant);
 
