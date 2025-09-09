@@ -14,13 +14,13 @@ typedef struct TelemetryLogger* OSConfigTelemetryHandle;
 // @brief Opens a new telemetry logger instance
 //
 // @return OSConfigTelemetryHandle Handle to the logger instance, or NULL on failure
-OSConfigTelemetryHandle TelemetryOpen(void);
+OSConfigTelemetryHandle OSConfigTelemetryOpen(void);
 
 // @brief Closes the telemetry logger instance
 //
 // @param handle Handle to the logger instance to close
 // @return int 0 on success, non-zero on failure
-int TelemetryClose(OSConfigTelemetryHandle* handle);
+int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle);
 
 // @brief Logs an event with key-value pairs
 //
@@ -29,7 +29,7 @@ int TelemetryClose(OSConfigTelemetryHandle* handle);
 // @param keyValuePairs Array of key-value pair strings (must be even number of elements)
 // @param pairCount Number of key-value pairs (keyValuePairs array size / 2)
 // @return int 0 on success, non-zero on failure
-int TelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
+int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
                           const char** keyValuePairs, int pairCount);
 
 // @brief Set the binary directory path for telemetry executable
@@ -37,18 +37,18 @@ int TelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
 // @param handle Handle to the logger instance
 // @param directory Path to the directory containing the telemetry binary
 // @return int 0 on success, non-zero on failure
-int TelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory);
+int OSConfigTelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory);
 
 // @brief Get the filepath of the log file
 //
 // @param handle Handle to the logger instance
 // @return const char* to the filepath string, or NULL on failure
-const char* TelemetryGetFilepath(OSConfigTelemetryHandle handle);
+const char* OSConfigTelemetryGetFilepath(OSConfigTelemetryHandle handle);
 
 // @brief Get the directory of the current module
 //
 // @return char* to the directory string, or NULL on failure
-const char* TelemetryGetModuleDirectory();
+const char* OSConfigTelemetryGetModuleDirectory();
 
 #ifdef __cplusplus
 }

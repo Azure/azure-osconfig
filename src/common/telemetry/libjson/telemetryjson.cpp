@@ -441,7 +441,7 @@ std::string Logger::getModuleDirectory()
 extern "C"
 {
 
-OSConfigTelemetryHandle TelemetryOpen(void)
+OSConfigTelemetryHandle OSConfigTelemetryOpen(void)
 {
     try
     {
@@ -462,7 +462,7 @@ OSConfigTelemetryHandle TelemetryOpen(void)
     }
 }
 
-int TelemetryClose(OSConfigTelemetryHandle* handle)
+int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle)
 {
     if (handle == nullptr || *handle == nullptr)
     {
@@ -474,7 +474,7 @@ int TelemetryClose(OSConfigTelemetryHandle* handle)
     return 0;
 }
 
-int TelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
+int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
                           const char** keyValuePairs, int pairCount)
 {
     if (handle == nullptr || eventName == nullptr)
@@ -494,7 +494,7 @@ int TelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
     }
 }
 
-int TelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory)
+int OSConfigTelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory)
 {
     if (handle == nullptr || directory == nullptr)
     {
@@ -513,7 +513,7 @@ int TelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* dire
     }
 }
 
-const char* TelemetryGetFilepath(OSConfigTelemetryHandle handle)
+const char* OSConfigTelemetryGetFilepath(OSConfigTelemetryHandle handle)
 {
     if (handle == nullptr)
     {
@@ -531,7 +531,7 @@ const char* TelemetryGetFilepath(OSConfigTelemetryHandle handle)
     }
 }
 
-const char* TelemetryGetModuleDirectory()
+const char* OSConfigTelemetryGetModuleDirectory()
 {
     try
     {

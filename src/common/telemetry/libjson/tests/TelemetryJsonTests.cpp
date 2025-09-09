@@ -82,49 +82,49 @@ protected:
 // Basic functionality tests
 TEST_F(TelemetryJsonTest, OpenAndClose_Success)
 {
-    OSConfigTelemetryHandle handle = TelemetryOpen();
+    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
 
     EXPECT_NE(nullptr, handle);
 
-    int result = TelemetryClose(&handle);
+    int result = OSConfigTelemetryClose(&handle);
     EXPECT_EQ(0, result);
 }
 
 TEST_F(TelemetryJsonTest, OpenMultiple_Success)
 {
-    OSConfigTelemetryHandle handle1 = TelemetryOpen();
-    OSConfigTelemetryHandle handle2 = TelemetryOpen();
+    OSConfigTelemetryHandle handle1 = OSConfigTelemetryOpen();
+    OSConfigTelemetryHandle handle2 = OSConfigTelemetryOpen();
 
     EXPECT_NE(nullptr, handle1);
     EXPECT_NE(nullptr, handle2);
     EXPECT_NE(handle1, handle2);
 
-    EXPECT_EQ(0, TelemetryClose(&handle1));
-    EXPECT_EQ(0, TelemetryClose(&handle2));
+    EXPECT_EQ(0, OSConfigTelemetryClose(&handle1));
+    EXPECT_EQ(0, OSConfigTelemetryClose(&handle2));
 }
 
 TEST_F(TelemetryJsonTest, CloseNullHandle_Failure)
 {
-    int result = TelemetryClose(nullptr);
+    int result = OSConfigTelemetryClose(nullptr);
     EXPECT_EQ(-1, result);
 }
 
 TEST_F(TelemetryJsonTest, CloseHandleTwice_Failure)
 {
-    OSConfigTelemetryHandle handle = TelemetryOpen();
+    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
     ASSERT_NE(nullptr, handle);
 
-    int result1 = TelemetryClose(&handle);
+    int result1 = OSConfigTelemetryClose(&handle);
     EXPECT_EQ(0, result1);
 
-    int result2 = TelemetryClose(&handle);
+    int result2 = OSConfigTelemetryClose(&handle);
     EXPECT_EQ(-1, result2);
 }
 
 // Event logging tests
 TEST_F(TelemetryJsonTest, LogEvent_ValidEventWithHandle_Success)
 {
-    OSConfigTelemetryHandle handle = TelemetryOpen();
+    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
     ASSERT_NE(nullptr, handle);
 
     const char* eventName = "TestEvent";
@@ -136,12 +136,12 @@ TEST_F(TelemetryJsonTest, LogEvent_ValidEventWithHandle_Success)
     };
     const size_t keyCount = sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2;
 
-    int result = TelemetryLogEvent(handle, eventName, keyValuePairs, keyCount);
+    int result = OSConfigTelemetryLogEvent(handle, eventName, keyValuePairs, keyCount);
     EXPECT_EQ(0, result);
 
-    std::string filePath = TelemetryGetFilepath(handle);
+    std::string filePath = OSConfigTelemetryGetFilepath(handle);
     ASSERT_FALSE(filePath.empty());
-    EXPECT_EQ(0, TelemetryClose(&handle));
+    EXPECT_EQ(0, OSConfigTelemetryClose(&handle));
 
     // Verify file contents
     std::string fileContents = readFileContents(filePath);
@@ -187,23 +187,23 @@ TEST_F(TelemetryJsonTest, LogEvent_ValidEventWithHandle_Success)
 
 TEST_F(TelemetryJsonTest, LogEvent_Sample_Success)
 {
-    OSConfigTelemetryHandle handle = TelemetryOpen();
+    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
     ASSERT_NE(nullptr, handle);
 
     const char* eventName = "SampleEvent";
-    int result = TelemetryLogEvent(handle, eventName, nullptr, 0);
+    int result = OSConfigTelemetryLogEvent(handle, eventName, nullptr, 0);
     EXPECT_EQ(0, result);
 
-    EXPECT_EQ(0, TelemetryClose(&handle));
+    EXPECT_EQ(0, OSConfigTelemetryClose(&handle));
 }
 
 // TelemetryGetFilepath tests
 TEST_F(TelemetryJsonTest, GetFilepath_ValidHandle_Success)
 {
-    OSConfigTelemetryHandle handle = TelemetryOpen();
+    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
     ASSERT_NE(nullptr, handle);
 
-    const char* filepath = TelemetryGetFilepath(handle);
+    const char* filepath = OSConfigTelemetryGetFilepath(handle);
     EXPECT_NE(nullptr, filepath);
     EXPECT_NE('\0', filepath[0]); // Should not be empty string
 
@@ -212,57 +212,57 @@ TEST_F(TelemetryJsonTest, GetFilepath_ValidHandle_Success)
     EXPECT_TRUE(filepathStr.find("/tmp/telemetry_") == 0);
     EXPECT_TRUE(filepathStr.find(".json") == filepathStr.length() - 5);
 
-    EXPECT_EQ(0, TelemetryClose(&handle));
+    EXPECT_EQ(0, OSConfigTelemetryClose(&handle));
 }
 
 TEST_F(TelemetryJsonTest, GetFilepath_NullHandle_Failure)
 {
-    const char* filepath = TelemetryGetFilepath(nullptr);
+    const char* filepath = OSConfigTelemetryGetFilepath(nullptr);
     EXPECT_EQ(nullptr, filepath);
 }
 
 TEST_F(TelemetryJsonTest, GetFilepath_MultipleHandles_UniqueFilepaths)
 {
-    OSConfigTelemetryHandle handle1 = TelemetryOpen();
-    OSConfigTelemetryHandle handle2 = TelemetryOpen();
+    OSConfigTelemetryHandle handle1 = OSConfigTelemetryOpen();
+    OSConfigTelemetryHandle handle2 = OSConfigTelemetryOpen();
     ASSERT_NE(nullptr, handle1);
     ASSERT_NE(nullptr, handle2);
 
-    const char* filepath1 = TelemetryGetFilepath(handle1);
-    const char* filepath2 = TelemetryGetFilepath(handle2);
+    const char* filepath1 = OSConfigTelemetryGetFilepath(handle1);
+    const char* filepath2 = OSConfigTelemetryGetFilepath(handle2);
 
     EXPECT_NE(nullptr, filepath1);
     EXPECT_NE(nullptr, filepath2);
     EXPECT_STRNE(filepath1, filepath2); // Should be different filepaths
 
-    EXPECT_EQ(0, TelemetryClose(&handle1));
-    EXPECT_EQ(0, TelemetryClose(&handle2));
+    EXPECT_EQ(0, OSConfigTelemetryClose(&handle1));
+    EXPECT_EQ(0, OSConfigTelemetryClose(&handle2));
 }
 
 TEST_F(TelemetryJsonTest, GetFilepath_AfterClose_InvalidResult)
 {
-    OSConfigTelemetryHandle handle = TelemetryOpen();
+    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
     ASSERT_NE(nullptr, handle);
 
-    const char* filepath = TelemetryGetFilepath(handle);
+    const char* filepath = OSConfigTelemetryGetFilepath(handle);
     EXPECT_NE(nullptr, filepath);
 
     // Store filepath for later verification
     std::string originalFilepath(filepath);
 
-    EXPECT_EQ(0, TelemetryClose(&handle));
+    EXPECT_EQ(0, OSConfigTelemetryClose(&handle));
 
     // After closing, getting filepath should return null or invalid result
-    const char* filepathAfterClose = TelemetryGetFilepath(handle);
+    const char* filepathAfterClose = OSConfigTelemetryGetFilepath(handle);
     EXPECT_EQ(nullptr, filepathAfterClose);
 }
 
 TEST_F(TelemetryJsonTest, GetFilepath_FileExists_Success)
 {
-    OSConfigTelemetryHandle handle = TelemetryOpen();
+    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
     ASSERT_NE(nullptr, handle);
 
-    const char* filepath = TelemetryGetFilepath(handle);
+    const char* filepath = OSConfigTelemetryGetFilepath(handle);
     EXPECT_NE(nullptr, filepath);
 
     // Check if file exists and is accessible
@@ -271,7 +271,7 @@ TEST_F(TelemetryJsonTest, GetFilepath_FileExists_Success)
     EXPECT_EQ(0, statResult);
     EXPECT_TRUE(S_ISREG(fileStat.st_mode)); // Should be a regular file
 
-    EXPECT_EQ(0, TelemetryClose(&handle));
+    EXPECT_EQ(0, OSConfigTelemetryClose(&handle));
 }
 
 TEST_F(TelemetryJsonTest, GetModuleDirectory_ReturnsValidPath)

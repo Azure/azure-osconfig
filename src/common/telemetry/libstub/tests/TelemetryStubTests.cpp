@@ -14,14 +14,14 @@ protected:
 // Test C interface functions
 TEST_F(TelemetryStubTest, TelemetryOpen_ReturnsNull)
 {
-    OSConfigTelemetryHandle handle = TelemetryOpen();
+    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
     EXPECT_EQ(NULL, handle);
 }
 
 TEST_F(TelemetryStubTest, TelemetryClose_ReturnsSuccess)
 {
     OSConfigTelemetryHandle handle = NULL;
-    int result = TelemetryClose(&handle);
+    int result = OSConfigTelemetryClose(&handle);
     EXPECT_EQ(0, result);
 }
 
@@ -32,7 +32,7 @@ TEST_F(TelemetryStubTest, TelemetryLogEvent_ReturnsSuccess)
     const char* keyValuePairs[] = {"key1", "value1", "key2", "value2"};
     int pairCount = 2;
 
-    int result = TelemetryLogEvent(handle, eventName, keyValuePairs, pairCount);
+    int result = OSConfigTelemetryLogEvent(handle, eventName, keyValuePairs, pairCount);
     EXPECT_EQ(0, result);
 }
 
@@ -40,7 +40,7 @@ TEST_F(TelemetryStubTest, TelemetryLogEvent_NullParams_ReturnsSuccess)
 {
     OSConfigTelemetryHandle handle = NULL;
 
-    int result = TelemetryLogEvent(handle, NULL, NULL, 0);
+    int result = OSConfigTelemetryLogEvent(handle, NULL, NULL, 0);
     EXPECT_EQ(0, result);
 }
 
@@ -49,7 +49,7 @@ TEST_F(TelemetryStubTest, TelemetrySetBinaryDirectory_ReturnsSuccess)
     OSConfigTelemetryHandle handle = NULL;
     const char* directory = "/tmp/test";
 
-    int result = TelemetrySetBinaryDirectory(handle, directory);
+    int result = OSConfigTelemetrySetBinaryDirectory(handle, directory);
     EXPECT_EQ(0, result);
 }
 
@@ -57,7 +57,7 @@ TEST_F(TelemetryStubTest, TelemetrySetBinaryDirectory_NullDirectory_ReturnsSucce
 {
     OSConfigTelemetryHandle handle = NULL;
 
-    int result = TelemetrySetBinaryDirectory(handle, NULL);
+    int result = OSConfigTelemetrySetBinaryDirectory(handle, NULL);
     EXPECT_EQ(0, result);
 }
 
@@ -65,6 +65,6 @@ TEST_F(TelemetryStubTest, TelemetryGetFilepath_ReturnsNull)
 {
     OSConfigTelemetryHandle handle = NULL;
 
-    const char* result = TelemetryGetFilepath(handle);
+    const char* result = OSConfigTelemetryGetFilepath(handle);
     EXPECT_EQ(NULL, result);
 }
