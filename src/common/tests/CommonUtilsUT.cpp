@@ -2867,13 +2867,15 @@ TEST_F(CommonUtilsTest, CheckBootloadersHavePasswordProtectionEnabled)
 
 TEST_F(CommonUtilsTest, CheckFilePermissionsForAllRsyslogLogFiles)
 {
-    const char* testFile =
-        "$FileCreateMode 00640\n"
-        "$FileCreateMode  00640\n"
+    const char* testFiles[] = {
+        "$FileCreateMode 00640",
+        "$FileCreateMode  00640\n",
         "$FileCreateMode 0600\n"
-        "$FileCreateMode 600"
-        "$FileCreateMode     600";
+        "$FileCreateMode 600",
+        "$FileCreateMode     600"
+    };
     const char* list = "00600,00640";
+    int testFilesSize = ARRAY_SIZE(testFiles);
 
     int* modes = NULL;
     int numberOfModes = 0;
@@ -2881,9 +2883,12 @@ TEST_F(CommonUtilsTest, CheckFilePermissionsForAllRsyslogLogFiles)
     EXPECT_EQ(0, ConvertStringToIntegers(list, ',', &modes, &numberOfModes, 8, nullptr));
     EXPECT_EQ(2, numberOfModes);
 
-    EXPECT_TRUE(CreateTestFile(m_path, testFile));
-    EXPECT_EQ(0, CheckIntegerOptionFromFileEqualWithAny(m_path, "$FileCreateMode", ' ', modes, numberOfModes, nullptr, 8, nullptr));
-    EXPECT_TRUE(Cleanup(m_path));
+    for (int = 0; i < testFileSize; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(m_path, testFiles[i]));
+        EXPECT_EQ(0, CheckIntegerOptionFromFileEqualWithAny(m_path, "$FileCreateMode", ' ', modes, numberOfModes, nullptr, 8, nullptr));
+        EXPECT_TRUE(Cleanup(m_path));
+    }
 
     FREE_MEMORY(modes);
 }
