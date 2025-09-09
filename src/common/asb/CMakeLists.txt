@@ -14,10 +14,9 @@ target_include_directories(asb PUBLIC
 
 target_link_libraries(asb
     PUBLIC
-        $<$<BOOL:${ENABLE_TELEMETRY}>:telemetryjsonlib>
-        $<$<NOT:$<BOOL:${ENABLE_TELEMETRY}>>:telemetrystublib>
+        $<$<BOOL:${BUILD_TELEMETRY}>:telemetryjsonlib>
+        $<$<NOT:$<BOOL:${BUILD_TELEMETRY}>>:telemetrystublib>
     PRIVATE
-        dl
         logging
         commonutils
         parsonlib
