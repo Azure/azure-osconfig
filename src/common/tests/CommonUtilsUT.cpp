@@ -2836,6 +2836,9 @@ TEST_F(CommonUtilsTest, LoggingOptions)
     SetConsoleLoggingEnabled(false);
     EXPECT_FALSE(IsConsoleLoggingEnabled());
 
+    // Leave console logging enabled for remaining tests
+    SetConsoleLoggingEnabled(true);
+
     EXPECT_FALSE(IsDaemon());
 }
 

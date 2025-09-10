@@ -721,8 +721,6 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
 {
     int status = ENOENT, _status = ENOENT;
 
-    OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: '%s' and '%s'", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); //////////////////////////////////////////////////
-
     if ((false == FileExists(g_etcPamdCommonPassword)) && (false == FileExists(g_etcSecurityPwQualityConf)))
     {
         OsConfigLogInfo(log, "CheckPasswordCreationRequirements: neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
@@ -732,10 +730,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     {
         if (FileExists(g_etcPamdCommonPassword))
         {
-            OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: check '%s'", g_etcPamdCommonPassword); ////////////////////////////////////////////////////////////////////////
             _status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
-
-            printf("############################# '%s', '%s' -- %d (1) #################################\n", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf, status); ////////////////////////////////////////////////////////////////////////////////////////////////
         }
 
 #ifndef TEST_CODE        
@@ -744,14 +739,9 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
         if (FileExists(g_etcSecurityPwQualityConf))
 #endif
         {
-            OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: check '%s'", g_etcSecurityPwQualityConf); /////////////////////////////////////////////////////////////////////
             status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);
-
-            printf("############################# '%s', '%s' -- %d (2) #################################\n", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf, status); ////////////////////////////////////////////////////////////////////////////////////////////////
         }
     }
-
-    OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: '%s' and '%s' -- DONE", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); //////////////////////////////////////////////////
 
     return status ? status : _status;
 }
