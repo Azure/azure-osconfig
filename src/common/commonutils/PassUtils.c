@@ -734,13 +734,13 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     {
         printf("############################# HERE #################################\n"); ////////////////////////////////////////////////////////////////////////////////////////////////
         
-        if (etcPamdCommonPasswordExists)
+        if (FileExists(g_etcPamdCommonPassword))
         {
             OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: check '%s'", g_etcPamdCommonPassword); ////////////////////////////////////////////////////////////////////////
             status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
 
-        if ((0 != status) && etcSecurityPwQualityConfExists)
+        if ((0 != status) && FileExists(g_etcSecurityPwQualityConf))
         {
             OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: check '%s'", g_etcSecurityPwQualityConf); /////////////////////////////////////////////////////////////////////
             status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);
