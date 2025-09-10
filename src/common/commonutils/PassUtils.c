@@ -738,7 +738,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     bool etcSecurityPwQualityConfExists = (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log)) ? true : false;
     int status = ENOENT;
 
-    OsConfigLogInfo(log, "CheckPasswordCreationRequirements: '%s' and '%s'", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); //////////////////////////////////////////////////
+    OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: '%s' and '%s'", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); //////////////////////////////////////////////////
 
     if ((false == etcPamdCommonPasswordExists) && (false == etcSecurityPwQualityConfExists))
     {
@@ -749,16 +749,18 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     {
         if (etcPamdCommonPasswordExists)
         {
-            OsConfigLogInfo(log, "CheckPasswordCreationRequirements: check '%s'", g_etcPamdCommonPassword); ////////////////////////////////////////////////////////////////////////
+            OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: check '%s'", g_etcPamdCommonPassword); ////////////////////////////////////////////////////////////////////////
             status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
 
         if ((0 != status) && etcSecurityPwQualityConfExists)
         {
-            OsConfigLogInfo(log, "CheckPasswordCreationRequirements: check '%s'", g_etcSecurityPwQualityConf); /////////////////////////////////////////////////////////////////////
+            OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: check '%s'", g_etcSecurityPwQualityConf); /////////////////////////////////////////////////////////////////////
             status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
     }
+
+    OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: '%s' and '%s' -- DONE", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); //////////////////////////////////////////////////
 
     return status;
 }
