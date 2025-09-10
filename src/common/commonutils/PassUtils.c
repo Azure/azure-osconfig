@@ -719,25 +719,12 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
 int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
-    // First, check if at least one of the following files exists :
-    // - /etc/pam.d/common-password
-    // - /etc/security/pwquality.conf
-    // If neither exists, the audit fails early.
-    //
-    // If /etc/pam.d/common-password exists:
-    // - Audit inline parameters (e.g., minlen, dcredit, ucredit, etc.).
-    // - If all required parameters are present and valid, the audit passes.
-    //
-    // If the audit fails for common-password and /etc/security/pwquality.conf is present :
-    // - Audit pwquality.conf for the required parameters.
-    // - If valid, the audit passes.
-    //
-    // This logic ensures compatibility across distros and PAM module configurations and supports both common-password and pwquality.conf setups.
-
     bool etcPamdCommonPasswordExists = (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log)) ? true : false;
     bool etcSecurityPwQualityConfExists = (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log)) ? true : false;
     int status = ENOENT;
 
+    printf("############################# HERE #################################\n"); ////////////////////////////////////////////////////////////////////////////////////////////////
+    
     OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: '%s' and '%s'", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); //////////////////////////////////////////////////
 
     if ((false == etcPamdCommonPasswordExists) && (false == etcSecurityPwQualityConfExists))
