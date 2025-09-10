@@ -14,6 +14,7 @@
 
 #include <keys.h>
 #include <LogManager.hpp>
+#include <Logging.h>
 
 #include "parameterSets.hpp"
 
@@ -56,6 +57,7 @@ namespace Telemetry {
         MAT::ILogger* m_logger;
         bool m_initialized;
         mutable std::mutex m_mutex;
+        static OsConfigLogHandle m_logfileHandle;
 
         // Initialize configuration
         void SetupConfiguration(bool enableDebug, int teardownTime);
