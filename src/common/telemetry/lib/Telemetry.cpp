@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "telemetry.hpp"
-#include "parameterSets.hpp"
+#include "Telemetry.hpp"
+#include "ParameterSets.hpp"
 
 #include <algorithm>
 #include <chrono>

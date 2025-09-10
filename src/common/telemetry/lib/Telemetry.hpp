@@ -12,11 +12,11 @@
 #include <unordered_map>
 #include <vector>
 
-#include <keys.h>
+#include <Keys.h>
 #include <LogManager.hpp>
 #include <Logging.h>
 
-#include "parameterSets.hpp"
+#include "ParameterSets.hpp"
 
 namespace Telemetry {
 
