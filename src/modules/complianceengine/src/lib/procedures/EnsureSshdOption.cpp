@@ -49,10 +49,9 @@ Result<std::vector<std::string>> GetAllMatches(ContextInterface& context)
             std::string directive;
             lineStream >> directive;
 
-            std::string directiveLower = directive;
-            std::transform(directiveLower.begin(), directiveLower.end(), directiveLower.begin(), ::tolower);
+            std::transform(directive.begin(), directive.end(), directive.begin(), ::tolower);
 
-            if (directiveLower == "include")
+            if (directive == "include")
             {
                 std::string includeFile;
                 lineStream >> includeFile;
@@ -85,7 +84,7 @@ Result<std::vector<std::string>> GetAllMatches(ContextInterface& context)
                     }
                 }
             }
-            else if (directiveLower == "match")
+            else if (directive == "match")
             {
                 std::string type, value;
                 lineStream >> type >> value;
