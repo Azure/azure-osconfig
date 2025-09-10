@@ -723,7 +723,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
 
     OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: '%s' and '%s'", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); //////////////////////////////////////////////////
 
-    if ((false == FileExists(g_etcPamdCommonPassword)) && (false == FileExists(g_etcSecurityPwQualityConf))
+    if ((false == FileExists(g_etcPamdCommonPassword)) && (false == FileExists(g_etcSecurityPwQualityConf)))
     {
         OsConfigLogInfo(log, "CheckPasswordCreationRequirements: neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
         OsConfigCaptureReason(reason, "Neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
