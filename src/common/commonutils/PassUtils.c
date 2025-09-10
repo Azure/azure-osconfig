@@ -719,7 +719,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
 int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
-    int status = 0;
+    int status = ENOENT;
 
     OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: '%s' and '%s'", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); //////////////////////////////////////////////////
 
@@ -727,22 +727,23 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     {
         OsConfigLogInfo(log, "CheckPasswordCreationRequirements: neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
         OsConfigCaptureReason(reason, "Neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
-        status = ENOENT;
     }
     else
     {
-        printf("############################# '%s', '%s' #################################\n", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); ////////////////////////////////////////////////////////////////////////////////////////////////
-        
         if (FileExists(g_etcPamdCommonPassword))
         {
             OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: check '%s'", g_etcPamdCommonPassword); ////////////////////////////////////////////////////////////////////////
             status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
+
+            printf("############################# '%s', '%s' -- %d (1) #################################\n", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf, status); ////////////////////////////////////////////////////////////////////////////////////////////////
         }
 
         if ((0 != status) && FileExists(g_etcSecurityPwQualityConf))
         {
             OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: check '%s'", g_etcSecurityPwQualityConf); /////////////////////////////////////////////////////////////////////
             status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);
+
+            printf("############################# '%s', '%s' -- %d (2) #################################\n", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf, status); ////////////////////////////////////////////////////////////////////////////////////////////////
         }
     }
 
