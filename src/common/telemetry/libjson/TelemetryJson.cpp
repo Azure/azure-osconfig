@@ -78,15 +78,14 @@ private:
             }
 
             // Execute telemetry application
-            // Usage: telemetry [OPTIONS] <json_file_path> [teardown_time_seconds] [syslog_identifier]
+            // Usage: telemetry [OPTIONS] <json_file_path> [teardown_time_seconds]
             //     json_file_path         - Path to the JSON file to process
             //     teardown_time_seconds  - Optional: Teardown time in seconds (default: 5s)
-            //     syslog_identifier      - Optional: Custom identifier for syslog entries (default: telemetry-exe)
 
             //     Options:
             //     -v, --verbose          - Enable verbose output
             std::string path = binaryDirectory + std::string("/") + TELEMETRY_BINARY_NAME;
-            execl(path.c_str(), TELEMETRY_BINARY_NAME, "-v", telemetryJSONFile, "5", TELEMETRY_SYSLOG_IDENTIFIER, (char*)NULL);
+            execl(path.c_str(), TELEMETRY_BINARY_NAME, "-v", telemetryJSONFile, "5", (char*)NULL);
             exit(errno);
         }
         else if (pid > 0)

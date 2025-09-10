@@ -4,8 +4,7 @@
 #ifndef TELEMETRYJSON_HPP
 #define TELEMETRYJSON_HPP
 
-#define TELEMETRY_BINARY_NAME "telemetry"
-#define TELEMETRY_SYSLOG_IDENTIFIER "osconfig-telemetry"
+#define TELEMETRY_BINARY_NAME "OSConfigTelemetry"
 
 #ifdef __cplusplus
 
