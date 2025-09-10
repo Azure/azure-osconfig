@@ -747,11 +747,13 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     {
         if (etcPamdCommonPasswordExists)
         {
+            OsConfigLogInfo(log, "CheckPasswordCreationRequirements: check '%s'", g_etcPamdCommonPassword); ///////////////
             status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
 
         if ((0 != status) && etcSecurityPwQualityConfExists)
         {
+            OsConfigLogInfo(log, "CheckPasswordCreationRequirements: check '%s'", g_etcSecurityPwQualityConf); ///////////////
             status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
     }
