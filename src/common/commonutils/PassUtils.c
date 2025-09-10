@@ -741,6 +741,8 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
         }
     }
 
+    OsConfigLogInfo(log, "CheckPasswordCreationRequirements: returning %d (%s)", status, strerror(status));
+
     return status;
 }
 
