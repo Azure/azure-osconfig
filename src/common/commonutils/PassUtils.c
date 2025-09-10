@@ -733,7 +733,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
             _status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
 
-#ifndef TEST_CODE        
+#ifndef TEST_CODE
         if ((0 != _status) && FileExists(g_etcSecurityPwQualityConf))
 #else
         if (FileExists(g_etcSecurityPwQualityConf))
@@ -743,7 +743,12 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
         }
     }
 
-    return status ? status : _status;
+    if ((0 == status) && _status)
+    {
+        status = _status;
+    }
+
+    return status;
 }
 
 typedef struct PasswordCreationRequirements
