@@ -2944,4 +2944,7 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
     EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
 
     FREE_MEMORY(values);
+
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(m_path2));
 }
