@@ -2896,16 +2896,7 @@ TEST_F(CommonUtilsTest, CheckFilePermissionsForAllRsyslogLogFiles)
 
 TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
 {
-    static const char* etcPamdCommonPassword = "/etc/pam.d/common-password";
-    static const char* etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
     const char* list = "1,14,4,-1,-1,-1,-1";
-
-    int* values = NULL;
-    int numberOfValues = 0;
-
-    EXPECT_EQ(0, ConvertStringToIntegers(list, ',', &values, &numberOfValues, 10, nullptr));
-    EXPECT_EQ(7, numberOfValues);
-
     const char* testCommonPassword =
         "#\n"
         "# /etc/pam.d/common-password - password-related modules common to all services\n"
@@ -2927,7 +2918,6 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
         "password        optional        pam_gnome_keyring.so\n"
         "# end of pam - auth - update config\n"
         "password required /usr/lib/x86_64-linux-gnu/security/pam_unix.so sha512 shadow remember = 5 retry = 3";
-
     const char* testPwQualityConf =
         "# Configuration for systemwide password quality limits\n"
         "# Skip testing the password quality for users that are not present in the\n"
@@ -2942,16 +2932,22 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
         "ocredit   = -1\n"
         "lcredit = -1";
 
+    int* values = NULL;
+    int numberOfValues = 0;
+
+    EXPECT_EQ(0, ConvertStringToIntegers(list, ',', &values, &numberOfValues, 10, nullptr));
+    EXPECT_EQ(7, numberOfValues);
+
     EXPECT_TRUE(CreateTestFile(m_path, testCommonPassword));
     EXPECT_TRUE(CreateTestFile(m_path2, testPwQualityConf));
 
-    if ((0 == CheckFileExists(etcPamdCommonPassword, nullptr, nullptr)) || (0 == CheckFileExists(etcSecurityPwQualityConf, nullptr, nullptr)))
-    {
 #ifndef TEST_CODE
 #define TEST_CODE 1
+    if ((0 == CheckFileExists(etcPamdCommonPassword, nullptr, nullptr)) || (0 == CheckFileExists(etcSecurityPwQualityConf, nullptr, nullptr)))
+    {
         EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
-#endif
     }
+#endif
 
     FREE_MEMORY(values);
 }

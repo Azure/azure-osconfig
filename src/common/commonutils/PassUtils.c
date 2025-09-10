@@ -485,7 +485,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                         "(retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", g_etcPamdCommonPassword, password, requisite,
                         retryOption, minlenOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
                     status = 0;
-                    break;
+                    //break;
                 }
                 else
                 {
@@ -561,7 +561,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                         OsConfigCaptureReason(reason, "In '%s' 'lcredit' set to '%d' instead of %d", g_etcPamdCommonPassword, lcreditOption, lcredit);
                     }
                     status = ENOENT;
-                    break;
+                    //break;
                 }
             }
 
