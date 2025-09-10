@@ -719,7 +719,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
 int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
-    int status = ENOENT;
+    int status = ENOENT, _status = ENOENT;
 
     OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: '%s' and '%s'", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); //////////////////////////////////////////////////
 
@@ -733,12 +733,16 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
         if (FileExists(g_etcPamdCommonPassword))
         {
             OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: check '%s'", g_etcPamdCommonPassword); ////////////////////////////////////////////////////////////////////////
-            status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
+            _status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
 
             printf("############################# '%s', '%s' -- %d (1) #################################\n", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf, status); ////////////////////////////////////////////////////////////////////////////////////////////////
         }
 
-        if ((0 != status) && FileExists(g_etcSecurityPwQualityConf))
+#ifndef TEST_CODE        
+        if ((0 != _status) && FileExists(g_etcSecurityPwQualityConf))
+#else
+        if (FileExists(g_etcSecurityPwQualityConf))
+#endif
         {
             OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: check '%s'", g_etcSecurityPwQualityConf); /////////////////////////////////////////////////////////////////////
             status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);
@@ -749,7 +753,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
 
     OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: '%s' and '%s' -- DONE", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); //////////////////////////////////////////////////
 
-    return status;
+    return status ? status : _status;
 }
 
 typedef struct PasswordCreationRequirements
