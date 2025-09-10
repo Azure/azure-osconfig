@@ -39,17 +39,15 @@ endif()
 add_custom_target(stage_create_ssh_zip
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.metaconfig.json" ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/
-    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/SetLinuxSshServerSecurityBaseline.metaconfig.json
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.mof" ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/
-    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/SetLinuxSshServerSecurityBaseline.mof
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceSsh> ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
     ${STAGING_COMMANDS_GET}
-    DEPENDS OsConfigResourceSsh)
+    DEPENDS OsConfigResourceSsh $<$<BOOL:${BUILD_TELEMETRY}>:telemetry>)
 
 add_custom_target(create_ssh_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaseline.zip
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/LinuxSshServerSecurityBaseline.zip" --format=zip .
-    DEPENDS stage_create_ssh_zip $<$<BOOL:${BUILD_TELEMETRY}>:telemetry>
+    DEPENDS stage_create_ssh_zip
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/)
 
 # For Remediation (Set):
@@ -57,15 +55,13 @@ add_custom_target(create_ssh_zip ALL
 add_custom_target(stage_create_ssh_zip_set
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.metaconfig.json" ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/SetLinuxSshServerSecurityBaseline.metaconfig.json
-    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/LinuxSshServerSecurityBaseline.metaconfig.json
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxSshServerSecurityBaseline.mof" ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/SetLinuxSshServerSecurityBaseline.mof
-    COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/LinuxSshServerSecurityBaseline.mof
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResourceSsh> ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
     ${STAGING_COMMANDS_SET}
-    DEPENDS OsConfigResourceSsh)
+    DEPENDS OsConfigResourceSsh $<$<BOOL:${BUILD_TELEMETRY}>:telemetry>)
 
 add_custom_target(create_ssh_zip_set ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/SetLinuxSshServerSecurityBaseline.zip
     COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/SetLinuxSshServerSecurityBaseline.zip" --format=zip .
-    DEPENDS stage_create_ssh_zip_set $<$<BOOL:${BUILD_TELEMETRY}>:telemetry>
+    DEPENDS stage_create_ssh_zip_set
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/)
