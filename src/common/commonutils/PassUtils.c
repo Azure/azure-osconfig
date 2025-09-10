@@ -719,7 +719,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
 int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
-    int status = ENOENT, _status = ENOENT;
+    int status = ENOENT;
 
     if ((false == FileExists(g_etcPamdCommonPassword)) && (false == FileExists(g_etcSecurityPwQualityConf)))
     {
@@ -730,22 +730,13 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     {
         if (FileExists(g_etcPamdCommonPassword))
         {
-            _status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
+            status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
 
-#ifndef TEST_CODE
-        if ((0 != _status) && FileExists(g_etcSecurityPwQualityConf))
-#else
-        if (FileExists(g_etcSecurityPwQualityConf))
-#endif
+        if ((0 != status) && FileExists(g_etcSecurityPwQualityConf))
         {
             status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
-    }
-
-    if ((0 == status) && _status)
-    {
-        status = _status;
     }
 
     return status;
