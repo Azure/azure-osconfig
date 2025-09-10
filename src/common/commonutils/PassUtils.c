@@ -719,21 +719,21 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
 int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
-    bool etcPamdCommonPasswordExists = (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log)) ? true : false;
-    bool etcSecurityPwQualityConfExists = (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log)) ? true : false;
     int status = ENOENT;
 
-    printf("############################# HERE #################################\n"); ////////////////////////////////////////////////////////////////////////////////////////////////
-    
     OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: '%s' and '%s'", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); //////////////////////////////////////////////////
 
-    if ((false == etcPamdCommonPasswordExists) && (false == etcSecurityPwQualityConfExists))
+    if ((false == FileExists(g_etcPamdCommonPassword)) && (false == FileExists(g_etcSecurityPwQualityConf))
     {
         OsConfigLogInfo(log, "CheckPasswordCreationRequirements: neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
         OsConfigCaptureReason(reason, "Neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
+
+        printf("############################# NOT #################################\n"); ////////////////////////////////////////////////////////////////////////////////////////////////
     }
     else
     {
+        printf("############################# HERE #################################\n"); ////////////////////////////////////////////////////////////////////////////////////////////////
+        
         if (etcPamdCommonPasswordExists)
         {
             OsConfigLogInfo(NULL, "CheckPasswordCreationRequirements: check '%s'", g_etcPamdCommonPassword); ////////////////////////////////////////////////////////////////////////
