@@ -19,6 +19,8 @@ LOGMANAGER_INSTANCE
 namespace Telemetry
 {
 
+OsConfigLogHandle TelemetryManager::m_logfileHandle = NULL;
+
 TelemetryManager::TelemetryManager()
     : m_logger(nullptr),
       m_initialized(false)
@@ -51,6 +53,11 @@ bool TelemetryManager::Initialize(bool enableDebug, int teardownTime)
 
     try
     {
+        if (NULL == m_logfileHandle)
+        {
+            m_logfileHandle = OpenLog("/var/log/osconfig_telemetry.log", NULL);
+        }
+
         SetupConfiguration(enableDebug, teardownTime);
 
         // Initialize the logger
@@ -67,7 +74,10 @@ bool TelemetryManager::Initialize(bool enableDebug, int teardownTime)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Failed to initialize telemetry: " << e.what() << std::endl;
+        if (m_logfileHandle)
+        {
+            OsConfigLogError(m_logfileHandle, "Failed to initialize telemetry: %s", e.what());
+        }
         return false;
     }
 }
@@ -105,10 +115,14 @@ void TelemetryManager::Shutdown()
         LogManager::FlushAndTeardown();
 
         m_initialized = false;
+        CloseLog(&m_logfileHandle);
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error during telemetry shutdown: " << e.what() << std::endl;
+        if (m_logfileHandle)
+        {
+            OsConfigLogError(m_logfileHandle, "Exception during shutdown: %s", e.what());
+        }
     }
 }
 
@@ -118,14 +132,14 @@ bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
 
     if (!m_initialized)
     {
-        std::cerr << "TelemetryManager not initialized" << std::endl;
+        OsConfigLogError(m_logfileHandle, "TelemetryManager not initialized");
         return false;
     }
 
     FILE* file = fopen(filePath.c_str(), "r");
     if (!file)
     {
-        std::cerr << "Failed to open file: " << filePath << std::endl;
+        OsConfigLogError(m_logfileHandle, "Failed to open file: %s", filePath.c_str());
         return false;
     }
 
@@ -157,7 +171,7 @@ bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error processing JSON file '" << filePath << "': " << e.what() << std::endl;
+        OsConfigLogError(m_logfileHandle, "Error processing JSON file '%s': %s", filePath.c_str(), e.what());
         success = false;
     }
 
@@ -176,7 +190,7 @@ bool TelemetryManager::ValidateEventParameters(const std::string& eventName, con
     auto it = EVENT_PARAMETER_SETS.find(eventName);
     if (it == EVENT_PARAMETER_SETS.end())
     {
-        std::cerr << "Unknown event type: " << eventName << std::endl;
+        OsConfigLogError(m_logfileHandle, "Unknown event type: %s", eventName.c_str());
         return false;
     }
 
@@ -188,7 +202,7 @@ bool TelemetryManager::ValidateEventParameters(const std::string& eventName, con
     {
         if (jsonKeys.find(requiredParam) == jsonKeys.end())
         {
-            std::cerr << "Missing required parameter '" << requiredParam << "' for event '" << eventName << "'" << std::endl;
+            OsConfigLogError(m_logfileHandle, "Missing required parameter '%s' for event '%s'", requiredParam.c_str(), eventName.c_str());
             return false;
         }
     }
@@ -201,7 +215,7 @@ bool TelemetryManager::ValidateEventParameters(const std::string& eventName, con
         if (requiredParams.find(jsonKey) == requiredParams.end() &&
             optionalParams.find(jsonKey) == optionalParams.end())
         {
-            std::cerr << "Unexpected parameter '" << jsonKey << "' for event '" << eventName << "'" << std::endl;
+            OsConfigLogError(m_logfileHandle, "Unexpected parameter '%s' for event '%s'", jsonKey.c_str(), eventName.c_str());
             return false;
         }
     }
@@ -225,14 +239,14 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
         jsonValue = json_parse_string(jsonLine.c_str());
         if (!jsonValue)
         {
-            std::cerr << "Failed to parse JSON line: " << jsonLine << std::endl;
+            OsConfigLogError(m_logfileHandle, "Failed to parse JSON line: %s", jsonLine.c_str());
             return;
         }
 
         jsonObject = json_value_get_object(jsonValue);
         if (!jsonObject)
         {
-            std::cerr << "JSON line is not an object: " << jsonLine << std::endl;
+            OsConfigLogError(m_logfileHandle, "JSON line is not an object: %s", jsonLine.c_str());
             json_value_free(jsonValue);
             return;
         }
@@ -241,7 +255,7 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
         const char* eventName = json_object_get_string(jsonObject, "EventName");
         if (!eventName)
         {
-            std::cerr << "JSON object missing 'EventName' field: " << jsonLine << std::endl;
+            OsConfigLogError(m_logfileHandle, "JSON object missing 'EventName' field: %s", jsonLine.c_str());
             json_value_free(jsonValue);
             return;
         }
@@ -261,13 +275,13 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
         // Validate parameters against the event's parameter set
         if (!ValidateEventParameters(std::string(eventName), jsonKeys))
         {
-            std::cerr << "Parameter validation failed for event '" << eventName << "': " << jsonLine << std::endl;
+            OsConfigLogError(m_logfileHandle, "Parameter validation failed for event '%s': %s", eventName, jsonLine.c_str());
             json_value_free(jsonValue);
             return;
         }
 
         // Create event with the event name
-        std::cout << "Processing event: " << eventName << std::endl;
+        OsConfigLogInfo(m_logfileHandle, "Processing event: %s", eventName);
         EventProperties event(eventName);
 
         // Iterate over all key/value pairs in the JSON object
@@ -286,7 +300,7 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
                 continue;
             }
 
-            std::cout << "Processing key: " << key << std::endl;
+            OsConfigLogInfo(m_logfileHandle, "Processing key: %s", key);
 
             // Handle different JSON value types
             JSON_Value_Type valueType = json_value_get_type(value);
@@ -342,7 +356,7 @@ void TelemetryManager::ProcessJsonLine(const std::string& jsonLine)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Exception processing JSON line '" << jsonLine << "': " << e.what() << std::endl;
+        OsConfigLogError(m_logfileHandle, "Exception processing JSON line '%s': %s", jsonLine.c_str(), e.what());
     }
 
     // Cleanup
