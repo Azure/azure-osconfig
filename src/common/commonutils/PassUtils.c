@@ -3,8 +3,14 @@
 
 #include "Internal.h"
 
+#ifdef TEST_CODE
+static const char* g_etcPamdCommonPassword = "/tmp/~test.test";
+static const char* g_etcSecurityPwQualityConf = "/tmp/~test.test2";
+#else
 static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
 static const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
+#endif
+
 static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
 static const char* g_etcPamdSystemPassword = "/etc/pam.d/system-password";
 static const char* g_pamUnixSo = "pam_unix.so";

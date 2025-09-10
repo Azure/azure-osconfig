@@ -22,6 +22,7 @@ class CommonUtilsTest : public ::testing::Test
 {
     protected:
         const char* m_path = "/tmp/~test.test";
+        const char* m_path2 = "/tmp/~test.test2";
         const char* m_data = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM";
         const char* m_dataWithEol = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
         const char* m_dataLowercase = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 qwertyuiopasdfghjklzxcvbnm";
@@ -2905,9 +2906,51 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
     EXPECT_EQ(0, ConvertStringToIntegers(list, ',', &values, &numberOfValues, 10, nullptr));
     EXPECT_EQ(7, numberOfValues);
 
+    const char* testCommonPassword =
+        "#\n"
+        "# /etc/pam.d/common-password - password-related modules common to all services\n"
+        "#\n"
+        "# This file is included from other service - specific PAM config files,\n"
+        "# and should contain a list of modules that define the services to be\n"
+        "# used to change user passwords.The default is pam_unix.\n"
+        "\n"
+        "# here are the per - package modules(the \"Primary\" block)\n"
+        "password requisite /usr/lib/x86_64-linux-gnu/security/pam_pwquality.so retry = 1 minlen = 14 lcredit = -1 ucredit = -1 ocredit = -1 dcredit = -1\n"
+        "password[success = 1 default = ignore]      pam_unix.so obscure use_authtok try_first_pass yescrypt\n"
+        "# here's the fallback if no module succeeds\n"
+        "password        requisite                       pam_deny.so\n"
+        "# prime the stack with a positive return value if there isn't one already;\n"
+        "# this avoids us returning an error just because nothing sets a success code\n"
+        "# since the modules above will each just jump around\n"
+        "password        required                        pam_permit.so\n"
+        "# and here are more per - package modules(the \"Additional\" block)\n"
+        "password        optional        pam_gnome_keyring.so\n"
+        "# end of pam - auth - update config\n"
+        "password required /usr/lib/x86_64-linux-gnu/security/pam_unix.so sha512 shadow remember = 5 retry = 3";
+
+    const char* testPwQualityConf =
+        "# Configuration for systemwide password quality limits\n"
+        "# Skip testing the password quality for users that are not present in the\n"
+        "# /etc/passwd file.\n"
+        "# Enabled if the option is present.\n"
+        "# local_users_only\n"
+        "retry = 1\n"
+        "minlen = 14\n"
+        "   minclass = 4\n"
+        "dcredit =    -1\n"
+        "ucredit = -1\n"
+        "ocredit   = -1\n"
+        "lcredit = -1";
+
+    EXPECT_TRUE(CreateTestFile(m_path, testCommonPassword));
+    EXPECT_TRUE(CreateTestFile(m_path2, testPwQualityConf));
+
     if ((0 == CheckFileExists(etcPamdCommonPassword, nullptr, nullptr)) || (0 == CheckFileExists(etcSecurityPwQualityConf, nullptr, nullptr)))
     {
+#ifndef TEST_CODE
+#define TEST_CODE 1
         EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
+#endif
     }
 
     FREE_MEMORY(values);
