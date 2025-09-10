@@ -2941,13 +2941,10 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
     EXPECT_TRUE(CreateTestFile(m_path, testCommonPassword));
     EXPECT_TRUE(CreateTestFile(m_path2, testPwQualityConf));
 
-#ifndef TEST_CODE
-#define TEST_CODE 1
     if ((0 == CheckFileExists(etcPamdCommonPassword, nullptr, nullptr)) || (0 == CheckFileExists(etcSecurityPwQualityConf, nullptr, nullptr)))
     {
         EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
     }
-#endif
 
     FREE_MEMORY(values);
 }
