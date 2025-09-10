@@ -732,7 +732,7 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     }
     else
     {
-        printf("############################# HERE #################################\n"); ////////////////////////////////////////////////////////////////////////////////////////////////
+        printf("############################# '%s', '%s' #################################\n", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf); ////////////////////////////////////////////////////////////////////////////////////////////////
         
         if (FileExists(g_etcPamdCommonPassword))
         {
