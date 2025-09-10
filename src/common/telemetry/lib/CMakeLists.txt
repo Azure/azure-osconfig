@@ -77,10 +77,10 @@ else()
     message(WARNING "OsConfigTelemetryApiKey not set, using default value")
     set(OsConfigTelemetryApiKey "999999999999999999999999999999999-999999999-9999-9999-9999-999999999999-9999")
 endif()
-configure_file(keys.h.in ${CMAKE_CURRENT_BINARY_DIR}/keys.h @ONLY)
+configure_file(Keys.h.in ${CMAKE_CURRENT_BINARY_DIR}/Keys.h @ONLY)
 
 add_library(telemetrylib STATIC
-    telemetry.cpp
+    Telemetry.cpp
 )
 add_dependencies(telemetrylib 1dscpplib)
 
