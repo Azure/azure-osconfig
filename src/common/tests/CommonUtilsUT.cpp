@@ -2903,7 +2903,10 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
     EXPECT_EQ(0, ConvertStringToIntegers(list, ',', &values, &numberOfValues, 10, nullptr));
     EXPECT_EQ(7, numberOfValues);
 
-    EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
+    if ((0 == CheckFileExists(g_etcPamdCommonPassword, nullptr, nullptr)) || (0 == CheckFileExists(g_etcSecurityPwQualityConf, nullptr, nullptr)))
+    {
+        EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
+    }
 
     FREE_MEMORY(values);
 }
