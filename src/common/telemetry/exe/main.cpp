@@ -133,7 +133,8 @@ int main(int argc, char* argv[])
         telemetry.Shutdown();
         auto end_time = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-        OsConfigLogInfo(g_log, "Telemetry shutdown successfully! [%lld ms]", duration.count());
+        std::string duration_str = std::to_string(duration.count());
+        OsConfigLogInfo(g_log, "Telemetry shutdown successfully! [%s ms]", duration_str.c_str());
 
         // Delete the JSON file
         if (std::remove(filepath.c_str()) != 0)
