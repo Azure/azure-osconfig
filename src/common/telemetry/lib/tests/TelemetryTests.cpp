@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include <thread>
 
-#include <telemetry.hpp>
+#include <Telemetry.hpp>
 
 class TelemetryTest : public ::testing::Test
 {
