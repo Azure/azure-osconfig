@@ -4,18 +4,13 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
-#include <string>
 #include <Logging.h>
+#include <string>
+#include <unistd.h>
 
 #include <Telemetry.hpp>
 
-bool file_exists(const std::string& filepath)
-{
-    std::ifstream file(filepath.c_str());
-    return file.good();
-}
-
-int shutdown(OsConfigLogHandle log, int exit_code)
+int _exit(OsConfigLogHandle log, int exit_code)
 {
     CloseLog(&log);
     return exit_code;
@@ -41,7 +36,7 @@ int main(int argc, char* argv[])
     if (argc < 2 || argc > 4)
     {
         print_usage(argv[0]);
-        return shutdown(g_log, 1);
+        return _exit(g_log, 1);
     }
 
     bool verbose = false;
@@ -59,7 +54,7 @@ int main(int argc, char* argv[])
         {
             OsConfigLogError(g_log, "Error: JSON file path is required after verbose flag.");
             print_usage(argv[0]);
-            return shutdown(g_log, 1);
+            return _exit(g_log, 1);
         }
     }
 
@@ -73,7 +68,7 @@ int main(int argc, char* argv[])
     {
         OsConfigLogError(g_log, "Error: JSON file path is required.");
         print_usage(argv[0]);
-        return shutdown(g_log, 1);
+        return _exit(g_log, 1);
     }
 
     // Parse teardown time argument
@@ -85,22 +80,15 @@ int main(int argc, char* argv[])
             if (teardown_time < 0)
             {
                 OsConfigLogError(g_log, "Error: Teardown time must be a non-negative integer.");
-                return shutdown(g_log, 1);
+                return _exit(g_log, 1);
             }
             arg_index++;
         }
         catch (const std::exception& e)
         {
             OsConfigLogError(g_log, "Error: Invalid teardown time argument '%s'. Must be a valid integer.", argv[arg_index]);
-            return shutdown(g_log, 1);
+            return _exit(g_log, 1);
         }
-    }
-
-    // Check if file exists
-    if (!file_exists(filepath))
-    {
-        OsConfigLogError(g_log, "Error: File '%s' does not exist.", filepath.c_str());
-        return shutdown(g_log, 1);
     }
 
     // Initialize telemetry
@@ -145,7 +133,7 @@ int main(int argc, char* argv[])
     else
     {
         OsConfigLogError(g_log, "Error: Failed to initialize telemetry.");
-        return shutdown(g_log, 1);
+        return _exit(g_log, 1);
     }
 
     CloseLog(&g_log);
