@@ -632,7 +632,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
     FILE* fileHandle = NULL;
     char* line = NULL;
     long lineMax = sysconf(_SC_LINE_MAX);
-    int status = ENOENT, _status = ENOENT;
+    int status = 0, _status = ENOENT;
 
     if (false == FileExists(g_etcSecurityPwQualityConf))
     {
@@ -658,8 +658,6 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
     }
     else
     {
-        status = ENOENT;
-
         while (NULL != fgets(line, lineMax + 1, fileHandle))
         {
             // Example of typical lines coming by default commented out:
