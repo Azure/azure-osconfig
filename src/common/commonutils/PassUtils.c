@@ -3,8 +3,14 @@
 
 #include "Internal.h"
 
+#ifdef TEST_CODE
+static const char* g_etcPamdCommonPassword = "/tmp/~test.test";
+static const char* g_etcSecurityPwQualityConf = "/tmp/~test.test2";
+#else
 static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
 static const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
+#endif
+
 static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
 static const char* g_etcPamdSystemPassword = "/etc/pam.d/system-password";
 static const char* g_pamUnixSo = "pam_unix.so";
@@ -576,6 +582,8 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
         status = ENOENT;
     }
 
+    OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: returning %d (%s)", status, strerror(status));
+
     return status;
 }
 
@@ -626,7 +634,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
     FILE* fileHandle = NULL;
     char* line = NULL;
     long lineMax = sysconf(_SC_LINE_MAX);
-    int status = ENOENT, _status = ENOENT;
+    int status = 0, _status = 0;
 
     if (false == FileExists(g_etcSecurityPwQualityConf))
     {
@@ -652,8 +660,6 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
     }
     else
     {
-        status = ENOENT;
-
         while (NULL != fgets(line, lineMax + 1, fileHandle))
         {
             // Example of typical lines coming by default commented out:
@@ -708,43 +714,30 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
     FREE_MEMORY(line);
 
+    OsConfigLogInfo(log, "CheckRequirementsForPwQualityConf: returning %d (%s)", status, strerror(status));
+
     return status;
 }
 
 int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
-    // First, check if at least one of the following files exists :
-    // - /etc/pam.d/common-password
-    // - /etc/security/pwquality.conf
-    // If neither exists, the audit fails early.
-    //
-    // If /etc/pam.d/common-password exists:
-    // - Audit inline parameters (e.g., minlen, dcredit, ucredit, etc.).
-    // - If all required parameters are present and valid, the audit passes.
-    //
-    // If the audit fails for common-password and /etc/security/pwquality.conf is present :
-    // - Audit pwquality.conf for the required parameters.
-    // - If valid, the audit passes.
-    //
-    // This logic ensures compatibility across distros and PAM module configurations and supports both common-password and pwquality.conf setups.
-
-    bool etcPamdCommonPasswordExists = (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log)) ? true : false;
-    bool etcSecurityPwQualityConfExists = (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log)) ? true : false;
+    bool commonPasswordExists = FileExists(g_etcPamdCommonPassword);
+    bool pwQualityConfExists = FileExists(g_etcSecurityPwQualityConf);
     int status = ENOENT;
 
-    if ((false == etcPamdCommonPasswordExists) && (false == etcSecurityPwQualityConfExists))
+    if ((false == commonPasswordExists) && (false == pwQualityConfExists))
     {
         OsConfigLogInfo(log, "CheckPasswordCreationRequirements: neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
         OsConfigCaptureReason(reason, "Neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
     }
     else
     {
-        if (etcPamdCommonPasswordExists)
+        if (commonPasswordExists)
         {
             status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
 
-        if ((0 != status) && etcSecurityPwQualityConfExists)
+        if ((0 != status) && pwQualityConfExists)
         {
             status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
