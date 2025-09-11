@@ -734,18 +734,14 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     {
         if (commonPasswordExists)
         {
-            OsConfigLogInfo(log, "CheckPasswordCreationRequirements: looking at '%s'", g_etcPamdCommonPassword);
             status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
 
         if ((0 != status) && pwQualityConfExists)
         {
-            OsConfigLogInfo(log, "CheckPasswordCreationRequirements: looking at '%s'", g_etcSecurityPwQualityConf);
             status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
     }
-
-    OsConfigLogInfo(log, "CheckPasswordCreationRequirements: returning %d (%s)", status, strerror(status));
 
     return status;
 }
