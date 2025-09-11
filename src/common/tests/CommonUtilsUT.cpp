@@ -2876,7 +2876,7 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], 123, values[4], values[5], values[6], nullptr, nullptr));
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], 123, values[5], values[6], nullptr, nullptr));
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], 123, values[6], nullptr, nullptr));
-    EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], 123, nullptr, nullptr));
+    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], 123, nullptr, nullptr));
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], 123, values[2], 456, 789, values[5], values[6], nullptr, nullptr));
     EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
 
