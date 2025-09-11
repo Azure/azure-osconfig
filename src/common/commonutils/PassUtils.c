@@ -485,7 +485,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
                         "(retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)", g_etcPamdCommonPassword, password, requisite,
                         retryOption, minlenOption, dcreditOption, ucreditOption, ocreditOption, lcreditOption);
                     status = 0;
-                    //break;
+                    break;
                 }
                 else
                 {
