@@ -2869,6 +2869,7 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
     EXPECT_TRUE(CreateTestFile(m_path, testCommonPassword));
     EXPECT_TRUE(CreateTestFile(m_path2, testPwQualityConf));
 
+    // Here the common-password audit route is validated:
     EXPECT_NE(0, CheckPasswordCreationRequirements(123, values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], 123, values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], 123, values[3], values[4], values[5], values[6], nullptr, nullptr));
@@ -2877,10 +2878,21 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], 123, values[6], nullptr, nullptr));
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], 123, nullptr, nullptr));
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], 123, values[2], 456, 789, values[5], values[6], nullptr, nullptr));
+    EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
 
-    EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
+    // Force pwquality route to be validated by removing the test file for common-password:
     EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_NE(0, CheckPasswordCreationRequirements(123, values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
+    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], 123, values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
+    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], 123, values[3], values[4], values[5], values[6], nullptr, nullptr));
+    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], 123, values[4], values[5], values[6], nullptr, nullptr));
+    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], 123, values[5], values[6], nullptr, nullptr));
+    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], 123, values[6], nullptr, nullptr));
+    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], 123, nullptr, nullptr));
+    EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], 123, values[2], 456, 789, values[5], values[6], nullptr, nullptr));
     EXPECT_EQ(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
+
+    // When neither common-password or pwquality are not present the audit fails:
     EXPECT_TRUE(Cleanup(m_path2));
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
 

@@ -626,8 +626,6 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
         }
     }
 
-    OsConfigLogInfo(log, "CheckPasswordRequirementFromBuffer: returning %d (%s)", status, strerror(status));
-
     return status;
 }
 
@@ -726,8 +724,6 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     bool commonPasswordExists = FileExists(g_etcPamdCommonPassword);
     bool pwQualityConfExists = FileExists(g_etcSecurityPwQualityConf);
     int status = ENOENT;
-
-    OsConfigLogInfo(log, "CheckPasswordCreationRequirements: ########### %d, %d ############# ", commonPasswordExists, pwQualityConfExists);
 
     if ((false == commonPasswordExists) && (false == pwQualityConfExists))
     {
