@@ -14,6 +14,12 @@
 #include <Logging.h>
 #include <Reasons.h>
 #include <Asb.h>
+#include <Telemetry.h>
+
+// Buffer sizes for string conversion of numeric values
+// Based on maximum possible digits for each type plus sign and null terminator
+#define MAX_LONG_STRING_LENGTH 32   // Accommodates 64-bit long values
+#define MAX_INT_STRING_LENGTH 16    // Accommodates 32-bit int values
 
 #define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_asb_perf.bak"
@@ -664,6 +670,8 @@ static bool g_auditOnly = true;
 
 static OsConfigLogHandle g_perfLog = NULL;
 
+static OSConfigTelemetryHandle g_telemetry = NULL;
+
 OsConfigLogHandle GetPerfLog(void)
 {
     return g_perfLog;
@@ -938,6 +946,7 @@ void AsbInitialize(OsConfigLogHandle log)
     unsigned short freeMemoryPercentage = 0;
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
+    g_telemetry = OSConfigTelemetryOpen();
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 
@@ -1108,6 +1117,18 @@ void AsbShutdown(OsConfigLogHandle log)
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
 
         // For telemetry:
+        char durationSeconds[MAX_INT_STRING_LENGTH] = {0};
+        snprintf(durationSeconds, sizeof(durationSeconds), "%.02f", GetPerfClockTime(&g_perfClock, log) / 1000000.0);
+        const char* keyValuePairs[] = {
+            "DistroName", g_prettyName ? g_prettyName : "unknown",
+            "BaselineName", g_asbName,
+            "Mode", g_auditOnly ? auditOnly : automaticRemediation,
+            "DurationSeconds", durationSeconds,
+            "CorrelationId", getenv("activityId") ? getenv("activityId") : "",
+            "Version", OSCONFIG_VERSION
+        };
+        OSConfigTelemetryLogEvent(g_telemetry, "BaselineRun", keyValuePairs, sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2);
+
         OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f",
             g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
     }
@@ -1115,6 +1136,7 @@ void AsbShutdown(OsConfigLogHandle log)
     FREE_MEMORY(g_prettyName);
 
     CloseLog(&g_perfLog);
+    OSConfigTelemetryClose(&g_telemetry);
 
     // When done, allow others access to read the performance log
     SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);
@@ -5018,6 +5040,21 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
 
         // For telemetry:
+        char durationMicroseconds[MAX_LONG_STRING_LENGTH] = {0};
+        char statusString[MAX_INT_STRING_LENGTH] = {0};
+        snprintf(durationMicroseconds, sizeof(durationMicroseconds), "%ld", GetPerfClockTime(&perfClock, log));
+        snprintf(statusString, sizeof(statusString), "%d", status);
+        const char* keyValuePairs[] = {
+            "ComponentName", componentName,
+            "ObjectName", objectName,
+            "ObjectResult", statusString,
+            "Microseconds", durationMicroseconds,
+            "DistroName", g_prettyName ? g_prettyName : "unknown",
+            "CorrelationId", getenv("activityId") ? getenv("activityId") : "",
+            "Version", OSCONFIG_VERSION
+        };
+        OSConfigTelemetryLogEvent(g_telemetry, "RuleComplete", keyValuePairs, sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2);
+
         OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Reason: '%.*s', Microseconds: %ld",
             g_prettyName, componentName, objectName, strerror(status), status, *payloadSizeBytes, *payload, GetPerfClockTime(&perfClock, log));
     }
@@ -6006,6 +6043,21 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
 
             // For telemetry:
+            char durationMicroseconds[MAX_LONG_STRING_LENGTH] = {0};
+            char statusString[MAX_INT_STRING_LENGTH] = {0};
+            snprintf(durationMicroseconds, sizeof(durationMicroseconds), "%ld", GetPerfClockTime(&perfClock, log));
+            snprintf(statusString, sizeof(statusString), "%d", status);
+            const char* keyValuePairs[] = {
+                "ComponentName", componentName,
+                "ObjectName", objectName,
+                "ObjectResult", statusString,
+                "Microseconds", durationMicroseconds,
+                "DistroName", g_prettyName ? g_prettyName : "unknown",
+                "CorrelationId", getenv("activityId") ? getenv("activityId") : "",
+                "Version", OSCONFIG_VERSION
+            };
+            OSConfigTelemetryLogEvent(g_telemetry, "RuleComplete", keyValuePairs, sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2);
+
             OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Microseconds: %ld",
                 g_prettyName, componentName, objectName, strerror(status), status, GetPerfClockTime(&perfClock, log));
 
