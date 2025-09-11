@@ -719,22 +719,26 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
 int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
+    bool commonPasswordExists = FileExists(g_etcPamdCommonPassword);
+    bool pwQualityConfExists = FileExists(g_etcSecurityPwQualityConf);
     int status = ENOENT;
 
-    if ((false == FileExists(g_etcPamdCommonPassword)) && (false == FileExists(g_etcSecurityPwQualityConf)))
+    OsConfigLogInfo(log, "CheckPasswordCreationRequirements: ########### %d, %d ############# ", commonPasswordExists, pwQualityConfExists);
+
+    if ((false == commonPasswordExists) && (false == pwQualityConfExists))
     {
         OsConfigLogInfo(log, "CheckPasswordCreationRequirements: neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
         OsConfigCaptureReason(reason, "Neither '%s' or '%s' exist", g_etcPamdCommonPassword, g_etcSecurityPwQualityConf);
     }
     else
     {
-        if (FileExists(g_etcPamdCommonPassword))
+        if (commonPasswordExists)
         {
             OsConfigLogInfo(log, "CheckPasswordCreationRequirements: looking at '%s'", g_etcPamdCommonPassword);
             status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
 
-        if ((0 != status) && FileExists(g_etcSecurityPwQualityConf))
+        if ((0 != status) && pwQualityConfExists)
         {
             OsConfigLogInfo(log, "CheckPasswordCreationRequirements: looking at '%s'", g_etcSecurityPwQualityConf);
             status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);

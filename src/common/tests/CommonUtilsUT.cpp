@@ -2765,83 +2765,6 @@ TEST_F(CommonUtilsTest, StartStopPerfClock)
     EXPECT_EQ(76, GetPerfClockTime(&clock, nullptr));
 }
 
-TEST_F(CommonUtilsTest, LoggingOptions)
-{
-    const char* emergency = "EMERGENCY";
-    const char* alert = "ALERT";
-    const char* critical = "CRITICAL";
-    const char* error = "ERROR";
-    const char* warning = "WARNING";
-    const char* notice = "NOTICE";
-    const char* info = "INFO";
-    const char* debug = "DEBUG";
-
-    LoggingLevel level = LoggingLevelEmergency;
-    unsigned int i = 0;
-    unsigned int maxLogSize = 0;
-
-    SetLoggingLevel(LoggingLevelEmergency);
-    EXPECT_FALSE(IsDebugLoggingEnabled());
-    EXPECT_EQ(LoggingLevelEmergency, level = GetLoggingLevel());
-    EXPECT_STREQ(emergency, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelAlert);
-    EXPECT_FALSE(IsDebugLoggingEnabled());
-    EXPECT_EQ(LoggingLevelAlert, level = GetLoggingLevel());
-    EXPECT_STREQ(alert, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelCritical);
-    EXPECT_FALSE(IsDebugLoggingEnabled());
-    EXPECT_EQ(LoggingLevelCritical, level = GetLoggingLevel());
-    EXPECT_STREQ(critical, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelError);
-    EXPECT_FALSE(IsDebugLoggingEnabled());
-    EXPECT_EQ(LoggingLevelError, level = GetLoggingLevel());
-    EXPECT_STREQ(error, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelWarning);
-    EXPECT_FALSE(IsDebugLoggingEnabled());
-    EXPECT_EQ(LoggingLevelWarning, level = GetLoggingLevel());
-    EXPECT_STREQ(warning, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelNotice);
-    EXPECT_FALSE(IsDebugLoggingEnabled());
-    EXPECT_EQ(LoggingLevelNotice, level = GetLoggingLevel());
-    EXPECT_STREQ(notice, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelInformational);
-    EXPECT_FALSE(IsDebugLoggingEnabled());
-    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
-    EXPECT_STREQ(info, GetLoggingLevelName(level));
-
-    SetLoggingLevel(LoggingLevelDebug);
-    EXPECT_TRUE(IsDebugLoggingEnabled());
-    EXPECT_EQ(LoggingLevelDebug, level = GetLoggingLevel());
-    EXPECT_STREQ(debug, GetLoggingLevelName(level));
-
-    for (i = 0; i < 100; i++)
-    {
-        maxLogSize = (unsigned int)rand();
-
-        SetMaxLogSize(maxLogSize);
-        EXPECT_EQ(maxLogSize, GetMaxLogSize());
-
-        SetMaxLogSizeDebugMultiplier(i);
-        EXPECT_EQ(i, GetMaxLogSizeDebugMultiplier());
-    }
-
-    SetConsoleLoggingEnabled(true);
-    EXPECT_TRUE(IsConsoleLoggingEnabled());
-    SetConsoleLoggingEnabled(false);
-    EXPECT_FALSE(IsConsoleLoggingEnabled());
-
-    // Leave console logging enabled for remaining tests
-    SetConsoleLoggingEnabled(true);
-
-    EXPECT_FALSE(IsDaemon());
-}
-
 TEST_F(CommonUtilsTest, CheckBootloadersHavePasswordProtectionEnabled)
 {
     const char* testFile =
@@ -2962,4 +2885,81 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
 
     FREE_MEMORY(values);
+}
+
+TEST_F(CommonUtilsTest, LoggingOptions)
+{
+    const char* emergency = "EMERGENCY";
+    const char* alert = "ALERT";
+    const char* critical = "CRITICAL";
+    const char* error = "ERROR";
+    const char* warning = "WARNING";
+    const char* notice = "NOTICE";
+    const char* info = "INFO";
+    const char* debug = "DEBUG";
+
+    LoggingLevel level = LoggingLevelEmergency;
+    unsigned int i = 0;
+    unsigned int maxLogSize = 0;
+
+    SetLoggingLevel(LoggingLevelEmergency);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelEmergency, level = GetLoggingLevel());
+    EXPECT_STREQ(emergency, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelAlert);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelAlert, level = GetLoggingLevel());
+    EXPECT_STREQ(alert, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelCritical);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelCritical, level = GetLoggingLevel());
+    EXPECT_STREQ(critical, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelError);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelError, level = GetLoggingLevel());
+    EXPECT_STREQ(error, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelWarning);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelWarning, level = GetLoggingLevel());
+    EXPECT_STREQ(warning, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelNotice);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelNotice, level = GetLoggingLevel());
+    EXPECT_STREQ(notice, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelInformational);
+    EXPECT_FALSE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelInformational, level = GetLoggingLevel());
+    EXPECT_STREQ(info, GetLoggingLevelName(level));
+
+    SetLoggingLevel(LoggingLevelDebug);
+    EXPECT_TRUE(IsDebugLoggingEnabled());
+    EXPECT_EQ(LoggingLevelDebug, level = GetLoggingLevel());
+    EXPECT_STREQ(debug, GetLoggingLevelName(level));
+
+    for (i = 0; i < 100; i++)
+    {
+        maxLogSize = (unsigned int)rand();
+
+        SetMaxLogSize(maxLogSize);
+        EXPECT_EQ(maxLogSize, GetMaxLogSize());
+
+        SetMaxLogSizeDebugMultiplier(i);
+        EXPECT_EQ(i, GetMaxLogSizeDebugMultiplier());
+    }
+
+    SetConsoleLoggingEnabled(true);
+    EXPECT_TRUE(IsConsoleLoggingEnabled());
+    SetConsoleLoggingEnabled(false);
+    EXPECT_FALSE(IsConsoleLoggingEnabled());
+
+    // Leave console logging enabled for remaining tests
+    SetConsoleLoggingEnabled(true);
+
+    EXPECT_FALSE(IsDaemon());
 }
