@@ -582,6 +582,8 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
         status = ENOENT;
     }
 
+    OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: returning %d (%s)", status, strerror(status));
+
     return status;
 }
 
@@ -711,6 +713,8 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
     }
 
     FREE_MEMORY(line);
+
+    OsConfigLogInfo(log, "CheckRequirementsForPwQualityConf: returning %d (%s)", status, strerror(status));
 
     return status;
 }
