@@ -626,6 +626,8 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
         }
     }
 
+    OsConfigLogInfo(log, "CheckPasswordRequirementFromBuffer: returning %d (%s)", status, strerror(status));
+
     return status;
 }
 
@@ -634,7 +636,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
     FILE* fileHandle = NULL;
     char* line = NULL;
     long lineMax = sysconf(_SC_LINE_MAX);
-    int status = 0, _status = ENOENT;
+    int status = 0, _status = 0;
 
     if (false == FileExists(g_etcSecurityPwQualityConf))
     {
