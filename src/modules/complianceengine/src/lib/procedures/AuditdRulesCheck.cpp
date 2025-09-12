@@ -284,7 +284,7 @@ AUDIT_FN(AuditdRulesCheck, "searchItem:Item being audited:M", "excludeOption:Opt
     auto runningRulesResult = GetRulesFromRunningConfig(context);
     if (!runningRulesResult.HasValue())
     {
-        return Error("Failed to get running audit rules: " + runningRulesResult.Error().message, runningRulesResult.Error().code);
+        return indicators.NonCompliant("auditctl missing: " + runningRulesResult.Error().message);
     }
     auto runningRules = runningRulesResult.Value();
 
@@ -294,7 +294,7 @@ AUDIT_FN(AuditdRulesCheck, "searchItem:Item being audited:M", "excludeOption:Opt
     auto filesRulesResult = GetRulesFromFilesAtPath(context, rulesDirectory);
     if (!filesRulesResult.HasValue())
     {
-        return Error("Failed to get audit rules from files: " + filesRulesResult.Error().message, filesRulesResult.Error().code);
+        return indicators.NonCompliant("audit files missing: " + filesRulesResult.Error().message);
     }
     auto filesRules = filesRulesResult.Value();
 
