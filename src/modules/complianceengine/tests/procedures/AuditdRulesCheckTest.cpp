@@ -118,7 +118,9 @@ TEST_F(AuditdRulesCheckTest, AuditctlCommandFails)
     args["requiredOptions"] = "-p wa";
 
     auto result = AuditAuditdRulesCheck(args, indicators, mContext);
-    ASSERT_FALSE(result.HasValue());
+
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 // Test: override audit rules path with a temp directory containing matching rule -> Compliant
@@ -172,8 +174,8 @@ TEST_F(AuditdRulesCheckTest, OverridePathMissingFileRuleIsNonCompliant)
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
-// Test: invalid override path returns error when directory cannot be opened
-TEST_F(AuditdRulesCheckTest, InvalidOverridePathReturnsError)
+// Test: invalid override path returns NonCompliant when directory cannot be opened
+TEST_F(AuditdRulesCheckTest, InvalidOverridePathReturnsNonCompliant)
 {
     EXPECT_CALL(mContext, ExecuteCommand("auditctl -l")).WillOnce(Return(Result<std::string>(std::string("No rules\n"))));
     mContext.SetSpecialFilePath("/etc/audit/rules.d", "/does/not/exist");
@@ -183,7 +185,8 @@ TEST_F(AuditdRulesCheckTest, InvalidOverridePathReturnsError)
     args["requiredOptions"] = "-p wa";
 
     auto result = AuditAuditdRulesCheck(args, indicators, mContext);
-    ASSERT_FALSE(result.HasValue());
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
 // Test: syscall search compliant when both running and files match
