@@ -2769,7 +2769,7 @@ TEST_F(CommonUtilsTest, CheckBootloadersHavePasswordProtectionEnabled)
 {
     const char* testFile =
         "### BEGIN /etc/grub.d/01_users ###\n"
-        "# Test of a pa$$word for GRUB2\n"
+        "# Test of protection for GRUB2\n"
         "    if[-f ${ prefix } / user.cfg]; then\n"
         "        source ${ prefix } / user.cfg\n"
         "    if[-n \"${GRUB2_PASSWORD}\"]; then\n"
@@ -2785,7 +2785,7 @@ TEST_F(CommonUtilsTest, CheckBootloadersHavePasswordProtectionEnabled)
     EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "superusers", nullptr, nullptr));
     EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "password_pbkdf2", nullptr, nullptr));
     EXPECT_EQ(0, CheckLineFoundNotCommentedOut(m_path, '#', "GRUB2_PASSWORD", nullptr, nullptr));
-    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "pa$$word", nullptr, nullptr));
+    EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "protection", nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "Test of a", nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "BEGIN", nullptr, nullptr));
     EXPECT_EQ(EEXIST, CheckLineFoundNotCommentedOut(m_path, '#', "END", nullptr, nullptr));
