@@ -72,27 +72,27 @@ private:
 
         if (pid == 0)
         {
+            // Child process
             if (binaryDirectory.empty())
             {
                 exit(ENOENT);
             }
 
+            // Create new session and detach from parent's process group
+            setsid();
+
             // Execute telemetry application
             // Usage: telemetry [OPTIONS] <json_file_path> [teardown_time_seconds]
             //     json_file_path         - Path to the JSON file to process
             //     teardown_time_seconds  - Optional: Teardown time in seconds (default: 5s)
-
+            //
             //     Options:
             //     -v, --verbose          - Enable verbose output
             std::string path = binaryDirectory + std::string("/") + TELEMETRY_BINARY_NAME;
             execl(path.c_str(), TELEMETRY_BINARY_NAME, "-v", telemetryJSONFile, "5", (char*)NULL);
             exit(errno);
         }
-        else if (pid > 0)
-        {
-            // Parent process waits for child to exit
-            waitpid(pid, NULL, 0);
-        }
+        // Parent process continues immediately without waiting
     }
 
 public:
