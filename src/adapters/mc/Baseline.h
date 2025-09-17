@@ -9,14 +9,14 @@ extern "C"
 {
 #endif
 
-int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log);
-int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log);
+int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry);
+int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry);
 
-void BaselineInitialize(OsConfigLogHandle log);
-void BaselineShutdown(OsConfigLogHandle log);
+void BaselineInitialize(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry);
+void BaselineShutdown(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry);
 
-int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log);
-int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log);
+int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry);
+int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry);
 
 #ifdef __cplusplus
 }

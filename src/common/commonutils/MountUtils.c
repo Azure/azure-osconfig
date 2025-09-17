@@ -3,8 +3,9 @@
 
 #include "Internal.h"
 
-int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, OsConfigLogHandle log)
+int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     FILE* mountFileHandle = NULL;
     struct mntent* mountStruct = NULL;
     bool matchFound = false;
@@ -13,6 +14,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 
     if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "mountFileName", EINVAL);
         OsConfigLogError(log, "CheckFileSystemMountingOption called with invalid argument(s)");
         return EINVAL;
     }
@@ -113,8 +115,9 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     return status;
 }
 
-static int CopyMountTableFile(const char* source, const char* target, OsConfigLogHandle log)
+static int CopyMountTableFile(const char* source, const char* target, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     FILE* sourceHandle = NULL;
     FILE* targetHandle = NULL;
     struct mntent* mountStruct = NULL;
@@ -122,6 +125,7 @@ static int CopyMountTableFile(const char* source, const char* target, OsConfigLo
 
     if ((NULL == source) || (NULL == target))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "source", EINVAL);
         OsConfigLogError(log, "CopyMountTableFile called with invalid argument(s)");
         return EINVAL;
     }
@@ -165,8 +169,9 @@ static int CopyMountTableFile(const char* source, const char* target, OsConfigLo
     return status;
 }
 
-static int LineAlreadyExistsInFile(const char* fileName, const char* text, OsConfigLogHandle log)
+static int LineAlreadyExistsInFile(const char* fileName, const char* text, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     char* contents = NULL;
     int status = 0;
 
@@ -179,7 +184,7 @@ static int LineAlreadyExistsInFile(const char* fileName, const char* text, OsCon
         return ENOENT;
     }
 
-    if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+    if (NULL == (contents = LoadStringFromFile(fileName, false, log, telemetry)))
     {
         status = EACCES;
     }
@@ -196,7 +201,7 @@ static int LineAlreadyExistsInFile(const char* fileName, const char* text, OsCon
     return status;
 }
 
-int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log)
+int SetFileSystemMountingOption(const char* mountDirectory, const char* mountType, const char* desiredOption, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* fsMountTable = "/etc/fstab";
     const char* mountTable = "/etc/mtab";
@@ -218,6 +223,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
     if (((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "mountDirectory", EINVAL);
         OsConfigLogError(log, "SetFileSystemMountingOption called with invalid argument(s)");
         return EINVAL;
     }
@@ -232,6 +238,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
         (NULL == (tempFileNameTwo = FormatAllocateString(tempFileNameTemplate, 2))) ||
         (NULL == (tempFileNameThree = FormatAllocateString(tempFileNameTemplate, 3))))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
         status = ENOMEM;
     }
@@ -273,9 +280,9 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                     if (NULL != newLine)
                     {
-                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log))
+                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log, telemetry))
                         {
-                            if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                            if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log, telemetry) ? 0 : ENOENT))
                             {
                                 OsConfigLogInfo(log, "SetFileSystemMountingOption: cannot collect entries from '%s'", fsMountTable);
                                 break;
@@ -284,6 +291,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     }
                     else
                     {
+                        OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
                         OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
                         status = ENOMEM;
                         break;
@@ -296,9 +304,9 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     if (NULL != (newLine = FormatAllocateString(newLineAsIsTemplate, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type,
                         mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno)))
                     {
-                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log))
+                        if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log, telemetry))
                         {
-                            if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                            if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log, telemetry) ? 0 : ENOENT))
                             {
                                 OsConfigLogInfo(log, "SetFileSystemMountingOption: cannot copy existing entries from '%s'", fsMountTable);
                                 break;
@@ -307,6 +315,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                     }
                     else
                     {
+                        OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
                         OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
                         status = ENOMEM;
                         break;
@@ -362,9 +371,9 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
 
                                 if (NULL != newLine)
                                 {
-                                    if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log))
+                                    if (0 != LineAlreadyExistsInFile(tempFileNameOne, newLine, log, telemetry))
                                     {
-                                        if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log) ? 0 : ENOENT))
+                                        if (0 != (status = AppendPayloadToFile(tempFileNameOne, newLine, (const int)strlen(newLine), log, telemetry) ? 0 : ENOENT))
                                         {
                                             OsConfigLogInfo(log, "SetFileSystemMountingOption: cannot collect entry from '%s'", mountTable);
                                             break;
@@ -373,6 +382,7 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
                                 }
                                 else
                                 {
+                                    OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
                                     OsConfigLogError(log, "SetFileSystemMountingOption: out of memory");
                                     status = ENOMEM;
                                     break;
@@ -407,27 +417,27 @@ int SetFileSystemMountingOption(const char* mountDirectory, const char* mountTyp
         if (matchFound && (0 == status))
         {
             // Copy from the manually built temp mount file one to the temp mount file two using the *mntent API to ensure correct format
-            if (0 == (status = CopyMountTableFile(tempFileNameOne, tempFileNameTwo, log)))
+            if (0 == (status = CopyMountTableFile(tempFileNameOne, tempFileNameTwo, log, telemetry)))
             {
                 // Optionally, try to preserve the commented out lines from original /etc/fstab
-                if (MakeFileBackupCopy(fsMountTable, tempFileNameThree, false, log))
+                if (MakeFileBackupCopy(fsMountTable, tempFileNameThree, false, log, telemetry))
                 {
                     // Skip all lines containing either paths or 'UUID' entries
-                    if ((0 == ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', false, log)) &&
-                        (0 == ReplaceMarkedLinesInFile(tempFileNameThree, "UUID", NULL, '#', false, log)))
+                    if ((0 == ReplaceMarkedLinesInFile(tempFileNameThree, "/", NULL, '#', false, log, telemetry)) &&
+                        (0 == ReplaceMarkedLinesInFile(tempFileNameThree, "UUID", NULL, '#', false, log, telemetry)))
                     {
-                        if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo, false, log))
+                        if (ConcatenateFiles(tempFileNameThree, tempFileNameTwo, false, log, telemetry))
                         {
-                            RenameFile(tempFileNameThree, tempFileNameTwo, log);
+                            RenameFile(tempFileNameThree, tempFileNameTwo, log, telemetry);
                         }
                     }
                 }
 
                 // When done assembling the final temp mount file two, move it in an atomic step to real mount file
-                if (0 == (status = RenameFileWithOwnerAndAccess(tempFileNameTwo, fsMountTable, log)))
+                if (0 == (status = RenameFileWithOwnerAndAccess(tempFileNameTwo, fsMountTable, log, telemetry)))
                 {
                     // Command may fail when one configured mount point is not present, so ignore failures
-                    ExecuteCommand(NULL, mountAll, false, false, 0, 0, NULL, NULL, NULL);
+                    ExecuteCommand(NULL, mountAll, false, false, 0, 0, NULL, NULL, NULL, NULL);
                 }
                 else
                 {

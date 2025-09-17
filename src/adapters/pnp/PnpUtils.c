@@ -545,12 +545,12 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
         return IOTHUB_CLIENT_ERROR;
     }
 
-    mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength, GetLog());
+    mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength, GetLog(), NULL);
     if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
     {
         CallMpiFree(valuePayload);
 
-        mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength, GetLog());
+        mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength, GetLog(), NULL);
     }
 
     if ((MPI_OK == mpiResult) && (valueLength > 0) && (NULL != valuePayload))
@@ -642,10 +642,10 @@ IOTHUB_CLIENT_RESULT UpdatePropertyFromIotHub(const char* componentName, const c
 
         OsConfigLogDebug(GetLog(), "%s.%s: received %.*s (%d bytes)", componentName, propertyName, valueLength, serializedValue, valueLength);
 
-        mpiResult = CallMpiSet(componentName, propertyName, serializedValue, valueLength, GetLog());
+        mpiResult = CallMpiSet(componentName, propertyName, serializedValue, valueLength, GetLog(), NULL);
         if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
         {
-            mpiResult = CallMpiSet(componentName, propertyName, serializedValue, valueLength, GetLog());
+            mpiResult = CallMpiSet(componentName, propertyName, serializedValue, valueLength, GetLog(), NULL);
         }
 
         if (MPI_OK == mpiResult)

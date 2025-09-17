@@ -3,6 +3,7 @@
 
 #include <CommonUtils.h>
 #include <Evaluator.h>
+#include <Internal.h>
 #include <Result.h>
 #include <cstdio>
 #include <fstream>
@@ -527,6 +528,7 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "minPackageVersion:Mini
             }
             else
             {
+                OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "SavePackageCache", saveResult.Error().code);
                 OsConfigLogError(log, "Failed to save package cache: %s", saveResult.Error().message.c_str());
             }
         }
@@ -534,10 +536,12 @@ AUDIT_FN(PackageInstalled, "packageName:Package name:M", "minPackageVersion:Mini
         {
             if (cacheStale)
             {
+                OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "GetInstalledPackages", cacheResult.Error().code);
                 OsConfigLogError(log, "Failed to get installed packages: %s, reusing stale cache", cacheResult.Error().message.c_str());
             }
             else
             {
+                OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "GetInstalledPackages", cacheResult.Error().code);
                 OsConfigLogError(log, "Failed to get installed packages: %s, cannot use cache", cacheResult.Error().message.c_str());
                 return Error("Failed to get installed packages: " + cacheResult.Error().message);
             }

@@ -3,12 +3,13 @@
 
 #include "Internal.h"
 
-int StartPerfClock(PerfClock* clock, OsConfigLogHandle log)
+int StartPerfClock(PerfClock* clock, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     int status = EINVAL;
 
     if (NULL == clock)
     {
+        OSConfigTelemetryStatusTrace(telemetry, "clock", EINVAL);
         OsConfigLogError(log, "StartPerfClock called with an clock invalid argument");
         return status;
     }
@@ -17,18 +18,20 @@ int StartPerfClock(PerfClock* clock, OsConfigLogHandle log)
 
     if (0 != (status = clock_gettime(CLOCK_MONOTONIC, &(clock->start))))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "clock_gettime", errno);
         OsConfigLogError(log, "StartPerfClock: clock_gettime failed with %d (%d)", status, errno);
     }
 
     return status;
 }
 
-int StopPerfClock(PerfClock* clock, OsConfigLogHandle log)
+int StopPerfClock(PerfClock* clock, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     int status = EINVAL;
 
     if (NULL == clock)
     {
+        OSConfigTelemetryStatusTrace(telemetry, "clock", EINVAL);
         OsConfigLogError(log, "StopPerfClock called with an invalid clock argument");
         return status;
     }
@@ -37,6 +40,7 @@ int StopPerfClock(PerfClock* clock, OsConfigLogHandle log)
     {
         if (clock->stop.tv_sec < clock->start.tv_sec)
         {
+            OSConfigTelemetryStatusTrace(telemetry, "clock_gettime", ENOENT);
             OsConfigLogError(log, "StopPerfClock: clock_gettime returned an earlier time than expected (%ld seconds earlier)",
                 clock->start.tv_sec - clock->stop.tv_sec);
 
@@ -47,20 +51,23 @@ int StopPerfClock(PerfClock* clock, OsConfigLogHandle log)
     }
     else
     {
+        OSConfigTelemetryStatusTrace(telemetry, "clock_gettime", errno);
         OsConfigLogError(log, "StopPerfClock: clock_gettime failed with %d (%d)", status, errno);
     }
 
     return status;
 }
 
-long GetPerfClockTime(PerfClock* clock, OsConfigLogHandle log)
+long GetPerfClockTime(PerfClock* clock, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     long seconds = 0;
     long nanoseconds = 0;
     long microseconds = -1;
 
     if ((NULL == clock) || (0 == clock->stop.tv_sec))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "clock", EINVAL);
         OsConfigLogError(log, "GetPerfClockTime called with an invalid clock argument");
         return microseconds;
     }
@@ -79,17 +86,19 @@ long GetPerfClockTime(PerfClock* clock, OsConfigLogHandle log)
     return microseconds;
 }
 
-void LogPerfClock(PerfClock* clock, const char* componentName, const char* objectName, int objectResult, long limit, OsConfigLogHandle log)
+void LogPerfClock(PerfClock* clock, const char* componentName, const char* objectName, int objectResult, long limit, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     long microseconds = -1;
 
     if ((NULL == clock) || (NULL == componentName))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "clock", EINVAL);
         OsConfigLogError(log, "LogPerfClock called with an invalid argument");
         return;
     }
 
-    microseconds = GetPerfClockTime(clock, log);
+    microseconds = GetPerfClockTime(clock, log, telemetry);
 
     if (NULL != objectName)
     {
@@ -104,6 +113,7 @@ void LogPerfClock(PerfClock* clock, const char* componentName, const char* objec
 
         if (microseconds > limit)
         {
+            OSConfigTelemetryStatusTrace(telemetry, "microseconds", ETIME);
             OsConfigLogError(log, "%s.%s completion time of %ld microseconds is longer than %ld microseconds",
                 componentName, objectName, microseconds, limit);
         }
@@ -114,6 +124,7 @@ void LogPerfClock(PerfClock* clock, const char* componentName, const char* objec
 
         if (microseconds > limit)
         {
+            OSConfigTelemetryStatusTrace(telemetry, "microseconds", ETIME);
             OsConfigLogError(log, "%s completion time of %ld microseconds is longer than %.2f minutes (%ld microseconds)",
                 componentName, microseconds, limit / 60000000.0, limit);
         }

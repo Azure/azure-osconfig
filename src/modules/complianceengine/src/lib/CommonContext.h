@@ -7,6 +7,7 @@
 #include "ContextInterface.h"
 #include "Logging.h"
 #include "Result.h"
+#include "Telemetry.h"
 
 #include <sstream>
 #include <string>
@@ -16,8 +17,9 @@ namespace ComplianceEngine
 class CommonContext : public ContextInterface
 {
 public:
-    CommonContext(OsConfigLogHandle log)
-        : mLog(log)
+    CommonContext(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+        : mLog(log),
+          mTelemetry(telemetry)
     {
     }
     ~CommonContext() override;
@@ -28,11 +30,16 @@ public:
     {
         return mLog;
     }
+    OSConfigTelemetryHandle GetTelemetryHandle() const override
+    {
+        return mTelemetry;
+    }
 
     std::string GetSpecialFilePath(const std::string& path) const override;
 
 private:
     OsConfigLogHandle mLog;
+    OSConfigTelemetryHandle mTelemetry;
 };
 } // namespace ComplianceEngine
 #endif // COMPLIANCEENGINE_COMMONCONTEXT_H

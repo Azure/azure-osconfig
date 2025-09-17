@@ -12,6 +12,7 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
+#include <Internal.h>
 
 #define SAMPLE_LOGFILE "/var/log/osconfig_sample.log"
 #define SAMPLE_ROLLEDLOGFILE "/var/log/osconfig_sample.bak"
@@ -24,18 +25,26 @@ public:
         return m_log;
     }
 
+    static OSConfigTelemetryHandle GetTelemetry()
+    {
+        return m_telemetry;
+    }
+
     static void OpenLog()
     {
         m_log = ::OpenLog(SAMPLE_LOGFILE, SAMPLE_ROLLEDLOGFILE);
+        m_telemetry = OSConfigTelemetryOpen();
     }
 
     static void CloseLog()
     {
+        OSConfigTelemetryClose(&m_telemetry);
         ::CloseLog(&m_log);
     }
 
 private:
     static OsConfigLogHandle m_log;
+    static OSConfigTelemetryHandle m_telemetry;
 };
 
 class Sample

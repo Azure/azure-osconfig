@@ -139,8 +139,9 @@ static char* g_desiredAppropriateCiphersForSsh = NULL;
 
 static bool g_auditOnlySession = true;
 
-static char* GetSshServerState(const char* name, OsConfigLogHandle log)
+static char* GetSshServerState(const char* name, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     const char* sshdDashTCommand = "sshd -T";
     const char* commandTemplateForOne = "%s | grep  -m 1 -w %s";
     char* command = NULL;
@@ -149,7 +150,7 @@ static char* GetSshServerState(const char* name, OsConfigLogHandle log)
 
     if (NULL == name)
     {
-        if (0 != (status = ExecuteCommand(NULL, sshdDashTCommand, true, false, 0, 0, &textResult, NULL, NULL)))
+        if (0 != (status = ExecuteCommand(NULL, sshdDashTCommand, true, false, 0, 0, &textResult, NULL, NULL, NULL)))
         {
             OsConfigLogInfo(log, "GetSshServerState: '%s' failed with %d and '%s'", sshdDashTCommand, status, textResult);
             FREE_MEMORY(textResult);
@@ -159,7 +160,7 @@ static char* GetSshServerState(const char* name, OsConfigLogHandle log)
     {
         if (NULL != (command = FormatAllocateString(commandTemplateForOne, sshdDashTCommand, name)))
         {
-            if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
+            if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL, NULL)))
             {
                 OsConfigLogInfo(log, "GetSshServerState: '%s' failed with %d and '%s'", command, status, textResult);
                 FREE_MEMORY(textResult);
@@ -174,6 +175,7 @@ static char* GetSshServerState(const char* name, OsConfigLogHandle log)
         }
         else
         {
+            OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
             OsConfigLogError(log, "GetSshServerState: FormatAllocateString failed");
         }
 
@@ -183,8 +185,9 @@ static char* GetSshServerState(const char* name, OsConfigLogHandle log)
     return textResult;
 }
 
-static int IsSshServerActive(OsConfigLogHandle log)
+static int IsSshServerActive(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     int result = 0;
 
     if (false == FileExists(g_sshServerConfiguration))
@@ -192,7 +195,7 @@ static int IsSshServerActive(OsConfigLogHandle log)
         OsConfigLogInfo(log, "IsSshServerActive: the OpenSSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
         result = EEXIST;
     }
-    else if (false == IsDaemonActive(g_sshServerService, log))
+    else if (false == IsDaemonActive(g_sshServerService, log, telemetry))
     {
         OsConfigLogInfo(log, "IsSshServerActive: the OpenSSH Server service '%s' is not active on this device", g_sshServerService);
         result = EEXIST;
@@ -203,8 +206,9 @@ static int IsSshServerActive(OsConfigLogHandle log)
 
 // SSH servers that implement OpenSSH version 8.2 or newer support Include
 // See https://www.openssh.com/txt/release-8.2, quote: "add an Include sshd_config keyword that allows including additional configuration files"
-static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
+static int IsSshConfigIncludeSupported(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     const char* expectedPrefix = "unknown option -- V OpenSSH_";
     const char* command = "sshd -V";
     const int minVersionMajor = 8;
@@ -218,7 +222,7 @@ static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
     int versionMinor = 0;
     int result = 0;
 
-    if (false == IsDaemonActive(g_sshServerService, log))
+    if (false == IsDaemonActive(g_sshServerService, log, telemetry))
     {
         OsConfigLogInfo(log, "IsSshConfigIncludeSupported: the OpenSSH Server service '%s' is not active on this device, assuming Include is not supported", g_sshServerService);
         return EEXIST;
@@ -227,7 +231,7 @@ static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
     // Extract the two version digits from the SSH server response to unsupported command -V (the OpenSSH way)
     // For example, version 8.9 from response "unknown option -- V OpenSSH_8.9p1..."
 
-    ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
+    ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL, NULL);
 
     if (NULL != textResult)
     {
@@ -273,7 +277,7 @@ static int IsSshConfigIncludeSupported(OsConfigLogHandle log)
     return result;
 }
 
-static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, OsConfigLogHandle log)
+static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* sshMacs = NULL;
     char* macsValue = NULL;
@@ -284,20 +288,22 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
 
     if (NULL == macs)
     {
+        OSConfigTelemetryStatusTrace(telemetry, "macs", EINVAL);
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: invalid arguments");
         return EINVAL;
     }
-    else if (0 != IsSshServerActive(log))
+    else if (0 != IsSshServerActive(log, telemetry))
     {
         return status;
     }
     else if (NULL == (sshMacs = DuplicateStringToLowercase(g_sshMacs)))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "DuplicateStringToLowercase", ENOMEM);
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: failed to duplicate string to lowercase");
         return ENOMEM;
     }
 
-    if (NULL == (macsValue = GetSshServerState(sshMacs, log)))
+    if (NULL == (macsValue = GetSshServerState(sshMacs, log, telemetry)))
     {
         OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' not found in SSH Server response from 'sshd -T'", sshMacs);
         OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", sshMacs);
@@ -311,6 +317,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
         {
             if (NULL == (value = DuplicateString(&(macsValue[i]))))
             {
+                OSConfigTelemetryStatusTrace(telemetry, "DuplicateString", ENOMEM);
                 OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: failed to duplicate string");
                 status = ENOMEM;
                 break;
@@ -346,7 +353,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
     return status;
 }
 
-static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsConfigLogHandle log)
+static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* sshCiphers = NULL;
     char* ciphersValue = NULL;
@@ -357,20 +364,22 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
 
     if (NULL == ciphers)
     {
+        OSConfigTelemetryStatusTrace(telemetry, "ciphers", EINVAL);
         OsConfigLogError(log, "CheckAppropriateCiphersForSsh: invalid argument");
         return EINVAL;
     }
-    else if (0 != IsSshServerActive(log))
+    else if (0 != IsSshServerActive(log, telemetry))
     {
         return status;
     }
     else if (NULL == (sshCiphers = DuplicateStringToLowercase(g_sshCiphers)))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "DuplicateStringToLowercase", ENOMEM);
         OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate string to lowercase");
         return ENOMEM;
     }
 
-    if (NULL == (ciphersValue = GetSshServerState(sshCiphers, log)))
+    if (NULL == (ciphersValue = GetSshServerState(sshCiphers, log, telemetry)))
     {
         OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: '%s' not found in SSH Server response", sshCiphers);
         OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", sshCiphers);
@@ -385,6 +394,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
         {
             if (NULL == (value = DuplicateString(&(ciphersValue[i]))))
             {
+                OSConfigTelemetryStatusTrace(telemetry, "DuplicateString", ENOMEM);
                 OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate string");
                 status = ENOMEM;
                 break;
@@ -413,6 +423,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
         {
             if (NULL == (value = DuplicateString(&(ciphers[i]))))
             {
+                OSConfigTelemetryStatusTrace(telemetry, "DuplicateString", ENOMEM);
                 OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate ciphers string");
                 status = ENOMEM;
                 break;
@@ -448,23 +459,24 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
     return status;
 }
 
-static int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** actualValue, char** reason, OsConfigLogHandle log)
+static int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** actualValue, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* value = NULL;
     int status = 0;
 
     if (NULL == option)
     {
+        OSConfigTelemetryStatusTrace(telemetry, "option", EINVAL);
         OsConfigLogError(log, "CheckSshOptionIsSet: invalid argument");
         return EINVAL;
     }
 
-    if (0 != IsSshServerActive(log))
+    if (0 != IsSshServerActive(log, telemetry))
     {
         return status;
     }
 
-    if (NULL != (value = GetSshServerState(option, log)))
+    if (NULL != (value = GetSshServerState(option, log, telemetry)))
     {
         OsConfigLogInfo(log, "CheckSshOptionIsSet: '%s' found in SSH Server response set to '%s'", option, value);
 
@@ -498,11 +510,11 @@ static int CheckSshOptionIsSet(const char* option, const char* expectedValue, ch
     return status;
 }
 
-static int CheckSshOptionIsSetToInteger(const char* option, int* expectedValue, int* actualValue, char** reason, OsConfigLogHandle log)
+static int CheckSshOptionIsSetToInteger(const char* option, int* expectedValue, int* actualValue, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* actualValueString = NULL;
     char* expectedValueString = expectedValue ? FormatAllocateString("%d", *expectedValue) : NULL;
-    int status = CheckSshOptionIsSet(option, expectedValueString, &actualValueString, reason, log);
+    int status = CheckSshOptionIsSet(option, expectedValueString, &actualValueString, reason, log, telemetry);
 
     if ((0 == status) && (NULL != actualValue))
     {
@@ -515,15 +527,15 @@ static int CheckSshOptionIsSetToInteger(const char* option, int* expectedValue, 
     return status;
 }
 
-static int CheckSshClientAliveInterval(char** reason, OsConfigLogHandle log)
+static int CheckSshClientAliveInterval(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* clientAliveInterval = DuplicateStringToLowercase(g_sshClientAliveInterval);
     int actualValue = 0;
     int status = 0;
 
-    if (0 == IsSshServerActive(log))
+    if (0 == IsSshServerActive(log, telemetry))
     {
-        if (0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log)))
+        if (0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log, telemetry)))
         {
             OsConfigResetReason(reason);
 
@@ -547,16 +559,16 @@ static int CheckSshClientAliveInterval(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-static int CheckSshLoginGraceTime(const char* value, char** reason, OsConfigLogHandle log)
+static int CheckSshLoginGraceTime(const char* value, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* loginGraceTime = DuplicateStringToLowercase(g_sshLoginGraceTime);
     int targetValue = atoi(value ? value : g_sshDefaultSshLoginGraceTime);
     int actualValue = 0;
     int status = 0;
 
-    if (0 == IsSshServerActive(log))
+    if (0 == IsSshServerActive(log, telemetry))
     {
-        if (0 == (status = CheckSshOptionIsSetToInteger(loginGraceTime, NULL, &actualValue, reason, log)))
+        if (0 == (status = CheckSshOptionIsSetToInteger(loginGraceTime, NULL, &actualValue, reason, log, telemetry)))
         {
             OsConfigResetReason(reason);
 
@@ -580,16 +592,16 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, OsConfigLogH
     return status;
 }
 
-static int CheckSshMaxAuthTries(const char* value, char** reason, OsConfigLogHandle log)
+static int CheckSshMaxAuthTries(const char* value, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* maxAuthTries = DuplicateStringToLowercase(g_sshMaxAuthTries);
     int targetValue = atoi(value ? value : g_sshDefaultSshMaxAuthTries);
     int actualValue = 0;
     int status = 0;
 
-    if (0 == IsSshServerActive(log))
+    if (0 == IsSshServerActive(log, telemetry))
     {
-        if (0 == (status = CheckSshOptionIsSetToInteger(maxAuthTries, NULL, &actualValue, reason, log)))
+        if (0 == (status = CheckSshOptionIsSetToInteger(maxAuthTries, NULL, &actualValue, reason, log, telemetry)))
         {
             OsConfigResetReason(reason);
 
@@ -613,19 +625,19 @@ static int CheckSshMaxAuthTries(const char* value, char** reason, OsConfigLogHan
     return status;
 }
 
-static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
+static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* banner = "banner";
     const char* none = "none";
     char* bannerPath = NULL;
     int status = 0;
 
-    if (0 != IsSshServerActive(log))
+    if (0 != IsSshServerActive(log, telemetry))
     {
         return status;
     }
 
-    if (NULL != (bannerPath = GetSshServerState(banner, log)))
+    if (NULL != (bannerPath = GetSshServerState(banner, log, telemetry)))
     {
         if (0 == strcmp(bannerPath, none))
         {
@@ -636,7 +648,7 @@ static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
         else
         {
             OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' found in SSH Server response set to '%s'", banner, bannerPath);
-            status = CheckFileExists(bannerPath, reason, log);
+            status = CheckFileExists(bannerPath, reason, log, telemetry);
         }
 
         FREE_MEMORY(bannerPath);
@@ -653,8 +665,9 @@ static int CheckSshWarningBanner(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-static char* FormatInclusionForRemediation(OsConfigLogHandle log)
+static char* FormatInclusionForRemediation(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     const char* inclusionTemplate = "%s\nInclude %s\n";
     char* inclusion = NULL;
     size_t inclusionSize = 0;
@@ -667,20 +680,21 @@ static char* FormatInclusionForRemediation(OsConfigLogHandle log)
     }
     else
     {
+        OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
         OsConfigLogError(log, "FormatInclusionForRemediation: out of memory");
     }
 
     return inclusion;
 }
 
-int CheckSshProtocol(char** reason, OsConfigLogHandle log)
+int CheckSshProtocol(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* protocolTemplate = "%s %s";
     char* protocol = NULL;
     char* inclusion = NULL;
     int status = 0;
 
-    if (0 != IsSshServerActive(log))
+    if (0 != IsSshServerActive(log, telemetry))
     {
         return status;
     }
@@ -696,7 +710,7 @@ int CheckSshProtocol(char** reason, OsConfigLogHandle log)
         OsConfigCaptureReason(reason, "'%s' is not present on this device", g_sshServerConfiguration);
         status = ENOENT;
     }
-    else if (0 == CheckLineFoundNotCommentedOut(g_sshServerConfiguration, '#', protocol, reason, log))
+    else if (0 == CheckLineFoundNotCommentedOut(g_sshServerConfiguration, '#', protocol, reason, log, telemetry))
     {
         OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
         status = 0;
@@ -706,7 +720,7 @@ int CheckSshProtocol(char** reason, OsConfigLogHandle log)
         OsConfigLogInfo(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
         status = ENOENT;
 
-        if (0 == IsSshConfigIncludeSupported(log))
+        if (0 == IsSshConfigIncludeSupported(log, telemetry))
         {
             if (false == FileExists(g_osconfigRemediationConf))
             {
@@ -714,18 +728,18 @@ int CheckSshProtocol(char** reason, OsConfigLogHandle log)
                 OsConfigCaptureReason(reason, "The OSConfig remediation file '%s' is not present on this device", g_osconfigRemediationConf);
                 status = EEXIST;
             }
-            else if (NULL == (inclusion = FormatInclusionForRemediation(log)))
+            else if (NULL == (inclusion = FormatInclusionForRemediation(log, telemetry)))
             {
                 OsConfigLogError(log, "CheckSshProtocol: FormatInclusionForRemediation failed");
                 status = ENOMEM;
             }
-            else if (0 != FindTextInFile(g_sshServerConfiguration, inclusion, log))
+            else if (0 != FindTextInFile(g_sshServerConfiguration, inclusion, log, telemetry))
             {
                 OsConfigLogInfo(log, "CheckSshProtocol: '%s' is not found included in '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
                 OsConfigCaptureReason(reason, "'%s' is not found included in %s", g_osconfigRemediationConf, g_sshServerConfiguration);
                 status = ENOENT;
             }
-            else if (0 == CheckLineFoundNotCommentedOut(g_osconfigRemediationConf, '#', protocol, reason, log))
+            else if (0 == CheckLineFoundNotCommentedOut(g_osconfigRemediationConf, '#', protocol, reason, log, telemetry))
             {
                 OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_osconfigRemediationConf);
                 status = 0;
@@ -747,7 +761,7 @@ int CheckSshProtocol(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expectedValue, char** reason, OsConfigLogHandle log)
+static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expectedValue, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* commandTemplate = "%s -T | grep \"%s %s\"";
     char* command = NULL;
@@ -763,14 +777,14 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
         OsConfigLogError(log, "CheckAllowDenyUsersGroups: invalid arguments");
         return EINVAL;
     }
-    else if (0 != IsSshServerActive(log))
+    else if (0 != IsSshServerActive(log, telemetry))
     {
         return status;
     }
     else if (NULL == strchr(expectedValue, ' '))
     {
         // If the expected value is not a list of users or groups separated by space, but a single user or group, then:
-        return CheckSshOptionIsSet(lowercase, expectedValue, NULL, reason, log);
+        return CheckSshOptionIsSet(lowercase, expectedValue, NULL, reason, log, telemetry);
     }
 
     valueLength = strlen(expectedValue);
@@ -793,7 +807,7 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
                 memset(command, 0, commandLength);
                 snprintf(command, commandLength, commandTemplate, g_sshServerService, lowercase, value);
 
-                status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
+                status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL, NULL);
 
                 FREE_MEMORY(textResult);
                 FREE_MEMORY(command);
@@ -825,7 +839,7 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
     return status;
 }
 
-static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, OsConfigLogHandle log)
+static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* etcAzSec = "/etc/azsec/";
     int status = 0;
@@ -847,9 +861,9 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
 
     if (true == DirectoryExists(etcAzSec))
     {
-        if (SavePayloadToFile(g_sshBannerFile, bannerText, strlen(bannerText), log))
+        if (SavePayloadToFile(g_sshBannerFile, bannerText, strlen(bannerText), log, telemetry))
         {
-            if (0 != (status = SetFileAccess(g_sshBannerFile, 0, 0, desiredBannerFileAccess, log)))
+            if (0 != (status = SetFileAccess(g_sshBannerFile, 0, 0, desiredBannerFileAccess, log, telemetry)))
             {
                 OsConfigLogInfo(log, "SetSshWarningBanner: failed to set desired access %03o on banner file %s (%d)", desiredBannerFileAccess, g_sshBannerFile, status);
             }
@@ -864,8 +878,9 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
     return status;
 }
 
-static char* FormatRemediationValues(OsConfigLogHandle log)
+static char* FormatRemediationValues(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     const char* remediationTemplate = "%s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n";
     char* remediation = NULL;
     size_t remediationSize = 0;
@@ -923,7 +938,7 @@ static char* FormatRemediationValues(OsConfigLogHandle log)
     return remediation;
 }
 
-static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
+static int IncludeRemediationSshConfFile(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* etcSshSshdConfigD = "/etc/ssh/sshd_config.d";
     const char* configurationTemplate = "%s%s";
@@ -940,7 +955,7 @@ static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
         OsConfigLogInfo(log, "IncludeRemediationSshConfFile: '%s' is not present on this device", g_sshServerConfiguration);
         return EEXIST;
     }
-    else if ((NULL == (inclusion = FormatInclusionForRemediation(log))) || (0 == (inclusionSize = strlen(inclusion))))
+    else if ((NULL == (inclusion = FormatInclusionForRemediation(log, telemetry))) || (0 == (inclusionSize = strlen(inclusion))))
     {
         OsConfigLogInfo(log, "IncludeRemediationSshConfFile: failed preparing the inclusion statement, cannot include '%s' into '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
         FREE_MEMORY(inclusion);
@@ -958,7 +973,7 @@ static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
 
     if (true == DirectoryExists(etcSshSshdConfigD))
     {
-        if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
+        if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log, telemetry)))
         {
             if (0 != strncmp(originalConfiguration, inclusion, inclusionSize))
             {
@@ -969,7 +984,7 @@ static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
                     memset(newConfiguration, 0, newConfigurationSize);
                     snprintf(newConfiguration, newConfigurationSize, configurationTemplate, inclusion, originalConfiguration);
 
-                    if (true == SecureSaveToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log))
+                    if (true == SecureSaveToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log, telemetry))
                     {
                         OsConfigLogInfo(log, "IncludeRemediationSshConfFile: '%s' is now included into '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
                         status = 0;
@@ -1003,33 +1018,33 @@ static int IncludeRemediationSshConfFile(OsConfigLogHandle log)
         }
     }
 
-    SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log);
+    SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log, telemetry);
 
     FREE_MEMORY(inclusion);
 
     return status;
 }
 
-static int SaveRemediationToConfFile(OsConfigLogHandle log)
+static int SaveRemediationToConfFile(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* newRemediation = NULL;
     char* currentRemediation = NULL;
     size_t newRemediationSize = 0;
     int status = 0;
 
-    if ((NULL == (newRemediation = FormatRemediationValues(log))) || (0 == (newRemediationSize = strlen(newRemediation))))
+    if ((NULL == (newRemediation = FormatRemediationValues(log, telemetry))) || (0 == (newRemediationSize = strlen(newRemediation))))
     {
         OsConfigLogInfo(log, "SaveRemediationToConfFile: failed formatting, cannot save remediation to '%s'", g_osconfigRemediationConf);
         return ENOMEM;
     }
 
-    if ((NULL != (currentRemediation = LoadStringFromFile(g_osconfigRemediationConf, false, log))) && (0 == strncmp(currentRemediation, newRemediation, newRemediationSize)))
+    if ((NULL != (currentRemediation = LoadStringFromFile(g_osconfigRemediationConf, false, log, telemetry))) && (0 == strncmp(currentRemediation, newRemediation, newRemediationSize)))
     {
         OsConfigLogInfo(log, "SaveRemediationToConfFile: '%s' already contains the correct remediation values:\n---\n%s---", g_osconfigRemediationConf, newRemediation);
     }
     else
     {
-        if (true == SavePayloadToFile(g_osconfigRemediationConf, newRemediation, newRemediationSize, log))
+        if (true == SavePayloadToFile(g_osconfigRemediationConf, newRemediation, newRemediationSize, log, telemetry))
         {
             OsConfigLogInfo(log, "SaveRemediationToConfFile: '%s' is now updated to the following remediation values:\n---\n%s---", g_osconfigRemediationConf, newRemediation);
         }
@@ -1040,7 +1055,7 @@ static int SaveRemediationToConfFile(OsConfigLogHandle log)
         }
     }
 
-    SetFileAccess(g_osconfigRemediationConf, 0, 0, strtol(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), log);
+    SetFileAccess(g_osconfigRemediationConf, 0, 0, strtol(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), log, telemetry);
 
     FREE_MEMORY(newRemediation);
     FREE_MEMORY(currentRemediation);
@@ -1048,14 +1063,15 @@ static int SaveRemediationToConfFile(OsConfigLogHandle log)
     return status;
 }
 
-static int BackupSshdConfig(const char* configuration, OsConfigLogHandle log)
+static int BackupSshdConfig(const char* configuration, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     size_t configurationSize = 0;
     int status = 0;
 
     if ((false == FileExists(g_sshServerConfigurationBackup)) && (NULL != configuration) && (0 < (configurationSize = strlen(configuration))))
     {
-        if (false == SavePayloadToFile(g_sshServerConfigurationBackup, configuration, configurationSize, log))
+        if (false == SavePayloadToFile(g_sshServerConfigurationBackup, configuration, configurationSize, log, telemetry))
         {
             status = ENOENT;
         }
@@ -1064,7 +1080,7 @@ static int BackupSshdConfig(const char* configuration, OsConfigLogHandle log)
     return status;
 }
 
-static int SaveRemediationToSshdConfig(OsConfigLogHandle log)
+static int SaveRemediationToSshdConfig(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* configurationTemplate = "%s%s";
     char* originalConfiguration = NULL;
@@ -1080,17 +1096,17 @@ static int SaveRemediationToSshdConfig(OsConfigLogHandle log)
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' is not present on this device", g_sshServerConfiguration);
         status = EEXIST;
     }
-    else if ((NULL == (remediation = FormatRemediationValues(log))) || (0 == (remediationSize = strlen(remediation))))
+    else if ((NULL == (remediation = FormatRemediationValues(log, telemetry))) || (0 == (remediationSize = strlen(remediation))))
     {
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: failed formatting, cannot save remediation values to '%s'", g_sshServerConfiguration);
         status = ENOMEM;
     }
-    else if (NULL == (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
+    else if (NULL == (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log, telemetry)))
     {
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: failed to read from '%s'", g_sshServerConfiguration);
         status = EEXIST;
     }
-    else if (0 != (status = BackupSshdConfig(originalConfiguration, log)))
+    else if (0 != (status = BackupSshdConfig(originalConfiguration, log, telemetry)))
     {
         OsConfigLogInfo(log, "SaveRemediationToSshdConfig: failed to make a backup copy of '%s'", g_sshServerConfiguration);
     }
@@ -1103,7 +1119,7 @@ static int SaveRemediationToSshdConfig(OsConfigLogHandle log)
     {
         FREE_MEMORY(originalConfiguration);
 
-        if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfigurationBackup, false, log)))
+        if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfigurationBackup, false, log, telemetry)))
         {
             newConfigurationSize = strlen(configurationTemplate) + remediationSize + strlen(originalConfiguration) + 1;
             if (NULL != (newConfiguration = malloc(newConfigurationSize)))
@@ -1111,7 +1127,7 @@ static int SaveRemediationToSshdConfig(OsConfigLogHandle log)
                 memset(newConfiguration, 0, newConfigurationSize);
                 snprintf(newConfiguration, newConfigurationSize, configurationTemplate, remediation, originalConfiguration);
 
-                if (true == SecureSaveToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log))
+                if (true == SecureSaveToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log, telemetry))
                 {
                     OsConfigLogInfo(log, "SaveRemediationToSshdConfig: '%s' is now updated to include the following remediation values:\n---\n%s---", g_sshServerConfiguration, remediation);
                     status = 0;
@@ -1139,14 +1155,15 @@ static int SaveRemediationToSshdConfig(OsConfigLogHandle log)
     FREE_MEMORY(originalConfiguration);
     FREE_MEMORY(newConfiguration);
 
-    SetFileAccess(g_sshServerConfigurationBackup, 0, 0, desiredAccess, log);
-    SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log);
+    SetFileAccess(g_sshServerConfigurationBackup, 0, 0, desiredAccess, log, telemetry);
+    SetFileAccess(g_sshServerConfiguration, 0, 0, desiredAccess, log, telemetry);
 
     return status;
 }
 
-int InitializeSshAudit(OsConfigLogHandle log)
+int InitializeSshAudit(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     int status = 0;
 
     g_auditOnlySession = true;
@@ -1179,7 +1196,7 @@ int InitializeSshAudit(OsConfigLogHandle log)
     return status;
 }
 
-void SshAuditCleanup(OsConfigLogHandle log)
+void SshAuditCleanup(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     bool configurationChanged = false;
 
@@ -1187,15 +1204,15 @@ void SshAuditCleanup(OsConfigLogHandle log)
 
     if (false == g_auditOnlySession)
     {
-        if (0 == IsSshConfigIncludeSupported(log))
+        if (0 == IsSshConfigIncludeSupported(log, telemetry))
         {
-            IncludeRemediationSshConfFile(log);
-            if (0 == SaveRemediationToConfFile(log))
+            IncludeRemediationSshConfFile(log, telemetry);
+            if (0 == SaveRemediationToConfFile(log, telemetry))
             {
                 configurationChanged = true;
             }
         }
-        else if (0 == SaveRemediationToSshdConfig(log))
+        else if (0 == SaveRemediationToSshdConfig(log, telemetry))
         {
             configurationChanged = true;
         }
@@ -1203,7 +1220,7 @@ void SshAuditCleanup(OsConfigLogHandle log)
         if (configurationChanged)
         {
             // Signal to the SSH Server service to reload configuration
-            RestartDaemon(g_sshServerService, log);
+            RestartDaemon(g_sshServerService, log, telemetry);
         }
     }
 
@@ -1231,8 +1248,9 @@ void SshAuditCleanup(OsConfigLogHandle log)
     g_auditOnlySession = true;
 }
 
-int InitializeSshAuditCheck(const char* name, char* value, OsConfigLogHandle log)
+int InitializeSshAuditCheck(const char* name, char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     bool isValidValue = ((NULL == value) || (0 == value[0])) ? false : true;
     int status = 0;
 
@@ -1354,7 +1372,7 @@ int InitializeSshAuditCheck(const char* name, char* value, OsConfigLogHandle log
     return status;
 }
 
-int ProcessSshAuditCheck(const char* name, char* value, char** reason, OsConfigLogHandle log)
+int ProcessSshAuditCheck(const char* name, char* value, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* lowercase = NULL;
     int status = 0;
@@ -1370,103 +1388,103 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, OsConfigL
     if (0 == strcmp(name, g_auditEnsurePermissionsOnEtcSshSshdConfigObject))
     {
         CheckFileAccess(g_sshServerConfiguration, 0, 0, strtol(g_desiredPermissionsOnEtcSshSshdConfig ?
-            g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), reason, log);
+            g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureSshPortIsConfiguredObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshPort);
-        CheckSshOptionIsSet(lowercase, g_desiredSshPort ? g_desiredSshPort : g_sshDefaultSshPort, NULL, reason, log);
+        CheckSshOptionIsSet(lowercase, g_desiredSshPort ? g_desiredSshPort : g_sshDefaultSshPort, NULL, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureSshBestPracticeProtocolObject))
     {
-        CheckSshProtocol(reason, log);
+        CheckSshProtocol(reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureSshBestPracticeIgnoreRhostsObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshIgnoreHosts);
-        CheckSshOptionIsSet(lowercase, g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : g_sshDefaultSshYes, NULL, reason, log);
+        CheckSshOptionIsSet(lowercase, g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : g_sshDefaultSshYes, NULL, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureSshLogLevelIsSetObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshLogLevel);
-        CheckSshOptionIsSet(lowercase, g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : g_sshDefaultSshLogLevel, NULL, reason, log);
+        CheckSshOptionIsSet(lowercase, g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : g_sshDefaultSshLogLevel, NULL, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureSshMaxAuthTriesIsSetObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshMaxAuthTries);
-        CheckSshMaxAuthTries(g_desiredSshMaxAuthTriesIsSet ? g_desiredSshMaxAuthTriesIsSet : g_sshDefaultSshMaxAuthTries, reason, log);
+        CheckSshMaxAuthTries(g_desiredSshMaxAuthTriesIsSet ? g_desiredSshMaxAuthTriesIsSet : g_sshDefaultSshMaxAuthTries, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureAllowUsersIsConfiguredObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshAllowUsers);
-        CheckAllowDenyUsersGroups(lowercase, g_desiredAllowUsersIsConfigured ? g_desiredAllowUsersIsConfigured : g_sshDefaultSshAllowUsers, reason, log);
+        CheckAllowDenyUsersGroups(lowercase, g_desiredAllowUsersIsConfigured ? g_desiredAllowUsersIsConfigured : g_sshDefaultSshAllowUsers, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureDenyUsersIsConfiguredObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshDenyUsers);
-        CheckAllowDenyUsersGroups(lowercase, g_desiredDenyUsersIsConfigured ? g_desiredDenyUsersIsConfigured : g_sshDefaultSshDenyUsers, reason, log);
+        CheckAllowDenyUsersGroups(lowercase, g_desiredDenyUsersIsConfigured ? g_desiredDenyUsersIsConfigured : g_sshDefaultSshDenyUsers, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureAllowGroupsIsConfiguredObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshAllowGroups);
-        CheckAllowDenyUsersGroups(lowercase, g_desiredAllowGroupsIsConfigured ? g_desiredAllowGroupsIsConfigured : g_sshDefaultSshAllowGroups, reason, log);
+        CheckAllowDenyUsersGroups(lowercase, g_desiredAllowGroupsIsConfigured ? g_desiredAllowGroupsIsConfigured : g_sshDefaultSshAllowGroups, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureDenyGroupsConfiguredObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshDenyGroups);
-        CheckAllowDenyUsersGroups(lowercase, g_desiredDenyGroupsConfigured ? g_desiredDenyGroupsConfigured : g_sshDefaultSshDenyGroups, reason, log);
+        CheckAllowDenyUsersGroups(lowercase, g_desiredDenyGroupsConfigured ? g_desiredDenyGroupsConfigured : g_sshDefaultSshDenyGroups, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureSshHostbasedAuthenticationIsDisabledObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshHostBasedAuthentication);
-        CheckSshOptionIsSet(lowercase, g_desiredSshHostbasedAuthenticationIsDisabled ? g_desiredSshHostbasedAuthenticationIsDisabled : g_sshDefaultSshNo, NULL, reason, log);
+        CheckSshOptionIsSet(lowercase, g_desiredSshHostbasedAuthenticationIsDisabled ? g_desiredSshHostbasedAuthenticationIsDisabled : g_sshDefaultSshNo, NULL, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureSshPermitRootLoginIsDisabledObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshPermitRootLogin);
-        CheckSshOptionIsSet(lowercase, g_desiredSshPermitRootLoginIsDisabled ? g_desiredSshPermitRootLoginIsDisabled : g_sshDefaultSshNo, NULL, reason, log);
+        CheckSshOptionIsSet(lowercase, g_desiredSshPermitRootLoginIsDisabled ? g_desiredSshPermitRootLoginIsDisabled : g_sshDefaultSshNo, NULL, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshPermitEmptyPasswords);
-        CheckSshOptionIsSet(lowercase, g_desiredSshPermitEmptyPasswordsIsDisabled ? g_desiredSshPermitEmptyPasswordsIsDisabled : g_sshDefaultSshNo, NULL, reason, log);
+        CheckSshOptionIsSet(lowercase, g_desiredSshPermitEmptyPasswordsIsDisabled ? g_desiredSshPermitEmptyPasswordsIsDisabled : g_sshDefaultSshNo, NULL, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureSshClientIntervalCountMaxIsConfiguredObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshClientAliveCountMax);
-        CheckSshOptionIsSet(lowercase, g_desiredSshClientIntervalCountMaxIsConfigured ? g_desiredSshClientIntervalCountMaxIsConfigured : g_sshDefaultSshClientIntervalCountMax, NULL, reason, log);
+        CheckSshOptionIsSet(lowercase, g_desiredSshClientIntervalCountMaxIsConfigured ? g_desiredSshClientIntervalCountMaxIsConfigured : g_sshDefaultSshClientIntervalCountMax, NULL, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureSshClientAliveIntervalIsConfiguredObject))
     {
-        CheckSshClientAliveInterval(reason, log);
+        CheckSshClientAliveInterval(reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureSshLoginGraceTimeIsSetObject))
     {
-        CheckSshLoginGraceTime(g_desiredSshLoginGraceTimeIsSet ? g_desiredSshLoginGraceTimeIsSet : g_sshDefaultSshLoginGraceTime, reason, log);
+        CheckSshLoginGraceTime(g_desiredSshLoginGraceTimeIsSet ? g_desiredSshLoginGraceTimeIsSet : g_sshDefaultSshLoginGraceTime, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
     {
-        CheckOnlyApprovedMacAlgorithmsAreUsed(g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : g_sshDefaultSshMacs, reason, log);
+        CheckOnlyApprovedMacAlgorithmsAreUsed(g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : g_sshDefaultSshMacs, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureSshWarningBannerIsEnabledObject))
     {
-        CheckSshWarningBanner(reason, log);
+        CheckSshWarningBanner(reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
     {
         lowercase = DuplicateStringToLowercase(g_sshPermitUserEnvironment);
-        CheckSshOptionIsSet(lowercase, g_desiredUsersCannotSetSshEnvironmentOptions ? g_desiredUsersCannotSetSshEnvironmentOptions : g_sshDefaultSshNo, NULL, reason, log);
+        CheckSshOptionIsSet(lowercase, g_desiredUsersCannotSetSshEnvironmentOptions ? g_desiredUsersCannotSetSshEnvironmentOptions : g_sshDefaultSshNo, NULL, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_auditEnsureAppropriateCiphersForSshObject))
     {
-        CheckAppropriateCiphersForSsh(g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : g_sshDefaultSshCiphers, reason, log);
+        CheckAppropriateCiphersForSsh(g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : g_sshDefaultSshCiphers, reason, log, telemetry);
     }
     else if (0 == strcmp(name, g_remediateEnsurePermissionsOnEtcSshSshdConfigObject))
     {
-        if (0 == (status = InitializeSshAuditCheck(name, value, log)))
+        if (0 == (status = InitializeSshAuditCheck(name, value, log, telemetry)))
         {
             status = SetFileAccess(g_sshServerConfiguration, 0, 0, strtol(g_desiredPermissionsOnEtcSshSshdConfig ?
-                g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), log);
+                g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), log, telemetry);
         }
     }
     else if ((0 == strcmp(name, g_remediateEnsureSshPortIsConfiguredObject)) ||
@@ -1488,14 +1506,14 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, OsConfigL
         (0 == strcmp(name, g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject)) ||
         (0 == strcmp(name, g_remediateEnsureAppropriateCiphersForSshObject)))
     {
-        status = InitializeSshAuditCheck(name, value, log);
+        status = InitializeSshAuditCheck(name, value, log, telemetry);
     }
     else if (0 == strcmp(name, g_remediateEnsureSshWarningBannerIsEnabledObject))
     {
-        if (0 == (status = InitializeSshAuditCheck(name, value, log)))
+        if (0 == (status = InitializeSshAuditCheck(name, value, log, telemetry)))
         {
             status = SetSshWarningBanner(strtol(g_desiredPermissionsOnEtcSshSshdConfig ?
-                g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), g_desiredSshWarningBannerIsEnabled, log);
+                g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess, NULL, 8), g_desiredSshWarningBannerIsEnabled, log, telemetry);
         }
     }
     else
@@ -1508,7 +1526,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, OsConfigL
 
     if ((NULL != reason) && (NULL == *reason))
     {
-        if (0 != IsSshServerActive(log))
+        if (0 != IsSshServerActive(log, telemetry))
         {
             OsConfigCaptureSuccessReason(reason, "%s is not present or active, nothing to audit", g_sshServerService);
         }

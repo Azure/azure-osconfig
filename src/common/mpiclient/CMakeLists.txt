@@ -16,5 +16,6 @@ target_include_directories(mpiclient
 target_link_libraries(mpiclient
     PRIVATE
         logging
+        $<IF:$<BOOL:${BUILD_TELEMETRY}>,telemetryjsonlib,telemetrystublib>
         commonutils
         parsonlib)

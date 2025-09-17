@@ -37,19 +37,19 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
 
     if (fileName && hash)
     {
-        mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
+        mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog(), GetTelemetry());
         if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
         {
             CallMpiFree(payload);
 
-            mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
+            mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog(), GetTelemetry());
         }
 
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
             if ((*hash != (payloadHash = HashString(payload))) && payloadHash)
             {
-                if (SavePayloadToFile(fileName, payload, payloadSizeBytes, GetLog()))
+                if (SavePayloadToFile(fileName, payload, payloadSizeBytes, GetLog(), GetTelemetry()))
                 {
                     RestrictFileAccessToCurrentAccountOnly(fileName);
                     *hash = payloadHash;
@@ -61,7 +61,7 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
     }
 }
 
-static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* hash, OsConfigLogHandle log)
+static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* hash, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     size_t payloadHash = 0;
     int payloadSizeBytes = 0;
@@ -73,7 +73,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     {
         RestrictFileAccessToCurrentAccountOnly(fileName);
 
-        payload = LoadStringFromFile(fileName, false, GetLog());
+        payload = LoadStringFromFile(fileName, false, log, telemetry);
         if (payload && (0 != (payloadSizeBytes = strlen(payload))))
         {
             // Do not call MpiSetDesired unless this desired configuration is different from previous
@@ -81,10 +81,10 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
             {
                 OsConfigLogInfo(log, "Watcher: processing DC payload from '%s'", fileName);
 
-                mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
+                mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, log, telemetry);
                 if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
                 {
-                    mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
+                    mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, log, telemetry);
                 }
 
                 if (MPI_OK == mpiResult)
@@ -98,7 +98,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     }
 }
 
-static int DeleteGitClone(const char* gitClonePath, OsConfigLogHandle log)
+static int DeleteGitClone(const char* gitClonePath, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* g_gitCloneCleanUpTemplate = "rm -r %s";
     char* cleanUpCommand = NULL;
@@ -111,7 +111,7 @@ static int DeleteGitClone(const char* gitClonePath, OsConfigLogHandle log)
     }
 
     cleanUpCommand = FormatAllocateString(g_gitCloneCleanUpTemplate, gitClonePath);
-    result = ExecuteCommand(NULL, cleanUpCommand, false, false, 0, 0, NULL, NULL, log);
+    result = ExecuteCommand(NULL, cleanUpCommand, false, false, 0, 0, NULL, NULL, log, telemetry);
     FREE_MEMORY(cleanUpCommand);
 
     return result;
@@ -139,7 +139,7 @@ static int ProtectDcFile(const char* gitClonedDcFile, OsConfigLogHandle log)
     return error;
 }
 
-static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, OsConfigLogHandle log)
+static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* g_gitCloneTemplate = "git clone -q --branch %s --single-branch %s %s";
     const char* g_gitConfigTemplate = "git config --global --add safe.directory %s";
@@ -165,13 +165,13 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
     cloneCommand = FormatAllocateString(g_gitCloneTemplate, gitBranch, gitRepositoryUrl, gitClonePath);
     configCommand = FormatAllocateString(g_gitConfigTemplate, gitClonePath);
 
-    DeleteGitClone(gitClonePath, log);
+    DeleteGitClone(gitClonePath, log, telemetry);
 
-    if (0 != (error = ExecuteCommand(NULL, cloneCommand, false, false, 0, 0, NULL, NULL, GetLog())))
+    if (0 != (error = ExecuteCommand(NULL, cloneCommand, false, false, 0, 0, NULL, NULL, GetLog(), GetTelemetry())))
     {
         OsConfigLogError(log, "Watcher: failed making a new Git clone at %s (%d)", gitClonePath, error);
     }
-    else if (0 != (error = ExecuteCommand(NULL, configCommand, false, false, 0, 0, NULL, NULL, GetLog())))
+    else if (0 != (error = ExecuteCommand(NULL, configCommand, false, false, 0, 0, NULL, NULL, GetLog(), GetTelemetry())))
     {
         OsConfigLogError(log, "Watcher: failed configuring the new Git clone at %s (%d)", gitClonePath, error);
     }
@@ -191,7 +191,7 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
     return error;
 }
 
-static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, OsConfigLogHandle log)
+static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* g_gitCheckoutTemplate = "git checkout %s";
     const char* g_gitPullCommand = "git pull";
@@ -215,15 +215,15 @@ static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, cons
     {
         OsConfigLogError(log, "Watcher: failed changing current directory to %s (%d)", gitClonePath, error);
     }
-    else if (0 != (error = ExecuteCommand(NULL, checkoutFileCommand, false, false, 0, 0, NULL, NULL, GetLog())))
+    else if (0 != (error = ExecuteCommand(NULL, checkoutFileCommand, false, false, 0, 0, NULL, NULL, GetLog(), telemetry)))
     {
         OsConfigLogError(log, "Watcher: failed checking out Git file %s (%d)", gitBranch, error);
     }
-    else if (0 != (error = ExecuteCommand(NULL, checkoutBranchCommand, false, false, 0, 0, NULL, NULL, GetLog())))
+    else if (0 != (error = ExecuteCommand(NULL, checkoutBranchCommand, false, false, 0, 0, NULL, NULL, GetLog(), telemetry)))
     {
         OsConfigLogError(log, "Watcher: failed checking out Git branch %s (%d)", gitBranch, error);
     }
-    else if (0 != (error = ExecuteCommand(NULL, g_gitPullCommand, false, false, 0, 0, NULL, NULL, GetLog())))
+    else if (0 != (error = ExecuteCommand(NULL, g_gitPullCommand, false, false, 0, 0, NULL, NULL, GetLog(), telemetry)))
     {
         OsConfigLogError(log, "Watcher: failed Git pull from branch %s to local clone %s (%d)", gitBranch, gitClonePath, error);
     }
@@ -248,14 +248,14 @@ static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, cons
     return error;
 }
 
-void InitializeWatcher(const char* jsonConfiguration, OsConfigLogHandle log)
+void InitializeWatcher(const char* jsonConfiguration, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     if (NULL != jsonConfiguration)
     {
-        g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration, log);
-        g_gitManagement = GetGitManagementFromJsonConfig(jsonConfiguration, log);
-        g_gitRepositoryUrl = GetGitRepositoryUrlFromJsonConfig(jsonConfiguration, log);
-        g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, log);
+        g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration, log, telemetry);
+        g_gitManagement = GetGitManagementFromJsonConfig(jsonConfiguration, log, telemetry);
+        g_gitRepositoryUrl = GetGitRepositoryUrlFromJsonConfig(jsonConfiguration, log, telemetry);
+        g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, log, telemetry);
     }
 
     g_gitCloneInitialized = false;
@@ -265,23 +265,23 @@ void InitializeWatcher(const char* jsonConfiguration, OsConfigLogHandle log)
     RestrictFileAccessToCurrentAccountOnly(GIT_DC_FILE);
 }
 
-void WatcherDoWork(OsConfigLogHandle log)
+void WatcherDoWork(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     if (g_localManagement)
     {
-        ProcessDesiredConfigurationFromFile(DC_FILE, &g_desiredHash, log);
+        ProcessDesiredConfigurationFromFile(DC_FILE, &g_desiredHash, log, telemetry);
     }
 
     if (g_gitManagement)
     {
-        if ((false == g_gitCloneInitialized) && (0 == InitializeGitClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log)))
+        if ((false == g_gitCloneInitialized) && (0 == InitializeGitClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log, telemetry)))
         {
             g_gitCloneInitialized = true;
         }
 
-        if ((true == g_gitCloneInitialized) && (0 == RefreshGitClone(g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log)))
+        if ((true == g_gitCloneInitialized) && (0 == RefreshGitClone(g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log, telemetry)))
         {
-            ProcessDesiredConfigurationFromFile(GIT_DC_FILE, &g_gitDesiredHash, log);
+            ProcessDesiredConfigurationFromFile(GIT_DC_FILE, &g_gitDesiredHash, log, telemetry);
         }
     }
 
@@ -291,11 +291,11 @@ void WatcherDoWork(OsConfigLogHandle log)
     }
 }
 
-void WatcherCleanup(OsConfigLogHandle log)
+void WatcherCleanup(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     OsConfigLogInfo(log, "Watcher shutting down");
 
-    DeleteGitClone(GIT_DC_CLONE, log);
+    DeleteGitClone(GIT_DC_CLONE, log, telemetry);
 
     FREE_MEMORY(g_gitRepositoryUrl);
     FREE_MEMORY(g_gitBranch);

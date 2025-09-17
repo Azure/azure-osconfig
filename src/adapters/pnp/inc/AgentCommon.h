@@ -42,6 +42,7 @@
 
 #include <CommonUtils.h>
 #include <Logging.h>
+#include <Telemetry.h>
 #include <Mpi.h>
 #include <MpiClient.h>
 #include <version.h>
@@ -52,5 +53,6 @@
 #define OSCONFIG_MAX_PAYLOAD 4096
 
 OsConfigLogHandle GetLog();
+OSConfigTelemetryHandle GetTelemetry();
 
 #endif // AGENTCOMMON_H

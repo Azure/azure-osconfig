@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 #include <CommonUtils.h>
 #include <Evaluator.h>
+#include <Internal.h>
 #include <Optional.h>
 #include <Regex.h>
 #include <Result.h>
@@ -247,6 +248,7 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     if (nullptr == entry && errno != 0)
     {
         int status = errno;
+        OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "readdir", status);
         OsConfigLogError(context.GetLogHandle(), "Failed to read directory '%s': %s", path.c_str(), strerror(status));
         return Error("Failed to read directory '" + path + "': " + strerror(status), status);
     }

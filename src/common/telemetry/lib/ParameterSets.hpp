@@ -45,10 +45,25 @@ const std::set<std::string> RULE_COMPLETE_OPTIONAL_PARAMS = {
     // No optional params for now
 };
 
+// StatusTrace
+const std::set<std::string> STATUS_TRACE_SPECIFIC_REQUIRED_PARAMS = {
+    "FileName",
+    "LineNumber",
+    "ScenarioName",
+    "FunctionName",
+    "RuleCodename",
+    "Microseconds",
+    "ResultCode"
+};
+const std::set<std::string> STATUS_TRACE_OPTIONAL_PARAMS = {
+    // No optional params for now
+};
+
 // Event parameter validation map
 const std::unordered_map<std::string, std::pair<std::set<std::string>, std::set<std::string>>> EVENT_PARAMETER_SETS = {
     {"BaselineRun", {AddCommonParams(BASELINE_RUN_SPECIFIC_REQUIRED_PARAMS), BASELINE_RUN_OPTIONAL_PARAMS}},
-    {"RuleComplete", {AddCommonParams(RULE_COMPLETE_SPECIFIC_REQUIRED_PARAMS), RULE_COMPLETE_OPTIONAL_PARAMS}}
+    {"RuleComplete", {AddCommonParams(RULE_COMPLETE_SPECIFIC_REQUIRED_PARAMS), RULE_COMPLETE_OPTIONAL_PARAMS}},
+    {"StatusTrace", {AddCommonParams(STATUS_TRACE_SPECIFIC_REQUIRED_PARAMS), STATUS_TRACE_OPTIONAL_PARAMS}}
 };
 
 } // namespace Telemetry

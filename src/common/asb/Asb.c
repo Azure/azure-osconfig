@@ -12,14 +12,10 @@
 #include <UserUtils.h>
 #include <SshUtils.h>
 #include <Logging.h>
+#include <Telemetry.h>
 #include <Reasons.h>
 #include <Asb.h>
-#include <Telemetry.h>
-
-// Buffer sizes for string conversion of numeric values
-// Based on maximum possible digits for each type plus sign and null terminator
-#define MAX_LONG_STRING_LENGTH 32   // Accommodates 64-bit long values
-#define MAX_INT_STRING_LENGTH 16    // Accommodates 32-bit int values
+#include <Internal.h>
 
 #define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_asb_perf.bak"
@@ -670,7 +666,7 @@ static bool g_auditOnly = true;
 
 static OsConfigLogHandle g_perfLog = NULL;
 
-static OSConfigTelemetryHandle g_telemetry = NULL;
+// static OSConfigTelemetryHandle telemetry = NULL;
 
 OsConfigLogHandle GetPerfLog(void)
 {
@@ -856,14 +852,16 @@ const BaselineRule g_rules[] =
     { "Ensure SMB V1 with Samba is disabled (CIS: L1 - Server - 2.2.12)", "7624efb0-3026-4c72-8920-48d5be78a50e", "EnsureSmbWithSambaIsDisabled" }
 };
 
-int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log)
+int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     int numRules = ARRAY_SIZE(g_rules);
     int i = 0;
     int result = 0;
 
     if ((NULL == payloadKey) || ((NULL == resourceId) && (NULL == ruleId)))
     {
+        OSConfigTelemetryStatusTrace(telemetry, NULL, EINVAL);
         OsConfigLogError(log, "AsbIsValidRuleIdAndName called with invalid arguments");
         return EINVAL;
     }
@@ -874,11 +872,13 @@ int AsbIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const
         {
             if ((NULL != resourceId) && (0 != strncmp(resourceId, g_rules[i].resourceId, strlen(g_rules[i].resourceId))))
             {
+                OSConfigTelemetryStatusTrace(telemetry, "resourceId", EINVAL);
                 OsConfigLogError(log, "AsbIsValidRuleIdAndName: resourceId for rule '%s' of '%s' (instead of '%s') is invalid", payloadKey, resourceId, g_rules[i].resourceId);
                 result = ENOENT;
             }
             else if ((NULL != ruleId) && (0 != strncasecmp(ruleId, g_rules[i].ruleId, strlen(g_rules[i].ruleId))))
             {
+                OSConfigTelemetryStatusTrace(telemetry, "ruleId", EINVAL);
                 OsConfigLogError(log, "AsbIsValidRuleIdAndName: ruleId for rule '%s' of '%s' (instead of '%s') is invalid", payloadKey, ruleId, g_rules[i].ruleId);
                 result = ENOENT;
             }
@@ -936,7 +936,7 @@ static LoggingLevel GetLoggingLevelFromString(const char* value)
     return level;
 }
 
-void AsbInitialize(OsConfigLogHandle log)
+void AsbInitialize(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* jsonConfiguration = NULL;
     char* kernelVersion = NULL;
@@ -946,17 +946,16 @@ void AsbInitialize(OsConfigLogHandle log)
     unsigned short freeMemoryPercentage = 0;
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
-    g_telemetry = OSConfigTelemetryOpen();
 
-    StartPerfClock(&g_perfClock, GetPerfLog());
+    StartPerfClock(&g_perfClock, GetPerfLog(), telemetry);
 
     if (FileExists(g_configurationFile))
     {
-        if (NULL != (jsonConfiguration = LoadStringFromFile(g_configurationFile, false, log)))
+        if (NULL != (jsonConfiguration = LoadStringFromFile(g_configurationFile, false, log, telemetry)))
         {
-            SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, log));
-            SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, log));
-            SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, log));
+            SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, log, telemetry));
+            SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, log, telemetry));
+            SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, log, telemetry));
             FREE_MEMORY(jsonConfiguration);
         }
 
@@ -975,21 +974,21 @@ void AsbInitialize(OsConfigLogHandle log)
 
     OsConfigLogInfo(log, "AsbInitialize: %s", g_asbName);
 
-    if (NULL != (cpuModel = GetCpuModel(GetPerfLog())))
+    if (NULL != (cpuModel = GetCpuModel(GetPerfLog(), telemetry)))
     {
         OsConfigLogInfo(log, "AsbInitialize: CPU model: %s", cpuModel);
     }
 
-    OsConfigLogInfo(log, "AsbInitialize: CPU cores: %u", GetNumberOfCpuCores(log));
+    OsConfigLogInfo(log, "AsbInitialize: CPU cores: %u", GetNumberOfCpuCores(log, telemetry));
 
-    totalMemory = GetTotalMemory(log);
+    totalMemory = GetTotalMemory(log, telemetry);
     OsConfigLogInfo(log, "AsbInitialize: total memory: %lu kB", totalMemory);
 
-    freeMemory = GetFreeMemory(log);
+    freeMemory = GetFreeMemory(log, telemetry);
     freeMemoryPercentage = (freeMemory * 100) / totalMemory;
     OsConfigLogInfo(log, "AsbInitialize: free memory: %u%% (%lu kB)", freeMemoryPercentage, freeMemory);
 
-    InitializeSshAudit(log);
+    InitializeSshAudit(log, telemetry);
 
     if ((NULL == (g_desiredLoggingLevel = DuplicateString(g_defaultLoggingLevel))) ||
         (NULL == (g_desiredEnsurePermissionsOnEtcIssue = DuplicateString(g_defaultEnsurePermissionsOnEtcIssue))) ||
@@ -1027,20 +1026,21 @@ void AsbInitialize(OsConfigLogHandle log)
         (NULL == (g_desiredEnsureUnnecessaryAccountsAreRemoved = DuplicateString(g_defaultEnsureUnnecessaryAccountsAreRemoved))) ||
         (NULL == (g_desiredEnsureDefaultDenyFirewallPolicyIsSet = DuplicateString(g_defaultEnsureDefaultDenyFirewallPolicyIsSet))))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "DuplicateString", ENOMEM);
         OsConfigLogError(log, "AsbInitialize: failed to allocate memory");
     }
 
     if (false == FileExists(g_etcFstabCopy))
     {
-        if (false == MakeFileBackupCopy(g_etcFstab, g_etcFstabCopy, false, log))
+        if (false == MakeFileBackupCopy(g_etcFstab, g_etcFstabCopy, false, log, telemetry))
         {
             OsConfigLogInfo(log, "AsbInitialize: cannot make a local backup copy of '%s' (%d)", g_etcFstab, errno);
         }
     }
 
-    kernelVersion = GetOsKernelVersion(log);
+    kernelVersion = GetOsKernelVersion(log, telemetry);
 
-    if (NULL != (g_prettyName = GetOsPrettyName(log)))
+    if (NULL != (g_prettyName = GetOsPrettyName(log, telemetry)))
     {
         OsConfigLogInfo(log, "AsbInitialize: running on '%s' ('%s')", g_prettyName, kernelVersion);
     }
@@ -1049,12 +1049,12 @@ void AsbInitialize(OsConfigLogHandle log)
         OsConfigLogInfo(log, "AsbInitialize: running on an unknown Linux distribution with kernel version '%s' and without a valid PRETTY_NAME in /etc/os-release", kernelVersion);
     }
 
-    if (IsCommodore(log))
+    if (IsCommodore(log, telemetry))
     {
         OsConfigLogInfo(log, "AsbInitialize: running on product '%s'", PRODUCT_NAME_AZURE_COMMODORE);
     }
 
-    if (DetectSelinux(log))
+    if (DetectSelinux(log, telemetry))
     {
         OsConfigLogInfo(log, "AsbInitialize: SELinux present");
     }
@@ -1065,7 +1065,7 @@ void AsbInitialize(OsConfigLogHandle log)
     OsConfigLogInfo(log, "%s initialized", g_asbName);
 }
 
-void AsbShutdown(OsConfigLogHandle log)
+void AsbShutdown(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* auditOnly = "audit-only";
     const char* automaticRemediation = "automatic remediation";
@@ -1108,49 +1108,49 @@ void AsbShutdown(OsConfigLogHandle log)
     FREE_MEMORY(g_desiredEnsureUnnecessaryAccountsAreRemoved);
     FREE_MEMORY(g_desiredEnsureDefaultDenyFirewallPolicyIsSet);
 
-    SshAuditCleanup(log);
+    SshAuditCleanup(log, telemetry);
 
     PackageUtilsCleanup();
 
-    if (0 == StopPerfClock(&g_perfClock, GetPerfLog()))
+    if (0 == StopPerfClock(&g_perfClock, GetPerfLog(), telemetry))
     {
-        LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
+        LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog(), telemetry);
 
         // For telemetry:
-        char durationSeconds[MAX_INT_STRING_LENGTH] = {0};
-        snprintf(durationSeconds, sizeof(durationSeconds), "%.02f", GetPerfClockTime(&g_perfClock, log) / 1000000.0);
-        const char* keyValuePairs[] = {
-            "DistroName", g_prettyName ? g_prettyName : "unknown",
-            "BaselineName", g_asbName,
-            "Mode", g_auditOnly ? auditOnly : automaticRemediation,
-            "DurationSeconds", durationSeconds,
-            "CorrelationId", getenv("activityId") ? getenv("activityId") : "",
-            "Version", OSCONFIG_VERSION
-        };
-        OSConfigTelemetryLogEvent(g_telemetry, "BaselineRun", keyValuePairs, sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2);
+        // char durationSeconds[MAX_INT_STRING_LENGTH] = {0};
+        // snprintf(durationSeconds, sizeof(durationSeconds), "%.02f", GetPerfClockTime(&g_perfClock, log, telemetry) / 1000000.0);
+        // const char* keyValuePairs[] = {
+        //     "DistroName", g_prettyName ? g_prettyName : "unknown",
+        //     "BaselineName", g_asbName,
+        //     "Mode", g_auditOnly ? auditOnly : automaticRemediation,
+        //     "DurationSeconds", durationSeconds,
+        //     "CorrelationId", getenv("activityId") ? getenv("activityId") : "",
+        //     "Version", OSCONFIG_VERSION
+        // };
+        // OSConfigTelemetryLogEvent(telemetry, "BaselineRun", keyValuePairs, sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2);
+        OSConfigTelemetryBaselineRun(telemetry, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log, telemetry) / 1000000.0);
 
         OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f",
-            g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
+            g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log, telemetry) / 1000000.0);
     }
 
     FREE_MEMORY(g_prettyName);
 
     CloseLog(&g_perfLog);
-    OSConfigTelemetryClose(&g_telemetry);
 
     // When done, allow others access to read the performance log
-    SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);
-    SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 0644, NULL);
+    SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL, telemetry);
+    SetFileAccess(ROLLED_PERF_LOG_FILE, 0, 0, 0644, NULL, telemetry);
 }
 
-static char* AuditEnsureLoggingLevel(OsConfigLogHandle log)
+static char* AuditEnsureLoggingLevel(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     LoggingLevel existingLevel = GetLoggingLevel();
     LoggingLevel desiredLevel = GetLoggingLevelFromString(g_desiredLoggingLevel ? g_desiredLoggingLevel : g_defaultLoggingLevel);
 
     // We need to configure the desired logging level even in audit-only mode
-    SetLoggingLevelPersistently(desiredLevel, log);
+    SetLoggingLevelPersistently(desiredLevel, log, telemetry);
 
 // We need to avoid the warning treated as error for 'reason' always being non-NULL in this case
 #pragma GCC diagnostic push
@@ -1170,169 +1170,169 @@ static char* AuditEnsureLoggingLevel(OsConfigLogHandle log)
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcIssue(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcIssue(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcIssue, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssue ?
-        g_desiredEnsurePermissionsOnEtcIssue : g_defaultEnsurePermissionsOnEtcIssue, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcIssue : g_defaultEnsurePermissionsOnEtcIssue, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcIssueNet(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcIssueNet(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcIssueNet, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssueNet ?
-        g_desiredEnsurePermissionsOnEtcIssueNet : g_defaultEnsurePermissionsOnEtcIssueNet, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcIssueNet : g_defaultEnsurePermissionsOnEtcIssueNet, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcHostsAllow(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcHostsAllow(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcHostsAllow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsAllow ?
-        g_desiredEnsurePermissionsOnEtcHostsAllow : g_defaultEnsurePermissionsOnEtcHostsAllow, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcHostsAllow : g_defaultEnsurePermissionsOnEtcHostsAllow, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcHostsDeny(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcHostsDeny(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcHostsDeny, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsDeny ?
-        g_desiredEnsurePermissionsOnEtcHostsDeny : g_defaultEnsurePermissionsOnEtcHostsDeny, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcHostsDeny : g_defaultEnsurePermissionsOnEtcHostsDeny, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcSshSshdConfig(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcSshSshdConfig(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsurePermissionsOnEtcSshSshdConfigObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsurePermissionsOnEtcSshSshdConfigObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcShadow(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcShadow(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadow ?
-        g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcShadowDash(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcShadowDash(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadowDash ?
-        g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcGShadow(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcGShadow(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcGShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadow ?
-        g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcGShadowDash(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcGShadowDash(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcGShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash ?
-        g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcPasswd(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcPasswd(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcPasswd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswd ?
-        g_desiredEnsurePermissionsOnEtcPasswd : g_defaultEnsurePermissionsOnEtcPasswd, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcPasswd : g_defaultEnsurePermissionsOnEtcPasswd, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcPasswdDash(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcPasswdDash(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcPasswdDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswdDash ?
-        g_desiredEnsurePermissionsOnEtcPasswdDash : g_defaultEnsurePermissionsOnEtcPasswdDash, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcPasswdDash : g_defaultEnsurePermissionsOnEtcPasswdDash, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcGroup(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcGroup(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcGroup, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroup ?
-        g_desiredEnsurePermissionsOnEtcGroup : g_defaultEnsurePermissionsOnEtcGroup, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcGroup : g_defaultEnsurePermissionsOnEtcGroup, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcGroupDash(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcGroupDash(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcGroupDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroupDash ?
-        g_desiredEnsurePermissionsOnEtcGroupDash : g_defaultEnsurePermissionsOnEtcGroupDash, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcGroupDash : g_defaultEnsurePermissionsOnEtcGroupDash, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcAnacronTab(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcAnacronTab(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcAnacronTab, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcAnacronTab ?
-        g_desiredEnsurePermissionsOnEtcAnacronTab : g_defaultEnsurePermissionsOnEtcAnacronTab, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcAnacronTab : g_defaultEnsurePermissionsOnEtcAnacronTab, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcCronD(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcCronD(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronD, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronD ?
-        g_desiredEnsurePermissionsOnEtcCronD : g_defaultEnsurePermissionsOnEtcCronD, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcCronD : g_defaultEnsurePermissionsOnEtcCronD, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcCronDaily(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcCronDaily(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronDaily, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronDaily ?
-        g_desiredEnsurePermissionsOnEtcCronDaily : g_defaultEnsurePermissionsOnEtcCronDaily, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcCronDaily : g_defaultEnsurePermissionsOnEtcCronDaily, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcCronHourly(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcCronHourly(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronHourly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronHourly ?
-        g_desiredEnsurePermissionsOnEtcCronHourly : g_defaultEnsurePermissionsOnEtcCronHourly, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcCronHourly : g_defaultEnsurePermissionsOnEtcCronHourly, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcCronMonthly(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcCronMonthly(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronMonthly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronMonthly ?
-        g_desiredEnsurePermissionsOnEtcCronMonthly : g_defaultEnsurePermissionsOnEtcCronMonthly, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcCronMonthly : g_defaultEnsurePermissionsOnEtcCronMonthly, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcCronWeekly(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcCronWeekly(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcCronWeekly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronWeekly ?
-        g_desiredEnsurePermissionsOnEtcCronWeekly : g_defaultEnsurePermissionsOnEtcCronWeekly, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcCronWeekly : g_defaultEnsurePermissionsOnEtcCronWeekly, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnEtcMotd(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnEtcMotd(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckFileAccess(g_etcMotd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcMotd ?
-        g_desiredEnsurePermissionsOnEtcMotd : g_defaultEnsurePermissionsOnEtcMotd, NULL, 8), &reason, log);
+        g_desiredEnsurePermissionsOnEtcMotd : g_defaultEnsurePermissionsOnEtcMotd, NULL, 8), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureKernelSupportForCpuNx(OsConfigLogHandle log)
+static char* AuditEnsureKernelSupportForCpuNx(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    if (false == CheckCpuFlagSupported("nx", &reason, log))
+    if (false == CheckCpuFlagSupported("nx", &reason, log, telemetry))
     {
         FREE_MEMORY(reason);
         reason = DuplicateString("A CPU that supports the NX (no-execute) bit technology is necessary. Automatic remediation is not possible");
@@ -1340,213 +1340,213 @@ static char* AuditEnsureKernelSupportForCpuNx(OsConfigLogHandle log)
     return reason;
 }
 
-static char* AuditEnsureNodevOptionOnHomePartition(OsConfigLogHandle log)
+static char* AuditEnsureNodevOptionOnHomePartition(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNodevOptionOnTmpPartition(OsConfigLogHandle log)
+static char* AuditEnsureNodevOptionOnTmpPartition(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNodevOptionOnVarTmpPartition(OsConfigLogHandle log)
+static char* AuditEnsureNodevOptionOnVarTmpPartition(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNosuidOptionOnTmpPartition(OsConfigLogHandle log)
+static char* AuditEnsureNosuidOptionOnTmpPartition(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNosuidOptionOnVarTmpPartition(OsConfigLogHandle log)
+static char* AuditEnsureNosuidOptionOnVarTmpPartition(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNoexecOptionOnVarTmpPartition(OsConfigLogHandle log)
+static char* AuditEnsureNoexecOptionOnVarTmpPartition(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNoexecOptionOnDevShmPartition(OsConfigLogHandle log)
+static char* AuditEnsureNoexecOptionOnDevShmPartition(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(OsConfigLogHandle log)
+static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(OsConfigLogHandle log)
+static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(OsConfigLogHandle log)
+static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, log);
+    CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(OsConfigLogHandle log)
+static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_noexec, &reason, log));
-    CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_nosuid, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_noexec, &reason, log, telemetry));
+    CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_nosuid, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureInetdNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureInetdNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_inetd, &reason, log));
-    CheckPackageNotInstalled(g_inetUtilsInetd, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_inetd, &reason, log, telemetry));
+    CheckPackageNotInstalled(g_inetUtilsInetd, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureXinetdNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureXinetdNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_xinetd, &reason, log);
+    CheckPackageNotInstalled(g_xinetd, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAllTelnetdPackagesUninstalled(OsConfigLogHandle log)
+static char* AuditEnsureAllTelnetdPackagesUninstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_allTelnetd, &reason, log);
+    CheckPackageNotInstalled(g_allTelnetd, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureRshServerNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureRshServerNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_rshServer, &reason, log);
+    CheckPackageNotInstalled(g_rshServer, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNisNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureNisNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_nis, &reason, log);
+    CheckPackageNotInstalled(g_nis, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureTftpdNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureTftpdNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_tftpHpa, &reason, log);
+    CheckPackageNotInstalled(g_tftpHpa, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureReadaheadFedoraNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureReadaheadFedoraNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_readAheadFedora, &reason, log);
+    CheckPackageNotInstalled(g_readAheadFedora, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureBluetoothHiddNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureBluetoothHiddNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_bluetooth, &reason, log));
-    CheckDaemonNotActive(g_bluetooth, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_bluetooth, &reason, log, telemetry));
+    CheckDaemonNotActive(g_bluetooth, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureIsdnUtilsBaseNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureIsdnUtilsBaseNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_isdnUtilsBase, &reason, log);
+    CheckPackageNotInstalled(g_isdnUtilsBase, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureIsdnUtilsKdumpToolsNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureIsdnUtilsKdumpToolsNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_kdumpTools, &reason, log);
+    CheckPackageNotInstalled(g_kdumpTools, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureIscDhcpdServerNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureIscDhcpdServerNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_iscDhcpServer, &reason, log);
+    CheckPackageNotInstalled(g_iscDhcpServer, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSendmailNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureSendmailNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_sendmail, &reason, log);
+    CheckPackageNotInstalled(g_sendmail, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSldapdNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureSldapdNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_slapd, &reason, log);
+    CheckPackageNotInstalled(g_slapd, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureBind9NotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureBind9NotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_bind9, &reason, log);
+    CheckPackageNotInstalled(g_bind9, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDovecotCoreNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureDovecotCoreNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_dovecotCore, &reason, log);
+    CheckPackageNotInstalled(g_dovecotCore, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAuditdInstalled(OsConfigLogHandle log)
+static char* AuditEnsureAuditdInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_audit, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_auditd, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_auditLibs, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_auditLibsDevel, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_audit, &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_auditd, &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_auditLibs, &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_auditLibsDevel, &reason, log, telemetry));
     return reason;
 }
 
-static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(OsConfigLogHandle log)
+static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckAllEtcPasswdGroupsExistInEtcGroup(&reason, log);
+    CheckAllEtcPasswdGroupsExistInEtcGroup(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNoDuplicateUidsExist(OsConfigLogHandle log)
+static char* AuditEnsureNoDuplicateUidsExist(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     char* updatedReason = NULL;
-    if (0 != CheckNoDuplicateUidsExist(&reason, log))
+    if (0 != CheckNoDuplicateUidsExist(&reason, log, telemetry))
     {
         if (NULL != (updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible)))
         {
@@ -1557,11 +1557,11 @@ static char* AuditEnsureNoDuplicateUidsExist(OsConfigLogHandle log)
     return reason;
 }
 
-static char* AuditEnsureNoDuplicateGidsExist(OsConfigLogHandle log)
+static char* AuditEnsureNoDuplicateGidsExist(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     char* updatedReason = NULL;
-    if (0 != CheckNoDuplicateGidsExist(&reason, log))
+    if (0 != CheckNoDuplicateGidsExist(&reason, log, telemetry))
     {
         if (NULL != (updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible)))
         {
@@ -1572,11 +1572,11 @@ static char* AuditEnsureNoDuplicateGidsExist(OsConfigLogHandle log)
     return reason;
 }
 
-static char* AuditEnsureNoDuplicateUserNamesExist(OsConfigLogHandle log)
+static char* AuditEnsureNoDuplicateUserNamesExist(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     char* updatedReason = NULL;
-    if (0 != CheckNoDuplicateUserNamesExist(&reason, log))
+    if (0 != CheckNoDuplicateUserNamesExist(&reason, log, telemetry))
     {
         if (NULL != (updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible)))
         {
@@ -1587,11 +1587,11 @@ static char* AuditEnsureNoDuplicateUserNamesExist(OsConfigLogHandle log)
     return reason;
 }
 
-static char* AuditEnsureNoDuplicateGroupsExist(OsConfigLogHandle log)
+static char* AuditEnsureNoDuplicateGroupsExist(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     char* updatedReason = NULL;
-    if (0 != CheckNoDuplicateGroupNamesExist(&reason, log))
+    if (0 != CheckNoDuplicateGroupNamesExist(&reason, log, telemetry))
     {
         if (NULL != (updatedReason = FormatAllocateString("%s, %s", reason, g_remediationIsNotPossible)))
         {
@@ -1602,94 +1602,94 @@ static char* AuditEnsureNoDuplicateGroupsExist(OsConfigLogHandle log)
     return reason;
 }
 
-static char* AuditEnsureShadowGroupIsEmpty(OsConfigLogHandle log)
+static char* AuditEnsureShadowGroupIsEmpty(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckShadowGroupIsEmpty(&reason, log);
+    CheckShadowGroupIsEmpty(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureRootGroupExists(OsConfigLogHandle log)
+static char* AuditEnsureRootGroupExists(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckRootGroupExists(&reason, log);
+    CheckRootGroupExists(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAllAccountsHavePasswords(OsConfigLogHandle log)
+static char* AuditEnsureAllAccountsHavePasswords(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckAllUsersHavePasswordsSet(&reason, log);
+    CheckAllUsersHavePasswordsSet(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(OsConfigLogHandle log)
+static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckRootIsOnlyUidZeroAccount(&reason, log);
+    CheckRootIsOnlyUidZeroAccount(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(OsConfigLogHandle log)
+static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckNoLegacyPlusEntriesInFile(g_etcPasswd, &reason, log);
+    CheckNoLegacyPlusEntriesInFile(g_etcPasswd, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNoLegacyPlusEntriesInEtcShadow(OsConfigLogHandle log)
+static char* AuditEnsureNoLegacyPlusEntriesInEtcShadow(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckNoLegacyPlusEntriesInFile(g_etcShadow, &reason, log);
+    CheckNoLegacyPlusEntriesInFile(g_etcShadow, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNoLegacyPlusEntriesInEtcGroup(OsConfigLogHandle log)
+static char* AuditEnsureNoLegacyPlusEntriesInEtcGroup(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckNoLegacyPlusEntriesInFile(g_etcGroup, &reason, log);
+    CheckNoLegacyPlusEntriesInFile(g_etcGroup, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDefaultRootAccountGroupIsGidZero(OsConfigLogHandle log)
+static char* AuditEnsureDefaultRootAccountGroupIsGidZero(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckDefaultRootAccountGroupIsGidZero(&reason, log);
+    CheckDefaultRootAccountGroupIsGidZero(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
+static char* AuditEnsureRootIsOnlyUidZeroAccount(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckRootGroupExists(&reason, log));
-    CheckRootIsOnlyUidZeroAccount(&reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckRootGroupExists(&reason, log, telemetry));
+    CheckRootIsOnlyUidZeroAccount(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAllUsersHomeDirectoriesExist(OsConfigLogHandle log)
+static char* AuditEnsureAllUsersHomeDirectoriesExist(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckAllUsersHomeDirectoriesExist(&reason, log);
+    CheckAllUsersHomeDirectoriesExist(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureUsersOwnTheirHomeDirectories(OsConfigLogHandle log)
+static char* AuditEnsureUsersOwnTheirHomeDirectories(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckUsersOwnTheirHomeDirectories(&reason, log);
+    CheckUsersOwnTheirHomeDirectories(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureRestrictedUserHomeDirectories(OsConfigLogHandle log)
+static char* AuditEnsureRestrictedUserHomeDirectories(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     int* modes = NULL;
     int numberOfModes = 0;
     char* reason = NULL;
 
     if (0 == ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories ?
-        g_desiredEnsureRestrictedUserHomeDirectories : g_defaultEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, 8, log))
+        g_desiredEnsureRestrictedUserHomeDirectories : g_defaultEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, 8, log, telemetry))
     {
-        CheckRestrictedUserHomeDirectories((unsigned int*)modes, (unsigned int)numberOfModes, &reason, log);
+        CheckRestrictedUserHomeDirectories((unsigned int*)modes, (unsigned int)numberOfModes, &reason, log, telemetry);
     }
     else
     {
@@ -1701,116 +1701,116 @@ static char* AuditEnsureRestrictedUserHomeDirectories(OsConfigLogHandle log)
     return reason;
 }
 
-static char* AuditEnsurePasswordHashingAlgorithm(OsConfigLogHandle log)
+static char* AuditEnsurePasswordHashingAlgorithm(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckPasswordHashingAlgorithm((unsigned int)atoi(g_desiredEnsurePasswordHashingAlgorithm ?
-        g_desiredEnsurePasswordHashingAlgorithm : g_defaultEnsurePasswordHashingAlgorithm), &reason, log);
+        g_desiredEnsurePasswordHashingAlgorithm : g_defaultEnsurePasswordHashingAlgorithm), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureMinDaysBetweenPasswordChanges(OsConfigLogHandle log)
+static char* AuditEnsureMinDaysBetweenPasswordChanges(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckMinDaysBetweenPasswordChanges(atoi(g_desiredEnsureMinDaysBetweenPasswordChanges ?
-        g_desiredEnsureMinDaysBetweenPasswordChanges : g_defaultEnsureMinDaysBetweenPasswordChanges), &reason, log);
+        g_desiredEnsureMinDaysBetweenPasswordChanges : g_defaultEnsureMinDaysBetweenPasswordChanges), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureInactivePasswordLockPeriod(OsConfigLogHandle log)
+static char* AuditEnsureInactivePasswordLockPeriod(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckLockoutAfterInactivityLessThan(atoi(g_desiredEnsureInactivePasswordLockPeriod ?
-        g_desiredEnsureInactivePasswordLockPeriod : g_defaultEnsureInactivePasswordLockPeriod), &reason, log));
-    CheckUsersRecordedPasswordChangeDates(&reason, log);
+        g_desiredEnsureInactivePasswordLockPeriod : g_defaultEnsureInactivePasswordLockPeriod), &reason, log, telemetry));
+    CheckUsersRecordedPasswordChangeDates(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureMaxDaysBetweenPasswordChanges(OsConfigLogHandle log)
+static char* AuditEnsureMaxDaysBetweenPasswordChanges(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckMaxDaysBetweenPasswordChanges(atoi(g_desiredEnsureMaxDaysBetweenPasswordChanges ?
-        g_desiredEnsureMaxDaysBetweenPasswordChanges : g_defaultEnsureMaxDaysBetweenPasswordChanges), &reason, log);
+        g_desiredEnsureMaxDaysBetweenPasswordChanges : g_defaultEnsureMaxDaysBetweenPasswordChanges), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePasswordExpiration(OsConfigLogHandle log)
+static char* AuditEnsurePasswordExpiration(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckPasswordExpirationLessThan(atol(g_desiredEnsurePasswordExpiration ?
-        g_desiredEnsurePasswordExpiration : g_defaultEnsurePasswordExpiration), &reason, log);
+        g_desiredEnsurePasswordExpiration : g_defaultEnsurePasswordExpiration), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePasswordExpirationWarning(OsConfigLogHandle log)
+static char* AuditEnsurePasswordExpirationWarning(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckPasswordExpirationWarning(atol(g_desiredEnsurePasswordExpirationWarning ?
-        g_desiredEnsurePasswordExpirationWarning : g_defaultEnsurePasswordExpirationWarning), &reason, log);
+        g_desiredEnsurePasswordExpirationWarning : g_defaultEnsurePasswordExpirationWarning), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSystemAccountsAreNonLogin(OsConfigLogHandle log)
+static char* AuditEnsureSystemAccountsAreNonLogin(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckSystemAccountsAreNonLogin(&reason, log);
+    CheckSystemAccountsAreNonLogin(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAuthenticationRequiredForSingleUserMode(OsConfigLogHandle log)
+static char* AuditEnsureAuthenticationRequiredForSingleUserMode(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckRootPasswordForSingleUserMode(&reason, log);
+    CheckRootPasswordForSingleUserMode(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePrelinkIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsurePrelinkIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_prelink, &reason, log);
+    CheckPackageNotInstalled(g_prelink, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureTalkClientIsNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureTalkClientIsNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_talk, &reason, log);
+    CheckPackageNotInstalled(g_talk, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDotDoesNotAppearInRootsPath(OsConfigLogHandle log)
+static char* AuditEnsureDotDoesNotAppearInRootsPath(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* path = "PATH";
     const char* dot = ".";
     const char comment = '#';
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckTextNotFoundInEnvironmentVariable(path, dot, false, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile("/etc/sudoers", "secure_path", dot, comment, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile(g_etcEnvironment, path, dot, comment, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile(g_etcProfile, path, dot, comment, &reason, log));
-    CheckMarkedTextNotFoundInFile("/root/.profile", path, dot, comment, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckTextNotFoundInEnvironmentVariable(path, dot, false, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile("/etc/sudoers", "secure_path", dot, comment, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile(g_etcEnvironment, path, dot, comment, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckMarkedTextNotFoundInFile(g_etcProfile, path, dot, comment, &reason, log, telemetry));
+    CheckMarkedTextNotFoundInFile("/root/.profile", path, dot, comment, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureCronServiceIsEnabled(OsConfigLogHandle log)
+static char* AuditEnsureCronServiceIsEnabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_cron, &reason, log)) && CheckDaemonActive(g_cron, &reason, log)) ? 0 : ENOENT);
-    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_cronie, &reason, log)) && CheckDaemonActive(g_crond, &reason, log)) ? 0 : ENOENT);
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_cron, &reason, log, telemetry)) && CheckDaemonActive(g_cron, &reason, log, telemetry)) ? 0 : ENOENT);
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_cronie, &reason, log, telemetry)) && CheckDaemonActive(g_crond, &reason, log, telemetry)) ? 0 : ENOENT);
     return reason;
 }
 
-static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(OsConfigLogHandle log)
+static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    if (0 == CheckFileExists(g_etcIssueNet, &reason, log))
+    if (0 == CheckFileExists(g_etcIssueNet, &reason, log, telemetry))
     {
-        RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\m", &reason, log));
-        RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\r", &reason, log));
-        RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\s", &reason, log));
-        CheckTextIsNotFoundInFile(g_etcIssueNet, "\\v", &reason, log);
+        RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\m", &reason, log, telemetry));
+        RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\r", &reason, log, telemetry));
+        RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssueNet, "\\s", &reason, log, telemetry));
+        CheckTextIsNotFoundInFile(g_etcIssueNet, "\\v", &reason, log, telemetry);
     }
-    else if (IsCurrentOs(PRETTY_NAME_SLES_15, log))
+    else if (IsCurrentOs(PRETTY_NAME_SLES_15, log, telemetry))
     {
         FREE_MEMORY(reason);
         reason = FormatAllocateString("%s'%s' does not exist in '%s'", g_pass, g_etcIssueNet, PRETTY_NAME_SLES_15);
@@ -1818,21 +1818,21 @@ static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(OsConfigLogHandle l
     return reason;
 }
 
-static char* AuditEnsureLocalLoginWarningBannerIsConfigured(OsConfigLogHandle log)
+static char* AuditEnsureLocalLoginWarningBannerIsConfigured(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssue, "\\m", &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssue, "\\r", &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssue, "\\s", &reason, log));
-    CheckTextIsNotFoundInFile(g_etcIssue, "\\v", &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssue, "\\m", &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssue, "\\r", &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckTextIsNotFoundInFile(g_etcIssue, "\\s", &reason, log, telemetry));
+    CheckTextIsNotFoundInFile(g_etcIssue, "\\v", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAuditdServiceIsRunning(OsConfigLogHandle log)
+static char* AuditEnsureAuditdServiceIsRunning(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    bool auditdActive = CheckDaemonActive(g_auditd, &reason, log);
-    bool auomsActive = CheckDaemonNotActive(g_auoms, &reason, log);
+    bool auditdActive = CheckDaemonActive(g_auditd, &reason, log, telemetry);
+    bool auomsActive = CheckDaemonNotActive(g_auoms, &reason, log, telemetry);
 
     if (auditdActive && auomsActive)
     {
@@ -1843,45 +1843,45 @@ static char* AuditEnsureAuditdServiceIsRunning(OsConfigLogHandle log)
     return reason;
 }
 
-static char* AuditEnsureSuRestrictedToRootGroup(OsConfigLogHandle log)
+static char* AuditEnsureSuRestrictedToRootGroup(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckTextIsFoundInFile("/etc/pam.d/su", "use_uid", &reason, log);
+    CheckTextIsFoundInFile("/etc/pam.d/su", "use_uid", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDefaultUmaskForAllUsers(OsConfigLogHandle log)
+static char* AuditEnsureDefaultUmaskForAllUsers(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckLoginUmask(g_desiredEnsureDefaultUmaskForAllUsers ?
-        g_desiredEnsureDefaultUmaskForAllUsers : g_defaultEnsureDefaultUmaskForAllUsers, &reason, log);
+        g_desiredEnsureDefaultUmaskForAllUsers : g_defaultEnsureDefaultUmaskForAllUsers, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAutomountingDisabled(OsConfigLogHandle log)
+static char* AuditEnsureAutomountingDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_autofs, &reason, log);
+    CheckDaemonNotActive(g_autofs, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureKernelCompiledFromApprovedSources(OsConfigLogHandle log)
+static char* AuditEnsureKernelCompiledFromApprovedSources(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckOsAndKernelMatchDistro(&reason, log);
+    CheckOsAndKernelMatchDistro(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(OsConfigLogHandle log)
+static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* readIpTables = "iptables -S";
     char* reason = NULL;
     int forceDrop = atoi(g_desiredEnsureDefaultDenyFirewallPolicyIsSet ?
         g_desiredEnsureDefaultDenyFirewallPolicyIsSet : g_defaultEnsureDefaultDenyFirewallPolicyIsSet);
 
-    if ((0 != CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, log)) ||
-        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, log)) ||
-        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, log)))
+    if ((0 != CheckTextFoundInCommandOutput(readIpTables, "-P INPUT DROP", &reason, log, telemetry)) ||
+        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, log, telemetry)) ||
+        (0 != CheckTextFoundInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, log, telemetry)))
     {
         FREE_MEMORY(reason);
         reason = FormatAllocateString("Ensure that all necessary communication channels have explicit "
@@ -1892,197 +1892,197 @@ static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(OsConfigLogHandle log)
     return reason;
 }
 
-static char* AuditEnsurePacketRedirectSendingIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsurePacketRedirectSendingIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.send_redirects = 0", &reason, log));
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.send_redirects = 0", &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.send_redirects = 0", &reason, log, telemetry));
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.send_redirects = 0", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureIcmpRedirectsIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureIcmpRedirectsIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.accept_redirects = 0", &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.accept_redirects = 0", &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.accept_redirects = 0", &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.accept_redirects = 0", &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.secure_redirects = 0", &reason, log));
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.secure_redirects = 0", &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.accept_redirects = 0", &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.accept_redirects = 0", &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.accept_redirects = 0", &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.accept_redirects = 0", &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.secure_redirects = 0", &reason, log, telemetry));
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.secure_redirects = 0", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSourceRoutedPacketsIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureSourceRoutedPacketsIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, log));
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", &reason, log, telemetry));
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = 0;
-    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/accept_source_route", '#', "0", &reason, log));
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/accept_source_route", '#', "0", &reason, log, telemetry));
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureIgnoringBogusIcmpBroadcastResponses(OsConfigLogHandle log)
+static char* AuditEnsureIgnoringBogusIcmpBroadcastResponses(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", &reason, log);
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureIgnoringIcmpEchoPingsToMulticast(OsConfigLogHandle log)
+static char* AuditEnsureIgnoringIcmpEchoPingsToMulticast(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", &reason, log);
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureMartianPacketLoggingIsEnabled(OsConfigLogHandle log)
+static char* AuditEnsureMartianPacketLoggingIsEnabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.log_martians = 1", &reason, log));
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.log_martians = 1", &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.all.log_martians = 1", &reason, log, telemetry));
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv4.conf.default.log_martians = 1", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureReversePathSourceValidationIsEnabled(OsConfigLogHandle log)
+static char* AuditEnsureReversePathSourceValidationIsEnabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", &reason, log));
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", &reason, log, telemetry));
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureTcpSynCookiesAreEnabled(OsConfigLogHandle log)
+static char* AuditEnsureTcpSynCookiesAreEnabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", &reason, log);
+    CheckLineFoundNotCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSystemNotActingAsNetworkSniffer(OsConfigLogHandle log)
+static char* AuditEnsureSystemNotActingAsNetworkSniffer(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* command = "ip address";
     const char* text = "PROMISC";
     char* reason = NULL;
-    RETURN_REASON_IF_ZERO(((0 == CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', text, &reason, log)) &&
-        (0 == CheckLineNotFoundOrCommentedOut(g_etcRcLocal, '#', text, &reason, log))) ? 0 : ENOENT);
-    CheckTextNotFoundInCommandOutput(command, text, &reason, log);
+    RETURN_REASON_IF_ZERO(((0 == CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', text, &reason, log, telemetry)) &&
+        (0 == CheckLineNotFoundOrCommentedOut(g_etcRcLocal, '#', text, &reason, log, telemetry))) ? 0 : ENOENT);
+    CheckTextNotFoundInCommandOutput(command, text, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAllWirelessInterfacesAreDisabled(OsConfigLogHandle log)
+static char* AuditEnsureAllWirelessInterfacesAreDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckAllWirelessInterfacesAreDisabled(&reason, log);
+    CheckAllWirelessInterfacesAreDisabled(&reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureIpv6ProtocolIsEnabled(OsConfigLogHandle log)
+static char* AuditEnsureIpv6ProtocolIsEnabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.disable_ipv6 = 0", &reason, log));
-    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.disable_ipv6 = 0", &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.all.disable_ipv6 = 0", &reason, log, telemetry));
+    CheckTextFoundInCommandOutput(g_sysCtlA, "net.ipv6.conf.default.disable_ipv6 = 0", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDccpIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureDccpIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install dccp /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install dccp /bin/true", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSctpIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureSctpIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install sctp /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install sctp /bin/true", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDisabledSupportForRds(OsConfigLogHandle log)
+static char* AuditEnsureDisabledSupportForRds(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install rds /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install rds /bin/true", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureTipcIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureTipcIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install tipc /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install tipc /bin/true", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureZeroconfNetworkingIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureZeroconfNetworkingIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_avahiDaemon, &reason, log) ? 0 : ENOENT);
-    RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', g_ipv4ll, &reason, log));
-    if (FileExists(g_etcSysconfigNetwork) && IsAFile(g_etcSysconfigNetwork, log))
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_avahiDaemon, &reason, log, telemetry) ? 0 : ENOENT);
+    RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcNetworkInterfaces, '#', g_ipv4ll, &reason, log, telemetry));
+    if (FileExists(g_etcSysconfigNetwork) && IsAFile(g_etcSysconfigNetwork, log, telemetry))
     {
         // NOZEROCONF is only processed when legacy network-scripts are in use.
         // If network.service is not active, then we should return early.
-        RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_legacyNetworkService, &reason, log));
-        CheckLineFoundNotCommentedOut(g_etcSysconfigNetwork, '#', "NOZEROCONF=yes", &reason, log);
+        RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_legacyNetworkService, &reason, log, telemetry));
+        CheckLineFoundNotCommentedOut(g_etcSysconfigNetwork, '#', "NOZEROCONF=yes", &reason, log, telemetry);
     }
     return reason;
 }
 
-static char* AuditEnsurePermissionsOnBootloaderConfig(OsConfigLogHandle log)
+static char* AuditEnsurePermissionsOnBootloaderConfig(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* value = g_desiredEnsurePermissionsOnBootloaderConfig ?
         g_desiredEnsurePermissionsOnBootloaderConfig : g_defaultEnsurePermissionsOnBootloaderConfig;
     unsigned int mode = strtol(value, NULL, 8);
     char* reason = NULL;
 
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubCfg, 0, 0, mode, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubConf, 0, 0, mode, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrub2GrubConf, 0, 0, mode, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubUserCfg, 0, 0, mode, &reason, log));
-    CheckFileAccess(g_bootGrub2UserCfg, 0, 0, mode, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubCfg, 0, 0, mode, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubGrubConf, 0, 0, mode, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrub2GrubConf, 0, 0, mode, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_bootGrubUserCfg, 0, 0, mode, &reason, log, telemetry));
+    CheckFileAccess(g_bootGrub2UserCfg, 0, 0, mode, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePasswordReuseIsLimited(OsConfigLogHandle log)
+static char* AuditEnsurePasswordReuseIsLimited(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckEnsurePasswordReuseIsLimited(atoi(g_desiredEnsurePasswordReuseIsLimited ?
-        g_desiredEnsurePasswordReuseIsLimited : g_defaultEnsurePasswordReuseIsLimited), &reason, log);
+        g_desiredEnsurePasswordReuseIsLimited : g_defaultEnsurePasswordReuseIsLimited), &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureCoreDumpsAreRestricted(OsConfigLogHandle log)
+static char* AuditEnsureCoreDumpsAreRestricted(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckCoreDumpsHardLimitIsDisabledForAllUsers(&reason, log));
-    CheckLineFoundNotCommentedOut(g_sysCtlConf, '#', g_fsSuidDumpable, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckCoreDumpsHardLimitIsDisabledForAllUsers(&reason, log, telemetry));
+    CheckLineFoundNotCommentedOut(g_sysCtlConf, '#', g_fsSuidDumpable, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePasswordCreationRequirements(OsConfigLogHandle log)
+static char* AuditEnsurePasswordCreationRequirements(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     int* values = NULL;
     int numberOfValues = 0;
     char* reason = NULL;
 
     if ((0 == ConvertStringToIntegers(g_desiredEnsurePasswordCreationRequirements ? g_desiredEnsurePasswordCreationRequirements :
-        g_defaultEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, 10, log)) && (7 == numberOfValues))
+        g_defaultEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, 10, log, telemetry)) && (7 == numberOfValues))
     {
-        CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], &reason, log);
+        CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], &reason, log, telemetry);
     }
     else
     {
@@ -2094,142 +2094,142 @@ static char* AuditEnsurePasswordCreationRequirements(OsConfigLogHandle log)
     return reason;
 }
 
-static char* AuditEnsureLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
+static char* AuditEnsureLockoutForFailedPasswordAttempts(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* pamFailLockSo = "pam_faillock.so";
     const char* pamTally2So = "pam_tally2.so";
     const char* pamTallySo = "pam_tally.so";
     char* reason = NULL;
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamFailLockSo, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamFailLockSo, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamFailLockSo, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamTally2So, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamTally2So, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTally2So, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamTallySo, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamTallySo, '#', &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTallySo, '#', &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamFailLockSo, '#', &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamFailLockSo, '#', &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamFailLockSo, '#', &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamTally2So, '#', &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamTally2So, '#', &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTally2So, '#', &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdSystemAuth, pamTallySo, '#', &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdPasswordAuth, pamTallySo, '#', &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLockoutForFailedPasswordAttempts(g_etcPamdLogin, pamTallySo, '#', &reason, log, telemetry));
     FREE_MEMORY(reason);
     reason = DuplicateString("Neither pam_faillock.so, pam_tally2.so or pam_tally.so PAM modules exist for this distribution. "
         "Manually set lockout for failed password attempts following specific instructions for this distrubution. Automatic remediation is not possible");
     return reason;
 }
 
-static char* AuditEnsureDisabledInstallationOfCramfsFileSystem(OsConfigLogHandle log)
+static char* AuditEnsureDisabledInstallationOfCramfsFileSystem(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install cramfs", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install cramfs", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDisabledInstallationOfFreevxfsFileSystem(OsConfigLogHandle log)
+static char* AuditEnsureDisabledInstallationOfFreevxfsFileSystem(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install freevxfs", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install freevxfs", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDisabledInstallationOfHfsFileSystem(OsConfigLogHandle log)
+static char* AuditEnsureDisabledInstallationOfHfsFileSystem(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install hfs", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install hfs", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDisabledInstallationOfHfsplusFileSystem(OsConfigLogHandle log)
+static char* AuditEnsureDisabledInstallationOfHfsplusFileSystem(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install hfsplus", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install hfsplus", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDisabledInstallationOfJffs2FileSystem(OsConfigLogHandle log)
+static char* AuditEnsureDisabledInstallationOfJffs2FileSystem(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install jffs2", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install jffs2", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(OsConfigLogHandle log)
+static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    if (0 == CheckSmallFileContainsText("/proc/sys/kernel/randomize_va_space", "2", &reason, log))
+    if (0 == CheckSmallFileContainsText("/proc/sys/kernel/randomize_va_space", "2", &reason, log, telemetry))
     {
         return reason;
     }
-    CheckSmallFileContainsText("/proc/sys/kernel/randomize_va_space", "1", &reason, log);
+    CheckSmallFileContainsText("/proc/sys/kernel/randomize_va_space", "1", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OsConfigLogHandle log)
+static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     // GRUB (legacy) uses 'password', GRUB2 uses 'password_pbkdf2' and either can be in any of the checked files
     const char* password = "password";
     char* reason = NULL;
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubCfg, '#', password, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubConf, '#', password, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubUserCfg, '#', password, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubCfg, '#', password, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubConf, '#', password, &reason, log));
-    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2UserCfg, '#', password, &reason, log));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubCfg, '#', password, &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubGrubConf, '#', password, &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrubUserCfg, '#', password, &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubCfg, '#', password, &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2GrubConf, '#', password, &reason, log, telemetry));
+    RETURN_REASON_IF_ZERO(CheckLineFoundNotCommentedOut(g_bootGrub2UserCfg, '#', password, &reason, log, telemetry));
     FREE_MEMORY(reason);
     reason = DuplicateString("Manually set a boot loader password for GRUB. Automatic remediation is not possible");
     return reason;
 }
 
-static char* AuditEnsureLoggingIsConfigured(OsConfigLogHandle log)
+static char* AuditEnsureLoggingIsConfigured(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_systemd, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonActive(g_systemdJournald, &reason, log) ? 0 : ENOENT);
-    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_rsyslog, &reason, log)) && CheckDaemonActive(g_rsyslog, &reason, log)) ? 0 : ENOENT);
-    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_syslog, &reason, log)) && CheckDaemonActive(g_syslog, &reason, log)) ? 0 : ENOENT);
-    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_syslogNg, &reason, log)) && CheckDaemonActive(g_syslogNg, &reason, log)) ? 0 : ENOENT);
+    RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_systemd, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonActive(g_systemdJournald, &reason, log, telemetry) ? 0 : ENOENT);
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_rsyslog, &reason, log, telemetry)) && CheckDaemonActive(g_rsyslog, &reason, log, telemetry)) ? 0 : ENOENT);
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_syslog, &reason, log, telemetry)) && CheckDaemonActive(g_syslog, &reason, log, telemetry)) ? 0 : ENOENT);
+    RETURN_REASON_IF_ZERO(((0 == CheckPackageInstalled(g_syslogNg, &reason, log, telemetry)) && CheckDaemonActive(g_syslogNg, &reason, log, telemetry)) ? 0 : ENOENT);
     return reason;
 }
 
-static char* AuditEnsureSyslogPackageIsInstalled(OsConfigLogHandle log)
+static char* AuditEnsureSyslogPackageIsInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    if (0 == CheckPackageInstalled(g_systemd, &reason, log))
+    if (0 == CheckPackageInstalled(g_systemd, &reason, log, telemetry))
     {
-        RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_syslog, &reason, log));
-        RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_rsyslog, &reason, log));
+        RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_syslog, &reason, log, telemetry));
+        RETURN_REASON_IF_ZERO(CheckPackageInstalled(g_rsyslog, &reason, log, telemetry));
     }
-    CheckPackageInstalled(g_syslogNg, &reason, log);
+    CheckPackageInstalled(g_syslogNg, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(OsConfigLogHandle log)
+static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_systemd, &reason, log));
-    CheckDirectoryAccess(g_varLogJournal, 0, -1, g_varLogJournalMode, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_systemd, &reason, log, telemetry));
+    CheckDirectoryAccess(g_varLogJournal, 0, -1, g_varLogJournalMode, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureALoggingServiceIsEnabled(OsConfigLogHandle log)
+static char* AuditEnsureALoggingServiceIsEnabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    if (0 == CheckPackageNotInstalled(g_systemd, &reason, log))
+    if (0 == CheckPackageNotInstalled(g_systemd, &reason, log, telemetry))
     {
-        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_syslogNg, &reason, log)) && CheckDaemonActive(g_rsyslog, &reason, log)) ? 0 : ENOENT);
-        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_rsyslog, &reason, log)) && CheckDaemonActive(g_syslogNg, &reason, log)) ? 0 : ENOENT);
+        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_syslogNg, &reason, log, telemetry)) && CheckDaemonActive(g_rsyslog, &reason, log, telemetry)) ? 0 : ENOENT);
+        RETURN_REASON_IF_ZERO(((0 == CheckPackageNotInstalled(g_rsyslog, &reason, log, telemetry)) && CheckDaemonActive(g_syslogNg, &reason, log, telemetry)) ? 0 : ENOENT);
     }
-    CheckDaemonActive(g_systemdJournald, &reason, log);
+    CheckDaemonActive(g_systemdJournald, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(OsConfigLogHandle log)
+static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     int* modes = NULL;
     int numberOfModes = 0;
     char* reason = NULL;
 
     if ((0 == ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles ? g_desiredEnsureFilePermissionsForAllRsyslogLogFiles :
-        g_defaultEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, 8, log)) && (numberOfModes > 0))
+        g_defaultEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, 8, log, telemetry)) && (numberOfModes > 0))
     {
-        CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, g_fileCreateMode, ' ', modes, numberOfModes, &reason, log);
+        CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, g_fileCreateMode, ' ', modes, numberOfModes, &reason, log, telemetry);
     }
     else
     {
@@ -2241,346 +2241,346 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(OsConfigLogHandle l
     return reason;
 }
 
-static char* AuditEnsureLoggerConfigurationFilesAreRestricted(OsConfigLogHandle log)
+static char* AuditEnsureLoggerConfigurationFilesAreRestricted(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcRsyslogConf, 0, 0, 0640, &reason, log));
-    CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 0640, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcRsyslogConf, 0, 0, 0640, &reason, log, telemetry));
+    CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 0640, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(OsConfigLogHandle log)
+static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* fileGroup = "$FileGroup adm";
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, fileGroup, &reason, log));
-    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileGroup, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, fileGroup, &reason, log, telemetry));
+    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileGroup, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(OsConfigLogHandle log)
+static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* fileOwner = "$FileOwner syslog";
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, fileOwner, &reason, log));
-    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileOwner, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, fileOwner, &reason, log, telemetry));
+    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileOwner, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureRsyslogNotAcceptingRemoteMessages(OsConfigLogHandle log)
+static char* AuditEnsureRsyslogNotAcceptingRemoteMessages(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "$ModLoad imudp", &reason, log));
-    CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "$ModLoad imtcp", &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "$ModLoad imudp", &reason, log, telemetry));
+    CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "$ModLoad imtcp", &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSyslogRotaterServiceIsEnabled(OsConfigLogHandle log)
+static char* AuditEnsureSyslogRotaterServiceIsEnabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_logrotate, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronDailyLogRotate, 0, 0, 0755, &reason, log));
-    if ((false == IsRedHatBased(log)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_16_04, log)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_18_04, log)))
+    RETURN_REASON_IF_NOT_ZERO(CheckPackageInstalled(g_logrotate, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronDailyLogRotate, 0, 0, 0755, &reason, log, telemetry));
+    if ((false == IsRedHatBased(log, telemetry)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_16_04, log, telemetry)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_18_04, log, telemetry)))
     {
-        CheckDaemonActive(g_logrotateTimer, &reason, log);
+        CheckDaemonActive(g_logrotateTimer, &reason, log, telemetry);
     }
     return reason;
 }
 
-static char* AuditEnsureTelnetServiceIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureTelnetServiceIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_telnet, &reason, log) ? 0 : ENOENT);
-    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_telnet, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_telnet, &reason, log, telemetry) ? 0 : ENOENT);
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_telnet, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureRcprshServiceIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureRcprshServiceIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rcpSocket, &reason, log) ? 0 : ENOENT);
-    CheckDaemonNotActive(g_rshSocket, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rcpSocket, &reason, log, telemetry) ? 0 : ENOENT);
+    CheckDaemonNotActive(g_rshSocket, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureTftpServiceisDisabled(OsConfigLogHandle log)
+static char* AuditEnsureTftpServiceisDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_tftpHpa, &reason, log) ? 0 : ENOENT);
-    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_tftp, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_tftpHpa, &reason, log, telemetry) ? 0 : ENOENT);
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_tftp, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(OsConfigLogHandle log)
+static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcCronDeny, &reason, log) ? 0 : ENOENT);
-    RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcAtDeny, &reason, log) ? 0 : ENOENT);
-    RETURN_REASON_IF_NOT_ZERO(CheckFileExists(g_etcCronAllow, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckFileExists(g_etcAtAllow, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronAllow, 0, 0, 0600, &reason, log));
-    CheckFileAccess(g_etcAtAllow, 0, 0, 0600, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcCronDeny, &reason, log, telemetry) ? 0 : ENOENT);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcAtDeny, &reason, log, telemetry) ? 0 : ENOENT);
+    RETURN_REASON_IF_NOT_ZERO(CheckFileExists(g_etcCronAllow, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckFileExists(g_etcAtAllow, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcCronAllow, 0, 0, 0600, &reason, log, telemetry));
+    CheckFileAccess(g_etcAtAllow, 0, 0, 0600, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSshPortIsConfigured(OsConfigLogHandle log)
+static char* AuditEnsureSshPortIsConfigured(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureSshPortIsConfiguredObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureSshPortIsConfiguredObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSshBestPracticeProtocol(OsConfigLogHandle log)
+static char* AuditEnsureSshBestPracticeProtocol(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureSshBestPracticeProtocolObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureSshBestPracticeProtocolObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSshBestPracticeIgnoreRhosts(OsConfigLogHandle log)
+static char* AuditEnsureSshBestPracticeIgnoreRhosts(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureSshBestPracticeIgnoreRhostsObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureSshBestPracticeIgnoreRhostsObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSshLogLevelIsSet(OsConfigLogHandle log)
+static char* AuditEnsureSshLogLevelIsSet(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureSshLogLevelIsSetObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureSshLogLevelIsSetObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSshMaxAuthTriesIsSet(OsConfigLogHandle log)
+static char* AuditEnsureSshMaxAuthTriesIsSet(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureSshMaxAuthTriesIsSetObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureSshMaxAuthTriesIsSetObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAllowUsersIsConfigured(OsConfigLogHandle log)
+static char* AuditEnsureAllowUsersIsConfigured(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureAllowUsersIsConfiguredObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureAllowUsersIsConfiguredObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDenyUsersIsConfigured(OsConfigLogHandle log)
+static char* AuditEnsureDenyUsersIsConfigured(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureDenyUsersIsConfiguredObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureDenyUsersIsConfiguredObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAllowGroupsIsConfigured(OsConfigLogHandle log)
+static char* AuditEnsureAllowGroupsIsConfigured(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureAllowGroupsIsConfiguredObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureAllowGroupsIsConfiguredObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureDenyGroupsConfigured(OsConfigLogHandle log)
+static char* AuditEnsureDenyGroupsConfigured(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureDenyGroupsConfiguredObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureDenyGroupsConfiguredObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureSshHostbasedAuthenticationIsDisabledObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureSshHostbasedAuthenticationIsDisabledObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSshPermitRootLoginIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureSshPermitRootLoginIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureSshPermitRootLoginIsDisabledObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureSshPermitRootLoginIsDisabledObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSshClientIntervalCountMaxIsConfigured(OsConfigLogHandle log)
+static char* AuditEnsureSshClientIntervalCountMaxIsConfigured(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureSshClientIntervalCountMaxIsConfiguredObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureSshClientIntervalCountMaxIsConfiguredObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSshClientAliveIntervalIsConfigured(OsConfigLogHandle log)
+static char* AuditEnsureSshClientAliveIntervalIsConfigured(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureSshClientAliveIntervalIsConfiguredObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureSshClientAliveIntervalIsConfiguredObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSshLoginGraceTimeIsSet(OsConfigLogHandle log)
+static char* AuditEnsureSshLoginGraceTimeIsSet(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureSshLoginGraceTimeIsSetObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureSshLoginGraceTimeIsSetObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(OsConfigLogHandle log)
+static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSshWarningBannerIsEnabled(OsConfigLogHandle log)
+static char* AuditEnsureSshWarningBannerIsEnabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureSshWarningBannerIsEnabledObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureSshWarningBannerIsEnabledObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(OsConfigLogHandle log)
+static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAppropriateCiphersForSsh(OsConfigLogHandle log)
+static char* AuditEnsureAppropriateCiphersForSsh(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    ProcessSshAuditCheck(g_auditEnsureAppropriateCiphersForSshObject, NULL, &reason, log);
+    ProcessSshAuditCheck(g_auditEnsureAppropriateCiphersForSshObject, NULL, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureAvahiDaemonServiceIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureAvahiDaemonServiceIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_avahiDaemon, &reason, log);
+    CheckDaemonNotActive(g_avahiDaemon, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureCupsServiceisDisabled(OsConfigLogHandle log)
+static char* AuditEnsureCupsServiceisDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_cups, &reason, log);
+    CheckDaemonNotActive(g_cups, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePostfixPackageIsUninstalled(OsConfigLogHandle log)
+static char* AuditEnsurePostfixPackageIsUninstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckPackageNotInstalled(g_postfix, &reason, log);
+    CheckPackageNotInstalled(g_postfix, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePostfixNetworkListeningIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsurePostfixNetworkListeningIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    if ((0 != CheckPackageNotInstalled(g_postfix, &reason, log)) && (0 == CheckFileExists(g_etcPostfixMainCf, &reason, log)))
+    if ((0 != CheckPackageNotInstalled(g_postfix, &reason, log, telemetry)) && (0 == CheckFileExists(g_etcPostfixMainCf, &reason, log, telemetry)))
     {
-        CheckTextIsFoundInFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, &reason, log);
+        CheckTextIsFoundInFile(g_etcPostfixMainCf, g_inetInterfacesLocalhost, &reason, log, telemetry);
     }
     return reason;
 }
 
-static char* AuditEnsureRpcgssdServiceIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureRpcgssdServiceIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcgssd, &reason, log) ? 0 : ENOENT);
-    CheckDaemonNotActive(g_rpcGssd, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcgssd, &reason, log, telemetry) ? 0 : ENOENT);
+    CheckDaemonNotActive(g_rpcGssd, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureRpcidmapdServiceIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureRpcidmapdServiceIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcidmapd, &reason, log) ? 0 : ENOENT);
-    CheckDaemonNotActive(g_nfsIdmapd, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcidmapd, &reason, log, telemetry) ? 0 : ENOENT);
+    CheckDaemonNotActive(g_nfsIdmapd, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsurePortmapServiceIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsurePortmapServiceIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcbindSocket, &reason, log) ? 0 : ENOENT);
-    CheckDaemonNotActive(g_rpcbind, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rpcbindSocket, &reason, log, telemetry) ? 0 : ENOENT);
+    CheckDaemonNotActive(g_rpcbind, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNetworkFileSystemServiceIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureNetworkFileSystemServiceIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_nfsServer, &reason, log);
+    CheckDaemonNotActive(g_nfsServer, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureRpcsvcgssdServiceIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureRpcsvcgssdServiceIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_needSvcgssd, &reason, log));
-    CheckDaemonNotActive(g_rpcSvcgssd, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_needSvcgssd, &reason, log, telemetry));
+    CheckDaemonNotActive(g_rpcSvcgssd, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSnmpServerIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureSnmpServerIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_snmpd, &reason, log);
+    CheckDaemonNotActive(g_snmpd, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureRsynServiceIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureRsynServiceIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_rsync, &reason, log);
+    CheckDaemonNotActive(g_rsync, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNisServerIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureNisServerIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckDaemonNotActive(g_ypserv, &reason, log);
+    CheckDaemonNotActive(g_ypserv, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureRshClientNotInstalled(OsConfigLogHandle log)
+static char* AuditEnsureRshClientNotInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_rsh, &reason, log));
-    CheckPackageNotInstalled(g_rshClient, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_rsh, &reason, log, telemetry));
+    CheckPackageNotInstalled(g_rshClient, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureSmbWithSambaIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureSmbWithSambaIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    if (IsDaemonActive(g_smbd, log))
+    if (IsDaemonActive(g_smbd, log, telemetry))
     {
-        RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcSambaConf, '#', g_minSambaProtocol, &reason, log));
-        CheckLineFoundNotCommentedOut(g_etcSambaConf, ';', g_minSambaProtocol, &reason, log);
+        RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcSambaConf, '#', g_minSambaProtocol, &reason, log, telemetry));
+        CheckLineFoundNotCommentedOut(g_etcSambaConf, ';', g_minSambaProtocol, &reason, log, telemetry);
     }
     else
     {
-        RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcSambaConf, &reason, log));
-        CheckPackageNotInstalled(g_samba, &reason, log);
+        RETURN_REASON_IF_NOT_ZERO(CheckFileNotFound(g_etcSambaConf, &reason, log, telemetry));
+        CheckPackageNotInstalled(g_samba, &reason, log, telemetry);
     }
     return reason;
 }
 
-static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(OsConfigLogHandle log)
+static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     int* modes = NULL;
     int numberOfModes = 0;
     char* reason = NULL;
 
     if ((0 == ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable ? g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable :
-        g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, 8, log)) && (numberOfModes >= 2))
+        g_defaultEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, 8, log, telemetry)) && (numberOfModes >= 2))
     {
-        CheckUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, &reason, log);
+        CheckUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, &reason, log, telemetry);
     }
     else
     {
@@ -2593,144 +2593,164 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(OsConfigLogHandle
     return reason;
 }
 
-static char* AuditEnsureNoUsersHaveDotForwardFiles(OsConfigLogHandle log)
+static char* AuditEnsureNoUsersHaveDotForwardFiles(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, &reason, log);
+    CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNoUsersHaveDotNetrcFiles(OsConfigLogHandle log)
+static char* AuditEnsureNoUsersHaveDotNetrcFiles(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, &reason, log);
+    CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureNoUsersHaveDotRhostsFiles(OsConfigLogHandle log)
+static char* AuditEnsureNoUsersHaveDotRhostsFiles(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, &reason, log);
+    CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureRloginServiceIsDisabled(OsConfigLogHandle log)
+static char* AuditEnsureRloginServiceIsDisabled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rlogin, &reason, log) ? 0 : ENOENT);
-    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_rlogin, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_inetd, &reason, log));
-    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_inetUtilsInetd, &reason, log));
-    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_login, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckDaemonNotActive(g_rlogin, &reason, log, telemetry) ? 0 : ENOENT);
+    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_rlogin, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_inetd, &reason, log, telemetry));
+    RETURN_REASON_IF_NOT_ZERO(CheckPackageNotInstalled(g_inetUtilsInetd, &reason, log, telemetry));
+    CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', g_login, &reason, log, telemetry);
     return reason;
 }
 
-static char* AuditEnsureUnnecessaryAccountsAreRemoved(OsConfigLogHandle log)
+static char* AuditEnsureUnnecessaryAccountsAreRemoved(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     char* reason = NULL;
     CheckUserAccountsNotFound(g_desiredEnsureUnnecessaryAccountsAreRemoved ?
-        g_desiredEnsureUnnecessaryAccountsAreRemoved : g_defaultEnsureUnnecessaryAccountsAreRemoved, &reason, log);
+        g_desiredEnsureUnnecessaryAccountsAreRemoved : g_defaultEnsureUnnecessaryAccountsAreRemoved, &reason, log, telemetry);
     return reason;
 }
 
-static int InitEnsurePermissionsOnEtcSshSshdConfig(char* value, OsConfigLogHandle log)
+static int InitEnsurePermissionsOnEtcSshSshdConfig(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsurePermissionsOnEtcSshSshdConfigObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsurePermissionsOnEtcSshSshdConfigObject, value, log, telemetry);
 }
 
-static int InitEnsureSshPortIsConfigured(char* value, OsConfigLogHandle log)
+static int InitEnsureSshPortIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureSshPortIsConfiguredObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureSshPortIsConfiguredObject, value, log, telemetry);
 }
 
-static int InitEnsureSshBestPracticeProtocol(char* value, OsConfigLogHandle log)
+static int InitEnsureSshBestPracticeProtocol(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureSshBestPracticeProtocolObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureSshBestPracticeProtocolObject, value, log, telemetry);
 }
 
-static int InitEnsureSshBestPracticeIgnoreRhosts(char* value, OsConfigLogHandle log)
+static int InitEnsureSshBestPracticeIgnoreRhosts(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureSshBestPracticeIgnoreRhostsObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureSshBestPracticeIgnoreRhostsObject, value, log, telemetry);
 }
 
-static int InitEnsureSshLogLevelIsSet(char* value, OsConfigLogHandle log)
+static int InitEnsureSshLogLevelIsSet(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureSshLogLevelIsSetObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureSshLogLevelIsSetObject, value, log, telemetry);
 }
 
-static int InitEnsureSshMaxAuthTriesIsSet(char* value, OsConfigLogHandle log)
+static int InitEnsureSshMaxAuthTriesIsSet(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureSshMaxAuthTriesIsSetObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureSshMaxAuthTriesIsSetObject, value, log, telemetry);
 }
 
-static int InitEnsureAllowUsersIsConfigured(char* value, OsConfigLogHandle log)
+static int InitEnsureAllowUsersIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureAllowUsersIsConfiguredObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureAllowUsersIsConfiguredObject, value, log, telemetry);
 }
 
-static int InitEnsureDenyUsersIsConfigured(char* value, OsConfigLogHandle log)
+static int InitEnsureDenyUsersIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureDenyUsersIsConfiguredObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureDenyUsersIsConfiguredObject, value, log, telemetry);
 }
 
-static int InitEnsureAllowGroupsIsConfigured(char* value, OsConfigLogHandle log)
+static int InitEnsureAllowGroupsIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureAllowGroupsIsConfiguredObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureAllowGroupsIsConfiguredObject, value, log, telemetry);
 }
 
-static int InitEnsureDenyGroupsConfigured(char* value, OsConfigLogHandle log)
+static int InitEnsureDenyGroupsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureDenyGroupsConfiguredObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureDenyGroupsConfiguredObject, value, log, telemetry);
 }
 
-static int InitEnsureSshHostbasedAuthenticationIsDisabled(char* value, OsConfigLogHandle log)
+static int InitEnsureSshHostbasedAuthenticationIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureSshHostbasedAuthenticationIsDisabledObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureSshHostbasedAuthenticationIsDisabledObject, value, log, telemetry);
 }
 
-static int InitEnsureSshPermitRootLoginIsDisabled(char* value, OsConfigLogHandle log)
+static int InitEnsureSshPermitRootLoginIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureSshPermitRootLoginIsDisabledObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureSshPermitRootLoginIsDisabledObject, value, log, telemetry);
 }
 
-static int InitEnsureSshPermitEmptyPasswordsIsDisabled(char* value, OsConfigLogHandle log)
+static int InitEnsureSshPermitEmptyPasswordsIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureSshPermitEmptyPasswordsIsDisabledObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureSshPermitEmptyPasswordsIsDisabledObject, value, log, telemetry);
 }
 
-static int InitEnsureSshClientIntervalCountMaxIsConfigured(char* value, OsConfigLogHandle log)
+static int InitEnsureSshClientIntervalCountMaxIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureSshClientIntervalCountMaxIsConfiguredObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureSshClientIntervalCountMaxIsConfiguredObject, value, log, telemetry);
 }
 
-static int InitEnsureSshClientAliveIntervalIsConfigured(char* value, OsConfigLogHandle log)
+static int InitEnsureSshClientAliveIntervalIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureSshClientAliveIntervalIsConfiguredObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureSshClientAliveIntervalIsConfiguredObject, value, log, telemetry);
 }
 
-static int InitEnsureSshLoginGraceTimeIsSet(char* value, OsConfigLogHandle log)
+static int InitEnsureSshLoginGraceTimeIsSet(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureSshLoginGraceTimeIsSetObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureSshLoginGraceTimeIsSetObject, value, log, telemetry);
 }
 
-static int InitEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value, OsConfigLogHandle log)
+static int InitEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject, value, log, telemetry);
 }
 
-static int InitEnsureSshWarningBannerIsEnabled(char* value, OsConfigLogHandle log)
+static int InitEnsureSshWarningBannerIsEnabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureSshWarningBannerIsEnabledObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureSshWarningBannerIsEnabledObject, value, log, telemetry);
 }
 
-static int InitEnsureUsersCannotSetSshEnvironmentOptions(char* value, OsConfigLogHandle log)
+static int InitEnsureUsersCannotSetSshEnvironmentOptions(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureUsersCannotSetSshEnvironmentOptionsObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureUsersCannotSetSshEnvironmentOptionsObject, value, log, telemetry);
 }
 
-static int InitEnsureAppropriateCiphersForSsh(char* value, OsConfigLogHandle log)
+static int InitEnsureAppropriateCiphersForSsh(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return InitializeSshAuditCheck(g_initEnsureAppropriateCiphersForSshObject, value, log);
+    UNUSED(telemetry);
+    return InitializeSshAuditCheck(g_initEnsureAppropriateCiphersForSshObject, value, log, telemetry);
 }
 
 static int ReplaceString(char** target, char* source, const char* defaultValue)
@@ -2924,247 +2944,333 @@ static int InitEnsureDefaultDenyFirewallPolicyIsSet(char* value)
     return ReplaceString(&g_desiredEnsureDefaultDenyFirewallPolicyIsSet, value, g_defaultEnsureDefaultDenyFirewallPolicyIsSet);
 }
 
-static int RemediateEnsureLoggingLevel(char* value, OsConfigLogHandle log)
+static int RemediateEnsureLoggingLevel(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsureLoggingLevel(value);
-    SetLoggingLevelPersistently(GetLoggingLevelFromString(g_desiredLoggingLevel), log);
+    SetLoggingLevelPersistently(GetLoggingLevelFromString(g_desiredLoggingLevel), log, telemetry);
     return 0;
 };
 
-static int RemediateEnsurePermissionsOnEtcIssue(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcIssue(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcIssue(value);
-    return SetFileAccess(g_etcIssue, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssue, NULL, 8), log);
+    return SetFileAccess(g_etcIssue, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssue, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcIssueNet(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcIssueNet(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcIssueNet(value);
-    return SetFileAccess(g_etcIssueNet, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssueNet, NULL, 8), log);
+    return SetFileAccess(g_etcIssueNet, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcIssueNet, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcHostsAllow(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcHostsAllow(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcHostsAllow(value);
-    return SetFileAccess(g_etcHostsAllow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsAllow, NULL, 8), log);
+    return SetFileAccess(g_etcHostsAllow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsAllow, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcHostsDeny(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcHostsDeny(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcHostsDeny(value);
-    return SetFileAccess(g_etcHostsDeny, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsDeny, NULL, 8), log);
+    return SetFileAccess(g_etcHostsDeny, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcHostsDeny, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsurePermissionsOnEtcSshSshdConfigObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsurePermissionsOnEtcSshSshdConfigObject, value, NULL, log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcShadow(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcShadow(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcShadow(value);
-    return SetFileAccess(g_etcShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadow, NULL, 8), log);
+    return SetFileAccess(g_etcShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadow, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcShadowDash(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcShadowDash(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcShadowDash(value);
-    return SetFileAccess(g_etcShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadowDash, NULL, 8), log);
+    return SetFileAccess(g_etcShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadowDash, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcGShadow(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcGShadow(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcGShadow(value);
-    return SetFileAccess(g_etcGShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadow, NULL, 8), log);
+    return SetFileAccess(g_etcGShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadow, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcGShadowDash(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcGShadowDash(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcGShadowDash(value);
-    return SetFileAccess(g_etcGShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash, NULL, 8), log);
+    return SetFileAccess(g_etcGShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcPasswd(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcPasswd(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcPasswd(value);
-    return SetFileAccess(g_etcPasswd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswd, NULL, 8), log);
+    return SetFileAccess(g_etcPasswd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswd, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcPasswdDash(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcPasswdDash(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcPasswdDash(value);
-    return SetFileAccess(g_etcPasswdDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswdDash, NULL, 8), log);
+    return SetFileAccess(g_etcPasswdDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcPasswdDash, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcGroup(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcGroup(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcGroup(value);
-    return SetFileAccess(g_etcGroup, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroup, NULL, 8), log);
+    return SetFileAccess(g_etcGroup, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroup, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcGroupDash(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcGroupDash(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcGroupDash(value);
-    return SetFileAccess(g_etcGroupDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroupDash, NULL, 8), log);
+    return SetFileAccess(g_etcGroupDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGroupDash, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcAnacronTab(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcAnacronTab(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcAnacronTab(value);
-    return SetFileAccess(g_etcAnacronTab, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcAnacronTab, NULL, 8), log);
+    return SetFileAccess(g_etcAnacronTab, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcAnacronTab, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcCronD(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcCronD(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcCronD(value);
-    return SetFileAccess(g_etcCronD, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronD, NULL, 8), log);
+    return SetFileAccess(g_etcCronD, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronD, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcCronDaily(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcCronDaily(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcCronDaily(value);
-    return SetFileAccess(g_etcCronDaily, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronDaily, NULL, 8), log);
+    return SetFileAccess(g_etcCronDaily, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronDaily, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcCronHourly(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcCronHourly(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcCronHourly(value);
-    return SetFileAccess(g_etcCronHourly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronHourly, NULL, 8), log);
+    return SetFileAccess(g_etcCronHourly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronHourly, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcCronMonthly(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcCronMonthly(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcCronMonthly(value);
-    return SetFileAccess(g_etcCronMonthly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronMonthly, NULL, 8), log);
+    return SetFileAccess(g_etcCronMonthly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronMonthly, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcCronWeekly(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcCronWeekly(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcCronWeekly(value);
-    return SetFileAccess(g_etcCronWeekly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronWeekly, NULL, 8), log);
+    return SetFileAccess(g_etcCronWeekly, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcCronWeekly, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsurePermissionsOnEtcMotd(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnEtcMotd(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePermissionsOnEtcMotd(value);
-    return SetFileAccess(g_etcMotd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcMotd, NULL, 8), log);
+    return SetFileAccess(g_etcMotd, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcMotd, NULL, 8), log, telemetry);
 };
 
-static int RemediateEnsureInetdNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureInetdNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == UninstallPackage(g_inetd, log)) &&
-        (0 == UninstallPackage(g_inetUtilsInetd, log))) ? 0 : ENOENT;
+    return ((0 == UninstallPackage(g_inetd, log, telemetry)) &&
+        (0 == UninstallPackage(g_inetUtilsInetd, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureXinetdNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureXinetdNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_xinetd, log);
+    return UninstallPackage(g_xinetd, log, telemetry);
 }
 
-static int RemediateEnsureRshServerNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRshServerNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_rshServer, log);
+    return UninstallPackage(g_rshServer, log, telemetry);
 }
 
-static int RemediateEnsureNisNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNisNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_nis, log);
+    return UninstallPackage(g_nis, log, telemetry);
 }
 
-static int RemediateEnsureTftpdNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureTftpdNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_tftpHpa, log);
+    return UninstallPackage(g_tftpHpa, log, telemetry);
 }
 
-static int RemediateEnsureReadaheadFedoraNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureReadaheadFedoraNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_readAheadFedora, log);
+    return UninstallPackage(g_readAheadFedora, log, telemetry);
 }
 
-static int RemediateEnsureBluetoothHiddNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureBluetoothHiddNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_bluetooth, log);
-    return UninstallPackage(g_bluetooth, log);
+    StopAndDisableDaemon(g_bluetooth, log, telemetry);
+    return UninstallPackage(g_bluetooth, log, telemetry);
 }
 
-static int RemediateEnsureIsdnUtilsBaseNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureIsdnUtilsBaseNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_isdnUtilsBase, log);
+    return UninstallPackage(g_isdnUtilsBase, log, telemetry);
 }
 
-static int RemediateEnsureIsdnUtilsKdumpToolsNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureIsdnUtilsKdumpToolsNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_kdumpTools, log);
+    return UninstallPackage(g_kdumpTools, log, telemetry);
 }
 
-static int RemediateEnsureIscDhcpdServerNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureIscDhcpdServerNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_iscDhcpServer, log);
+    return UninstallPackage(g_iscDhcpServer, log, telemetry);
 }
 
-static int RemediateEnsureSendmailNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSendmailNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_sendmail, log);
+    return UninstallPackage(g_sendmail, log, telemetry);
 }
 
-static int RemediateEnsureSldapdNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSldapdNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_slapd, log);
+    return UninstallPackage(g_slapd, log, telemetry);
 }
 
-static int RemediateEnsureBind9NotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureBind9NotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_bind9, log);
+    return UninstallPackage(g_bind9, log, telemetry);
 }
 
-static int RemediateEnsureDovecotCoreNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDovecotCoreNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_dovecotCore, log);
+    return UninstallPackage(g_dovecotCore, log, telemetry);
 }
 
-static int RemediateEnsureAuditdInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAuditdInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == InstallPackage(g_audit, log)) || (0 == InstallPackage(g_auditd, log)) ||
-        (0 == InstallPackage(g_auditLibs, log)) || (0 == InstallPackage(g_auditLibsDevel, log))) ? 0 : ENOENT;
+    return ((0 == InstallPackage(g_audit, log, telemetry)) || (0 == InstallPackage(g_auditd, log, telemetry)) ||
+        (0 == InstallPackage(g_auditLibs, log, telemetry)) || (0 == InstallPackage(g_auditLibsDevel, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsurePrelinkIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePrelinkIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_prelink, log);
+    return UninstallPackage(g_prelink, log, telemetry);
 }
 
-static int RemediateEnsureTalkClientIsNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureTalkClientIsNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_talk, log);
+    return UninstallPackage(g_talk, log, telemetry);
 }
 
-static int RemediateEnsureCronServiceIsEnabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureCronServiceIsEnabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
 
-    return (((0 == InstallPackage(g_cron, log)) && EnableAndStartDaemon(g_cron, log)) ||
-        (((0 == InstallPackage(g_cronie, log)) && EnableAndStartDaemon(g_crond, log)))) ? 0 : ENOENT;
+    return (((0 == InstallPackage(g_cron, log, telemetry)) && EnableAndStartDaemon(g_cron, log, telemetry)) ||
+        (((0 == InstallPackage(g_cronie, log, telemetry)) && EnableAndStartDaemon(g_crond, log, telemetry)))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureAuditdServiceIsRunning(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAuditdServiceIsRunning(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     int status = 0;
     UNUSED(value);
 
@@ -3172,346 +3278,438 @@ static int RemediateEnsureAuditdServiceIsRunning(char* value, OsConfigLogHandle 
     // Conflicts between auoms and auditd can arise because both services attempt to manage and collect audit events.
     // One of the recommended mitigation strategies is Single Service Usage: use either auoms or auditd, but not both.
     // To mitigate this conflict we try to stop and disable auoms when present and we are asked to enable and start auditd:
-    if (IsDaemonActive(g_auoms, log))
+    if (IsDaemonActive(g_auoms, log, telemetry))
     {
-        StopAndDisableDaemon(g_auoms, log);
+        StopAndDisableDaemon(g_auoms, log, telemetry);
     }
 
-    if (IsDaemonActive(g_auoms, log))
+    if (IsDaemonActive(g_auoms, log, telemetry))
     {
         OsConfigLogWarning(log, "RemediateEnsureAuditdServiceIsRunning: '%s' is active and collides with '%s', %s",
             g_auoms, g_auditd, g_remediationIsNotPossible);
     }
 
-    if ((0 != InstallPackage(g_audit, log)) && (0 != InstallPackage(g_auditd, log)) &&
-        (0 != InstallPackage(g_auditLibs, log)) && (0 != InstallPackage(g_auditLibsDevel, log)))
+    if ((0 != InstallPackage(g_audit, log, telemetry)) && (0 != InstallPackage(g_auditd, log, telemetry)) &&
+        (0 != InstallPackage(g_auditLibs, log, telemetry)) && (0 != InstallPackage(g_auditLibsDevel, log, telemetry)))
     {
         status = ENOENT;
     }
-    else if ((false == CheckDaemonActive(g_auditd, NULL, log)) && (false == EnableAndStartDaemon(g_auditd, log)))
+    else if ((false == CheckDaemonActive(g_auditd, NULL, log, telemetry)) && (false == EnableAndStartDaemon(g_auditd, log, telemetry)))
     {
-        ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log);
-        EnableAndStartDaemon(g_auditd, log);
-        status = CheckDaemonActive(g_auditd, NULL, log) ? 0 : ENOENT;
+        ExecuteCommand(NULL, "restorecon -r -v /var/log/audit", false, false, 0, 0, NULL, NULL, log, telemetry);
+        EnableAndStartDaemon(g_auditd, log, telemetry);
+        status = CheckDaemonActive(g_auditd, NULL, log, telemetry) ? 0 : ENOENT;
     }
 
     return status;
 }
 
-static int RemediateEnsureKernelSupportForCpuNx(char* value, OsConfigLogHandle log)
+static int RemediateEnsureKernelSupportForCpuNx(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     OsConfigLogInfo(log, "A CPU that supports the NX (no-execute) bit technology is necessary, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureNodevOptionOnHomePartition(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNodevOptionOnHomePartition(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetFileSystemMountingOption(g_home, NULL, g_nodev, log);
+    return SetFileSystemMountingOption(g_home, NULL, g_nodev, log, telemetry);
 }
 
-static int RemediateEnsureNodevOptionOnTmpPartition(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNodevOptionOnTmpPartition(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetFileSystemMountingOption(g_tmp, NULL, g_nodev, log);
+    return SetFileSystemMountingOption(g_tmp, NULL, g_nodev, log, telemetry);
 }
 
-static int RemediateEnsureNodevOptionOnVarTmpPartition(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNodevOptionOnVarTmpPartition(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetFileSystemMountingOption(g_varTmp, NULL, g_nodev, log);
+    return SetFileSystemMountingOption(g_varTmp, NULL, g_nodev, log, telemetry);
 }
 
-static int RemediateEnsureNosuidOptionOnTmpPartition(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNosuidOptionOnTmpPartition(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetFileSystemMountingOption(g_tmp, NULL, g_nosuid, log);
+    return SetFileSystemMountingOption(g_tmp, NULL, g_nosuid, log, telemetry);
 }
 
-static int RemediateEnsureNosuidOptionOnVarTmpPartition(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNosuidOptionOnVarTmpPartition(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetFileSystemMountingOption(g_varTmp, NULL, g_nosuid, log);
+    return SetFileSystemMountingOption(g_varTmp, NULL, g_nosuid, log, telemetry);
 }
 
-static int RemediateEnsureNoexecOptionOnVarTmpPartition(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoexecOptionOnVarTmpPartition(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetFileSystemMountingOption(g_varTmp, NULL, g_noexec, log);
+    return SetFileSystemMountingOption(g_varTmp, NULL, g_noexec, log, telemetry);
 }
 
-static int RemediateEnsureNoexecOptionOnDevShmPartition(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoexecOptionOnDevShmPartition(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetFileSystemMountingOption(g_devShm, NULL, g_noexec, log);
+    return SetFileSystemMountingOption(g_devShm, NULL, g_noexec, log, telemetry);
 }
 
-static int RemediateEnsureNodevOptionEnabledForAllRemovableMedia(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNodevOptionEnabledForAllRemovableMedia(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetFileSystemMountingOption(g_media, NULL, g_nodev, log);
+    return SetFileSystemMountingOption(g_media, NULL, g_nodev, log, telemetry);
 }
 
-static int RemediateEnsureNoexecOptionEnabledForAllRemovableMedia(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoexecOptionEnabledForAllRemovableMedia(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetFileSystemMountingOption(g_media, NULL, g_noexec, log);
+    return SetFileSystemMountingOption(g_media, NULL, g_noexec, log, telemetry);
 }
 
-static int RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetFileSystemMountingOption(g_media, NULL, g_nosuid, log);
+    return SetFileSystemMountingOption(g_media, NULL, g_nosuid, log, telemetry);
 }
 
-static int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == SetFileSystemMountingOption(g_nfs, NULL, g_nosuid, log)) &&
-        (0 == SetFileSystemMountingOption(g_nfs, NULL, g_noexec, log))) ? 0 : ENOENT;
+    return ((0 == SetFileSystemMountingOption(g_nfs, NULL, g_nosuid, log, telemetry)) &&
+        (0 == SetFileSystemMountingOption(g_nfs, NULL, g_noexec, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureAllTelnetdPackagesUninstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAllTelnetdPackagesUninstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_allTelnetd, log);
+    return UninstallPackage(g_allTelnetd, log, telemetry);
 }
 
-static int RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetAllEtcPasswdGroupsToExistInEtcGroup(log);
+    return SetAllEtcPasswdGroupsToExistInEtcGroup(log, telemetry);
 }
 
-static int RemediateEnsureNoDuplicateUidsExist(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoDuplicateUidsExist(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     OsConfigLogInfo(log, "Any duplicate UIDs must be manually removed, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureNoDuplicateGidsExist(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoDuplicateGidsExist(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     OsConfigLogInfo(log, "Any duplicate GIDs must be manually removed, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureNoDuplicateUserNamesExist(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoDuplicateUserNamesExist(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     OsConfigLogInfo(log, "Any duplicate usernames must be manually removed, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureNoDuplicateGroupsExist(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoDuplicateGroupsExist(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     OsConfigLogInfo(log, "Any duplicate groups must be manually removed, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureShadowGroupIsEmpty(char* value, OsConfigLogHandle log)
+static int RemediateEnsureShadowGroupIsEmpty(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetShadowGroupEmpty(log);
+    return SetShadowGroupEmpty(log, telemetry);
 }
 
-static int RemediateEnsureRootGroupExists(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRootGroupExists(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return RepairRootGroup(log);
+    return RepairRootGroup(log, telemetry);
 }
 
-static int RemediateEnsureAllAccountsHavePasswords(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAllAccountsHavePasswords(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     // We cannot automatically add passwords for user accounts that can login and do not have passwords set.
     // If we try for example to run a command such as usermod, the command line can reveal that password
     // in clear before it gets encrypted and saved. Thus we simply remove such accounts:
-    return RemoveUsersWithoutPasswords(log);
+    return RemoveUsersWithoutPasswords(log, telemetry);
 }
 
-static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetRootIsOnlyUidZeroAccount(log);
+    return SetRootIsOnlyUidZeroAccount(log, telemetry);
 }
 
-static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ReplaceMarkedLinesInFile(g_etcPasswd, "+", NULL, '#', true, log);
+    return ReplaceMarkedLinesInFile(g_etcPasswd, "+", NULL, '#', true, log, telemetry);
 }
 
-static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ReplaceMarkedLinesInFile(g_etcShadow, "+", NULL, '#', true, log);
+    return ReplaceMarkedLinesInFile(g_etcShadow, "+", NULL, '#', true, log, telemetry);
 }
 
-static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ReplaceMarkedLinesInFile(g_etcGroup, "+", NULL, '#', true, log);
+    return ReplaceMarkedLinesInFile(g_etcGroup, "+", NULL, '#', true, log, telemetry);
 }
 
-static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDefaultRootAccountGroupIsGidZero(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetDefaultRootAccountGroupIsGidZero(log);
+    return SetDefaultRootAccountGroupIsGidZero(log, telemetry);
 }
 
-static int RemediateEnsureRootIsOnlyUidZeroAccount(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRootIsOnlyUidZeroAccount(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetRootIsOnlyUidZeroAccount(log);
+    return SetRootIsOnlyUidZeroAccount(log, telemetry);
 }
 
-static int RemediateEnsureAllUsersHomeDirectoriesExist(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAllUsersHomeDirectoriesExist(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetUserHomeDirectories(log);
+    return SetUserHomeDirectories(log, telemetry);
 }
 
-static int RemediateEnsureUsersOwnTheirHomeDirectories(char* value, OsConfigLogHandle log)
+static int RemediateEnsureUsersOwnTheirHomeDirectories(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetUserHomeDirectories(log);
+    return SetUserHomeDirectories(log, telemetry);
 }
 
-static int RemediateEnsureRestrictedUserHomeDirectories(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRestrictedUserHomeDirectories(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     int* modes = NULL;
     int numberOfModes = 0;
     int status = 0;
 
     InitEnsureRestrictedUserHomeDirectories(value);
 
-    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, 8, log))) && (numberOfModes > 1))
+    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureRestrictedUserHomeDirectories, ',', &modes, &numberOfModes, 8, log, telemetry))) && (numberOfModes > 1))
     {
-        status = SetRestrictedUserHomeDirectories((unsigned int*)modes, (unsigned int)numberOfModes, modes[0], modes[numberOfModes - 1], log);
+        status = SetRestrictedUserHomeDirectories((unsigned int*)modes, (unsigned int)numberOfModes, modes[0], modes[numberOfModes - 1], log, telemetry);
     }
 
     FREE_MEMORY(modes);
     return status;
 }
 
-static int RemediateEnsurePasswordHashingAlgorithm(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePasswordHashingAlgorithm(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePasswordHashingAlgorithm(value);
-    return SetPasswordHashingAlgorithm((unsigned int)atoi(g_desiredEnsurePasswordHashingAlgorithm), log);
+    return SetPasswordHashingAlgorithm((unsigned int)atoi(g_desiredEnsurePasswordHashingAlgorithm), log, telemetry);
 }
 
-static int RemediateEnsureMinDaysBetweenPasswordChanges(char* value, OsConfigLogHandle log)
+static int RemediateEnsureMinDaysBetweenPasswordChanges(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsureMinDaysBetweenPasswordChanges(value);
-    return SetMinDaysBetweenPasswordChanges(atol(g_desiredEnsureMinDaysBetweenPasswordChanges), log);
+    return SetMinDaysBetweenPasswordChanges(atol(g_desiredEnsureMinDaysBetweenPasswordChanges), log, telemetry);
 }
 
-static int RemediateEnsureInactivePasswordLockPeriod(char* value, OsConfigLogHandle log)
+static int RemediateEnsureInactivePasswordLockPeriod(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsureInactivePasswordLockPeriod(value);
-    return SetLockoutAfterInactivityLessThan(atol(g_desiredEnsureInactivePasswordLockPeriod), log);
+    return SetLockoutAfterInactivityLessThan(atol(g_desiredEnsureInactivePasswordLockPeriod), log, telemetry);
 }
 
-static int RemediateEnsureMaxDaysBetweenPasswordChanges(char* value, OsConfigLogHandle log)
+static int RemediateEnsureMaxDaysBetweenPasswordChanges(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsureMaxDaysBetweenPasswordChanges(value);
-    return SetMaxDaysBetweenPasswordChanges(atol(g_desiredEnsureMaxDaysBetweenPasswordChanges), log);
+    return SetMaxDaysBetweenPasswordChanges(atol(g_desiredEnsureMaxDaysBetweenPasswordChanges), log, telemetry);
 }
 
-static int RemediateEnsurePasswordExpiration(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePasswordExpiration(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePasswordExpiration(value);
-    return ((0 == EnsureUsersHaveDatesOfLastPasswordChanges(log)) &&
-        (0 == SetMaxDaysBetweenPasswordChanges(atol(g_desiredEnsurePasswordExpiration), log)) &&
-        (0 == CheckPasswordExpirationLessThan(atol(g_desiredEnsurePasswordExpiration), NULL, log))) ? 0 : ENOENT;
+    return ((0 == EnsureUsersHaveDatesOfLastPasswordChanges(log, telemetry)) &&
+        (0 == SetMaxDaysBetweenPasswordChanges(atol(g_desiredEnsurePasswordExpiration), log, telemetry)) &&
+        (0 == CheckPasswordExpirationLessThan(atol(g_desiredEnsurePasswordExpiration), NULL, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsurePasswordExpirationWarning(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePasswordExpirationWarning(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePasswordExpirationWarning(value);
-    return SetPasswordExpirationWarning(atol(g_desiredEnsurePasswordExpirationWarning), log);
+    return SetPasswordExpirationWarning(atol(g_desiredEnsurePasswordExpirationWarning), log, telemetry);
 }
 
-static int RemediateEnsureSystemAccountsAreNonLogin(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSystemAccountsAreNonLogin(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetSystemAccountsNonLogin(log);
+    return SetSystemAccountsNonLogin(log, telemetry);
 }
 
-static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAuthenticationRequiredForSingleUserMode(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     OsConfigLogInfo(log, "For single user mode the root user account must have a password set. "
         "Manually set a password for root user account if necessary, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureDotDoesNotAppearInRootsPath(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDotDoesNotAppearInRootsPath(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return RemoveDotsFromPath(log);
+    return RemoveDotsFromPath(log, telemetry);
 }
 
-static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     const char* escapes = "mrsv";
     unsigned int numEscapes = 4;
     int status = 0;
     UNUSED(value);
-    if (0 == CheckFileExists(g_etcIssueNet, NULL, log))
+    if (0 == CheckFileExists(g_etcIssueNet, NULL, log, telemetry))
     {
-        status = RemoveEscapeSequencesFromFile(g_etcIssueNet, escapes, numEscapes, ' ', log);
+        status = RemoveEscapeSequencesFromFile(g_etcIssueNet, escapes, numEscapes, ' ', log, telemetry);
     }
     return status;
 }
 
-static int RemediateEnsureLocalLoginWarningBannerIsConfigured(char* value, OsConfigLogHandle log)
+static int RemediateEnsureLocalLoginWarningBannerIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     const char* escapes = "mrsv";
     unsigned int numEscapes = 4;
     UNUSED(value);
-    return RemoveEscapeSequencesFromFile(g_etcIssue, escapes, numEscapes, ' ', log);
+    return RemoveEscapeSequencesFromFile(g_etcIssue, escapes, numEscapes, ' ', log, telemetry);
 }
 
-static int RemediateEnsureSuRestrictedToRootGroup(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSuRestrictedToRootGroup(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return RestrictSuToRootGroup(log);
+    return RestrictSuToRootGroup(log, telemetry);
 }
 
-static int RemediateEnsureDefaultUmaskForAllUsers(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDefaultUmaskForAllUsers(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     const char* umask = "UMASK";
     InitEnsureDefaultUmaskForAllUsers(value);
-    return SetEtcLoginDefValue(umask, g_desiredEnsureDefaultUmaskForAllUsers, log);
+    return SetEtcLoginDefValue(umask, g_desiredEnsureDefaultUmaskForAllUsers, log, telemetry);
 }
 
-static int RemediateEnsureAutomountingDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAutomountingDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_autofs, log);
-    return CheckDaemonNotActive(g_autofs, NULL, log) ? 0 : ENOENT;
+    StopAndDisableDaemon(g_autofs, log, telemetry);
+    return CheckDaemonNotActive(g_autofs, NULL, log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, OsConfigLogHandle log)
+static int RemediateEnsureKernelCompiledFromApprovedSources(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     OsConfigLogInfo(log, "Automatic remediation is not possible");
     return 0;
 }
 
-static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     int status = 0;
     UNUSED(value);
     InitEnsureDefaultDenyFirewallPolicyIsSet(value);
     if (atoi(g_desiredEnsureDefaultDenyFirewallPolicyIsSet))
     {
-        status = SetDefaultDenyFirewallPolicy(log);
+        status = SetDefaultDenyFirewallPolicy(log, telemetry);
     }
     else
     {
@@ -3522,224 +3720,269 @@ static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(char* value, OsConfigLo
     return status;
 }
 
-static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePacketRedirectSendingIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.send_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.send_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.send_redirects", "net.ipv4.conf.all.send_redirects = 0\n", '#', true, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.send_redirects", "net.ipv4.conf.default.send_redirects = 0\n", '#', true, log))) ? 0 : ENOENT;
+    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.send_redirects=0", true, false, 0, 0, NULL, NULL, log, telemetry)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.send_redirects=0", true, false, 0, 0, NULL, NULL, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.send_redirects", "net.ipv4.conf.all.send_redirects = 0\n", '#', true, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.send_redirects", "net.ipv4.conf.default.send_redirects = 0\n", '#', true, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureIcmpRedirectsIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.default.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.all.accept_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.secure_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.secure_redirects=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.accept_redirects", "net.ipv4.conf.default.accept_redirects = 0\n", '#', true, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.default.accept_redirects", "net.ipv6.conf.default.accept_redirects = 0\n", '#', true, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.accept_redirects", "net.ipv4.conf.all.accept_redirects = 0\n", '#', true, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.all.accept_redirects", "net.ipv6.conf.all.accept_redirects = 0\n", '#', true, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.secure_redirects", "net.ipv4.conf.default.secure_redirects = 0\n", true, '#', log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.secure_redirects", "net.ipv4.conf.all.secure_redirects = 0\n", '#', true, log))) ? 0 : ENOENT;
+    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.accept_redirects=0", true, false, 0, 0, NULL, NULL, log, telemetry)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.default.accept_redirects=0", true, false, 0, 0, NULL, NULL, log, telemetry)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.accept_redirects=0", true, false, 0, 0, NULL, NULL, log, telemetry)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.all.accept_redirects=0", true, false, 0, 0, NULL, NULL, log, telemetry)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.secure_redirects=0", true, false, 0, 0, NULL, NULL, log, telemetry)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.secure_redirects=0", true, false, 0, 0, NULL, NULL, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.accept_redirects", "net.ipv4.conf.default.accept_redirects = 0\n", '#', true, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.default.accept_redirects", "net.ipv6.conf.default.accept_redirects = 0\n", '#', true, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.accept_redirects", "net.ipv4.conf.all.accept_redirects = 0\n", '#', true, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.all.accept_redirects", "net.ipv6.conf.all.accept_redirects = 0\n", '#', true, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.secure_redirects", "net.ipv4.conf.default.secure_redirects = 0\n", true, '#', log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.secure_redirects", "net.ipv4.conf.all.secure_redirects = 0\n", '#', true, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSourceRoutedPacketsIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSourceRoutedPacketsIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log) &&
-        SavePayloadToFile("/proc/sys/net/ipv6/conf/all/accept_source_route", "0", 1, log)) ? 0 : ENOENT;
+    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/accept_source_route", "0", 1, log, telemetry) &&
+        SavePayloadToFile("/proc/sys/net/ipv6/conf/all/accept_source_route", "0", 1, log, telemetry)) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/default/accept_source_route", "0", 1, log) &&
-        SavePayloadToFile("/proc/sys/net/ipv6/conf/default/accept_source_route", "0", 1, log)) ? 0 : ENOENT;
+    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/default/accept_source_route", "0", 1, log, telemetry) &&
+        SavePayloadToFile("/proc/sys/net/ipv6/conf/default/accept_source_route", "0", 1, log, telemetry)) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureIgnoringBogusIcmpBroadcastResponses(char* value, OsConfigLogHandle log)
+static int RemediateEnsureIgnoringBogusIcmpBroadcastResponses(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SavePayloadToFile("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", "1", 1, log) ? 0 : ENOENT;
+    return SavePayloadToFile("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", "1", 1, log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureIgnoringIcmpEchoPingsToMulticast(char* value, OsConfigLogHandle log)
+static int RemediateEnsureIgnoringIcmpEchoPingsToMulticast(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SavePayloadToFile("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", "1", 1, log) ? 0 : ENOENT;
+    return SavePayloadToFile("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", "1", 1, log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureMartianPacketLoggingIsEnabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.log_martians=1", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.log_martians=1", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.log_martians", "net.ipv4.conf.all.log_martians = 1\n", '#', true, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.log_martians", "net.ipv4.conf.default.log_martians = 1\n", '#', true, log))) ? 0 : ENOENT;
+    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.all.log_martians=1", true, false, 0, 0, NULL, NULL, log, telemetry)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv4.conf.default.log_martians=1", true, false, 0, 0, NULL, NULL, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.all.log_martians", "net.ipv4.conf.all.log_martians = 1\n", '#', true, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv4.conf.default.log_martians", "net.ipv4.conf.default.log_martians = 1\n", '#', true, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureReversePathSourceValidationIsEnabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureReversePathSourceValidationIsEnabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/rp_filter", "1", 1, log) &&
-        SavePayloadToFile("/proc/sys/net/ipv4/conf/default/rp_filter", "1", 1, log)) ? 0 : ENOENT;
+    return (SavePayloadToFile("/proc/sys/net/ipv4/conf/all/rp_filter", "1", 1, log, telemetry) &&
+        SavePayloadToFile("/proc/sys/net/ipv4/conf/default/rp_filter", "1", 1, log, telemetry)) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureTcpSynCookiesAreEnabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureTcpSynCookiesAreEnabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SavePayloadToFile("/proc/sys/net/ipv4/tcp_syncookies", "1", 1, log) ? 0 : ENOENT;
+    return SavePayloadToFile("/proc/sys/net/ipv4/tcp_syncookies", "1", 1, log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSystemNotActingAsNetworkSniffer(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSystemNotActingAsNetworkSniffer(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, "PROMISC", NULL, '#', true, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcRcLocal, "PROMISC", NULL, '#', true, log))) ? 0 : ENOENT;
+    return ((0 == ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, "PROMISC", NULL, '#', true, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcRcLocal, "PROMISC", NULL, '#', true, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureAllWirelessInterfacesAreDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAllWirelessInterfacesAreDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return DisableAllWirelessInterfaces(log);
+    return DisableAllWirelessInterfaces(log, telemetry);
 }
 
-static int RemediateEnsureIpv6ProtocolIsEnabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureIpv6ProtocolIsEnabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.default.disable_ipv6=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.all.disable_ipv6=0", true, false, 0, 0, NULL, NULL, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.default.disable_ipv6", "net.ipv6.conf.default.disable_ipv6 = 0\n", '#', true, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.all.disable_ipv6", "net.ipv6.conf.all.disable_ipv6 = 0\n", '#', true, log))) ? 0 : ENOENT;
+    return ((0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.default.disable_ipv6=0", true, false, 0, 0, NULL, NULL, log, telemetry)) &&
+        (0 == ExecuteCommand(NULL, "sysctl -w net.ipv6.conf.all.disable_ipv6=0", true, false, 0, 0, NULL, NULL, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.default.disable_ipv6", "net.ipv6.conf.default.disable_ipv6 = 0\n", '#', true, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcSysctlConf, "net.ipv6.conf.all.disable_ipv6", "net.ipv6.conf.all.disable_ipv6 = 0\n", '#', true, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureDccpIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDccpIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/dccp.conf";
     const char* payload = "install dccp /bin/true";
-    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
+    return SecureSaveToFile(fileName, payload, strlen(payload), log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSctpIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSctpIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/sctp.conf";
     const char* payload = "install sctp /bin/true";
-    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
+    return SecureSaveToFile(fileName, payload, strlen(payload), log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureDisabledSupportForRds(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDisabledSupportForRds(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/rds.conf";
     const char* payload = "install rds /bin/true";
-    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
+    return SecureSaveToFile(fileName, payload, strlen(payload), log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureTipcIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureTipcIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/tipc.conf";
     const char* payload = "install tipc /bin/true";
-    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
+    return SecureSaveToFile(fileName, payload, strlen(payload), log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureZeroconfNetworkingIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     int status = 0;
     UNUSED(value);
     // avahi-daemon may be retriggered by avahi-daemon.socket:
-    StopAndDisableDaemon(g_avahiDaemonSocket, log);
-    StopAndDisableDaemon(g_avahiDaemon, log);
-    if (0 == (status = (CheckDaemonNotActive(g_avahiDaemon, NULL, log) ? 0 : ENOENT)))
+    StopAndDisableDaemon(g_avahiDaemonSocket, log, telemetry);
+    StopAndDisableDaemon(g_avahiDaemon, log, telemetry);
+    if (0 == (status = (CheckDaemonNotActive(g_avahiDaemon, NULL, log, telemetry) ? 0 : ENOENT)))
     {
-        if (0 == (status = ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, g_ipv4ll, NULL, '#', true, log)))
+        if (0 == (status = ReplaceMarkedLinesInFile(g_etcNetworkInterfaces, g_ipv4ll, NULL, '#', true, log, telemetry)))
         {
-            if (FileExists(g_etcSysconfigNetwork) && IsAFile(g_etcSysconfigNetwork, log) && IsDaemonActive(g_legacyNetworkService, log))
+            if (FileExists(g_etcSysconfigNetwork) && IsAFile(g_etcSysconfigNetwork, log, telemetry) && IsDaemonActive(g_legacyNetworkService, log, telemetry))
             {
                 // cloud-init regenerates the config file on every boot, and discards any changes before its header,
                 // so we need to add the NOZEROCONF line to the top of the file.
-                status = ReplaceMarkedLinesInFilePrepend(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', true, log);
+                status = ReplaceMarkedLinesInFilePrepend(g_etcSysconfigNetwork, "NOZEROCONF", "NOZEROCONF=yes\n", '#', true, log, telemetry);
             }
         }
     }
     return status;
 }
 
-static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePermissionsOnBootloaderConfig(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     unsigned int mode = 0;
     InitEnsurePermissionsOnBootloaderConfig(value);
     mode = strtol(g_desiredEnsurePermissionsOnBootloaderConfig, NULL, 8);
 
-    return ((FileExists(g_bootGrubGrubCfg) && (0 == SetFileAccess(g_bootGrubGrubCfg, 0, 0, mode, log))) ||
-        (FileExists(g_bootGrubGrubConf) && (0 == SetFileAccess(g_bootGrubGrubConf, 0, 0, mode, log))) ||
-        (FileExists(g_bootGrub2GrubCfg) && (0 == SetFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, log))) ||
-        (FileExists(g_bootGrubUserCfg) && (0 == SetFileAccess(g_bootGrubUserCfg, 0, 0, mode, log))) ||
-        (FileExists(g_bootGrub2UserCfg) && (0 == SetFileAccess(g_bootGrub2UserCfg, 0, 0, mode, log))) ||
-        (FileExists(g_bootGrub2GrubConf) && (0 == SetFileAccess(g_bootGrub2GrubConf, 0, 0, mode, log)))) ? 0 : ENOENT;
+    return ((FileExists(g_bootGrubGrubCfg) && (0 == SetFileAccess(g_bootGrubGrubCfg, 0, 0, mode, log, telemetry))) ||
+        (FileExists(g_bootGrubGrubConf) && (0 == SetFileAccess(g_bootGrubGrubConf, 0, 0, mode, log, telemetry))) ||
+        (FileExists(g_bootGrub2GrubCfg) && (0 == SetFileAccess(g_bootGrub2GrubCfg, 0, 0, mode, log, telemetry))) ||
+        (FileExists(g_bootGrubUserCfg) && (0 == SetFileAccess(g_bootGrubUserCfg, 0, 0, mode, log, telemetry))) ||
+        (FileExists(g_bootGrub2UserCfg) && (0 == SetFileAccess(g_bootGrub2UserCfg, 0, 0, mode, log, telemetry))) ||
+        (FileExists(g_bootGrub2GrubConf) && (0 == SetFileAccess(g_bootGrub2GrubConf, 0, 0, mode, log, telemetry)))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsurePasswordReuseIsLimited(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePasswordReuseIsLimited(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsurePasswordReuseIsLimited(value);
-    return SetEnsurePasswordReuseIsLimited(atoi(g_desiredEnsurePasswordReuseIsLimited), log);
+    return SetEnsurePasswordReuseIsLimited(atoi(g_desiredEnsurePasswordReuseIsLimited), log, telemetry);
 }
 
-static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/usb-storage.conf";
     const char* payload = "install usb-storage /bin/true";
-    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
+    return SecureSaveToFile(fileName, payload, strlen(payload), log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureCoreDumpsAreRestricted(char* value, OsConfigLogHandle log)
+static int RemediateEnsureCoreDumpsAreRestricted(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     int status = 0;
     UNUSED(value);
 
-    if ((0 == CheckCoreDumpsHardLimitIsDisabledForAllUsers(NULL, log)) &&
-        (0 == CheckLineFoundNotCommentedOut(g_sysCtlConf, '#', g_fsSuidDumpable, NULL, log)))
+    if ((0 == CheckCoreDumpsHardLimitIsDisabledForAllUsers(NULL, log, telemetry)) &&
+        (0 == CheckLineFoundNotCommentedOut(g_sysCtlConf, '#', g_fsSuidDumpable, NULL, log, telemetry)))
     {
         return status;
     }
 
-    if (0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, "hard core", g_hardCoreZero, '#', true, log)))
+    if (0 == (status = ReplaceMarkedLinesInFile(g_etcSecurityLimitsConf, "hard core", g_hardCoreZero, '#', true, log, telemetry)))
     {
         if (false == FileExists(g_sysCtlConf))
         {
-            status = SavePayloadToFile(g_sysCtlConf, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log) ? 0 : ENOENT;
+            status = SavePayloadToFile(g_sysCtlConf, g_fsSuidDumpable, strlen(g_fsSuidDumpable), log, telemetry) ? 0 : ENOENT;
         }
         else
         {
-            status = ReplaceMarkedLinesInFile(g_sysCtlConf, "fs.suid_dumpable", g_fsSuidDumpable, '#', true, log);
+            status = ReplaceMarkedLinesInFile(g_sysCtlConf, "fs.suid_dumpable", g_fsSuidDumpable, '#', true, log, telemetry);
         }
     }
 
     return status;
 }
 
-static int RemediateEnsurePasswordCreationRequirements(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePasswordCreationRequirements(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     int* values = NULL;
     int numberOfValues = 0;
     int status = 0;
 
     InitEnsurePasswordCreationRequirements(value);
 
-    if ((0 == ConvertStringToIntegers(g_desiredEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, 10, log)) && (7 == numberOfValues))
+    if ((0 == ConvertStringToIntegers(g_desiredEnsurePasswordCreationRequirements, ',', &values, &numberOfValues, 10, log, telemetry)) && (7 == numberOfValues))
     {
-        status = SetPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], log);
+        status = SetPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], log, telemetry);
     }
     else
     {
+        OSConfigTelemetryStatusTrace(telemetry, "ConvertStringToIntegers", EINVAL);
         OsConfigLogError(log, "RemediateEnsurePasswordCreationRequirements: failed to parse '%s'. There must be 7 numbers, comma separated, "
             "in this order: retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit", g_desiredEnsurePasswordCreationRequirements);
     }
@@ -3748,103 +3991,129 @@ static int RemediateEnsurePasswordCreationRequirements(char* value, OsConfigLogH
     return status;
 }
 
-static int RemediateEnsureLockoutForFailedPasswordAttempts(char* value, OsConfigLogHandle log)
+static int RemediateEnsureLockoutForFailedPasswordAttempts(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetLockoutForFailedPasswordAttempts(log);
+    return SetLockoutForFailedPasswordAttempts(log, telemetry);
 }
 
-static int RemediateEnsureDisabledInstallationOfCramfsFileSystem(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDisabledInstallationOfCramfsFileSystem(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/cramfs.conf";
     const char* payload = "install cramfs /bin/true";
-    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
+    return SecureSaveToFile(fileName, payload, strlen(payload), log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureDisabledInstallationOfFreevxfsFileSystem(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDisabledInstallationOfFreevxfsFileSystem(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/freevxfs.conf";
     const char* payload = "install freevxfs /bin/true";
-    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
+    return SecureSaveToFile(fileName, payload, strlen(payload), log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureDisabledInstallationOfHfsFileSystem(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDisabledInstallationOfHfsFileSystem(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/hfs.conf";
     const char* payload = "install hfs /bin/true";
-    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
+    return SecureSaveToFile(fileName, payload, strlen(payload), log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureDisabledInstallationOfHfsplusFileSystem(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDisabledInstallationOfHfsplusFileSystem(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/hfsplus.conf";
     const char* payload = "install hfsplus /bin/true";
-    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
+    return SecureSaveToFile(fileName, payload, strlen(payload), log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureDisabledInstallationOfJffs2FileSystem(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDisabledInstallationOfJffs2FileSystem(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     const char* fileName = "/etc/modprobe.d/jffs2.conf";
     const char* payload = "install jffs2 /bin/true";
-    return SecureSaveToFile(fileName, payload, strlen(payload), log) ? 0 : ENOENT;
+    return SecureSaveToFile(fileName, payload, strlen(payload), log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureVirtualMemoryRandomizationIsEnabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureVirtualMemoryRandomizationIsEnabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return EnableVirtualMemoryRandomization(log);
+    return EnableVirtualMemoryRandomization(log, telemetry);
     return 0;
 }
 
-static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     OsConfigLogInfo(log, "Manually set a boot loader password for GRUB, %s", g_remediationIsNotPossible);
     return 0;
 }
 
-static int RemediateEnsureLoggingIsConfigured(char* value, OsConfigLogHandle log)
+static int RemediateEnsureLoggingIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return (((0 == InstallPackage(g_systemd, log) &&
-        ((0 == InstallPackage(g_rsyslog, log)) || (0 == InstallPackage(g_syslog, log)))) || (0 == InstallPackage(g_syslogNg, log))) &&
-        (((0 == CheckPackageInstalled(g_systemd, NULL, log)) && EnableAndStartDaemon(g_systemdJournald, log))) &&
-        ((((0 == CheckPackageInstalled(g_rsyslog, NULL, log)) && EnableAndStartDaemon(g_rsyslog, log))) ||
-        (((0 == CheckPackageInstalled(g_syslog, NULL, log)) && EnableAndStartDaemon(g_syslog, log))) ||
-        (((0 == CheckPackageInstalled(g_syslogNg, NULL, log)) && EnableAndStartDaemon(g_syslogNg, log))))) ? 0 : ENOENT;
+    return (((0 == InstallPackage(g_systemd, log, telemetry) &&
+        ((0 == InstallPackage(g_rsyslog, log, telemetry)) || (0 == InstallPackage(g_syslog, log, telemetry)))) || (0 == InstallPackage(g_syslogNg, log, telemetry))) &&
+        (((0 == CheckPackageInstalled(g_systemd, NULL, log, telemetry)) && EnableAndStartDaemon(g_systemdJournald, log, telemetry))) &&
+        ((((0 == CheckPackageInstalled(g_rsyslog, NULL, log, telemetry)) && EnableAndStartDaemon(g_rsyslog, log, telemetry))) ||
+        (((0 == CheckPackageInstalled(g_syslog, NULL, log, telemetry)) && EnableAndStartDaemon(g_syslog, log, telemetry))) ||
+        (((0 == CheckPackageInstalled(g_syslogNg, NULL, log, telemetry)) && EnableAndStartDaemon(g_syslogNg, log, telemetry))))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSyslogPackageIsInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSyslogPackageIsInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == InstallPackage(g_systemd, log) &&
-        ((0 == InstallPackage(g_rsyslog, log)) || (0 == InstallPackage(g_syslog, log)))) ||
-        ((0 == InstallPackage(g_syslogNg, log)))) ? 0 : ENOENT;
+    return ((0 == InstallPackage(g_systemd, log, telemetry) &&
+        ((0 == InstallPackage(g_rsyslog, log, telemetry)) || (0 == InstallPackage(g_syslog, log, telemetry)))) ||
+        ((0 == InstallPackage(g_syslogNg, log, telemetry)))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSystemdJournaldServicePersistsLogMessages(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSystemdJournaldServicePersistsLogMessages(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == InstallPackage(g_systemd, log)) &&
-        (0 == SetDirectoryAccess(g_varLogJournal, 0, -1, g_varLogJournalMode, log))) ? 0 : ENOENT;
+    return ((0 == InstallPackage(g_systemd, log, telemetry)) &&
+        (0 == SetDirectoryAccess(g_varLogJournal, 0, -1, g_varLogJournalMode, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureALoggingServiceIsEnabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureALoggingServiceIsEnabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((((0 == InstallPackage(g_systemd, log)) && EnableAndStartDaemon(g_systemdJournald, log)) &&
-        (((0 == InstallPackage(g_rsyslog, log)) && EnableAndStartDaemon(g_rsyslog, log)) ||
-        (((0 == InstallPackage(g_syslog, log) && EnableAndStartDaemon(g_syslog, log)))))) ||
-        (((0 == InstallPackage(g_syslogNg, log)) && EnableAndStartDaemon(g_syslogNg, log)))) ? 0 : ENOENT;
+    return ((((0 == InstallPackage(g_systemd, log, telemetry)) && EnableAndStartDaemon(g_systemdJournald, log, telemetry)) &&
+        (((0 == InstallPackage(g_rsyslog, log, telemetry)) && EnableAndStartDaemon(g_rsyslog, log, telemetry)) ||
+        (((0 == InstallPackage(g_syslog, log, telemetry) && EnableAndStartDaemon(g_syslog, log, telemetry)))))) ||
+        (((0 == InstallPackage(g_syslogNg, log, telemetry)) && EnableAndStartDaemon(g_syslogNg, log, telemetry)))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OsConfigLogHandle log)
+static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     const char* formatTemplate = "0%03d";
     int* modes = NULL;
     int numberOfModes = 0;
@@ -3853,23 +4122,25 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OsCo
 
     InitEnsureFilePermissionsForAllRsyslogLogFiles(value);
 
-    if (0 == (status = ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, 8, log)))
+    if (0 == (status = ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, 8, log, telemetry)))
     {
         if (numberOfModes > 0)
         {
             if (NULL != (formattedMode = FormatAllocateString(formatTemplate, modes[numberOfModes - 1])))
             {
-                status = SetEtcConfValue(g_etcRsyslogConf, g_fileCreateMode, formattedMode, log);
+                status = SetEtcConfValue(g_etcRsyslogConf, g_fileCreateMode, formattedMode, log, telemetry);
                 FREE_MEMORY(formattedMode);
             }
             else
             {
+                OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
                 OsConfigLogError(log, "RemediateEnsureFilePermissionsForAllRsyslogLogFiles: out of memory");
                 status = ENOMEM;
             }
         }
         else
         {
+            OSConfigTelemetryStatusTrace(telemetry, "ConvertStringToIntegers", ENOENT);
             OsConfigLogError(log, "RemediateEnsureFilePermissionsForAllRsyslogLogFiles: failed to parse desired value '%s'",
                 g_desiredEnsureFilePermissionsForAllRsyslogLogFiles);
             status = ENOENT;
@@ -3880,209 +4151,273 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(char* value, OsCo
     return status;
 }
 
-static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, OsConfigLogHandle log)
+static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == SetFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 0640, log)) &&
-        (0 == SetFileAccess(g_etcRsyslogConf, 0, 0, 0640, log))) ? 0 : ENOENT;
+    return ((0 == SetFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 0640, log, telemetry)) &&
+        (0 == SetFileAccess(g_etcRsyslogConf, 0, 0, 0640, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetEtcConfValue(g_etcRsyslogConf, "$FileGroup", "adm", log);
+    return SetEtcConfValue(g_etcRsyslogConf, "$FileGroup", "adm", log, telemetry);
 }
 
-static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return SetEtcConfValue(g_etcRsyslogConf, "$FileOwner", "syslog", log);
+    return SetEtcConfValue(g_etcRsyslogConf, "$FileOwner", "syslog", log, telemetry);
 }
 
-static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == ReplaceMarkedLinesInFile(g_etcRsyslogConf, "$ModLoad imudp", NULL, '#', true, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcRsyslogConf, "$ModLoad imtcp", NULL, '#', true, log))) ? 0 : ENOENT;
+    return ((0 == ReplaceMarkedLinesInFile(g_etcRsyslogConf, "$ModLoad imudp", NULL, '#', true, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcRsyslogConf, "$ModLoad imtcp", NULL, '#', true, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSyslogRotaterServiceIsEnabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     int status = ENOENT;
     UNUSED(value);
-    if ((0 == InstallPackage(g_logrotate, log)) && (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 0755, log)))
+    if ((0 == InstallPackage(g_logrotate, log, telemetry)) && (0 == SetFileAccess(g_etcCronDailyLogRotate, 0, 0, 0755, log, telemetry)))
     {
         status = 0;
-        if ((false == IsRedHatBased(log)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_16_04, log)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_18_04, log)))
+        if ((false == IsRedHatBased(log, telemetry)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_16_04, log, telemetry)) && (false == IsCurrentOs(PRETTY_NAME_UBUNTU_18_04, log, telemetry)))
         {
-            status = EnableAndStartDaemon(g_logrotateTimer, log) ? 0 : ENOENT;
+            status = EnableAndStartDaemon(g_logrotateTimer, log, telemetry) ? 0 : ENOENT;
         }
     }
     return status;
 }
 
-static int RemediateEnsureTelnetServiceIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureTelnetServiceIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_telnet, log);
-    return (CheckDaemonNotActive(g_telnet, NULL, log) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_telnet, NULL, '#', true, log))) ? 0 : ENOENT;
+    StopAndDisableDaemon(g_telnet, log, telemetry);
+    return (CheckDaemonNotActive(g_telnet, NULL, log, telemetry) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_telnet, NULL, '#', true, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureRcprshServiceIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRcprshServiceIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_rcpSocket, log);
-    StopAndDisableDaemon(g_rshSocket, log);
-    return (CheckDaemonNotActive(g_rcpSocket, NULL, log) && CheckDaemonNotActive(g_rshSocket, NULL, log)) ? 0 : ENOENT;
+    StopAndDisableDaemon(g_rcpSocket, log, telemetry);
+    StopAndDisableDaemon(g_rshSocket, log, telemetry);
+    return (CheckDaemonNotActive(g_rcpSocket, NULL, log, telemetry) && CheckDaemonNotActive(g_rshSocket, NULL, log, telemetry)) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureTftpServiceisDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureTftpServiceisDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_tftpHpa, log);
-    return (CheckDaemonNotActive(g_tftpHpa, NULL, log) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_tftp, NULL, '#', true, log))) ? 0 : ENOENT;
+    StopAndDisableDaemon(g_tftpHpa, log, telemetry);
+    return (CheckDaemonNotActive(g_tftpHpa, NULL, log, telemetry) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_tftp, NULL, '#', true, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     const char* payload = "root\n";
     UNUSED(value);
     remove(g_etcCronDeny);
     remove(g_etcAtDeny);
-    return (SecureSaveToFile(g_etcCronAllow, payload, strlen(payload), log) &&
-        SecureSaveToFile(g_etcAtAllow, payload, strlen(payload), log) &&
-        (0 != CheckFileExists(g_etcCronDeny, NULL, log)) &&
-        (0 != CheckFileExists(g_etcAtDeny, NULL, log)) &&
-        (0 == SetFileAccess(g_etcCronAllow, 0, 0, 0600, log)) &&
-        (0 == SetFileAccess(g_etcAtAllow, 0, 0, 0600, log))) ? 0 : ENOENT;
+    return (SecureSaveToFile(g_etcCronAllow, payload, strlen(payload), log, telemetry) &&
+        SecureSaveToFile(g_etcAtAllow, payload, strlen(payload), log, telemetry) &&
+        (0 != CheckFileExists(g_etcCronDeny, NULL, log, telemetry)) &&
+        (0 != CheckFileExists(g_etcAtDeny, NULL, log, telemetry)) &&
+        (0 == SetFileAccess(g_etcCronAllow, 0, 0, 0600, log, telemetry)) &&
+        (0 == SetFileAccess(g_etcAtAllow, 0, 0, 0600, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSshPortIsConfigured(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSshPortIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureSshPortIsConfiguredObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureSshPortIsConfiguredObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureSshBestPracticeProtocol(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSshBestPracticeProtocol(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureSshBestPracticeProtocolObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureSshBestPracticeProtocolObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureSshBestPracticeIgnoreRhosts(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSshBestPracticeIgnoreRhosts(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureSshBestPracticeIgnoreRhostsObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureSshBestPracticeIgnoreRhostsObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureSshLogLevelIsSet(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSshLogLevelIsSet(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureSshLogLevelIsSetObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureSshLogLevelIsSetObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureSshMaxAuthTriesIsSet(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSshMaxAuthTriesIsSet(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureSshMaxAuthTriesIsSetObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureSshMaxAuthTriesIsSetObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureAllowUsersIsConfigured(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAllowUsersIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureAllowUsersIsConfiguredObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureAllowUsersIsConfiguredObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureDenyUsersIsConfigured(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDenyUsersIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureDenyUsersIsConfiguredObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureDenyUsersIsConfiguredObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureAllowGroupsIsConfigured(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAllowGroupsIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureAllowGroupsIsConfiguredObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureAllowGroupsIsConfiguredObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureDenyGroupsConfigured(char* value, OsConfigLogHandle log)
+static int RemediateEnsureDenyGroupsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureDenyGroupsConfiguredObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureDenyGroupsConfiguredObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureSshPermitRootLoginIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSshPermitRootLoginIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureSshPermitRootLoginIsDisabledObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureSshPermitRootLoginIsDisabledObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureSshClientIntervalCountMaxIsConfigured(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSshClientIntervalCountMaxIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureSshClientIntervalCountMaxIsConfiguredObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureSshClientIntervalCountMaxIsConfiguredObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureSshClientAliveIntervalIsConfigured(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSshClientAliveIntervalIsConfigured(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureSshClientAliveIntervalIsConfiguredObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureSshClientAliveIntervalIsConfiguredObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureSshLoginGraceTimeIsSet(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSshLoginGraceTimeIsSet(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureSshLoginGraceTimeIsSetObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureSshLoginGraceTimeIsSetObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value, OsConfigLogHandle log)
+static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureSshWarningBannerIsEnabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSshWarningBannerIsEnabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureSshWarningBannerIsEnabledObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureSshWarningBannerIsEnabledObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(char* value, OsConfigLogHandle log)
+static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureAppropriateCiphersForSsh(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAppropriateCiphersForSsh(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    return ProcessSshAuditCheck(g_remediateEnsureAppropriateCiphersForSshObject, value, NULL, log);
+    UNUSED(telemetry);
+    UNUSED(telemetry);
+    return ProcessSshAuditCheck(g_remediateEnsureAppropriateCiphersForSshObject, value, NULL, log, telemetry);
 }
 
-static int RemediateEnsureAvahiDaemonServiceIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureAvahiDaemonServiceIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_avahiDaemonSocket, log);
-    StopAndDisableDaemon(g_avahiDaemon, log);
-    return CheckDaemonNotActive(g_avahiDaemon, NULL, log) ? 0 : ENOENT;
+    StopAndDisableDaemon(g_avahiDaemonSocket, log, telemetry);
+    StopAndDisableDaemon(g_avahiDaemon, log, telemetry);
+    return CheckDaemonNotActive(g_avahiDaemon, NULL, log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureCupsServiceisDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureCupsServiceisDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_cups, log);
-    UninstallPackage(g_cups, log);
-    return CheckDaemonNotActive(g_cups, NULL, log) ? 0 : ENOENT;
+    StopAndDisableDaemon(g_cups, log, telemetry);
+    UninstallPackage(g_cups, log, telemetry);
+    return CheckDaemonNotActive(g_cups, NULL, log, telemetry) ? 0 : ENOENT;
 }
 
-static int RemediateEnsurePostfixPackageIsUninstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePostfixPackageIsUninstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return UninstallPackage(g_postfix, log);
+    return UninstallPackage(g_postfix, log, telemetry);
 }
 
-static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePostfixNetworkListeningIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     int result = 0;
-    if (0 == IsPackageInstalled(g_postfix, log))
+    if (0 == IsPackageInstalled(g_postfix, log, telemetry))
     {
-        result = DisablePostfixNetworkListening(log);
+        result = DisablePostfixNetworkListening(log, telemetry);
     }
     return result;
 }
@@ -4094,173 +4429,207 @@ static int CheckAndFreeReason(char *reason)
     return result;
 }
 
-static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRpcgssdServiceIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_rpcgssd, log);
-    StopAndDisableDaemon(g_rpcGssd, log);
-    return CheckAndFreeReason(AuditEnsureRpcgssdServiceIsDisabled(log));
+    StopAndDisableDaemon(g_rpcgssd, log, telemetry);
+    StopAndDisableDaemon(g_rpcGssd, log, telemetry);
+    return CheckAndFreeReason(AuditEnsureRpcgssdServiceIsDisabled(log, telemetry));
 }
 
-static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRpcidmapdServiceIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_rpcidmapd, log);
-    StopAndDisableDaemon(g_nfsIdmapd, log);
-    return CheckAndFreeReason(AuditEnsureRpcidmapdServiceIsDisabled(log));
+    StopAndDisableDaemon(g_rpcidmapd, log, telemetry);
+    StopAndDisableDaemon(g_nfsIdmapd, log, telemetry);
+    return CheckAndFreeReason(AuditEnsureRpcidmapdServiceIsDisabled(log, telemetry));
 }
 
-static int RemediateEnsurePortmapServiceIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsurePortmapServiceIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    if (CheckDaemonActive(g_rpcbind, NULL, log))
+    if (CheckDaemonActive(g_rpcbind, NULL, log, telemetry))
     {
-        RestartDaemon(g_rpcbind, log);
-        StopDaemon(g_rpcbind, log);
-        DisableDaemon(g_rpcbind, log);
-        MaskDaemon(g_rpcbind, log);
+        RestartDaemon(g_rpcbind, log, telemetry);
+        StopDaemon(g_rpcbind, log, telemetry);
+        DisableDaemon(g_rpcbind, log, telemetry);
+        MaskDaemon(g_rpcbind, log, telemetry);
     }
-    if (CheckDaemonActive(g_rpcbindSocket, NULL, log))
+    if (CheckDaemonActive(g_rpcbindSocket, NULL, log, telemetry))
     {
-        RestartDaemon(g_rpcbindSocket, log);
-        StopDaemon(g_rpcbindSocket, log);
-        DisableDaemon(g_rpcbindSocket, log);
-        MaskDaemon(g_rpcbindSocket, log);
+        RestartDaemon(g_rpcbindSocket, log, telemetry);
+        StopDaemon(g_rpcbindSocket, log, telemetry);
+        DisableDaemon(g_rpcbindSocket, log, telemetry);
+        MaskDaemon(g_rpcbindSocket, log, telemetry);
     }
-    return (CheckDaemonNotActive(g_rpcbindSocket, NULL, log) && CheckDaemonNotActive(g_rpcbind, NULL, log)) ? 0 : ENOENT;
+    return (CheckDaemonNotActive(g_rpcbindSocket, NULL, log, telemetry) && CheckDaemonNotActive(g_rpcbind, NULL, log, telemetry)) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_nfsServer, log);
-    return CheckAndFreeReason(AuditEnsureNetworkFileSystemServiceIsDisabled(log));
+    StopAndDisableDaemon(g_nfsServer, log, telemetry);
+    return CheckAndFreeReason(AuditEnsureNetworkFileSystemServiceIsDisabled(log, telemetry));
 }
 
-static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
     int status = 0;
-    StopAndDisableDaemon(g_rpcSvcgssd, log);
+    StopAndDisableDaemon(g_rpcSvcgssd, log, telemetry);
     if (FileExists(g_etcInetdConf))
     {
-        status = ReplaceMarkedLinesInFile(g_etcInetdConf, g_needSvcgssd, NULL, '#', true, log);
+        status = ReplaceMarkedLinesInFile(g_etcInetdConf, g_needSvcgssd, NULL, '#', true, log, telemetry);
     }
-    return ((0 == status) && (false == IsDaemonActive(g_rpcSvcgssd, log))) ? 0 : ENOENT;
+    return ((0 == status) && (false == IsDaemonActive(g_rpcSvcgssd, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSnmpServerIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSnmpServerIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_snmpd, log);
-    return CheckAndFreeReason(AuditEnsureSnmpServerIsDisabled(log));
+    StopAndDisableDaemon(g_snmpd, log, telemetry);
+    return CheckAndFreeReason(AuditEnsureSnmpServerIsDisabled(log, telemetry));
 }
 
-static int RemediateEnsureRsynServiceIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRsynServiceIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_rsync, log);
-    return CheckAndFreeReason(AuditEnsureRsynServiceIsDisabled(log));
+    StopAndDisableDaemon(g_rsync, log, telemetry);
+    return CheckAndFreeReason(AuditEnsureRsynServiceIsDisabled(log, telemetry));
 }
 
-static int RemediateEnsureNisServerIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNisServerIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_ypserv, log);
-    return CheckAndFreeReason(AuditEnsureNisServerIsDisabled(log));
+    StopAndDisableDaemon(g_ypserv, log, telemetry);
+    return CheckAndFreeReason(AuditEnsureNisServerIsDisabled(log, telemetry));
 }
 
-static int RemediateEnsureRshClientNotInstalled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRshClientNotInstalled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return ((0 == UninstallPackage(g_rsh, log)) &&
-        (0 == UninstallPackage(g_rshClient, log))) ? 0 : ENOENT;
+    return ((0 == UninstallPackage(g_rsh, log, telemetry)) &&
+        (0 == UninstallPackage(g_rshClient, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureSmbWithSambaIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureSmbWithSambaIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     const char* command = "sed -i '/^\\[global\\]/a min protocol = SMB2' /etc/samba/smb.conf";
     const char* smb1 = "SMB1";
     int status = 0;
 
     UNUSED(value);
 
-    if (IsDaemonActive(g_smbd, log))
+    if (IsDaemonActive(g_smbd, log, telemetry))
     {
-        if (0 == (status = ReplaceMarkedLinesInFile(g_etcSambaConf, smb1, NULL, '#', true, log)))
+        if (0 == (status = ReplaceMarkedLinesInFile(g_etcSambaConf, smb1, NULL, '#', true, log, telemetry)))
         {
-            if (0 != FindTextInFile(g_etcSambaConf, g_minSambaProtocol, log))
+            if (0 != FindTextInFile(g_etcSambaConf, g_minSambaProtocol, log, telemetry))
             {
-                status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log);
+                status = ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log, telemetry);
             }
         }
     }
     else
     {
-        UninstallPackage(g_samba, log);
+        UninstallPackage(g_samba, log, telemetry);
         remove(g_etcSambaConf);
-        status = CheckPackageNotInstalled(g_samba, NULL, log);
+        status = CheckPackageNotInstalled(g_samba, NULL, log, telemetry);
     }
 
     return status;
 }
 
-static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, OsConfigLogHandle log)
+static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     int* modes = NULL;
     int numberOfModes = 0;
     int status = 0;
 
     InitEnsureUsersDotFilesArentGroupOrWorldWritable(value);
 
-    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, 8, log))) && (numberOfModes > 0))
+    if ((0 == (status = ConvertStringToIntegers(g_desiredEnsureUsersDotFilesArentGroupOrWorldWritable, ',', &modes, &numberOfModes, 8, log, telemetry))) && (numberOfModes > 0))
     {
-        status = SetUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, modes[numberOfModes - 1], log);
+        status = SetUsersRestrictedDotFiles((unsigned int*)modes, (unsigned int)numberOfModes, modes[numberOfModes - 1], log, telemetry);
     }
 
     FREE_MEMORY(modes);
     return status;
 }
 
-static int RemediateEnsureNoUsersHaveDotForwardFiles(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoUsersHaveDotForwardFiles(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, true, NULL, log);
+    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, true, NULL, log, telemetry);
 }
 
-static int RemediateEnsureNoUsersHaveDotNetrcFiles(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoUsersHaveDotNetrcFiles(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, true, NULL, log);
+    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, true, NULL, log, telemetry);
 }
 
-static int RemediateEnsureNoUsersHaveDotRhostsFiles(char* value, OsConfigLogHandle log)
+static int RemediateEnsureNoUsersHaveDotRhostsFiles(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, true, NULL, log);
+    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, true, NULL, log, telemetry);
 }
 
-static int RemediateEnsureRloginServiceIsDisabled(char* value, OsConfigLogHandle log)
+static int RemediateEnsureRloginServiceIsDisabled(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     UNUSED(value);
-    StopAndDisableDaemon(g_rlogin, log);
-    UninstallPackage(g_rlogin, log);
-    UninstallPackage(g_inetd, log);
-    UninstallPackage(g_inetUtilsInetd, log);
-    return ((0 == CheckPackageNotInstalled(g_rlogin, NULL, log)) &&
-        (0 == CheckPackageNotInstalled(g_inetd, NULL, log)) &&
-        (0 == CheckPackageNotInstalled(g_inetUtilsInetd, NULL, log)) &&
-        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_login, NULL, '#', true, log))) ? 0 : ENOENT;
+    StopAndDisableDaemon(g_rlogin, log, telemetry);
+    UninstallPackage(g_rlogin, log, telemetry);
+    UninstallPackage(g_inetd, log, telemetry);
+    UninstallPackage(g_inetUtilsInetd, log, telemetry);
+    return ((0 == CheckPackageNotInstalled(g_rlogin, NULL, log, telemetry)) &&
+        (0 == CheckPackageNotInstalled(g_inetd, NULL, log, telemetry)) &&
+        (0 == CheckPackageNotInstalled(g_inetUtilsInetd, NULL, log, telemetry)) &&
+        (0 == ReplaceMarkedLinesInFile(g_etcInetdConf, g_login, NULL, '#', true, log, telemetry))) ? 0 : ENOENT;
 }
 
-static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, OsConfigLogHandle log)
+static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     InitEnsureUnnecessaryAccountsAreRemoved(value);
-    return RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log);
+    return RemoveUserAccounts(g_desiredEnsureUnnecessaryAccountsAreRemoved, log, telemetry);
 }
 
-int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log)
+int AsbMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     JSON_Value* jsonValue = NULL;
     char* serializedValue = NULL;
     PerfClock perfClock = {{0, 0}, {0, 0}};
@@ -4269,6 +4638,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
+        OSConfigTelemetryStatusTrace(telemetry, NULL, EINVAL);
         OsConfigLogError(log, "AsbMmiGet(%s, %s, %p, %p) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         status = EINVAL;
         return status;
@@ -4277,10 +4647,11 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    StartPerfClock(&perfClock, GetPerfLog());
+    StartPerfClock(&perfClock, GetPerfLog(), telemetry);
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "strcmp", EINVAL);
         OsConfigLogError(log, "AsbMmiGet called for an unsupported component name (%s)", componentName);
         status = EINVAL;
     }
@@ -4288,682 +4659,683 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     {
         if (0 == strcmp(objectName, g_auditEnsureLoggingLevelObject))
         {
-            result = AuditEnsureLoggingLevel(log);
+            result = AuditEnsureLoggingLevel(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueObject))
         {
-            result = AuditEnsurePermissionsOnEtcIssue(log);
+            result = AuditEnsurePermissionsOnEtcIssue(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueNetObject))
         {
-            result = AuditEnsurePermissionsOnEtcIssueNet(log);
+            result = AuditEnsurePermissionsOnEtcIssueNet(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcHostsAllowObject))
         {
-            result = AuditEnsurePermissionsOnEtcHostsAllow(log);
+            result = AuditEnsurePermissionsOnEtcHostsAllow(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcHostsDenyObject))
         {
-            result = AuditEnsurePermissionsOnEtcHostsDeny(log);
+            result = AuditEnsurePermissionsOnEtcHostsDeny(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcSshSshdConfigObject))
         {
-            result = AuditEnsurePermissionsOnEtcSshSshdConfig(log);
+            result = AuditEnsurePermissionsOnEtcSshSshdConfig(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowObject))
         {
-            result = AuditEnsurePermissionsOnEtcShadow(log);
+            result = AuditEnsurePermissionsOnEtcShadow(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowDashObject))
         {
-            result = AuditEnsurePermissionsOnEtcShadowDash(log);
+            result = AuditEnsurePermissionsOnEtcShadowDash(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowObject))
         {
-            result = AuditEnsurePermissionsOnEtcGShadow(log);
+            result = AuditEnsurePermissionsOnEtcGShadow(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowDashObject))
         {
-            result = AuditEnsurePermissionsOnEtcGShadowDash(log);
+            result = AuditEnsurePermissionsOnEtcGShadowDash(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdObject))
         {
-            result = AuditEnsurePermissionsOnEtcPasswd(log);
+            result = AuditEnsurePermissionsOnEtcPasswd(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdDashObject))
         {
-            result = AuditEnsurePermissionsOnEtcPasswdDash(log);
+            result = AuditEnsurePermissionsOnEtcPasswdDash(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupObject))
         {
-            result = AuditEnsurePermissionsOnEtcGroup(log);
+            result = AuditEnsurePermissionsOnEtcGroup(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupDashObject))
         {
-            result = AuditEnsurePermissionsOnEtcGroupDash(log);
+            result = AuditEnsurePermissionsOnEtcGroupDash(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcAnacronTabObject))
         {
-            result = AuditEnsurePermissionsOnEtcAnacronTab(log);
+            result = AuditEnsurePermissionsOnEtcAnacronTab(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronD(log);
+            result = AuditEnsurePermissionsOnEtcCronD(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDailyObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronDaily(log);
+            result = AuditEnsurePermissionsOnEtcCronDaily(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronHourlyObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronHourly(log);
+            result = AuditEnsurePermissionsOnEtcCronHourly(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronMonthlyObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronMonthly(log);
+            result = AuditEnsurePermissionsOnEtcCronMonthly(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronWeeklyObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronWeekly(log);
+            result = AuditEnsurePermissionsOnEtcCronWeekly(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcMotdObject))
         {
-            result = AuditEnsurePermissionsOnEtcMotd(log);
+            result = AuditEnsurePermissionsOnEtcMotd(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureKernelSupportForCpuNxObject))
         {
-            result = AuditEnsureKernelSupportForCpuNx(log);
+            result = AuditEnsureKernelSupportForCpuNx(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNodevOptionOnHomePartitionObject))
         {
-            result = AuditEnsureNodevOptionOnHomePartition(log);
+            result = AuditEnsureNodevOptionOnHomePartition(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNodevOptionOnTmpPartitionObject))
         {
-            result = AuditEnsureNodevOptionOnTmpPartition(log);
+            result = AuditEnsureNodevOptionOnTmpPartition(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNodevOptionOnVarTmpPartitionObject))
         {
-            result = AuditEnsureNodevOptionOnVarTmpPartition(log);
+            result = AuditEnsureNodevOptionOnVarTmpPartition(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNosuidOptionOnTmpPartitionObject))
         {
-            result = AuditEnsureNosuidOptionOnTmpPartition(log);
+            result = AuditEnsureNosuidOptionOnTmpPartition(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNosuidOptionOnVarTmpPartitionObject))
         {
-            result = AuditEnsureNosuidOptionOnVarTmpPartition(log);
+            result = AuditEnsureNosuidOptionOnVarTmpPartition(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoexecOptionOnVarTmpPartitionObject))
         {
-            result = AuditEnsureNoexecOptionOnVarTmpPartition(log);
+            result = AuditEnsureNoexecOptionOnVarTmpPartition(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoexecOptionOnDevShmPartitionObject))
         {
-            result = AuditEnsureNoexecOptionOnDevShmPartition(log);
+            result = AuditEnsureNoexecOptionOnDevShmPartition(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNodevOptionEnabledForAllRemovableMediaObject))
         {
-            result = AuditEnsureNodevOptionEnabledForAllRemovableMedia(log);
+            result = AuditEnsureNodevOptionEnabledForAllRemovableMedia(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject))
         {
-            result = AuditEnsureNoexecOptionEnabledForAllRemovableMedia(log);
+            result = AuditEnsureNoexecOptionEnabledForAllRemovableMedia(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject))
         {
-            result = AuditEnsureNosuidOptionEnabledForAllRemovableMedia(log);
+            result = AuditEnsureNosuidOptionEnabledForAllRemovableMedia(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject))
         {
-            result = AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(log);
+            result = AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureInetdNotInstalledObject))
         {
-            result = AuditEnsureInetdNotInstalled(log);
+            result = AuditEnsureInetdNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureXinetdNotInstalledObject))
         {
-            result = AuditEnsureXinetdNotInstalled(log);
+            result = AuditEnsureXinetdNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllTelnetdPackagesUninstalledObject))
         {
-            result = AuditEnsureAllTelnetdPackagesUninstalled(log);
+            result = AuditEnsureAllTelnetdPackagesUninstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRshServerNotInstalledObject))
         {
-            result = AuditEnsureRshServerNotInstalled(log);
+            result = AuditEnsureRshServerNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNisNotInstalledObject))
         {
-            result = AuditEnsureNisNotInstalled(log);
+            result = AuditEnsureNisNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureTftpdNotInstalledObject))
         {
-            result = AuditEnsureTftpdNotInstalled(log);
+            result = AuditEnsureTftpdNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureReadaheadFedoraNotInstalledObject))
         {
-            result = AuditEnsureReadaheadFedoraNotInstalled(log);
+            result = AuditEnsureReadaheadFedoraNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureBluetoothHiddNotInstalledObject))
         {
-            result = AuditEnsureBluetoothHiddNotInstalled(log);
+            result = AuditEnsureBluetoothHiddNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureIsdnUtilsBaseNotInstalledObject))
         {
-            result = AuditEnsureIsdnUtilsBaseNotInstalled(log);
+            result = AuditEnsureIsdnUtilsBaseNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject))
         {
-            result = AuditEnsureIsdnUtilsKdumpToolsNotInstalled(log);
+            result = AuditEnsureIsdnUtilsKdumpToolsNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureIscDhcpdServerNotInstalledObject))
         {
-            result = AuditEnsureIscDhcpdServerNotInstalled(log);
+            result = AuditEnsureIscDhcpdServerNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSendmailNotInstalledObject))
         {
-            result = AuditEnsureSendmailNotInstalled(log);
+            result = AuditEnsureSendmailNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSldapdNotInstalledObject))
         {
-            result = AuditEnsureSldapdNotInstalled(log);
+            result = AuditEnsureSldapdNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureBind9NotInstalledObject))
         {
-            result = AuditEnsureBind9NotInstalled(log);
+            result = AuditEnsureBind9NotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDovecotCoreNotInstalledObject))
         {
-            result = AuditEnsureDovecotCoreNotInstalled(log);
+            result = AuditEnsureDovecotCoreNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAuditdInstalledObject))
         {
-            result = AuditEnsureAuditdInstalled(log);
+            result = AuditEnsureAuditdInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllEtcPasswdGroupsExistInEtcGroupObject))
         {
-            result = AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(log);
+            result = AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateUidsExistObject))
         {
-            result = AuditEnsureNoDuplicateUidsExist(log);
+            result = AuditEnsureNoDuplicateUidsExist(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateGidsExistObject))
         {
-            result = AuditEnsureNoDuplicateGidsExist(log);
+            result = AuditEnsureNoDuplicateGidsExist(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateUserNamesExistObject))
         {
-            result = AuditEnsureNoDuplicateUserNamesExist(log);
+            result = AuditEnsureNoDuplicateUserNamesExist(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateGroupsExistObject))
         {
-            result = AuditEnsureNoDuplicateGroupsExist(log);
+            result = AuditEnsureNoDuplicateGroupsExist(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureShadowGroupIsEmptyObject))
         {
-            result = AuditEnsureShadowGroupIsEmpty(log);
+            result = AuditEnsureShadowGroupIsEmpty(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRootGroupExistsObject))
         {
-            result = AuditEnsureRootGroupExists(log);
+            result = AuditEnsureRootGroupExists(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllAccountsHavePasswordsObject))
         {
-            result = AuditEnsureAllAccountsHavePasswords(log);
+            result = AuditEnsureAllAccountsHavePasswords(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject))
         {
-            result = AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(log);
+            result = AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcPasswdObject))
         {
-            result = AuditEnsureNoLegacyPlusEntriesInEtcPasswd(log);
+            result = AuditEnsureNoLegacyPlusEntriesInEtcPasswd(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcShadowObject))
         {
-            result = AuditEnsureNoLegacyPlusEntriesInEtcShadow(log);
+            result = AuditEnsureNoLegacyPlusEntriesInEtcShadow(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcGroupObject))
         {
-            result = AuditEnsureNoLegacyPlusEntriesInEtcGroup(log);
+            result = AuditEnsureNoLegacyPlusEntriesInEtcGroup(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDefaultRootAccountGroupIsGidZeroObject))
         {
-            result = AuditEnsureDefaultRootAccountGroupIsGidZero(log);
+            result = AuditEnsureDefaultRootAccountGroupIsGidZero(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRootIsOnlyUidZeroAccountObject))
         {
-            result = AuditEnsureRootIsOnlyUidZeroAccount(log);
+            result = AuditEnsureRootIsOnlyUidZeroAccount(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllUsersHomeDirectoriesExistObject))
         {
-            result = AuditEnsureAllUsersHomeDirectoriesExist(log);
+            result = AuditEnsureAllUsersHomeDirectoriesExist(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureUsersOwnTheirHomeDirectoriesObject))
         {
-            result = AuditEnsureUsersOwnTheirHomeDirectories(log);
+            result = AuditEnsureUsersOwnTheirHomeDirectories(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRestrictedUserHomeDirectoriesObject))
         {
-            result = AuditEnsureRestrictedUserHomeDirectories(log);
+            result = AuditEnsureRestrictedUserHomeDirectories(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordHashingAlgorithmObject))
         {
-            result = AuditEnsurePasswordHashingAlgorithm(log);
+            result = AuditEnsurePasswordHashingAlgorithm(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureMinDaysBetweenPasswordChangesObject))
         {
-            result = AuditEnsureMinDaysBetweenPasswordChanges(log);
+            result = AuditEnsureMinDaysBetweenPasswordChanges(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureInactivePasswordLockPeriodObject))
         {
-            result = AuditEnsureInactivePasswordLockPeriod(log);
+            result = AuditEnsureInactivePasswordLockPeriod(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditMaxDaysBetweenPasswordChangesObject))
         {
-            result = AuditEnsureMaxDaysBetweenPasswordChanges(log);
+            result = AuditEnsureMaxDaysBetweenPasswordChanges(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationObject))
         {
-            result = AuditEnsurePasswordExpiration(log);
+            result = AuditEnsurePasswordExpiration(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationWarningObject))
         {
-            result = AuditEnsurePasswordExpirationWarning(log);
+            result = AuditEnsurePasswordExpirationWarning(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSystemAccountsAreNonLoginObject))
         {
-            result = AuditEnsureSystemAccountsAreNonLogin(log);
+            result = AuditEnsureSystemAccountsAreNonLogin(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAuthenticationRequiredForSingleUserModeObject))
         {
-            result = AuditEnsureAuthenticationRequiredForSingleUserMode(log);
+            result = AuditEnsureAuthenticationRequiredForSingleUserMode(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePrelinkIsDisabledObject))
         {
-            result = AuditEnsurePrelinkIsDisabled(log);
+            result = AuditEnsurePrelinkIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureTalkClientIsNotInstalledObject))
         {
-            result = AuditEnsureTalkClientIsNotInstalled(log);
+            result = AuditEnsureTalkClientIsNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDotDoesNotAppearInRootsPathObject))
         {
-            result = AuditEnsureDotDoesNotAppearInRootsPath(log);
+            result = AuditEnsureDotDoesNotAppearInRootsPath(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureCronServiceIsEnabledObject))
         {
-            result = AuditEnsureCronServiceIsEnabled(log);
+            result = AuditEnsureCronServiceIsEnabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRemoteLoginWarningBannerIsConfiguredObject))
         {
-            result = AuditEnsureRemoteLoginWarningBannerIsConfigured(log);
+            result = AuditEnsureRemoteLoginWarningBannerIsConfigured(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureLocalLoginWarningBannerIsConfiguredObject))
         {
-            result = AuditEnsureLocalLoginWarningBannerIsConfigured(log);
+            result = AuditEnsureLocalLoginWarningBannerIsConfigured(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAuditdServiceIsRunningObject))
         {
-            result = AuditEnsureAuditdServiceIsRunning(log);
+            result = AuditEnsureAuditdServiceIsRunning(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSuRestrictedToRootGroupObject))
         {
-            result = AuditEnsureSuRestrictedToRootGroup(log);
+            result = AuditEnsureSuRestrictedToRootGroup(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDefaultUmaskForAllUsersObject))
         {
-            result = AuditEnsureDefaultUmaskForAllUsers(log);
+            result = AuditEnsureDefaultUmaskForAllUsers(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAutomountingDisabledObject))
         {
-            result = AuditEnsureAutomountingDisabled(log);
+            result = AuditEnsureAutomountingDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureKernelCompiledFromApprovedSourcesObject))
         {
-            result = AuditEnsureKernelCompiledFromApprovedSources(log);
+            result = AuditEnsureKernelCompiledFromApprovedSources(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDefaultDenyFirewallPolicyIsSetObject))
         {
-            result = AuditEnsureDefaultDenyFirewallPolicyIsSet(log);
+            result = AuditEnsureDefaultDenyFirewallPolicyIsSet(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePacketRedirectSendingIsDisabledObject))
         {
-            result = AuditEnsurePacketRedirectSendingIsDisabled(log);
+            result = AuditEnsurePacketRedirectSendingIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureIcmpRedirectsIsDisabledObject))
         {
-            result = AuditEnsureIcmpRedirectsIsDisabled(log);
+            result = AuditEnsureIcmpRedirectsIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSourceRoutedPacketsIsDisabledObject))
         {
-            result = AuditEnsureSourceRoutedPacketsIsDisabled(log);
+            result = AuditEnsureSourceRoutedPacketsIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAcceptingSourceRoutedPacketsIsDisabledObject))
         {
-            result = AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(log);
+            result = AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureIgnoringBogusIcmpBroadcastResponsesObject))
         {
-            result = AuditEnsureIgnoringBogusIcmpBroadcastResponses(log);
+            result = AuditEnsureIgnoringBogusIcmpBroadcastResponses(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureIgnoringIcmpEchoPingsToMulticastObject))
         {
-            result = AuditEnsureIgnoringIcmpEchoPingsToMulticast(log);
+            result = AuditEnsureIgnoringIcmpEchoPingsToMulticast(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureMartianPacketLoggingIsEnabledObject))
         {
-            result = AuditEnsureMartianPacketLoggingIsEnabled(log);
+            result = AuditEnsureMartianPacketLoggingIsEnabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureReversePathSourceValidationIsEnabledObject))
         {
-            result = AuditEnsureReversePathSourceValidationIsEnabled(log);
+            result = AuditEnsureReversePathSourceValidationIsEnabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureTcpSynCookiesAreEnabledObject))
         {
-            result = AuditEnsureTcpSynCookiesAreEnabled(log);
+            result = AuditEnsureTcpSynCookiesAreEnabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSystemNotActingAsNetworkSnifferObject))
         {
-            result = AuditEnsureSystemNotActingAsNetworkSniffer(log);
+            result = AuditEnsureSystemNotActingAsNetworkSniffer(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllWirelessInterfacesAreDisabledObject))
         {
-            result = AuditEnsureAllWirelessInterfacesAreDisabled(log);
+            result = AuditEnsureAllWirelessInterfacesAreDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureIpv6ProtocolIsEnabledObject))
         {
-            result = AuditEnsureIpv6ProtocolIsEnabled(log);
+            result = AuditEnsureIpv6ProtocolIsEnabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDccpIsDisabledObject))
         {
-            result = AuditEnsureDccpIsDisabled(log);
+            result = AuditEnsureDccpIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSctpIsDisabledObject))
         {
-            result = AuditEnsureSctpIsDisabled(log);
+            result = AuditEnsureSctpIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledSupportForRdsObject))
         {
-            result = AuditEnsureDisabledSupportForRds(log);
+            result = AuditEnsureDisabledSupportForRds(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureTipcIsDisabledObject))
         {
-            result = AuditEnsureTipcIsDisabled(log);
+            result = AuditEnsureTipcIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureZeroconfNetworkingIsDisabledObject))
         {
-            result = AuditEnsureZeroconfNetworkingIsDisabled(log);
+            result = AuditEnsureZeroconfNetworkingIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnBootloaderConfigObject))
         {
-            result = AuditEnsurePermissionsOnBootloaderConfig(log);
+            result = AuditEnsurePermissionsOnBootloaderConfig(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordReuseIsLimitedObject))
         {
-            result = AuditEnsurePasswordReuseIsLimited(log);
+            result = AuditEnsurePasswordReuseIsLimited(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureMountingOfUsbStorageDevicesIsDisabledObject))
         {
-            result = AuditEnsureMountingOfUsbStorageDevicesIsDisabled(log);
+            result = AuditEnsureMountingOfUsbStorageDevicesIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureCoreDumpsAreRestrictedObject))
         {
-            result = AuditEnsureCoreDumpsAreRestricted(log);
+            result = AuditEnsureCoreDumpsAreRestricted(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordCreationRequirementsObject))
         {
-            result = AuditEnsurePasswordCreationRequirements(log);
+            result = AuditEnsurePasswordCreationRequirements(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureLockoutForFailedPasswordAttemptsObject))
         {
-            result = AuditEnsureLockoutForFailedPasswordAttempts(log);
+            result = AuditEnsureLockoutForFailedPasswordAttempts(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfCramfsFileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfCramfsFileSystem(log);
+            result = AuditEnsureDisabledInstallationOfCramfsFileSystem(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfFreevxfsFileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfFreevxfsFileSystem(log);
+            result = AuditEnsureDisabledInstallationOfFreevxfsFileSystem(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfHfsFileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfHfsFileSystem(log);
+            result = AuditEnsureDisabledInstallationOfHfsFileSystem(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfHfsplusFileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfHfsplusFileSystem(log);
+            result = AuditEnsureDisabledInstallationOfHfsplusFileSystem(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfJffs2FileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfJffs2FileSystem(log);
+            result = AuditEnsureDisabledInstallationOfJffs2FileSystem(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureVirtualMemoryRandomizationIsEnabledObject))
         {
-            result = AuditEnsureVirtualMemoryRandomizationIsEnabled(log);
+            result = AuditEnsureVirtualMemoryRandomizationIsEnabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllBootloadersHavePasswordProtectionEnabledObject))
         {
-            result = AuditEnsureAllBootloadersHavePasswordProtectionEnabled(log);
+            result = AuditEnsureAllBootloadersHavePasswordProtectionEnabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureLoggingIsConfiguredObject))
         {
-            result = AuditEnsureLoggingIsConfigured(log);
+            result = AuditEnsureLoggingIsConfigured(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSyslogPackageIsInstalledObject))
         {
-            result = AuditEnsureSyslogPackageIsInstalled(log);
+            result = AuditEnsureSyslogPackageIsInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSystemdJournaldServicePersistsLogMessagesObject))
         {
-            result = AuditEnsureSystemdJournaldServicePersistsLogMessages(log);
+            result = AuditEnsureSystemdJournaldServicePersistsLogMessages(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureALoggingServiceIsEnabledObject))
         {
-            result = AuditEnsureALoggingServiceIsEnabled(log);
+            result = AuditEnsureALoggingServiceIsEnabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureFilePermissionsForAllRsyslogLogFilesObject))
         {
-            result = AuditEnsureFilePermissionsForAllRsyslogLogFiles(log);
+            result = AuditEnsureFilePermissionsForAllRsyslogLogFiles(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureLoggerConfigurationFilesAreRestrictedObject))
         {
-            result = AuditEnsureLoggerConfigurationFilesAreRestricted(log);
+            result = AuditEnsureLoggerConfigurationFilesAreRestricted(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject))
         {
-            result = AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(log);
+            result = AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject))
         {
-            result = AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(log);
+            result = AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRsyslogNotAcceptingRemoteMessagesObject))
         {
-            result = AuditEnsureRsyslogNotAcceptingRemoteMessages(log);
+            result = AuditEnsureRsyslogNotAcceptingRemoteMessages(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSyslogRotaterServiceIsEnabledObject))
         {
-            result = AuditEnsureSyslogRotaterServiceIsEnabled(log);
+            result = AuditEnsureSyslogRotaterServiceIsEnabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureTelnetServiceIsDisabledObject))
         {
-            result = AuditEnsureTelnetServiceIsDisabled(log);
+            result = AuditEnsureTelnetServiceIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRcprshServiceIsDisabledObject))
         {
-            result = AuditEnsureRcprshServiceIsDisabled(log);
+            result = AuditEnsureRcprshServiceIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureTftpServiceisDisabledObject))
         {
-            result = AuditEnsureTftpServiceisDisabled(log);
+            result = AuditEnsureTftpServiceisDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject))
         {
-            result = AuditEnsureAtCronIsRestrictedToAuthorizedUsers(log);
+            result = AuditEnsureAtCronIsRestrictedToAuthorizedUsers(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshPortIsConfiguredObject))
         {
-            result = AuditEnsureSshPortIsConfigured(log);
+            result = AuditEnsureSshPortIsConfigured(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeProtocolObject))
         {
-            result = AuditEnsureSshBestPracticeProtocol(log);
+            result = AuditEnsureSshBestPracticeProtocol(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeIgnoreRhostsObject))
         {
-            result = AuditEnsureSshBestPracticeIgnoreRhosts(log);
+            result = AuditEnsureSshBestPracticeIgnoreRhosts(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshLogLevelIsSetObject))
         {
-            result = AuditEnsureSshLogLevelIsSet(log);
+            result = AuditEnsureSshLogLevelIsSet(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshMaxAuthTriesIsSetObject))
         {
-            result = AuditEnsureSshMaxAuthTriesIsSet(log);
+            result = AuditEnsureSshMaxAuthTriesIsSet(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllowUsersIsConfiguredObject))
         {
-            result = AuditEnsureAllowUsersIsConfigured(log);
+            result = AuditEnsureAllowUsersIsConfigured(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDenyUsersIsConfiguredObject))
         {
-            result = AuditEnsureDenyUsersIsConfigured(log);
+            result = AuditEnsureDenyUsersIsConfigured(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllowGroupsIsConfiguredObject))
         {
-            result = AuditEnsureAllowGroupsIsConfigured(log);
+            result = AuditEnsureAllowGroupsIsConfigured(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureDenyGroupsConfiguredObject))
         {
-            result = AuditEnsureDenyGroupsConfigured(log);
+            result = AuditEnsureDenyGroupsConfigured(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshHostbasedAuthenticationIsDisabledObject))
         {
-            result = AuditEnsureSshHostbasedAuthenticationIsDisabled(log);
+            result = AuditEnsureSshHostbasedAuthenticationIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshPermitRootLoginIsDisabledObject))
         {
-            result = AuditEnsureSshPermitRootLoginIsDisabled(log);
+            result = AuditEnsureSshPermitRootLoginIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject))
         {
-            result = AuditEnsureSshPermitEmptyPasswordsIsDisabled(log);
+            result = AuditEnsureSshPermitEmptyPasswordsIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshClientIntervalCountMaxIsConfiguredObject))
         {
-            result = AuditEnsureSshClientIntervalCountMaxIsConfigured(log);
+            result = AuditEnsureSshClientIntervalCountMaxIsConfigured(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshClientAliveIntervalIsConfiguredObject))
         {
-            result = AuditEnsureSshClientAliveIntervalIsConfigured(log);
+            result = AuditEnsureSshClientAliveIntervalIsConfigured(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshLoginGraceTimeIsSetObject))
         {
-            result = AuditEnsureSshLoginGraceTimeIsSet(log);
+            result = AuditEnsureSshLoginGraceTimeIsSet(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
         {
-            result = AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(log);
+            result = AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshWarningBannerIsEnabledObject))
         {
-            result = AuditEnsureSshWarningBannerIsEnabled(log);
+            result = AuditEnsureSshWarningBannerIsEnabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
         {
-            result = AuditEnsureUsersCannotSetSshEnvironmentOptions(log);
+            result = AuditEnsureUsersCannotSetSshEnvironmentOptions(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAppropriateCiphersForSshObject))
         {
-            result = AuditEnsureAppropriateCiphersForSsh(log);
+            result = AuditEnsureAppropriateCiphersForSsh(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureAvahiDaemonServiceIsDisabledObject))
         {
-            result = AuditEnsureAvahiDaemonServiceIsDisabled(log);
+            result = AuditEnsureAvahiDaemonServiceIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureCupsServiceisDisabledObject))
         {
-            result = AuditEnsureCupsServiceisDisabled(log);
+            result = AuditEnsureCupsServiceisDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePostfixPackageIsUninstalledObject))
         {
-            result = AuditEnsurePostfixPackageIsUninstalled(log);
+            result = AuditEnsurePostfixPackageIsUninstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePostfixNetworkListeningIsDisabledObject))
         {
-            result = AuditEnsurePostfixNetworkListeningIsDisabled(log);
+            result = AuditEnsurePostfixNetworkListeningIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRpcgssdServiceIsDisabledObject))
         {
-            result = AuditEnsureRpcgssdServiceIsDisabled(log);
+            result = AuditEnsureRpcgssdServiceIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRpcidmapdServiceIsDisabledObject))
         {
-            result = AuditEnsureRpcidmapdServiceIsDisabled(log);
+            result = AuditEnsureRpcidmapdServiceIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsurePortmapServiceIsDisabledObject))
         {
-            result = AuditEnsurePortmapServiceIsDisabled(log);
+            result = AuditEnsurePortmapServiceIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNetworkFileSystemServiceIsDisabledObject))
         {
-            result = AuditEnsureNetworkFileSystemServiceIsDisabled(log);
+            result = AuditEnsureNetworkFileSystemServiceIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRpcsvcgssdServiceIsDisabledObject))
         {
-            result = AuditEnsureRpcsvcgssdServiceIsDisabled(log);
+            result = AuditEnsureRpcsvcgssdServiceIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSnmpServerIsDisabledObject))
         {
-            result = AuditEnsureSnmpServerIsDisabled(log);
+            result = AuditEnsureSnmpServerIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRsynServiceIsDisabledObject))
         {
-            result = AuditEnsureRsynServiceIsDisabled(log);
+            result = AuditEnsureRsynServiceIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNisServerIsDisabledObject))
         {
-            result = AuditEnsureNisServerIsDisabled(log);
+            result = AuditEnsureNisServerIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRshClientNotInstalledObject))
         {
-            result = AuditEnsureRshClientNotInstalled(log);
+            result = AuditEnsureRshClientNotInstalled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureSmbWithSambaIsDisabledObject))
         {
-            result = AuditEnsureSmbWithSambaIsDisabled(log);
+            result = AuditEnsureSmbWithSambaIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureUsersDotFilesArentGroupOrWorldWritableObject))
         {
-            result = AuditEnsureUsersDotFilesArentGroupOrWorldWritable(log);
+            result = AuditEnsureUsersDotFilesArentGroupOrWorldWritable(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotForwardFilesObject))
         {
-            result = AuditEnsureNoUsersHaveDotForwardFiles(log);
+            result = AuditEnsureNoUsersHaveDotForwardFiles(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotNetrcFilesObject))
         {
-            result = AuditEnsureNoUsersHaveDotNetrcFiles(log);
+            result = AuditEnsureNoUsersHaveDotNetrcFiles(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotRhostsFilesObject))
         {
-            result = AuditEnsureNoUsersHaveDotRhostsFiles(log);
+            result = AuditEnsureNoUsersHaveDotRhostsFiles(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureRloginServiceIsDisabledObject))
         {
-            result = AuditEnsureRloginServiceIsDisabled(log);
+            result = AuditEnsureRloginServiceIsDisabled(log, telemetry);
         }
         else if (0 == strcmp(objectName, g_auditEnsureUnnecessaryAccountsAreRemovedObject))
         {
-            result = AuditEnsureUnnecessaryAccountsAreRemoved(log);
+            result = AuditEnsureUnnecessaryAccountsAreRemoved(log, telemetry);
         }
         else
         {
+            OSConfigTelemetryStatusTrace(telemetry, "strcmp", EINVAL);
             OsConfigLogError(log, "AsbMmiGet called for an unsupported object (%s)", objectName);
             status = EINVAL;
         }
@@ -4973,10 +5345,12 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
     {
         if ((NULL == result) || (NULL == (jsonValue = json_value_init_string(result))))
         {
+            OSConfigTelemetryStatusTrace(telemetry, "json_value_init_string", ENOENT);
             OsConfigLogError(log, "AsbMmiGet(%s, %s): audit failure without a valid reason", componentName, objectName);
             FREE_MEMORY(result);
             if (NULL == (result = DuplicateString(g_fail)))
             {
+                OSConfigTelemetryStatusTrace(telemetry, "DuplicateString", ENOMEM);
                 OsConfigLogError(log, "AsbMmiGet: DuplicateString failed");
                 status = ENOMEM;
             }
@@ -4986,11 +5360,13 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         {
             if ((NULL == jsonValue) && (NULL == (jsonValue = json_value_init_string(result))))
             {
+                OSConfigTelemetryStatusTrace(telemetry, "json_value_init_string", ENOMEM);
                 OsConfigLogError(log, "AsbMmiGet(%s, %s): json_value_init_string(%s) failed", componentName, objectName, result);
                 status = ENOMEM;
             }
             else if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
             {
+                OSConfigTelemetryStatusTrace(telemetry, "json_serialize_to_string", ENOMEM);
                 OsConfigLogError(log, "AsbMmiGet(%s, %s): json_serialize_to_string(%s) failed", componentName, objectName, result);
                 status = ENOMEM;
             }
@@ -5013,6 +5389,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
                 }
                 else
                 {
+                    OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
                     OsConfigLogError(log, "AsbMmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
                     *payloadSizeBytes = 0;
                     status = ENOMEM;
@@ -5035,35 +5412,38 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
 
     FREE_MEMORY(result);
 
-    if (0 == StopPerfClock(&perfClock, GetPerfLog()))
+    if (0 == StopPerfClock(&perfClock, GetPerfLog(), telemetry))
     {
-        LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
-
+        LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog(), telemetry);
+        long durationMicroseconds = GetPerfClockTime(&perfClock, log, telemetry);
         // For telemetry:
-        char durationMicroseconds[MAX_LONG_STRING_LENGTH] = {0};
-        char statusString[MAX_INT_STRING_LENGTH] = {0};
-        snprintf(durationMicroseconds, sizeof(durationMicroseconds), "%ld", GetPerfClockTime(&perfClock, log));
-        snprintf(statusString, sizeof(statusString), "%d", status);
-        const char* keyValuePairs[] = {
-            "ComponentName", componentName,
-            "ObjectName", objectName,
-            "ObjectResult", statusString,
-            "Microseconds", durationMicroseconds,
-            "DistroName", g_prettyName ? g_prettyName : "unknown",
-            "CorrelationId", getenv("activityId") ? getenv("activityId") : "",
-            "Version", OSCONFIG_VERSION
-        };
-        OSConfigTelemetryLogEvent(g_telemetry, "RuleComplete", keyValuePairs, sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2);
+        // char durationMicroseconds[MAX_LONG_STRING_LENGTH] = {0};
+        // char statusString[MAX_INT_STRING_LENGTH] = {0};
+        // snprintf(durationMicroseconds, sizeof(durationMicroseconds), "%ld", GetPerfClockTime(&perfClock, log, telemetry));
+        // snprintf(statusString, sizeof(statusString), "%d", status);
+        // const char* keyValuePairs[] = {
+        //     "ComponentName", componentName,
+        //     "ObjectName", objectName,
+        //     "ObjectResult", statusString,
+        //     "Microseconds", durationMicroseconds,
+        //     "DistroName", g_prettyName ? g_prettyName : "unknown",
+        //     "CorrelationId", getenv("activityId") ? getenv("activityId") : "",
+        //     "Version", OSCONFIG_VERSION
+        // };
+        // OSConfigTelemetryLogEvent(telemetry, "RuleComplete", keyValuePairs, sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2);
+        OSConfigTelemetryRuleComplete(telemetry, componentName, objectName, status, durationMicroseconds);
 
         OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Reason: '%.*s', Microseconds: %ld",
-            g_prettyName, componentName, objectName, strerror(status), status, *payloadSizeBytes, *payload, GetPerfClockTime(&perfClock, log));
+            g_prettyName, componentName, objectName, strerror(status), status, *payloadSizeBytes, *payload, durationMicroseconds);
     }
 
     return status;
 }
 
-int AsbMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
+int AsbMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
+    UNUSED(telemetry);
     const char* init = "init";
     JSON_Value* jsonValue = NULL;
     char* jsonString = NULL;
@@ -5074,14 +5454,16 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     // No payload is accepted for now, this may change once the complete Azure Security Baseline is implemented
     if ((NULL == componentName) || (NULL == objectName))
     {
+        OSConfigTelemetryStatusTrace(telemetry, NULL, EINVAL);
         OsConfigLogError(log, "AsbMmiSet(%s, %s, %s, %d) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         return EINVAL;
     }
 
-    StartPerfClock(&perfClock, GetPerfLog());
+    StartPerfClock(&perfClock, GetPerfLog(), telemetry);
 
     if (0 != strcmp(componentName, g_securityBaselineComponentName))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "strcmp", EINVAL);
         OsConfigLogError(log, "AsbMmiSet called for an unsupported component name (%s)", componentName);
         status = EINVAL;
     }
@@ -5097,18 +5479,21 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
             {
                 if (NULL == (jsonString = (char*)json_value_get_string(jsonValue)))
                 {
+                    OSConfigTelemetryStatusTrace(telemetry, "json_value_get_string", EINVAL);
                     status = EINVAL;
                     OsConfigLogError(log, "AsbMmiSet: json_value_get_string(%s) failed", payloadString);
                 }
             }
             else
             {
+                OSConfigTelemetryStatusTrace(telemetry, "json_parse_string", EINVAL);
                 status = EINVAL;
                 OsConfigLogError(log, "AsbMmiSet: json_parse_string(%s) failed", payloadString);
             }
         }
         else
         {
+            OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
             status = ENOMEM;
             OsConfigLogError(log, "AsbMmiSet: failed to allocate %d bytes of memory", payloadSizeBytes + 1);
         }
@@ -5118,683 +5503,683 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
     {
         if (0 == strcmp(objectName, g_remediateEnsureLoggingLevelObject))
         {
-            status = RemediateEnsureLoggingLevel(jsonString, log);
+            status = RemediateEnsureLoggingLevel(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcIssueObject))
         {
-            status = RemediateEnsurePermissionsOnEtcIssue(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcIssue(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcIssueNetObject))
         {
-            status = RemediateEnsurePermissionsOnEtcIssueNet(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcIssueNet(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcHostsAllowObject))
         {
-            status = RemediateEnsurePermissionsOnEtcHostsAllow(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcHostsAllow(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcHostsDenyObject))
         {
-            status = RemediateEnsurePermissionsOnEtcHostsDeny(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcHostsDeny(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcSshSshdConfigObject))
         {
-            status = RemediateEnsurePermissionsOnEtcSshSshdConfig(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcSshSshdConfig(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcShadowObject))
         {
-            status = RemediateEnsurePermissionsOnEtcShadow(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcShadow(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcShadowDashObject))
         {
-            status = RemediateEnsurePermissionsOnEtcShadowDash(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcShadowDash(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcGShadowObject))
         {
-            status = RemediateEnsurePermissionsOnEtcGShadow(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcGShadow(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcGShadowDashObject))
         {
-            status = RemediateEnsurePermissionsOnEtcGShadowDash(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcGShadowDash(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcPasswdObject))
         {
-            status = RemediateEnsurePermissionsOnEtcPasswd(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcPasswd(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcPasswdDashObject))
         {
-            status = RemediateEnsurePermissionsOnEtcPasswdDash(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcPasswdDash(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcGroupObject))
         {
-            status = RemediateEnsurePermissionsOnEtcGroup(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcGroup(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcGroupDashObject))
         {
-            status = RemediateEnsurePermissionsOnEtcGroupDash(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcGroupDash(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcAnacronTabObject))
         {
-            status = RemediateEnsurePermissionsOnEtcAnacronTab(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcAnacronTab(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcCronDObject))
         {
-            status = RemediateEnsurePermissionsOnEtcCronD(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcCronD(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcCronDailyObject))
         {
-            status = RemediateEnsurePermissionsOnEtcCronDaily(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcCronDaily(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcCronHourlyObject))
         {
-            status = RemediateEnsurePermissionsOnEtcCronHourly(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcCronHourly(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcCronMonthlyObject))
         {
-            status = RemediateEnsurePermissionsOnEtcCronMonthly(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcCronMonthly(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcCronWeeklyObject))
         {
-            status = RemediateEnsurePermissionsOnEtcCronWeekly(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcCronWeekly(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcMotdObject))
         {
-            status = RemediateEnsurePermissionsOnEtcMotd(jsonString, log);
+            status = RemediateEnsurePermissionsOnEtcMotd(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureInetdNotInstalledObject))
         {
-            status = RemediateEnsureInetdNotInstalled(jsonString, log);
+            status = RemediateEnsureInetdNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureXinetdNotInstalledObject))
         {
-            status = RemediateEnsureXinetdNotInstalled(jsonString, log);
+            status = RemediateEnsureXinetdNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRshServerNotInstalledObject))
         {
-            status = RemediateEnsureRshServerNotInstalled(jsonString, log);
+            status = RemediateEnsureRshServerNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNisNotInstalledObject))
         {
-            status = RemediateEnsureNisNotInstalled(jsonString, log);
+            status = RemediateEnsureNisNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureTftpdNotInstalledObject))
         {
-            status = RemediateEnsureTftpdNotInstalled(jsonString, log);
+            status = RemediateEnsureTftpdNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureReadaheadFedoraNotInstalledObject))
         {
-            status = RemediateEnsureReadaheadFedoraNotInstalled(jsonString, log);
+            status = RemediateEnsureReadaheadFedoraNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureBluetoothHiddNotInstalledObject))
         {
-            status = RemediateEnsureBluetoothHiddNotInstalled(jsonString, log);
+            status = RemediateEnsureBluetoothHiddNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureIsdnUtilsBaseNotInstalledObject))
         {
-            status = RemediateEnsureIsdnUtilsBaseNotInstalled(jsonString, log);
+            status = RemediateEnsureIsdnUtilsBaseNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureIsdnUtilsKdumpToolsNotInstalledObject))
         {
-            status = RemediateEnsureIsdnUtilsKdumpToolsNotInstalled(jsonString, log);
+            status = RemediateEnsureIsdnUtilsKdumpToolsNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureIscDhcpdServerNotInstalledObject))
         {
-            status = RemediateEnsureIscDhcpdServerNotInstalled(jsonString, log);
+            status = RemediateEnsureIscDhcpdServerNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSendmailNotInstalledObject))
         {
-            status = RemediateEnsureSendmailNotInstalled(jsonString, log);
+            status = RemediateEnsureSendmailNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSldapdNotInstalledObject))
         {
-            status = RemediateEnsureSldapdNotInstalled(jsonString, log);
+            status = RemediateEnsureSldapdNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureBind9NotInstalledObject))
         {
-            status = RemediateEnsureBind9NotInstalled(jsonString, log);
+            status = RemediateEnsureBind9NotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDovecotCoreNotInstalledObject))
         {
-            status = RemediateEnsureDovecotCoreNotInstalled(jsonString, log);
+            status = RemediateEnsureDovecotCoreNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAuditdInstalledObject))
         {
-            status = RemediateEnsureAuditdInstalled(jsonString, log);
+            status = RemediateEnsureAuditdInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePrelinkIsDisabledObject))
         {
-            status = RemediateEnsurePrelinkIsDisabled(jsonString, log);
+            status = RemediateEnsurePrelinkIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureTalkClientIsNotInstalledObject))
         {
-            status = RemediateEnsureTalkClientIsNotInstalled(jsonString, log);
+            status = RemediateEnsureTalkClientIsNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureCronServiceIsEnabledObject))
         {
-            status = RemediateEnsureCronServiceIsEnabled(jsonString, log);
+            status = RemediateEnsureCronServiceIsEnabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAuditdServiceIsRunningObject))
         {
-            status = RemediateEnsureAuditdServiceIsRunning(jsonString, log);
+            status = RemediateEnsureAuditdServiceIsRunning(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureKernelSupportForCpuNxObject))
         {
-            status = RemediateEnsureKernelSupportForCpuNx(jsonString, log);
+            status = RemediateEnsureKernelSupportForCpuNx(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNodevOptionOnHomePartitionObject))
         {
-            status = RemediateEnsureNodevOptionOnHomePartition(jsonString, log);
+            status = RemediateEnsureNodevOptionOnHomePartition(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNodevOptionOnTmpPartitionObject))
         {
-            status = RemediateEnsureNodevOptionOnTmpPartition(jsonString, log);
+            status = RemediateEnsureNodevOptionOnTmpPartition(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNodevOptionOnVarTmpPartitionObject))
         {
-            status = RemediateEnsureNodevOptionOnVarTmpPartition(jsonString, log);
+            status = RemediateEnsureNodevOptionOnVarTmpPartition(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNosuidOptionOnTmpPartitionObject))
         {
-            status = RemediateEnsureNosuidOptionOnTmpPartition(jsonString, log);
+            status = RemediateEnsureNosuidOptionOnTmpPartition(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNosuidOptionOnVarTmpPartitionObject))
         {
-            status = RemediateEnsureNosuidOptionOnVarTmpPartition(jsonString, log);
+            status = RemediateEnsureNosuidOptionOnVarTmpPartition(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoexecOptionOnVarTmpPartitionObject))
         {
-            status = RemediateEnsureNoexecOptionOnVarTmpPartition(jsonString, log);
+            status = RemediateEnsureNoexecOptionOnVarTmpPartition(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoexecOptionOnDevShmPartitionObject))
         {
-            status = RemediateEnsureNoexecOptionOnDevShmPartition(jsonString, log);
+            status = RemediateEnsureNoexecOptionOnDevShmPartition(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNodevOptionEnabledForAllRemovableMediaObject))
         {
-            status = RemediateEnsureNodevOptionEnabledForAllRemovableMedia(jsonString, log);
+            status = RemediateEnsureNodevOptionEnabledForAllRemovableMedia(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoexecOptionEnabledForAllRemovableMediaObject))
         {
-            status = RemediateEnsureNoexecOptionEnabledForAllRemovableMedia(jsonString, log);
+            status = RemediateEnsureNoexecOptionEnabledForAllRemovableMedia(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNosuidOptionEnabledForAllRemovableMediaObject))
         {
-            status = RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(jsonString, log);
+            status = RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject))
         {
-            status = RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(jsonString, log);
+            status = RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAllTelnetdPackagesUninstalledObject))
         {
-            status = RemediateEnsureAllTelnetdPackagesUninstalled(jsonString, log);
+            status = RemediateEnsureAllTelnetdPackagesUninstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAllEtcPasswdGroupsExistInEtcGroupObject))
         {
-            status = RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(jsonString, log);
+            status = RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoDuplicateUidsExistObject))
         {
-            status = RemediateEnsureNoDuplicateUidsExist(jsonString, log);
+            status = RemediateEnsureNoDuplicateUidsExist(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoDuplicateGidsExistObject))
         {
-            status = RemediateEnsureNoDuplicateGidsExist(jsonString, log);
+            status = RemediateEnsureNoDuplicateGidsExist(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoDuplicateUserNamesExistObject))
         {
-            status = RemediateEnsureNoDuplicateUserNamesExist(jsonString, log);
+            status = RemediateEnsureNoDuplicateUserNamesExist(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoDuplicateGroupsExistObject))
         {
-            status = RemediateEnsureNoDuplicateGroupsExist(jsonString, log);
+            status = RemediateEnsureNoDuplicateGroupsExist(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureShadowGroupIsEmptyObject))
         {
-            status = RemediateEnsureShadowGroupIsEmpty(jsonString, log);
+            status = RemediateEnsureShadowGroupIsEmpty(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRootGroupExistsObject))
         {
-            status = RemediateEnsureRootGroupExists(jsonString, log);
+            status = RemediateEnsureRootGroupExists(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAllAccountsHavePasswordsObject))
         {
-            status = RemediateEnsureAllAccountsHavePasswords(jsonString, log);
+            status = RemediateEnsureAllAccountsHavePasswords(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject))
         {
-            status = RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(jsonString, log);
+            status = RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoLegacyPlusEntriesInEtcPasswdObject))
         {
-            status = RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(jsonString, log);
+            status = RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoLegacyPlusEntriesInEtcShadowObject))
         {
-            status = RemediateEnsureNoLegacyPlusEntriesInEtcShadow(jsonString, log);
+            status = RemediateEnsureNoLegacyPlusEntriesInEtcShadow(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoLegacyPlusEntriesInEtcGroupObject))
         {
-            status = RemediateEnsureNoLegacyPlusEntriesInEtcGroup(jsonString, log);
+            status = RemediateEnsureNoLegacyPlusEntriesInEtcGroup(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDefaultRootAccountGroupIsGidZeroObject))
         {
-            status = RemediateEnsureDefaultRootAccountGroupIsGidZero(jsonString, log);
+            status = RemediateEnsureDefaultRootAccountGroupIsGidZero(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRootIsOnlyUidZeroAccountObject))
         {
-            status = RemediateEnsureRootIsOnlyUidZeroAccount(jsonString, log);
+            status = RemediateEnsureRootIsOnlyUidZeroAccount(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAllUsersHomeDirectoriesExistObject))
         {
-            status = RemediateEnsureAllUsersHomeDirectoriesExist(jsonString, log);
+            status = RemediateEnsureAllUsersHomeDirectoriesExist(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureUsersOwnTheirHomeDirectoriesObject))
         {
-            status = RemediateEnsureUsersOwnTheirHomeDirectories(jsonString, log);
+            status = RemediateEnsureUsersOwnTheirHomeDirectories(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRestrictedUserHomeDirectoriesObject))
         {
-            status = RemediateEnsureRestrictedUserHomeDirectories(jsonString, log);
+            status = RemediateEnsureRestrictedUserHomeDirectories(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePasswordHashingAlgorithmObject))
         {
-            status = RemediateEnsurePasswordHashingAlgorithm(jsonString, log);
+            status = RemediateEnsurePasswordHashingAlgorithm(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureMinDaysBetweenPasswordChangesObject))
         {
-            status = RemediateEnsureMinDaysBetweenPasswordChanges(jsonString, log);
+            status = RemediateEnsureMinDaysBetweenPasswordChanges(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureInactivePasswordLockPeriodObject))
         {
-            status = RemediateEnsureInactivePasswordLockPeriod(jsonString, log);
+            status = RemediateEnsureInactivePasswordLockPeriod(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateMaxDaysBetweenPasswordChangesObject))
         {
-            status = RemediateEnsureMaxDaysBetweenPasswordChanges(jsonString, log);
+            status = RemediateEnsureMaxDaysBetweenPasswordChanges(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePasswordExpirationObject))
         {
-            status = RemediateEnsurePasswordExpiration(jsonString, log);
+            status = RemediateEnsurePasswordExpiration(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePasswordExpirationWarningObject))
         {
-            status = RemediateEnsurePasswordExpirationWarning(jsonString, log);
+            status = RemediateEnsurePasswordExpirationWarning(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSystemAccountsAreNonLoginObject))
         {
-            status = RemediateEnsureSystemAccountsAreNonLogin(jsonString, log);
+            status = RemediateEnsureSystemAccountsAreNonLogin(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAuthenticationRequiredForSingleUserModeObject))
         {
-            status = RemediateEnsureAuthenticationRequiredForSingleUserMode(jsonString, log);
+            status = RemediateEnsureAuthenticationRequiredForSingleUserMode(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDotDoesNotAppearInRootsPathObject))
         {
-            status = RemediateEnsureDotDoesNotAppearInRootsPath(jsonString, log);
+            status = RemediateEnsureDotDoesNotAppearInRootsPath(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRemoteLoginWarningBannerIsConfiguredObject))
         {
-            status = RemediateEnsureRemoteLoginWarningBannerIsConfigured(jsonString, log);
+            status = RemediateEnsureRemoteLoginWarningBannerIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureLocalLoginWarningBannerIsConfiguredObject))
         {
-            status = RemediateEnsureLocalLoginWarningBannerIsConfigured(jsonString, log);
+            status = RemediateEnsureLocalLoginWarningBannerIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAuditdServiceIsRunningObject))
         {
-            status = RemediateEnsureAuditdServiceIsRunning(jsonString, log);
+            status = RemediateEnsureAuditdServiceIsRunning(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSuRestrictedToRootGroupObject))
         {
-            status = RemediateEnsureSuRestrictedToRootGroup(jsonString, log);
+            status = RemediateEnsureSuRestrictedToRootGroup(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDefaultUmaskForAllUsersObject))
         {
-            status = RemediateEnsureDefaultUmaskForAllUsers(jsonString, log);
+            status = RemediateEnsureDefaultUmaskForAllUsers(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAutomountingDisabledObject))
         {
-            status = RemediateEnsureAutomountingDisabled(jsonString, log);
+            status = RemediateEnsureAutomountingDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureKernelCompiledFromApprovedSourcesObject))
         {
-            status = RemediateEnsureKernelCompiledFromApprovedSources(jsonString, log);
+            status = RemediateEnsureKernelCompiledFromApprovedSources(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDefaultDenyFirewallPolicyIsSetObject))
         {
-            status = RemediateEnsureDefaultDenyFirewallPolicyIsSet(jsonString, log);
+            status = RemediateEnsureDefaultDenyFirewallPolicyIsSet(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePacketRedirectSendingIsDisabledObject))
         {
-            status = RemediateEnsurePacketRedirectSendingIsDisabled(jsonString, log);
+            status = RemediateEnsurePacketRedirectSendingIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureIcmpRedirectsIsDisabledObject))
         {
-            status = RemediateEnsureIcmpRedirectsIsDisabled(jsonString, log);
+            status = RemediateEnsureIcmpRedirectsIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSourceRoutedPacketsIsDisabledObject))
         {
-            status = RemediateEnsureSourceRoutedPacketsIsDisabled(jsonString, log);
+            status = RemediateEnsureSourceRoutedPacketsIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAcceptingSourceRoutedPacketsIsDisabledObject))
         {
-            status = RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(jsonString, log);
+            status = RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureIgnoringBogusIcmpBroadcastResponsesObject))
         {
-            status = RemediateEnsureIgnoringBogusIcmpBroadcastResponses(jsonString, log);
+            status = RemediateEnsureIgnoringBogusIcmpBroadcastResponses(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureIgnoringIcmpEchoPingsToMulticastObject))
         {
-            status = RemediateEnsureIgnoringIcmpEchoPingsToMulticast(jsonString, log);
+            status = RemediateEnsureIgnoringIcmpEchoPingsToMulticast(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureMartianPacketLoggingIsEnabledObject))
         {
-            status = RemediateEnsureMartianPacketLoggingIsEnabled(jsonString, log);
+            status = RemediateEnsureMartianPacketLoggingIsEnabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureReversePathSourceValidationIsEnabledObject))
         {
-            status = RemediateEnsureReversePathSourceValidationIsEnabled(jsonString, log);
+            status = RemediateEnsureReversePathSourceValidationIsEnabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureTcpSynCookiesAreEnabledObject))
         {
-            status = RemediateEnsureTcpSynCookiesAreEnabled(jsonString, log);
+            status = RemediateEnsureTcpSynCookiesAreEnabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSystemNotActingAsNetworkSnifferObject))
         {
-            status = RemediateEnsureSystemNotActingAsNetworkSniffer(jsonString, log);
+            status = RemediateEnsureSystemNotActingAsNetworkSniffer(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAllWirelessInterfacesAreDisabledObject))
         {
-            status = RemediateEnsureAllWirelessInterfacesAreDisabled(jsonString, log);
+            status = RemediateEnsureAllWirelessInterfacesAreDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureIpv6ProtocolIsEnabledObject))
         {
-            status = RemediateEnsureIpv6ProtocolIsEnabled(jsonString, log);
+            status = RemediateEnsureIpv6ProtocolIsEnabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDccpIsDisabledObject))
         {
-            status = RemediateEnsureDccpIsDisabled(jsonString, log);
+            status = RemediateEnsureDccpIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSctpIsDisabledObject))
         {
-            status = RemediateEnsureSctpIsDisabled(jsonString, log);
+            status = RemediateEnsureSctpIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDisabledSupportForRdsObject))
         {
-            status = RemediateEnsureDisabledSupportForRds(jsonString, log);
+            status = RemediateEnsureDisabledSupportForRds(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureTipcIsDisabledObject))
         {
-            status = RemediateEnsureTipcIsDisabled(jsonString, log);
+            status = RemediateEnsureTipcIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureZeroconfNetworkingIsDisabledObject))
         {
-            status = RemediateEnsureZeroconfNetworkingIsDisabled(jsonString, log);
+            status = RemediateEnsureZeroconfNetworkingIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnBootloaderConfigObject))
         {
-            status = RemediateEnsurePermissionsOnBootloaderConfig(jsonString, log);
+            status = RemediateEnsurePermissionsOnBootloaderConfig(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePasswordReuseIsLimitedObject))
         {
-            status = RemediateEnsurePasswordReuseIsLimited(jsonString, log);
+            status = RemediateEnsurePasswordReuseIsLimited(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureMountingOfUsbStorageDevicesIsDisabledObject))
         {
-            status = RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(jsonString, log);
+            status = RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureCoreDumpsAreRestrictedObject))
         {
-            status = RemediateEnsureCoreDumpsAreRestricted(jsonString, log);
+            status = RemediateEnsureCoreDumpsAreRestricted(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePasswordCreationRequirementsObject))
         {
-            status = RemediateEnsurePasswordCreationRequirements(jsonString, log);
+            status = RemediateEnsurePasswordCreationRequirements(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureLockoutForFailedPasswordAttemptsObject))
         {
-            status = RemediateEnsureLockoutForFailedPasswordAttempts(jsonString, log);
+            status = RemediateEnsureLockoutForFailedPasswordAttempts(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDisabledInstallationOfCramfsFileSystemObject))
         {
-            status = RemediateEnsureDisabledInstallationOfCramfsFileSystem(jsonString, log);
+            status = RemediateEnsureDisabledInstallationOfCramfsFileSystem(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDisabledInstallationOfFreevxfsFileSystemObject))
         {
-            status = RemediateEnsureDisabledInstallationOfFreevxfsFileSystem(jsonString, log);
+            status = RemediateEnsureDisabledInstallationOfFreevxfsFileSystem(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDisabledInstallationOfHfsFileSystemObject))
         {
-            status = RemediateEnsureDisabledInstallationOfHfsFileSystem(jsonString, log);
+            status = RemediateEnsureDisabledInstallationOfHfsFileSystem(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDisabledInstallationOfHfsplusFileSystemObject))
         {
-            status = RemediateEnsureDisabledInstallationOfHfsplusFileSystem(jsonString, log);
+            status = RemediateEnsureDisabledInstallationOfHfsplusFileSystem(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDisabledInstallationOfJffs2FileSystemObject))
         {
-            status = RemediateEnsureDisabledInstallationOfJffs2FileSystem(jsonString, log);
+            status = RemediateEnsureDisabledInstallationOfJffs2FileSystem(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureVirtualMemoryRandomizationIsEnabledObject))
         {
-            status = RemediateEnsureVirtualMemoryRandomizationIsEnabled(jsonString, log);
+            status = RemediateEnsureVirtualMemoryRandomizationIsEnabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAllBootloadersHavePasswordProtectionEnabledObject))
         {
-            status = RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(jsonString, log);
+            status = RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureLoggingIsConfiguredObject))
         {
-            status = RemediateEnsureLoggingIsConfigured(jsonString, log);
+            status = RemediateEnsureLoggingIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSyslogPackageIsInstalledObject))
         {
-            status = RemediateEnsureSyslogPackageIsInstalled(jsonString, log);
+            status = RemediateEnsureSyslogPackageIsInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSystemdJournaldServicePersistsLogMessagesObject))
         {
-            status = RemediateEnsureSystemdJournaldServicePersistsLogMessages(jsonString, log);
+            status = RemediateEnsureSystemdJournaldServicePersistsLogMessages(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureALoggingServiceIsEnabledObject))
         {
-            status = RemediateEnsureALoggingServiceIsEnabled(jsonString, log);
+            status = RemediateEnsureALoggingServiceIsEnabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureFilePermissionsForAllRsyslogLogFilesObject))
         {
-            status = RemediateEnsureFilePermissionsForAllRsyslogLogFiles(jsonString, log);
+            status = RemediateEnsureFilePermissionsForAllRsyslogLogFiles(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureLoggerConfigurationFilesAreRestrictedObject))
         {
-            status = RemediateEnsureLoggerConfigurationFilesAreRestricted(jsonString, log);
+            status = RemediateEnsureLoggerConfigurationFilesAreRestricted(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject))
         {
-            status = RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(jsonString, log);
+            status = RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject))
         {
-            status = RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(jsonString, log);
+            status = RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRsyslogNotAcceptingRemoteMessagesObject))
         {
-            status = RemediateEnsureRsyslogNotAcceptingRemoteMessages(jsonString, log);
+            status = RemediateEnsureRsyslogNotAcceptingRemoteMessages(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSyslogRotaterServiceIsEnabledObject))
         {
-            status = RemediateEnsureSyslogRotaterServiceIsEnabled(jsonString, log);
+            status = RemediateEnsureSyslogRotaterServiceIsEnabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureTelnetServiceIsDisabledObject))
         {
-            status = RemediateEnsureTelnetServiceIsDisabled(jsonString, log);
+            status = RemediateEnsureTelnetServiceIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRcprshServiceIsDisabledObject))
         {
-            status = RemediateEnsureRcprshServiceIsDisabled(jsonString, log);
+            status = RemediateEnsureRcprshServiceIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureTftpServiceisDisabledObject))
         {
-            status = RemediateEnsureTftpServiceisDisabled(jsonString, log);
+            status = RemediateEnsureTftpServiceisDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAtCronIsRestrictedToAuthorizedUsersObject))
         {
-            status = RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(jsonString, log);
+            status = RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshPortIsConfiguredObject))
         {
-            status = RemediateEnsureSshPortIsConfigured(jsonString, log);
+            status = RemediateEnsureSshPortIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshBestPracticeProtocolObject))
         {
-            status = RemediateEnsureSshBestPracticeProtocol(jsonString, log);
+            status = RemediateEnsureSshBestPracticeProtocol(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshBestPracticeIgnoreRhostsObject))
         {
-            status = RemediateEnsureSshBestPracticeIgnoreRhosts(jsonString, log);
+            status = RemediateEnsureSshBestPracticeIgnoreRhosts(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshLogLevelIsSetObject))
         {
-            status = RemediateEnsureSshLogLevelIsSet(jsonString, log);
+            status = RemediateEnsureSshLogLevelIsSet(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshMaxAuthTriesIsSetObject))
         {
-            status = RemediateEnsureSshMaxAuthTriesIsSet(jsonString, log);
+            status = RemediateEnsureSshMaxAuthTriesIsSet(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAllowUsersIsConfiguredObject))
         {
-            status = RemediateEnsureAllowUsersIsConfigured(jsonString, log);
+            status = RemediateEnsureAllowUsersIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDenyUsersIsConfiguredObject))
         {
-            status = RemediateEnsureDenyUsersIsConfigured(jsonString, log);
+            status = RemediateEnsureDenyUsersIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAllowGroupsIsConfiguredObject))
         {
-            status = RemediateEnsureAllowGroupsIsConfigured(jsonString, log);
+            status = RemediateEnsureAllowGroupsIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureDenyGroupsConfiguredObject))
         {
-            status = RemediateEnsureDenyGroupsConfigured(jsonString, log);
+            status = RemediateEnsureDenyGroupsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject))
         {
-            status = RemediateEnsureSshHostbasedAuthenticationIsDisabled(jsonString, log);
+            status = RemediateEnsureSshHostbasedAuthenticationIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshPermitRootLoginIsDisabledObject))
         {
-            status = RemediateEnsureSshPermitRootLoginIsDisabled(jsonString, log);
+            status = RemediateEnsureSshPermitRootLoginIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject))
         {
-            status = RemediateEnsureSshPermitEmptyPasswordsIsDisabled(jsonString, log);
+            status = RemediateEnsureSshPermitEmptyPasswordsIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshClientIntervalCountMaxIsConfiguredObject))
         {
-            status = RemediateEnsureSshClientIntervalCountMaxIsConfigured(jsonString, log);
+            status = RemediateEnsureSshClientIntervalCountMaxIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshClientAliveIntervalIsConfiguredObject))
         {
-            status = RemediateEnsureSshClientAliveIntervalIsConfigured(jsonString, log);
+            status = RemediateEnsureSshClientAliveIntervalIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshLoginGraceTimeIsSetObject))
         {
-            status = RemediateEnsureSshLoginGraceTimeIsSet(jsonString, log);
+            status = RemediateEnsureSshLoginGraceTimeIsSet(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
         {
-            status = RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(jsonString, log);
+            status = RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshWarningBannerIsEnabledObject))
         {
-            status = RemediateEnsureSshWarningBannerIsEnabled(jsonString, log);
+            status = RemediateEnsureSshWarningBannerIsEnabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject))
         {
-            status = RemediateEnsureUsersCannotSetSshEnvironmentOptions(jsonString, log);
+            status = RemediateEnsureUsersCannotSetSshEnvironmentOptions(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAppropriateCiphersForSshObject))
         {
-            status = RemediateEnsureAppropriateCiphersForSsh(jsonString, log);
+            status = RemediateEnsureAppropriateCiphersForSsh(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureAvahiDaemonServiceIsDisabledObject))
         {
-            status = RemediateEnsureAvahiDaemonServiceIsDisabled(jsonString, log);
+            status = RemediateEnsureAvahiDaemonServiceIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureCupsServiceisDisabledObject))
         {
-            status = RemediateEnsureCupsServiceisDisabled(jsonString, log);
+            status = RemediateEnsureCupsServiceisDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePostfixPackageIsUninstalledObject))
         {
-            status = RemediateEnsurePostfixPackageIsUninstalled(jsonString, log);
+            status = RemediateEnsurePostfixPackageIsUninstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePostfixNetworkListeningIsDisabledObject))
         {
-            status = RemediateEnsurePostfixNetworkListeningIsDisabled(jsonString, log);
+            status = RemediateEnsurePostfixNetworkListeningIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRpcgssdServiceIsDisabledObject))
         {
-            status = RemediateEnsureRpcgssdServiceIsDisabled(jsonString, log);
+            status = RemediateEnsureRpcgssdServiceIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRpcidmapdServiceIsDisabledObject))
         {
-            status = RemediateEnsureRpcidmapdServiceIsDisabled(jsonString, log);
+            status = RemediateEnsureRpcidmapdServiceIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePortmapServiceIsDisabledObject))
         {
-            status = RemediateEnsurePortmapServiceIsDisabled(jsonString, log);
+            status = RemediateEnsurePortmapServiceIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNetworkFileSystemServiceIsDisabledObject))
         {
-            status = RemediateEnsureNetworkFileSystemServiceIsDisabled(jsonString, log);
+            status = RemediateEnsureNetworkFileSystemServiceIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRpcsvcgssdServiceIsDisabledObject))
         {
-            status = RemediateEnsureRpcsvcgssdServiceIsDisabled(jsonString, log);
+            status = RemediateEnsureRpcsvcgssdServiceIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSnmpServerIsDisabledObject))
         {
-            status = RemediateEnsureSnmpServerIsDisabled(jsonString, log);
+            status = RemediateEnsureSnmpServerIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRsynServiceIsDisabledObject))
         {
-            status = RemediateEnsureRsynServiceIsDisabled(jsonString, log);
+            status = RemediateEnsureRsynServiceIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNisServerIsDisabledObject))
         {
-            status = RemediateEnsureNisServerIsDisabled(jsonString, log);
+            status = RemediateEnsureNisServerIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRshClientNotInstalledObject))
         {
-            status = RemediateEnsureRshClientNotInstalled(jsonString, log);
+            status = RemediateEnsureRshClientNotInstalled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSmbWithSambaIsDisabledObject))
         {
-            status = RemediateEnsureSmbWithSambaIsDisabled(jsonString, log);
+            status = RemediateEnsureSmbWithSambaIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureUsersDotFilesArentGroupOrWorldWritableObject))
         {
-            status = RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(jsonString, log);
+            status = RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoUsersHaveDotForwardFilesObject))
         {
-            status = RemediateEnsureNoUsersHaveDotForwardFiles(jsonString, log);
+            status = RemediateEnsureNoUsersHaveDotForwardFiles(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoUsersHaveDotNetrcFilesObject))
         {
-            status = RemediateEnsureNoUsersHaveDotNetrcFiles(jsonString, log);
+            status = RemediateEnsureNoUsersHaveDotNetrcFiles(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureNoUsersHaveDotRhostsFilesObject))
         {
-            status = RemediateEnsureNoUsersHaveDotRhostsFiles(jsonString, log);
+            status = RemediateEnsureNoUsersHaveDotRhostsFiles(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureRloginServiceIsDisabledObject))
         {
-            status = RemediateEnsureRloginServiceIsDisabled(jsonString, log);
+            status = RemediateEnsureRloginServiceIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_remediateEnsureUnnecessaryAccountsAreRemovedObject))
         {
-            status = RemediateEnsureUnnecessaryAccountsAreRemoved(jsonString, log);
+            status = RemediateEnsureUnnecessaryAccountsAreRemoved(jsonString, log, telemetry);
         }
         // Initialization for audit before remediation
         else if (0 == strcmp(objectName, g_initEnsureLoggingLevelObject))
@@ -5803,83 +6188,83 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         }
         else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcSshSshdConfigObject))
         {
-            status = InitEnsurePermissionsOnEtcSshSshdConfig(jsonString, log);
+            status = InitEnsurePermissionsOnEtcSshSshdConfig(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshPortIsConfiguredObject))
         {
-            status = InitEnsureSshPortIsConfigured(jsonString, log);
+            status = InitEnsureSshPortIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshBestPracticeProtocolObject))
         {
-            status = InitEnsureSshBestPracticeProtocol(jsonString, log);
+            status = InitEnsureSshBestPracticeProtocol(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshBestPracticeIgnoreRhostsObject))
         {
-            status = InitEnsureSshBestPracticeIgnoreRhosts(jsonString, log);
+            status = InitEnsureSshBestPracticeIgnoreRhosts(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshLogLevelIsSetObject))
         {
-            status = InitEnsureSshLogLevelIsSet(jsonString, log);
+            status = InitEnsureSshLogLevelIsSet(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshMaxAuthTriesIsSetObject))
         {
-            status = InitEnsureSshMaxAuthTriesIsSet(jsonString, log);
+            status = InitEnsureSshMaxAuthTriesIsSet(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureAllowUsersIsConfiguredObject))
         {
-            status = InitEnsureAllowUsersIsConfigured(jsonString, log);
+            status = InitEnsureAllowUsersIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureDenyUsersIsConfiguredObject))
         {
-            status = InitEnsureDenyUsersIsConfigured(jsonString, log);
+            status = InitEnsureDenyUsersIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureAllowGroupsIsConfiguredObject))
         {
-            status = InitEnsureAllowGroupsIsConfigured(jsonString, log);
+            status = InitEnsureAllowGroupsIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureDenyGroupsConfiguredObject))
         {
-            status = InitEnsureDenyGroupsConfigured(jsonString, log);
+            status = InitEnsureDenyGroupsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshHostbasedAuthenticationIsDisabledObject))
         {
-            status = InitEnsureSshHostbasedAuthenticationIsDisabled(jsonString, log);
+            status = InitEnsureSshHostbasedAuthenticationIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshPermitRootLoginIsDisabledObject))
         {
-            status = InitEnsureSshPermitRootLoginIsDisabled(jsonString, log);
+            status = InitEnsureSshPermitRootLoginIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshPermitEmptyPasswordsIsDisabledObject))
         {
-            status = InitEnsureSshPermitEmptyPasswordsIsDisabled(jsonString, log);
+            status = InitEnsureSshPermitEmptyPasswordsIsDisabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshClientIntervalCountMaxIsConfiguredObject))
         {
-            status = InitEnsureSshClientIntervalCountMaxIsConfigured(jsonString, log);
+            status = InitEnsureSshClientIntervalCountMaxIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshClientAliveIntervalIsConfiguredObject))
         {
-            status = InitEnsureSshClientAliveIntervalIsConfigured(jsonString, log);
+            status = InitEnsureSshClientAliveIntervalIsConfigured(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshLoginGraceTimeIsSetObject))
         {
-            status = InitEnsureSshLoginGraceTimeIsSet(jsonString, log);
+            status = InitEnsureSshLoginGraceTimeIsSet(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
         {
-            status = InitEnsureOnlyApprovedMacAlgorithmsAreUsed(jsonString, log);
+            status = InitEnsureOnlyApprovedMacAlgorithmsAreUsed(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureSshWarningBannerIsEnabledObject))
         {
-            status = InitEnsureSshWarningBannerIsEnabled(jsonString, log);
+            status = InitEnsureSshWarningBannerIsEnabled(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureUsersCannotSetSshEnvironmentOptionsObject))
         {
-            status = InitEnsureUsersCannotSetSshEnvironmentOptions(jsonString, log);
+            status = InitEnsureUsersCannotSetSshEnvironmentOptions(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsureAppropriateCiphersForSshObject))
         {
-            status = InitEnsureAppropriateCiphersForSsh(jsonString, log);
+            status = InitEnsureAppropriateCiphersForSsh(jsonString, log, telemetry);
         }
         else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcIssueObject))
         {
@@ -6019,6 +6404,7 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
         }
         else
         {
+            OSConfigTelemetryStatusTrace(telemetry, "strcmp", EINVAL);
             OsConfigLogError(log, "AsbMmiSet called for an unsupported object name: %s", objectName);
             status = EINVAL;
         }
@@ -6033,33 +6419,33 @@ int AsbMmiSet(const char* componentName, const char* objectName, const char* pay
 
     FREE_MEMORY(payloadString);
 
-    if (0 == StopPerfClock(&perfClock, GetPerfLog()))
+    if (0 == StopPerfClock(&perfClock, GetPerfLog(), telemetry))
     {
         // Ignore the successful init* objects and focus on remediate* ones
         if (0 != strncmp(objectName, init, strlen(init)))
         {
             g_auditOnly = false;
 
-            LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog());
-
+            LogPerfClock(&perfClock, componentName, objectName, status, g_maxRemediateTime, GetPerfLog(), telemetry);
+            long durationMicroseconds = GetPerfClockTime(&perfClock, log, telemetry);
             // For telemetry:
-            char durationMicroseconds[MAX_LONG_STRING_LENGTH] = {0};
-            char statusString[MAX_INT_STRING_LENGTH] = {0};
-            snprintf(durationMicroseconds, sizeof(durationMicroseconds), "%ld", GetPerfClockTime(&perfClock, log));
-            snprintf(statusString, sizeof(statusString), "%d", status);
-            const char* keyValuePairs[] = {
-                "ComponentName", componentName,
-                "ObjectName", objectName,
-                "ObjectResult", statusString,
-                "Microseconds", durationMicroseconds,
-                "DistroName", g_prettyName ? g_prettyName : "unknown",
-                "CorrelationId", getenv("activityId") ? getenv("activityId") : "",
-                "Version", OSCONFIG_VERSION
-            };
-            OSConfigTelemetryLogEvent(g_telemetry, "RuleComplete", keyValuePairs, sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2);
-
+            // char durationMicroseconds[MAX_LONG_STRING_LENGTH] = {0};
+            // char statusString[MAX_INT_STRING_LENGTH] = {0};
+            // snprintf(durationMicroseconds, sizeof(durationMicroseconds), "%ld", GetPerfClockTime(&perfClock, log, telemetry));
+            // snprintf(statusString, sizeof(statusString), "%d", status);
+            // const char* keyValuePairs[] = {
+            //     "ComponentName", componentName,
+            //     "ObjectName", objectName,
+            //     "ObjectResult", statusString,
+            //     "Microseconds", durationMicroseconds,
+            //     "DistroName", g_prettyName ? g_prettyName : "unknown",
+            //     "CorrelationId", getenv("activityId") ? getenv("activityId") : "",
+            //     "Version", OSCONFIG_VERSION
+            // };
+            // OSConfigTelemetryLogEvent(telemetry, "RuleComplete", keyValuePairs, sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2);
+            OSConfigTelemetryRuleComplete(telemetry, componentName, objectName, status, durationMicroseconds);
             OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Microseconds: %ld",
-                g_prettyName, componentName, objectName, strerror(status), status, GetPerfClockTime(&perfClock, log));
+                g_prettyName, componentName, objectName, strerror(status), status, durationMicroseconds);
 
         }
     }
