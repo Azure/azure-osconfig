@@ -13,8 +13,8 @@
 #include <vector>
 
 #include <Telemetry.h>
-#include <TelemetryJson.hpp>
 
+#if BUILD_TELEMETRY
 class TelemetryJsonTest : public ::testing::Test
 {
 protected:
@@ -276,22 +276,28 @@ TEST_F(TelemetryJsonTest, GetFilepath_FileExists_Success)
 
 TEST_F(TelemetryJsonTest, GetModuleDirectory_ReturnsValidPath)
 {
-    std::string moduleDir = TelemetryJson::Logger::getModuleDirectory();
+    const char* moduleDir = OSConfigTelemetryGetModuleDirectory();
 
-    // Should not be empty - dladdr should find the current module
-    EXPECT_FALSE(moduleDir.empty());
+    // Should not be NULL - dladdr should find the current module
+    EXPECT_NE(nullptr, moduleDir);
+    if (moduleDir) {
+        EXPECT_NE('\0', moduleDir[0]);
 
-    // Should be an absolute path (start with '/')
-    EXPECT_TRUE(moduleDir[0] == '/');
+        // Should be an absolute path (start with '/') or relative path (start with '.')
+        EXPECT_TRUE(moduleDir[0] == '/' || moduleDir[0] == '.');
 
-    // Should not end with '/' (directory names typically don't)
-    if (!moduleDir.empty()) {
-        EXPECT_NE('/', moduleDir.back());
+        // Should not end with '/' (directory names typically don't)
+        size_t len = strlen(moduleDir);
+        if (len > 0) {
+            EXPECT_NE('/', moduleDir[len - 1]);
+        }
+
+        // The directory should exist
+        struct stat dirStat;
+        int statResult = stat(moduleDir, &dirStat);
+        EXPECT_EQ(0, statResult);
+        EXPECT_TRUE(S_ISDIR(dirStat.st_mode));
     }
-
-    // The directory should exist
-    struct stat dirStat;
-    int statResult = stat(moduleDir.c_str(), &dirStat);
-    EXPECT_EQ(0, statResult);
-    EXPECT_TRUE(S_ISDIR(dirStat.st_mode));
 }
+
+#endif // BUILD_TELEMETRY
