@@ -22,6 +22,11 @@ struct MockContext : public ComplianceEngine::ContextInterface
         return nullptr;
     }
 
+    OSConfigTelemetryHandle GetTelemetryHandle() const override
+    {
+        return nullptr;
+    }
+
     MockContext()
     {
         strcpy(mTempdir, "/tmp/ComplianceEngineTest.XXXXXX");

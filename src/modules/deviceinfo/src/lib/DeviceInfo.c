@@ -10,7 +10,9 @@
 #include <version.h>
 #include <CommonUtils.h>
 #include <Logging.h>
+#include <Telemetry.h>
 #include <Mmi.h>
+#include <Internal.h>
 
 #include "DeviceInfo.h"
 
@@ -47,6 +49,7 @@ static const char* g_deviceInfoModuleInfo = "{\"Name\": \"DeviceInfo\","
     "\"UserAccount\": 0}";
 
 static OsConfigLogHandle g_log = NULL;
+static OSConfigTelemetryHandle g_telemetry = NULL;
 
 static char* g_osName = NULL;
 static char* g_osVersion = NULL;
@@ -77,25 +80,31 @@ static OsConfigLogHandle DeviceInfoGetLog(void)
     return g_log;
 }
 
+static OSConfigTelemetryHandle DeviceInfoGetTelemetry(void)
+{
+    return g_telemetry;
+}
+
 void DeviceInfoInitialize(void)
 {
     g_log = OpenLog(g_deviceInfoLogFile, g_deviceInfoRolledLogFile);
+    g_telemetry = OSConfigTelemetryOpen();
 
-    g_osName = GetOsName(DeviceInfoGetLog());
-    g_osVersion = GetOsVersion(DeviceInfoGetLog());
-    g_cpuType = GetCpuType(DeviceInfoGetLog());
-    g_cpuVendor = GetCpuVendor(DeviceInfoGetLog());
-    g_cpuModel = GetCpuModel(DeviceInfoGetLog());
-    g_totalMemory = GetTotalMemory(DeviceInfoGetLog());
-    g_freeMemory = GetFreeMemory(DeviceInfoGetLog());
-    g_kernelName = GetOsKernelName(DeviceInfoGetLog());
-    g_kernelRelease = GetOsKernelRelease(DeviceInfoGetLog());
-    g_kernelVersion = GetOsKernelVersion(DeviceInfoGetLog());
-    g_productVendor = GetProductVendor(DeviceInfoGetLog());
-    g_productName = GetProductName(DeviceInfoGetLog());
-    g_productVersion = GetProductVersion(DeviceInfoGetLog());
-    g_systemCapabilities = GetSystemCapabilities(DeviceInfoGetLog());
-    g_systemConfiguration = GetSystemConfiguration(DeviceInfoGetLog());
+    g_osName = GetOsName(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_osVersion = GetOsVersion(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_cpuType = GetCpuType(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_cpuVendor = GetCpuVendor(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_cpuModel = GetCpuModel(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_totalMemory = GetTotalMemory(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_freeMemory = GetFreeMemory(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_kernelName = GetOsKernelName(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_kernelRelease = GetOsKernelRelease(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_kernelVersion = GetOsKernelVersion(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_productVendor = GetProductVendor(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_productName = GetProductName(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_productVersion = GetProductVersion(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_systemCapabilities = GetSystemCapabilities(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_systemConfiguration = GetSystemConfiguration(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
 
     OsConfigLogInfo(DeviceInfoGetLog(), "%s initialized", g_deviceInfoModuleName);
 }
@@ -118,6 +127,7 @@ void DeviceInfoShutdown(void)
 
     OsConfigLogInfo(DeviceInfoGetLog(), "%s shutting down", g_deviceInfoModuleName);
 
+    OSConfigTelemetryClose(&g_telemetry);
     CloseLog(&g_log);
 }
 
@@ -144,6 +154,7 @@ void DeviceInfoMmiClose(MMI_HANDLE clientSession)
     }
     else
     {
+        OSConfigTelemetryStatusTrace(DeviceInfoGetTelemetry(), "IsValidSession", EINVAL);
         OsConfigLogError(DeviceInfoGetLog(), "MmiClose() called outside of a valid session");
     }
 }
@@ -168,9 +179,11 @@ int DeviceInfoMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* 
     }
     else
     {
+        status = ENOMEM;
+        OSConfigTelemetryStatusTrace(DeviceInfoGetTelemetry(), "malloc", status);
         OsConfigLogError(DeviceInfoGetLog(), "MmiGetInfo: failed to allocate %d bytes", *payloadSizeBytes);
         *payloadSizeBytes = 0;
-        status = ENOMEM;
+
     }
 
     OsConfigLogDebug(DeviceInfoGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
@@ -187,8 +200,9 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
-        OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s, %p, %p) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         status = EINVAL;
+        OSConfigTelemetryStatusTrace(DeviceInfoGetTelemetry(), "payload", status);
+        OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s, %p, %p) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         return status;
     }
 
@@ -197,14 +211,16 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 
     if (!IsValidSession(clientSession))
     {
-        OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
+        OSConfigTelemetryStatusTrace(DeviceInfoGetTelemetry(), "IsValidSession", status);
+        OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
     }
 
     if ((MMI_OK == status) && (strcmp(componentName, g_deviceInfoComponentName)))
     {
-        OsConfigLogError(DeviceInfoGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
         status = EINVAL;
+        OSConfigTelemetryStatusTrace(DeviceInfoGetTelemetry(), "componentName", status);
+        OsConfigLogError(DeviceInfoGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
     }
 
     if (MMI_OK == status)
@@ -238,7 +254,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         else if (0 == strcmp(objectName, g_freeMemoryObject))
         {
             // Refresh this one at every MmiGet
-            g_freeMemory = GetFreeMemory(DeviceInfoGetLog());
+            g_freeMemory = GetFreeMemory(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
 
             isStringValue = false;
             snprintf(buffer, sizeof(buffer), "%lu", g_freeMemory);
@@ -282,8 +298,9 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         }
         else
         {
-            OsConfigLogError(DeviceInfoGetLog(), "MmiGet called for an unsupported object name (%s)", objectName);
             status = EINVAL;
+            OSConfigTelemetryStatusTrace(DeviceInfoGetTelemetry(), "objectName", status);
+            OsConfigLogError(DeviceInfoGetLog(), "MmiGet called for an unsupported object name (%s)", objectName);
         }
     }
 
@@ -294,6 +311,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 
         if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
+            OSConfigTelemetryStatusTrace(DeviceInfoGetTelemetry(), "payloadSizeBytes", EINVAL);
             OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated",
                 componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
 
@@ -308,9 +326,10 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         }
         else
         {
+            status = ENOMEM;
+            OSConfigTelemetryStatusTrace(DeviceInfoGetTelemetry(), "malloc", status);
             OsConfigLogError(DeviceInfoGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
             *payloadSizeBytes = 0;
-            status = ENOMEM;
         }
     }
 

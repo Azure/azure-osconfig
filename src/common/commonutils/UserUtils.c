@@ -55,13 +55,14 @@ void FreeUsersList(SimplifiedUser** source, unsigned int size)
     }
 }
 
-static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsConfigLogHandle log)
+static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     int status = 0;
     size_t length = 0;
 
     if ((NULL == destination) || (NULL == source))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "destination", EINVAL);
         OsConfigLogError(log, "CopyUserEntry: invalid arguments");
         return EINVAL;
     }
@@ -72,6 +73,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
     {
         if (NULL == (destination->username = malloc(length + 1)))
         {
+            OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
             OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_name for user %u", source->pw_uid);
             status = ENOMEM;
         }
@@ -94,6 +96,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
     {
         if (NULL == (destination->home = malloc(length + 1)))
         {
+            OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
             OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_dir '%s'", source->pw_dir);
             status = ENOMEM;
         }
@@ -108,6 +111,7 @@ static int CopyUserEntry(SimplifiedUser* destination, struct passwd* source, OsC
     {
         if (NULL == (destination->shell = malloc(length + 1)))
         {
+            OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
             OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_shell '%s'", source->pw_shell);
             status = ENOMEM;
 
@@ -201,7 +205,7 @@ static bool IsSystemGroup(SimplifiedGroup* group)
     return (group && ((group->groupName && (0 == strcmp(group->groupName, g_root))) || (group->groupId < 1000))) ? true : false;
 }
 
-static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
+static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* commandTemplate = "usermod -s %s %s";
     char* command = NULL;
@@ -209,6 +213,7 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
 
     if ((NULL == user) || (NULL == user->username))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "user", EINVAL);
         OsConfigLogError(log, "SetUserNonLogin: invalid argument");
         return EINVAL;
     }
@@ -227,10 +232,11 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
         {
             if (NULL == (command = FormatAllocateString(commandTemplate, g_noLoginShell[i], user->username)))
             {
+                OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
                 OsConfigLogError(log, "SetUserNonLogin: out of memory");
                 result = ENOMEM;
             }
-            else if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+            else if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, telemetry)))
             {
                 OsConfigLogInfo(log, "SetUserNonLogin: usermod for user %u failed with %d (errno: %d)", user->userId, result, errno);
             }
@@ -256,7 +262,7 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
     return result;
 }
 
-static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
+static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     struct spwd* shadowEntry = NULL;
     char control = 0;
@@ -264,6 +270,7 @@ static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
 
     if ((NULL == user) || (NULL == user->username))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "user", EINVAL);
         OsConfigLogError(log, "CheckIfUserHasPassword: invalid argument");
         return EINVAL;
     }
@@ -358,7 +365,7 @@ static int CheckIfUserHasPassword(SimplifiedUser* user, OsConfigLogHandle log)
     return status;
 }
 
-int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason, OsConfigLogHandle log)
+int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     struct passwd* userEntry = NULL;
     unsigned int i = 0;
@@ -367,6 +374,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
 
     if ((NULL == userList) || (NULL == size))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "userList", EINVAL);
         OsConfigLogError(log, "EnumerateUsers: invalid arguments");
         return EINVAL;
     }
@@ -385,12 +393,13 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
 
             while ((NULL != (userEntry = getpwent())) && (i < *size))
             {
-                if (0 != (status = CopyUserEntry(&((*userList)[i]), userEntry, log)))
+                if (0 != (status = CopyUserEntry(&((*userList)[i]), userEntry, log, telemetry)))
                 {
+                    OSConfigTelemetryStatusTrace(telemetry, "CopyUserEntry", status);
                     OsConfigLogError(log, "EnumerateUsers: failed making copy of user entry (%d)", status);
                     break;
                 }
-                else if (0 != (status = CheckIfUserHasPassword(&((*userList)[i]), log)))
+                else if (0 != (status = CheckIfUserHasPassword(&((*userList)[i]), log, telemetry)))
                 {
                     OsConfigLogInfo(log, "EnumerateUsers: cannot check user's login and password (%d)", status);
                     break;
@@ -403,6 +412,7 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
         }
         else
         {
+            OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
             OsConfigLogError(log, "EnumerateUsers: out of memory");
             *size = 0;
             status = ENOMEM;
@@ -449,8 +459,9 @@ void FreeGroupList(SimplifiedGroup** groupList, unsigned int size)
     }
 }
 
-int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsigned int* size, char** reason, OsConfigLogHandle log)
+int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsigned int* size, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     gid_t* groupIds = NULL;
     int numberOfGroups = MAX_GROUPS_USER_CAN_BE_IN;
     struct group* groupEntry = NULL;
@@ -461,11 +472,13 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
     if ((NULL == user) || (NULL == groupList) || (NULL == size))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "user", EINVAL);
         OsConfigLogError(log, "EnumerateUserGroups: invalid arguments");
         return EINVAL;
     }
     else if (NULL == user->username)
     {
+        OSConfigTelemetryStatusTrace(telemetry, "username", ENOENT);
         OsConfigLogError(log, "EnumerateUserGroups: unable to enumerate groups for user without name");
         return ENOENT;
     }
@@ -475,6 +488,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
     if (NULL == (groupIds = malloc(numberOfGroups * sizeof(gid_t))))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
         OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of %d group identifiers", numberOfGroups);
         numberOfGroups = 0;
         status = ENOMEM;
@@ -493,6 +507,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
             }
             else
             {
+                OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
                 OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of %d group identifiers", numberOfGroups);
                 numberOfGroups = 0;
                 status = ENOMEM;
@@ -512,6 +527,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
 
         if (NULL == (*groupList = malloc(sizeof(SimplifiedGroup) * numberOfGroups)))
         {
+            OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
             OsConfigLogError(log, "EnumerateUserGroups: out of memory");
             status = ENOMEM;
         }
@@ -556,6 +572,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
                         }
                         else
                         {
+                            OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
                             OsConfigLogError(log, "EnumerateUserGroups: out of memory");
                             status = ENOMEM;
                             break;
@@ -581,7 +598,7 @@ int EnumerateUserGroups(SimplifiedUser* user, SimplifiedGroup** groupList, unsig
     return status;
 }
 
-int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** reason, OsConfigLogHandle log)
+int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* groupFile = "/etc/group";
     struct group* groupEntry = NULL;
@@ -592,6 +609,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
 
     if ((NULL == groupList) || (NULL == size))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "groupList", EINVAL);
         OsConfigLogError(log, "EnumerateAllGroups: invalid arguments");
         return EINVAL;
     }
@@ -626,6 +644,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
                     }
                     else
                     {
+                        OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
                         OsConfigLogError(log, "EnumerateAllGroups: out of memory");
                         status = ENOMEM;
                         break;
@@ -643,6 +662,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
         }
         else
         {
+            OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
             OsConfigLogError(log, "EnumerateAllGroups: out of memory");
             status = ENOMEM;
         }
@@ -661,7 +681,7 @@ int EnumerateAllGroups(SimplifiedGroup** groupList, unsigned int* size, char** r
     return status;
 }
 
-int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
+int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
@@ -673,12 +693,12 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
     bool found = false;
     int status = 0;
 
-    if ((0 == (status = EnumerateUsers(&userList, &userListSize, reason, log))) &&
-        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log))))
+    if ((0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry))) &&
+        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log, telemetry))))
     {
         for (i = 0; (i < userListSize) && (0 == status); i++)
         {
-            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, reason, log)))
+            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, reason, log, telemetry)))
             {
                 for (j = 0; (j < userGroupListSize) && (0 == status); j++)
                 {
@@ -720,7 +740,7 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
+int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* commandTemplate = "gpasswd -d %u %u";
     char* command = NULL;
@@ -734,12 +754,12 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
     bool found = false;
     int status = 0, _status = 0;
 
-    if ((0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log))) &&
-        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log))))
+    if ((0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry))) &&
+        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log, telemetry))))
     {
         for (i = 0; (i < userListSize) && (0 == status); i++)
         {
-            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, NULL, log)))
+            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, NULL, log, telemetry)))
             {
                 for (j = 0; (j < userGroupListSize) && (0 == status); j++)
                 {
@@ -763,7 +783,7 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
 
                         if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].userId, userGroupList[j].groupId)))
                         {
-                            if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                            if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, telemetry)))
                             {
                                 OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: user %u was removed from group %u ('%s')",
                                     userList[i].userId, userGroupList[j].groupId, IsSystemGroup(&userGroupList[j]) ? userGroupList[j].groupName : g_redacted);
@@ -778,6 +798,7 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
                         }
                         else
                         {
+                            OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
                             OsConfigLogError(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: out of memory");
                             _status = ENOMEM;
                         }
@@ -805,7 +826,7 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
     return status;
 }
 
-int CheckNoDuplicateUidsExist(char** reason, OsConfigLogHandle log)
+int CheckNoDuplicateUidsExist(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
@@ -813,7 +834,7 @@ int CheckNoDuplicateUidsExist(char** reason, OsConfigLogHandle log)
     unsigned int hits = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; (i < userListSize) && (0 == status); i++)
         {
@@ -848,7 +869,7 @@ int CheckNoDuplicateUidsExist(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
+int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* commandTemplate = "userdel -f %s";
     char* command = NULL;
@@ -856,6 +877,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
 
     if (NULL == user)
     {
+        OSConfigTelemetryStatusTrace(telemetry, "user", EINVAL);
         OsConfigLogError(log, "RemoveUser: invalid argument");
         return EINVAL;
     }
@@ -872,7 +894,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
 
     if (NULL != (command = FormatAllocateString(commandTemplate, user->username)))
     {
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, telemetry)))
         {
             OsConfigLogInfo(log, "RemoveUser: removed user %u", user->userId);
 
@@ -894,6 +916,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
     }
     else
     {
+        OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "RemoveUser: out of memory");
         status = ENOMEM;
     }
@@ -901,7 +924,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
     return status;
 }
 
-int CheckNoDuplicateGidsExist(char** reason, OsConfigLogHandle log)
+int CheckNoDuplicateGidsExist(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
@@ -909,7 +932,7 @@ int CheckNoDuplicateGidsExist(char** reason, OsConfigLogHandle log)
     unsigned int hits = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log, telemetry)))
     {
         for (i = 0; (i < groupListSize) && (0 == status); i++)
         {
@@ -944,7 +967,7 @@ int CheckNoDuplicateGidsExist(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int CheckNoDuplicateUserNamesExist(char** reason, OsConfigLogHandle log)
+int CheckNoDuplicateUserNamesExist(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
@@ -952,7 +975,7 @@ int CheckNoDuplicateUserNamesExist(char** reason, OsConfigLogHandle log)
     unsigned int hits = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; (i < userListSize) && (0 == status); i++)
         {
@@ -987,7 +1010,7 @@ int CheckNoDuplicateUserNamesExist(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int CheckNoDuplicateGroupNamesExist(char** reason, OsConfigLogHandle log)
+int CheckNoDuplicateGroupNamesExist(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
@@ -995,7 +1018,7 @@ int CheckNoDuplicateGroupNamesExist(char** reason, OsConfigLogHandle log)
     unsigned int hits = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log, telemetry)))
     {
         for (i = 0; (i < groupListSize) && (0 == status); i++)
         {
@@ -1032,7 +1055,7 @@ int CheckNoDuplicateGroupNamesExist(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int CheckShadowGroupIsEmpty(char** reason, OsConfigLogHandle log)
+int CheckShadowGroupIsEmpty(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
@@ -1040,7 +1063,7 @@ int CheckShadowGroupIsEmpty(char** reason, OsConfigLogHandle log)
     bool found = false;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log, telemetry)))
     {
         for (i = 0; i < groupListSize; i++)
         {
@@ -1072,8 +1095,9 @@ int CheckShadowGroupIsEmpty(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int SetShadowGroupEmpty(OsConfigLogHandle log)
+int SetShadowGroupEmpty(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     const char* commandTemplate = "gpasswd -d %s %s";
     char* command = NULL;
     SimplifiedUser* userList = NULL;
@@ -1083,11 +1107,11 @@ int SetShadowGroupEmpty(OsConfigLogHandle log)
     unsigned int i = 0, j = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, NULL, log)))
+            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, NULL, log, telemetry)))
             {
                 for (j = 0; j < userGroupListSize; j++)
                 {
@@ -1098,7 +1122,7 @@ int SetShadowGroupEmpty(OsConfigLogHandle log)
 
                         if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].username, g_shadow)))
                         {
-                            if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                            if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, telemetry)))
                             {
                                 OsConfigLogInfo(log, "SetShadowGroupEmpty: user %u was removed from group %u ('%s')",
                                     userList[i].userId, userGroupList[j].groupId, IsSystemGroup(&userGroupList[j]) ? userGroupList[j].groupName : g_redacted);
@@ -1118,6 +1142,7 @@ int SetShadowGroupEmpty(OsConfigLogHandle log)
                         }
                         else
                         {
+                            OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
                             OsConfigLogError(log, "SetShadowGroupEmpty: out of memory");
                             _status = ENOMEM;
                         }
@@ -1144,7 +1169,7 @@ int SetShadowGroupEmpty(OsConfigLogHandle log)
     return status;
 }
 
-int CheckRootGroupExists(char** reason, OsConfigLogHandle log)
+int CheckRootGroupExists(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedGroup* groupList = NULL;
     unsigned int groupListSize = 0;
@@ -1152,7 +1177,7 @@ int CheckRootGroupExists(char** reason, OsConfigLogHandle log)
     bool found = false;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log, telemetry)))
     {
         for (i = 0; i < groupListSize; i++)
         {
@@ -1178,7 +1203,7 @@ int CheckRootGroupExists(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int RepairRootGroup(OsConfigLogHandle log)
+int RepairRootGroup(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* etcGroup = "/etc/group";
     const char* rootLine = "root:x:0:\n";
@@ -1190,7 +1215,7 @@ int RepairRootGroup(OsConfigLogHandle log)
     char* original = NULL;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log)))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < groupListSize; i++)
         {
@@ -1208,31 +1233,31 @@ int RepairRootGroup(OsConfigLogHandle log)
     if (false == found)
     {
         // Load content of /etc/group
-        if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
+        if (NULL != (original = LoadStringFromFile(etcGroup, false, log, telemetry)))
         {
             // Save content loaded from /etc/group to temporary file
-            if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
+            if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log, telemetry))
             {
                 // Delete from temporary file any lines containing "root"
-                if (0 == (status = ReplaceMarkedLinesInFile(tempFileName, g_root, NULL, '#', false, log)))
+                if (0 == (status = ReplaceMarkedLinesInFile(tempFileName, g_root, NULL, '#', false, log, telemetry)))
                 {
                     // Free the previously loaded content, we'll reload
                     FREE_MEMORY(original);
 
                     // Load the fixed content of temporary file
-                    if (NULL != (original = LoadStringFromFile(tempFileName, false, log)))
+                    if (NULL != (original = LoadStringFromFile(tempFileName, false, log, telemetry)))
                     {
                         // Delete the previously created temporary file, we'll recreate
                         remove(tempFileName);
 
                         // Save correct root line to the recreated temporary file
-                        if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
+                        if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log, telemetry))
                         {
                             // Append to temporary file the cleaned content
-                            if (AppendPayloadToFile(tempFileName, original, strlen(original), log))
+                            if (AppendPayloadToFile(tempFileName, original, strlen(original), log, telemetry))
                             {
                                 // In a single atomic operation move edited contents from temporary file to /etc/group
-                                if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, etcGroup, log)))
+                                if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, etcGroup, log, telemetry)))
                                 {
                                     OsConfigLogInfo(log, "RepairRootGroup:  RenameFileWithOwnerAndAccess('%s' to '%s') returned %d",
                                         tempFileName, etcGroup, status);
@@ -1281,13 +1306,13 @@ int RepairRootGroup(OsConfigLogHandle log)
     return status;
 }
 
-int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
+int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1338,13 +1363,13 @@ int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
+int RemoveUsersWithoutPasswords(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1377,7 +1402,7 @@ int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
                     OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: the root account's password must be manually fixed");
                     status = EPERM;
                 }
-                else if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                else if ((0 != (_status = RemoveUser(&(userList[i]), log, telemetry))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -1395,13 +1420,13 @@ int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
     return status;
 }
 
-int CheckRootIsOnlyUidZeroAccount(char** reason, OsConfigLogHandle log)
+int CheckRootIsOnlyUidZeroAccount(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1427,13 +1452,13 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
+int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1442,7 +1467,7 @@ int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
                 OsConfigLogInfo(log, "SetRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
                     IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted, userList[i].userId, userList[i].groupId);
 
-                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
+                if ((0 != (_status = RemoveUser(&(userList[i]), log, telemetry))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -1460,14 +1485,14 @@ int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
     return status;
 }
 
-int CheckDefaultRootAccountGroupIsGidZero(char** reason, OsConfigLogHandle log)
+int CheckDefaultRootAccountGroupIsGidZero(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0;
     unsigned int i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1493,25 +1518,25 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int SetDefaultRootAccountGroupIsGidZero(OsConfigLogHandle log)
+int SetDefaultRootAccountGroupIsGidZero(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     int status = 0;
 
-    if (0 != (status = CheckDefaultRootAccountGroupIsGidZero(NULL, log)))
+    if (0 != (status = CheckDefaultRootAccountGroupIsGidZero(NULL, log, telemetry)))
     {
-        status = RepairRootGroup(log);
+        status = RepairRootGroup(log, telemetry);
     }
 
     return status;
 }
 
-int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log)
+int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1539,14 +1564,14 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int SetUserHomeDirectories(OsConfigLogHandle log)
+int SetUserHomeDirectories(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     unsigned int defaultHomeDirAccess = 0750;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1575,7 +1600,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
                 // If the home directory does not have correct ownership and access, correct this
                 if (true == DirectoryExists(userList[i].home))
                 {
-                    if (0 != (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, defaultHomeDirAccess, log)))
+                    if (0 != (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, defaultHomeDirAccess, log, telemetry)))
                     {
                         OsConfigLogInfo(log, "SetUserHomeDirectories: cannot set access and ownership for home directory of user %u (%d, errno: %d, %s)",
                             userList[i].userId, _status, errno, strerror(errno));
@@ -1600,8 +1625,9 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
     return status;
 }
 
-static int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle log)
+static int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     struct stat statStruct = {0};
     int status = 0;
 
@@ -1633,13 +1659,13 @@ static int CheckHomeDirectoryOwnership(SimplifiedUser* user, OsConfigLogHandle l
     return status;
 }
 
-int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
+int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1649,11 +1675,11 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
             }
             else if (DirectoryExists(userList[i].home))
             {
-                if (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log)))
+                if (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log, telemetry)))
                 {
                     OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user %u cannot login and their assigned home directory is owned by root", userList[i].userId);
                 }
-                else if (0 == CheckHomeDirectoryOwnership(&userList[i], log))
+                else if (0 == CheckHomeDirectoryOwnership(&userList[i], log, telemetry))
                 {
                     OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user %u owns their assigned home directory", userList[i].userId);
                 }
@@ -1684,7 +1710,7 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, char** reason, OsConfigLogHandle log)
+int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
@@ -1697,7 +1723,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
         return EINVAL;
     }
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1711,7 +1737,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log, telemetry))
                     {
                         OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user %u has proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, modes[j]);
@@ -1746,7 +1772,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
     return status;
 }
 
-int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, unsigned int modeForRoot, unsigned int modeForOthers, OsConfigLogHandle log)
+int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, unsigned int modeForRoot, unsigned int modeForOthers, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
@@ -1755,11 +1781,12 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
     if ((NULL == modes) || (0 == numberOfModes))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "modes", EINVAL);
         OsConfigLogError(log, "SetRestrictedUserHomeDirectories: invalid arguments (%p, %u)", modes, numberOfModes);
         return EINVAL;
     }
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1773,7 +1800,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log, telemetry))
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u already has proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, modes[j]);
@@ -1784,7 +1811,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
                 if (false == oneGoodMode)
                 {
-                    if (0 == (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, log)))
+                    if (0 == (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, log, telemetry)))
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u has now proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, userList[i].isRoot ? modeForRoot : modeForOthers);
@@ -1814,14 +1841,14 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
     return status;
 }
 
-int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, OsConfigLogHandle log)
+int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* command = "cat /etc/login.defs | grep ENCRYPT_METHOD | grep ^[^#]";
     char* encryption = EncryptionName(algorithm);
     char* textResult = NULL;
     int status = 0;
 
-    if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log))) && (NULL != textResult))
+    if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log, telemetry))) && (NULL != textResult))
     {
         RemovePrefixBlanks(textResult);
         RemovePrefixUpTo(textResult, ' ');
@@ -1857,7 +1884,7 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, OsConfi
     return status;
 }
 
-int SetPasswordHashingAlgorithm(unsigned int algorithm, OsConfigLogHandle log)
+int SetPasswordHashingAlgorithm(unsigned int algorithm, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* encryptMethod = "ENCRYPT_METHOD";
     char* encryption = EncryptionName(algorithm);
@@ -1865,13 +1892,14 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, OsConfigLogHandle log)
 
     if ((md5 != algorithm) && (sha256 != algorithm) && (sha512 != algorithm))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "algorithm", EINVAL);
         OsConfigLogError(log, "SetPasswordHashingAlgorithm: unsupported algorithm argument (%u, not: %u, %u, or %u)", algorithm, md5, sha256, sha512);
         return EINVAL;
     }
 
-    if (0 == CheckPasswordHashingAlgorithm(algorithm, NULL, log))
+    if (0 == CheckPasswordHashingAlgorithm(algorithm, NULL, log, telemetry))
     {
-        if (0 == (status = SetEtcLoginDefValue(encryptMethod, encryption, log)))
+        if (0 == (status = SetEtcLoginDefValue(encryptMethod, encryption, log, telemetry)))
         {
             OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: successfully set 'ENCRYPT_METHOD' to '%s' in '/etc/login.defs'", encryption);
         }
@@ -1884,14 +1912,15 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, OsConfigLogHandle log)
     return status;
 }
 
-int CheckMinDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHandle log)
+int CheckMinDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
-    long etcLoginDefsDays = GetPassMinDays(log);
+    long etcLoginDefsDays = GetPassMinDays(log, telemetry);
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1954,7 +1983,7 @@ int CheckMinDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHand
     return status;
 }
 
-int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
+int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* commandTemplate = "chage -m %ld %s";
     char* command = NULL;
@@ -1962,7 +1991,7 @@ int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1977,13 +2006,14 @@ int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
 
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
+                    OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
                     OsConfigLogError(log, "SetMinDaysBetweenPasswordChanges: cannot allocate memory");
                     status = ENOMEM;
                     break;
                 }
                 else
                 {
-                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, telemetry)))
                     {
                         userList[i].minimumPasswordAge = days;
                         OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user %u minimum time between password changes is now set to %ld days", userList[i].userId, days);
@@ -2007,7 +2037,7 @@ int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
         OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: all users who have passwords have correct number of minimum days (%ld) between changes", days);
     }
 
-    if (0 == (_status = SetPassMinDays(days, log)))
+    if (0 == (_status = SetPassMinDays(days, log, telemetry)))
     {
         OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: 'PASS_MIN_DAYS' is set to %ld days in '/etc/login.defs'", days);
     }
@@ -2024,14 +2054,13 @@ int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
     return status;
 }
 
-int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHandle log)
+int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
-    long etcLoginDefsDays = GetPassMaxDays(log);
-
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    long etcLoginDefsDays = GetPassMaxDays(log, telemetry);
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2096,7 +2125,7 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHand
     return status;
 }
 
-int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
+int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* commandTemplate = "chage -M %ld %s";
     char* command = NULL;
@@ -2104,7 +2133,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2119,13 +2148,14 @@ int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
 
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
+                    OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
                     OsConfigLogError(log, "SetMaxDaysBetweenPasswordChanges: cannot allocate memory");
                     status = ENOMEM;
                     break;
                 }
                 else
                 {
-                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, telemetry)))
                     {
                         userList[i].maximumPasswordAge = days;
                         OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user %u maximum time between password changes is now set to %ld days", userList[i].userId, days);
@@ -2149,7 +2179,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
         OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: all users who have passwords have correct number of maximum days (%ld) between changes", days);
     }
 
-    if (0 == (_status = SetPassMaxDays(days, log)))
+    if (0 == (_status = SetPassMaxDays(days, log, telemetry)))
     {
         OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: 'PASS_MAX_DAYS' is set to %ld days in '/etc/login.defs'", days);
     }
@@ -2166,7 +2196,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
     return status;
 }
 
-int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log)
+int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* commandTemplate = "chage -d %ld %s";
     char* command = NULL;
@@ -2176,7 +2206,7 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log)
     time_t currentTime = 0;
     long currentDate = time(&currentTime) / NUMBER_OF_SECONDS_IN_A_DAY;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2190,13 +2220,14 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log)
 
                 if (NULL == (command = FormatAllocateString(commandTemplate, currentDate, userList[i].username)))
                 {
+                    OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
                     OsConfigLogError(log, "EnsureUsersHaveDatesOfLastPasswordChanges: cannot allocate memory");
                     status = ENOMEM;
                     break;
                 }
                 else
                 {
-                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, telemetry)))
                     {
                         OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: user %u date of last password change is now set to %ld days since epoch (today)",
                             userList[i].userId, currentDate);
@@ -2223,7 +2254,7 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log)
     return status;
 }
 
-int CheckPasswordExpirationLessThan(long days, char** reason, OsConfigLogHandle log)
+int CheckPasswordExpirationLessThan(long days, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -2232,7 +2263,7 @@ int CheckPasswordExpirationLessThan(long days, char** reason, OsConfigLogHandle 
     long passwordExpirationDate = 0;
     long currentDate = time(&currentTime) / NUMBER_OF_SECONDS_IN_A_DAY;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2299,14 +2330,13 @@ int CheckPasswordExpirationLessThan(long days, char** reason, OsConfigLogHandle 
     return status;
 }
 
-int CheckPasswordExpirationWarning(long days, char** reason, OsConfigLogHandle log)
+int CheckPasswordExpirationWarning(long days, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
-    long etcLoginDefsDays = GetPassWarnAge(log);
-
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    long etcLoginDefsDays = GetPassWarnAge(log, telemetry);
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2363,7 +2393,7 @@ int CheckPasswordExpirationWarning(long days, char** reason, OsConfigLogHandle l
     return status;
 }
 
-int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
+int SetPasswordExpirationWarning(long days, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* commandTemplate = "chage -W %ld %s";
     char* command = NULL;
@@ -2371,7 +2401,7 @@ int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2386,13 +2416,14 @@ int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
 
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
+                    OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
                     OsConfigLogError(log, "SetPasswordExpirationWarning: cannot allocate memory");
                     status = ENOMEM;
                     break;
                 }
                 else
                 {
-                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, telemetry)))
                     {
                         userList[i].warningPeriod = days;
                         OsConfigLogInfo(log, "SetPasswordExpirationWarning: user %u password expiration warning time is now set to %ld days", userList[i].userId, days);
@@ -2416,7 +2447,7 @@ int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
         OsConfigLogInfo(log, "SetPasswordExpirationWarning: all users who have passwords have correct number of maximum days (%ld) between changes", days);
     }
 
-    if (0 == (_status = SetPassWarnAge(days, log)))
+    if (0 == (_status = SetPassWarnAge(days, log, telemetry)))
     {
         OsConfigLogInfo(log, "SetPasswordExpirationWarning: 'PASS_WARN_AGE' is set to %ld days in '/etc/login.defs'", days);
     }
@@ -2433,7 +2464,7 @@ int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
     return status;
 }
 
-int CheckUsersRecordedPasswordChangeDates(char** reason, OsConfigLogHandle log)
+int CheckUsersRecordedPasswordChangeDates(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -2441,7 +2472,7 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, OsConfigLogHandle log)
     int status = 0;
     long daysCurrent = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2488,13 +2519,13 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int CheckLockoutAfterInactivityLessThan(long days, char** reason, OsConfigLogHandle log)
+int CheckLockoutAfterInactivityLessThan(long days, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2524,7 +2555,7 @@ int CheckLockoutAfterInactivityLessThan(long days, char** reason, OsConfigLogHan
     return status;
 }
 
-int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log)
+int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* commandTemplate = "chage -I %ld %s";
     char* command = NULL;
@@ -2532,7 +2563,7 @@ int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2547,13 +2578,14 @@ int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log)
 
                 if (NULL == (command = FormatAllocateString(commandTemplate, days, userList[i].username)))
                 {
+                    OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
                     OsConfigLogError(log, "SetLockoutAfterInactivityLessThan: cannot allocate memory");
                     status = ENOMEM;
                     break;
                 }
                 else
                 {
-                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, telemetry)))
                     {
                         userList[i].inactivityPeriod = days;
                         OsConfigLogInfo(log, "SetLockoutAfterInactivityLessThan: user %u lockout time after inactivity is now set to %ld days", userList[i].userId, days);
@@ -2580,13 +2612,13 @@ int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log)
     return status;
 }
 
-int CheckSystemAccountsAreNonLogin(char** reason, OsConfigLogHandle log)
+int CheckSystemAccountsAreNonLogin(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2610,13 +2642,13 @@ int CheckSystemAccountsAreNonLogin(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int SetSystemAccountsNonLogin(OsConfigLogHandle log)
+int SetSystemAccountsNonLogin(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2625,9 +2657,9 @@ int SetSystemAccountsNonLogin(OsConfigLogHandle log)
                 OsConfigLogInfo(log, "SetSystemAccountsNonLogin: user %u is either locked, non-login, or cannot-login, but can login with password ('%s')",  userList[i].userId, userList[i].shell);
 
                 // If the account is not already true non-login, try to make it non-login and if that does not work, remove the account
-                if (0 != (_status = SetUserNonLogin(&(userList[i]), log)))
+                if (0 != (_status = SetUserNonLogin(&(userList[i]), log, telemetry)))
                 {
-                    _status = RemoveUser(&(userList[i]), log);
+                    _status = RemoveUser(&(userList[i]), log, telemetry);
                 }
 
                 // Do not overwrite a previous non zero status value if any
@@ -2649,7 +2681,7 @@ int SetSystemAccountsNonLogin(OsConfigLogHandle log)
     return status;
 }
 
-int CheckRootPasswordForSingleUserMode(char** reason, OsConfigLogHandle log)
+int CheckRootPasswordForSingleUserMode(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -2657,7 +2689,7 @@ int CheckRootPasswordForSingleUserMode(char** reason, OsConfigLogHandle log)
     bool rootHasPassword = false;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2713,7 +2745,7 @@ int CheckRootPasswordForSingleUserMode(char** reason, OsConfigLogHandle log)
     return status;
 }
 
-int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, char** reason, OsConfigLogHandle log)
+int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* templateDotPath = "%s/.%s";
 
@@ -2725,13 +2757,14 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
 
     if (NULL == name)
     {
+        OSConfigTelemetryStatusTrace(telemetry, "name", EINVAL);
         OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles called with an invalid argument");
         return EINVAL;
     }
 
     templateLength = strlen(templateDotPath) + strlen(name) + 1;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2745,6 +2778,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
 
                 if (NULL == (dotPath = malloc(length)))
                 {
+                    OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
                     OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles: out of memory");
                     status = ENOMEM;
                     break;
@@ -2789,7 +2823,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
     return status;
 }
 
-int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, OsConfigLogHandle log)
+int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* pathTemplate = "%s/%s";
 
@@ -2804,11 +2838,12 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
     if ((NULL == modes) || (0 == numberOfModes))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "modes", EINVAL);
         OsConfigLogError(log, "CheckUsersRestrictedDotFiles: invalid arguments (%p, %u)", modes, numberOfModes);
         return EINVAL;
     }
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2825,6 +2860,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                         length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
                         if (NULL == (path = malloc(length + 1)))
                         {
+                            OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
                             OsConfigLogError(log, "CheckUsersRestrictedDotFiles: out of memory");
                             status = ENOMEM;
                             break;
@@ -2837,7 +2873,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
+                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log, telemetry))
                             {
                                 OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user %u has proper restricted access (%03o) for their dot file '%s'",
                                     userList[i].userId, modes[j], entry->d_name);
@@ -2879,7 +2915,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
     return status;
 }
 
-int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, OsConfigLogHandle log)
+int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* pathTemplate = "%s/%s";
 
@@ -2894,11 +2930,12 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
     if ((NULL == modes) || (0 == numberOfModes))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "modes", EINVAL);
         OsConfigLogError(log, "SetUsersRestrictedDotFiles: invalid arguments (%p, %u)", modes, numberOfModes);
         return EINVAL;
     }
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, telemetry)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2915,6 +2952,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                         length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
                         if (NULL == (path = malloc(length + 1)))
                         {
+                            OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
                             OsConfigLogError(log, "SetUsersRestrictedDotFiles: out of memory");
                             status = ENOMEM;
                             break;
@@ -2927,7 +2965,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
+                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log, telemetry))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u already has proper restricted access (%03o) set for their dot file '%s'",
                                     userList[i].userId, modes[j], path);
@@ -2938,7 +2976,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
                         if (false == oneGoodMode)
                         {
-                            if (0 == (_status = SetFileAccess(path, userList[i].userId, userList[i].groupId, mode, log)))
+                            if (0 == (_status = SetFileAccess(path, userList[i].userId, userList[i].groupId, mode, log, telemetry)))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u now has restricted access (%03o) set for their dot file '%s'",
                                     userList[i].userId, mode, path);
@@ -2974,7 +3012,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
     return status;
 }
 
-int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandle log)
+int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     struct passwd* userEntry = NULL;
     unsigned int i = 0, j = 0;
@@ -2986,6 +3024,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
 
     if (NULL == names)
     {
+        OSConfigTelemetryStatusTrace(telemetry, "names", EINVAL);
         OsConfigLogError(log, "CheckUserAccountsNotFound: invalid argument");
         return EINVAL;
     }
@@ -3002,6 +3041,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
             {
                 if (NULL == (name = DuplicateString(&(names[j]))))
                 {
+                    OSConfigTelemetryStatusTrace(telemetry, "DuplicateString", ENOMEM);
                     OsConfigLogError(log, "CheckUserAccountsNotFound: failed to duplicate string");
                     status = ENOMEM;
                     break;
@@ -3050,7 +3090,7 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
     return status;
 }
 
-int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
+int RemoveUserAccounts(const char* names, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     SimplifiedUser simplifiedUser = {0};
     size_t namesLength = 0;
@@ -3062,15 +3102,17 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
 
     if (NULL == names)
     {
+        OSConfigTelemetryStatusTrace(telemetry, "names", EINVAL);
         OsConfigLogError(log, "RemoveUserAccounts: invalid argument");
         return EINVAL;
     }
     else if (0 == (numberOfPasswdLines = GetNumberOfLinesInFile(g_passwdFile)))
     {
+        OSConfigTelemetryStatusTrace(telemetry, "GetNumberOfLinesInFile", ENOENT);
         OsConfigLogError(log, "RemoveUserAccounts: cannot read from '%s'", g_passwdFile);
         return EPERM;
     }
-    else if (0 == CheckUserAccountsNotFound(names, NULL, log))
+    else if (0 == CheckUserAccountsNotFound(names, NULL, log, telemetry))
     {
         OsConfigLogInfo(log, "RemoveUserAccounts: the requested user accounts '%s' appear already removed", names);
         return 0;
@@ -3088,6 +3130,7 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
         {
             if (NULL == (name = DuplicateString(&(names[j]))))
             {
+                OSConfigTelemetryStatusTrace(telemetry, "DuplicateString", ENOMEM);
                 OsConfigLogError(log, "RemoveUserAccounts: failed to duplicate string");
                 status = ENOMEM;
                 break;
@@ -3098,12 +3141,13 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
 
                 if (0 == strcmp(userEntry->pw_name, name))
                 {
-                    if (0 != (status = CopyUserEntry(&simplifiedUser, userEntry, log)))
+                    if (0 != (status = CopyUserEntry(&simplifiedUser, userEntry, log, telemetry)))
                     {
+                        OSConfigTelemetryStatusTrace(telemetry, "CopyUserEntry", status);
                         OsConfigLogError(log, "RemoveUserAccounts: failed making copy of user entry (%d)", status);
                         break;
                     }
-                    else if ((0 != (_status = RemoveUser(&simplifiedUser, log))) && (0 == status))
+                    else if ((0 != (_status = RemoveUser(&simplifiedUser, log, telemetry))) && (0 == status))
                     {
                         status = _status;
                     }
@@ -3129,13 +3173,13 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
     return status;
 }
 
-int RestrictSuToRootGroup(OsConfigLogHandle log)
+int RestrictSuToRootGroup(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     const char* etcPamdSu = "/etc/pam.d/su";
     const char* suRestrictedToRootGroup = "auth required pam_wheel.so use_uid group=root";
     int status = 0;
 
-    if (AppendToFile(etcPamdSu, suRestrictedToRootGroup, strlen(suRestrictedToRootGroup), log))
+    if (AppendToFile(etcPamdSu, suRestrictedToRootGroup, strlen(suRestrictedToRootGroup), log, telemetry))
     {
         OsConfigLogInfo(log, "RestrictSuToRootGroup: '%s' was written to '%s'", suRestrictedToRootGroup, etcPamdSu);
     }
