@@ -21,7 +21,6 @@ target_link_libraries(OsConfigResourceComplianceEngine
         logging
         mpiclient
         parsonlib
-        $<IF:$<BOOL:${BUILD_TELEMETRY}>,telemetryjsonlib,telemetrystublib>
         complianceenginelib)
 
 add_custom_target(stage_create_compliance_engine_shell_zip
