@@ -13,7 +13,7 @@ CommonContext::~CommonContext() = default;
 Result<std::string> CommonContext::ExecuteCommand(const std::string& cmd) const
 {
     char* output = nullptr;
-    int err = ::ExecuteCommand(NULL, cmd.c_str(), false, false, 0, 0, &output, NULL, mLog);
+    int err = ::ExecuteCommand(NULL, cmd.c_str(), false, false, 0, 0, &output, NULL, mLog, mTelemetry);
     if (err != 0 || output == nullptr)
     {
         std::string outStr = output == NULL ? "Failed to execute command" : output;
@@ -27,7 +27,7 @@ Result<std::string> CommonContext::ExecuteCommand(const std::string& cmd) const
 
 Result<std::string> CommonContext::GetFileContents(const std::string& filePath) const
 {
-    char* output = LoadStringFromFile(filePath.c_str(), false, mLog);
+    char* output = LoadStringFromFile(filePath.c_str(), false, mLog, mTelemetry);
     if (output == nullptr)
     {
         return Error("Failed to load file contents");

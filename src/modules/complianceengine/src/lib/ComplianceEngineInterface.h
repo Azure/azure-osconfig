@@ -7,13 +7,14 @@
 #include "../inc/Mmi.h"
 
 #include <Logging.h>
+#include <Telemetry.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-void ComplianceEngineInitialize(OsConfigLogHandle);
+void ComplianceEngineInitialize(OsConfigLogHandle, OSConfigTelemetryHandle);
 void ComplianceEngineShutdown();
 
 MMI_HANDLE ComplianceEngineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes);

@@ -22,7 +22,7 @@ protected:
     static const unsigned int cMaxPayloadSize = 100;
     void SetUp() override
     {
-        ComplianceEngineInitialize(nullptr);
+        ComplianceEngineInitialize(nullptr, nullptr);
         mHandle = ComplianceEngineMmiOpen("test", cMaxPayloadSize);
     }
 

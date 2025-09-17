@@ -490,12 +490,12 @@ static void* MpiServerWorker(void* arguments)
 
             OsConfigLogDebug(GetPlatformLog(), "Accepted connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
 
-            if (NULL == (uri = ReadUriFromSocket(socketHandle, GetPlatformLog())))
+            if (NULL == (uri = ReadUriFromSocket(socketHandle, GetPlatformLog(), GetPlatformTelemetry())))
             {
                 OsConfigLogError(GetPlatformLog(), "Failed to read request URI %d", socketHandle);
                 status = HTTP_BAD_REQUEST;
             }
-            else if (0 != (contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog())))
+            else if (0 != (contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog(), GetPlatformTelemetry())))
             {
                 if (NULL == (requestBody = (char*)malloc(contentLength + 1)))
                 {

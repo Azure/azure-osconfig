@@ -21,6 +21,7 @@
 
 #include <CommonUtils.h>
 #include <Logging.h>
+#include <Telemetry.h>
 #include <Mmi.h>
 #include <Mpi.h>
 #include <parson.h>
@@ -32,6 +33,7 @@ extern "C"
 #endif
 
 OsConfigLogHandle GetPlatformLog(void);
+OSConfigTelemetryHandle GetPlatformTelemetry(void);
 
 #ifdef __cplusplus
 }

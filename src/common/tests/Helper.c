@@ -2,7 +2,7 @@
 
 int BackupSshdConfigTest(char const* c)
 {
-    return BackupSshdConfig(c, NULL);
+    return BackupSshdConfig(c, NULL, NULL);
 }
 
 void SwapGlobalSshServerConfigs(const char** config, const char** backup, const char** remediation)

@@ -18,6 +18,7 @@
 
 #include <CommonUtils.h>
 #include <Logging.h>
+#include <Telemetry.h>
 #include <Reasons.h>
 #include <Asb.h>
 #include <Mmi.h>

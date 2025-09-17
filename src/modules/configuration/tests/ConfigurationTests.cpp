@@ -64,7 +64,7 @@ class ConfigurationTest : public ::testing::Test
 
         void SetUp()
         {
-            EXPECT_TRUE(SavePayloadToFile(m_testConfigurationFile, m_testConfiguration, strlen(m_testConfiguration), nullptr));
+            EXPECT_TRUE(SavePayloadToFile(m_testConfigurationFile, m_testConfiguration, strlen(m_testConfiguration), nullptr, nullptr));
             ConfigurationInitialize(m_testConfigurationFile);
         }
 

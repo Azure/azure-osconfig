@@ -22,6 +22,7 @@
 static unsigned int g_lastTime = 0;
 
 extern OsConfigLogHandle g_platformLog;
+extern OSConfigTelemetryHandle g_platformTelemetry;
 
 extern char g_mpiCall[MPI_CALL_MESSAGE_LENGTH];
 
@@ -166,18 +167,19 @@ int main(int argc, char* argv[])
     pid_t pid = 0;
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
 
-    char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetPlatformLog());
+    char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetPlatformLog(), GetPlatformTelemetry());
     if (NULL != jsonConfiguration)
     {
-        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetPlatformLog()));
-        SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetPlatformLog()));
-        SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, GetPlatformLog()));
+        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetPlatformLog(), GetPlatformTelemetry()));
+        SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetPlatformLog(), GetPlatformTelemetry()));
+        SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, GetPlatformLog(), GetPlatformTelemetry()));
         FREE_MEMORY(jsonConfiguration);
     }
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
 
     g_platformLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
+    g_platformTelemetry = OSConfigTelemetryOpen();
 
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetPlatformLog(), "OSConfig version: %s", OSCONFIG_VERSION);
@@ -211,6 +213,7 @@ int main(int argc, char* argv[])
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
 
     TerminatePlatform();
+    OSConfigTelemetryClose(&g_platformTelemetry);
     CloseLog(&g_platformLog);
 
     return 0;

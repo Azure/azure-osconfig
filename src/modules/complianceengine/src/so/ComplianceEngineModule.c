@@ -8,14 +8,17 @@
 #include <stddef.h>
 
 static OsConfigLogHandle gLog = NULL;
+static OSConfigTelemetryHandle gTelemetry = NULL;
 static const char* gLogFile = "/var/log/osconfig_complianceengine.log";
 static const char* gRolledLogFile = "/var/log/osconfig_complianceengine.bak";
 
 void __attribute__((constructor)) InitModule(void)
 {
     gLog = OpenLog(gLogFile, gRolledLogFile);
+    gTelemetry = OSConfigTelemetryOpen();
     assert(NULL != gLog);
-    ComplianceEngineInitialize(gLog);
+    assert(NULL != gTelemetry);
+    ComplianceEngineInitialize(gLog, gTelemetry);
 }
 
 void __attribute__((destructor)) DestroyModule(void)

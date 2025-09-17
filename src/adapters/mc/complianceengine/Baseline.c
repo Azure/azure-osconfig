@@ -7,8 +7,9 @@
 static MMI_HANDLE gComplianceEngine = NULL;
 static const char gComponentName[] = "ComplianceEngine";
 
-int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log)
+int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     UNUSED(resourceId);
     UNUSED(ruleId);
     UNUSED(payloadKey);
@@ -16,22 +17,24 @@ int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, 
     return 0;
 }
 
-int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log)
+int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     return ComplianceEngineCheckApplicability(gComplianceEngine, payloadKey, log);
 }
 
 // This function is called in library constructor in OsConfigResource.c
-void BaselineInitialize(OsConfigLogHandle log)
+void BaselineInitialize(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
-    ComplianceEngineInitialize(log);
+    ComplianceEngineInitialize(log, telemetry);
     gComplianceEngine = ComplianceEngineMmiOpen(gComponentName, -1);
 }
 
 // This function is called in library destructor in OsConfigResource.c
-void BaselineShutdown(OsConfigLogHandle log)
+void BaselineShutdown(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     UNUSED(log);
+    UNUSED(telemetry);
     if (NULL == gComplianceEngine)
     {
         return;
@@ -42,8 +45,9 @@ void BaselineShutdown(OsConfigLogHandle log)
     gComplianceEngine = NULL;
 }
 
-int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log)
+int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
+    UNUSED(telemetry);
     if ((NULL == componentName) || (NULL == objectName))
     {
         OsConfigLogError(log, "BaselineMmiGet called with invalid arguments");
@@ -67,8 +71,9 @@ int BaselineMmiGet(const char* componentName, const char* objectName, char** pay
     return MMI_OK;
 }
 
-int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
+int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     UNUSED(log);
+    UNUSED(telemetry);
     return ComplianceEngineMmiSet(gComplianceEngine, componentName, objectName, payload, payloadSizeBytes);
 }
