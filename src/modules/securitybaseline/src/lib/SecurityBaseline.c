@@ -95,7 +95,7 @@ void SecurityBaselineMmiClose(MMI_HANDLE clientSession)
     }
     else
     {
-        OSConfigTelemetryStatusTrace(SecurityBaselineGetTelemetry(), "clientSession", status);
+        OSConfigTelemetryStatusTrace(SecurityBaselineGetTelemetry(), "clientSession", EINVAL);
         OsConfigLogError(SecurityBaselineGetLog(), "MmiClose() called outside of a valid session");
     }
 }
