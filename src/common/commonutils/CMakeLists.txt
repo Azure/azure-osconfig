@@ -29,7 +29,7 @@ target_include_directories(commonutils
 target_link_libraries(commonutils
     PUBLIC
         logging
-        $<IF:$<BOOL:${BUILD_TELEMETRY}>,telemetryjsonlib,telemetrystublib>
+        telemetryjsonlib
     PRIVATE
         parsonlib
         m
