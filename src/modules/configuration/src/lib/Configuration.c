@@ -93,12 +93,12 @@ static char* LoadConfigurationFromFile(const char* fileName)
     char* jsonConfiguration = NULL;
     const char* fileToLoadFrom = fileName ? fileName : g_osConfigConfigurationFile;
 
-    if (NULL != (jsonConfiguration = LoadStringFromFile(fileToLoadFrom, false, ConfigurationGetLog(), ConfigurationGetTelemetry())))
+    if (NULL != (jsonConfiguration = LoadStringFromFile(fileToLoadFrom, false, ConfigurationGetLog())))
     {
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, ConfigurationGetLog(), ConfigurationGetTelemetry());
         g_refreshInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, ConfigurationGetLog(), ConfigurationGetTelemetry());
-        g_localManagementEnabled = (GetLocalManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog(), ConfigurationGetTelemetry())) ? true : false;
-        g_debugLoggingEnabled = (LoggingLevelDebug == GetLoggingLevelFromJsonConfig(jsonConfiguration, ConfigurationGetLog(), ConfigurationGetTelemetry())) ? true : false;
+        g_localManagementEnabled = (GetLocalManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
+        g_debugLoggingEnabled = (LoggingLevelDebug == GetLoggingLevelFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
         g_iotHubManagementEnabled = IsIotHubManagementEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog(), ConfigurationGetTelemetry());
         g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog(), ConfigurationGetTelemetry());
@@ -280,7 +280,7 @@ static int UpdateConfigurationFile(void)
         {
             if (NULL != (newConfiguration = json_serialize_to_string_pretty(jsonValue)))
             {
-                if (false == SavePayloadToFile(g_configurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog(), ConfigurationGetTelemetry()))
+                if (false == SavePayloadToFile(g_configurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog()))
                 {
                     status = ENOENT;
                     OSConfigTelemetryStatusTrace(ConfigurationGetTelemetry(), "SavePayloadToFile", status);

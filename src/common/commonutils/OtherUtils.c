@@ -103,9 +103,8 @@ int SleepMilliseconds(long milliseconds)
     return nanosleep(&interval, &remaining);
 }
 
-char* GetHttpProxyData(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetHttpProxyData(OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     const char* proxyVariables[] = {
         "http_proxy",
         "https_proxy",
@@ -127,7 +126,7 @@ char* GetHttpProxyData(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
             proxyData = DuplicateString(environmentVariable);
             if (NULL == proxyData)
             {
-                OSConfigTelemetryStatusTrace(telemetry, "DuplicateString", errno);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "DuplicateString", errno);
                 OsConfigLogError(log, "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
             }
             else
@@ -200,9 +199,8 @@ char* RepairBrokenEolCharactersIfAny(const char* value)
     return result;
 }
 
-int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, int base, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int ConvertStringToIntegers(const char* source, char separator, int** integers, int* numIntegers, int base, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     const char space = ' ';
     char* value = NULL;
     size_t sourceLength = 0;
@@ -211,7 +209,7 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
 
     if ((NULL == source) || (NULL == integers) || (NULL == numIntegers))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "source", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "source", EINVAL);
         OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: invalid arguments");
         return EINVAL;
     }
@@ -225,7 +223,7 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
     {
         if (NULL == (value = DuplicateString(&(source[i]))))
         {
-            OSConfigTelemetryStatusTrace(telemetry, "DuplicateString", ENOMEM);
+            OSConfigTelemetryStatusTrace(GetTelemetry(), "DuplicateString", ENOMEM);
             OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: failed to duplicate string");
             status = ENOMEM;
             break;
@@ -253,7 +251,7 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
 
             if (NULL == *integers)
             {
-                OSConfigTelemetryStatusTrace(telemetry, "realloc", ENOMEM);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "realloc", ENOMEM);
                 OsConfigLogError(log, "ConvertSpaceSeparatedStringsToIntegers: failed to allocate memory");
                 *numIntegers = 0;
                 status = ENOMEM;
@@ -279,13 +277,12 @@ int ConvertStringToIntegers(const char* source, char separator, int** integers, 
     return status;
 }
 
-int CheckAllWirelessInterfacesAreDisabled(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int CheckAllWirelessInterfacesAreDisabled(char** reason, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     const char* command = "iwconfig 2>&1 | egrep -v 'no wireless extensions|not found' | grep Frequency";
     int status = 0;
 
-    if (0 == ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log, telemetry))
+    if (0 == ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log, GetTelemetry()))
     {
         OsConfigLogInfo(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
         OsConfigCaptureReason(reason, "At least one active wireless interface is present");
@@ -301,25 +298,24 @@ int CheckAllWirelessInterfacesAreDisabled(char** reason, OsConfigLogHandle log, 
     return status;
 }
 
-int DisableAllWirelessInterfaces(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int DisableAllWirelessInterfaces(OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     const char* nmcli = "nmcli";
     const char* rfkill = "rfkill";
     const char* nmCliRadioAllOff = "nmcli radio wifi off";
     const char* rfKillBlockAll = "rfkill block all";
     int status = 0;
 
-    if (0 == CheckAllWirelessInterfacesAreDisabled(NULL, log, telemetry))
+    if (0 == CheckAllWirelessInterfacesAreDisabled(NULL, log, GetTelemetry()))
     {
         OsConfigLogInfo(log, "DisableAllWirelessInterfaces: no active wireless interfaces are present");
         return 0;
     }
 
-    if ((0 != IsPresent(nmcli, log, telemetry)) && (0 != IsPresent(rfkill, log, telemetry)))
+    if ((0 != IsPresent(nmcli, log, GetTelemetry())) && (0 != IsPresent(rfkill, log, GetTelemetry())))
     {
         OsConfigLogInfo(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed", nmcli, rfkill);
-        if (0 != (status = InstallOrUpdatePackage(rfkill, log, telemetry)))
+        if (0 != (status = InstallOrUpdatePackage(rfkill, log, GetTelemetry())))
         {
             OsConfigLogInfo(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed, also failed "
                 "to install '%s', automatic remediation is not possible", nmcli, rfkill, rfkill);
@@ -329,17 +325,17 @@ int DisableAllWirelessInterfaces(OsConfigLogHandle log, OSConfigTelemetryHandle 
 
     if (0 == status)
     {
-        if (0 == IsPresent(nmcli, log, telemetry))
+        if (0 == IsPresent(nmcli, log, GetTelemetry()))
         {
-            if (0 != (status = ExecuteCommand(NULL, nmCliRadioAllOff, true, false, 0, 0, NULL, NULL, log, telemetry)))
+            if (0 != (status = ExecuteCommand(NULL, nmCliRadioAllOff, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
             {
                 OsConfigLogInfo(log, "DisableAllWirelessInterfaces: '%s' failed with %d", nmCliRadioAllOff, status);
             }
         }
 
-        if (0 == IsPresent(rfkill, log, telemetry))
+        if (0 == IsPresent(rfkill, log, GetTelemetry()))
         {
-            if (0 != (status = ExecuteCommand(NULL, rfKillBlockAll, true, false, 0, 0, NULL, NULL, log, telemetry)))
+            if (0 != (status = ExecuteCommand(NULL, rfKillBlockAll, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
             {
                 OsConfigLogInfo(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
             }
@@ -351,9 +347,8 @@ int DisableAllWirelessInterfaces(OsConfigLogHandle log, OSConfigTelemetryHandle 
     return status;
 }
 
-int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     const char* acceptInput = "iptables -A INPUT -j ACCEPT";
     const char* acceptForward = "iptables -A FORWARD -j ACCEPT";
     const char* acceptOutput = "iptables -A OUTPUT -j ACCEPT";
@@ -363,15 +358,15 @@ int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log, OSConfigTelemetryHandle 
     int status = 0;
 
     // First, ensure all current traffic is accepted:
-    if (0 != (status = ExecuteCommand(NULL, acceptInput, true, false, 0, 0, NULL, NULL, log, telemetry)))
+    if (0 != (status = ExecuteCommand(NULL, acceptInput, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
     {
         OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptInput, status);
     }
-    else if (0 != (status = ExecuteCommand(NULL, acceptForward, true, false, 0, 0, NULL, NULL, log, telemetry)))
+    else if (0 != (status = ExecuteCommand(NULL, acceptForward, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
     {
         OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptForward, status);
     }
-    else if (0 != (status = ExecuteCommand(NULL, acceptOutput, true, false, 0, 0, NULL, NULL, log, telemetry)))
+    else if (0 != (status = ExecuteCommand(NULL, acceptOutput, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
     {
         OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptOutput, status);
     }
@@ -379,15 +374,15 @@ int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log, OSConfigTelemetryHandle 
     if (0 == status)
     {
         // Then set default to drop:
-        if (0 != (status = ExecuteCommand(NULL, dropInput, true, false, 0, 0, NULL, NULL, log, telemetry)))
+        if (0 != (status = ExecuteCommand(NULL, dropInput, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
         {
             OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropInput, status);
         }
-        else if (0 != (status = ExecuteCommand(NULL, dropForward, true, false, 0, 0, NULL, NULL, log, telemetry)))
+        else if (0 != (status = ExecuteCommand(NULL, dropForward, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
         {
             OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropForward, status);
         }
-        else if (0 != (status = ExecuteCommand(NULL, dropOutput, true, false, 0, 0, NULL, NULL, log, telemetry)))
+        else if (0 != (status = ExecuteCommand(NULL, dropOutput, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
         {
             OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropOutput, status);
         }
@@ -398,9 +393,8 @@ int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log, OSConfigTelemetryHandle 
     return 0;
 }
 
-char* RemoveCharacterFromString(const char* source, char what, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* RemoveCharacterFromString(const char* source, char what, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     char* target = NULL;
     size_t sourceLength = 0, i = 0, j = 0;
 
@@ -432,9 +426,8 @@ char* RemoveCharacterFromString(const char* source, char what, OsConfigLogHandle
     return target;
 }
 
-char* ReplaceEscapeSequencesInString(const char* source, const char* escapes, unsigned int numEscapes, char replacement, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* ReplaceEscapeSequencesInString(const char* source, const char* escapes, unsigned int numEscapes, char replacement, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     char* target = NULL;
     size_t sourceLength = 0, i = 0, j = 0, k = 0;
     bool found = false;
@@ -494,9 +487,8 @@ typedef struct PathLocations
     const char* path;
 } PathLocations;
 
-int RemoveDotsFromPath(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int RemoveDotsFromPath(OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     const char* path = "PATH";
     const char* dot = ".";
     const char* printenv = "printenv PATH";
@@ -514,15 +506,15 @@ int RemoveDotsFromPath(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     char* newPath = NULL;
     int status = 0, _status = 0;
 
-    if (0 != CheckTextNotFoundInEnvironmentVariable(path, dot, false, NULL, log, telemetry))
+    if (0 != CheckTextNotFoundInEnvironmentVariable(path, dot, false, NULL, log, GetTelemetry()))
     {
-        if (0 == (status == ExecuteCommand(NULL, printenv, false, false, 0, 0, &currentPath, NULL, log, telemetry)))
+        if (0 == (status == ExecuteCommand(NULL, printenv, false, false, 0, 0, &currentPath, NULL, log, GetTelemetry())))
         {
-            if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log, telemetry)))
+            if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log, GetTelemetry())))
             {
                 if (NULL != (setenv = FormatAllocateString(setenvTemplate, newPath)))
                 {
-                    if (0 == (status == ExecuteCommand(NULL, setenv, false, false, 0, 0, NULL, NULL, log, telemetry)))
+                    if (0 == (status == ExecuteCommand(NULL, setenv, false, false, 0, 0, NULL, NULL, log, GetTelemetry())))
                     {
                         OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set 'PATH' to '%s'", newPath);
                     }
@@ -535,7 +527,7 @@ int RemoveDotsFromPath(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
                 }
                 else
                 {
-                    OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+                    OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
                     OsConfigLogError(log, "RemoveDotsFromPath: out of memory");
                     status = ENOMEM;
                 }
@@ -560,16 +552,16 @@ int RemoveDotsFromPath(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     {
         for (i = 0; i < numPathLocations; i++)
         {
-            if (0 == CheckMarkedTextNotFoundInFile(pathLocations[i].location, pathLocations[i].path, dot, '#', NULL, log, telemetry))
+            if (0 == CheckMarkedTextNotFoundInFile(pathLocations[i].location, pathLocations[i].path, dot, '#', NULL, log, GetTelemetry()))
             {
                 continue;
             }
 
-            if (NULL != (currentPath = GetStringOptionFromFile(pathLocations[i].location, pathLocations[i].path, ' ', log, telemetry)))
+            if (NULL != (currentPath = GetStringOptionFromFile(pathLocations[i].location, pathLocations[i].path, ' ', log, GetTelemetry())))
             {
-                if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log, telemetry)))
+                if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log, GetTelemetry())))
                 {
-                    if (0 == (_status = SetEtcConfValue(pathLocations[i].location, pathLocations[i].path, newPath, log, telemetry)))
+                    if (0 == (_status = SetEtcConfValue(pathLocations[i].location, pathLocations[i].path, newPath, log, GetTelemetry())))
                     {
                         OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set '%s' to '%s' in '%s'",
                             pathLocations[i].path, pathLocations[i].location, newPath);
@@ -597,9 +589,8 @@ int RemoveDotsFromPath(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     return status;
 }
 
-int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, unsigned int numEscapes, char replacement, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, unsigned int numEscapes, char replacement, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     char* fileContents = NULL;
     char* newFileContents = NULL;
     int status = 0;
@@ -614,15 +605,15 @@ int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, uns
         OsConfigLogInfo(log, "ReplaceEscapesFromFile: called for a file that does not exist ('%s')", fileName);
         return EEXIST;
     }
-    else if (NULL == (fileContents = LoadStringFromFile(fileName, false, log, telemetry)))
+    else if (NULL == (fileContents = LoadStringFromFile(fileName, false, log, GetTelemetry())))
     {
         OsConfigLogInfo(log, "ReplaceEscapesFromFile: cannot read from file '%s'", fileName);
         return ENOENT;
     }
 
-    if (NULL != (newFileContents = ReplaceEscapeSequencesInString(fileContents, escapes, numEscapes, replacement, log, telemetry)))
+    if (NULL != (newFileContents = ReplaceEscapeSequencesInString(fileContents, escapes, numEscapes, replacement, log, GetTelemetry())))
     {
-        if (false == SecureSaveToFile(fileName, newFileContents, strlen(newFileContents), log, telemetry))
+        if (false == SecureSaveToFile(fileName, newFileContents, strlen(newFileContents), log, GetTelemetry()))
         {
             OsConfigLogInfo(log, "ReplaceEscapesFromFile: cannot save '%s' (%d)", fileName, errno);
             status = ENOENT;

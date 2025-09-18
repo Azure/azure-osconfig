@@ -81,13 +81,13 @@ void __attribute__((constructor)) Initialize()
 
     if (NULL != g_mpiHandle)
     {
-        CallMpiClose(g_mpiHandle, GetLog(), GetTelemetry());
+        CallMpiClose(g_mpiHandle, GetLog()));
         g_mpiHandle = NULL;
     }
 
     SetConsoleLoggingEnabled(false);
 
-    BaselineInitialize(GetLog(), GetTelemetry());
+    BaselineInitialize(GetLog()));
 
     OsConfigLogInfo(GetLog(), "[OsConfigResource] Initialize (PID: %d)", getpid());
     OsConfigLogInfo(GetLog(), "[OsConfigResource] Version: %s", version);
@@ -99,16 +99,16 @@ void __attribute__((destructor)) Destroy()
     {
         OsConfigLogInfo(GetLog(), "[OsConfigResource] Destroy (PID: %d)", getpid());
 
-        BaselineShutdown(GetLog(), GetTelemetry());
+        BaselineShutdown(GetLog()));
     }
     else
     {
         OsConfigLogInfo(GetLog(), "[OsConfigResource] Destroy (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 
-        CallMpiClose(g_mpiHandle, GetLog(), GetTelemetry());
+        CallMpiClose(g_mpiHandle, GetLog()));
         g_mpiHandle = NULL;
 
-        RestartDaemon(IsDaemonActive(g_osconfig, GetLog(), GetTelemetry()) ? g_osconfig : g_mpiServer, NULL, NULL);
+        RestartDaemon(IsDaemonActive(g_osconfig, GetLog())) ? g_osconfig : g_mpiServer, NULL, NULL);
     }
 
     FREE_MEMORY(g_resourceId);
@@ -144,7 +144,7 @@ static void LogOsConfigVersion(MI_Context* context)
     int objectValueLength = 0;
     char* payloadString = NULL;
 
-    if ((NULL != g_mpiHandle) && (MPI_OK == CallMpiGet(deviceInfoComponent, osConfigVersionObject, &objectValue, &objectValueLength, GetLog(), GetTelemetry())) && (NULL != objectValue))
+    if ((NULL != g_mpiHandle) && (MPI_OK == CallMpiGet(deviceInfoComponent, osConfigVersionObject, &objectValue, &objectValueLength, GetLog()))) && (NULL != objectValue))
     {
         if (NULL != (payloadString = malloc(((objectValueLength > 0) ? objectValueLength : (int)strlen(objectValue)) + 1)))
         {
@@ -172,22 +172,22 @@ static MPI_HANDLE RefreshMpiClientSession(MPI_HANDLE currentMpiHandle, MI_Contex
 {
     MPI_HANDLE mpiHandle = currentMpiHandle;
 
-    if ((NULL != mpiHandle) && (true == IsDaemonActive(g_mpiServer, GetLog(), GetTelemetry())))
+    if ((NULL != mpiHandle) && (true == IsDaemonActive(g_mpiServer, GetLog()))))
     {
         return mpiHandle;
     }
 
     if (NULL != mpiHandle)
     {
-        CallMpiClose(mpiHandle, GetLog(), GetTelemetry());
+        CallMpiClose(mpiHandle, GetLog()));
         mpiHandle = NULL;
     }
 
-    if (true == EnableAndStartDaemon(g_mpiServer, GetLog(), GetTelemetry()))
+    if (true == EnableAndStartDaemon(g_mpiServer, GetLog())))
     {
         sleep(1);
 
-        if (NULL == (mpiHandle = CallMpiOpen(MPI_CLIENT_NAME, MAX_PAYLOAD_LENGTH, GetLog(), GetTelemetry())))
+        if (NULL == (mpiHandle = CallMpiOpen(MPI_CLIENT_NAME, MAX_PAYLOAD_LENGTH, GetLog()))))
         {
             OSConfigTelemetryStatusTrace(GetTelemetry(), "CallMpiOpen", ENOTCONN);
             OsConfigLogError(GetLog(), "[OsConfigResource] MpiOpen failed");
@@ -361,7 +361,7 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, const char* comp
             memset(payloadString, 0, payloadSize + 1);
             memcpy(payloadString, serializedValue, payloadSize);
 
-            mpiResult = BaselineMmiSet(componentName, objectName, payloadString, payloadSize, GetLog(), GetTelemetry());
+            mpiResult = BaselineMmiSet(componentName, objectName, payloadString, payloadSize, GetLog()));
             LogInfo(context, GetLog(), "[%s] BaselineMmiSet(%s, %s, '%.*s', %d) returned %d",
                 who, componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult);
 
@@ -374,7 +374,7 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, const char* comp
 
                 if (NULL != g_mpiHandle)
                 {
-                    mpiResult = CallMpiSet(componentName, objectName, payloadString, payloadSize, GetLog(), GetTelemetry());
+                    mpiResult = CallMpiSet(componentName, objectName, payloadString, payloadSize, GetLog()));
                     LogInfo(context, GetLog(), "[%s] CallMpiSet(%s, %s, '%.*s', %d) returned %d",
                         who, componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult);
                 }
@@ -431,7 +431,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, const char* c
         SetDesiredObjectValueToDevice(who, componentName, g_initObjectName, g_desiredObjectValue, context);
     }
 
-    mpiResult = BaselineMmiGet(componentName, g_reportedObjectName, &objectValue, &objectValueLength, MAX_PAYLOAD_LENGTH, GetLog(), GetTelemetry());
+    mpiResult = BaselineMmiGet(componentName, g_reportedObjectName, &objectValue, &objectValueLength, MAX_PAYLOAD_LENGTH, GetLog()));
     LogInfo(context, GetLog(), "[%s] BaselineMmiGet(%s, %s): '%s' (%d)", who, componentName, g_reportedObjectName, objectValue, objectValueLength);
 
     if (MPI_OK != mpiResult)
@@ -443,7 +443,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, const char* c
 
         if (NULL != g_mpiHandle)
         {
-            mpiResult = CallMpiGet(componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog(), GetTelemetry());
+            mpiResult = CallMpiGet(componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog()));
             LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s): '%s' (%d)", who, componentName, g_reportedObjectName, objectValue, objectValueLength);
         }
     }
@@ -740,7 +740,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         }
     }
 
-    if (0 != BaselineIsCorrectDistribution(g_payloadKey, GetLog(), GetTelemetry()))
+    if (0 != BaselineIsCorrectDistribution(g_payloadKey, GetLog())))
     {
         OsConfigLogInfo(GetLog(), "[OsConfigResource.Get] BaselineIsCorrectDistribution(%s) failed", g_payloadKey);
         miResult = MI_RESULT_NOT_SUPPORTED;
@@ -908,7 +908,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     if (MI_TRUE == isCompliant)
     {
-        if (0 == BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog(), GetTelemetry()))
+        if (0 == BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog())))
         {
             reasonCode = FormatAllocateString(auditPassedCodeTemplate, g_ruleId);
         }
@@ -925,7 +925,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
     else
     {
-        if (0 == BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog(), GetTelemetry()))
+        if (0 == BaselineIsValidResourceIdRuleId(g_resourceId, g_ruleId, g_payloadKey, GetLog())))
         {
             reasonCode = FormatAllocateString(auditFailedCodeTemplate, g_ruleId);
         }
@@ -1215,7 +1215,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         FREE_MEMORY(g_procedureObjectName);
     }
 
-    if (0 != BaselineIsCorrectDistribution(g_payloadKey, GetLog(), GetTelemetry()))
+    if (0 != BaselineIsCorrectDistribution(g_payloadKey, GetLog())))
     {
         OsConfigLogInfo(GetLog(), "[OsConfigResource.Get] BaselineIsCorrectDistribution(%s) failed", g_payloadKey);
         miResult = MI_RESULT_NOT_SUPPORTED;
@@ -1458,7 +1458,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         FREE_MEMORY(g_procedureObjectName);
     }
 
-    if (0 != BaselineIsCorrectDistribution(g_payloadKey, GetLog(), GetTelemetry()))
+    if (0 != BaselineIsCorrectDistribution(g_payloadKey, GetLog())))
     {
         OsConfigLogInfo(GetLog(), "[OsConfigResource.Get] BaselineIsCorrectDistribution(%s) failed", g_payloadKey);
         miResult = MI_RESULT_NOT_SUPPORTED;

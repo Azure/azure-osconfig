@@ -5,6 +5,8 @@
 
 #include <sys/select.h>
 
+extern OSConfigTelemetryHandle GetTelemetry(void);
+
 static long MonotonicTime()
 {
     struct timespec ts;
@@ -56,9 +58,8 @@ void CleanupMockCommands()
 
 #define BUFFER_SIZE 1024
 
-int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     int workerPid = -1;
     int pipefd[2] = {0};
     long startTime = 0;
@@ -70,7 +71,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     }
     if (strlen(command) > (size_t)sysconf(_SC_ARG_MAX))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "strlen", E2BIG);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "strlen", E2BIG);
         OsConfigLogError(log, "Command '%.40s...' is too long, %lu characters (maximum %lu characters)", command, strlen(command), (size_t)sysconf(_SC_ARG_MAX));
         return E2BIG;
     }
@@ -107,14 +108,14 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     startTime = MonotonicTime();
     if (startTime < 0)
     {
-        OSConfigTelemetryStatusTrace(telemetry, "startTime", errno);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "startTime", errno);
         OsConfigLogError(log, "Cannot get time for command '%s', clock_gettime() failed with %d (%s)", command, errno, strerror(errno));
         return errno;
     }
 
     if (0 != pipe(pipefd))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "pipe", errno);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "pipe", errno);
         OsConfigLogError(log, "Cannot create pipe for command '%s', pipe() failed with %d (%s)", command, errno, strerror(errno));
         return errno;
     }
@@ -122,7 +123,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     workerPid = fork();
     if (workerPid < 0)
     {
-        OSConfigTelemetryStatusTrace(telemetry, "fork", errno);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "fork", errno);
         OsConfigLogError(log, "Cannot fork for command '%s', fork() failed with %d (%s)", command, errno, strerror(errno));
         close(pipefd[0]);
         close(pipefd[1]);
@@ -186,7 +187,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                 {
                     continue;
                 }
-                OSConfigTelemetryStatusTrace(telemetry, "select", errno);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "select", errno);
                 OsConfigLogError(log, "Error doing select for command '%s', select() failed with %d (%s)", command, errno, strerror(errno));
                 status = errno;
                 break;
@@ -195,14 +196,14 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             currentTime = MonotonicTime();
             if (currentTime < 0)
             {
-                OSConfigTelemetryStatusTrace(telemetry, "currentTime", errno);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "currentTime", errno);
                 OsConfigLogError(log, "Error getting time for command '%s', clock_gettime() failed with %d (%s)", command, errno, strerror(errno));
                 status = errno;
                 break;
             }
             if ((timeoutSeconds > 0) && (currentTime - startTime >= timeoutSeconds))
             {
-                OSConfigTelemetryStatusTrace(telemetry, "timeoutSeconds", ETIME);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "timeoutSeconds", ETIME);
                 OsConfigLogError(log, "Timeout reading from pipe for command '%s', %d seconds", command, (int)(currentTime - startTime));
                 status = ETIME;
                 break;
@@ -211,7 +212,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             {
                 if (0 != callback(context))
                 {
-                    OSConfigTelemetryStatusTrace(telemetry, "callback", ECANCELED);
+                    OSConfigTelemetryStatusTrace(GetTelemetry(), "callback", ECANCELED);
                     OsConfigLogError(log, "Canceled reading from pipe for command '%s'", command);
                     status = ECANCELED;
                     break;
@@ -238,7 +239,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
                 {
                     continue;
                 }
-                OSConfigTelemetryStatusTrace(telemetry, "read", errno);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "read", errno);
                 OsConfigLogError(log, "Error reading from pipe for command '%s', read() failed with %d (%s)", command, errno, strerror(errno));
                 status = errno;
                 break;
@@ -259,7 +260,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             tmp = realloc(*textResult, outputBufferSize + 1);
             if (NULL == tmp)
             {
-                OSConfigTelemetryStatusTrace(telemetry, "realloc", ENOMEM);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "realloc", ENOMEM);
                 OsConfigLogError(log, "Cannot allocate buffer for command '%s'", command);
                 status = ENOMEM;
                 FREE_MEMORY(*textResult);
@@ -315,9 +316,8 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     }
 }
 
-char* HashCommand(const char* source, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* HashCommand(const char* source, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     static const char hashCommandTemplate[] = "%s | sha256sum | head -c 64";
 
     char* command = NULL;
@@ -337,7 +337,7 @@ char* HashCommand(const char* source, OsConfigLogHandle log, OSConfigTelemetryHa
         memset(command, 0, length);
         snprintf(command, length, hashCommandTemplate, source);
 
-        status = ExecuteCommand(NULL, command, false, false, 0, 0, &hash, NULL, log, telemetry);
+        status = ExecuteCommand(NULL, command, false, false, 0, 0, &hash, NULL, log, GetTelemetry());
         if (0 != status)
         {
             FREE_MEMORY(hash);
@@ -345,7 +345,7 @@ char* HashCommand(const char* source, OsConfigLogHandle log, OSConfigTelemetryHa
     }
     else
     {
-        OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
         OsConfigLogError(log, "HashCommand: out of memory");
     }
 

@@ -39,35 +39,36 @@ static int g_updateInstalledPackagesCache = 0;
 #endif
 static char* g_installedPackagesCache = NULL;
 
+extern OSConfigTelemetryHandle GetTelemetry(void);
+
 void PackageUtilsCleanup(void)
 {
     FREE_MEMORY(g_installedPackagesCache);
 }
 
-int IsPresent(const char* what, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int IsPresent(const char* what, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     const char* commandTemplate = "command -v %s";
     char* command = NULL;
     int status = ENOENT;
 
     if (NULL == what)
     {
-        OSConfigTelemetryStatusTrace(telemetry, "what", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "what", EINVAL);
         OsConfigLogError(log, "IsPresent called with invalid argument");
         return EINVAL;
     }
 
     if (NULL != (command = FormatAllocateString(commandTemplate, what)))
     {
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log, telemetry)))
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log, GetTelemetry())))
         {
             OsConfigLogInfo(log, "'%s' is locally present", what);
         }
     }
     else
     {
-        OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "IsPresent: FormatAllocateString failed");
         status = ENOMEM;
     }
@@ -77,43 +78,41 @@ int IsPresent(const char* what, OsConfigLogHandle log, OSConfigTelemetryHandle t
     return status;
 }
 
-static void CheckPackageManagersPresence(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static void CheckPackageManagersPresence(OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     if (false == g_checkedPackageManagersPresence)
     {
         g_checkedPackageManagersPresence = true;
-        g_aptGetIsPresent = (0 == IsPresent(g_aptGet, log, telemetry)) ? true : false;
-        g_dpkgIsPresent = (0 == IsPresent(g_dpkg, log, telemetry)) ? true : false;
-        g_tdnfIsPresent = (0 == IsPresent(g_tdnf, log, telemetry)) ? true : false;
-        g_dnfIsPresent = (0 == IsPresent(g_dnf, log, telemetry)) ? true : false;
-        g_yumIsPresent = (0 == IsPresent(g_yum, log, telemetry)) ? true : false;
-        g_zypperIsPresent = (0 == IsPresent(g_zypper, log, telemetry)) ? true : false;
-        g_rpmIsPresent = (0 == IsPresent(g_rpm, log, telemetry)) ? true : false;
+        g_aptGetIsPresent = (0 == IsPresent(g_aptGet, log, GetTelemetry())) ? true : false;
+        g_dpkgIsPresent = (0 == IsPresent(g_dpkg, log, GetTelemetry())) ? true : false;
+        g_tdnfIsPresent = (0 == IsPresent(g_tdnf, log, GetTelemetry())) ? true : false;
+        g_dnfIsPresent = (0 == IsPresent(g_dnf, log, GetTelemetry())) ? true : false;
+        g_yumIsPresent = (0 == IsPresent(g_yum, log, GetTelemetry())) ? true : false;
+        g_zypperIsPresent = (0 == IsPresent(g_zypper, log, GetTelemetry())) ? true : false;
+        g_rpmIsPresent = (0 == IsPresent(g_rpm, log, GetTelemetry())) ? true : false;
     }
 }
 
-static int CheckOrInstallPackage(const char* commandTemplate, const char* packageManager, const char* packageName, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int CheckOrInstallPackage(const char* commandTemplate, const char* packageManager, const char* packageName, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     char* command = NULL;
     int status = ENOENT;
 
     if ((NULL == commandTemplate) || (NULL == packageManager) || (NULL == packageName) || ((0 == strlen(packageName))))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "packageName", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "packageName", EINVAL);
         OsConfigLogError(log, "CheckOrInstallPackage called with invalid arguments");
         return EINVAL;
     }
 
     if (NULL == (command = FormatAllocateString(commandTemplate, packageManager, packageName)))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "CheckOrInstallPackage: FormatAllocateString failed");
         return ENOMEM;
     }
 
-    status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log, telemetry);
+    status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log, GetTelemetry());
 
     OsConfigLogInfo(log, "Package manager '%s' command '%s' returning %d", packageManager, command, status);
 
@@ -125,27 +124,26 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     return status;
 }
 
-static int CheckAllPackages(const char* commandTemplate, const char* packageManager, char** results, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int CheckAllPackages(const char* commandTemplate, const char* packageManager, char** results, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     char* command = NULL;
     int status = ENOENT;
 
     if ((NULL == commandTemplate) || (NULL == packageManager) || (NULL == results))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "results", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "results", EINVAL);
         OsConfigLogError(log, "CheckAllPackages called with invalid arguments");
         return EINVAL;
     }
 
     if (NULL == (command = FormatAllocateString(commandTemplate, packageManager)))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "CheckAllPackages: FormatAllocateString failed");
         return ENOMEM;
     }
 
-    status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log, telemetry);
+    status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, results, NULL, log, GetTelemetry());
 
     OsConfigLogInfo(log, "Package manager '%s' command '%s' returning  %d", packageManager, command, status);
     OsConfigLogDebug(log, "%s", *results);
@@ -155,7 +153,7 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
     return status;
 }
 
-static int UpdateInstalledPackagesCache(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
 {
     const char* commandTemplateDpkg = "%s-query -W -f='${binary:Package}\n'";
     const char* commandTemplateRpm = "%s -qa --queryformat \"%{NAME}\n\"";
@@ -166,31 +164,31 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log, OSConfigTelemetry
     char* buffer = NULL;
     int status = ENOENT;
 
-    CheckPackageManagersPresence(log, telemetry);
+    CheckPackageManagersPresence(log, GetTelemetry());
 
     if (g_aptGetIsPresent || g_dpkgIsPresent)
     {
-        status = CheckAllPackages(commandTemplateDpkg, g_dpkg, &results, log, telemetry);
+        status = CheckAllPackages(commandTemplateDpkg, g_dpkg, &results, log, GetTelemetry());
     }
     else if (g_rpmIsPresent)
     {
-        status = CheckAllPackages(commandTemplateRpm, g_rpm, &results, log, telemetry);
+        status = CheckAllPackages(commandTemplateRpm, g_rpm, &results, log, GetTelemetry());
     }
     else if (g_tdnfIsPresent)
     {
-        status = CheckAllPackages(commandTemplateYumDnf, g_tdnf, &results, log, telemetry);
+        status = CheckAllPackages(commandTemplateYumDnf, g_tdnf, &results, log, GetTelemetry());
     }
     else if (g_dnfIsPresent)
     {
-        status = CheckAllPackages(commandTemplateYumDnf, g_dnf, &results, log, telemetry);
+        status = CheckAllPackages(commandTemplateYumDnf, g_dnf, &results, log, GetTelemetry());
     }
     else if (g_yumIsPresent)
     {
-        status = CheckAllPackages(commandTemplateYumDnf, g_yum, &results, log, telemetry);
+        status = CheckAllPackages(commandTemplateYumDnf, g_yum, &results, log, GetTelemetry());
     }
     else if (g_zypperIsPresent)
     {
-        status = CheckAllPackages(commandTmeplateZypper, g_zypper, &results, log, telemetry);
+        status = CheckAllPackages(commandTmeplateZypper, g_zypper, &results, log, GetTelemetry());
     }
 
     if ((0 == status) && (NULL != results))
@@ -203,7 +201,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log, OSConfigTelemetry
         else
         {
             // Leave the cache as-is, just log the error
-            OSConfigTelemetryStatusTrace(telemetry, "DuplicateString", ENOMEM);
+            OSConfigTelemetryStatusTrace(GetTelemetry(), "DuplicateString", ENOMEM);
             OsConfigLogError(log, "UpdateInstalledPackagesCache: out of memory");
             status = ENOMEM;
         }
@@ -220,7 +218,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log, OSConfigTelemetry
     return status;
 }
 
-int IsPackageInstalled(const char* packageName, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 {
     const char* searchTemplateDpkgRpm = "\n%s\n";
     const char* searchTemplateYumDnf = "\n%s.x86_64\n";
@@ -231,18 +229,18 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log, OSConfigT
 
     if ((NULL == packageName) || (0 == strlen(packageName)))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "packageName", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "packageName", EINVAL);
         OsConfigLogError(log, "IsPackageInstalled called with an invalid argument");
         return EINVAL;
     }
 
-    CheckPackageManagersPresence(log, telemetry);
+    CheckPackageManagersPresence(log, GetTelemetry());
 
     if ((0 != g_updateInstalledPackagesCache) || (NULL == g_installedPackagesCache))
     {
         g_updateInstalledPackagesCache = 0;
 
-        if (0 != (status = UpdateInstalledPackagesCache(log, telemetry)))
+        if (0 != (status = UpdateInstalledPackagesCache(log, GetTelemetry())))
         {
             OsConfigLogInfo(log, "IsPackageInstalled(%s) failed (UpdateInstalledPackagesCache failed)", packageName);
         }
@@ -250,7 +248,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log, OSConfigT
 
     if (NULL == g_installedPackagesCache)
     {
-        OSConfigTelemetryStatusTrace(telemetry, "g_installedPackagesCache", ENOENT);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "g_installedPackagesCache", ENOENT);
         OsConfigLogError(log, "IsPackageInstalled: cannot check for '%s' presence without cache", packageName);
         status = ENOENT;
     }
@@ -271,7 +269,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log, OSConfigT
 
         if (NULL == searchTarget)
         {
-            OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+            OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
             OsConfigLogError(log, "IsPackageInstalled: out of memory");
             status = ENOMEM;
         }
@@ -299,11 +297,11 @@ static bool WildcardsPresent(const char* packageName)
     return (packageName ? (strstr(packageName, "*") || strstr(packageName, "^")) : false);
 }
 
-int CheckPackageInstalled(const char* packageName, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int CheckPackageInstalled(const char* packageName, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
-    if (0 == (result = IsPackageInstalled(packageName, log, telemetry)))
+    if (0 == (result = IsPackageInstalled(packageName, log, GetTelemetry())))
     {
         OsConfigCaptureSuccessReason(reason, WildcardsPresent(packageName) ? "Some '%s' packages are installed" : "Package '%s' is installed", packageName);
     }
@@ -319,11 +317,11 @@ int CheckPackageInstalled(const char* packageName, char** reason, OsConfigLogHan
     return result;
 }
 
-int CheckPackageNotInstalled(const char* packageName, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int CheckPackageNotInstalled(const char* packageName, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
-    if (0 == (result = IsPackageInstalled(packageName, log, telemetry)))
+    if (0 == (result = IsPackageInstalled(packageName, log, GetTelemetry())))
     {
         OsConfigCaptureReason(reason, WildcardsPresent(packageName) ? "Some '%s' packages are installed" : "Package '%s' is installed", packageName);
         result = ENOENT;
@@ -341,13 +339,13 @@ int CheckPackageNotInstalled(const char* packageName, char** reason, OsConfigLog
     return result;
 }
 
-static int ExecuteSimplePackageCommand(const char* command, bool* executed, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int ExecuteSimplePackageCommand(const char* command, bool* executed, OsConfigLogHandle log)
 {
     int status = 0;
 
     if ((NULL == command) || (NULL == executed))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "command", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "command", EINVAL);
         OsConfigLogError(log, "ExecuteSimplePackageCommand called with invalid arguments");
         return EINVAL;
     }
@@ -357,7 +355,7 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, OsCo
         return status;
     }
 
-    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log, telemetry)))
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log, GetTelemetry())))
     {
         OsConfigLogInfo(log, "ExecuteSimplePackageCommand: '%s' was successful", command);
         *executed = true;
@@ -374,12 +372,12 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, OsCo
     return status;
 }
 
-static int ExecuteAptGetUpdate(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int ExecuteAptGetUpdate(OsConfigLogHandle log)
 {
-    return ExecuteSimplePackageCommand("apt-get update", &g_aptGetUpdateExecuted, log, telemetry);
+    return ExecuteSimplePackageCommand("apt-get update", &g_aptGetUpdateExecuted, log, GetTelemetry());
 }
 
-static int ExecuteZypperRefresh(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int ExecuteZypperRefresh(OsConfigLogHandle log)
 {
     const char* zypperClean = "zypper clean";
     const char* zypperRefresh = "zypper refresh";
@@ -392,15 +390,15 @@ static int ExecuteZypperRefresh(OsConfigLogHandle log, OSConfigTelemetryHandle t
         return status;
     }
 
-    if (0 != (status = ExecuteCommand(NULL, zypperClean, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log, telemetry)))
+    if (0 != (status = ExecuteCommand(NULL, zypperClean, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log, GetTelemetry())))
     {
         OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d", zypperClean, status);
     }
-    else if (0 != (status = ExecuteCommand(NULL, zypperRefresh, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log, telemetry)))
+    else if (0 != (status = ExecuteCommand(NULL, zypperRefresh, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log, GetTelemetry())))
     {
         OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d", zypperRefresh, status);
     }
-    else if (0 != (status = ExecuteCommand(NULL, zypperRefreshServices, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log, telemetry)))
+    else if (0 != (status = ExecuteCommand(NULL, zypperRefreshServices, false, false, 0, g_packageManagerTimeoutSeconds, NULL, NULL, log, GetTelemetry())))
     {
         OsConfigLogInfo(log, "ExecuteZypperRefresh: '%s' returned %d", zypperRefreshServices, status);
     }
@@ -416,58 +414,58 @@ static int ExecuteZypperRefresh(OsConfigLogHandle log, OSConfigTelemetryHandle t
     return status;
 }
 
-static int ExecuteTdnfCheckUpdate(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int ExecuteTdnfCheckUpdate(OsConfigLogHandle log)
 {
-    return ExecuteSimplePackageCommand("tdnf check-update", &g_tdnfCheckUpdateExecuted, log, telemetry);
+    return ExecuteSimplePackageCommand("tdnf check-update", &g_tdnfCheckUpdateExecuted, log, GetTelemetry());
 }
 
-static int ExecuteDnfCheckUpdate(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int ExecuteDnfCheckUpdate(OsConfigLogHandle log)
 {
-    return ExecuteSimplePackageCommand("dnf check-update", &g_dnfCheckUpdateExecuted, log, telemetry);
+    return ExecuteSimplePackageCommand("dnf check-update", &g_dnfCheckUpdateExecuted, log, GetTelemetry());
 }
 
-static int ExecuteYumCheckUpdate(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int ExecuteYumCheckUpdate(OsConfigLogHandle log)
 {
-    return ExecuteSimplePackageCommand("yum check-update", &g_yumCheckUpdateExecuted, log, telemetry);
+    return ExecuteSimplePackageCommand("yum check-update", &g_yumCheckUpdateExecuted, log, GetTelemetry());
 }
 
-int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log)
 {
     const char* commandTemplate = "%s install -y %s";
     const char* commandTemplateTdnfDnfYum = "%s install -y --cacheonly %s";
     int status = ENOENT;
 
-    CheckPackageManagersPresence(log, telemetry);
+    CheckPackageManagersPresence(log, GetTelemetry());
 
     if (g_aptGetIsPresent)
     {
-        ExecuteAptGetUpdate(log, telemetry);
-        status = CheckOrInstallPackage(commandTemplate, g_aptGet, packageName, log, telemetry);
+        ExecuteAptGetUpdate(log, GetTelemetry());
+        status = CheckOrInstallPackage(commandTemplate, g_aptGet, packageName, log, GetTelemetry());
     }
     else if (g_tdnfIsPresent)
     {
-        ExecuteTdnfCheckUpdate(log, telemetry);
-        status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_tdnf, packageName, log, telemetry);
+        ExecuteTdnfCheckUpdate(log, GetTelemetry());
+        status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_tdnf, packageName, log, GetTelemetry());
     }
     else if (g_dnfIsPresent)
     {
-        ExecuteDnfCheckUpdate(log, telemetry);
-        status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_dnf, packageName, log, telemetry);
+        ExecuteDnfCheckUpdate(log, GetTelemetry());
+        status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_dnf, packageName, log, GetTelemetry());
     }
     else if (g_yumIsPresent)
     {
-        ExecuteYumCheckUpdate(log, telemetry);
-        status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_yum, packageName, log, telemetry);
+        ExecuteYumCheckUpdate(log, GetTelemetry());
+        status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_yum, packageName, log, GetTelemetry());
     }
     else if (g_zypperIsPresent)
     {
-        ExecuteZypperRefresh(log, telemetry);
-        status = CheckOrInstallPackage(commandTemplate, g_zypper, packageName, log, telemetry);
+        ExecuteZypperRefresh(log, GetTelemetry());
+        status = CheckOrInstallPackage(commandTemplate, g_zypper, packageName, log, GetTelemetry());
     }
 
     if (0 == status)
     {
-        status = IsPackageInstalled(packageName, log, telemetry);
+        status = IsPackageInstalled(packageName, log, GetTelemetry());
     }
 
     if (0 == status)
@@ -482,13 +480,13 @@ int InstallOrUpdatePackage(const char* packageName, OsConfigLogHandle log, OSCon
     return status;
 }
 
-int InstallPackage(const char* packageName, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int InstallPackage(const char* packageName, OsConfigLogHandle log)
 {
     int status = ENOENT;
 
-    if (0 != IsPackageInstalled(packageName, log, telemetry))
+    if (0 != IsPackageInstalled(packageName, log, GetTelemetry()))
     {
-        if (0 == (status = InstallOrUpdatePackage(packageName, log, telemetry)))
+        if (0 == (status = InstallOrUpdatePackage(packageName, log, GetTelemetry())))
         {
             OsConfigLogInfo(log, "InstallPackage: package '%s' was successfully installed", packageName);
         }
@@ -502,7 +500,7 @@ int InstallPackage(const char* packageName, OsConfigLogHandle log, OSConfigTelem
     return status;
 }
 
-int UninstallPackage(const char* packageName, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int UninstallPackage(const char* packageName, OsConfigLogHandle log)
 {
     const char* commandTemplateAptGet = "%s remove -y --purge %s";
     const char* commandTemplateZypper = "%s remove -y --force %s";
@@ -510,37 +508,37 @@ int UninstallPackage(const char* packageName, OsConfigLogHandle log, OSConfigTel
 
     int status = ENOENT;
 
-    CheckPackageManagersPresence(log, telemetry);
+    CheckPackageManagersPresence(log, GetTelemetry());
 
-    if (0 == (status = IsPackageInstalled(packageName, log, telemetry)))
+    if (0 == (status = IsPackageInstalled(packageName, log, GetTelemetry())))
     {
         if (g_aptGetIsPresent)
         {
-            ExecuteAptGetUpdate(log, telemetry);
-            status = CheckOrInstallPackage(commandTemplateAptGet, g_aptGet, packageName, log, telemetry);
+            ExecuteAptGetUpdate(log, GetTelemetry());
+            status = CheckOrInstallPackage(commandTemplateAptGet, g_aptGet, packageName, log, GetTelemetry());
         }
         else if (g_tdnfIsPresent)
         {
-            ExecuteTdnfCheckUpdate(log, telemetry);
-            status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_tdnf, packageName, log, telemetry);
+            ExecuteTdnfCheckUpdate(log, GetTelemetry());
+            status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_tdnf, packageName, log, GetTelemetry());
         }
         else if (g_dnfIsPresent)
         {
-            ExecuteDnfCheckUpdate(log, telemetry);
-            status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_dnf, packageName, log, telemetry);
+            ExecuteDnfCheckUpdate(log, GetTelemetry());
+            status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_dnf, packageName, log, GetTelemetry());
         }
         else if (g_yumIsPresent)
         {
-            ExecuteYumCheckUpdate(log, telemetry);
-            status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_yum, packageName, log, telemetry);
+            ExecuteYumCheckUpdate(log, GetTelemetry());
+            status = CheckOrInstallPackage(commandTemplateTdnfDnfYum, g_yum, packageName, log, GetTelemetry());
         }
         else if (g_zypperIsPresent)
         {
-            ExecuteZypperRefresh(log, telemetry);
-            status = CheckOrInstallPackage(commandTemplateZypper, g_zypper, packageName, log, telemetry);
+            ExecuteZypperRefresh(log, GetTelemetry());
+            status = CheckOrInstallPackage(commandTemplateZypper, g_zypper, packageName, log, GetTelemetry());
         }
 
-        if ((0 == status) && (0 == IsPackageInstalled(packageName, log, telemetry)))
+        if ((0 == status) && (0 == IsPackageInstalled(packageName, log, GetTelemetry())))
         {
             status = ENOENT;
         }
