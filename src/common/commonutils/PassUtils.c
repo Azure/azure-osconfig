@@ -10,9 +10,8 @@ static const char* g_etcPamdSystemPassword = "/etc/pam.d/system-password";
 static const char* g_pamUnixSo = "pam_unix.so";
 static const char* g_remember = "remember";
 
-static char* FindPamModule(const char* pamModule, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     const char* paths[] = {
         "/usr/lib/x86_64-linux-gnu/security/%s",
         "/usr/lib/security/%s",
@@ -25,7 +24,7 @@ static char* FindPamModule(const char* pamModule, OsConfigLogHandle log, OSConfi
 
     if (NULL == pamModule)
     {
-        OSConfigTelemetryStatusTrace(telemetry, "pamModule", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "pamModule", EINVAL);
         OsConfigLogError(log, "FindPamModule: invalid argument");
         return NULL;
     }
@@ -34,7 +33,7 @@ static char* FindPamModule(const char* pamModule, OsConfigLogHandle log, OSConfi
     {
         if (NULL != (result = FormatAllocateString(paths[i], pamModule)))
         {
-            if (0 == CheckFileExists(result, NULL, log, telemetry))
+            if (0 == CheckFileExists(result, NULL, log, GetTelemetry()))
             {
                 break;
             }
@@ -45,7 +44,7 @@ static char* FindPamModule(const char* pamModule, OsConfigLogHandle log, OSConfi
         }
         else
         {
-            OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+            OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
             OsConfigLogError(log, "FindPamModule: out of memory");
             break;
         }
@@ -63,29 +62,28 @@ static char* FindPamModule(const char* pamModule, OsConfigLogHandle log, OSConfi
     return result;
 }
 
-int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     int status = ENOENT;
     char* pamModule = NULL;
 
-    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log, telemetry))
+    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log, GetTelemetry()))
     {
         // On Debian-based systems '/etc/pam.d/common-password' is expected to exist
-        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdCommonPassword, '#', g_remember, reason, log, telemetry)) &&
-            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', remember, reason, log, telemetry))) ? 0 : ENOENT;
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdCommonPassword, '#', g_remember, reason, log, GetTelemetry())) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', remember, reason, log, GetTelemetry()))) ? 0 : ENOENT;
     }
-    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log, telemetry))
+    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log, GetTelemetry()))
     {
         // On Red Hat-based systems '/etc/pam.d/system-auth' is expected to exist
-        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, reason, log, telemetry)) &&
-            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, log, telemetry))) ? 0 : ENOENT;
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, reason, log, GetTelemetry())) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, log, GetTelemetry()))) ? 0 : ENOENT;
     }
-    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log, telemetry))
+    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log, GetTelemetry()))
     {
         // On Azure Linux '/etc/pam.d/system-password' is expected to exist
-        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemPassword, '#', g_remember, reason, log, telemetry)) &&
-            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemPassword, g_remember, '=', remember, reason, log, telemetry))) ? 0 : ENOENT;
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemPassword, '#', g_remember, reason, log, GetTelemetry())) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemPassword, g_remember, '=', remember, reason, log, GetTelemetry()))) ? 0 : ENOENT;
     }
     else
     {
@@ -95,7 +93,7 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHa
 
     if (status)
     {
-        if (NULL == (pamModule = FindPamModule(g_pamUnixSo, log, telemetry)))
+        if (NULL == (pamModule = FindPamModule(g_pamUnixSo, log, GetTelemetry())))
         {
             OsConfigCaptureReason(reason, "The PAM module '%s' is not available. Automatic remediation is not possible", g_pamUnixSo);
         }
@@ -105,20 +103,19 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHa
     return status;
 }
 
-static void EnsurePamModulePackagesAreInstalled(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static void EnsurePamModulePackagesAreInstalled(OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     const char* pamPackages[] = {"pam", "libpam-modules", "pam_pwquality", "libpam-pwquality", "libpam-cracklib"};
     int numPamPackages = ARRAY_SIZE(pamPackages);
     int i = 0;
 
     for (i = 0; i < numPamPackages; i++)
     {
-        InstallPackage(pamPackages[i], log, telemetry);
+        InstallPackage(pamPackages[i], log, GetTelemetry());
     }
 }
 
-int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log)
 {
     // This configuration line is used in the PAM (Pluggable Authentication Module) configuration
     // to set the number of previous passwords to remember in order to prevent password reuse.
@@ -144,9 +141,9 @@ int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log, OSConfi
     char* newline = NULL;
     int status = 0, _status = 0;
 
-    EnsurePamModulePackagesAreInstalled(log, telemetry);
+    EnsurePamModulePackagesAreInstalled(log, GetTelemetry());
 
-    if (NULL == (pamModulePath = FindPamModule(g_pamUnixSo, log, telemetry)))
+    if (NULL == (pamModulePath = FindPamModule(g_pamUnixSo, log, GetTelemetry())))
     {
         OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited: cannot proceed without %s being present", g_pamUnixSo);
         return ENOENT;
@@ -154,22 +151,22 @@ int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log, OSConfi
 
     if (NULL != (newline = FormatAllocateString(endsHereIfFailsTemplate, pamModulePath, g_remember, remember)))
     {
-        if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log, telemetry))
+        if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log, GetTelemetry()))
         {
-            status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log, telemetry);
+            status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log, GetTelemetry());
         }
 
-        if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log, telemetry))
+        if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log, GetTelemetry()))
         {
-            if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log, telemetry))) && (0 == status))
+            if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log, GetTelemetry()))) && (0 == status))
             {
                 status = _status;
             }
         }
 
-        if (0 == CheckFileExists(g_etcPamdSystemPassword, NULL, log, telemetry))
+        if (0 == CheckFileExists(g_etcPamdSystemPassword, NULL, log, GetTelemetry()))
         {
-            if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdSystemPassword, g_remember, newline, '#', true, log, telemetry))) && (0 == status))
+            if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdSystemPassword, g_remember, newline, '#', true, log, GetTelemetry()))) && (0 == status))
             {
                 status = _status;
             }
@@ -177,7 +174,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log, OSConfi
     }
     else
     {
-        OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
         status = ENOMEM;
     }
@@ -190,9 +187,8 @@ int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log, OSConfi
     return status;
 }
 
-int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamSo, char commentCharacter, char** reason, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     const char* auth = "auth";
     const char* required = "required";
     FILE* fileHandle = NULL;
@@ -205,18 +201,18 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
 
     if ((NULL == fileName) || (NULL == pamSo))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "fileName", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "fileName", EINVAL);
         OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: invalid arguments");
         return EINVAL;
     }
-    else if (0 != CheckFileExists(fileName, reason, log, telemetry))
+    else if (0 != CheckFileExists(fileName, reason, log, GetTelemetry()))
     {
         // CheckFileExists logs
         return ENOENT;
     }
     else if (NULL == (line = malloc(lineMax + 1)))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
         OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: out of memory");
         return ENOMEM;
     }
@@ -248,9 +244,9 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                 continue;
             }
             else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) &&
-                (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log, telemetry))) && (0 == strcmp(authValue, required)) &&
-                (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log, telemetry))) && (deny <= 5) &&
-                (0 < (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log, telemetry))))
+                (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log, GetTelemetry()))) && (0 == strcmp(authValue, required)) &&
+                (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log, GetTelemetry()))) && (deny <= 5) &&
+                (0 < (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log, GetTelemetry()))))
             {
                 OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s %s %s' found uncommented with 'deny' set to %d and 'unlock_time' set to %d in '%s'",
                     auth, required, pamSo, deny, unlockTime, fileName);
@@ -305,9 +301,8 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     return status;
 }
 
-int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     // These configuration lines are used in the PAM (Pluggable Authentication Module) settings to count
     // number of attempted accesses and lock user accounts after a specified number of failed login attempts.
     //
@@ -348,17 +343,17 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log, OSConfigTelemetry
     char* line = NULL;
     int i = 0, status = 0, _status = 0;
 
-    EnsurePamModulePackagesAreInstalled(log, telemetry);
+    EnsurePamModulePackagesAreInstalled(log, GetTelemetry());
 
     for (i = 0; i < numPamConfigurations; i++)
     {
-        if (0 == CheckFileExists(pamConfigurations[i], NULL, log, telemetry))
+        if (0 == CheckFileExists(pamConfigurations[i], NULL, log, GetTelemetry()))
         {
-            if (NULL != (pamModulePath = FindPamModule(pamFaillockSo, log, telemetry)))
+            if (NULL != (pamModulePath = FindPamModule(pamFaillockSo, log, GetTelemetry())))
             {
                 if (NULL != (line = FormatAllocateString(pamFailLockLineTemplate, pamModulePath)))
                 {
-                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamFaillockSo, line, '#', true, log, telemetry);
+                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamFaillockSo, line, '#', true, log, GetTelemetry());
                     FREE_MEMORY(line);
                 }
                 else
@@ -368,11 +363,11 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log, OSConfigTelemetry
 
                 FREE_MEMORY(pamModulePath);
             }
-            else if (NULL != (pamModulePath = FindPamModule(pamTally2So, log, telemetry)))
+            else if (NULL != (pamModulePath = FindPamModule(pamTally2So, log, GetTelemetry())))
             {
                 if (NULL != (line = FormatAllocateString(pamTally2LineTemplate, pamModulePath)))
                 {
-                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTally2So, line, '#', true, log, telemetry);
+                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTally2So, line, '#', true, log, GetTelemetry());
                     FREE_MEMORY(line);
                 }
                 else
@@ -382,12 +377,12 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log, OSConfigTelemetry
 
                 FREE_MEMORY(pamModulePath);
             }
-            else if ((NULL != (pamModulePath = FindPamModule(pamTallySo, log, telemetry))) &&
-                (NULL != (pamModulePath2 = FindPamModule(pamDenySo, log, telemetry))))
+            else if ((NULL != (pamModulePath = FindPamModule(pamTallySo, log, GetTelemetry()))) &&
+                (NULL != (pamModulePath2 = FindPamModule(pamDenySo, log, GetTelemetry()))))
             {
                 if (NULL != (line = FormatAllocateString(pamTallyDenyLineTemplate, pamModulePath, pamModulePath2)))
                 {
-                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTallySo, line, '#', true, log, telemetry);
+                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTallySo, line, '#', true, log, GetTelemetry());
                     FREE_MEMORY(line);
                 }
                 else
@@ -406,7 +401,7 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log, OSConfigTelemetry
 
             if (ENOMEM == status)
             {
-                OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
                 OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: out of memory");
                 break;
             }
@@ -416,9 +411,8 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log, OSConfigTelemetry
     return status;
 }
 
-static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     const char* pamPwQualitySo = "pam_pwquality.so";
     const char* pamCrackLibSo = "pam_cracklib.so";
     const char* password = "password";
@@ -444,7 +438,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
     }
     else if (NULL == (line = malloc(lineMax + 1)))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
         OsConfigLogError(log, "CheckRequirementsForCommonPassword: out of memory");
         return ENOMEM;
     }
@@ -478,12 +472,12 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
             {
                 found = true;
 
-                if ((retry == (retryOption = GetIntegerOptionFromBuffer(line, "retry", '=', log, telemetry))) &&
-                    (minlen == (minlenOption = GetIntegerOptionFromBuffer(line, "minlen", '=', log, telemetry))) &&
-                    (dcredit == (dcreditOption = GetIntegerOptionFromBuffer(line, "dcredit", '=', log, telemetry))) &&
-                    (ucredit == (ucreditOption = GetIntegerOptionFromBuffer(line, "ucredit", '=', log, telemetry))) &&
-                    (ocredit == (ocreditOption = GetIntegerOptionFromBuffer(line, "ocredit", '=', log, telemetry))) &&
-                    (lcredit == (lcreditOption = GetIntegerOptionFromBuffer(line, "lcredit", '=', log, telemetry))))
+                if ((retry == (retryOption = GetIntegerOptionFromBuffer(line, "retry", '=', log, GetTelemetry()))) &&
+                    (minlen == (minlenOption = GetIntegerOptionFromBuffer(line, "minlen", '=', log, GetTelemetry()))) &&
+                    (dcredit == (dcreditOption = GetIntegerOptionFromBuffer(line, "dcredit", '=', log, GetTelemetry()))) &&
+                    (ucredit == (ucreditOption = GetIntegerOptionFromBuffer(line, "ucredit", '=', log, GetTelemetry()))) &&
+                    (ocredit == (ocreditOption = GetIntegerOptionFromBuffer(line, "ocredit", '=', log, GetTelemetry()))) &&
+                    (lcredit == (lcreditOption = GetIntegerOptionFromBuffer(line, "lcredit", '=', log, GetTelemetry()))))
                 {
                     OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s' contains uncommented '%s %s' with "
                         "the expected password creation requirements (retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)",
@@ -592,19 +586,19 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
     return status;
 }
 
-static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* option, const char* fileName, char separator, char comment, int desired, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* option, const char* fileName, char separator, char comment, int desired, char** reason, OsConfigLogHandle log)
 {
     int value = INT_ENOENT;
     int status = ENOENT;
 
     if ((NULL == buffer) || (NULL == option) || (NULL == fileName))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "fileName", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "fileName", EINVAL);
         OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: invalid arguments");
         return INT_ENOENT;
     }
 
-    if (desired == (value = GetIntegerOptionFromBuffer(buffer, option, separator, log, telemetry)))
+    if (desired == (value = GetIntegerOptionFromBuffer(buffer, option, separator, log, GetTelemetry())))
     {
         if (comment == buffer[0])
         {
@@ -635,7 +629,7 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
     return status;
 }
 
-static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
     FILE* fileHandle = NULL;
     char* line = NULL;
@@ -650,7 +644,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
     }
     else if (NULL == (line = malloc(lineMax + 1)))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
         OsConfigLogError(log, "CheckRequirementsForPwQualityConf: out of memory");
         return ENOMEM;
     }
@@ -683,31 +677,31 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
             if (NULL != strstr(line, "retry"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "retry", g_etcSecurityPwQualityConf, '=', '#', retry, reason, log, telemetry);
+                _status = CheckPasswordRequirementFromBuffer(line, "retry", g_etcSecurityPwQualityConf, '=', '#', retry, reason, log, GetTelemetry());
             }
             else if (NULL != strstr(line, "minlen"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "minlen", g_etcSecurityPwQualityConf, '=', '#', minlen, reason, log, telemetry);
+                _status = CheckPasswordRequirementFromBuffer(line, "minlen", g_etcSecurityPwQualityConf, '=', '#', minlen, reason, log, GetTelemetry());
             }
             else if (NULL != strstr(line, "minclass"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "minclass", g_etcSecurityPwQualityConf, '=', '#', minclass, reason, log, telemetry);
+                _status = CheckPasswordRequirementFromBuffer(line, "minclass", g_etcSecurityPwQualityConf, '=', '#', minclass, reason, log, GetTelemetry());
             }
             else if (NULL != strstr(line, "dcredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "dcredit", g_etcSecurityPwQualityConf, '=', '#', dcredit, reason, log, telemetry);
+                _status = CheckPasswordRequirementFromBuffer(line, "dcredit", g_etcSecurityPwQualityConf, '=', '#', dcredit, reason, log, GetTelemetry());
             }
             else if (NULL != strstr(line, "ucredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "ucredit", g_etcSecurityPwQualityConf, '=', '#', ucredit, reason, log, telemetry);
+                _status = CheckPasswordRequirementFromBuffer(line, "ucredit", g_etcSecurityPwQualityConf, '=', '#', ucredit, reason, log, GetTelemetry());
             }
             else if (NULL != strstr(line, "lcredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "lcredit", g_etcSecurityPwQualityConf, '=', '#', lcredit, reason, log, telemetry);
+                _status = CheckPasswordRequirementFromBuffer(line, "lcredit", g_etcSecurityPwQualityConf, '=', '#', lcredit, reason, log, GetTelemetry());
             }
             else if (NULL != strstr(line, "ocredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "ocredit", g_etcSecurityPwQualityConf, '=', '#', ocredit, reason, log, telemetry);
+                _status = CheckPasswordRequirementFromBuffer(line, "ocredit", g_etcSecurityPwQualityConf, '=', '#', ocredit, reason, log, GetTelemetry());
             }
 
             if (_status && (0 == status))
@@ -726,9 +720,8 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
     return status;
 }
 
-int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, char** reason, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     // First, check if at least one of the following files exists :
     // - /etc/pam.d/common-password
     // - /etc/security/pwquality.conf
@@ -744,8 +737,8 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     //
     // This logic ensures compatibility across distros and PAM module configurations and supports both common-password and pwquality.conf setups.
 
-    bool etcPamdCommonPasswordExists = (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log, telemetry)) ? true : false;
-    bool etcSecurityPwQualityConfExists = (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log, telemetry)) ? true : false;
+    bool etcPamdCommonPasswordExists = (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log, GetTelemetry())) ? true : false;
+    bool etcSecurityPwQualityConfExists = (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log, GetTelemetry())) ? true : false;
     int status = ENOENT;
 
     if ((false == etcPamdCommonPasswordExists) && (false == etcSecurityPwQualityConfExists))
@@ -757,12 +750,12 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     {
         if (etcPamdCommonPasswordExists)
         {
-            status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log, telemetry);
+            status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log, GetTelemetry());
         }
 
         if ((0 != status) && etcSecurityPwQualityConfExists)
         {
-            status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log, telemetry);
+            status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log, GetTelemetry());
         }
     }
 
@@ -775,7 +768,7 @@ typedef struct PasswordCreationRequirements
     int value;
 } PasswordCreationRequirements;
 
-int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcredit, int ucredit, int ocredit, int lcredit, OsConfigLogHandle log)
 {
     // These lines are used for password creation requirements configuration.
     //
@@ -823,13 +816,13 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     int i = 0, status = 0, _status = 0;
     char* line = NULL;
 
-    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log, telemetry))
+    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log, GetTelemetry()))
     {
-        EnsurePamModulePackagesAreInstalled(log, telemetry);
+        EnsurePamModulePackagesAreInstalled(log, GetTelemetry());
 
-        pamPwQualitySoExists = (NULL != (pamModulePath = FindPamModule(pamPwQualitySo, log, telemetry))) ? true : false;
-        pamCrackLibSoExists = (NULL != (pamModulePath2 = FindPamModule(pamCrackLibSo, log, telemetry))) ? true : false;
-        pamUnixSoExists = (NULL != (pamModulePath3 = FindPamModule(g_pamUnixSo, log, telemetry))) ? true : false;
+        pamPwQualitySoExists = (NULL != (pamModulePath = FindPamModule(pamPwQualitySo, log, GetTelemetry()))) ? true : false;
+        pamCrackLibSoExists = (NULL != (pamModulePath2 = FindPamModule(pamCrackLibSo, log, GetTelemetry()))) ? true : false;
+        pamUnixSoExists = (NULL != (pamModulePath3 = FindPamModule(g_pamUnixSo, log, GetTelemetry()))) ? true : false;
 
         if (pamPwQualitySoExists || pamCrackLibSoExists || pamUnixSoExists)
         {
@@ -837,12 +830,12 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
                 pamPwQualitySoExists ? pamModulePath : (pamCrackLibSoExists ? pamModulePath2 : pamModulePath3),
                 retry, minlen, lcredit, ucredit, ocredit, dcredit)))
             {
-                status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamPwQualitySoExists ? pamPwQualitySo : (pamCrackLibSoExists ? pamCrackLibSo : g_pamUnixSo), line, '#', true, log, telemetry);
+                status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamPwQualitySoExists ? pamPwQualitySo : (pamCrackLibSoExists ? pamCrackLibSo : g_pamUnixSo), line, '#', true, log, GetTelemetry());
                 FREE_MEMORY(line);
             }
             else
             {
-                OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
                 OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcPamdCommonPassword);
             }
         }
@@ -856,7 +849,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         FREE_MEMORY(pamModulePath3);
     }
 
-    if (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log, telemetry))
+    if (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log, GetTelemetry()))
     {
         entries[0].value = retry;
         entries[1].value = minlen;
@@ -870,12 +863,12 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         {
             if (NULL != (line = FormatAllocateString(etcSecurityPwQualityConfLineTemplate, entries[i].name, entries[i].value)))
             {
-                _status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i].name, line, '#', true, log, telemetry);
+                _status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i].name, line, '#', true, log, GetTelemetry());
                 FREE_MEMORY(line);
             }
             else
             {
-                OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
                 OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcSecurityPwQualityConf);
             }
         }

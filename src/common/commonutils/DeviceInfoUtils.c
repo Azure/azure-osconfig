@@ -3,6 +3,8 @@
 
 #include "Internal.h"
 
+extern OSConfigTelemetryHandle GetTelemetry(void);
+
 typedef struct OsDistroInfo
 {
     char* id;
@@ -95,13 +97,12 @@ void TruncateAtFirst(char* target, char marker)
     }
 }
 
-char* GetOsPrettyName(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetOsPrettyName(OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     const char* osPrettyNameCommand = "cat /etc/os-release | grep PRETTY_NAME=";
     char* textResult = NULL;
 
-    if ((0 == ExecuteCommand(NULL, osPrettyNameCommand, true, true, 0, 0, &textResult, NULL, log, telemetry)) && textResult)
+    if ((0 == ExecuteCommand(NULL, osPrettyNameCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixUpTo(textResult, '=');
         RemovePrefix(textResult, '=');
@@ -118,12 +119,12 @@ char* GetOsPrettyName(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     return textResult;
 }
 
-char* GetOsName(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetOsName(OsConfigLogHandle log)
 {
     const char* osNameCommand = "cat /etc/os-release | grep ID=";
     char* textResult = NULL;
 
-    if (NULL != (textResult = GetOsPrettyName(log, telemetry)))
+    if (NULL != (textResult = GetOsPrettyName(log)))
     {
         // Comment next line to capture the full pretty name including version (example: 'Ubuntu 20.04.3 LTS')
         TruncateAtFirst(textResult, ' ');
@@ -131,7 +132,7 @@ char* GetOsName(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     else
     {
         // PRETTY_NAME did not work, try ID
-        if ((0 == ExecuteCommand(NULL, osNameCommand, true, true, 0, 0, &textResult, NULL, log, telemetry)) && textResult)
+        if ((0 == ExecuteCommand(NULL, osNameCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
         {
             RemovePrefixUpTo(textResult, '=');
             RemovePrefix(textResult, '=');
@@ -150,12 +151,12 @@ char* GetOsName(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     return textResult;
 }
 
-char* GetOsVersion(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetOsVersion(OsConfigLogHandle log)
 {
     const char* osVersionCommand = "cat /etc/os-release | grep VERSION=";
     char* textResult = NULL;
 
-    if ((0 == ExecuteCommand(NULL, osVersionCommand, true, true, 0, 0, &textResult, NULL, log, telemetry)) && textResult)
+    if ((0 == ExecuteCommand(NULL, osVersionCommand, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixUpTo(textResult, '=');
         TruncateAtFirst(textResult, '=');
@@ -173,11 +174,11 @@ char* GetOsVersion(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     return textResult;
 }
 
-static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace, OsConfigLogHandle log)
 {
     char* textResult = NULL;
 
-    if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log, telemetry)) && textResult)
+    if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixUpTo(textResult, ':');
         RemovePrefix(textResult, ':');
@@ -200,7 +201,7 @@ static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace,
     return textResult;
 }
 
-static char* GetAnotherOsProperty(const char* command, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static char* GetAnotherOsProperty(const char* command, OsConfigLogHandle log)
 {
     char* textResult = NULL;
 
@@ -209,7 +210,7 @@ static char* GetAnotherOsProperty(const char* command, OsConfigLogHandle log, OS
         return NULL;
     }
 
-    if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log, telemetry)) && textResult)
+    if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
@@ -222,61 +223,61 @@ static char* GetAnotherOsProperty(const char* command, OsConfigLogHandle log, OS
     return textResult;
 }
 
-char* GetOsKernelName(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetOsKernelName(OsConfigLogHandle log)
 {
     static char* osKernelNameCommand = "uname -s";
-    char* textResult = GetAnotherOsProperty(osKernelNameCommand, log, telemetry);
+    char* textResult = GetAnotherOsProperty(osKernelNameCommand, log);
     OsConfigLogDebug(log, "Kernel name: '%s'", textResult);
     return textResult;
 }
 
-char* GetOsKernelRelease(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetOsKernelRelease(OsConfigLogHandle log)
 {
     static char* osKernelReleaseCommand = "uname -r";
-    char* textResult = GetAnotherOsProperty(osKernelReleaseCommand, log, telemetry);
+    char* textResult = GetAnotherOsProperty(osKernelReleaseCommand, log);
     OsConfigLogDebug(log, "Kernel release: '%s'", textResult);
     return textResult;
 }
 
-char* GetOsKernelVersion(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetOsKernelVersion(OsConfigLogHandle log)
 {
     static char* osKernelVersionCommand = "uname -v";
-    char* textResult = GetAnotherOsProperty(osKernelVersionCommand, log, telemetry);
+    char* textResult = GetAnotherOsProperty(osKernelVersionCommand, log);
     OsConfigLogDebug(log, "Kernel version: '%s'", textResult);
     return textResult;
 }
 
-char* GetCpuType(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetCpuType(OsConfigLogHandle log)
 {
     const char* osCpuTypeCommand = "lscpu | grep Architecture:";
-    char* textResult = GetHardwareProperty(osCpuTypeCommand, false, log, telemetry);
+    char* textResult = GetHardwareProperty(osCpuTypeCommand, false, log);
     OsConfigLogDebug(log, "CPU type: '%s'", textResult);
     return textResult;
 }
 
-char* GetCpuVendor(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetCpuVendor(OsConfigLogHandle log)
 {
     const char* osCpuVendorCommand = "grep 'vendor_id' /proc/cpuinfo | uniq";
-    char* textResult = GetHardwareProperty(osCpuVendorCommand, false, log, telemetry);
+    char* textResult = GetHardwareProperty(osCpuVendorCommand, false, log);
     OsConfigLogDebug(log, "CPU vendor id: '%s'", textResult);
     return textResult;
 }
 
-char* GetCpuModel(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetCpuModel(OsConfigLogHandle log)
 {
     const char* osCpuModelCommand = "grep 'model name' /proc/cpuinfo | uniq";
-    char* textResult = GetHardwareProperty(osCpuModelCommand, false, log, telemetry);
+    char* textResult = GetHardwareProperty(osCpuModelCommand, false, log);
     OsConfigLogDebug(log, "CPU model: '%s'", textResult);
     return textResult;
 }
 
-unsigned int GetNumberOfCpuCores(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+unsigned int GetNumberOfCpuCores(OsConfigLogHandle log)
 {
     const char* osCpuCoresCommand = "grep -c ^processor /proc/cpuinfo";
     unsigned int numberOfCores = 1;
     char* textResult = NULL;
 
-    if (NULL != (textResult = GetHardwareProperty(osCpuCoresCommand, false, log, telemetry)))
+    if (NULL != (textResult = GetHardwareProperty(osCpuCoresCommand, false, log)))
     {
         numberOfCores = atoi(textResult);
     }
@@ -288,18 +289,18 @@ unsigned int GetNumberOfCpuCores(OsConfigLogHandle log, OSConfigTelemetryHandle 
     return numberOfCores;
 }
 
-char* GetCpuFlags(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetCpuFlags(OsConfigLogHandle log)
 {
     const char* osCpuFlagsCommand = "lscpu | grep \"Flags:\"";
-    char* textResult = GetHardwareProperty(osCpuFlagsCommand, false, log, telemetry);
+    char* textResult = GetHardwareProperty(osCpuFlagsCommand, false, log);
     OsConfigLogDebug(log, "CPU flags: '%s'", textResult);
     return textResult;
 }
 
-bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, OsConfigLogHandle log)
 {
     bool result = false;
-    char* cpuFlags = GetCpuFlags(log, telemetry);
+    char* cpuFlags = GetCpuFlags(log);
 
     if ((NULL != cpuFlag) && (NULL != cpuFlags) && (NULL != strstr(cpuFlags, cpuFlag)))
     {
@@ -318,10 +319,10 @@ bool CheckCpuFlagSupported(const char* cpuFlag, char** reason, OsConfigLogHandle
     return result;
 }
 
-long GetTotalMemory(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+long GetTotalMemory(OsConfigLogHandle log)
 {
     const char* osTotalMemoryCommand = "grep MemTotal /proc/meminfo";
-    char* textResult = GetHardwareProperty(osTotalMemoryCommand, true, log, telemetry);
+    char* textResult = GetHardwareProperty(osTotalMemoryCommand, true, log);
     long totalMemory = 0;
 
     if (NULL != textResult)
@@ -335,10 +336,10 @@ long GetTotalMemory(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     return totalMemory;
 }
 
-long GetFreeMemory(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+long GetFreeMemory(OsConfigLogHandle log)
 {
     const char* osFreeMemoryCommand = "grep MemFree /proc/meminfo";
-    char* textResult = GetHardwareProperty(osFreeMemoryCommand, true, log, telemetry);
+    char* textResult = GetHardwareProperty(osFreeMemoryCommand, true, log);
     long freeMemory = 0;
 
     if (NULL != textResult)
@@ -352,16 +353,16 @@ long GetFreeMemory(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     return freeMemory;
 }
 
-char* GetProductName(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetProductName(OsConfigLogHandle log)
 {
     const char* osProductNameCommand = "cat /sys/devices/virtual/dmi/id/product_name";
     const char* osProductNameAlternateCommand = "lshw -c system | grep -m 1 \"product:\"";
-    char* textResult = GetAnotherOsProperty(osProductNameCommand, log, telemetry);
+    char* textResult = GetAnotherOsProperty(osProductNameCommand, log);
 
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
         FREE_MEMORY(textResult);
-        textResult = GetHardwareProperty(osProductNameAlternateCommand, false, log, telemetry);
+        textResult = GetHardwareProperty(osProductNameAlternateCommand, false, log);
     }
 
     OsConfigLogDebug(log, "Product name: '%s'", textResult);
@@ -369,16 +370,16 @@ char* GetProductName(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     return textResult;
 }
 
-char* GetProductVendor(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetProductVendor(OsConfigLogHandle log)
 {
     const char* osProductVendorCommand = "cat /sys/devices/virtual/dmi/id/sys_vendor";
     const char* osProductVendorAlternateCommand = "lshw -c system | grep -m 1 \"vendor:\"";
-    char* textResult = GetAnotherOsProperty(osProductVendorCommand, log, telemetry);
+    char* textResult = GetAnotherOsProperty(osProductVendorCommand, log);
 
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
         FREE_MEMORY(textResult);
-        textResult = GetHardwareProperty(osProductVendorAlternateCommand, false, log, telemetry);
+        textResult = GetHardwareProperty(osProductVendorAlternateCommand, false, log);
     }
 
     OsConfigLogDebug(log, "Product vendor: '%s'", textResult);
@@ -386,16 +387,16 @@ char* GetProductVendor(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     return textResult;
 }
 
-char* GetProductVersion(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetProductVersion(OsConfigLogHandle log)
 {
     const char* osProductVersionCommand = "cat /sys/devices/virtual/dmi/id/product_version";
     const char* osProductVersionAlternateCommand = "lshw -c system | grep -m 1 \"version:\"";
-    char* textResult = GetHardwareProperty(osProductVersionCommand, false, log, telemetry);
+    char* textResult = GetHardwareProperty(osProductVersionCommand, false, log);
 
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
         FREE_MEMORY(textResult);
-        textResult = GetHardwareProperty(osProductVersionAlternateCommand, false, log, telemetry);
+        textResult = GetHardwareProperty(osProductVersionAlternateCommand, false, log);
     }
 
     OsConfigLogDebug(log, "Product version: '%s'", textResult);
@@ -403,23 +404,23 @@ char* GetProductVersion(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry
     return textResult;
 }
 
-char* GetSystemCapabilities(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetSystemCapabilities(OsConfigLogHandle log)
 {
     const char* osSystemCapabilitiesCommand = "lshw -c system | grep -m 1 \"capabilities:\"";
-    char* textResult = GetHardwareProperty(osSystemCapabilitiesCommand, false, log, telemetry);
+    char* textResult = GetHardwareProperty(osSystemCapabilitiesCommand, false, log);
     OsConfigLogDebug(log, "Product capabilities: '%s'", textResult);
     return textResult;
 }
 
-char* GetSystemConfiguration(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetSystemConfiguration(OsConfigLogHandle log)
 {
     const char* osSystemConfigurationCommand = "lshw -c system | grep -m 1 \"configuration:\"";
-    char* textResult = GetHardwareProperty(osSystemConfigurationCommand, false, log, telemetry);
+    char* textResult = GetHardwareProperty(osSystemConfigurationCommand, false, log);
     OsConfigLogDebug(log, "Product configuration: '%s'", textResult);
     return textResult;
 }
 
-static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, char separator, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, char separator, OsConfigLogHandle log)
 {
     char* command = NULL;
     char* result = NULL;
@@ -427,7 +428,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
 
     if ((NULL == commandTemplate) || (NULL == name) || (0 == strlen(name)))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "commandTemplate", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "commandTemplate", EINVAL);
         OsConfigLogError(log, "GetOsReleaseEntry: invalid arguments");
         result = DuplicateString("<error>");
     }
@@ -437,7 +438,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
 
         if (NULL == (command = malloc(commandLength)))
         {
-            OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
+            OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
             OsConfigLogError(log, "GetOsReleaseEntry: out of memory");
         }
         else
@@ -445,7 +446,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
             memset(command, 0, commandLength);
             snprintf(command, commandLength, commandTemplate, name);
 
-            if ((0 == ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log, telemetry)) && result)
+            if ((0 == ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)) && result)
             {
                 RemovePrefixBlanks(result);
                 RemoveTrailingBlanks(result);
@@ -479,14 +480,14 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
     return result;
 }
 
-static char* GetEtcReleaseEntry(const char* name, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static char* GetEtcReleaseEntry(const char* name, OsConfigLogHandle log)
 {
-    return GetOsReleaseEntry("cat /etc/*-release | grep %s=", name, '=', log, telemetry);
+    return GetOsReleaseEntry("cat /etc/*-release | grep %s=", name, '=', log);
 }
 
-static char* GetLsbReleaseEntry(const char* name, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static char* GetLsbReleaseEntry(const char* name, OsConfigLogHandle log)
 {
-    return GetOsReleaseEntry("lsb_release -a | grep \"%s:\"", name, ':', log, telemetry);
+    return GetOsReleaseEntry("lsb_release -a | grep \"%s:\"", name, ':', log);
 }
 
 static void ClearOsDistroInfo(OsDistroInfo* info)
@@ -500,7 +501,7 @@ static void ClearOsDistroInfo(OsDistroInfo* info)
     }
 }
 
-bool CheckOsAndKernelMatchDistro(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+bool CheckOsAndKernelMatchDistro(char** reason, OsConfigLogHandle log)
 {
     const char* linuxName = "Linux";
     const char* ubuntuName = "Ubuntu";
@@ -508,48 +509,48 @@ bool CheckOsAndKernelMatchDistro(char** reason, OsConfigLogHandle log, OSConfigT
     const char* none = "<null>";
 
     OsDistroInfo distro = {0}, os = {0};
-    char* kernelName = GetOsKernelName(log, telemetry);
-    char* kernelVersion = GetOsKernelVersion(log, telemetry);
+    char* kernelName = GetOsKernelName(log);
+    char* kernelVersion = GetOsKernelVersion(log);
     bool match = false;
 
     // Distro
 
-    distro.id = GetEtcReleaseEntry("DISTRIB_ID", log, telemetry);
+    distro.id = GetEtcReleaseEntry("DISTRIB_ID", log);
     if (0 == strcmp(distro.id, none))
     {
         FREE_MEMORY(distro.id);
-        distro.id = GetLsbReleaseEntry("Distributor ID", log, telemetry);
+        distro.id = GetLsbReleaseEntry("Distributor ID", log);
     }
 
-    distro.release = GetEtcReleaseEntry("DISTRIB_RELEASE", log, telemetry);
+    distro.release = GetEtcReleaseEntry("DISTRIB_RELEASE", log);
     if (0 == strcmp(distro.release, none))
     {
         FREE_MEMORY(distro.release);
-        distro.release = GetLsbReleaseEntry("Release", log, telemetry);
+        distro.release = GetLsbReleaseEntry("Release", log);
     }
 
-    distro.codename = GetEtcReleaseEntry("DISTRIB_CODENAME", log, telemetry);
+    distro.codename = GetEtcReleaseEntry("DISTRIB_CODENAME", log);
     if (0 == strcmp(distro.codename, none))
     {
         FREE_MEMORY(distro.codename);
-        distro.codename = GetLsbReleaseEntry("Codename", log, telemetry);
+        distro.codename = GetLsbReleaseEntry("Codename", log);
     }
 
-    distro.description = GetEtcReleaseEntry("DISTRIB_DESCRIPTION", log, telemetry);
+    distro.description = GetEtcReleaseEntry("DISTRIB_DESCRIPTION", log);
     if (0 == strcmp(distro.description, none))
     {
         FREE_MEMORY(distro.description);
-        distro.description = GetLsbReleaseEntry("Description", log, telemetry);
+        distro.description = GetLsbReleaseEntry("Description", log);
     }
 
     // installed OS
 
-    os.id = GetEtcReleaseEntry("-w NAME", log, telemetry);
-    os.release = GetEtcReleaseEntry("VERSION_ID", log, telemetry);
-    os.codename = GetEtcReleaseEntry("VERSION_CODENAME", log, telemetry);
-    os.description = GetEtcReleaseEntry("PRETTY_NAME", log, telemetry);
+    os.id = GetEtcReleaseEntry("-w NAME", log);
+    os.release = GetEtcReleaseEntry("VERSION_ID", log);
+    os.codename = GetEtcReleaseEntry("VERSION_CODENAME", log);
+    os.description = GetEtcReleaseEntry("PRETTY_NAME", log);
 
-    if (IsCurrentOs(ubuntuName, log, telemetry) || IsCurrentOs(debianName, log, telemetry))
+    if (IsCurrentOs(ubuntuName, log) || IsCurrentOs(debianName, log))
     {
         if ((0 == strncmp(distro.id, os.id, strlen(distro.id))) &&
             (0 == strcmp(distro.release, os.release)) &&
@@ -595,12 +596,12 @@ bool CheckOsAndKernelMatchDistro(char** reason, OsConfigLogHandle log, OSConfigT
     return match;
 }
 
-char* GetLoginUmask(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetLoginUmask(char** reason, OsConfigLogHandle log)
 {
     const char* command = "grep -v '^#' /etc/login.defs | grep UMASK";
     char* result = NULL;
 
-    if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &result, NULL, log, telemetry)) && result)
+    if ((0 == ExecuteCommand(NULL, command, true, true, 0, 0, &result, NULL, log)) && result)
     {
         RemovePrefixUpTo(result, ' ');
         RemovePrefixBlanks(result);
@@ -617,7 +618,7 @@ char* GetLoginUmask(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandl
     return result;
 }
 
-int CheckLoginUmask(const char* desired, char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int CheckLoginUmask(const char* desired, char** reason, OsConfigLogHandle log)
 {
     char* current = NULL;
     size_t length = 0;
@@ -625,12 +626,12 @@ int CheckLoginUmask(const char* desired, char** reason, OsConfigLogHandle log, O
 
     if ((NULL == desired) || (0 == (length = strlen(desired))))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "desired", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "desired", EINVAL);
         OsConfigLogError(log, "CheckLoginUmask: invalid argument");
         return EINVAL;
     }
 
-    if (NULL == (current = GetLoginUmask(reason, log, telemetry)))
+    if (NULL == (current = GetLoginUmask(reason, log)))
     {
         OsConfigLogInfo(log, "CheckLoginUmask: GetLoginUmask failed");
         status = ENOENT;
@@ -655,7 +656,7 @@ int CheckLoginUmask(const char* desired, char** reason, OsConfigLogHandle log, O
     return status;
 }
 
-static long GetPasswordDays(const char* name, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static long GetPasswordDays(const char* name, OsConfigLogHandle log)
 {
     const char* commandTemplate = "cat /etc/login.defs | grep %s | grep -v ^#";
     size_t commandLength = 0;
@@ -665,7 +666,7 @@ static long GetPasswordDays(const char* name, OsConfigLogHandle log, OSConfigTel
 
     if ((NULL == name) || (0 == strlen(name)))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "name", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "name", EINVAL);
         OsConfigLogError(log, "GetPasswordDays: invalid argument");
         return -1;
     }
@@ -674,7 +675,7 @@ static long GetPasswordDays(const char* name, OsConfigLogHandle log, OSConfigTel
 
     if (NULL == (command = malloc(commandLength)))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
         OsConfigLogError(log, "GetPasswordDays: out of memory");
     }
     else
@@ -682,7 +683,7 @@ static long GetPasswordDays(const char* name, OsConfigLogHandle log, OSConfigTel
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, name);
 
-        if ((0 == ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log, telemetry)) && result)
+        if ((0 == ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)) && result)
         {
             RemovePrefixBlanks(result);
             RemovePrefixUpTo(result, ' ');
@@ -701,22 +702,22 @@ static long GetPasswordDays(const char* name, OsConfigLogHandle log, OSConfigTel
     return days;
 }
 
-long GetPassMinDays(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+long GetPassMinDays(OsConfigLogHandle log)
 {
-    return GetPasswordDays("PASS_MIN_DAYS", log, telemetry);
+    return GetPasswordDays("PASS_MIN_DAYS", log);
 }
 
-long GetPassMaxDays(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+long GetPassMaxDays(OsConfigLogHandle log)
 {
-    return GetPasswordDays("PASS_MAX_DAYS", log, telemetry);
+    return GetPasswordDays("PASS_MAX_DAYS", log);
 }
 
-long GetPassWarnAge(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+long GetPassWarnAge(OsConfigLogHandle log)
 {
-    return GetPasswordDays("PASS_WARN_AGE", log, telemetry);
+    return GetPasswordDays("PASS_WARN_AGE", log);
 }
 
-static int SetPasswordDays(const char* name, long days, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int SetPasswordDays(const char* name, long days, OsConfigLogHandle log)
 {
     const char* etcLoginDefs = "/etc/login.defs";
     char* value = NULL;
@@ -725,25 +726,25 @@ static int SetPasswordDays(const char* name, long days, OsConfigLogHandle log, O
 
     if ((NULL == name) || (0 == strlen(name)))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "name", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "name", EINVAL);
         OsConfigLogError(log, "SetPasswordDays: invalid argument");
         return EINVAL;
     }
     else if (NULL == (value = FormatAllocateString("%ld", days)))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "SetPasswordDays: out of memory");
         return ENOMEM;
     }
 
-    if (days == (currentDays = GetPasswordDays(name, log, telemetry)))
+    if (days == (currentDays = GetPasswordDays(name, log)))
     {
         OsConfigLogInfo(log, "SetPasswordDays: '%s' already set to %ld days in '%s'", name, days, etcLoginDefs);
     }
     else
     {
         OsConfigLogInfo(log, "SetPasswordDays: '%s' is set to %ld days in '%s' instead of %ld days", name, currentDays, etcLoginDefs, days);
-        if (0 == (status = SetEtcLoginDefValue(name, value, log, telemetry)))
+        if (0 == (status = SetEtcLoginDefValue(name, value, log)))
         {
             OsConfigLogInfo(log, "SetPasswordDays: '%s' is now set to %ld days in '%s'", name, days, etcLoginDefs);
         }
@@ -754,22 +755,22 @@ static int SetPasswordDays(const char* name, long days, OsConfigLogHandle log, O
     return status;
 }
 
-int SetPassMinDays(long days, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int SetPassMinDays(long days, OsConfigLogHandle log)
 {
-    return SetPasswordDays("PASS_MIN_DAYS", days, log, telemetry);
+    return SetPasswordDays("PASS_MIN_DAYS", days, log);
 }
 
-int SetPassMaxDays(long days, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int SetPassMaxDays(long days, OsConfigLogHandle log)
 {
-    return SetPasswordDays("PASS_MAX_DAYS", days, log, telemetry);
+    return SetPasswordDays("PASS_MAX_DAYS", days, log);
 }
 
-int SetPassWarnAge(long days, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int SetPassWarnAge(long days, OsConfigLogHandle log)
 {
-    return SetPasswordDays("PASS_WARN_AGE", days, log, telemetry);
+    return SetPasswordDays("PASS_WARN_AGE", days, log);
 }
 
-bool IsCurrentOs(const char* name, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+bool IsCurrentOs(const char* name, OsConfigLogHandle log)
 {
     char* prettyName = NULL;
     size_t prettyNameLength = 0;
@@ -778,12 +779,12 @@ bool IsCurrentOs(const char* name, OsConfigLogHandle log, OSConfigTelemetryHandl
 
     if ((NULL == name) || (0 == (nameLength = strlen(name))))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "name", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "name", EINVAL);
         OsConfigLogError(log, "IsCurrentOs called with an invalid argument");
         return result;
     }
 
-    if ((NULL == (prettyName = GetOsPrettyName(log, telemetry))) || (0 == (prettyNameLength = strlen(prettyName))))
+    if ((NULL == (prettyName = GetOsPrettyName(log))) || (0 == (prettyNameLength = strlen(prettyName))))
     {
         OsConfigLogInfo(log, "IsCurrentOs: no valid PRETTY_NAME found in /etc/os-release, assuming this is not the '%s' distro", name);
     }
@@ -804,7 +805,7 @@ bool IsCurrentOs(const char* name, OsConfigLogHandle log, OSConfigTelemetryHandl
     return result;
 }
 
-static bool IsRedHatBasedInternal(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static bool IsRedHatBasedInternal(OsConfigLogHandle log)
 {
     const char* distros[] = {"Red Hat", "CentOS", "AlmaLinux", "Rocky Linux", "Oracle Linux"};
     int numDistros = ARRAY_SIZE(distros);
@@ -814,7 +815,7 @@ static bool IsRedHatBasedInternal(OsConfigLogHandle log, OSConfigTelemetryHandle
     int i = 0;
     bool result = false;
 
-    if ((NULL == (prettyName = GetOsPrettyName(log, telemetry))) || (0 == (prettyNameLength = strlen(prettyName))))
+    if ((NULL == (prettyName = GetOsPrettyName(log))) || (0 == (prettyNameLength = strlen(prettyName))))
     {
         OsConfigLogInfo(log, "IsRedHatBased: no valid PRETTY_NAME found in /etc/os-release, cannot check if Red Hat based, assuming not");
     }
@@ -848,31 +849,31 @@ static bool IsRedHatBasedInternal(OsConfigLogHandle log, OSConfigTelemetryHandle
     return result;
 }
 
-bool IsRedHatBased(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+bool IsRedHatBased(OsConfigLogHandle log)
 {
     static bool firstTime = true;
     static bool redHatBased = false;
     if (firstTime)
     {
-        redHatBased = IsRedHatBasedInternal(log, telemetry);
+        redHatBased = IsRedHatBasedInternal(log);
         firstTime = false;
     }
     return redHatBased;
 }
 
-int EnableVirtualMemoryRandomization(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int EnableVirtualMemoryRandomization(OsConfigLogHandle log)
 {
     const char* procSysKernelRandomizeVaSpace = "/proc/sys/kernel/randomize_va_space";
     const char* fullRandomization = "2";
     int status = 0;
 
-    if (0 == CheckSmallFileContainsText(procSysKernelRandomizeVaSpace, fullRandomization, NULL, log, telemetry))
+    if (0 == CheckSmallFileContainsText(procSysKernelRandomizeVaSpace, fullRandomization, NULL, log))
     {
         OsConfigLogInfo(log, "EnableVirtualMemoryRandomization: full virtual memory randomization '%s' is already enabled in '%s'", fullRandomization, procSysKernelRandomizeVaSpace);
     }
     else
     {
-        if (SavePayloadToFile(procSysKernelRandomizeVaSpace, fullRandomization, strlen(fullRandomization), log, telemetry))
+        if (SavePayloadToFile(procSysKernelRandomizeVaSpace, fullRandomization, strlen(fullRandomization), log))
         {
             OsConfigLogInfo(log, "EnableVirtualMemoryRandomization: '%s' was written to '%s'", fullRandomization, procSysKernelRandomizeVaSpace);
         }
@@ -886,13 +887,13 @@ int EnableVirtualMemoryRandomization(OsConfigLogHandle log, OSConfigTelemetryHan
     return status;
 }
 
-bool IsCommodore(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+bool IsCommodore(OsConfigLogHandle log)
 {
     const char* productNameCommand = "cat /etc/os-subrelease | grep PRODUCT_NAME=";
     char* textResult = NULL;
     bool status = false;
 
-    if ((0 == ExecuteCommand(NULL, productNameCommand, true, false, 0, 0, &textResult, NULL, log, telemetry)) && textResult)
+    if ((0 == ExecuteCommand(NULL, productNameCommand, true, false, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
@@ -916,12 +917,12 @@ bool IsSelinuxPresent(void)
     return g_selinuxPresent;
 }
 
-bool DetectSelinux(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+bool DetectSelinux(OsConfigLogHandle log)
 {
     const char* command = "cat /sys/kernel/security/lsm | grep selinux";
     bool status = false;
 
-    if (0 == ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, telemetry))
+    if (0 == ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log))
     {
         status = true;
     }
@@ -931,7 +932,7 @@ bool DetectSelinux(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     return status;
 }
 
-int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandle log)
 {
     const char* checkLimitsConf = "grep -v '^[[:space:]]*#' /etc/security/limits.conf | grep 'hard[[:space:]]\\+core' | tr '\\t' ' ' | tr -s ' ' | cut -d' ' -f4";
     const char* checkUnderLimitsD = "grep -rh '^[[:space:]]*\\*[[:space:]]\\+hard[[:space:]]\\+core[[:space:]]\\+[0-9]\\+' /etc/security/limits.d/ 2>/dev/null | tr '\\t' ' ' | tr -s ' ' | cut -d' ' -f4";
@@ -939,7 +940,7 @@ int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandl
     int status = ENOENT;
 
     // Check /etc/security/limits.conf for containing uncommented lines of "* hard core 0" where separators can be tab characters or any number of spaces
-    if ((0 == ExecuteCommand(NULL, checkLimitsConf, true, true, 0, 0, &textResult, NULL, log, telemetry)) && textResult)
+    if ((0 == ExecuteCommand(NULL, checkLimitsConf, true, true, 0, 0, &textResult, NULL, log)) && textResult)
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
@@ -960,7 +961,7 @@ int CheckCoreDumpsHardLimitIsDisabledForAllUsers(char** reason, OsConfigLogHandl
     if (0 != status)
     {
         // If not found, also check all files under /etc/security/limits.d/ if they contain any such line:
-        if ((0 == ExecuteCommand(NULL, checkUnderLimitsD, true, true, 0, 0, &textResult, NULL, log, telemetry)) && textResult)
+        if ((0 == ExecuteCommand(NULL, checkUnderLimitsD, true, true, 0, 0, &textResult, NULL, log)) && textResult)
         {
             RemovePrefixBlanks(textResult);
             RemoveTrailingBlanks(textResult);

@@ -90,21 +90,21 @@ void DeviceInfoInitialize(void)
     g_log = OpenLog(g_deviceInfoLogFile, g_deviceInfoRolledLogFile);
     g_telemetry = OSConfigTelemetryOpen();
 
-    g_osName = GetOsName(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_osVersion = GetOsVersion(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_cpuType = GetCpuType(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_cpuVendor = GetCpuVendor(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_cpuModel = GetCpuModel(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_totalMemory = GetTotalMemory(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_freeMemory = GetFreeMemory(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_kernelName = GetOsKernelName(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_kernelRelease = GetOsKernelRelease(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_kernelVersion = GetOsKernelVersion(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_productVendor = GetProductVendor(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_productName = GetProductName(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_productVersion = GetProductVersion(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_systemCapabilities = GetSystemCapabilities(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
-    g_systemConfiguration = GetSystemConfiguration(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+    g_osName = GetOsName(DeviceInfoGetLog());
+    g_osVersion = GetOsVersion(DeviceInfoGetLog());
+    g_cpuType = GetCpuType(DeviceInfoGetLog());
+    g_cpuVendor = GetCpuVendor(DeviceInfoGetLog());
+    g_cpuModel = GetCpuModel(DeviceInfoGetLog());
+    g_totalMemory = GetTotalMemory(DeviceInfoGetLog());
+    g_freeMemory = GetFreeMemory(DeviceInfoGetLog());
+    g_kernelName = GetOsKernelName(DeviceInfoGetLog());
+    g_kernelRelease = GetOsKernelRelease(DeviceInfoGetLog());
+    g_kernelVersion = GetOsKernelVersion(DeviceInfoGetLog());
+    g_productVendor = GetProductVendor(DeviceInfoGetLog());
+    g_productName = GetProductName(DeviceInfoGetLog());
+    g_productVersion = GetProductVersion(DeviceInfoGetLog());
+    g_systemCapabilities = GetSystemCapabilities(DeviceInfoGetLog());
+    g_systemConfiguration = GetSystemConfiguration(DeviceInfoGetLog());
 
     OsConfigLogInfo(DeviceInfoGetLog(), "%s initialized", g_deviceInfoModuleName);
 }
@@ -254,7 +254,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         else if (0 == strcmp(objectName, g_freeMemoryObject))
         {
             // Refresh this one at every MmiGet
-            g_freeMemory = GetFreeMemory(DeviceInfoGetLog(), DeviceInfoGetTelemetry());
+            g_freeMemory = GetFreeMemory(DeviceInfoGetLog());
 
             isStringValue = false;
             snprintf(buffer, sizeof(buffer), "%lu", g_freeMemory);

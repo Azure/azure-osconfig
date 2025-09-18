@@ -74,7 +74,7 @@ int Command::Execute(unsigned int maxPayloadSizeBytes)
 
         SetStatus(0, "", Command::State::Running);
 
-        exitCode = ExecuteCommand(context, m_arguments.c_str(), m_replaceEol, true, maxTextResultSize, m_timeout, &textResult, &Command::ExecutionCallback, CommandRunnerLog::Get(), CommandRunnerLog::GetTelemetry());
+        exitCode = ExecuteCommand(context, m_arguments.c_str(), m_replaceEol, true, maxTextResultSize, m_timeout, &textResult, &Command::ExecutionCallback, CommandRunnerLog::Get());
 
         SetStatus(exitCode, (textResult != nullptr) ? std::string(textResult) : "");
 
@@ -190,7 +190,7 @@ int ShutdownCommand::Execute(unsigned int maxPayloadSizeBytes)
     {
         SetStatus(0, "", Command::State::Succeeded);
 
-        exitCode = ExecuteCommand(nullptr, m_arguments.c_str(), m_replaceEol, true, maxPayloadSizeBytes, m_timeout, &textResult, nullptr, CommandRunnerLog::Get(), CommandRunnerLog::GetTelemetry());
+        exitCode = ExecuteCommand(nullptr, m_arguments.c_str(), m_replaceEol, true, maxPayloadSizeBytes, m_timeout, &textResult, nullptr, CommandRunnerLog::Get());
 
         if (nullptr != textResult)
         {
