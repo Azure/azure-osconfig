@@ -52,9 +52,14 @@ void ComplianceEngineShutdown(void)
 {
 }
 
+OSConfigTelemetryHandle GetTelemetry(void)
+{
+    return g_telemetry;
+}
+
 MMI_HANDLE ComplianceEngineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
-    auto context = std::unique_ptr<ComplianceEngine::CommonContext>(new ComplianceEngine::CommonContext(g_log, g_telemetry));
+    auto context = std::unique_ptr<ComplianceEngine::CommonContext>(new ComplianceEngine::CommonContext(g_log));
     if (nullptr == context)
     {
         OSConfigTelemetryStatusTrace(g_telemetry, "CommonContext", ENOMEM);

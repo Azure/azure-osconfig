@@ -3,6 +3,9 @@
 
 #include "Internal.h"
 
+// Forward declaration for global telemetry function
+extern OSConfigTelemetryHandle GetTelemetry(void);
+
 // 1 second
 #define MIN_REPORTING_INTERVAL 1
 
@@ -67,9 +70,8 @@ bool IsIotHubManagementEnabledInJsonConfig(const char* jsonString)
     return IsOptionEnabledInJsonConfig(jsonString, IOT_HUB_MANAGEMENT);
 }
 
-static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
     int valueToReturn = defaultValue;
@@ -132,44 +134,43 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
     return valueToReturn;
 }
 
-LoggingLevel GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+LoggingLevel GetLoggingLevelFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
-    return GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log, telemetry);
+    return GetIntegerFromJsonConfig(LOGGING_LEVEL, jsonString, DEFAULT_LOGGING_LEVEL, MIN_LOGGING_LEVEL, MAX_LOGGING_LEVEL, log);
 }
 
-int GetMaxLogSizeFromJsonConfig(const char* jsonString, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int GetMaxLogSizeFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
-    return GetIntegerFromJsonConfig(MAX_LOG_SIZE, jsonString, DEFAULT_MAX_LOG_SIZE, MIN_MAX_LOG_SIZE, MAX_MAX_LOG_SIZE, log, telemetry);
+    return GetIntegerFromJsonConfig(MAX_LOG_SIZE, jsonString, DEFAULT_MAX_LOG_SIZE, MIN_MAX_LOG_SIZE, MAX_MAX_LOG_SIZE, log);
 }
 
-int GetMaxLogSizeDebugMultiplierFromJsonConfig(const char* jsonString, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int GetMaxLogSizeDebugMultiplierFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
-    return GetIntegerFromJsonConfig(MAX_LOG_SIZE_DEBUG_MULTIPLIER, jsonString, DEFAULT_MAX_LOG_SIZE_DEBUG_MULTIPLIER, MIN_MAX_LOG_SIZE_DEBUG_MULTIPLIER, MAX_MAX_LOG_SIZE_DEBUG_MULTIPLIER, log, telemetry);
+    return GetIntegerFromJsonConfig(MAX_LOG_SIZE_DEBUG_MULTIPLIER, jsonString, DEFAULT_MAX_LOG_SIZE_DEBUG_MULTIPLIER, MIN_MAX_LOG_SIZE_DEBUG_MULTIPLIER, MAX_MAX_LOG_SIZE_DEBUG_MULTIPLIER, log);
 }
 
-int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int GetReportingIntervalFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
-    return GetIntegerFromJsonConfig(REPORTING_INTERVAL_SECONDS, jsonString, DEFAULT_REPORTING_INTERVAL, MIN_REPORTING_INTERVAL, MAX_REPORTING_INTERVAL, log, telemetry);
+    return GetIntegerFromJsonConfig(REPORTING_INTERVAL_SECONDS, jsonString, DEFAULT_REPORTING_INTERVAL, MIN_REPORTING_INTERVAL, MAX_REPORTING_INTERVAL, log);
 }
 
-int GetModelVersionFromJsonConfig(const char* jsonString, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int GetModelVersionFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
-    return GetIntegerFromJsonConfig(MODEL_VERSION_NAME, jsonString, DEFAULT_DEVICE_MODEL_ID, MIN_DEVICE_MODEL_ID, MAX_DEVICE_MODEL_ID, log, telemetry);
+    return GetIntegerFromJsonConfig(MODEL_VERSION_NAME, jsonString, DEFAULT_DEVICE_MODEL_ID, MIN_DEVICE_MODEL_ID, MAX_DEVICE_MODEL_ID, log);
 }
 
-int GetLocalManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int GetLocalManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
-    return GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1, log, telemetry);
+    return GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1, log);
 }
 
-int GetIotHubProtocolFromJsonConfig(const char* jsonString, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int GetIotHubProtocolFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
-    return GetIntegerFromJsonConfig(PROTOCOL, jsonString, PROTOCOL_AUTO, PROTOCOL_AUTO, PROTOCOL_MQTT_WS, log, telemetry);
+    return GetIntegerFromJsonConfig(PROTOCOL, jsonString, PROTOCOL_AUTO, PROTOCOL_AUTO, PROTOCOL_MQTT_WS, log);
 }
 
-int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** reportedProperties, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** reportedProperties, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
     JSON_Object* itemObject = NULL;
@@ -183,7 +184,7 @@ int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** report
 
     if (NULL == reportedProperties)
     {
-        OSConfigTelemetryStatusTrace(telemetry, "reportedProperties", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "reportedProperties", EINVAL);
         OsConfigLogError(log, "LoadReportedFromJsonConfig: called with an invalid argument, no properties to report");
         return 0;
     }
@@ -229,14 +230,14 @@ int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** report
                                     }
                                     else
                                     {
-                                        OSConfigTelemetryStatusTrace(telemetry, "json_object_get_string", EINVAL);
+                                        OSConfigTelemetryStatusTrace(GetTelemetry(), "json_object_get_string", EINVAL);
                                         OsConfigLogError(log, "LoadReportedFromJsonConfig: %s or %s missing at position %d of %d, no property to report",
                                             REPORTED_COMPONENT_NAME, REPORTED_SETTING_NAME, (int)(i + 1), (int)numReported);
                                     }
                                 }
                                 else
                                 {
-                                    OSConfigTelemetryStatusTrace(telemetry, "json_array_get_object", EINVAL);
+                                    OSConfigTelemetryStatusTrace(GetTelemetry(), "json_array_get_object", EINVAL);
                                     OsConfigLogError(log, "LoadReportedFromJsonConfig: json_array_get_object failed at position %d of %d, no reported property",
                                         (int)(i + 1), (int)numReported);
                                 }
@@ -244,7 +245,7 @@ int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** report
                         }
                         else
                         {
-                            OSConfigTelemetryStatusTrace(telemetry, "malloc", ENOMEM);
+                            OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
                             OsConfigLogError(log, "LoadReportedFromJsonConfig: out of memory, cannot allocate %d bytes for %d reported properties",
                                 (int)bufferSize, (int)numReported);
                         }
@@ -252,13 +253,13 @@ int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** report
                 }
                 else
                 {
-                    OSConfigTelemetryStatusTrace(telemetry, "json_array_get_object", ENOENT);
+                    OSConfigTelemetryStatusTrace(GetTelemetry(), "json_array_get_object", ENOENT);
                     OsConfigLogError(log, "LoadReportedFromJsonConfig: no valid %s array in configuration, no properties to report", REPORTED_NAME);
                 }
             }
             else
             {
-                OSConfigTelemetryStatusTrace(telemetry, "json_value_get_object", ENOENT);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "json_value_get_object", ENOENT);
                 OsConfigLogError(log, "LoadReportedFromJsonConfig: json_value_get_object(root) failed, no properties to report");
             }
 
@@ -266,22 +267,21 @@ int LoadReportedFromJsonConfig(const char* jsonString, ReportedProperty** report
         }
         else
         {
-            OSConfigTelemetryStatusTrace(telemetry, "json_parse_string", ENOENT);
+            OSConfigTelemetryStatusTrace(GetTelemetry(), "json_parse_string", ENOENT);
             OsConfigLogError(log, "LoadReportedFromJsonConfig: json_parse_string failed, no properties to report");
         }
     }
     else
     {
-        OSConfigTelemetryStatusTrace(telemetry, "jsonString", ENOENT);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "jsonString", ENOENT);
         OsConfigLogError(log, "LoadReportedFromJsonConfig: no configuration data, no properties to report");
     }
 
     return numReportedProperties;
 }
 
-static char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+static char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
     char* value = NULL;
@@ -316,7 +316,7 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                     }
                     else
                     {
-                        OSConfigTelemetryStatusTrace(telemetry, "GetStringFromJsonConfig", ENOMEM);
+                        OSConfigTelemetryStatusTrace(GetTelemetry(), "GetStringFromJsonConfig", ENOMEM);
                         OsConfigLogError(log, "GetStringFromJsonConfig: failed to allocate %d bytes for %s", (int)(valueLength + 1), valueName);
                     }
                 }
@@ -342,22 +342,22 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
     return buffer;
 }
 
-int GetGitManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int GetGitManagementFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
-    return GetIntegerFromJsonConfig(GIT_MANAGEMENT, jsonString, 0, 0, 1, log, telemetry);
+    return GetIntegerFromJsonConfig(GIT_MANAGEMENT, jsonString, 0, 0, 1, log);
 }
 
-char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
-    return GetStringFromJsonConfig(GIT_REPOSITORY_URL, jsonString, log, telemetry);
+    return GetStringFromJsonConfig(GIT_REPOSITORY_URL, jsonString, log);
 }
 
-char* GetGitBranchFromJsonConfig(const char* jsonString, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+char* GetGitBranchFromJsonConfig(const char* jsonString, OsConfigLogHandle log)
 {
-    return GetStringFromJsonConfig(GIT_BRANCH, jsonString, log, telemetry);
+    return GetStringFromJsonConfig(GIT_BRANCH, jsonString, log);
 }
 
-int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log)
 {
     const char* configurationDirectory = "/etc/osconfig";
     const char* configurationFile = "/etc/osconfig/osconfig.json";
@@ -371,7 +371,7 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log, OSCon
 
     if (false == IsLoggingLevelSupported(level))
     {
-        OSConfigTelemetryStatusTrace(telemetry, "SetLoggingLevelPersistently", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "SetLoggingLevelPersistently", EINVAL);
         OsConfigLogError(log, "SetLoggingLevelPersistently: requested logging level %u is not supported", level);
         result = EINVAL;
     }
@@ -379,26 +379,26 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log, OSCon
     {
         if (FileExists(configurationFile))
         {
-            if (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, log, telemetry)))
+            if (NULL != (jsonConfiguration = LoadStringFromFile(configurationFile, false, log)))
             {
-                if (level != GetLoggingLevelFromJsonConfig(jsonConfiguration, log, telemetry))
+                if (level != GetLoggingLevelFromJsonConfig(jsonConfiguration, log))
                 {
                     if (NULL == (buffer = FormatAllocateString(strstr(jsonConfiguration, ",") ? loggingLevelTemplateWithComma : loggingLevelTemplate, level)))
                     {
-                        OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+                        OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
                         OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
                         result = ENOMEM;
                     }
-                    else if (0 != (result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", buffer, '#', true, log, telemetry)))
+                    else if (0 != (result = ReplaceMarkedLinesInFile(configurationFile, "LoggingLevel", buffer, '#', true, log)))
                     {
-                        OSConfigTelemetryStatusTrace(telemetry, "ReplaceMarkedLinesInFile", result);
+                        OSConfigTelemetryStatusTrace(GetTelemetry(), "ReplaceMarkedLinesInFile", result);
                         OsConfigLogError(log, "SetLoggingLevelPersistently: failed to update the logging level to %u in the configuration file '%s'", level, configurationFile);
                     }
                 }
             }
             else
             {
-                OSConfigTelemetryStatusTrace(telemetry, "LoadStringFromFile", errno);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "LoadStringFromFile", errno);
                 OsConfigLogError(log, "SetLoggingLevelPersistently: cannot read from '%s' (%d, %s)", configurationFile, errno, strerror(errno));
                 result = errno ? errno : ENOENT;
             }
@@ -407,19 +407,19 @@ int SetLoggingLevelPersistently(LoggingLevel level, OsConfigLogHandle log, OSCon
         {
             if (NULL == (buffer = FormatAllocateString(configurationTemplate, level)))
             {
-                OSConfigTelemetryStatusTrace(telemetry, "FormatAllocateString", ENOMEM);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
                 OsConfigLogError(log, "SetLoggingLevelPersistently: out of memory");
                 result = ENOMEM;
             }
             else if ((false == DirectoryExists(configurationDirectory)) && (0 != (result = mkdir(configurationDirectory, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))))
             {
-                OSConfigTelemetryStatusTrace(telemetry, "mkdir", errno);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "mkdir", errno);
                 OsConfigLogError(log, "SetLoggingLevelPersistently: failed to create directory '%s'for the configuration file (%d, %s)", configurationDirectory, errno, strerror(errno));
                 result = result ? result : (errno ? errno : ENOENT);
             }
-            else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log, telemetry))
+            else if (false == SavePayloadToFile(configurationFile, buffer, strlen(buffer), log))
             {
-                OSConfigTelemetryStatusTrace(telemetry, "SavePayloadToFile", errno);
+                OSConfigTelemetryStatusTrace(GetTelemetry(), "SavePayloadToFile", errno);
                 OsConfigLogError(log, "SetLoggingLevelPersistently: failed to save the new logging level %u to the configuration file '%s'  (%d, %s)", level, configurationFile, errno, strerror(errno));
                 result = errno ? errno : ENOENT;
             }

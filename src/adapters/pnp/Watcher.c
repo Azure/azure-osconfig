@@ -37,19 +37,19 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
 
     if (fileName && hash)
     {
-        mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog(), GetTelemetry());
+        mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog()));
         if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
         {
             CallMpiFree(payload);
 
-            mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog(), GetTelemetry());
+            mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog()));
         }
 
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
             if ((*hash != (payloadHash = HashString(payload))) && payloadHash)
             {
-                if (SavePayloadToFile(fileName, payload, payloadSizeBytes, GetLog(), GetTelemetry()))
+                if (SavePayloadToFile(fileName, payload, payloadSizeBytes, GetLog())))
                 {
                     RestrictFileAccessToCurrentAccountOnly(fileName);
                     *hash = payloadHash;
@@ -167,11 +167,11 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
 
     DeleteGitClone(gitClonePath, log, telemetry);
 
-    if (0 != (error = ExecuteCommand(NULL, cloneCommand, false, false, 0, 0, NULL, NULL, GetLog(), GetTelemetry())))
+    if (0 != (error = ExecuteCommand(NULL, cloneCommand, false, false, 0, 0, NULL, NULL, GetLog()))))
     {
         OsConfigLogError(log, "Watcher: failed making a new Git clone at %s (%d)", gitClonePath, error);
     }
-    else if (0 != (error = ExecuteCommand(NULL, configCommand, false, false, 0, 0, NULL, NULL, GetLog(), GetTelemetry())))
+    else if (0 != (error = ExecuteCommand(NULL, configCommand, false, false, 0, 0, NULL, NULL, GetLog()))))
     {
         OsConfigLogError(log, "Watcher: failed configuring the new Git clone at %s (%d)", gitClonePath, error);
     }
