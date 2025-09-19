@@ -73,9 +73,8 @@ struct MockContext : public ComplianceEngine::ContextInterface
                 continue;
             }
             std::string child = path + "/" + ent->d_name;
-            struct stat st
-            {
-            };
+            struct stat st;
+
             if (0 == lstat(child.c_str(), &st))
             {
                 if (S_ISDIR(st.st_mode))
