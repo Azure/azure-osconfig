@@ -33,6 +33,7 @@ Result<bool> SearchFilesystemForModuleName(std::string& moduleName, ContextInter
     {
         return Error("Failed to open /lib/modules directory");
     }
+    auto modulesDirDeleter = std::unique_ptr<DIR, int (*)(DIR*)>(modulesDir, closedir);
 
     std::vector<std::string> kernelModuleFileBasenames; // Collected file basenames (no directory prefix)
     bool moduleFound = false;
@@ -60,6 +61,7 @@ Result<bool> SearchFilesystemForModuleName(std::string& moduleName, ContextInter
             OsConfigLogError(context.GetLogHandle(), "Failed to open %s - errno %d", modulesVersionDir.c_str(), errno);
             continue;
         }
+        auto ftspDeleter = std::unique_ptr<FTS, int (*)(FTS*)>(fts, fts_close);
 
         FTSENT* node = nullptr;
         while (!moduleFound && (node = fts_read(fts)) != nullptr)
@@ -84,10 +86,7 @@ Result<bool> SearchFilesystemForModuleName(std::string& moduleName, ContextInter
                 }
             }
         }
-        fts_close(fts);
     }
-    closedir(modulesDir);
-
     return moduleFound;
 }
 
