@@ -131,6 +131,7 @@ add_library(complianceenginelib STATIC
     Evaluator.cpp
     FilePermissionsHelpers.cpp
     FileTreeWalk.cpp
+    FilesystemScanner.cpp
     GroupsIterator.cpp
     Indicators.cpp
     JsonWrapper.cpp
