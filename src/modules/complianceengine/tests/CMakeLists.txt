@@ -45,6 +45,7 @@ add_executable(complianceenginetests
     BenchmarkInfoTest.cpp
     CommonContextTest.cpp
     ComplianceEngineTest.cpp
+    FilesystemScannerTest.cpp
     DistributionInfoTest.cpp
     EngineTest.cpp
     EvaluatorTest.cpp
