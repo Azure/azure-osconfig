@@ -26,7 +26,6 @@
 
 namespace ComplianceEngine
 {
-
 namespace
 {
 
@@ -121,8 +120,7 @@ FilesystemScanner::FilesystemScanner(std::string rootDir, std::string cachePath,
     }
 }
 
-// Back-compat: internal implementation formerly named GetFs(); keep body but provide public wrapper GetFullFilesystem
-Result<std::shared_ptr<const FilesystemScanner::FSCache>> FilesystemScanner::GetFs()
+Result<std::shared_ptr<const FilesystemScanner::FSCache>> FilesystemScanner::GetFullFilesystem()
 {
     // Ensure we have a cache (may trigger background build + optional wait).
     if (!m_cache)
@@ -189,14 +187,9 @@ Result<std::shared_ptr<const FilesystemScanner::FSCache>> FilesystemScanner::Get
     return Result<std::shared_ptr<const FSCache>>(std::static_pointer_cast<const FSCache>(m_cache));
 }
 
-Result<std::shared_ptr<const FilesystemScanner::FSCache>> FilesystemScanner::GetFullFilesystem()
-{
-    return GetFs();
-}
-
 Result<std::map<std::string, FilesystemScanner::FSEntry>> FilesystemScanner::GetFilteredFilesystemEntries(Optional<mode_t> has_perms, Optional<mode_t> no_perms)
 {
-    auto full = GetFs();
+    auto full = GetFullFilesystem();
     if (!full)
     {
         return full.Error();
@@ -206,7 +199,6 @@ Result<std::map<std::string, FilesystemScanner::FSEntry>> FilesystemScanner::Get
     const mode_t noMask = no_perms.HasValue() ? no_perms.Value() : 0;
     for (const auto& kv : full.Value()->entries)
     {
-        const auto& path = kv.first;
         const auto& entry = kv.second;
         mode_t m = entry.st.st_mode;
         if (has_perms.HasValue() && (m & hasMask) != hasMask)
@@ -234,7 +226,6 @@ static void ScanDirRecursive(const std::string& dir, dev_t rootDev, std::map<std
         return; // ignore unreadable dirs
     }
     auto dirDeleter = std::unique_ptr<DIR, int (*)(DIR*)>(d, ::closedir);
-    std::vector<std::string> names;
     struct dirent* de = nullptr;
     while ((de = ::readdir(d)) != nullptr)
     {
@@ -242,11 +233,7 @@ static void ScanDirRecursive(const std::string& dir, dev_t rootDev, std::map<std
         {
             continue;
         }
-        names.emplace_back(de->d_name);
-    }
-    std::sort(names.begin(), names.end());
-    for (const auto& name : names)
-    {
+        const char* name = de->d_name;
         std::string fullPath = dir;
         if (!fullPath.empty() && fullPath.back() != '/')
         {
@@ -286,7 +273,7 @@ static void ScanDirRecursive(const std::string& dir, dev_t rootDev, std::map<std
             }
             if (traverse)
             {
-                ScanDirRecursive(fullPath, st.st_dev, entries);
+                ScanDirRecursive(fullPath, rootDev, entries);
             }
         }
     }
