@@ -23,6 +23,7 @@ set(PROCEDURES
     procedures/EnsureMountPointExistsTest.cpp
     procedures/EnsureMTAsLocalOnlyTest.cpp
     procedures/EnsureNoDuplicateEntriesExistTest.cpp
+    procedures/EnsureNoWritablesTest.cpp
     procedures/EnsurePasswordChangeIsInPastTest.cpp
     procedures/EnsureRootPathTest.cpp
     procedures/EnsureSshdOptionTest.cpp
