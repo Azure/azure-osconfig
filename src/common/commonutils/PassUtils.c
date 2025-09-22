@@ -6,13 +6,14 @@
 #ifdef TEST_CODE
 static const char* g_etcPamdCommonPassword = "/tmp/~test.test";
 static const char* g_etcSecurityPwQualityConf = "/tmp/~test.test2";
+static const char* g_etcPamdSystemAuth = "/tmp/~test.test3";
+static const char* g_etcPamdSystemPassword = "/tmp/~test.test4";
 #else
 static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
 static const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
-#endif
-
 static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
 static const char* g_etcPamdSystemPassword = "/etc/pam.d/system-password";
+#endif
 static const char* g_pamUnixSo = "pam_unix.so";
 static const char* g_remember = "remember";
 

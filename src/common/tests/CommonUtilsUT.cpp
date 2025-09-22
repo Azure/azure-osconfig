@@ -23,6 +23,8 @@ class CommonUtilsTest : public ::testing::Test
     protected:
         const char* m_path = "/tmp/~test.test";
         const char* m_path2 = "/tmp/~test.test2";
+        const char* m_path3 = "/tmp/~test.test3";
+        const char* m_path4 = "/tmp/~test.test4";
         const char* m_data = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM";
         const char* m_dataWithEol = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
         const char* m_dataLowercase = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 qwertyuiopasdfghjklzxcvbnm";
@@ -2895,6 +2897,76 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
     // When neither common-password or pwquality are not present the audit fails:
     EXPECT_TRUE(Cleanup(m_path2));
     EXPECT_NE(0, CheckPasswordCreationRequirements(values[0], values[1], values[2], values[3], values[4], values[5], values[6], nullptr, nullptr));
+
+    FREE_MEMORY(values);
+}
+
+TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
+{
+    const char* testCommonPassword =
+        "# here are the per-package modules (the \"Primary\" block)\n"
+        "password requisite /usr/lib/x86_64-linux-gnu/security/pam_pwquality.so retry=1 minlen=14 lcredit=-1 ucredit=-1 ocredit=-1 dcredit=-1\n"
+        "password        [success=1 default=ignore]      pam_unix.so obscure use_authtok try_first_pass yescrypt\n"
+        "# here's the fallback if no module succeeds\n"
+        "password        requisite                       pam_deny.so\n"
+        "# prime the stack with a positive return value if there isn't one already;\n"
+        "# this avoids us returning an error just because nothing sets a success code\n"
+        "# since the modules above will each just jump around\n"
+        "password        required                        pam_permit.so\n"
+        "# and here are more per-package modules (the \"Additional\" block)\n"
+        "password        optional        pam_gnome_keyring.so\n"
+        "# end of pam-auth-update config\n"
+        "password required /usr/lib/x86_64-linux-gnu/security/pam_unix.so sha512 shadow remember=5 retry=3";
+    const char* testSystemAuth =
+        "# here are the per-package modules (the \"Primary\" block)\n"
+        "password requisite /usr/lib/x86_64-linux-gnu/security/pam_pwquality.so retry=3 minlen=12 dcredit=-1 ucredit=-1 ocredit=-1 lcredit=-1\n"
+        "password [success=1 default=ignore] pam_unix.so obscure use_authtok try_first_pass yescrypt\n"
+        "# here's the fallback if no module succeeds\n"
+        "password requisite pam_deny.so\n"
+        "# prime the stack with a positive return value if there isn't one already\n"
+        "password required pam_permit.so\n"
+        "# and here are more per-package modules (the \"Additional\" block)\n"
+        "password optional pam_gnome_keyring.so\n"
+        "# end of pam-auth-update config\n"
+        "password required /usr/lib/x86_64-linux-gnu/security/pam_unix.so sha512 shadow remember=6 retry=3";
+    const char* testSystemPassword =
+        "password    requisite     pam_pwquality.so retry=3 minlen=14 dcredit=-1 ucredit=-1 ocredit=-1 lcredit=-1\n"
+        "password    sufficient    pam_unix.so sha512 shadow nullok try_first_pass use_authtok remember=7\n"
+        "password    required      pam_deny.so";
+
+    EXPECT_TRUE(CreateTestFile(m_path, testCommonPassword));
+    EXPECT_TRUE(CreateTestFile(m_path3, testSystemAuth));
+    EXPECT_TRUE(CreateTestFile(m_path4, testSystemPassword));
+
+    // Here the common-password audit route is validated:
+    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(5, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(7, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(10, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(0, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(-1, nullptr, nullptr));
+
+    // Force system-auth route to be validated by removing the test file for common-password:
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(5, nullptr, nullptr));
+    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(7, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(10, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(0, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(-1, nullptr, nullptr));
+
+    // Force system-auth route to be validated by also removing the test file for system-auth:
+    EXPECT_TRUE(Cleanup(m_path3));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(5, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
+    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(7, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(10, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(0, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(-1, nullptr, nullptr));
+
+    // When neither is present, the audit fails:
+    EXPECT_TRUE(Cleanup(m_path4));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(5, nullptr, nullptr));
 
     FREE_MEMORY(values);
 }
