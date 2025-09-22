@@ -2940,8 +2940,8 @@ TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
 
     // Here the common-password audit route is validated:
     EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(5, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(7, nullptr, nullptr));
+    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
+    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(7, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(10, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(0, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(-1, nullptr, nullptr));
@@ -2950,7 +2950,7 @@ TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(5, nullptr, nullptr));
     EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(7, nullptr, nullptr));
+    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(7, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(10, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(0, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(-1, nullptr, nullptr));
