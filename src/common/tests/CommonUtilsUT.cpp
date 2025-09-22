@@ -2916,7 +2916,7 @@ TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
         "# and here are more per-package modules (the \"Additional\" block)\n"
         "password        optional        pam_gnome_keyring.so\n"
         "# end of pam-auth-update config\n"
-        "password required /usr/lib/x86_64-linux-gnu/security/pam_unix.so sha512 shadow remember=5 retry=3";
+        "password required /usr/lib/x86_64-linux-gnu/security/pam_unix.so sha512 shadow remember=2 retry=3";
     const char* testSystemAuth =
         "# here are the per-package modules (the \"Primary\" block)\n"
         "password requisite /usr/lib/x86_64-linux-gnu/security/pam_pwquality.so retry=3 minlen=12 dcredit=-1 ucredit=-1 ocredit=-1 lcredit=-1\n"
@@ -2928,10 +2928,10 @@ TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
         "# and here are more per-package modules (the \"Additional\" block)\n"
         "password optional pam_gnome_keyring.so\n"
         "# end of pam-auth-update config\n"
-        "password required /usr/lib/x86_64-linux-gnu/security/pam_unix.so sha512 shadow remember=6 retry=3";
+        "password required /usr/lib/x86_64-linux-gnu/security/pam_unix.so sha512 shadow remember=4 retry=3";
     const char* testSystemPassword =
         "password    requisite     pam_pwquality.so retry=3 minlen=14 dcredit=-1 ucredit=-1 ocredit=-1 lcredit=-1\n"
-        "password    sufficient    pam_unix.so sha512 shadow nullok try_first_pass use_authtok remember=7\n"
+        "password    sufficient    pam_unix.so sha512 shadow nullok try_first_pass use_authtok remember=6\n"
         "password    required      pam_deny.so";
 
     EXPECT_TRUE(CreateTestFile(m_path, testCommonPassword));
@@ -2940,30 +2940,30 @@ TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
 
     // Here the common-password audit route is validated:
     printf("CommonUtilsTest, CheckEnsurePasswordReuseIsLimited: begin common-password route:\n");
-    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(5, nullptr, nullptr));
+    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(2, nullptr, nullptr));
+    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(4, nullptr, nullptr));
     EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
-    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(7, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(10, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(1, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(0, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(-1, nullptr, nullptr));
 
     // Force system-auth route to be validated by removing the test file for common-password:
     EXPECT_TRUE(Cleanup(m_path));
     printf("CommonUtilsTest, CheckEnsurePasswordReuseIsLimited: begin system-auth route:\n");
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(5, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(2, nullptr, nullptr));
+    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(4, nullptr, nullptr));
     EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
-    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(7, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(10, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(1, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(0, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(-1, nullptr, nullptr));
 
     // Force system-password route to be validated by also removing the test file for system-auth:
     EXPECT_TRUE(Cleanup(m_path3));
     printf("CommonUtilsTest, CheckEnsurePasswordReuseIsLimited: begin system-password route:\n");
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(5, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
-    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(7, nullptr, nullptr));
-    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(10, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(2, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(4, nullptr, nullptr));
+    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(1, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(0, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(-1, nullptr, nullptr));
 
