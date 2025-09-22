@@ -2899,6 +2899,15 @@ TEST_F(CommonUtilsTest, CheckPasswordCreationRequirements)
     FREE_MEMORY(values);
 }
 
+TEST_F(CommonUtilsTest, GroupExists)
+{
+    EXPECT_TRUE(GroupExists(0, nullptr);
+    EXPECT_FALSE(GroupExists(999999, nullptr);
+    EXPECT_FALSE(GroupExists(-1, nullptr);
+    EXPECT_FALSE(GroupExists(0xDEADBEEF, nullptr);
+    EXPECT_FALSE(GroupExists(0xFFFFFFFF, nullptr);
+}
+
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
     const char* emergency = "EMERGENCY";
