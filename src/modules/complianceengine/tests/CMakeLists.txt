@@ -25,6 +25,7 @@ set(PROCEDURES
     procedures/EnsureNoDuplicateEntriesExistTest.cpp
     procedures/EnsureNoWritablesTest.cpp
     procedures/EnsurePasswordChangeIsInPastTest.cpp
+        procedures/EnsureNoUnownedTest.cpp
     procedures/EnsureRootPathTest.cpp
     procedures/EnsureSshdOptionTest.cpp
     procedures/EnsureSysctlTest.cpp

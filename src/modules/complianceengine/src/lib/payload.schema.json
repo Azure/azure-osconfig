@@ -210,6 +210,9 @@
           "$ref": "procedures/EnsureNoDuplicateEntriesExist.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureNoUnowned.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/audit"
         },
         {
@@ -326,6 +329,9 @@
         },
         {
           "$ref": "procedures/EnsureNoDuplicateEntriesExist.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureNoUnowned.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json#/definitions/remediation"
