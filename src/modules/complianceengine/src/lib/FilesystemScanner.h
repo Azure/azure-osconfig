@@ -43,7 +43,6 @@ public:
     // No synchronous scanning API: all scans occur in background processes.
 
 private:
-    Result<std::shared_ptr<const FSCache>> GetFs();
     void LoadCache(); // Attempt to load cache file; ignores stale/invalid formats.
 
     std::string root;

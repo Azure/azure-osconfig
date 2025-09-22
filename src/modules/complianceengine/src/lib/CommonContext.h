@@ -11,13 +11,17 @@
 #include <sstream>
 #include <string>
 
+static constexpr char FS_CACHE_PATH[] = "/var/lib/GuestConfig/ComplianceEngineFSCache";
+static constexpr char LOCK_PATH[] = "/run/complianceengine-fsscanner.lock";
+
 namespace ComplianceEngine
 {
 class CommonContext : public ContextInterface
 {
 public:
     CommonContext(OsConfigLogHandle log)
-        : mLog(log)
+        : mLog(log),
+          mFsScanner("/", FS_CACHE_PATH, LOCK_PATH, 3600, 86400, 20)
     {
     }
     ~CommonContext() override;
@@ -30,9 +34,14 @@ public:
     }
 
     std::string GetSpecialFilePath(const std::string& path) const override;
+    FilesystemScanner& GetFilesystemScanner() override
+    {
+        return mFsScanner;
+    }
 
 private:
     OsConfigLogHandle mLog;
+    FilesystemScanner mFsScanner;
 };
 } // namespace ComplianceEngine
 #endif // COMPLIANCEENGINE_COMMONCONTEXT_H
