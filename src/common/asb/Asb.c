@@ -1191,52 +1191,32 @@ static char* AuditEnsurePermissionsOnEtcSshSshdConfig(OsConfigLogHandle log)
 static char* AuditEnsurePermissionsOnEtcShadow(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadow ?
-        g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow, NULL, 8), &reason, log));
-    if (false == GroupExists(g_shadowGid, log))
-    {
-        CheckFileAccess(g_etcShadow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcShadow ?
-            g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow, NULL, 8), &reason, log);
-    }
+    CheckFileAccess(g_etcShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadow ?
+        g_desiredEnsurePermissionsOnEtcShadow : g_defaultEnsurePermissionsOnEtcShadow, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcShadowDash(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcShadowDash ?
-        g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash, NULL, 8), &reason, log));
-    if (false == GroupExists(g_shadowGid, log))
-    {
-        CheckFileAccess(g_etcShadowDash, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcShadowDash ?
-            g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash, NULL, 8), &reason, log)
-    }
+    CheckFileAccess(g_etcShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcShadowDash ?
+        g_desiredEnsurePermissionsOnEtcShadowDash : g_defaultEnsurePermissionsOnEtcShadowDash, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcGShadow(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcGShadow, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadow ?
-        g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow, NULL, 8), &reason, log));
-    if (false == GroupExists(g_shadowGid, log))
-    {
-        CheckFileAccess(g_etcGShadow, 0, 0, strtol(g_desiredEnsurePermissionsOnEtcGShadow ?
-            g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow, NULL, 8), &reason, log);
-    }
+    CheckFileAccess(g_etcGShadow, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadow ?
+        g_desiredEnsurePermissionsOnEtcGShadow : g_defaultEnsurePermissionsOnEtcGShadow, NULL, 8), &reason, log);
     return reason;
 }
 
 static char* AuditEnsurePermissionsOnEtcGShadowDash(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    RETURN_REASON_IF_NOT_ZERO(CheckFileAccess(g_etcGShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash ?
-        g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash, NULL, 8), &reason, log));
-    if (false == GroupExists(g_shadowGid, log))
-    {
-        CheckFileAccess(g_etcGShadowDash, 0, g_shadowGid, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash ?
-            g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash, NULL, 8), &reason, log);
-    }
+    CheckFileAccess(g_etcGShadowDash, 0, GroupExists(g_shadowGid, log) ? g_shadowGid : 0, strtol(g_desiredEnsurePermissionsOnEtcGShadowDash ?
+        g_desiredEnsurePermissionsOnEtcGShadowDash : g_defaultEnsurePermissionsOnEtcGShadowDash, NULL, 8), &reason, log);
     return reason;
 }
 
