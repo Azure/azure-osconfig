@@ -30,6 +30,7 @@ set(PROCEDURES
     procedures/EnsureMTAsLocalOnly.cpp
     procedures/EnsureNoDuplicateEntriesExist.cpp
     procedures/EnsureNoUserHasPrimaryShadowGroup.cpp
+    procedures/EnsureNoUnowned.cpp
     procedures/EnsureNoWritables.cpp
     procedures/EnsurePasswordChangeIsInPast.cpp
     procedures/EnsureRootPath.cpp
@@ -70,6 +71,7 @@ set(SCHEMAS
     procedures/EnsureMTAsLocalOnly.schema.json
     procedures/EnsureNoDuplicateEntriesExist.schema.json
     procedures/EnsureNoUserHasPrimaryShadowGroup.schema.json
+    procedures/EnsureNoUnowned.schema.json
     procedures/EnsureNoWritables.schema.json
     procedures/EnsurePasswordChangeIsInPast.schema.json
     procedures/EnsureRootPath.schema.json

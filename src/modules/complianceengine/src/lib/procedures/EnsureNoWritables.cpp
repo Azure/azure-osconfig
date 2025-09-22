@@ -25,7 +25,10 @@ AUDIT_FN(EnsureNoWritables)
     violations.reserve(3);
     for (const auto& kv : entries)
     {
-        if (violations.size() >= 3) { break; }
+        if (violations.size() >= 3)
+        {
+            break;
+        }
         const std::string& path = kv.first;
         const auto& st = kv.second.st;
         mode_t mode = st.st_mode;
@@ -45,7 +48,8 @@ AUDIT_FN(EnsureNoWritables)
         std::string msg = "World-writable issues (up to 3): ";
         for (size_t i = 0; i < violations.size(); ++i)
         {
-            if (i) msg += "; ";
+            if (i)
+                msg += "; ";
             msg += violations[i];
         }
         return indicators.NonCompliant(msg);
