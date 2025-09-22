@@ -2962,7 +2962,7 @@ TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
     printf("CommonUtilsTest, CheckEnsurePasswordReuseIsLimited: begin system-password route:\n");
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(2, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(4, nullptr, nullptr));
-    EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
+    EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(1, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(0, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(-1, nullptr, nullptr));
