@@ -2967,8 +2967,6 @@ TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
     // When neither is present, the audit fails:
     EXPECT_TRUE(Cleanup(m_path4));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(5, nullptr, nullptr));
-
-    FREE_MEMORY(values);
 }
 
 TEST_F(CommonUtilsTest, GroupExists)
