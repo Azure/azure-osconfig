@@ -167,6 +167,7 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
             std::getline(lineStream, optionValue);
             optionValue.erase(0, optionValue.find_first_not_of(" \t"));
             std::transform(currentOption.begin(), currentOption.end(), currentOption.begin(), ::tolower);
+            std::transform(optionValue.begin(), optionValue.end(), optionValue.begin(), ::tolower);
             options[currentOption] = optionValue;
         }
     }
@@ -202,9 +203,9 @@ static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string
 
         if ((val1 > lim1) || (val2 > lim2) || (val3 > lim3))
         {
-            return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which exceeds limits");
+            return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which exceeds limits '" + value + "'");
         }
-        return indicators.Compliant("Option '" + option + "' has a compliant value '" + realValue + "'");
+        return indicators.Compliant("Option '" + option + "' has a value '" + realValue + "' compliant with limits '" + value + "'");
     }
 
     if (op == "match" || op == "regex") // The only difference is in the valueRegexes preparation
