@@ -47,6 +47,7 @@ set(PROCEDURES
     procedures/TestingProcedures.cpp
     procedures/UfwStatus.cpp
     procedures/EnsureShadowContains.cpp
+    procedures/EnsureSshKeyPerms.cpp
 )
 set(SCHEMAS
     procedures/EnsureAccountsWithoutShellAreLocked.schema.json
@@ -86,6 +87,7 @@ set(SCHEMAS
     procedures/TestingProcedures.schema.json
     procedures/UfwStatus.schema.json
     procedures/EnsureShadowContains.schema.json
+    procedures/EnsureSshKeyPerms.schema.json
 )
 
 # Check that all globbed procedures are in the PROCEDURES list
