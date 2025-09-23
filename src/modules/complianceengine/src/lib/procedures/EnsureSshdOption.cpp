@@ -197,9 +197,21 @@ static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string
         // special case
         int val1 = 0, val2 = 0, val3 = 0, lim1 = 0, lim2 = 0, lim3 = 0;
         std::istringstream valueStream(realValue);
-        valueStream >> val1 >> val2 >> val3;
+        std::string token;
+        if (std::getline(valueStream, token, ':'))
+            val1 = std::stoi(token);
+        if (std::getline(valueStream, token, ':'))
+            val2 = std::stoi(token);
+        if (std::getline(valueStream, token, ':'))
+            val3 = std::stoi(token);
+
         std::istringstream limitStream(value);
-        limitStream >> lim1 >> lim2 >> lim3;
+        if (std::getline(limitStream, token, ':'))
+            lim1 = std::stoi(token);
+        if (std::getline(limitStream, token, ':'))
+            lim2 = std::stoi(token);
+        if (std::getline(limitStream, token, ':'))
+            lim3 = std::stoi(token);
 
         if ((val1 > lim1) || (val2 > lim2) || (val3 > lim3))
         {
