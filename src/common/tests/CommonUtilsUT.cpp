@@ -2939,7 +2939,6 @@ TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
     EXPECT_TRUE(CreateTestFile(m_path4, testSystemPassword));
 
     // Here the common-password audit route is validated:
-    printf("CommonUtilsTest, CheckEnsurePasswordReuseIsLimited: begin common-password route:\n");
     EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(2, nullptr, nullptr));
     EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(4, nullptr, nullptr));
     EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
@@ -2949,7 +2948,6 @@ TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
 
     // Force system-auth route to be validated by removing the test file for common-password:
     EXPECT_TRUE(Cleanup(m_path));
-    printf("CommonUtilsTest, CheckEnsurePasswordReuseIsLimited: begin system-auth route:\n");
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(2, nullptr, nullptr));
     EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(4, nullptr, nullptr));
     EXPECT_EQ(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));
@@ -2959,7 +2957,6 @@ TEST_F(CommonUtilsTest, CheckEnsurePasswordReuseIsLimited)
 
     // Force system-password route to be validated by also removing the test file for system-auth:
     EXPECT_TRUE(Cleanup(m_path3));
-    printf("CommonUtilsTest, CheckEnsurePasswordReuseIsLimited: begin system-password route:\n");
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(2, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(4, nullptr, nullptr));
     EXPECT_NE(0, CheckEnsurePasswordReuseIsLimited(6, nullptr, nullptr));

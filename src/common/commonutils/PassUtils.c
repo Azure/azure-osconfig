@@ -88,8 +88,6 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHa
 
     if (status && (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log)))
     {
-        OsConfigLogInfo(log, "############ CheckFileExists: looking at system-auth '%s' for option %d", g_etcPamdSystemAuth, remember);///////////////////////////
-        
         // On Azure Linux '/etc/pam.d/system-password' is expected to exist
         status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemPassword, '#', g_remember, reason, log)) &&
             (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemPassword, g_remember, '=', remember, reason, 10, log))) ? 0 : ENOENT;
@@ -97,8 +95,7 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHa
 
     if (status)
     {
-        OsConfigCaptureReason(reason, "Unable to find option '%s' in either '%s' or '%s' or '%s'", g_remember,
-            g_etcPamdCommonPassword, g_etcPamdSystemAuth, g_etcPamdSystemPassword);
+        OsConfigCaptureReason(reason, "Unable to find option '%s' in either '%s' or '%s' or '%s'", g_remember, g_etcPamdCommonPassword, g_etcPamdSystemAuth, g_etcPamdSystemPassword);
 
         if (NULL == (pamModule = FindPamModule(g_pamUnixSo, log)))
         {
