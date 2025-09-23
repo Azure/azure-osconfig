@@ -393,7 +393,7 @@ AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option, might be a com
         auto sshdConfig = GetSshdOptions(context, matchMode);
         if (!sshdConfig.HasValue())
         {
-            return sshdConfig.Error();
+            return indicators.NonCompliant("Failed to get sshd options: " + sshdConfig.Error().message);
         }
         for (auto const& option : options)
         {

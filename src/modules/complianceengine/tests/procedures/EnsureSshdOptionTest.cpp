@@ -108,8 +108,11 @@ TEST_F(EnsureSshdOptionTest, InitialCommandFails)
     args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Failed to execute sshd -T command") != std::string::npos);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
+    ASSERT_TRUE(formatted.find("Failed to execute sshd -T command") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, SimpleConfigOptionExists)
@@ -173,8 +176,11 @@ TEST_F(EnsureSshdOptionTest, CommandFailure)
     args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Failed to execute sshd -T") != std::string::npos);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
+    ASSERT_TRUE(formatted.find("Failed to execute sshd -T") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, WithMatchGroupConfig)
@@ -207,8 +213,11 @@ TEST_F(EnsureSshdOptionTest, HostnameCommandFailure)
     args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Failed to execute hostname command") != std::string::npos);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
+    ASSERT_TRUE(formatted.find("Failed to execute hostname command") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, HostAddressCommandFailure)
@@ -224,8 +233,11 @@ TEST_F(EnsureSshdOptionTest, HostAddressCommandFailure)
     args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Failed to get host address") != std::string::npos);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
+    ASSERT_TRUE(formatted.find("Failed to get host address") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, RegexMatches)
