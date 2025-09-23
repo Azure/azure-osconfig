@@ -228,6 +228,9 @@
           "$ref": "procedures/EnsureShadowContains.schema.json#/definitions/audit"
         },
         {
+          "$ref": "procedures/EnsureSshKeyPerms.schema.json#/definitions/audit"
+        },
+        {
           "$ref": "procedures/EnsureSshdOption.schema.json#/definitions/audit"
         },
         {
@@ -347,6 +350,9 @@
         },
         {
           "$ref": "procedures/EnsureShadowContains.schema.json#/definitions/remediation"
+        },
+        {
+          "$ref": "procedures/EnsureSshKeyPerms.schema.json#/definitions/remediation"
         },
         {
           "$ref": "procedures/EnsureSshdOption.schema.json#/definitions/remediation"
