@@ -36,6 +36,7 @@ static constexpr const char* cModuleTestClientName = "ModuleTestClient";
 static constexpr const char* cNRPClientName = "ComplianceEngine";
 OsConfigLogHandle g_log = nullptr;
 static const std::set<int> g_criticalErrors = {ENOMEM};
+static const std::string g_configurationFile = "/etc/osconfig/osconfig.json";
 } // namespace
 
 // This function is called in library constructor by BaselineInitialize
@@ -43,6 +44,24 @@ void ComplianceEngineInitialize(OsConfigLogHandle log)
 {
     UNUSED(log);
     g_log = log;
+
+    std::ifstream configStream(g_configurationFile);
+    if (configStream)
+    {
+        std::ostringstream buffer;
+        buffer << configStream.rdbuf();
+        auto jsonConfiguration = buffer.str();
+
+        if (!jsonConfiguration.empty())
+        {
+            SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration.c_str(), log));
+            SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration.c_str(), log));
+            SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration.c_str(), log));
+            OsConfigLogInfo(g_log, "Configuration file loaded successfully: %s", g_configurationFile.c_str());
+        }
+    }
+
+    RestrictFileAccessToCurrentAccountOnly(g_configurationFile.c_str());
 }
 
 // This function is called in library destructor by BaselineInitialize
