@@ -9,6 +9,17 @@
 
 using namespace std;
 
+static OSConfigTelemetryHandle g_telemetry = NULL;
+extern "C" OSConfigTelemetryHandle GetTelemetry(void)
+{
+    if (NULL == g_telemetry)
+    {
+        g_telemetry = OSConfigTelemetryOpen();
+    }
+
+    return g_telemetry;
+}
+
 class DeviceInfoTest : public ::testing::Test
 {
     protected:

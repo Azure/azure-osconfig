@@ -3,6 +3,8 @@
 
 #include "Internal.h"
 
+extern OSConfigTelemetryHandle GetTelemetry(void);
+
 #define MAX_DAEMON_NAME_LENGTH 256
 
 // Valid systemd deamon name characters for us, not universal, add more here if necessary in the future
@@ -59,21 +61,21 @@ static int ExecuteSystemctlCommand(const char* command, const char* daemonName, 
         return ENOMEM;
     }
 
-    result = ExecuteCommand(NULL, formattedCommand, false, false, 0, 0, NULL, NULL, log, GetTelemetry());
+    result = ExecuteCommand(NULL, formattedCommand, false, false, 0, 0, NULL, NULL, log);
     FREE_MEMORY(formattedCommand);
     return result;
 }
 
 bool IsDaemonActive(const char* daemonName, OsConfigLogHandle log)
 {
-    return (IsValidDaemonName(daemonName) && (0 == ExecuteSystemctlCommand("is-active", daemonName, log, GetTelemetry()))) ? true : false;
+    return (IsValidDaemonName(daemonName) && (0 == ExecuteSystemctlCommand("is-active", daemonName, log))) ? true : false;
 }
 
 bool CheckDaemonActive(const char* daemonName, char** reason, OsConfigLogHandle log)
 {
     bool result = false;
 
-    if (true == (result = IsDaemonActive(daemonName, log, GetTelemetry())))
+    if (true == (result = IsDaemonActive(daemonName, log)))
     {
         OsConfigLogInfo(log, "CheckDaemonActive: service '%s' is active", daemonName);
         OsConfigCaptureSuccessReason(reason, "Service '%s' is active", daemonName);
@@ -91,7 +93,7 @@ bool CheckDaemonNotActive(const char* daemonName, char** reason, OsConfigLogHand
 {
     bool result = false;
 
-    if (true == IsDaemonActive(daemonName, log, GetTelemetry()))
+    if (true == IsDaemonActive(daemonName, log))
     {
         OsConfigLogInfo(log, "CheckDaemonNotActive: service '%s' is active", daemonName);
         OsConfigCaptureReason(reason, "Service '%s' is active", daemonName);
@@ -119,7 +121,7 @@ static bool CommandDaemon(const char* command, const char* daemonName, OsConfigL
         return false;
     }
 
-    if (0 == (result = ExecuteSystemctlCommand(command, daemonName, log, GetTelemetry())))
+    if (0 == (result = ExecuteSystemctlCommand(command, daemonName, log)))
     {
         OsConfigLogInfo(log, "Succeeded to %s service '%s'", command, daemonName);
     }
@@ -134,12 +136,12 @@ static bool CommandDaemon(const char* command, const char* daemonName, OsConfigL
 
 bool EnableDaemon(const char* daemonName, OsConfigLogHandle log)
 {
-    return CommandDaemon("enable", daemonName, log, GetTelemetry());
+    return CommandDaemon("enable", daemonName, log);
 }
 
 bool StartDaemon(const char* daemonName, OsConfigLogHandle log)
 {
-    return CommandDaemon("start", daemonName, log, GetTelemetry());
+    return CommandDaemon("start", daemonName, log);
 }
 
 bool EnableAndStartDaemon(const char* daemonName, OsConfigLogHandle log)
@@ -153,16 +155,16 @@ bool EnableAndStartDaemon(const char* daemonName, OsConfigLogHandle log)
         return false;
     }
 
-    if (false == EnableDaemon(daemonName, log, GetTelemetry()))
+    if (false == EnableDaemon(daemonName, log))
     {
         OSConfigTelemetryStatusTrace(GetTelemetry(), "EnableDaemon", EINVAL);
         OsConfigLogError(log, "EnableAndStartDaemon: failed to enable service '%s'", daemonName);
     }
     else
     {
-        if (false == IsDaemonActive(daemonName, log, GetTelemetry()))
+        if (false == IsDaemonActive(daemonName, log))
         {
-            if (false == StartDaemon(daemonName, log, GetTelemetry()))
+            if (false == StartDaemon(daemonName, log))
             {
                 OSConfigTelemetryStatusTrace(GetTelemetry(), "StartDaemon", EINVAL);
                 OsConfigLogError(log, "EnableAndStartDaemon: failed to start service '%s'", daemonName);
@@ -184,28 +186,28 @@ bool EnableAndStartDaemon(const char* daemonName, OsConfigLogHandle log)
 
 bool StopDaemon(const char* daemonName, OsConfigLogHandle log)
 {
-    return CommandDaemon("stop", daemonName, log, GetTelemetry());
+    return CommandDaemon("stop", daemonName, log);
 }
 
 bool DisableDaemon(const char* daemonName, OsConfigLogHandle log)
 {
-    return CommandDaemon("disable", daemonName, log, GetTelemetry());
+    return CommandDaemon("disable", daemonName, log);
 }
 
 void StopAndDisableDaemon(const char* daemonName, OsConfigLogHandle log)
 {
-    if (true == StopDaemon(daemonName, log, GetTelemetry()))
+    if (true == StopDaemon(daemonName, log))
     {
-        DisableDaemon(daemonName, log, GetTelemetry());
+        DisableDaemon(daemonName, log);
     }
 }
 
 bool RestartDaemon(const char* daemonName, OsConfigLogHandle log)
 {
-    return CommandDaemon("restart", daemonName, log, GetTelemetry());
+    return CommandDaemon("restart", daemonName, log);
 }
 
 bool MaskDaemon(const char* daemonName, OsConfigLogHandle log)
 {
-    return CommandDaemon("mask", daemonName, log, GetTelemetry());
+    return CommandDaemon("mask", daemonName, log);
 }

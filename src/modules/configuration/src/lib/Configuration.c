@@ -95,16 +95,16 @@ static char* LoadConfigurationFromFile(const char* fileName)
 
     if (NULL != (jsonConfiguration = LoadStringFromFile(fileToLoadFrom, false, ConfigurationGetLog())))
     {
-        g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, ConfigurationGetLog(), ConfigurationGetTelemetry());
-        g_refreshInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, ConfigurationGetLog(), ConfigurationGetTelemetry());
+        g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
+        g_refreshInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_localManagementEnabled = (GetLocalManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
         g_debugLoggingEnabled = (LoggingLevelDebug == GetLoggingLevelFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
         g_iotHubManagementEnabled = IsIotHubManagementEnabledInJsonConfig(jsonConfiguration);
-        g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog(), ConfigurationGetTelemetry());
-        g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog(), ConfigurationGetTelemetry());
+        g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
+        g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
 
         FREE_MEMORY(g_gitBranch);
-        g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, ConfigurationGetLog(), ConfigurationGetTelemetry());
+        g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
     }
     else
     {

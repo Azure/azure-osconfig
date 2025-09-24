@@ -36,7 +36,7 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
     "\"UserAccount\": 0}";
 
 static OsConfigLogHandle g_log = NULL;
-static OSConfigTelemetryHandle g_telemetry = NULL;
+extern OSConfigTelemetryHandle GetTelemetry(void);
 
 #if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
 static atomic_int g_referenceCount = 0;
@@ -51,24 +51,17 @@ static OsConfigLogHandle SecurityBaselineGetLog(void)
     return g_log;
 }
 
-static OSConfigTelemetryHandle SecurityBaselineGetTelemetry(void)
-{
-    return g_telemetry;
-}
-
 void SecurityBaselineInitialize(void)
 {
     g_log = OpenLog(g_securityBaselineLogFile, g_securityBaselineRolledLogFile);
-    g_telemetry = OSConfigTelemetryOpen();
-    AsbInitialize(SecurityBaselineGetLog(), SecurityBaselineGetTelemetry());
+    AsbInitialize(SecurityBaselineGetLog());
     OsConfigLogInfo(SecurityBaselineGetLog(), "%s initialized", g_securityBaselineModuleName);
 }
 
 void SecurityBaselineShutdown(void)
 {
     OsConfigLogInfo(SecurityBaselineGetLog(), "%s shutting down", g_securityBaselineModuleName);
-    AsbShutdown(SecurityBaselineGetLog(), SecurityBaselineGetTelemetry());
-    OSConfigTelemetryClose(&g_telemetry);
+    AsbShutdown(SecurityBaselineGetLog());
     CloseLog(&g_log);
 }
 
@@ -95,7 +88,7 @@ void SecurityBaselineMmiClose(MMI_HANDLE clientSession)
     }
     else
     {
-        OSConfigTelemetryStatusTrace(SecurityBaselineGetTelemetry(), "clientSession", EINVAL);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "clientSession", EINVAL);
         OsConfigLogError(SecurityBaselineGetLog(), "MmiClose() called outside of a valid session");
     }
 }
@@ -106,7 +99,7 @@ int SecurityBaselineMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload,
 
     if ((NULL == payload) || (NULL == payloadSizeBytes))
     {
-        OSConfigTelemetryStatusTrace(SecurityBaselineGetTelemetry(), "payload", status);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "payload", status);
         OsConfigLogError(SecurityBaselineGetLog(), "MmiGetInfo(%s, %p, %p) called with invalid arguments", clientName, payload, payloadSizeBytes);
         return status;
     }
@@ -123,7 +116,7 @@ int SecurityBaselineMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload,
     else
     {
         status = ENOMEM;
-        OSConfigTelemetryStatusTrace(SecurityBaselineGetTelemetry(), "malloc", status);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", status);
         OsConfigLogError(SecurityBaselineGetLog(), "MmiGetInfo: failed to allocate %d bytes", *payloadSizeBytes);
         *payloadSizeBytes = 0;
     }
@@ -140,7 +133,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace(SecurityBaselineGetTelemetry(), "payload", status);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "payload", status);
         OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s, %p, %p) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         return status;
     }
@@ -150,12 +143,12 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
 
     if (IsValidSession(clientSession))
     {
-        status = AsbMmiGet(componentName, objectName, payload, payloadSizeBytes, g_maxPayloadSizeBytes, SecurityBaselineGetLog(), SecurityBaselineGetTelemetry());
+        status = AsbMmiGet(componentName, objectName, payload, payloadSizeBytes, g_maxPayloadSizeBytes, SecurityBaselineGetLog());
     }
     else
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace(SecurityBaselineGetTelemetry(), "IsValidSession", status);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "IsValidSession", status);
         OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
     }
 
@@ -170,12 +163,12 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
 
     if (IsValidSession(clientSession))
     {
-        status = AsbMmiSet(componentName, objectName, payload, payloadSizeBytes, SecurityBaselineGetLog(), SecurityBaselineGetTelemetry());
+        status = AsbMmiSet(componentName, objectName, payload, payloadSizeBytes, SecurityBaselineGetLog());
     }
     else
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace(SecurityBaselineGetTelemetry(), "IsValidSession", status);
+        OSConfigTelemetryStatusTrace(GetTelemetry(), "IsValidSession", status);
         OsConfigLogError(SecurityBaselineGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
     }
 

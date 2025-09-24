@@ -4,6 +4,8 @@
 #include "Internal.h"
 #include "UserUtils.h"
 
+extern OSConfigTelemetryHandle GetTelemetry(void);
+
 #define MAX_GROUPS_USER_CAN_BE_IN 32
 #define NUMBER_OF_SECONDS_IN_A_DAY 86400
 
@@ -236,7 +238,7 @@ static int SetUserNonLogin(SimplifiedUser* user, OsConfigLogHandle log)
                 OsConfigLogError(log, "SetUserNonLogin: out of memory");
                 result = ENOMEM;
             }
-            else if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+            else if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
             {
                 OsConfigLogInfo(log, "SetUserNonLogin: usermod for user %u failed with %d (errno: %d)", user->userId, result, errno);
             }
@@ -393,13 +395,13 @@ int EnumerateUsers(SimplifiedUser** userList, unsigned int* size, char** reason,
 
             while ((NULL != (userEntry = getpwent())) && (i < *size))
             {
-                if (0 != (status = CopyUserEntry(&((*userList)[i]), userEntry, log, GetTelemetry())))
+                if (0 != (status = CopyUserEntry(&((*userList)[i]), userEntry, log)))
                 {
                     OSConfigTelemetryStatusTrace(GetTelemetry(), "CopyUserEntry", status);
                     OsConfigLogError(log, "EnumerateUsers: failed making copy of user entry (%d)", status);
                     break;
                 }
-                else if (0 != (status = CheckIfUserHasPassword(&((*userList)[i]), log, GetTelemetry())))
+                else if (0 != (status = CheckIfUserHasPassword(&((*userList)[i]), log)))
                 {
                     OsConfigLogInfo(log, "EnumerateUsers: cannot check user's login and password (%d)", status);
                     break;
@@ -692,12 +694,12 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, OsConfigLogHandle log)
     bool found = false;
     int status = 0;
 
-    if ((0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry()))) &&
-        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log, GetTelemetry()))))
+    if ((0 == (status = EnumerateUsers(&userList, &userListSize, reason, log))) &&
+        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log))))
     {
         for (i = 0; (i < userListSize) && (0 == status); i++)
         {
-            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, reason, log, GetTelemetry())))
+            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, reason, log)))
             {
                 for (j = 0; (j < userGroupListSize) && (0 == status); j++)
                 {
@@ -753,12 +755,12 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
     bool found = false;
     int status = 0, _status = 0;
 
-    if ((0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry()))) &&
-        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log, GetTelemetry()))))
+    if ((0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log))) &&
+        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log))))
     {
         for (i = 0; (i < userListSize) && (0 == status); i++)
         {
-            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, NULL, log, GetTelemetry())))
+            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, NULL, log)))
             {
                 for (j = 0; (j < userGroupListSize) && (0 == status); j++)
                 {
@@ -782,7 +784,7 @@ int SetAllEtcPasswdGroupsToExistInEtcGroup(OsConfigLogHandle log)
 
                         if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].userId, userGroupList[j].groupId)))
                         {
-                            if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+                            if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                             {
                                 OsConfigLogInfo(log, "SetAllEtcPasswdGroupsToExistInEtcGroup: user %u was removed from group %u ('%s')",
                                     userList[i].userId, userGroupList[j].groupId, IsSystemGroup(&userGroupList[j]) ? userGroupList[j].groupName : g_redacted);
@@ -833,7 +835,7 @@ int CheckNoDuplicateUidsExist(char** reason, OsConfigLogHandle log)
     unsigned int hits = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; (i < userListSize) && (0 == status); i++)
         {
@@ -893,7 +895,7 @@ int RemoveUser(SimplifiedUser* user, OsConfigLogHandle log)
 
     if (NULL != (command = FormatAllocateString(commandTemplate, user->username)))
     {
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
         {
             OsConfigLogInfo(log, "RemoveUser: removed user %u", user->userId);
 
@@ -931,7 +933,7 @@ int CheckNoDuplicateGidsExist(char** reason, OsConfigLogHandle log)
     unsigned int hits = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log)))
     {
         for (i = 0; (i < groupListSize) && (0 == status); i++)
         {
@@ -974,7 +976,7 @@ int CheckNoDuplicateUserNamesExist(char** reason, OsConfigLogHandle log)
     unsigned int hits = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; (i < userListSize) && (0 == status); i++)
         {
@@ -1017,7 +1019,7 @@ int CheckNoDuplicateGroupNamesExist(char** reason, OsConfigLogHandle log)
     unsigned int hits = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log)))
     {
         for (i = 0; (i < groupListSize) && (0 == status); i++)
         {
@@ -1062,7 +1064,7 @@ int CheckShadowGroupIsEmpty(char** reason, OsConfigLogHandle log)
     bool found = false;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log)))
     {
         for (i = 0; i < groupListSize; i++)
         {
@@ -1105,11 +1107,11 @@ int SetShadowGroupEmpty(OsConfigLogHandle log)
     unsigned int i = 0, j = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, NULL, log, GetTelemetry())))
+            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, NULL, log)))
             {
                 for (j = 0; j < userGroupListSize; j++)
                 {
@@ -1120,7 +1122,7 @@ int SetShadowGroupEmpty(OsConfigLogHandle log)
 
                         if (NULL != (command = FormatAllocateString(commandTemplate, userList[i].username, g_shadow)))
                         {
-                            if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+                            if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                             {
                                 OsConfigLogInfo(log, "SetShadowGroupEmpty: user %u was removed from group %u ('%s')",
                                     userList[i].userId, userGroupList[j].groupId, IsSystemGroup(&userGroupList[j]) ? userGroupList[j].groupName : g_redacted);
@@ -1175,7 +1177,7 @@ int CheckRootGroupExists(char** reason, OsConfigLogHandle log)
     bool found = false;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, reason, log)))
     {
         for (i = 0; i < groupListSize; i++)
         {
@@ -1213,7 +1215,7 @@ int RepairRootGroup(OsConfigLogHandle log)
     char* original = NULL;
     int status = 0;
 
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, NULL, log)))
     {
         for (i = 0; i < groupListSize; i++)
         {
@@ -1231,31 +1233,31 @@ int RepairRootGroup(OsConfigLogHandle log)
     if (false == found)
     {
         // Load content of /etc/group
-        if (NULL != (original = LoadStringFromFile(etcGroup, false, log, GetTelemetry())))
+        if (NULL != (original = LoadStringFromFile(etcGroup, false, log)))
         {
             // Save content loaded from /etc/group to temporary file
-            if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log, GetTelemetry()))
+            if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
             {
                 // Delete from temporary file any lines containing "root"
-                if (0 == (status = ReplaceMarkedLinesInFile(tempFileName, g_root, NULL, '#', false, log, GetTelemetry())))
+                if (0 == (status = ReplaceMarkedLinesInFile(tempFileName, g_root, NULL, '#', false, log)))
                 {
                     // Free the previously loaded content, we'll reload
                     FREE_MEMORY(original);
 
                     // Load the fixed content of temporary file
-                    if (NULL != (original = LoadStringFromFile(tempFileName, false, log, GetTelemetry())))
+                    if (NULL != (original = LoadStringFromFile(tempFileName, false, log)))
                     {
                         // Delete the previously created temporary file, we'll recreate
                         remove(tempFileName);
 
                         // Save correct root line to the recreated temporary file
-                        if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log, GetTelemetry()))
+                        if (SavePayloadToFile(tempFileName, rootLine, strlen(rootLine), log))
                         {
                             // Append to temporary file the cleaned content
-                            if (AppendPayloadToFile(tempFileName, original, strlen(original), log, GetTelemetry()))
+                            if (AppendPayloadToFile(tempFileName, original, strlen(original), log))
                             {
                                 // In a single atomic operation move edited contents from temporary file to /etc/group
-                                if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, etcGroup, log, GetTelemetry())))
+                                if (0 != (status = RenameFileWithOwnerAndAccess(tempFileName, etcGroup, log)))
                                 {
                                     OsConfigLogInfo(log, "RepairRootGroup:  RenameFileWithOwnerAndAccess('%s' to '%s') returned %d",
                                         tempFileName, etcGroup, status);
@@ -1310,7 +1312,7 @@ int CheckAllUsersHavePasswordsSet(char** reason, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1367,7 +1369,7 @@ int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1400,7 +1402,7 @@ int RemoveUsersWithoutPasswords(OsConfigLogHandle log)
                     OsConfigLogInfo(log, "RemoveUsersWithoutPasswords: the root account's password must be manually fixed");
                     status = EPERM;
                 }
-                else if ((0 != (_status = RemoveUser(&(userList[i]), log, GetTelemetry()))) && (0 == status))
+                else if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -1424,7 +1426,7 @@ int CheckRootIsOnlyUidZeroAccount(char** reason, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1456,7 +1458,7 @@ int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1465,7 +1467,7 @@ int SetRootIsOnlyUidZeroAccount(OsConfigLogHandle log)
                 OsConfigLogInfo(log, "SetRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has uid 0",
                     IsSystemAccount(&userList[i]) ? userList[i].username : g_redacted, userList[i].userId, userList[i].groupId);
 
-                if ((0 != (_status = RemoveUser(&(userList[i]), log, GetTelemetry()))) && (0 == status))
+                if ((0 != (_status = RemoveUser(&(userList[i]), log))) && (0 == status))
                 {
                     status = _status;
                 }
@@ -1490,7 +1492,7 @@ int CheckDefaultRootAccountGroupIsGidZero(char** reason, OsConfigLogHandle log)
     unsigned int i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1520,9 +1522,9 @@ int SetDefaultRootAccountGroupIsGidZero(OsConfigLogHandle log)
 {
     int status = 0;
 
-    if (0 != (status = CheckDefaultRootAccountGroupIsGidZero(NULL, log, GetTelemetry())))
+    if (0 != (status = CheckDefaultRootAccountGroupIsGidZero(NULL, log)))
     {
-        status = RepairRootGroup(log, GetTelemetry());
+        status = RepairRootGroup(log);
     }
 
     return status;
@@ -1534,7 +1536,7 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1569,7 +1571,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
     unsigned int defaultHomeDirAccess = 0750;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1598,7 +1600,7 @@ int SetUserHomeDirectories(OsConfigLogHandle log)
                 // If the home directory does not have correct ownership and access, correct this
                 if (true == DirectoryExists(userList[i].home))
                 {
-                    if (0 != (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, defaultHomeDirAccess, log, GetTelemetry())))
+                    if (0 != (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, defaultHomeDirAccess, log)))
                     {
                         OsConfigLogInfo(log, "SetUserHomeDirectories: cannot set access and ownership for home directory of user %u (%d, errno: %d, %s)",
                             userList[i].userId, _status, errno, strerror(errno));
@@ -1662,7 +1664,7 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1672,11 +1674,11 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, OsConfigLogHandle log)
             }
             else if (DirectoryExists(userList[i].home))
             {
-                if (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log, GetTelemetry())))
+                if (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log)))
                 {
                     OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user %u cannot login and their assigned home directory is owned by root", userList[i].userId);
                 }
-                else if (0 == CheckHomeDirectoryOwnership(&userList[i], log, GetTelemetry()))
+                else if (0 == CheckHomeDirectoryOwnership(&userList[i], log))
                 {
                     OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user %u owns their assigned home directory", userList[i].userId);
                 }
@@ -1720,7 +1722,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
         return EINVAL;
     }
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1734,7 +1736,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log, GetTelemetry()))
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                     {
                         OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user %u has proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, modes[j]);
@@ -1783,7 +1785,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
         return EINVAL;
     }
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1797,7 +1799,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log, GetTelemetry()))
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u already has proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, modes[j]);
@@ -1808,7 +1810,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
                 if (false == oneGoodMode)
                 {
-                    if (0 == (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, log, GetTelemetry())))
+                    if (0 == (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, log)))
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user %u has now proper restricted access (%03o) for their assigned home directory",
                             userList[i].userId, userList[i].isRoot ? modeForRoot : modeForOthers);
@@ -1845,7 +1847,7 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, OsConfi
     char* textResult = NULL;
     int status = 0;
 
-    if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log, GetTelemetry()))) && (NULL != textResult))
+    if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log))) && (NULL != textResult))
     {
         RemovePrefixBlanks(textResult);
         RemovePrefixUpTo(textResult, ' ');
@@ -1894,9 +1896,9 @@ int SetPasswordHashingAlgorithm(unsigned int algorithm, OsConfigLogHandle log)
         return EINVAL;
     }
 
-    if (0 == CheckPasswordHashingAlgorithm(algorithm, NULL, log, GetTelemetry()))
+    if (0 == CheckPasswordHashingAlgorithm(algorithm, NULL, log))
     {
-        if (0 == (status = SetEtcLoginDefValue(encryptMethod, encryption, log, GetTelemetry())))
+        if (0 == (status = SetEtcLoginDefValue(encryptMethod, encryption, log)))
         {
             OsConfigLogInfo(log, "SetPasswordHashingAlgorithm: successfully set 'ENCRYPT_METHOD' to '%s' in '/etc/login.defs'", encryption);
         }
@@ -1914,9 +1916,9 @@ int CheckMinDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHand
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
-    long etcLoginDefsDays = GetPassMinDays(log, GetTelemetry());
+    long etcLoginDefsDays = GetPassMinDays(log);
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -1987,7 +1989,7 @@ int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2009,7 +2011,7 @@ int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
                 }
                 else
                 {
-                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         userList[i].minimumPasswordAge = days;
                         OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user %u minimum time between password changes is now set to %ld days", userList[i].userId, days);
@@ -2033,7 +2035,7 @@ int SetMinDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
         OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: all users who have passwords have correct number of minimum days (%ld) between changes", days);
     }
 
-    if (0 == (_status = SetPassMinDays(days, log, GetTelemetry())))
+    if (0 == (_status = SetPassMinDays(days, log)))
     {
         OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: 'PASS_MIN_DAYS' is set to %ld days in '/etc/login.defs'", days);
     }
@@ -2055,8 +2057,8 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, OsConfigLogHand
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
-    long etcLoginDefsDays = GetPassMaxDays(log, GetTelemetry());
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    long etcLoginDefsDays = GetPassMaxDays(log);
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2129,7 +2131,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2151,7 +2153,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
                 }
                 else
                 {
-                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         userList[i].maximumPasswordAge = days;
                         OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user %u maximum time between password changes is now set to %ld days", userList[i].userId, days);
@@ -2175,7 +2177,7 @@ int SetMaxDaysBetweenPasswordChanges(long days, OsConfigLogHandle log)
         OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: all users who have passwords have correct number of maximum days (%ld) between changes", days);
     }
 
-    if (0 == (_status = SetPassMaxDays(days, log, GetTelemetry())))
+    if (0 == (_status = SetPassMaxDays(days, log)))
     {
         OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: 'PASS_MAX_DAYS' is set to %ld days in '/etc/login.defs'", days);
     }
@@ -2202,7 +2204,7 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log)
     time_t currentTime = 0;
     long currentDate = time(&currentTime) / NUMBER_OF_SECONDS_IN_A_DAY;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2223,7 +2225,7 @@ int EnsureUsersHaveDatesOfLastPasswordChanges(OsConfigLogHandle log)
                 }
                 else
                 {
-                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         OsConfigLogInfo(log, "EnsureUsersHaveDatesOfLastPasswordChanges: user %u date of last password change is now set to %ld days since epoch (today)",
                             userList[i].userId, currentDate);
@@ -2259,7 +2261,7 @@ int CheckPasswordExpirationLessThan(long days, char** reason, OsConfigLogHandle 
     long passwordExpirationDate = 0;
     long currentDate = time(&currentTime) / NUMBER_OF_SECONDS_IN_A_DAY;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2331,8 +2333,8 @@ int CheckPasswordExpirationWarning(long days, char** reason, OsConfigLogHandle l
     SimplifiedUser* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
-    long etcLoginDefsDays = GetPassWarnAge(log, GetTelemetry());
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    long etcLoginDefsDays = GetPassWarnAge(log);
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2397,7 +2399,7 @@ int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2419,7 +2421,7 @@ int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
                 }
                 else
                 {
-                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         userList[i].warningPeriod = days;
                         OsConfigLogInfo(log, "SetPasswordExpirationWarning: user %u password expiration warning time is now set to %ld days", userList[i].userId, days);
@@ -2443,7 +2445,7 @@ int SetPasswordExpirationWarning(long days, OsConfigLogHandle log)
         OsConfigLogInfo(log, "SetPasswordExpirationWarning: all users who have passwords have correct number of maximum days (%ld) between changes", days);
     }
 
-    if (0 == (_status = SetPassWarnAge(days, log, GetTelemetry())))
+    if (0 == (_status = SetPassWarnAge(days, log)))
     {
         OsConfigLogInfo(log, "SetPasswordExpirationWarning: 'PASS_WARN_AGE' is set to %ld days in '/etc/login.defs'", days);
     }
@@ -2468,7 +2470,7 @@ int CheckUsersRecordedPasswordChangeDates(char** reason, OsConfigLogHandle log)
     int status = 0;
     long daysCurrent = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2521,7 +2523,7 @@ int CheckLockoutAfterInactivityLessThan(long days, char** reason, OsConfigLogHan
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2559,7 +2561,7 @@ int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2581,7 +2583,7 @@ int SetLockoutAfterInactivityLessThan(long days, OsConfigLogHandle log)
                 }
                 else
                 {
-                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         userList[i].inactivityPeriod = days;
                         OsConfigLogInfo(log, "SetLockoutAfterInactivityLessThan: user %u lockout time after inactivity is now set to %ld days", userList[i].userId, days);
@@ -2614,7 +2616,7 @@ int CheckSystemAccountsAreNonLogin(char** reason, OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2644,7 +2646,7 @@ int SetSystemAccountsNonLogin(OsConfigLogHandle log)
     unsigned int userListSize = 0, i = 0;
     int status = 0, _status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2653,9 +2655,9 @@ int SetSystemAccountsNonLogin(OsConfigLogHandle log)
                 OsConfigLogInfo(log, "SetSystemAccountsNonLogin: user %u is either locked, non-login, or cannot-login, but can login with password ('%s')",  userList[i].userId, userList[i].shell);
 
                 // If the account is not already true non-login, try to make it non-login and if that does not work, remove the account
-                if (0 != (_status = SetUserNonLogin(&(userList[i]), log, GetTelemetry())))
+                if (0 != (_status = SetUserNonLogin(&(userList[i]), log)))
                 {
-                    _status = RemoveUser(&(userList[i]), log, GetTelemetry());
+                    _status = RemoveUser(&(userList[i]), log);
                 }
 
                 // Do not overwrite a previous non zero status value if any
@@ -2685,7 +2687,7 @@ int CheckRootPasswordForSingleUserMode(char** reason, OsConfigLogHandle log)
     bool rootHasPassword = false;
     int status = 0;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2760,7 +2762,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
 
     templateLength = strlen(templateDotPath) + strlen(name) + 1;
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2839,7 +2841,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
         return EINVAL;
     }
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, reason, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2869,7 +2871,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log, GetTelemetry()))
+                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                             {
                                 OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user %u has proper restricted access (%03o) for their dot file '%s'",
                                     userList[i].userId, modes[j], entry->d_name);
@@ -2931,7 +2933,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
         return EINVAL;
     }
 
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log, GetTelemetry())))
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, NULL, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
@@ -2961,7 +2963,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log, GetTelemetry()))
+                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u already has proper restricted access (%03o) set for their dot file '%s'",
                                     userList[i].userId, modes[j], path);
@@ -2972,7 +2974,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
                         if (false == oneGoodMode)
                         {
-                            if (0 == (_status = SetFileAccess(path, userList[i].userId, userList[i].groupId, mode, log, GetTelemetry())))
+                            if (0 == (_status = SetFileAccess(path, userList[i].userId, userList[i].groupId, mode, log)))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user %u now has restricted access (%03o) set for their dot file '%s'",
                                     userList[i].userId, mode, path);
@@ -3108,7 +3110,7 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
         OsConfigLogError(log, "RemoveUserAccounts: cannot read from '%s'", g_passwdFile);
         return EPERM;
     }
-    else if (0 == CheckUserAccountsNotFound(names, NULL, log, GetTelemetry()))
+    else if (0 == CheckUserAccountsNotFound(names, NULL, log))
     {
         OsConfigLogInfo(log, "RemoveUserAccounts: the requested user accounts '%s' appear already removed", names);
         return 0;
@@ -3137,13 +3139,13 @@ int RemoveUserAccounts(const char* names, OsConfigLogHandle log)
 
                 if (0 == strcmp(userEntry->pw_name, name))
                 {
-                    if (0 != (status = CopyUserEntry(&simplifiedUser, userEntry, log, GetTelemetry())))
+                    if (0 != (status = CopyUserEntry(&simplifiedUser, userEntry, log)))
                     {
                         OSConfigTelemetryStatusTrace(GetTelemetry(), "CopyUserEntry", status);
                         OsConfigLogError(log, "RemoveUserAccounts: failed making copy of user entry (%d)", status);
                         break;
                     }
-                    else if ((0 != (_status = RemoveUser(&simplifiedUser, log, GetTelemetry()))) && (0 == status))
+                    else if ((0 != (_status = RemoveUser(&simplifiedUser, log))) && (0 == status))
                     {
                         status = _status;
                     }
@@ -3175,7 +3177,7 @@ int RestrictSuToRootGroup(OsConfigLogHandle log)
     const char* suRestrictedToRootGroup = "auth required pam_wheel.so use_uid group=root";
     int status = 0;
 
-    if (AppendToFile(etcPamdSu, suRestrictedToRootGroup, strlen(suRestrictedToRootGroup), log, GetTelemetry()))
+    if (AppendToFile(etcPamdSu, suRestrictedToRootGroup, strlen(suRestrictedToRootGroup), log))
     {
         OsConfigLogInfo(log, "RestrictSuToRootGroup: '%s' was written to '%s'", suRestrictedToRootGroup, etcPamdSu);
     }

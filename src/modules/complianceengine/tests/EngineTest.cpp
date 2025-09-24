@@ -18,6 +18,17 @@ using ComplianceEngine::PayloadFormatter;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 
+static OSConfigTelemetryHandle g_telemetry = NULL;
+extern "C" OSConfigTelemetryHandle GetTelemetry(void)
+{
+    if (NULL == g_telemetry)
+    {
+        g_telemetry = OSConfigTelemetryOpen();
+    }
+
+    return g_telemetry;
+}
+
 class EngineTest : public ::testing::Test
 {
 public:

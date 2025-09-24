@@ -3,6 +3,8 @@
 
 #include "Internal.h"
 
+extern OSConfigTelemetryHandle GetTelemetry(void);
+
 static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
 static const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
 static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
@@ -33,7 +35,7 @@ static char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
     {
         if (NULL != (result = FormatAllocateString(paths[i], pamModule)))
         {
-            if (0 == CheckFileExists(result, NULL, log, GetTelemetry()))
+            if (0 == CheckFileExists(result, NULL, log))
             {
                 break;
             }
@@ -67,23 +69,23 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHa
     int status = ENOENT;
     char* pamModule = NULL;
 
-    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log, GetTelemetry()))
+    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
         // On Debian-based systems '/etc/pam.d/common-password' is expected to exist
-        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdCommonPassword, '#', g_remember, reason, log, GetTelemetry())) &&
-            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', remember, reason, log, GetTelemetry()))) ? 0 : ENOENT;
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdCommonPassword, '#', g_remember, reason, log)) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
     }
-    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log, GetTelemetry()))
+    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
     {
         // On Red Hat-based systems '/etc/pam.d/system-auth' is expected to exist
-        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, reason, log, GetTelemetry())) &&
-            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, log, GetTelemetry()))) ? 0 : ENOENT;
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, reason, log)) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
     }
-    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log, GetTelemetry()))
+    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
     {
         // On Azure Linux '/etc/pam.d/system-password' is expected to exist
-        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemPassword, '#', g_remember, reason, log, GetTelemetry())) &&
-            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemPassword, g_remember, '=', remember, reason, log, GetTelemetry()))) ? 0 : ENOENT;
+        status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemPassword, '#', g_remember, reason, log)) &&
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemPassword, g_remember, '=', remember, reason, log))) ? 0 : ENOENT;
     }
     else
     {
@@ -93,7 +95,7 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHa
 
     if (status)
     {
-        if (NULL == (pamModule = FindPamModule(g_pamUnixSo, log, GetTelemetry())))
+        if (NULL == (pamModule = FindPamModule(g_pamUnixSo, log)))
         {
             OsConfigCaptureReason(reason, "The PAM module '%s' is not available. Automatic remediation is not possible", g_pamUnixSo);
         }
@@ -111,7 +113,7 @@ static void EnsurePamModulePackagesAreInstalled(OsConfigLogHandle log)
 
     for (i = 0; i < numPamPackages; i++)
     {
-        InstallPackage(pamPackages[i], log, GetTelemetry());
+        InstallPackage(pamPackages[i], log);
     }
 }
 
@@ -141,9 +143,9 @@ int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log)
     char* newline = NULL;
     int status = 0, _status = 0;
 
-    EnsurePamModulePackagesAreInstalled(log, GetTelemetry());
+    EnsurePamModulePackagesAreInstalled(log);
 
-    if (NULL == (pamModulePath = FindPamModule(g_pamUnixSo, log, GetTelemetry())))
+    if (NULL == (pamModulePath = FindPamModule(g_pamUnixSo, log)))
     {
         OsConfigLogInfo(log, "SetEnsurePasswordReuseIsLimited: cannot proceed without %s being present", g_pamUnixSo);
         return ENOENT;
@@ -151,22 +153,22 @@ int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log)
 
     if (NULL != (newline = FormatAllocateString(endsHereIfFailsTemplate, pamModulePath, g_remember, remember)))
     {
-        if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log, GetTelemetry()))
+        if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
         {
-            status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log, GetTelemetry());
+            status = ReplaceMarkedLinesInFile(g_etcPamdSystemAuth, g_remember, newline, '#', true, log);
         }
 
-        if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log, GetTelemetry()))
+        if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
         {
-            if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log, GetTelemetry()))) && (0 == status))
+            if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, g_remember, newline, '#', true, log))) && (0 == status))
             {
                 status = _status;
             }
         }
 
-        if (0 == CheckFileExists(g_etcPamdSystemPassword, NULL, log, GetTelemetry()))
+        if (0 == CheckFileExists(g_etcPamdSystemPassword, NULL, log))
         {
-            if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdSystemPassword, g_remember, newline, '#', true, log, GetTelemetry()))) && (0 == status))
+            if ((0 != (_status = ReplaceMarkedLinesInFile(g_etcPamdSystemPassword, g_remember, newline, '#', true, log))) && (0 == status))
             {
                 status = _status;
             }
@@ -205,7 +207,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
         OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: invalid arguments");
         return EINVAL;
     }
-    else if (0 != CheckFileExists(fileName, reason, log, GetTelemetry()))
+    else if (0 != CheckFileExists(fileName, reason, log))
     {
         // CheckFileExists logs
         return ENOENT;
@@ -244,9 +246,9 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                 continue;
             }
             else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) &&
-                (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log, GetTelemetry()))) && (0 == strcmp(authValue, required)) &&
-                (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log, GetTelemetry()))) && (deny <= 5) &&
-                (0 < (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log, GetTelemetry()))))
+                (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) &&
+                (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', log))) && (deny <= 5) &&
+                (0 < (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', log))))
             {
                 OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s %s %s' found uncommented with 'deny' set to %d and 'unlock_time' set to %d in '%s'",
                     auth, required, pamSo, deny, unlockTime, fileName);
@@ -343,17 +345,17 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
     char* line = NULL;
     int i = 0, status = 0, _status = 0;
 
-    EnsurePamModulePackagesAreInstalled(log, GetTelemetry());
+    EnsurePamModulePackagesAreInstalled(log);
 
     for (i = 0; i < numPamConfigurations; i++)
     {
-        if (0 == CheckFileExists(pamConfigurations[i], NULL, log, GetTelemetry()))
+        if (0 == CheckFileExists(pamConfigurations[i], NULL, log))
         {
-            if (NULL != (pamModulePath = FindPamModule(pamFaillockSo, log, GetTelemetry())))
+            if (NULL != (pamModulePath = FindPamModule(pamFaillockSo, log)))
             {
                 if (NULL != (line = FormatAllocateString(pamFailLockLineTemplate, pamModulePath)))
                 {
-                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamFaillockSo, line, '#', true, log, GetTelemetry());
+                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamFaillockSo, line, '#', true, log);
                     FREE_MEMORY(line);
                 }
                 else
@@ -363,11 +365,11 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
 
                 FREE_MEMORY(pamModulePath);
             }
-            else if (NULL != (pamModulePath = FindPamModule(pamTally2So, log, GetTelemetry())))
+            else if (NULL != (pamModulePath = FindPamModule(pamTally2So, log)))
             {
                 if (NULL != (line = FormatAllocateString(pamTally2LineTemplate, pamModulePath)))
                 {
-                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTally2So, line, '#', true, log, GetTelemetry());
+                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTally2So, line, '#', true, log);
                     FREE_MEMORY(line);
                 }
                 else
@@ -377,12 +379,12 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
 
                 FREE_MEMORY(pamModulePath);
             }
-            else if ((NULL != (pamModulePath = FindPamModule(pamTallySo, log, GetTelemetry()))) &&
-                (NULL != (pamModulePath2 = FindPamModule(pamDenySo, log, GetTelemetry()))))
+            else if ((NULL != (pamModulePath = FindPamModule(pamTallySo, log))) &&
+                (NULL != (pamModulePath2 = FindPamModule(pamDenySo, log))))
             {
                 if (NULL != (line = FormatAllocateString(pamTallyDenyLineTemplate, pamModulePath, pamModulePath2)))
                 {
-                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTallySo, line, '#', true, log, GetTelemetry());
+                    _status = ReplaceMarkedLinesInFile(pamConfigurations[i], pamTallySo, line, '#', true, log);
                     FREE_MEMORY(line);
                 }
                 else
@@ -472,12 +474,12 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
             {
                 found = true;
 
-                if ((retry == (retryOption = GetIntegerOptionFromBuffer(line, "retry", '=', log, GetTelemetry()))) &&
-                    (minlen == (minlenOption = GetIntegerOptionFromBuffer(line, "minlen", '=', log, GetTelemetry()))) &&
-                    (dcredit == (dcreditOption = GetIntegerOptionFromBuffer(line, "dcredit", '=', log, GetTelemetry()))) &&
-                    (ucredit == (ucreditOption = GetIntegerOptionFromBuffer(line, "ucredit", '=', log, GetTelemetry()))) &&
-                    (ocredit == (ocreditOption = GetIntegerOptionFromBuffer(line, "ocredit", '=', log, GetTelemetry()))) &&
-                    (lcredit == (lcreditOption = GetIntegerOptionFromBuffer(line, "lcredit", '=', log, GetTelemetry()))))
+                if ((retry == (retryOption = GetIntegerOptionFromBuffer(line, "retry", '=', log))) &&
+                    (minlen == (minlenOption = GetIntegerOptionFromBuffer(line, "minlen", '=', log))) &&
+                    (dcredit == (dcreditOption = GetIntegerOptionFromBuffer(line, "dcredit", '=', log))) &&
+                    (ucredit == (ucreditOption = GetIntegerOptionFromBuffer(line, "ucredit", '=', log))) &&
+                    (ocredit == (ocreditOption = GetIntegerOptionFromBuffer(line, "ocredit", '=', log))) &&
+                    (lcredit == (lcreditOption = GetIntegerOptionFromBuffer(line, "lcredit", '=', log))))
                 {
                     OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s' contains uncommented '%s %s' with "
                         "the expected password creation requirements (retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)",
@@ -598,7 +600,7 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
         return INT_ENOENT;
     }
 
-    if (desired == (value = GetIntegerOptionFromBuffer(buffer, option, separator, log, GetTelemetry())))
+    if (desired == (value = GetIntegerOptionFromBuffer(buffer, option, separator, log)))
     {
         if (comment == buffer[0])
         {
@@ -677,31 +679,31 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
 
             if (NULL != strstr(line, "retry"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "retry", g_etcSecurityPwQualityConf, '=', '#', retry, reason, log, GetTelemetry());
+                _status = CheckPasswordRequirementFromBuffer(line, "retry", g_etcSecurityPwQualityConf, '=', '#', retry, reason, log);
             }
             else if (NULL != strstr(line, "minlen"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "minlen", g_etcSecurityPwQualityConf, '=', '#', minlen, reason, log, GetTelemetry());
+                _status = CheckPasswordRequirementFromBuffer(line, "minlen", g_etcSecurityPwQualityConf, '=', '#', minlen, reason, log);
             }
             else if (NULL != strstr(line, "minclass"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "minclass", g_etcSecurityPwQualityConf, '=', '#', minclass, reason, log, GetTelemetry());
+                _status = CheckPasswordRequirementFromBuffer(line, "minclass", g_etcSecurityPwQualityConf, '=', '#', minclass, reason, log);
             }
             else if (NULL != strstr(line, "dcredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "dcredit", g_etcSecurityPwQualityConf, '=', '#', dcredit, reason, log, GetTelemetry());
+                _status = CheckPasswordRequirementFromBuffer(line, "dcredit", g_etcSecurityPwQualityConf, '=', '#', dcredit, reason, log);
             }
             else if (NULL != strstr(line, "ucredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "ucredit", g_etcSecurityPwQualityConf, '=', '#', ucredit, reason, log, GetTelemetry());
+                _status = CheckPasswordRequirementFromBuffer(line, "ucredit", g_etcSecurityPwQualityConf, '=', '#', ucredit, reason, log);
             }
             else if (NULL != strstr(line, "lcredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "lcredit", g_etcSecurityPwQualityConf, '=', '#', lcredit, reason, log, GetTelemetry());
+                _status = CheckPasswordRequirementFromBuffer(line, "lcredit", g_etcSecurityPwQualityConf, '=', '#', lcredit, reason, log);
             }
             else if (NULL != strstr(line, "ocredit"))
             {
-                _status = CheckPasswordRequirementFromBuffer(line, "ocredit", g_etcSecurityPwQualityConf, '=', '#', ocredit, reason, log, GetTelemetry());
+                _status = CheckPasswordRequirementFromBuffer(line, "ocredit", g_etcSecurityPwQualityConf, '=', '#', ocredit, reason, log);
             }
 
             if (_status && (0 == status))
@@ -737,8 +739,8 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     //
     // This logic ensures compatibility across distros and PAM module configurations and supports both common-password and pwquality.conf setups.
 
-    bool etcPamdCommonPasswordExists = (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log, GetTelemetry())) ? true : false;
-    bool etcSecurityPwQualityConfExists = (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log, GetTelemetry())) ? true : false;
+    bool etcPamdCommonPasswordExists = (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log)) ? true : false;
+    bool etcSecurityPwQualityConfExists = (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log)) ? true : false;
     int status = ENOENT;
 
     if ((false == etcPamdCommonPasswordExists) && (false == etcSecurityPwQualityConfExists))
@@ -750,12 +752,12 @@ int CheckPasswordCreationRequirements(int retry, int minlen, int minclass, int d
     {
         if (etcPamdCommonPasswordExists)
         {
-            status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log, GetTelemetry());
+            status = CheckRequirementsForCommonPassword(retry, minlen, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
 
         if ((0 != status) && etcSecurityPwQualityConfExists)
         {
-            status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log, GetTelemetry());
+            status = CheckRequirementsForPwQualityConf(retry, minlen, minclass, dcredit, ucredit, ocredit, lcredit, reason, log);
         }
     }
 
@@ -816,13 +818,13 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
     int i = 0, status = 0, _status = 0;
     char* line = NULL;
 
-    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log, GetTelemetry()))
+    if (0 == CheckFileExists(g_etcPamdCommonPassword, NULL, log))
     {
-        EnsurePamModulePackagesAreInstalled(log, GetTelemetry());
+        EnsurePamModulePackagesAreInstalled(log);
 
-        pamPwQualitySoExists = (NULL != (pamModulePath = FindPamModule(pamPwQualitySo, log, GetTelemetry()))) ? true : false;
-        pamCrackLibSoExists = (NULL != (pamModulePath2 = FindPamModule(pamCrackLibSo, log, GetTelemetry()))) ? true : false;
-        pamUnixSoExists = (NULL != (pamModulePath3 = FindPamModule(g_pamUnixSo, log, GetTelemetry()))) ? true : false;
+        pamPwQualitySoExists = (NULL != (pamModulePath = FindPamModule(pamPwQualitySo, log))) ? true : false;
+        pamCrackLibSoExists = (NULL != (pamModulePath2 = FindPamModule(pamCrackLibSo, log))) ? true : false;
+        pamUnixSoExists = (NULL != (pamModulePath3 = FindPamModule(g_pamUnixSo, log))) ? true : false;
 
         if (pamPwQualitySoExists || pamCrackLibSoExists || pamUnixSoExists)
         {
@@ -830,7 +832,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
                 pamPwQualitySoExists ? pamModulePath : (pamCrackLibSoExists ? pamModulePath2 : pamModulePath3),
                 retry, minlen, lcredit, ucredit, ocredit, dcredit)))
             {
-                status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamPwQualitySoExists ? pamPwQualitySo : (pamCrackLibSoExists ? pamCrackLibSo : g_pamUnixSo), line, '#', true, log, GetTelemetry());
+                status = ReplaceMarkedLinesInFile(g_etcPamdCommonPassword, pamPwQualitySoExists ? pamPwQualitySo : (pamCrackLibSoExists ? pamCrackLibSo : g_pamUnixSo), line, '#', true, log);
                 FREE_MEMORY(line);
             }
             else
@@ -849,7 +851,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         FREE_MEMORY(pamModulePath3);
     }
 
-    if (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log, GetTelemetry()))
+    if (0 == CheckFileExists(g_etcSecurityPwQualityConf, NULL, log))
     {
         entries[0].value = retry;
         entries[1].value = minlen;
@@ -863,7 +865,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
         {
             if (NULL != (line = FormatAllocateString(etcSecurityPwQualityConfLineTemplate, entries[i].name, entries[i].value)))
             {
-                _status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i].name, line, '#', true, log, GetTelemetry());
+                _status = ReplaceMarkedLinesInFile(g_etcSecurityPwQualityConf, entries[i].name, line, '#', true, log);
                 FREE_MEMORY(line);
             }
             else
