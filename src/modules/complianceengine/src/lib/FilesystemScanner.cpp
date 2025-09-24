@@ -103,7 +103,7 @@ private:
 } // anonymous namespace
 
 static void ScanDirRecursive(const std::string& dir, dev_t rootDev, std::map<std::string, FilesystemScanner::FSEntry>& entries);
-Result<bool> BackgroundScan(const std::string& root, const std::string& cachePath, const std::string& lockPath);
+void BackgroundScan(const std::string& root, const std::string& cachePath, const std::string& lockPath);
 
 FilesystemScanner::FilesystemScanner(std::string rootDir, std::string cachePath, std::string lockPath, time_t softTimeoutSeconds,
     time_t hardTimeoutSeconds, time_t waitTimeoutSeconds)
@@ -125,17 +125,15 @@ Result<std::shared_ptr<const FilesystemScanner::FSCache>> FilesystemScanner::Get
     // Ensure we have a cache (may trigger background build + optional wait).
     if (!m_cache)
     {
-        LoadCache();
-        if (!m_cache)
+        if (!LoadCache())
         {
-            (void)BackgroundScan(root, cachePath, lockPath);
+            BackgroundScan(root, cachePath, lockPath);
             if (m_waitTimeout > 0)
             {
                 time_t startWait = ::time(nullptr);
                 while ((::time(nullptr) - startWait) < m_waitTimeout)
                 {
-                    LoadCache();
-                    if (m_cache)
+                    if (LoadCache())
                     {
                         break;
                     }
@@ -159,14 +157,13 @@ Result<std::shared_ptr<const FilesystemScanner::FSCache>> FilesystemScanner::Get
 
     if (hardExpired)
     {
-        (void)BackgroundScan(root, cachePath, lockPath);
+        BackgroundScan(root, cachePath, lockPath);
         if (m_waitTimeout > 0)
         {
             time_t startWait = ::time(nullptr);
             while ((::time(nullptr) - startWait) < m_waitTimeout)
             {
-                LoadCache();
-                if (m_cache && (now = ::time(nullptr), (now - m_cache->scan_end_time) < m_hardTimeout))
+                if (LoadCache() && (now = ::time(nullptr), (now - m_cache->scan_end_time) < m_hardTimeout))
                 {
                     return Result<std::shared_ptr<const FSCache>>(std::static_pointer_cast<const FSCache>(m_cache));
                 }
@@ -180,7 +177,7 @@ Result<std::shared_ptr<const FilesystemScanner::FSCache>> FilesystemScanner::Get
     if (softExpired)
     {
         // Return current (stale) data and refresh in the background (only launch once)
-        (void)BackgroundScan(root, cachePath, lockPath);
+        BackgroundScan(root, cachePath, lockPath);
         return Result<std::shared_ptr<const FSCache>>(std::static_pointer_cast<const FSCache>(m_cache));
     }
 
@@ -279,13 +276,13 @@ static void ScanDirRecursive(const std::string& dir, dev_t rootDev, std::map<std
     }
 }
 
-Result<bool> BackgroundScan(const std::string& root, const std::string& cachePath, const std::string& lockPath)
+void BackgroundScan(const std::string& root, const std::string& cachePath, const std::string& lockPath)
 {
     std::string tmpPath = cachePath + ".tmp";
     pid_t pid = ::fork();
     if (pid < 0)
     {
-        return ComplianceEngine::Error("Failed to fork process");
+        return;
     }
     if (pid == 0)
     {
@@ -341,31 +338,30 @@ Result<bool> BackgroundScan(const std::string& root, const std::string& cachePat
         ::rename(tmpPath.c_str(), cachePath.c_str());
         _exit(0);
     }
-    return true;
 }
 
-void FilesystemScanner::LoadCache()
+bool FilesystemScanner::LoadCache()
 {
     std::ifstream ifs(cachePath.c_str());
     if (!ifs.is_open())
     {
-        return;
+        return false;
     }
     std::string header;
     if (!std::getline(ifs, header))
     {
-        return;
+        return false;
     }
     std::istringstream hs(header);
     std::string hash, magic;
     long start = 0, end = 0;
     if (!(hs >> hash >> magic >> start >> end))
     {
-        return;
+        return false;
     }
     if (hash != "#" || magic != "FilesystemScanCache-V1")
     {
-        return;
+        return false;
     }
     // Skip loading if cache already beyond hard timeout age.
     if (m_hardTimeout > 0)
@@ -373,7 +369,7 @@ void FilesystemScanner::LoadCache()
         time_t now = ::time(nullptr);
         if (end > 0 && (now - end) >= m_hardTimeout)
         {
-            return;
+            return false;
         }
     }
     std::shared_ptr<FSCache> cache((FSCache*)nullptr);
@@ -383,7 +379,7 @@ void FilesystemScanner::LoadCache()
     }
     catch (...)
     {
-        return;
+        return false;
     }
     cache->scan_start_time = start;
     cache->scan_end_time = end;
@@ -419,7 +415,9 @@ void FilesystemScanner::LoadCache()
     if (!cache->entries.empty())
     {
         m_cache = cache;
+        return true;
     }
+    return false;
 }
 
 } // namespace ComplianceEngine
