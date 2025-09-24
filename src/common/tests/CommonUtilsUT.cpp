@@ -3010,7 +3010,7 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
     EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", text, nullptr, nullptr, nullptr));
 
     EXPECT_EQ(0, CheckTextNotFoundInFolder("/tmp", "ghost", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/tmp", "ghost", nullptr, nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckTextFoundInFolder("/tmp", "ghost", nullptr, nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(noConfPath));
 }
