@@ -1778,13 +1778,13 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
     EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder(nullptr, nullptr, nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder(nullptr, "a", nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/etc", nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/etc", nullptr, nullptr, ".conf", nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/etc", nullptr, ".conf", nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr, nullptr));
 
     EXPECT_EQ(EINVAL, CheckTextFoundInFolder(nullptr, nullptr, nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckTextFoundInFolder(nullptr, "a", nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/etc", nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/etc", nullptr, nullptr, ".conf", nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/etc", nullptr, ".conf", nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr, nullptr));
 
     FindTextInFolder("/etc/modprobe.d", "ac97", nullptr, nullptr);
