@@ -1485,7 +1485,7 @@ int CheckTextNotFoundInFolder(const char* directory, const char* text, const cha
     return result;
 }
 
-int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, const char* extension, OsConfigLogHandle log)
+int CheckTextFoundInFolder(const char* directory, const char* text, const char* extension, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
