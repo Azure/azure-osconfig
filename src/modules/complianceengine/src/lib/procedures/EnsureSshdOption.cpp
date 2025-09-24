@@ -192,26 +192,41 @@ static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string
 
     auto realValue = itOptions->second;
 
-    if (option == "maxstartups")
+    if (("maxstartups" == option) && ("match" == op))
     {
         // special case
         int val1 = 0, val2 = 0, val3 = 0, lim1 = 0, lim2 = 0, lim3 = 0;
-        std::istringstream valueStream(realValue);
-        std::string token;
-        if (std::getline(valueStream, token, ':'))
-            val1 = std::stoi(token);
-        if (std::getline(valueStream, token, ':'))
-            val2 = std::stoi(token);
-        if (std::getline(valueStream, token, ':'))
-            val3 = std::stoi(token);
+        try
+        {
+            std::istringstream valueStream(realValue);
+            std::string token;
+            if (std::getline(valueStream, token, ':'))
+                val1 = std::stoi(token);
+            if (std::getline(valueStream, token, ':'))
+                val2 = std::stoi(token);
+            if (std::getline(valueStream, token, ':'))
+                val3 = std::stoi(token);
+        }
+        catch (const std::exception& e)
+        {
+            return Error("Failed to parse maxstartups value '" + realValue + "': " + e.what(), EINVAL);
+        }
 
-        std::istringstream limitStream(value);
-        if (std::getline(limitStream, token, ':'))
-            lim1 = std::stoi(token);
-        if (std::getline(limitStream, token, ':'))
-            lim2 = std::stoi(token);
-        if (std::getline(limitStream, token, ':'))
-            lim3 = std::stoi(token);
+        try
+        {
+            std::istringstream limitStream(value);
+            std::string token;
+            if (std::getline(limitStream, token, ':'))
+                lim1 = std::stoi(token);
+            if (std::getline(limitStream, token, ':'))
+                lim2 = std::stoi(token);
+            if (std::getline(limitStream, token, ':'))
+                lim3 = std::stoi(token);
+        }
+        catch (const std::exception& e)
+        {
+            return Error("Failed to parse maxstartups limit '" + value + "': " + e.what(), EINVAL);
+        }
 
         if ((val1 > lim1) || (val2 > lim2) || (val3 > lim3))
         {
