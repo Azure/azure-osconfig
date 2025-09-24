@@ -1432,7 +1432,8 @@ int FindTextInFolder(const char* directory, const char* text, const char* extens
     {
         while (NULL != (entry = readdir(home)))
         {
-            if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..") && (extension && strstr(entry->d_name, extension)))
+            if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..") &&
+                ((extension && strstr(entry->d_name, extension)) || (NULL == extension)))
             {
                 length = strlen(pathTemplate) + strlen(directory) + strlen(entry->d_name);
                 if (NULL == (path = malloc(length + 1)))
