@@ -2985,15 +2985,15 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
 
     EXPECT_TRUE(CreateTestFile(path, text));
 
-    EXPECT_EQ(0, FindTextInFolder("/tmp", "123", nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInFolder("/tmp", "Test", nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInFolder("/tmp", text, nullptr, nullptr));
+    EXPECT_EQ(0, FindTextInFolder("/tmp", "123", ".conf", nullptr));
+    EXPECT_EQ(0, FindTextInFolder("/tmp", "Test", ".conf", nullptr));
+    EXPECT_EQ(0, FindTextInFolder("/tmp", text, ".conf", nullptr));
 
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/tmp", "ghost", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/tmp", "ghost", ".conf", nullptr, nullptr));
 
-    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "123", nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "Test", nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", text, nullptr, nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "123", ".conf", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "Test", ".conf", nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", text, ".conf", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(path));
 }
