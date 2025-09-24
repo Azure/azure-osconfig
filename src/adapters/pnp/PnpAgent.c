@@ -331,7 +331,7 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
 {
     bool status = true;
 
-    if (g_mpiHandle && IsDaemonActive(OSCONFIG_PLATFORM, GetLog())))
+    if (g_mpiHandle && IsDaemonActive(OSCONFIG_PLATFORM, GetLog()))
     {
         // Platform is already running
 
@@ -348,11 +348,11 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
         *platformAlreadyRunning = false;
     }
 
-    if (true == (status = EnableAndStartDaemon(OSCONFIG_PLATFORM, GetLog()))))
+    if (true == (status = EnableAndStartDaemon(OSCONFIG_PLATFORM, GetLog())))
     {
         sleep(1);
 
-        if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes, GetLog()))))
+        if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes, GetLog())))
         {
             OsConfigLogError(GetLog(), "MpiOpen failed");
             g_exitState = PlatformInitializationFailure;
@@ -411,7 +411,7 @@ void CloseAgent(void)
 
     if (NULL != g_mpiHandle)
     {
-        CallMpiClose(g_mpiHandle, GetLog()));
+        CallMpiClose(g_mpiHandle, GetLog());
         g_mpiHandle = NULL;
     }
 
@@ -473,7 +473,7 @@ static void AgentDoWork(void)
         }
 
         // Process RCD/DC and/or Git clones DC files (for Iot Hub this is signaled to be done with SIGUSR1)
-        WatcherDoWork(GetLog()));
+        WatcherDoWork(GetLog());
 
         // Process reported updates to the IoT Hub
         if (g_isIotHubEnabled && g_moduleHandle)
@@ -518,12 +518,12 @@ int main(int argc, char *argv[])
     forkDaemon = (bool)(((3 == argc) && (NULL != argv[2]) && (0 == strcmp(argv[2], FORK_ARG))) ||
         ((2 == argc) && (NULL != argv[1]) && (0 == strcmp(argv[1], FORK_ARG))));
 
-    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog()));
+    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetLog())));
-        SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetLog())));
-        SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, GetLog())));
+        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetLog()));
+        SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetLog()));
+        SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, GetLog()));
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -550,14 +550,14 @@ int main(int argc, char *argv[])
     }
 
     // Load remaining configuration
-    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog()));
+    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, GetLog()));
-        g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties, GetLog()));
-        g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog()));
+        g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, GetLog());
+        g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties, GetLog());
+        g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog());
         g_isIotHubEnabled = IsIotHubManagementEnabledInJsonConfig(jsonConfiguration);
-        g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, GetLog()));
+        g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, GetLog());
     }
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
@@ -568,18 +568,18 @@ int main(int argc, char *argv[])
     snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
     OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
 
-    osName = GetOsName(GetLog()));
-    osVersion = GetOsVersion(GetLog()));
-    cpuType = GetCpuType(GetLog()));
-    cpuVendor = GetCpuVendor(GetLog()));
-    cpuModel = GetCpuModel(GetLog()));
-    totalMemory = GetTotalMemory(GetLog()));
-    freeMemory = GetFreeMemory(GetLog()));
-    kernelName = GetOsKernelName(GetLog()));
-    kernelRelease = GetOsKernelRelease(GetLog()));
-    kernelVersion = GetOsKernelVersion(GetLog()));
-    productVendor = GetProductVendor(GetLog()));
-    productName = GetProductName(GetLog()));
+    osName = GetOsName(GetLog());
+    osVersion = GetOsVersion(GetLog());
+    cpuType = GetCpuType(GetLog());
+    cpuVendor = GetCpuVendor(GetLog());
+    cpuModel = GetCpuModel(GetLog());
+    totalMemory = GetTotalMemory(GetLog());
+    freeMemory = GetFreeMemory(GetLog());
+    kernelName = GetOsKernelName(GetLog());
+    kernelRelease = GetOsKernelRelease(GetLog());
+    kernelVersion = GetOsKernelVersion(GetLog());
+    productVendor = GetProductVendor(GetLog());
+    productName = GetProductName(GetLog());
 
     snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion,
         cpuType, cpuVendor, cpuModel, totalMemory, freeMemory, kernelName, kernelRelease, kernelVersion, productVendor, productName);
@@ -617,9 +617,9 @@ int main(int argc, char *argv[])
         if (PROTOCOL_MQTT_WS == g_iotHubProtocol)
         {
             // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
-            if (NULL != (proxyData = GetHttpProxyData(GetLog()))))
+            if (NULL != (proxyData = GetHttpProxyData(GetLog())))
             {
-                if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog())))
+                if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
                 {
                     // Assign the string pointers and trasfer ownership to the SDK
                     g_proxyOptions.host_address = proxyHostAddress;
@@ -664,7 +664,7 @@ int main(int argc, char *argv[])
             else
             {
                 g_connectionStringSource = FromFile;
-                connectionString = LoadStringFromFile(argv[1], true, GetLog()));
+                connectionString = LoadStringFromFile(argv[1], true, GetLog());
                 if (NULL == connectionString)
                 {
                     OsConfigLogError(GetLog(), "Failed to load a connection string from %s", argv[1]);
@@ -699,7 +699,7 @@ int main(int argc, char *argv[])
     }
 
     // Call the Watcher to initialize itself
-    InitializeWatcher(jsonConfiguration, GetLog()));
+    InitializeWatcher(jsonConfiguration, GetLog());
     FREE_MEMORY(jsonConfiguration);
 
     while (0 == g_stopSignal)
@@ -724,12 +724,11 @@ done:
     FREE_MEMORY(connectionString);
     FREE_MEMORY(g_iotHubConnectionString);
 
-    WatcherCleanup(GetLog()));
+    WatcherCleanup(GetLog());
 
     CloseAgent();
 
-    StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog()));
-
+    StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog());
     CloseLog(&g_agentLog);
     OSConfigTelemetryClose(&g_agentTelemetry);
 

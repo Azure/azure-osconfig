@@ -9,6 +9,17 @@
 
 using namespace std;
 
+static OSConfigTelemetryHandle g_telemetry = NULL;
+extern "C" OSConfigTelemetryHandle GetTelemetry(void)
+{
+    if (NULL == g_telemetry)
+    {
+        g_telemetry = OSConfigTelemetryOpen();
+    }
+
+    return g_telemetry;
+}
+
 class ConfigurationTest : public ::testing::Test
 {
     protected:
@@ -64,7 +75,7 @@ class ConfigurationTest : public ::testing::Test
 
         void SetUp()
         {
-            EXPECT_TRUE(SavePayloadToFile(m_testConfigurationFile, m_testConfiguration, strlen(m_testConfiguration), nullptr, nullptr));
+            EXPECT_TRUE(SavePayloadToFile(m_testConfigurationFile, m_testConfiguration, strlen(m_testConfiguration), nullptr));
             ConfigurationInitialize(m_testConfigurationFile);
         }
 

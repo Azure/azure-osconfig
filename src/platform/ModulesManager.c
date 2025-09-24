@@ -41,16 +41,10 @@ static REPORTED_OBJECT* g_reported = NULL;
 static int g_reportedTotal = 0;
 
 OsConfigLogHandle g_platformLog = NULL;
-OSConfigTelemetryHandle g_platformTelemetry = NULL;
 
 OsConfigLogHandle GetPlatformLog(void)
 {
     return g_platformLog;
-}
-
-OSConfigTelemetryHandle GetPlatformTelemetry(void)
-{
-    return g_platformTelemetry;
 }
 
 static void LoadModules(const char* directory, const char* configJson)

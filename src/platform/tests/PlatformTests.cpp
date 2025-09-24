@@ -6,6 +6,17 @@
 #include <PlatformCommon.h>
 #include <MpiServer.h>
 
+static OSConfigTelemetryHandle g_telemetry = NULL;
+extern "C" OSConfigTelemetryHandle GetTelemetry(void)
+{
+    if (NULL == g_telemetry)
+    {
+        g_telemetry = OSConfigTelemetryOpen();
+    }
+
+    return g_telemetry;
+}
+
 namespace Tests
 {
     class MpiServerTests : public ::testing::Test {};

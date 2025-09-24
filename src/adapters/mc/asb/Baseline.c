@@ -7,7 +7,7 @@
 int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     UNUSED(telemetry);
-    return AsbIsValidResourceIdRuleId(resourceId, ruleId, payloadKey, log, telemetry);
+    return AsbIsValidResourceIdRuleId(resourceId, ruleId, payloadKey, log);
 }
 
 int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
@@ -22,23 +22,23 @@ int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log,
 void BaselineInitialize(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     UNUSED(telemetry);
-    AsbInitialize(log, telemetry);
+    AsbInitialize(log);
 }
 
 void BaselineShutdown(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     UNUSED(telemetry);
-    AsbShutdown(log, telemetry);
+    AsbShutdown(log);
 }
 
 int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     UNUSED(telemetry);
-    return AsbMmiGet(componentName, objectName, payload, payloadSizeBytes, maxPayloadSizeBytes, log, telemetry);
+    return AsbMmiGet(componentName, objectName, payload, payloadSizeBytes, maxPayloadSizeBytes, log);
 }
 
 int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
 {
     UNUSED(telemetry);
-    return AsbMmiSet(componentName, objectName, payload, payloadSizeBytes, log, telemetry);
+    return AsbMmiSet(componentName, objectName, payload, payloadSizeBytes, log);
 }

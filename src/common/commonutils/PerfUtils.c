@@ -3,6 +3,8 @@
 
 #include "Internal.h"
 
+extern OSConfigTelemetryHandle GetTelemetry(void);
+
 int StartPerfClock(PerfClock* clock, OsConfigLogHandle log)
 {
     int status = EINVAL;
@@ -96,7 +98,7 @@ void LogPerfClock(PerfClock* clock, const char* componentName, const char* objec
         return;
     }
 
-    microseconds = GetPerfClockTime(clock, log, GetTelemetry());
+    microseconds = GetPerfClockTime(clock, log);
 
     if (NULL != objectName)
     {

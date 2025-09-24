@@ -3,6 +3,8 @@
 
 #include "Internal.h"
 
+extern OSConfigTelemetryHandle GetTelemetry(void);
+
 char* DuplicateString(const char* source)
 {
     if (NULL == source)
@@ -282,7 +284,7 @@ int CheckAllWirelessInterfacesAreDisabled(char** reason, OsConfigLogHandle log)
     const char* command = "iwconfig 2>&1 | egrep -v 'no wireless extensions|not found' | grep Frequency";
     int status = 0;
 
-    if (0 == ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log, GetTelemetry()))
+    if (0 == ExecuteCommand(NULL, command, true, false, 0, 0, NULL, NULL, log))
     {
         OsConfigLogInfo(log, "CheckAllWirelessInterfacesAreDisabled: wireless interfaces are enabled");
         OsConfigCaptureReason(reason, "At least one active wireless interface is present");
@@ -306,16 +308,16 @@ int DisableAllWirelessInterfaces(OsConfigLogHandle log)
     const char* rfKillBlockAll = "rfkill block all";
     int status = 0;
 
-    if (0 == CheckAllWirelessInterfacesAreDisabled(NULL, log, GetTelemetry()))
+    if (0 == CheckAllWirelessInterfacesAreDisabled(NULL, log))
     {
         OsConfigLogInfo(log, "DisableAllWirelessInterfaces: no active wireless interfaces are present");
         return 0;
     }
 
-    if ((0 != IsPresent(nmcli, log, GetTelemetry())) && (0 != IsPresent(rfkill, log, GetTelemetry())))
+    if ((0 != IsPresent(nmcli, log)) && (0 != IsPresent(rfkill, log)))
     {
         OsConfigLogInfo(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed", nmcli, rfkill);
-        if (0 != (status = InstallOrUpdatePackage(rfkill, log, GetTelemetry())))
+        if (0 != (status = InstallOrUpdatePackage(rfkill, log)))
         {
             OsConfigLogInfo(log, "DisableAllWirelessInterfaces: neither '%s' or '%s' are installed, also failed "
                 "to install '%s', automatic remediation is not possible", nmcli, rfkill, rfkill);
@@ -325,17 +327,17 @@ int DisableAllWirelessInterfaces(OsConfigLogHandle log)
 
     if (0 == status)
     {
-        if (0 == IsPresent(nmcli, log, GetTelemetry()))
+        if (0 == IsPresent(nmcli, log))
         {
-            if (0 != (status = ExecuteCommand(NULL, nmCliRadioAllOff, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+            if (0 != (status = ExecuteCommand(NULL, nmCliRadioAllOff, true, false, 0, 0, NULL, NULL, log)))
             {
                 OsConfigLogInfo(log, "DisableAllWirelessInterfaces: '%s' failed with %d", nmCliRadioAllOff, status);
             }
         }
 
-        if (0 == IsPresent(rfkill, log, GetTelemetry()))
+        if (0 == IsPresent(rfkill, log))
         {
-            if (0 != (status = ExecuteCommand(NULL, rfKillBlockAll, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+            if (0 != (status = ExecuteCommand(NULL, rfKillBlockAll, true, false, 0, 0, NULL, NULL, log)))
             {
                 OsConfigLogInfo(log, "DisableAllWirelessInterfaces: '%s' failed with %d", rfKillBlockAll, status);
             }
@@ -358,15 +360,15 @@ int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log)
     int status = 0;
 
     // First, ensure all current traffic is accepted:
-    if (0 != (status = ExecuteCommand(NULL, acceptInput, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+    if (0 != (status = ExecuteCommand(NULL, acceptInput, true, false, 0, 0, NULL, NULL, log)))
     {
         OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptInput, status);
     }
-    else if (0 != (status = ExecuteCommand(NULL, acceptForward, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+    else if (0 != (status = ExecuteCommand(NULL, acceptForward, true, false, 0, 0, NULL, NULL, log)))
     {
         OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptForward, status);
     }
-    else if (0 != (status = ExecuteCommand(NULL, acceptOutput, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+    else if (0 != (status = ExecuteCommand(NULL, acceptOutput, true, false, 0, 0, NULL, NULL, log)))
     {
         OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", acceptOutput, status);
     }
@@ -374,15 +376,15 @@ int SetDefaultDenyFirewallPolicy(OsConfigLogHandle log)
     if (0 == status)
     {
         // Then set default to drop:
-        if (0 != (status = ExecuteCommand(NULL, dropInput, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+        if (0 != (status = ExecuteCommand(NULL, dropInput, true, false, 0, 0, NULL, NULL, log)))
         {
             OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropInput, status);
         }
-        else if (0 != (status = ExecuteCommand(NULL, dropForward, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+        else if (0 != (status = ExecuteCommand(NULL, dropForward, true, false, 0, 0, NULL, NULL, log)))
         {
             OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropForward, status);
         }
-        else if (0 != (status = ExecuteCommand(NULL, dropOutput, true, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+        else if (0 != (status = ExecuteCommand(NULL, dropOutput, true, false, 0, 0, NULL, NULL, log)))
         {
             OsConfigLogInfo(log, "SetDefaultDenyFirewallPolicy: '%s' failed with %d", dropOutput, status);
         }
@@ -506,15 +508,15 @@ int RemoveDotsFromPath(OsConfigLogHandle log)
     char* newPath = NULL;
     int status = 0, _status = 0;
 
-    if (0 != CheckTextNotFoundInEnvironmentVariable(path, dot, false, NULL, log, GetTelemetry()))
+    if (0 != CheckTextNotFoundInEnvironmentVariable(path, dot, false, NULL, log))
     {
-        if (0 == (status == ExecuteCommand(NULL, printenv, false, false, 0, 0, &currentPath, NULL, log, GetTelemetry())))
+        if (0 == (status == ExecuteCommand(NULL, printenv, false, false, 0, 0, &currentPath, NULL, log)))
         {
-            if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log, GetTelemetry())))
+            if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log)))
             {
                 if (NULL != (setenv = FormatAllocateString(setenvTemplate, newPath)))
                 {
-                    if (0 == (status == ExecuteCommand(NULL, setenv, false, false, 0, 0, NULL, NULL, log, GetTelemetry())))
+                    if (0 == (status == ExecuteCommand(NULL, setenv, false, false, 0, 0, NULL, NULL, log)))
                     {
                         OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set 'PATH' to '%s'", newPath);
                     }
@@ -552,16 +554,16 @@ int RemoveDotsFromPath(OsConfigLogHandle log)
     {
         for (i = 0; i < numPathLocations; i++)
         {
-            if (0 == CheckMarkedTextNotFoundInFile(pathLocations[i].location, pathLocations[i].path, dot, '#', NULL, log, GetTelemetry()))
+            if (0 == CheckMarkedTextNotFoundInFile(pathLocations[i].location, pathLocations[i].path, dot, '#', NULL, log))
             {
                 continue;
             }
 
-            if (NULL != (currentPath = GetStringOptionFromFile(pathLocations[i].location, pathLocations[i].path, ' ', log, GetTelemetry())))
+            if (NULL != (currentPath = GetStringOptionFromFile(pathLocations[i].location, pathLocations[i].path, ' ', log)))
             {
-                if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log, GetTelemetry())))
+                if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log)))
                 {
-                    if (0 == (_status = SetEtcConfValue(pathLocations[i].location, pathLocations[i].path, newPath, log, GetTelemetry())))
+                    if (0 == (_status = SetEtcConfValue(pathLocations[i].location, pathLocations[i].path, newPath, log)))
                     {
                         OsConfigLogInfo(log, "RemoveDotsFromPath: successfully set '%s' to '%s' in '%s'",
                             pathLocations[i].path, pathLocations[i].location, newPath);
@@ -605,15 +607,15 @@ int RemoveEscapeSequencesFromFile(const char* fileName, const char* escapes, uns
         OsConfigLogInfo(log, "ReplaceEscapesFromFile: called for a file that does not exist ('%s')", fileName);
         return EEXIST;
     }
-    else if (NULL == (fileContents = LoadStringFromFile(fileName, false, log, GetTelemetry())))
+    else if (NULL == (fileContents = LoadStringFromFile(fileName, false, log)))
     {
         OsConfigLogInfo(log, "ReplaceEscapesFromFile: cannot read from file '%s'", fileName);
         return ENOENT;
     }
 
-    if (NULL != (newFileContents = ReplaceEscapeSequencesInString(fileContents, escapes, numEscapes, replacement, log, GetTelemetry())))
+    if (NULL != (newFileContents = ReplaceEscapeSequencesInString(fileContents, escapes, numEscapes, replacement, log)))
     {
-        if (false == SecureSaveToFile(fileName, newFileContents, strlen(newFileContents), log, GetTelemetry()))
+        if (false == SecureSaveToFile(fileName, newFileContents, strlen(newFileContents), log))
         {
             OsConfigLogInfo(log, "ReplaceEscapesFromFile: cannot save '%s' (%d)", fileName, errno);
             status = ENOENT;
