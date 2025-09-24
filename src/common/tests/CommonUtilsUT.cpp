@@ -1765,47 +1765,6 @@ TEST_F(CommonUtilsTest, OtherOptionalTests)
     CheckOsAndKernelMatchDistro(nullptr, nullptr);
 }
 
-TEST_F(CommonUtilsTest, FindTextInFolder)
-{
-    const char* text = "Test = 123";
-
-    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, "a", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInFolder("/etc", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInFolder("/etc", nullptr, ".conf", nullptr));
-    EXPECT_EQ(EINVAL, FindTextInFolder("/foo/does_not_exist", "test", nullptr, nullptr));
-
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder(nullptr, nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder(nullptr, "a", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/etc", nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/etc", nullptr, ".conf", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr, nullptr));
-
-    EXPECT_EQ(EINVAL, CheckTextFoundInFolder(nullptr, nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextFoundInFolder(nullptr, "a", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/etc", nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/etc", nullptr, ".conf", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr, nullptr));
-
-    FindTextInFolder("/etc/modprobe.d", "ac97", nullptr, nullptr);
-    CheckTextFoundInFolder("/etc/modprobe.d", "ac97", nullptr, nullptr, nullptr);
-    CheckTextNotFoundInFolder("/etc/modprobe.d", "~~~~ test123 ~~~~", nullptr, nullptr, nullptr);
-
-    EXPECT_TRUE(CreateTestFile(m_path, text));
-
-    EXPECT_EQ(0, FindTextInFolder("/tmp", "123", nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInFolder("/tmp", "Test", nullptr, nullptr));
-    EXPECT_EQ(0, FindTextInFolder("/tmp", text, nullptr, nullptr));
-
-    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/tmp", "ghost", nullptr, nullptr, nullptr));
-
-    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "123", nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "Test", nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", text, nullptr, nullptr, nullptr));
-
-    EXPECT_TRUE(Cleanup(m_path));
-}
-
 TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
 {
     const char* testFile =
@@ -2995,6 +2954,47 @@ TEST_F(CommonUtilsTest, GroupExists)
     EXPECT_FALSE(GroupExists(-1, nullptr));
     EXPECT_FALSE(GroupExists(0xDEADBEEF, nullptr));
     EXPECT_FALSE(GroupExists(0xFFFFFFFF, nullptr));
+}
+
+TEST_F(CommonUtilsTest, FindTextInFolder)
+{
+    const char* text = "Test = 123";
+
+    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, "a", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFolder("/etc", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFolder("/etc", nullptr, ".conf", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFolder("/foo/does_not_exist", "test", nullptr, nullptr));
+
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder(nullptr, nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder(nullptr, "a", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/etc", nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/etc", nullptr, ".conf", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr, nullptr));
+
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder(nullptr, nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder(nullptr, "a", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/etc", nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/etc", nullptr, ".conf", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckTextFoundInFolder("/foo/does_not_exist", "test", nullptr, nullptr, nullptr));
+
+    FindTextInFolder("/etc/modprobe.d", "ac97", nullptr, nullptr);
+    CheckTextFoundInFolder("/etc/modprobe.d", "ac97", nullptr, nullptr, nullptr);
+    CheckTextNotFoundInFolder("/etc/modprobe.d", "~~~~ test123 ~~~~", nullptr, nullptr, nullptr);
+
+    EXPECT_TRUE(CreateTestFile(m_path, text));
+
+    EXPECT_EQ(0, FindTextInFolder("/tmp", "123", nullptr, nullptr));
+    EXPECT_EQ(0, FindTextInFolder("/tmp", "Test", nullptr, nullptr));
+    EXPECT_EQ(0, FindTextInFolder("/tmp", text, nullptr, nullptr));
+
+    EXPECT_EQ(EINVAL, CheckTextNotFoundInFolder("/tmp", "ghost", nullptr, nullptr, nullptr));
+
+    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "123", nullptr, nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "Test", nullptr, nullptr, nullptr));
+    EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", text, nullptr, nullptr, nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, LoggingOptions)
