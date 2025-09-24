@@ -6,13 +6,14 @@
 #ifdef TEST_CODE
 static const char* g_etcPamdCommonPassword = "/tmp/~test.test";
 static const char* g_etcSecurityPwQualityConf = "/tmp/~test.test2";
+static const char* g_etcPamdSystemAuth = "/tmp/~test.test3";
+static const char* g_etcPamdSystemPassword = "/tmp/~test.test4";
 #else
 static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
 static const char* g_etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
-#endif
-
 static const char* g_etcPamdSystemAuth = "/etc/pam.d/system-auth";
 static const char* g_etcPamdSystemPassword = "/etc/pam.d/system-password";
+#endif
 static const char* g_pamUnixSo = "pam_unix.so";
 static const char* g_remember = "remember";
 
@@ -77,30 +78,30 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHa
         status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdCommonPassword, '#', g_remember, reason, log)) &&
             (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', remember, reason, 10, log))) ? 0 : ENOENT;
     }
-    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
+
+    if (status && (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log)))
     {
         // On Red Hat-based systems '/etc/pam.d/system-auth' is expected to exist
         status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, reason, log)) &&
             (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, 10, log))) ? 0 : ENOENT;
     }
-    else if (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log))
+
+    if (status && (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log)))
     {
         // On Azure Linux '/etc/pam.d/system-password' is expected to exist
         status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemPassword, '#', g_remember, reason, log)) &&
             (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemPassword, g_remember, '=', remember, reason, 10, log))) ? 0 : ENOENT;
     }
-    else
-    {
-        OsConfigCaptureReason(reason, "Neither '%s' or '%s' or '%s' found, unable to check for '%s' option being set",
-            g_etcPamdCommonPassword, g_etcPamdSystemAuth, g_etcPamdSystemPassword, g_remember);
-    }
 
     if (status)
     {
+        OsConfigCaptureReason(reason, "Unable to find option '%s' in either '%s' or '%s' or '%s'", g_remember, g_etcPamdCommonPassword, g_etcPamdSystemAuth, g_etcPamdSystemPassword);
+
         if (NULL == (pamModule = FindPamModule(g_pamUnixSo, log)))
         {
             OsConfigCaptureReason(reason, "The PAM module '%s' is not available. Automatic remediation is not possible", g_pamUnixSo);
         }
+
         FREE_MEMORY(pamModule);
     }
 
