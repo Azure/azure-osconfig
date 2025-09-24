@@ -9,6 +9,9 @@
     "RunCommand": "sudo useradd testuser_noshadow && echo 'testuser_noshadow:DummyPass123!' | sudo chpasswd && sudo sed -i '/^testuser_noshadow:/d' /etc/shadow && id testuser_noshadow"
   },
   {
+    "RunCommand": "echo 'remember=5' > /tmp/~test.test"
+  },
+  {
     "Action": "LoadModule",
     "Module": "securitybaseline.so"
   },
@@ -2684,5 +2687,8 @@
   },
   {
     "RunCommand": "groupdel testuser_noshadow || true"
+  },
+  {
+    "RunCommand": "rm /tmp/~test.test"
   }
 ]

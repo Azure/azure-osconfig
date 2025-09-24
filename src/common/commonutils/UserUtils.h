@@ -122,6 +122,8 @@ int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandl
 int RemoveUserAccounts(const char* names, OsConfigLogHandle log);
 int RestrictSuToRootGroup(OsConfigLogHandle log);
 
+bool GroupExists(gid_t groupId, OsConfigLogHandle log);
+
 #ifdef __cplusplus
 }
 #endif
