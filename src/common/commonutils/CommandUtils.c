@@ -337,7 +337,7 @@ char* HashCommand(const char* source, OsConfigLogHandle log)
         memset(command, 0, length);
         snprintf(command, length, hashCommandTemplate, source);
 
-        status = ExecuteCommand(NULL, command, false, false, 0, 0, &hash, NULL, log, GetTelemetry());
+        status = ExecuteCommand(NULL, command, false, false, 0, 0, &hash, NULL, log);
         if (0 != status)
         {
             FREE_MEMORY(hash);

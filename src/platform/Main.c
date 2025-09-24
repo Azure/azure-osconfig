@@ -20,9 +20,9 @@
 #define DEBUG_LOGGING "DebugLogging"
 
 static unsigned int g_lastTime = 0;
+static OSConfigTelemetryHandle g_telemetry = NULL;
 
 extern OsConfigLogHandle g_platformLog;
-extern OSConfigTelemetryHandle g_platformTelemetry;
 
 extern char g_mpiCall[MPI_CALL_MESSAGE_LENGTH];
 
@@ -52,6 +52,19 @@ static int g_refreshSignal = 0;
 #define ERROR_MESSAGE_SIGILL ERROR_MESSAGE_CRASH "illegal instruction (SIGILL)"
 #define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)"
 #define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)"
+
+OSConfigTelemetryHandle GetTelemetry()
+{
+    if (NULL == g_telemetry)
+    {
+        g_telemetry = OSConfigTelemetryOpen();
+        if (NULL == g_telemetry)
+        {
+            OsConfigLogError(GetPlatformLog(), "GetTelemetry: failed to open telemetry handle");
+        }
+    }
+    return g_telemetry;
+}
 
 static void SignalInterrupt(int signal)
 {
@@ -167,19 +180,18 @@ int main(int argc, char* argv[])
     pid_t pid = 0;
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
 
-    char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetPlatformLog(), GetPlatformTelemetry());
+    char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetPlatformLog());
     if (NULL != jsonConfiguration)
     {
-        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetPlatformLog(), GetPlatformTelemetry()));
-        SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetPlatformLog(), GetPlatformTelemetry()));
-        SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, GetPlatformLog(), GetPlatformTelemetry()));
+        SetLoggingLevel(GetLoggingLevelFromJsonConfig(jsonConfiguration, GetPlatformLog()));
+        SetMaxLogSize(GetMaxLogSizeFromJsonConfig(jsonConfiguration, GetPlatformLog()));
+        SetMaxLogSizeDebugMultiplier(GetMaxLogSizeDebugMultiplierFromJsonConfig(jsonConfiguration, GetPlatformLog()));
         FREE_MEMORY(jsonConfiguration);
     }
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
 
     g_platformLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
-    g_platformTelemetry = OSConfigTelemetryOpen();
 
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetPlatformLog(), "OSConfig version: %s", OSCONFIG_VERSION);
@@ -213,7 +225,7 @@ int main(int argc, char* argv[])
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
 
     TerminatePlatform();
-    OSConfigTelemetryClose(&g_platformTelemetry);
+    OSConfigTelemetryClose(&g_telemetry);
     CloseLog(&g_platformLog);
 
     return 0;

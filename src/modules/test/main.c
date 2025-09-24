@@ -33,6 +33,17 @@
 #define LINE_SEPARATOR "--------------------------------------------------------------------------------"
 #define LINE_SEPARATOR_THICK "================================================================================"
 
+static OSConfigTelemetryHandle g_telemetry = NULL;
+OSConfigTelemetryHandle GetTelemetry(void)
+{
+    if (NULL == g_telemetry)
+    {
+        g_telemetry = OSConfigTelemetryOpen();
+    }
+
+    return g_telemetry;
+}
+
 typedef enum STEP_TYPE
 {
     MODULE = 0,
@@ -367,7 +378,7 @@ int RunCommand(const COMMAND_STEP* command)
     if (command != NULL)
     {
         // We do log and ignore the result of the command, this is not a MIM object, we want to just execute it
-        if (command->status != (status = ExecuteCommand(NULL, command->arguments, false, false, 0, 0, &textResult, NULL, NULL, NULL)))
+        if (command->status != (status = ExecuteCommand(NULL, command->arguments, false, false, 0, 0, &textResult, NULL, NULL)))
         {
             LOG_INFO("Command exited with status: %d (while we were expecting %d): %s", status, command->status, textResult);
             status = 0;

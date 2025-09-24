@@ -33,7 +33,6 @@ extern "C"
 #endif
 
 OsConfigLogHandle GetPlatformLog(void);
-OSConfigTelemetryHandle GetPlatformTelemetry(void);
 
 #ifdef __cplusplus
 }

@@ -3,6 +3,8 @@
 
 #include "Internal.h"
 
+extern OSConfigTelemetryHandle GetTelemetry(void);
+
 #define MAX_MPI_URI_LENGTH 32
 
 static char* ReadUntilStringFound(int socketHandle, const char* what, OsConfigLogHandle log)
@@ -76,7 +78,7 @@ char* ReadUriFromSocket(int socketHandle, OsConfigLogHandle log)
         return NULL;
     }
 
-    buffer = ReadUntilStringFound(socketHandle, postPrefix, log, GetTelemetry());
+    buffer = ReadUntilStringFound(socketHandle, postPrefix, log);
     if (NULL == buffer)
     {
         OSConfigTelemetryStatusTrace(GetTelemetry(), "ReadUntilStringFound", ENOENT);
@@ -135,7 +137,7 @@ int ReadHttpStatusFromSocket(int socketHandle, OsConfigLogHandle log)
         return httpStatus;
     }
 
-    buffer = ReadUntilStringFound(socketHandle, httpPrefix, log, GetTelemetry());
+    buffer = ReadUntilStringFound(socketHandle, httpPrefix, log);
     if (NULL == buffer)
     {
         OSConfigTelemetryStatusTrace(GetTelemetry(), "ReadUntilStringFound", ENOENT);
@@ -173,7 +175,7 @@ int ReadHttpContentLengthFromSocket(int socketHandle, OsConfigLogHandle log)
         return httpContentLength;
     }
 
-    buffer = ReadUntilStringFound(socketHandle, doubleTerminator, log, GetTelemetry());
+    buffer = ReadUntilStringFound(socketHandle, doubleTerminator, log);
     if (NULL != buffer)
     {
         contentLength = strstr(buffer, contentLengthLabel);

@@ -51,5 +51,3 @@ OSConfigTelemetryHandle CommonContext::GetTelemetryHandle() const
 }
 
 } // namespace ComplianceEngine
-
-} // namespace ComplianceEngine
