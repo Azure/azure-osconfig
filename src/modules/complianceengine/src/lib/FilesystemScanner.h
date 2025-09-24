@@ -43,7 +43,7 @@ public:
     // No synchronous scanning API: all scans occur in background processes.
 
 private:
-    void LoadCache(); // Attempt to load cache file; ignores stale/invalid formats.
+    bool LoadCache(); // Attempt to load cache file; ignores stale/invalid formats.
 
     std::string root;
     std::string cachePath;

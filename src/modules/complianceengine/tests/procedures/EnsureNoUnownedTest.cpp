@@ -21,6 +21,11 @@ protected:
 
     void SetUp() override
     {
+        if (0 != getuid())
+        {
+            GTEST_SKIP() << "This test suite requires root privileges ";
+        }
+
         indicators.Push("EnsureNoUnowned");
         rootDir = mContext.GetTempdirPath();
         rootDir += "/rootfs";
