@@ -3147,3 +3147,24 @@ int RestrictSuToRootGroup(OsConfigLogHandle log)
 
     return status;
 }
+
+bool GroupExists(gid_t groupId, OsConfigLogHandle log)
+{
+    bool result = false;
+
+    if (NULL != getgrgid(groupId))
+    {
+        OsConfigLogInfo(log, "GroupExists: group %u exists", (unsigned int)groupId);
+        result = true;
+    }
+    else if (0 == errno)
+    {
+        OsConfigLogInfo(log, "GroupExists: group %u does not exist (errno: %d)", (unsigned int)groupId, errno);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "GroupExists: getgrgid(for gid: %u) failed (errno: %d, %s)", (unsigned int)groupId, errno, strerror(errno));
+    }
+
+    return result;
+}
