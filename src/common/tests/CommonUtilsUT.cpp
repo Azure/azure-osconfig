@@ -2958,6 +2958,7 @@ TEST_F(CommonUtilsTest, GroupExists)
 
 TEST_F(CommonUtilsTest, FindTextInFolder)
 {
+    const char* path = "/tmp/~test.conf";
     const char* text = "Test = 123";
 
     EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, nullptr, nullptr, nullptr));
@@ -2982,7 +2983,7 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
     CheckTextFoundInFolder("/etc/modprobe.d", "ac97", nullptr, nullptr, nullptr);
     CheckTextNotFoundInFolder("/etc/modprobe.d", "~~~~ test123 ~~~~", nullptr, nullptr, nullptr);
 
-    EXPECT_TRUE(CreateTestFile(m_path, text));
+    EXPECT_TRUE(CreateTestFile(path, text));
 
     EXPECT_EQ(0, FindTextInFolder("/tmp", "123", nullptr, nullptr));
     EXPECT_EQ(0, FindTextInFolder("/tmp", "Test", nullptr, nullptr));
@@ -2994,7 +2995,7 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
     EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", "Test", nullptr, nullptr, nullptr));
     EXPECT_EQ(0, CheckTextFoundInFolder("/tmp", text, nullptr, nullptr, nullptr));
 
-    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(Cleanup(path));
 }
 
 TEST_F(CommonUtilsTest, LoggingOptions)
