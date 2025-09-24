@@ -1412,7 +1412,7 @@ int CheckSmallFileContainsText(const char* fileName, const char* text, char** re
     return status;
 }
 
-int FindTextInFolder(const char* directory, const char* text, OsConfigLogHandle log)
+int FindTextInFolder(const char* directory, const char* text, const char* extension, OsConfigLogHandle log)
 {
     const char* pathTemplate = "%s/%s";
 
@@ -1420,7 +1420,7 @@ int FindTextInFolder(const char* directory, const char* text, OsConfigLogHandle 
     struct dirent* entry = NULL;
     char* path = NULL;
     size_t length = 0;
-    int status = ENOENT, _status = 0;
+    int status = ENOENT;
 
     if ((NULL == directory) || (false == DirectoryExists(directory)) || (NULL == text))
     {
@@ -1432,7 +1432,7 @@ int FindTextInFolder(const char* directory, const char* text, OsConfigLogHandle 
     {
         while (NULL != (entry = readdir(home)))
         {
-            if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
+            if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..") && (extension && strstr(entry->d_name, extension)))
             {
                 length = strlen(pathTemplate) + strlen(directory) + strlen(entry->d_name);
                 if (NULL == (path = malloc(length + 1)))
@@ -1445,12 +1445,14 @@ int FindTextInFolder(const char* directory, const char* text, OsConfigLogHandle 
                 memset(path, 0, length + 1);
                 snprintf(path, length, pathTemplate, directory, entry->d_name);
 
-                if ((0 == (_status = FindTextInFile(path, text, log))) && (0 != status))
-                {
-                    status = _status;
-                }
+                status = FindTextInFile(path, text, log);
 
                 FREE_MEMORY(path);
+
+                if (0 == status)
+                {
+                    break;
+                }
             }
         }
 
@@ -1459,17 +1461,17 @@ int FindTextInFolder(const char* directory, const char* text, OsConfigLogHandle 
 
     if (status)
     {
-        OsConfigLogInfo(log, "FindTextInFolder: '%s' not found in any file under '%s'", text, directory);
+        OsConfigLogInfo(log, "FindTextInFolder: '%s' not found in any '%s' file under '%s'", text, extension ? extension : "*", directory);
     }
 
     return status;
 }
 
-int CheckTextNotFoundInFolder(const char* directory, const char* text, char** reason, OsConfigLogHandle log)
+int CheckTextNotFoundInFolder(const char* directory, const char* text, const char* extension, char** reason, OsConfigLogHandle log)
 {
     int result = 0;
 
-    if (ENOENT == (result = FindTextInFolder(directory, text, log)))
+    if (ENOENT == (result = FindTextInFolder(directory, text, extension, log)))
     {
         OsConfigCaptureSuccessReason(reason, "Text '%s' not found in any file under directory '%s'", text, directory);
         result = 0;
@@ -1483,11 +1485,11 @@ int CheckTextNotFoundInFolder(const char* directory, const char* text, char** re
     return result;
 }
 
-int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, OsConfigLogHandle log)
+int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, const char* extension, OsConfigLogHandle log)
 {
     int result = 0;
 
-    if (0 == (result = FindTextInFolder(directory, text, log)))
+    if (0 == (result = FindTextInFolder(directory, text, extension, log)))
     {
         OsConfigCaptureSuccessReason(reason, "Text '%s' found in at least one file under directory '%s'", text, directory);
     }
