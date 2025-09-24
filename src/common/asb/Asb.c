@@ -14,12 +14,7 @@
 #include <Logging.h>
 #include <Reasons.h>
 #include <Asb.h>
-#include <Telemetry.h>
-
-// Buffer sizes for string conversion of numeric values
-// Based on maximum possible digits for each type plus sign and null terminator
-#define MAX_LONG_STRING_LENGTH 32   // Accommodates 64-bit long values
-#define MAX_INT_STRING_LENGTH 16    // Accommodates 32-bit int values
+#include <Internal.h>
 
 #define PERF_LOG_FILE "/var/log/osconfig_asb_perf.log"
 #define ROLLED_PERF_LOG_FILE "/var/log/osconfig_asb_perf.bak"
@@ -1117,18 +1112,7 @@ void AsbShutdown(OsConfigLogHandle log)
         LogPerfClock(&g_perfClock, g_asbName, NULL, 0, g_maxTotalTime, GetPerfLog());
 
         // For telemetry:
-        char durationSeconds[MAX_INT_STRING_LENGTH] = {0};
-        snprintf(durationSeconds, sizeof(durationSeconds), "%.02f", GetPerfClockTime(&g_perfClock, log) / 1000000.0);
-        const char* keyValuePairs[] = {
-            "DistroName", g_prettyName ? g_prettyName : "unknown",
-            "BaselineName", g_asbName,
-            "Mode", g_auditOnly ? auditOnly : automaticRemediation,
-            "DurationSeconds", durationSeconds,
-            "CorrelationId", getenv("activityId") ? getenv("activityId") : "",
-            "Version", OSCONFIG_VERSION
-        };
-        OSConfigTelemetryLogEvent(g_telemetry, "BaselineRun", keyValuePairs, sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2);
-
+        OSConfigTelemetryBaselineRun(g_telemetry, g_prettyName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
         OsConfigLogCritical(log, "TargetName: '%s', BaselineName: '%s', Mode: '%s', Seconds: %.02f",
             g_prettyName, g_asbName, g_auditOnly ? auditOnly : automaticRemediation, GetPerfClockTime(&g_perfClock, log) / 1000000.0);
     }
@@ -5040,21 +5024,7 @@ int AsbMmiGet(const char* componentName, const char* objectName, char** payload,
         LogPerfClock(&perfClock, componentName, objectName, status, g_maxAuditTime, GetPerfLog());
 
         // For telemetry:
-        char durationMicroseconds[MAX_LONG_STRING_LENGTH] = {0};
-        char statusString[MAX_INT_STRING_LENGTH] = {0};
-        snprintf(durationMicroseconds, sizeof(durationMicroseconds), "%ld", GetPerfClockTime(&perfClock, log));
-        snprintf(statusString, sizeof(statusString), "%d", status);
-        const char* keyValuePairs[] = {
-            "ComponentName", componentName,
-            "ObjectName", objectName,
-            "ObjectResult", statusString,
-            "Microseconds", durationMicroseconds,
-            "DistroName", g_prettyName ? g_prettyName : "unknown",
-            "CorrelationId", getenv("activityId") ? getenv("activityId") : "",
-            "Version", OSCONFIG_VERSION
-        };
-        OSConfigTelemetryLogEvent(g_telemetry, "RuleComplete", keyValuePairs, sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2);
-
+        OSConfigTelemetryRuleComplete(g_telemetry, componentName, objectName, status, GetPerfClockTime(&perfClock, log));
         OsConfigLogCritical(log, "TargetName: '%s', ComponentName: '%s', 'ObjectName:'%s', ObjectResult:'%s (%d)', Reason: '%.*s', Microseconds: %ld",
             g_prettyName, componentName, objectName, strerror(status), status, *payloadSizeBytes, *payload, GetPerfClockTime(&perfClock, log));
     }
