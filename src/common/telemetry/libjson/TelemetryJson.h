@@ -8,4 +8,12 @@
 
 #include <Telemetry.h>
 
+// Internal structure to hold logger state
+struct TelemetryLogger {
+    FILE* logFile;
+    char* filename;
+    char* binaryDirectory;
+    int isOpen;
+};
+
 #endif // TELEMETRYJSON_H

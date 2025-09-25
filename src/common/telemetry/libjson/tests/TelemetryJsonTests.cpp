@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <vector>
 
-#include <Telemetry.h>
+#include <TelemetryJson.h>
 
 #if BUILD_TELEMETRY
 class TelemetryJsonTest : public ::testing::Test
@@ -76,6 +76,20 @@ protected:
 
         json_value_free(jsonValue);
         return isValid;
+    }
+
+    const char* OSConfigTelemetryGetFilepath(OSConfigTelemetryHandle handle) {
+        if (handle == NULL) {
+            return NULL;
+        }
+
+        struct TelemetryLogger* logger = (struct TelemetryLogger*)handle;
+
+        if (!logger->isOpen) {
+            return NULL;
+        }
+
+        return logger->filename;
     }
 };
 

@@ -11,43 +11,32 @@ extern "C" {
 // Opaque handle for the telemetry logger (C interface)
 typedef struct TelemetryLogger* OSConfigTelemetryHandle;
 
-// @brief Opens a new telemetry logger instance
-//
-// @return OSConfigTelemetryHandle Handle to the logger instance, or NULL on failure
+// Opens a new telemetry logger instance
+// Returns handle to the logger instance, or NULL on failure
 OSConfigTelemetryHandle OSConfigTelemetryOpen(void);
 
-// @brief Closes the telemetry logger instance
-//
-// @param handle Handle to the logger instance to close
-// @return int 0 on success, non-zero on failure
+// Closes the telemetry logger instance
+// handle: Handle to the logger instance to close
+// Returns 0 on success, non-zero on failure
 int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle);
 
-// @brief Logs an event with key-value pairs
-//
-// @param handle Handle to the logger instance
-// @param eventName Name of the event to log
-// @param keyValuePairs Array of key-value pair strings (must be even number of elements)
-// @param pairCount Number of key-value pairs (keyValuePairs array size / 2)
-// @return int 0 on success, non-zero on failure
+// Logs an event with key-value pairs
+// handle: Handle to the logger instance
+// eventName: Name of the event to log
+// keyValuePairs: Array of key-value pair strings (must be even number of elements)
+// pairCount: Number of key-value pairs (keyValuePairs array size / 2)
+// Returns 0 on success, non-zero on failure
 int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
                           const char** keyValuePairs, int pairCount);
 
-// @brief Set the binary directory path for telemetry executable
-//
-// @param handle Handle to the logger instance
-// @param directory Path to the directory containing the telemetry binary
-// @return int 0 on success, non-zero on failure
+// Set the binary directory path for telemetry executable
+// handle: Handle to the logger instance
+// directory: Path to the directory containing the telemetry binary
+// Returns 0 on success, non-zero on failure
 int OSConfigTelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory);
 
-// @brief Get the filepath of the log file
-//
-// @param handle Handle to the logger instance
-// @return const char* to the filepath string, or NULL on failure
-const char* OSConfigTelemetryGetFilepath(OSConfigTelemetryHandle handle);
-
-// @brief Get the directory of the current module
-//
-// @return char* to the directory string, or NULL on failure
+// Get the directory of the current module
+// Returns pointer to the directory string, or NULL on failure
 const char* OSConfigTelemetryGetModuleDirectory();
 
 #ifdef __cplusplus

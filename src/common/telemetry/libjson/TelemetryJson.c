@@ -21,14 +21,6 @@
 
 #if BUILD_TELEMETRY
 
-// Internal structure to hold logger state
-struct TelemetryLogger {
-    FILE* logFile;
-    char* filename;
-    char* binaryDirectory;
-    int isOpen;
-};
-
 // Helper function to get current timestamp in ISO 8601 format
 static char* getCurrentTimestamp(void) {
     time_t now;
@@ -330,20 +322,6 @@ int OSConfigTelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const ch
     strcpy(logger->binaryDirectory, directory);
 
     return 0;
-}
-
-const char* OSConfigTelemetryGetFilepath(OSConfigTelemetryHandle handle) {
-    if (handle == NULL) {
-        return NULL;
-    }
-
-    struct TelemetryLogger* logger = (struct TelemetryLogger*)handle;
-
-    if (!logger->isOpen) {
-        return NULL;
-    }
-
-    return logger->filename;
 }
 
 const char* OSConfigTelemetryGetModuleDirectory(void) {

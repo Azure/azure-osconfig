@@ -12,4 +12,6 @@ add_executable(telemetryjsontests TelemetryJsonTests.cpp)
 
 target_link_libraries(telemetryjsontests gtest gtest_main pthread telemetryjsonlib)
 
+target_include_directories(telemetryjsontests PRIVATE ..)
+
 gtest_discover_tests(telemetryjsontests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
