@@ -110,9 +110,9 @@ int CheckTextIsNotFoundInFile(const char* fileName, const char* text, char** rea
 int CheckMarkedTextNotFoundInFile(const char* fileName, const char* text, const char* marker, char commentCharacter, char** reason, OsConfigLogHandle log);
 int CheckTextNotFoundInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, char** reason, OsConfigLogHandle log);
 int CheckSmallFileContainsText(const char* fileName, const char* text, char** reason, OsConfigLogHandle log);
-int FindTextInFolder(const char* directory, const char* text, OsConfigLogHandle log);
-int CheckTextNotFoundInFolder(const char* directory, const char* text, char** reason, OsConfigLogHandle log);
-int CheckTextFoundInFolder(const char* directory, const char* text, char** reason, OsConfigLogHandle log);
+int FindTextInFolder(const char* directory, const char* text, const char* extension, OsConfigLogHandle log);
+int CheckTextNotFoundInFolder(const char* directory, const char* text, const char* extension, char** reason, OsConfigLogHandle log);
+int CheckTextFoundInFolder(const char* directory, const char* text, const char* extension, char** reason, OsConfigLogHandle log);
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log);
 int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log);
 int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, OsConfigLogHandle log);
