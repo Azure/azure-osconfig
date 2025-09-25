@@ -23,7 +23,9 @@ set(PROCEDURES
     procedures/EnsureMountPointExistsTest.cpp
     procedures/EnsureMTAsLocalOnlyTest.cpp
     procedures/EnsureNoDuplicateEntriesExistTest.cpp
+    procedures/EnsureNoWritablesTest.cpp
     procedures/EnsurePasswordChangeIsInPastTest.cpp
+        procedures/EnsureNoUnownedTest.cpp
     procedures/EnsureRootPathTest.cpp
     procedures/EnsureSshKeyPermsTest.cpp
     procedures/EnsureSshdOptionTest.cpp
@@ -54,6 +56,7 @@ add_executable(complianceenginetests
     BenchmarkInfoTest.cpp
     CommonContextTest.cpp
     ComplianceEngineTest.cpp
+    FilesystemScannerTest.cpp
     DistributionInfoTest.cpp
     EngineTest.cpp
     EvaluatorTest.cpp
