@@ -20,7 +20,8 @@
               "properties": {
                 "option": {
                   "type": "string",
-                  "description": "Name of the SSH daemon option, might be a comma-separated list"
+                  "description": "Name of the SSH daemon option, might be a comma-separated list",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([a-z0-9]+(,[a-z0-9]+)*)$|(^[a-z0-9]+(,[a-z0-9]+)*$))"
                 },
                 "value": {
                   "type": "string",

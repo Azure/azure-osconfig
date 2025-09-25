@@ -314,7 +314,7 @@ static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string
 }
 } // namespace
 
-AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option, might be a comma-separated list:M",
+AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option, might be a comma-separated list:M:^[a-z0-9]+(,[a-z0-9]+)*$",
     "value:Regex, list of regexes, string or integer threshold the option value is evaluated against:M",
     "op:Operation (regex|match|not_match|lt|le|gt|ge) optional, defaults to regex::^(regex|match|not_match|lt|le|gt|ge)$",
     "mode:Mode, one of (regular|all_matches)::^(regular|all_matches)$")
@@ -387,17 +387,9 @@ AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option, might be a com
     std::string mode = "regular";
     if ((it = args.find("mode")) != args.end())
     {
-        auto modeValue = it->second;
-        std::transform(modeValue.begin(), modeValue.end(), modeValue.begin(), ::tolower);
-        if (modeValue == "all_matches" || modeValue == "regular")
-        {
-            mode = modeValue;
-        }
-        else
-        {
-            return Error("Invalid 'mode' parameter value '" + modeValue + "'", EINVAL);
-        }
+        mode = it->second;
     }
+
     if (mode == "all_matches")
     {
         auto allMatches = GetAllMatches(context);
