@@ -3183,7 +3183,7 @@ int CheckGroupExists(const char* name, char** reason, OsConfigLogHandle log)
 
     if (0 != result)
     {
-        OsConfigLogInfo(log, "CheckGroupExists: group '%s' does not exist (errno: %d)", name, errno);
+        OsConfigLogInfo(log, "CheckGroupExists: group '%s' does not exist (errno: %d), automatic remediation is not possible", name, errno);
         OsConfigCaptureReason(reason, "Group '%s' does not exist (%d), automatic remediation is not possible", name, errno);
     }
 
@@ -3219,7 +3219,7 @@ int CheckUserExists(const char* username, char** reason, OsConfigLogHandle log)
 
     if (0 != result)
     {
-        OsConfigLogInfo(log, "UserExists: user '%s' does not exist", username);
+        OsConfigLogInfo(log, "UserExists: user '%s' does not exist, automatic remediation is not possible", username);
         OsConfigCaptureReason(reason, "User '%s' does not exist, automatic remediation is not possible", username);
     }
 

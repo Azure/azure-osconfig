@@ -3872,29 +3872,15 @@ static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, OsC
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    if (0 == CheckGroupExists("adm", NULL, log))
-    {
-        return SetEtcConfValue(g_etcRsyslogConf, "$FileGroup", "adm", log);
-    }
-    else
-    {
-        OsConfigLogInfo(log, "Manually add group 'adm', %s", g_remediationIsNotPossible);
-        return 0;
-    }
+    CheckGroupExists("adm", NULL, log);
+    return SetEtcConfValue(g_etcRsyslogConf, "$FileGroup", "adm", log);
 }
 
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    if (0 == CheckUserExists("syslog", NULL, log))
-    {
-        return SetEtcConfValue(g_etcRsyslogConf, "$FileOwner", "syslog", log);
-    }
-    else
-    {
-        OsConfigLogInfo(log, "Manually add user 'syslog', %s", g_remediationIsNotPossible);
-        return 0;
-    }
+    CheckUserExists("syslog", NULL, log);
+    return SetEtcConfValue(g_etcRsyslogConf, "$FileOwner", "syslog", log);
 }
 
 static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(char* value, OsConfigLogHandle log)
