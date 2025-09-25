@@ -2958,7 +2958,7 @@ TEST_F(CommonUtilsTest, GroupExists)
 
 TEST_F(CommonUtilsTest, CheckGroupExists)
 {
-    EXPECT_EQ(0, GroupExists("root", nullptr, nullptr));
+    EXPECT_EQ(0, CheckGroupExists("root", nullptr, nullptr));
     EXPECT_EQ(ENOENT, CheckGroupExists("root ", nullptr, nullptr));
     EXPECT_EQ(ENOENT, CheckGroupExists("my root", nullptr, nullptr));
     EXPECT_EQ(ENOENT, CheckGroupExists("-root", nullptr, nullptr));
