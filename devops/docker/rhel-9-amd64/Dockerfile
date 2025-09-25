@@ -7,12 +7,14 @@ RUN yum install -y --disableplugin=subscription-manager \
     gcc-c++ \
     git \
     jq \
-    libtool \
     libcurl-devel \
+    libtool \
     make \
     ninja-build \
     openssl-devel \
     openssl-devel \
+    perl \
+    perl-IPC-Cmd \
     rpm-build \
     tar \
     unzip \
