@@ -3152,7 +3152,7 @@ bool GroupExists(gid_t groupId, OsConfigLogHandle log)
 {
     bool result = false;
 
-    if (NULL != (groupEntry = getgrgid(groupId)))
+    if (NULL != getgrgid(groupId))
     {
         OsConfigLogInfo(log, "GroupExists: group %u exists", (unsigned int)groupId);
         result = true;
