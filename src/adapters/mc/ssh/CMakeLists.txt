@@ -27,11 +27,9 @@ set_target_properties(OsConfigResourceSsh PROPERTIES OUTPUT_NAME libOsConfigReso
 # Add telemetry binary if enabled
 if(BUILD_TELEMETRY)
     list(APPEND STAGING_COMMANDS_GET
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/exe/telemetry" ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry
-    )
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/exe/telemetry" ${PROJECT_BINARY_DIR}/StagingLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry)
     list(APPEND STAGING_COMMANDS_SET
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/exe/telemetry" ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry
-    )
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BINARY_DIR}/exe/telemetry" ${PROJECT_BINARY_DIR}/StagingSetLinuxSshServerSecurityBaseline/Modules/DscNativeResources/OsConfigResource/OSConfigTelemetry)
 endif()
 
 # For Audit (Get):
