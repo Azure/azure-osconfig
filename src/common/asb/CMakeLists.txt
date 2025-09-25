@@ -14,7 +14,7 @@ target_include_directories(asb PUBLIC
 
 target_link_libraries(asb
     PUBLIC
-        telemetryjsonlib
+        $<$<BOOL:${BUILD_TELEMETRY}>:telemetryjsonlib>
     PRIVATE
         logging
         commonutils
