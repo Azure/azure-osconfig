@@ -30,6 +30,7 @@ protected:
     {
         mIndicators.Push("EnsureSshKeyPerms");
         mSshDir = mContext.GetTempdirPath() + std::string("/rootfs/etc/ssh");
+        ::mkdir((mContext.GetTempdirPath() + std::string("/rootfs")).c_str(), 0755);
         ::mkdir((mContext.GetTempdirPath() + std::string("/rootfs/etc")).c_str(), 0755);
         ::mkdir(mSshDir.c_str(), 0755);
         mContext.SetSpecialFilePath("/etc/ssh", mSshDir);
