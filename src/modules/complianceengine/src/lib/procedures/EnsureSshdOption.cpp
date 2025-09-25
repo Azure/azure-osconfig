@@ -167,6 +167,7 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
             std::getline(lineStream, optionValue);
             optionValue.erase(0, optionValue.find_first_not_of(" \t"));
             std::transform(currentOption.begin(), currentOption.end(), currentOption.begin(), ::tolower);
+            std::transform(optionValue.begin(), optionValue.end(), optionValue.begin(), ::tolower);
             options[currentOption] = optionValue;
         }
     }
@@ -174,57 +175,95 @@ Result<std::map<std::string, std::string>> GetSshdOptions(ContextInterface& cont
 }
 
 // Helper that evaluates a single sshd option against the provided operation/value.
-// valueRegex is only used (and must be valid) when op is match or not_match.
+// valueRegexes are only used (and must be valid) when op is regex, match, or not_match.
 static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string>& sshdConfig, const std::string& option, const std::string& value,
-    const std::string& op, const regex& valueRegex, bool useRegex, IndicatorsTree& indicators)
+    const std::string& op, const std::vector<regex>& valueRegexes, IndicatorsTree& indicators)
 {
     auto itOptions = sshdConfig.find(option);
     if (itOptions == sshdConfig.end())
     {
+        // For not_match semantics, absence means the forbidden pattern is not present -> compliant
+        if (op == "not_match")
+        {
+            return indicators.Compliant("Option '" + option + "' not found.");
+        }
         return indicators.NonCompliant("Option '" + option + "' not found in SSH daemon configuration");
     }
 
     auto realValue = itOptions->second;
 
-    if (option == "maxstartups")
+    if (("maxstartups" == option) && ("match" == op))
     {
         // special case
         int val1 = 0, val2 = 0, val3 = 0, lim1 = 0, lim2 = 0, lim3 = 0;
-        std::istringstream valueStream(realValue);
-        valueStream >> val1 >> val2 >> val3;
-        std::istringstream limitStream(value);
-        limitStream >> lim1 >> lim2 >> lim3;
+        try
+        {
+            std::istringstream valueStream(realValue);
+            std::string token;
+            if (std::getline(valueStream, token, ':'))
+                val1 = std::stoi(token);
+            if (std::getline(valueStream, token, ':'))
+                val2 = std::stoi(token);
+            if (std::getline(valueStream, token, ':'))
+                val3 = std::stoi(token);
+        }
+        catch (const std::exception& e)
+        {
+            return Error("Failed to parse maxstartups value '" + realValue + "': " + e.what(), EINVAL);
+        }
+
+        try
+        {
+            std::istringstream limitStream(value);
+            std::string token;
+            if (std::getline(limitStream, token, ':'))
+                lim1 = std::stoi(token);
+            if (std::getline(limitStream, token, ':'))
+                lim2 = std::stoi(token);
+            if (std::getline(limitStream, token, ':'))
+                lim3 = std::stoi(token);
+        }
+        catch (const std::exception& e)
+        {
+            return Error("Failed to parse maxstartups limit '" + value + "': " + e.what(), EINVAL);
+        }
 
         if ((val1 > lim1) || (val2 > lim2) || (val3 > lim3))
         {
-            return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which exceeds limits");
+            return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which exceeds limits '" + value + "'");
         }
-        return indicators.Compliant("Option '" + option + "' has a compliant value '" + realValue + "'");
+        return indicators.Compliant("Option '" + option + "' has a value '" + realValue + "' compliant with limits '" + value + "'");
     }
 
-    if (op == "match")
+    if (op == "match" || op == "regex") // The only difference is in the valueRegexes preparation
     {
-        if (!useRegex)
+        if (valueRegexes.empty())
         {
             return Error("Internal error: regex not prepared for match op", EINVAL);
         }
-        if (regex_search(realValue, valueRegex))
+        for (const auto& valueRegex : valueRegexes)
         {
-            return indicators.Compliant("Option '" + option + "' has a compliant value '" + realValue + "'");
+            if (regex_search(realValue, valueRegex))
+            {
+                return indicators.Compliant("Option '" + option + "' has a compliant value '" + realValue + "'");
+            }
         }
         return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which does not match required pattern '" + value + "'");
     }
     else if (op == "not_match")
     {
-        if (!useRegex)
+        if (valueRegexes.empty())
         {
             return Error("Internal error: regex not prepared for not_match op", EINVAL);
         }
-        if (!regex_search(realValue, valueRegex))
+        for (const auto& valueRegex : valueRegexes)
         {
-            return indicators.Compliant("Option '" + option + "' value '" + realValue + "' does not match forbidden pattern '" + value + "'");
+            if (regex_search(realValue, valueRegex))
+            {
+                return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which matches forbidden pattern '" + value + "'");
+            }
         }
-        return indicators.NonCompliant("Option '" + option + "' has value '" + realValue + "' which matches forbidden pattern '" + value + "'");
+        return indicators.Compliant("Option '" + option + "' has a compliant value '" + realValue + "'");
     }
     else if (op == "lt" || op == "le" || op == "gt" || op == "ge")
     {
@@ -275,8 +314,10 @@ static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string
 }
 } // namespace
 
-AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option:M", "value:Regex, string or integer threshold the option value is evaluated against:M",
-    "op:Operation (match|not_match|lt|le|gt|ge) optional, defaults to match::^(match|not_match|lt|le|gt|ge)$")
+AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option, might be a comma-separated list:M:^[a-z0-9]+(,[a-z0-9]+)*$",
+    "value:Regex, list of regexes, string or integer threshold the option value is evaluated against:M",
+    "op:Operation (regex|match|not_match|lt|le|gt|ge) optional, defaults to regex::^(regex|match|not_match|lt|le|gt|ge)$",
+    "mode:Mode, one of (regular|all_matches)::^(regular|all_matches)$")
 {
     auto log = context.GetLogHandle();
 
@@ -285,176 +326,110 @@ AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option:M", "value:Rege
     {
         return Error("Missing 'option' parameter", EINVAL);
     }
-    auto option = std::move(it->second);
-    std::transform(option.begin(), option.end(), option.begin(), ::tolower);
 
-    it = args.find("value");
-    if (it == args.end())
-    {
-        return Error("Missing 'value' parameter", EINVAL);
-    }
-    auto value = std::move(it->second);
-
-    // Operation (default match)
-    std::string op = "match";
-    if ((it = args.find("op")) != args.end())
-    {
-        op = it->second;
-        std::transform(op.begin(), op.end(), op.begin(), ::tolower);
-    }
-
-    // Pre-compile regex only for match / not_match operations
-    regex valueRegex;
-    bool useRegex = (op == "match" || op == "not_match");
-    if (useRegex)
-    {
-        try
-        {
-            valueRegex = regex(value);
-        }
-        catch (const regex_error& e)
-        {
-            OsConfigLogError(log, "Regex error: %s", e.what());
-            return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
-        }
-    }
-
-    auto result = GetSshdOptions(context);
-    if (!result.HasValue())
-    {
-        return result.Error();
-    }
-    auto& sshdConfig = result.Value();
-
-    return EvaluateSshdOption(sshdConfig, option, value, op, valueRegex, useRegex, indicators);
-}
-
-AUDIT_FN(EnsureSshdOptionMatch, "option:Name of the SSH daemon option:M",
-    "value:Regex, string or integer threshold the option value is evaluated against:M",
-    "op:Operation (match|not_match|lt|le|gt|ge) optional, defaults to match::^(match|not_match|lt|le|gt|ge)$")
-{
-    auto log = context.GetLogHandle();
-
-    auto it = args.find("option");
-    if (it == args.end())
-    {
-        return Error("Missing 'option' parameter", EINVAL);
-    }
-    auto option = std::move(it->second);
-    std::transform(option.begin(), option.end(), option.begin(), ::tolower);
-
-    it = args.find("value");
-    if (it == args.end())
-    {
-        return Error("Missing 'value' parameter", EINVAL);
-    }
-    auto value = std::move(it->second);
-
-    std::string op = "match";
-    if ((it = args.find("op")) != args.end())
-    {
-        op = it->second;
-        std::transform(op.begin(), op.end(), op.begin(), ::tolower);
-    }
-
-    regex valueRegex;
-    bool useRegex = (op == "match" || op == "not_match");
-    if (useRegex)
-    {
-        try
-        {
-            valueRegex = regex(value);
-        }
-        catch (const regex_error& e)
-        {
-            OsConfigLogError(log, "Regex error: %s", e.what());
-            return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
-        }
-    }
-    auto matchModes = GetAllMatches(context);
-    if (!matchModes.HasValue())
-    {
-        return matchModes.Error();
-    }
-    for (auto const& mode : matchModes.Value())
-    {
-        auto sshdConfig = GetSshdOptions(context, mode);
-        if (!sshdConfig.HasValue())
-        {
-            return sshdConfig.Error();
-        }
-        auto result = EvaluateSshdOption(sshdConfig.Value(), option, value, op, valueRegex, useRegex, indicators);
-        if (!result.HasValue())
-        {
-            return result.Error();
-        }
-        if (result.Value() == Status::NonCompliant)
-        {
-            return result.Value();
-        }
-    }
-    return indicators.Compliant("All possible match options are compliant");
-}
-
-AUDIT_FN(EnsureSshdNoOption, "options:Name of the SSH daemon options, comma separated:M", "values:Comma separated list of regexes:M")
-{
-    auto log = context.GetLogHandle();
-
-    auto it = args.find("options");
-    if (it == args.end())
-    {
-        return Error("Missing 'options' parameter", EINVAL);
-    }
-    auto options = std::move(it->second);
-
-    it = args.find("values");
-    if (it == args.end())
-    {
-        return Error("Missing 'values' parameter", EINVAL);
-    }
-    auto values = std::move(it->second);
-
-    auto result = GetSshdOptions(context);
-    if (!result.HasValue())
-    {
-        return indicators.NonCompliant("Failed to execute sshd " + result.Error().message + " (code: " + std::to_string(result.Error().code) + ")");
-    }
-    auto& sshdConfig = result.Value();
-
-    std::istringstream optionsStream(options);
+    auto optionList = std::move(it->second);
+    std::transform(optionList.begin(), optionList.end(), optionList.begin(), ::tolower);
+    std::vector<std::string> options;
+    std::istringstream optionsStream(optionList);
     std::string optionName;
     while (std::getline(optionsStream, optionName, ','))
     {
-        std::transform(optionName.begin(), optionName.end(), optionName.begin(), ::tolower);
-        auto itConfig = sshdConfig.find(optionName);
-        if (itConfig == sshdConfig.end())
-        {
-            indicators.Compliant("Option '" + optionName + "' not found in SSH daemon configuration");
-            continue;
-        }
+        options.push_back(optionName);
+    }
 
-        std::istringstream valueStream(values);
-        std::string value;
-        while (std::getline(valueStream, value, ','))
+    std::string op = "regex";
+    if ((it = args.find("op")) != args.end())
+    {
+        op = it->second;
+        std::transform(op.begin(), op.end(), op.begin(), ::tolower);
+    }
+
+    it = args.find("value");
+    if (it == args.end())
+    {
+        return Error("Missing 'value' parameter", EINVAL);
+    }
+    auto value = std::move(it->second);
+
+    // Pre-compile regexes for regex / match / not_match operations
+    std::vector<regex> valueRegexes;
+    if (op == "regex")
+    {
+        try
         {
-            regex valueRegex;
+            valueRegexes.push_back(regex(value));
+        }
+        catch (const regex_error& e)
+        {
+            OsConfigLogError(log, "Regex error: %s", e.what());
+            return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
+        }
+    }
+    if (op == "match" || op == "not_match")
+    {
+        std::istringstream valueStream(value);
+        std::string valuePart;
+        while (std::getline(valueStream, valuePart, ','))
+        {
             try
             {
-                valueRegex = regex(value);
+                valueRegexes.push_back(regex(valuePart));
             }
             catch (const regex_error& e)
             {
                 OsConfigLogError(log, "Regex error: %s", e.what());
-                return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
-            }
-            if (regex_search(itConfig->second, valueRegex))
-            {
-                return indicators.NonCompliant("Option '" + optionName + "' has a compliant value '" + itConfig->second + "'");
+                return Error("Failed to compile regex '" + valuePart + "' error: " + e.what(), EINVAL);
             }
         }
-        indicators.Compliant("Option '" + optionName + "' has no compliant value in SSH daemon configuration");
     }
-    return Status::Compliant; // All options checked, no non-compliant found
-}
 
+    std::vector<std::string> matchModes;
+    std::string mode = "regular";
+    if ((it = args.find("mode")) != args.end())
+    {
+        mode = it->second;
+    }
+
+    if (mode == "all_matches")
+    {
+        auto allMatches = GetAllMatches(context);
+        if (!allMatches.HasValue())
+        {
+            return allMatches.Error();
+        }
+        if (allMatches.Value().empty())
+        {
+            return indicators.Compliant("No Match blocks in SSH daemon configuration, skipping Match evaluation");
+        }
+        matchModes = allMatches.Value();
+    }
+    else
+    {
+        matchModes.push_back(""); // regular
+    }
+
+    for (auto const& matchMode : matchModes)
+    {
+        auto sshdConfig = GetSshdOptions(context, matchMode);
+        if (!sshdConfig.HasValue())
+        {
+            return indicators.NonCompliant("Failed to get sshd options: " + sshdConfig.Error().message);
+        }
+        for (auto const& option : options)
+        {
+            OsConfigLogInfo(log, "Evaluating SSH daemon option '%s' in mode '%s' with op '%s' against value '%s'", option.c_str(),
+                matchMode.empty() ? "regular" : matchMode.c_str(), op.c_str(), value.c_str());
+            auto result = EvaluateSshdOption(sshdConfig.Value(), option, value, op, valueRegexes, indicators);
+            if (!result.HasValue())
+            {
+                return result.Error();
+            }
+            if (result.Value() == Status::NonCompliant)
+            {
+                return result.Value();
+            }
+        }
+    }
+    return indicators.Compliant("All options are compliant");
+}
 } // namespace ComplianceEngine

@@ -20,75 +20,22 @@
               "properties": {
                 "option": {
                   "type": "string",
-                  "description": "Name of the SSH daemon option"
+                  "description": "Name of the SSH daemon option, might be a comma-separated list",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:([a-z0-9]+(,[a-z0-9]+)*)$|(^[a-z0-9]+(,[a-z0-9]+)*$))"
                 },
                 "value": {
                   "type": "string",
-                  "description": "Regex, string or integer threshold the option value is evaluated against"
+                  "description": "Regex, list of regexes, string or integer threshold the option value is evaluated against"
                 },
                 "op": {
                   "type": "string",
-                  "description": "Operation (match|not_match|lt|le|gt|ge) optional, defaults to match",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:((match|not_match|lt|le|gt|ge))$|(^(match|not_match|lt|le|gt|ge)$))"
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "object",
-          "required": [
-            "EnsureSshdOptionMatch"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "EnsureSshdOptionMatch": {
-              "type": "object",
-              "required": [
-                "option",
-                "value"
-              ],
-              "additionalProperties": false,
-              "properties": {
-                "option": {
-                  "type": "string",
-                  "description": "Name of the SSH daemon option"
+                  "description": "Operation (regex|match|not_match|lt|le|gt|ge) optional, defaults to regex",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((regex|match|not_match|lt|le|gt|ge))$|(^(regex|match|not_match|lt|le|gt|ge)$))"
                 },
-                "value": {
+                "mode": {
                   "type": "string",
-                  "description": "Regex, string or integer threshold the option value is evaluated against"
-                },
-                "op": {
-                  "type": "string",
-                  "description": "Operation (match|not_match|lt|le|gt|ge) optional, defaults to match",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:((match|not_match|lt|le|gt|ge))$|(^(match|not_match|lt|le|gt|ge)$))"
-                }
-              }
-            }
-          }
-        },
-        {
-          "type": "object",
-          "required": [
-            "EnsureSshdNoOption"
-          ],
-          "additionalProperties": false,
-          "properties": {
-            "EnsureSshdNoOption": {
-              "type": "object",
-              "required": [
-                "options",
-                "values"
-              ],
-              "additionalProperties": false,
-              "properties": {
-                "options": {
-                  "type": "string",
-                  "description": "Name of the SSH daemon options, comma separated"
-                },
-                "values": {
-                  "type": "string",
-                  "description": "Comma separated list of regexes"
+                  "description": "Mode, one of (regular|all_matches)",
+                  "pattern": "(^\\$[a-zA-Z0-9_]+:((regular|all_matches))$|(^(regular|all_matches)$))"
                 }
               }
             }
