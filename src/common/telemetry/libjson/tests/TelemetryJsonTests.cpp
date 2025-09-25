@@ -83,71 +83,69 @@ protected:
         return isValid;
     }
 
-    const char* OSConfigTelemetryGetFilepath(OSConfigTelemetryHandle handle)
+    // Helper function to get the current telemetry log file path
+    // Since we now use a static instance, we need to access it differently
+    std::string getCurrentTelemetryFilePath()
     {
-        if (handle == NULL)
+        // We'll need to check if a file was created in /tmp
+        system("ls /tmp/telemetry_*.json > /tmp/telemetry_files.txt 2>/dev/null");
+        std::ifstream fileList("/tmp/telemetry_files.txt");
+        std::string filePath;
+        if (std::getline(fileList, filePath))
         {
-            return NULL;
+            return filePath;
         }
-
-        struct TelemetryLogger* logger = (struct TelemetryLogger*)handle;
-
-        if (!logger->isOpen)
-        {
-            return NULL;
-        }
-
-        return logger->filename;
+        return "";
     }
 };
 
 // Basic functionality tests
 TEST_F(TelemetryJsonTest, OpenAndClose_Success)
 {
-    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
+    int openResult = OSConfigTelemetryOpen(NULL);
+    EXPECT_EQ(0, openResult);
 
-    EXPECT_NE(nullptr, handle);
-
-    int result = OSConfigTelemetryClose(&handle);
-    EXPECT_EQ(0, result);
+    int closeResult = OSConfigTelemetryClose();
+    EXPECT_EQ(0, closeResult);
 }
 
 TEST_F(TelemetryJsonTest, OpenMultiple_Success)
 {
-    OSConfigTelemetryHandle handle1 = OSConfigTelemetryOpen();
-    OSConfigTelemetryHandle handle2 = OSConfigTelemetryOpen();
+    // With static instance, multiple opens should succeed but use same instance
+    int result1 = OSConfigTelemetryOpen(NULL);
+    EXPECT_EQ(0, result1);
 
-    EXPECT_NE(nullptr, handle1);
-    EXPECT_NE(nullptr, handle2);
-    EXPECT_NE(handle1, handle2);
+    int result2 = OSConfigTelemetryOpen(NULL); // Should return success since already open
+    EXPECT_EQ(0, result2);
 
-    EXPECT_EQ(0, OSConfigTelemetryClose(&handle1));
-    EXPECT_EQ(0, OSConfigTelemetryClose(&handle2));
+    int closeResult = OSConfigTelemetryClose();
+    EXPECT_EQ(0, closeResult);
 }
 
-TEST_F(TelemetryJsonTest, CloseNullHandle_Failure)
+TEST_F(TelemetryJsonTest, CloseWithoutOpen_Failure)
 {
-    int result = OSConfigTelemetryClose(nullptr);
+    // Trying to close without opening should fail
+    int result = OSConfigTelemetryClose();
     EXPECT_EQ(-1, result);
 }
 
-TEST_F(TelemetryJsonTest, CloseHandleTwice_Failure)
+TEST_F(TelemetryJsonTest, CloseTwice_Failure)
 {
-    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
-    ASSERT_NE(nullptr, handle);
+    int openResult = OSConfigTelemetryOpen(NULL);
+    ASSERT_EQ(0, openResult);
 
-    int result1 = OSConfigTelemetryClose(&handle);
+    int result1 = OSConfigTelemetryClose();
     EXPECT_EQ(0, result1);
 
-    int result2 = OSConfigTelemetryClose(&handle);
+    int result2 = OSConfigTelemetryClose();
     EXPECT_EQ(-1, result2);
 }
 
 // Event logging tests
 TEST_F(TelemetryJsonTest, LogEvent_ValidEventWithHandle_Success)
 {
-    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
-    ASSERT_NE(nullptr, handle);
+    int openResult = OSConfigTelemetryOpen(NULL);
+    ASSERT_EQ(0, openResult);
 
     const char* eventName = "TestEvent";
 
@@ -158,12 +156,13 @@ TEST_F(TelemetryJsonTest, LogEvent_ValidEventWithHandle_Success)
     };
     const size_t keyCount = sizeof(keyValuePairs) / sizeof(keyValuePairs[0]) / 2;
 
-    int result = OSConfigTelemetryLogEvent(handle, eventName, keyValuePairs, keyCount);
+    int result = OSConfigTelemetryLogEvent(eventName, keyValuePairs, keyCount);
     EXPECT_EQ(0, result);
 
-    std::string filePath = OSConfigTelemetryGetFilepath(handle);
+    EXPECT_EQ(0, OSConfigTelemetryClose());
+
+    std::string filePath = getCurrentTelemetryFilePath();
     ASSERT_FALSE(filePath.empty());
-    EXPECT_EQ(0, OSConfigTelemetryClose(&handle));
 
     // Verify file contents
     std::string fileContents = readFileContents(filePath);
@@ -210,91 +209,96 @@ TEST_F(TelemetryJsonTest, LogEvent_ValidEventWithHandle_Success)
 
 TEST_F(TelemetryJsonTest, LogEvent_Sample_Success)
 {
-    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
-    ASSERT_NE(nullptr, handle);
+    int openResult = OSConfigTelemetryOpen(NULL);
+    ASSERT_EQ(0, openResult);
 
     const char* eventName = "SampleEvent";
-    int result = OSConfigTelemetryLogEvent(handle, eventName, nullptr, 0);
+    int result = OSConfigTelemetryLogEvent(eventName, nullptr, 0);
     EXPECT_EQ(0, result);
 
-    EXPECT_EQ(0, OSConfigTelemetryClose(&handle));
+    EXPECT_EQ(0, OSConfigTelemetryClose());
 }
 
-// TelemetryGetFilepath tests
-TEST_F(TelemetryJsonTest, GetFilepath_ValidHandle_Success)
+// File creation and logging behavior tests
+TEST_F(TelemetryJsonTest, TelemetryFileCreation_Success)
 {
-    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
-    ASSERT_NE(nullptr, handle);
+    int openResult = OSConfigTelemetryOpen(NULL);
+    ASSERT_EQ(0, openResult);
 
-    const char* filepath = OSConfigTelemetryGetFilepath(handle);
-    EXPECT_NE(nullptr, filepath);
-    EXPECT_NE('\0', filepath[0]); // Should not be empty string
+    // Log an event to ensure file is created
+    const char* eventName = "TestFileCreation";
+    int logResult = OSConfigTelemetryLogEvent(eventName, nullptr, 0);
+    EXPECT_EQ(0, logResult);
 
-    // Filepath should start with /tmp/telemetry_ and end with .json
-    std::string filepathStr(filepath);
-    EXPECT_TRUE(filepathStr.find("/tmp/telemetry_") == 0);
-    EXPECT_TRUE(filepathStr.find(".json") == filepathStr.length() - 5);
+    EXPECT_EQ(0, OSConfigTelemetryClose());
 
-    EXPECT_EQ(0, OSConfigTelemetryClose(&handle));
+    // Verify that a telemetry file was created
+    std::string filePath = getCurrentTelemetryFilePath();
+    EXPECT_FALSE(filePath.empty());
+
+    if (!filePath.empty())
+    {
+        // Filepath should start with /tmp/telemetry_ and end with .json
+        EXPECT_TRUE(filePath.find("/tmp/telemetry_") == 0);
+        EXPECT_TRUE(filePath.find(".json") == filePath.length() - 5);
+
+        // Check if file exists and is accessible
+        struct stat fileStat;
+        int statResult = stat(filePath.c_str(), &fileStat);
+        EXPECT_EQ(0, statResult);
+        EXPECT_TRUE(S_ISREG(fileStat.st_mode)); // Should be a regular file
+
+        // Verify file contents
+        std::string fileContents = readFileContents(filePath);
+        EXPECT_FALSE(fileContents.empty());
+        EXPECT_TRUE(validateJsonLine(fileContents, eventName));
+    }
 }
 
-TEST_F(TelemetryJsonTest, GetFilepath_NullHandle_Failure)
+TEST_F(TelemetryJsonTest, StaticInstance_Behavior)
 {
-    const char* filepath = OSConfigTelemetryGetFilepath(nullptr);
-    EXPECT_EQ(nullptr, filepath);
-}
+    // Test that multiple opens use the same static instance
+    int openResult1 = OSConfigTelemetryOpen(NULL);
+    ASSERT_EQ(0, openResult1);
 
-TEST_F(TelemetryJsonTest, GetFilepath_MultipleHandles_UniqueFilepaths)
-{
-    OSConfigTelemetryHandle handle1 = OSConfigTelemetryOpen();
-    OSConfigTelemetryHandle handle2 = OSConfigTelemetryOpen();
-    ASSERT_NE(nullptr, handle1);
-    ASSERT_NE(nullptr, handle2);
+    // Log an event
+    const char* eventName = "StaticInstanceTest";
+    int logResult1 = OSConfigTelemetryLogEvent(eventName, nullptr, 0);
+    EXPECT_EQ(0, logResult1);
 
-    const char* filepath1 = OSConfigTelemetryGetFilepath(handle1);
-    const char* filepath2 = OSConfigTelemetryGetFilepath(handle2);
+    // Open again (should use same instance)
+    int openResult2 = OSConfigTelemetryOpen(NULL);
+    EXPECT_EQ(0, openResult2);
 
-    EXPECT_NE(nullptr, filepath1);
-    EXPECT_NE(nullptr, filepath2);
-    EXPECT_STRNE(filepath1, filepath2); // Should be different filepaths
+    // Log another event
+    int logResult2 = OSConfigTelemetryLogEvent(eventName, nullptr, 0);
+    EXPECT_EQ(0, logResult2);
 
-    EXPECT_EQ(0, OSConfigTelemetryClose(&handle1));
-    EXPECT_EQ(0, OSConfigTelemetryClose(&handle2));
-}
+    EXPECT_EQ(0, OSConfigTelemetryClose());
 
-TEST_F(TelemetryJsonTest, GetFilepath_AfterClose_InvalidResult)
-{
-    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
-    ASSERT_NE(nullptr, handle);
+    // Verify file contains both events
+    std::string filePath = getCurrentTelemetryFilePath();
+    EXPECT_FALSE(filePath.empty());
 
-    const char* filepath = OSConfigTelemetryGetFilepath(handle);
-    EXPECT_NE(nullptr, filepath);
+    if (!filePath.empty())
+    {
+        std::string fileContents = readFileContents(filePath);
+        EXPECT_FALSE(fileContents.empty());
 
-    // Store filepath for later verification
-    std::string originalFilepath(filepath);
-
-    EXPECT_EQ(0, OSConfigTelemetryClose(&handle));
-
-    // After closing, getting filepath should return null or invalid result
-    const char* filepathAfterClose = OSConfigTelemetryGetFilepath(handle);
-    EXPECT_EQ(nullptr, filepathAfterClose);
-}
-
-TEST_F(TelemetryJsonTest, GetFilepath_FileExists_Success)
-{
-    OSConfigTelemetryHandle handle = OSConfigTelemetryOpen();
-    ASSERT_NE(nullptr, handle);
-
-    const char* filepath = OSConfigTelemetryGetFilepath(handle);
-    EXPECT_NE(nullptr, filepath);
-
-    // Check if file exists and is accessible
-    struct stat fileStat;
-    int statResult = stat(filepath, &fileStat);
-    EXPECT_EQ(0, statResult);
-    EXPECT_TRUE(S_ISREG(fileStat.st_mode)); // Should be a regular file
-
-    EXPECT_EQ(0, OSConfigTelemetryClose(&handle));
+        // Count number of lines (should be 2)
+        int lineCount = 0;
+        std::istringstream iss(fileContents);
+        std::string line;
+        while (std::getline(iss, line))
+        {
+            if (!line.empty())
+            {
+                lineCount++;
+                EXPECT_TRUE(validateJsonLine(line, eventName));
+            }
+        }
+        EXPECT_EQ(2, lineCount);
+    }
 }
 
 TEST_F(TelemetryJsonTest, GetModuleDirectory_ReturnsValidPath)

@@ -4,35 +4,30 @@
 #ifndef TELEMETRY_H
 #define TELEMETRY_H
 
+#include <Logging.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Opaque handle for the telemetry logger (C interface)
-typedef struct TelemetryLogger* OSConfigTelemetryHandle;
-
-// Opens a new telemetry logger instance
-// Returns handle to the logger instance, or NULL on failure
-OSConfigTelemetryHandle OSConfigTelemetryOpen(void);
-
-// Closes the telemetry logger instance
-// handle: Handle to the logger instance to close
+// Opens the static telemetry logger instance
 // Returns 0 on success, non-zero on failure
-int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle);
+int OSConfigTelemetryOpen(OsConfigLogHandle log);
 
-// Logs an event with key-value pairs
-// handle: Handle to the logger instance
+// Closes the static telemetry logger instance
+// Returns 0 on success, non-zero on failure
+int OSConfigTelemetryClose(void);
+
 // eventName: Name of the event to log
 // keyValuePairs: Array of key-value pair strings (must be even number of elements)
 // pairCount: Number of key-value pairs (keyValuePairs array size / 2)
 // Returns 0 on success, non-zero on failure
-int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName, const char** keyValuePairs, int pairCount);
+int OSConfigTelemetryLogEvent(const char* eventName, const char** keyValuePairs, int pairCount);
 
-// Set the binary directory path for telemetry executable
-// handle: Handle to the logger instance
+// Set the binary directory path for telemetry executable on the static instance
 // directory: Path to the directory containing the telemetry binary
 // Returns 0 on success, non-zero on failure
-int OSConfigTelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory);
+int OSConfigTelemetrySetBinaryDirectory(const char* directory);
 
 // Get the directory of the current module
 // Returns pointer to the directory string, or NULL on failure

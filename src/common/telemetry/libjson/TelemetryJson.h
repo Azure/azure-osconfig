@@ -13,6 +13,7 @@ struct TelemetryLogger {
     FILE* logFile;
     char* filename;
     char* binaryDirectory;
+    OsConfigLogHandle log;
     int isOpen;
 };
 

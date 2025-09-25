@@ -22,6 +22,9 @@
 
 #if BUILD_TELEMETRY
 
+// Static instance of the telemetry logger
+static struct TelemetryLogger* g_telemetryLogger = NULL;
+
 // Helper function to generate random filename
 static char* generateRandomFilename(void)
 {
@@ -112,102 +115,117 @@ static void runTelemetryProxy(const char* telemetryJSONFile, const char* binaryD
 }
 
 // C interface implementations
-OSConfigTelemetryHandle OSConfigTelemetryOpen(void)
+int OSConfigTelemetryOpen(OsConfigLogHandle log)
 {
-    struct TelemetryLogger* logger = malloc(sizeof(struct TelemetryLogger));
-    if (!logger)
+    // If already open, return success
+    if (g_telemetryLogger != NULL && g_telemetryLogger->isOpen)
     {
-        return NULL;
+        return 0;
+    }
+
+    // Clean up any existing instance
+    if (g_telemetryLogger != NULL)
+    {
+        OSConfigTelemetryClose();
+    }
+
+    g_telemetryLogger = malloc(sizeof(struct TelemetryLogger));
+    if (!g_telemetryLogger)
+    {
+        OsConfigLogError(log, "Failed to allocate memory for TelemetryLogger");
+        return -1;
     }
 
     // Initialize the logger
-    logger->logFile = NULL;
-    logger->filename = NULL;
-    logger->binaryDirectory = NULL;
-    logger->isOpen = 0;
+    g_telemetryLogger->logFile = NULL;
+    g_telemetryLogger->filename = NULL;
+    g_telemetryLogger->binaryDirectory = NULL;
+    g_telemetryLogger->isOpen = 0;
+    g_telemetryLogger->log = log;
 
     // Generate filename
-    logger->filename = generateRandomFilename();
-    if (!logger->filename)
+    g_telemetryLogger->filename = generateRandomFilename();
+    if (!g_telemetryLogger->filename)
     {
-        free(logger);
-        return NULL;
+        free(g_telemetryLogger);
+        g_telemetryLogger = NULL;
+        OsConfigLogError(log, "Failed to generate random filename for telemetry log");
+        return -1;
     }
 
     // Open file
-    logger->logFile = fopen(logger->filename, "a");
-    if (!logger->logFile)
+    g_telemetryLogger->logFile = fopen(g_telemetryLogger->filename, "a");
+    if (!g_telemetryLogger->logFile)
     {
-        free(logger->filename);
-        free(logger);
-        return NULL;
+        free(g_telemetryLogger->filename);
+        free(g_telemetryLogger);
+        g_telemetryLogger = NULL;
+        OsConfigLogError(log, "Failed to open telemetry log file: %s", strerror(errno));
+        return -1;
     }
 
-    logger->isOpen = 1;
-    return (OSConfigTelemetryHandle)logger;
+    g_telemetryLogger->isOpen = 1;
+    return 0;
 }
 
-int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle)
+int OSConfigTelemetryClose(void)
 {
-    if (handle == NULL || *handle == NULL)
+    if (g_telemetryLogger == NULL)
     {
         return -1;
     }
 
-    struct TelemetryLogger* logger = (struct TelemetryLogger*)*handle;
-
-    if (!logger->isOpen)
+    if (!g_telemetryLogger->isOpen)
     {
+        OsConfigLogError(g_telemetryLogger->log, "Telemetry logger is not open");
         return -1;
     }
 
-    if (logger->logFile)
+    if (g_telemetryLogger->logFile)
     {
-        fclose(logger->logFile);
-        logger->logFile = NULL;
+        fclose(g_telemetryLogger->logFile);
+        g_telemetryLogger->logFile = NULL;
     }
 
-    logger->isOpen = 0;
+    g_telemetryLogger->isOpen = 0;
 
     // Set binary directory if not already set
-    if (!logger->binaryDirectory)
+    if (!g_telemetryLogger->binaryDirectory)
     {
-        logger->binaryDirectory = getModuleDirectory();
+        g_telemetryLogger->binaryDirectory = getModuleDirectory();
     }
 
     // Run telemetry proxy if binary directory is available
-    if (logger->binaryDirectory && logger->filename)
+    if (g_telemetryLogger->binaryDirectory && g_telemetryLogger->filename)
     {
-        runTelemetryProxy(logger->filename, logger->binaryDirectory);
+        runTelemetryProxy(g_telemetryLogger->filename, g_telemetryLogger->binaryDirectory);
     }
 
     // Clean up
-    if (logger->filename)
+    if (g_telemetryLogger->filename)
     {
-        free(logger->filename);
+        free(g_telemetryLogger->filename);
     }
-    if (logger->binaryDirectory)
+    if (g_telemetryLogger->binaryDirectory)
     {
-        free(logger->binaryDirectory);
+        free(g_telemetryLogger->binaryDirectory);
     }
-    free(logger);
-    *handle = NULL;
+    free(g_telemetryLogger);
+    g_telemetryLogger = NULL;
 
     return 0;
 }
 
-int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
-                              const char** keyValuePairs, int pairCount)
+int OSConfigTelemetryLogEvent(const char* eventName, const char** keyValuePairs, int pairCount)
 {
-    if (handle == NULL || eventName == NULL)
+    if (g_telemetryLogger == NULL || eventName == NULL)
     {
         return -1;
     }
 
-    struct TelemetryLogger* logger = (struct TelemetryLogger*)handle;
-
-    if (!logger->isOpen || !logger->logFile)
+    if (!g_telemetryLogger->isOpen || !g_telemetryLogger->logFile)
     {
+        OsConfigLogError(g_telemetryLogger->log, "Telemetry logger is not open");
         return -1;
     }
 
@@ -215,6 +233,7 @@ int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventN
     JSON_Value* rootValue = json_value_init_object();
     if (rootValue == NULL)
     {
+        OsConfigLogError(g_telemetryLogger->log, "Failed to create JSON root object");
         return -1;
     }
 
@@ -222,6 +241,7 @@ int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventN
     if (rootObject == NULL)
     {
         json_value_free(rootValue);
+        OsConfigLogError(g_telemetryLogger->log, "Failed to get JSON root object");
         return -1;
     }
 
@@ -230,6 +250,7 @@ int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventN
     if (!timestamp || json_object_set_string(rootObject, "Timestamp", timestamp) != JSONSuccess)
     {
         json_value_free(rootValue);
+        OsConfigLogError(g_telemetryLogger->log, "Failed to set Timestamp in JSON object");
         return -1;
     }
 
@@ -237,6 +258,7 @@ int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventN
     if (json_object_set_string(rootObject, "EventName", eventName) != JSONSuccess)
     {
         json_value_free(rootValue);
+        OsConfigLogError(g_telemetryLogger->log, "Failed to set EventName in JSON object");
         return -1;
     }
 
@@ -305,6 +327,7 @@ int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventN
                 if (result != JSONSuccess)
                 {
                     json_value_free(rootValue);
+                    OsConfigLogError(g_telemetryLogger->log, "Failed to set key-value pair in JSON object");
                     return -1;
                 }
             }
@@ -317,12 +340,13 @@ int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventN
 
     if (jsonString == NULL)
     {
+        OsConfigLogError(g_telemetryLogger->log, "Failed to serialize JSON to string");
         return -1;
     }
 
     // Write to file
-    fprintf(logger->logFile, "%s\n", jsonString);
-    fflush(logger->logFile);
+    fprintf(g_telemetryLogger->logFile, "%s\n", jsonString);
+    fflush(g_telemetryLogger->logFile);
 
     // Free the serialized string
     json_free_serialized_string(jsonString);
@@ -330,29 +354,28 @@ int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventN
     return 0;
 }
 
-int OSConfigTelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory)
+int OSConfigTelemetrySetBinaryDirectory(const char* directory)
 {
-    if (handle == NULL || directory == NULL)
+    if (g_telemetryLogger == NULL || directory == NULL)
     {
         return -1;
     }
 
-    struct TelemetryLogger* logger = (struct TelemetryLogger*)handle;
-
     // Free existing directory if set
-    if (logger->binaryDirectory)
+    if (g_telemetryLogger->binaryDirectory)
     {
-        free(logger->binaryDirectory);
+        free(g_telemetryLogger->binaryDirectory);
     }
 
     // Copy the new directory
     size_t dirLen = strlen(directory) + 1;
-    logger->binaryDirectory = malloc(dirLen);
-    if (!logger->binaryDirectory)
+    g_telemetryLogger->binaryDirectory = malloc(dirLen);
+    if (!g_telemetryLogger->binaryDirectory)
     {
+        OsConfigLogError(g_telemetryLogger->log, "Failed to allocate memory for binary directory");
         return -1;
     }
-    strcpy(logger->binaryDirectory, directory);
+    strcpy(g_telemetryLogger->binaryDirectory, directory);
 
     return 0;
 }
@@ -370,31 +393,28 @@ const char* OSConfigTelemetryGetModuleDirectory(void)
 #else // BUILD_TELEMETRY
 
 // Stub implementations when BUILD_TELEMETRY is not enabled
-OSConfigTelemetryHandle OSConfigTelemetryOpen(void)
+int OSConfigTelemetryOpen(OsConfigLogHandle log)
 {
-    return NULL;
-}
-
-int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle)
-{
-    (void)handle; // Suppress unused parameter warning
+    (void)log; // Suppress unused parameter warning
     return -1;
 }
 
-int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
-                              const char** keyValuePairs, int pairCount)
+int OSConfigTelemetryClose(void)
 {
-    (void)handle; // Suppress unused parameter warnings
-    (void)eventName;
+    return -1;
+}
+
+int OSConfigTelemetryLogEvent(const char* eventName, const char** keyValuePairs, int pairCount)
+{
+    (void)eventName; // Suppress unused parameter warnings
     (void)keyValuePairs;
     (void)pairCount;
     return -1;
 }
 
-int OSConfigTelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory)
+int OSConfigTelemetrySetBinaryDirectory(const char* directory)
 {
-    (void)handle; // Suppress unused parameter warnings
-    (void)directory;
+    (void)directory; // Suppress unused parameter warning
     return -1;
 }
 
