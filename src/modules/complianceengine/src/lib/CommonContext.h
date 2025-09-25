@@ -11,17 +11,23 @@
 #include <sstream>
 #include <string>
 
-static constexpr char FS_CACHE_PATH[] = "/var/lib/GuestConfig/ComplianceEngineFSCache";
-static constexpr char LOCK_PATH[] = "/run/complianceengine-fsscanner.lock";
-
 namespace ComplianceEngine
 {
+
+namespace
+{
+constexpr char fsCachePath[] = "/var/lib/GuestConfig/ComplianceEngineFSCache";
+constexpr char lockPath[] = "/run/complianceengine-fsscanner.lock";
+constexpr int softTimeout = 3600;
+constexpr int hardTimeout = 86400;
+constexpr int scanWaitTime = 30;
+} // namespace
 class CommonContext : public ContextInterface
 {
 public:
     CommonContext(OsConfigLogHandle log)
         : mLog(log),
-          mFsScanner("/", FS_CACHE_PATH, LOCK_PATH, 3600, 86400, 20)
+          mFsScanner("/", fsCachePath, lockPath, softTimeout, hardTimeout, scanWaitTime)
     {
     }
     ~CommonContext() override;

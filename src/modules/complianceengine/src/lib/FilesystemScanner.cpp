@@ -32,32 +32,35 @@ namespace
 class FileLock
 {
 public:
-    explicit FileLock(const std::string& path)
-        : m_path(path),
-          m_fd(::open(m_path.c_str(), O_RDWR | O_CREAT, 0644))
+    // Factory: attempts to create and acquire an exclusive non-blocking lock.
+    // Returns Error if the file cannot be opened or the lock cannot be acquired.
+    static Result<FileLock> Make(const std::string& path)
     {
-
-        if (m_fd < 0)
+        FileLock fl(path);
+        fl.m_fd = ::open(path.c_str(), O_RDWR | O_CREAT, 0644);
+        if (fl.m_fd < 0)
         {
-            return;
+            return ComplianceEngine::Error("failed to open lock file");
         }
-        if (::flock(m_fd, LOCK_EX | LOCK_NB) != 0)
+        if (::flock(fl.m_fd, LOCK_EX | LOCK_NB) != 0)
         {
-            ::close(m_fd);
-            m_fd = -1;
-            return;
+            ::close(fl.m_fd);
+            fl.m_fd = -1;
+            return ComplianceEngine::Error("another process holds lock");
         }
-        if (ftruncate(m_fd, 0) == 0)
+        if (::ftruncate(fl.m_fd, 0) == 0)
         {
             char pidBuf[64];
             int len = std::snprintf(pidBuf, sizeof(pidBuf), "%ld\n", (long)::getpid());
             if (len > 0)
             {
-                (void)::write(m_fd, pidBuf, static_cast<size_t>(len));
-                ::lseek(m_fd, 0, SEEK_SET);
+                (void)::write(fl.m_fd, pidBuf, static_cast<size_t>(len));
+                ::lseek(fl.m_fd, 0, SEEK_SET);
             }
         }
+        return Result<FileLock>(std::move(fl));
     }
+
     ~FileLock()
     {
         if (m_fd >= 0)
@@ -67,10 +70,7 @@ public:
             m_fd = -1;
         }
     }
-    bool IsLocked() const
-    {
-        return m_fd >= 0;
-    }
+
     FileLock(const FileLock&) = delete;
     FileLock& operator=(const FileLock&) = delete;
     FileLock(FileLock&& other) noexcept
@@ -96,6 +96,10 @@ public:
     }
 
 private:
+    explicit FileLock(const std::string& path)
+        : m_path(path)
+    {
+    }
     std::string m_path;
     int m_fd = -1;
 };
@@ -286,12 +290,13 @@ void BackgroundScan(const std::string& root, const std::string& cachePath, const
     }
     if (pid == 0)
     {
-        FileLock lock(lockPath);
-        if (!lock.IsLocked())
+        auto lockResult = FileLock::Make(lockPath);
+        if (!lockResult.HasValue())
         {
-            // Another process is scanning; exit quietly.
+            // Unable to obtain lock (either open or flock failure, likely another process scanning).
             _exit(0);
         }
+        FileLock lock = std::move(lockResult.Value());
 
         time_t start = ::time(nullptr);
         std::shared_ptr<FilesystemScanner::FSCache> cache((FilesystemScanner::FSCache*)nullptr);
