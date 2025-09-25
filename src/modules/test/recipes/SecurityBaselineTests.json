@@ -16,7 +16,7 @@
   },
   {
     "RunCommand": "etent group adm >/dev/null || sudo groupadd -r adm"
-  }
+  },
   {
     "Action": "LoadModule",
     "Module": "securitybaseline.so"
