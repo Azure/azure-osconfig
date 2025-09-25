@@ -20,4 +20,8 @@ jobs:
       machine-config: true
       release: true
     secrets:
-      onedstenant: ${{ github.ref == 'refs/heads/main' && secrets.ONEDS_TENANT_PROD || github.ref == 'refs/heads/dev' && secrets.ONEDS_TENANT_NONPROD || '' }}
+      onedstenant: |
+        github.ref == 'refs/heads/main' && secrets.ONEDS_TENANT_PROD ||
+        github.ref == 'refs/heads/dev' && secrets.ONEDS_TENANT_NONPROD ||
+        github.ref == 'refs/heads/telemetry_staging' && secrets.ONEDS_TENANT_NONPROD ||
+        ''
