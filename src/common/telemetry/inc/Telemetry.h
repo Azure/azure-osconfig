@@ -26,8 +26,7 @@ int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle);
 // keyValuePairs: Array of key-value pair strings (must be even number of elements)
 // pairCount: Number of key-value pairs (keyValuePairs array size / 2)
 // Returns 0 on success, non-zero on failure
-int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
-                          const char** keyValuePairs, int pairCount);
+int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName, const char** keyValuePairs, int pairCount);
 
 // Set the binary directory path for telemetry executable
 // handle: Handle to the logger instance

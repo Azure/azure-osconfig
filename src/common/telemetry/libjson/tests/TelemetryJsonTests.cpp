@@ -36,14 +36,17 @@ protected:
     std::string readFileContents(const std::string& filename)
     {
         std::ifstream file(filename);
-        if (!file.is_open()) {
+        if (!file.is_open())
+        {
             return "";
         }
 
         std::string content;
         std::string line;
-        while (std::getline(file, line)) {
-            if (!content.empty()) {
+        while (std::getline(file, line))
+        {
+            if (!content.empty())
+            {
                 content += "\n";
             }
             content += line;
@@ -56,12 +59,14 @@ protected:
     bool validateJsonLine(const std::string& jsonLine, const std::string& expectedEventName)
     {
         JSON_Value* jsonValue = json_parse_string(jsonLine.c_str());
-        if (!jsonValue) {
+        if (!jsonValue)
+        {
             return false;
         }
 
         JSON_Object* jsonObject = json_value_get_object(jsonValue);
-        if (!jsonObject) {
+        if (!jsonObject)
+        {
             json_value_free(jsonValue);
             return false;
         }
@@ -78,14 +83,17 @@ protected:
         return isValid;
     }
 
-    const char* OSConfigTelemetryGetFilepath(OSConfigTelemetryHandle handle) {
-        if (handle == NULL) {
+    const char* OSConfigTelemetryGetFilepath(OSConfigTelemetryHandle handle)
+    {
+        if (handle == NULL)
+        {
             return NULL;
         }
 
         struct TelemetryLogger* logger = (struct TelemetryLogger*)handle;
 
-        if (!logger->isOpen) {
+        if (!logger->isOpen)
+        {
             return NULL;
         }
 
@@ -164,7 +172,8 @@ TEST_F(TelemetryJsonTest, LogEvent_ValidEventWithHandle_Success)
     // Validate JSON structure
     std::istringstream iss(fileContents);
     std::string line;
-    while (std::getline(iss, line)) {
+    while (std::getline(iss, line))
+    {
         EXPECT_TRUE(validateJsonLine(line, eventName));
 
         // Parse the JSON line to validate data types
@@ -294,7 +303,8 @@ TEST_F(TelemetryJsonTest, GetModuleDirectory_ReturnsValidPath)
 
     // Should not be NULL - dladdr should find the current module
     EXPECT_NE(nullptr, moduleDir);
-    if (moduleDir) {
+    if (moduleDir)
+    {
         EXPECT_NE('\0', moduleDir[0]);
 
         // Should be an absolute path (start with '/') or relative path (start with '.')
@@ -302,7 +312,8 @@ TEST_F(TelemetryJsonTest, GetModuleDirectory_ReturnsValidPath)
 
         // Should not end with '/' (directory names typically don't)
         size_t len = strlen(moduleDir);
-        if (len > 0) {
+        if (len > 0)
+        {
             EXPECT_NE('/', moduleDir[len - 1]);
         }
 

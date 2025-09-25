@@ -22,23 +22,26 @@
 
 #if BUILD_TELEMETRY
 
-
 // Helper function to generate random filename
-static char* generateRandomFilename(void) {
+static char* generateRandomFilename(void)
+{
     char temp_template[] = "/tmp/telemetry_XXXXXX";
     int fd = mkstemp(temp_template);
-    if (fd == -1) {
+    if (fd == -1)
+    {
         return NULL;
     }
 
     close(fd);
-    if (unlink(temp_template) != 0) {
+    if (unlink(temp_template) != 0)
+    {
         perror("Failed to delete temporary file");
     }
 
     // Append .json to the unique name
     char* result = malloc(strlen(temp_template) + 6); // +5 for ".json" +1 for '\0'
-    if (result) {
+    if (result)
+    {
         strcpy(result, temp_template);
         strcat(result, ".json");
     }
@@ -47,20 +50,25 @@ static char* generateRandomFilename(void) {
 }
 
 // Helper function to get module directory
-static char* getModuleDirectory(void) {
+static char* getModuleDirectory(void)
+{
     Dl_info dl_info;
 
     // Get information about the current function's address
-    if (dladdr((void*)getModuleDirectory, &dl_info) != 0) {
-        if (dl_info.dli_fname != NULL) {
+    if (dladdr((void*)getModuleDirectory, &dl_info) != 0)
+    {
+        if (dl_info.dli_fname != NULL)
+        {
             const char* fullPath = dl_info.dli_fname;
 
             // Find the last slash to get the directory path
             const char* lastSlash = strrchr(fullPath, '/');
-            if (lastSlash != NULL) {
+            if (lastSlash != NULL)
+            {
                 size_t dirLen = lastSlash - fullPath;
                 char* result = malloc(dirLen + 1);
-                if (result) {
+                if (result)
+                {
                     strncpy(result, fullPath, dirLen);
                     result[dirLen] = '\0';
                     return result;
@@ -73,12 +81,15 @@ static char* getModuleDirectory(void) {
 }
 
 // Helper function to run telemetry proxy
-static void runTelemetryProxy(const char* telemetryJSONFile, const char* binaryDirectory) {
+static void runTelemetryProxy(const char* telemetryJSONFile, const char* binaryDirectory)
+{
     pid_t pid = fork();
 
-    if (pid == 0) {
+    if (pid == 0)
+    {
         // Child process
-        if (!binaryDirectory) {
+        if (!binaryDirectory)
+        {
             exit(ENOENT);
         }
 
@@ -89,7 +100,8 @@ static void runTelemetryProxy(const char* telemetryJSONFile, const char* binaryD
         // Usage: telemetry [OPTIONS] <json_file_path> [teardown_time_seconds]
         size_t pathLen = strlen(binaryDirectory) + strlen(TELEMETRY_BINARY_NAME) + 2;
         char* path = malloc(pathLen);
-        if (path) {
+        if (path)
+        {
             snprintf(path, pathLen, "%s/%s", binaryDirectory, TELEMETRY_BINARY_NAME);
             execl(path, TELEMETRY_BINARY_NAME, "-v", telemetryJSONFile, "5", (char*)NULL);
             free(path);
@@ -100,9 +112,11 @@ static void runTelemetryProxy(const char* telemetryJSONFile, const char* binaryD
 }
 
 // C interface implementations
-OSConfigTelemetryHandle OSConfigTelemetryOpen(void) {
+OSConfigTelemetryHandle OSConfigTelemetryOpen(void)
+{
     struct TelemetryLogger* logger = malloc(sizeof(struct TelemetryLogger));
-    if (!logger) {
+    if (!logger)
+    {
         return NULL;
     }
 
@@ -114,14 +128,16 @@ OSConfigTelemetryHandle OSConfigTelemetryOpen(void) {
 
     // Generate filename
     logger->filename = generateRandomFilename();
-    if (!logger->filename) {
+    if (!logger->filename)
+    {
         free(logger);
         return NULL;
     }
 
     // Open file
     logger->logFile = fopen(logger->filename, "a");
-    if (!logger->logFile) {
+    if (!logger->logFile)
+    {
         free(logger->filename);
         free(logger);
         return NULL;
@@ -131,18 +147,22 @@ OSConfigTelemetryHandle OSConfigTelemetryOpen(void) {
     return (OSConfigTelemetryHandle)logger;
 }
 
-int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle) {
-    if (handle == NULL || *handle == NULL) {
+int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle)
+{
+    if (handle == NULL || *handle == NULL)
+    {
         return -1;
     }
 
     struct TelemetryLogger* logger = (struct TelemetryLogger*)*handle;
 
-    if (!logger->isOpen) {
+    if (!logger->isOpen)
+    {
         return -1;
     }
 
-    if (logger->logFile) {
+    if (logger->logFile)
+    {
         fclose(logger->logFile);
         logger->logFile = NULL;
     }
@@ -150,20 +170,24 @@ int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle) {
     logger->isOpen = 0;
 
     // Set binary directory if not already set
-    if (!logger->binaryDirectory) {
+    if (!logger->binaryDirectory)
+    {
         logger->binaryDirectory = getModuleDirectory();
     }
 
     // Run telemetry proxy if binary directory is available
-    if (logger->binaryDirectory && logger->filename) {
+    if (logger->binaryDirectory && logger->filename)
+    {
         runTelemetryProxy(logger->filename, logger->binaryDirectory);
     }
 
     // Clean up
-    if (logger->filename) {
+    if (logger->filename)
+    {
         free(logger->filename);
     }
-    if (logger->binaryDirectory) {
+    if (logger->binaryDirectory)
+    {
         free(logger->binaryDirectory);
     }
     free(logger);
@@ -173,90 +197,113 @@ int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle) {
 }
 
 int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
-                              const char** keyValuePairs, int pairCount) {
-    if (handle == NULL || eventName == NULL) {
+                              const char** keyValuePairs, int pairCount)
+{
+    if (handle == NULL || eventName == NULL)
+    {
         return -1;
     }
 
     struct TelemetryLogger* logger = (struct TelemetryLogger*)handle;
 
-    if (!logger->isOpen || !logger->logFile) {
+    if (!logger->isOpen || !logger->logFile)
+    {
         return -1;
     }
 
     // Create JSON value and get root object
     JSON_Value* rootValue = json_value_init_object();
-    if (rootValue == NULL) {
+    if (rootValue == NULL)
+    {
         return -1;
     }
 
     JSON_Object* rootObject = json_value_get_object(rootValue);
-    if (rootObject == NULL) {
+    if (rootObject == NULL)
+    {
         json_value_free(rootValue);
         return -1;
     }
 
     // Add timestamp
     const char* timestamp = GetFormattedTime();
-    if (!timestamp || json_object_set_string(rootObject, "Timestamp", timestamp) != JSONSuccess) {
+    if (!timestamp || json_object_set_string(rootObject, "Timestamp", timestamp) != JSONSuccess)
+    {
         json_value_free(rootValue);
         return -1;
     }
 
     // Add event name
-    if (json_object_set_string(rootObject, "EventName", eventName) != JSONSuccess) {
+    if (json_object_set_string(rootObject, "EventName", eventName) != JSONSuccess)
+    {
         json_value_free(rootValue);
         return -1;
     }
 
     // Add key-value pairs directly to root object if provided
-    if (keyValuePairs != NULL && pairCount > 0) {
-        for (int i = 0; i < pairCount; i++) {
+    if (keyValuePairs != NULL && pairCount > 0)
+    {
+        for (int i = 0; i < pairCount; i++)
+        {
             const char* key = keyValuePairs[i * 2];
             const char* value = keyValuePairs[i * 2 + 1];
 
-            if (key != NULL && value != NULL) {
+            if (key != NULL && value != NULL)
+            {
                 // Attempt to deduce the value type and serialize appropriately
                 JSON_Status result = JSONFailure;
 
                 // Try to parse as boolean first (exact matches)
-                if (strcmp(value, "true") == 0 || strcmp(value, "false") == 0) {
+                if (strcmp(value, "true") == 0 || strcmp(value, "false") == 0)
+                {
                     int boolValue = (strcmp(value, "true") == 0) ? 1 : 0;
                     result = json_object_set_boolean(rootObject, key, boolValue);
                 }
                 // Try to parse as null
-                else if (strcmp(value, "null") == 0) {
+                else if (strcmp(value, "null") == 0)
+                {
                     result = json_object_set_null(rootObject, key);
                 }
                 // Try to parse as integer
-                else {
+                else
+                {
                     char* endPtr = NULL;
                     long longValue = strtol(value, &endPtr, 10);
 
                     // Check if entire string was consumed and no overflow occurred
-                    if (endPtr != NULL && *endPtr == '\0' && endPtr != value) {
+                    if (endPtr != NULL && *endPtr == '\0' && endPtr != value)
+                    {
                         // Check if it fits in int range
-                        if (longValue >= INT_MIN && longValue <= INT_MAX) {
+                        if (longValue >= INT_MIN && longValue <= INT_MAX)
+                        {
                             result = json_object_set_number(rootObject, key, (double)longValue);
-                        } else {
+                        }
+                        else
+                        {
                             // Value is too large for int, treat as string
                             result = json_object_set_string(rootObject, key, value);
                         }
-                    } else {
+                    }
+                    else
+                    {
                         // Try to parse as double
                         double doubleValue = strtod(value, &endPtr);
 
                         // Check if entire string was consumed
-                        if (endPtr != NULL && *endPtr == '\0' && endPtr != value) {
+                        if (endPtr != NULL && *endPtr == '\0' && endPtr != value)
+                        {
                             result = json_object_set_number(rootObject, key, doubleValue);
-                        } else {
+                        }
+                        else
+                        {
                             // Not a number, treat as string
                             result = json_object_set_string(rootObject, key, value);
                         }
                     }
                 }
 
-                if (result != JSONSuccess) {
+                if (result != JSONSuccess)
+                {
                     json_value_free(rootValue);
                     return -1;
                 }
@@ -268,7 +315,8 @@ int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventN
     char* jsonString = json_serialize_to_string(rootValue);
     json_value_free(rootValue);
 
-    if (jsonString == NULL) {
+    if (jsonString == NULL)
+    {
         return -1;
     }
 
@@ -282,22 +330,26 @@ int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventN
     return 0;
 }
 
-int OSConfigTelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory) {
-    if (handle == NULL || directory == NULL) {
+int OSConfigTelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory)
+{
+    if (handle == NULL || directory == NULL)
+    {
         return -1;
     }
 
     struct TelemetryLogger* logger = (struct TelemetryLogger*)handle;
 
     // Free existing directory if set
-    if (logger->binaryDirectory) {
+    if (logger->binaryDirectory)
+    {
         free(logger->binaryDirectory);
     }
 
     // Copy the new directory
     size_t dirLen = strlen(directory) + 1;
     logger->binaryDirectory = malloc(dirLen);
-    if (!logger->binaryDirectory) {
+    if (!logger->binaryDirectory)
+    {
         return -1;
     }
     strcpy(logger->binaryDirectory, directory);
@@ -305,9 +357,11 @@ int OSConfigTelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const ch
     return 0;
 }
 
-const char* OSConfigTelemetryGetModuleDirectory(void) {
+const char* OSConfigTelemetryGetModuleDirectory(void)
+{
     static char* moduleDir = NULL;
-    if (!moduleDir) {
+    if (!moduleDir)
+    {
         moduleDir = getModuleDirectory();
     }
     return moduleDir;
@@ -316,17 +370,20 @@ const char* OSConfigTelemetryGetModuleDirectory(void) {
 #else // BUILD_TELEMETRY
 
 // Stub implementations when BUILD_TELEMETRY is not enabled
-OSConfigTelemetryHandle OSConfigTelemetryOpen(void) {
+OSConfigTelemetryHandle OSConfigTelemetryOpen(void)
+{
     return NULL;
 }
 
-int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle) {
+int OSConfigTelemetryClose(OSConfigTelemetryHandle* handle)
+{
     (void)handle; // Suppress unused parameter warning
     return -1;
 }
 
 int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventName,
-                              const char** keyValuePairs, int pairCount) {
+                              const char** keyValuePairs, int pairCount)
+{
     (void)handle; // Suppress unused parameter warnings
     (void)eventName;
     (void)keyValuePairs;
@@ -334,18 +391,21 @@ int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventN
     return -1;
 }
 
-int OSConfigTelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory) {
+int OSConfigTelemetrySetBinaryDirectory(OSConfigTelemetryHandle handle, const char* directory)
+{
     (void)handle; // Suppress unused parameter warnings
     (void)directory;
     return -1;
 }
 
-const char* OSConfigTelemetryGetFilepath(OSConfigTelemetryHandle handle) {
+const char* OSConfigTelemetryGetFilepath(OSConfigTelemetryHandle handle)
+{
     (void)handle; // Suppress unused parameter warning
     return NULL;
 }
 
-const char* OSConfigTelemetryGetModuleDirectory(void) {
+const char* OSConfigTelemetryGetModuleDirectory(void)
+{
     return NULL;
 }
 
