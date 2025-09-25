@@ -121,8 +121,9 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 int CheckUserAccountsNotFound(const char* names, char** reason, OsConfigLogHandle log);
 int RemoveUserAccounts(const char* names, OsConfigLogHandle log);
 int RestrictSuToRootGroup(OsConfigLogHandle log);
-
 bool GroupExists(gid_t groupId, OsConfigLogHandle log);
+int CheckGroupExists(const char* name, char** reason, OsConfigLogHandle log);
+int CheckUserExists(const char* username, char** reason, OsConfigLogHandle log);
 
 #ifdef __cplusplus
 }
