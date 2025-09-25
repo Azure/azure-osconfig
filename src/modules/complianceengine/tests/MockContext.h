@@ -32,6 +32,13 @@ struct MockContext : public ComplianceEngine::ContextInterface
         {
             throw std::runtime_error("Failed to create temporary directory");
         }
+        mTempRootDir = std::string(mTempdir) + "/rootfs";
+        ::mkdir(mTempRootDir.c_str(), 0755);
+
+        std::string mCachePath = std::string(mTempdir) + "/fsscanner-cache";
+        std::string mLockfilePath = std::string(mTempdir) + "/fsscanner-lock";
+        mFsScannerp =
+            std::unique_ptr<ComplianceEngine::FilesystemScanner>(new ComplianceEngine::FilesystemScanner(mTempRootDir, mCachePath, mLockfilePath, 30, 60, 5));
     }
 
     ~MockContext() override
@@ -127,8 +134,15 @@ struct MockContext : public ComplianceEngine::ContextInterface
         mSpecialFilesMap[path] = overridden;
     }
 
+    ComplianceEngine::FilesystemScanner& GetFilesystemScanner()
+    {
+        return *mFsScannerp;
+    }
+
 private:
     char mTempdir[PATH_MAX];
+    std::string mTempRootDir;
     std::vector<std::string> mTempfiles;
     std::map<std::string, std::string> mSpecialFilesMap;
+    std::unique_ptr<ComplianceEngine::FilesystemScanner> mFsScannerp;
 };
