@@ -3878,7 +3878,7 @@ static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, OsCo
     }
     else
     {
-        OsConfigLogInfo(log, "Manually add group 'adm', %", g_remediationIsNotPossible);
+        OsConfigLogInfo(log, "Manually add group 'adm', %s", g_remediationIsNotPossible);
         return ENOENT;
     }
 }
@@ -3892,7 +3892,7 @@ static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, Os
     }
     else
     {
-        OsConfigLogInfo(log, "Manually add user 'syslog', %", g_remediationIsNotPossible);
+        OsConfigLogInfo(log, "Manually add user 'syslog', %s", g_remediationIsNotPossible);
         return ENOENT;
     }
 }
