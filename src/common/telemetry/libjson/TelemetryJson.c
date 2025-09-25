@@ -17,28 +17,11 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <Logging.h>
 #include "TelemetryJson.h"
 
 #if BUILD_TELEMETRY
 
-// Helper function to get current timestamp in ISO 8601 format
-static char* getCurrentTimestamp(void) {
-    time_t now;
-    struct tm* timeInfo;
-    char* buffer = malloc(32);
-    if (!buffer) {
-        return NULL;
-    }
-
-    time(&now);
-    timeInfo = gmtime(&now);
-    if (timeInfo && strftime(buffer, 32, "%Y-%m-%dT%H:%M:%SZ", timeInfo) > 0) {
-        return buffer;
-    }
-
-    free(buffer);
-    return NULL;
-}
 
 // Helper function to generate random filename
 static char* generateRandomFilename(void) {
@@ -214,13 +197,11 @@ int OSConfigTelemetryLogEvent(OSConfigTelemetryHandle handle, const char* eventN
     }
 
     // Add timestamp
-    char* timestamp = getCurrentTimestamp();
+    const char* timestamp = GetFormattedTime();
     if (!timestamp || json_object_set_string(rootObject, "Timestamp", timestamp) != JSONSuccess) {
         json_value_free(rootValue);
-        if (timestamp) free(timestamp);
         return -1;
     }
-    free(timestamp);
 
     // Add event name
     if (json_object_set_string(rootObject, "EventName", eventName) != JSONSuccess) {
