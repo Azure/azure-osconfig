@@ -604,6 +604,7 @@ static const char* g_bootGrubUserCfg = "/boot/grub/user.cfg";
 static const char* g_bootGrub2UserCfg = "/boot/grub2/user.cfg";
 static const char* g_minSambaProtocol = "min protocol = SMB2";
 static const char* g_login = "login";
+static const char* g_conf = ".conf";
 
 static const char* g_remediationIsNotPossible = "automatic remediation is not possible";
 
@@ -1973,28 +1974,28 @@ static char* AuditEnsureIpv6ProtocolIsEnabled(OsConfigLogHandle log)
 static char* AuditEnsureDccpIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install dccp /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install dccp /bin/true", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureSctpIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install sctp /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install sctp /bin/true", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledSupportForRds(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install rds /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install rds /bin/true", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureTipcIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install tipc /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install tipc /bin/true", g_conf, &reason, log);
     return reason;
 }
 
@@ -2040,7 +2041,7 @@ static char* AuditEnsurePasswordReuseIsLimited(OsConfigLogHandle log)
 static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install usb-storage /bin/true", g_conf, &reason, log);
     return reason;
 }
 
@@ -2097,35 +2098,35 @@ static char* AuditEnsureLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
 static char* AuditEnsureDisabledInstallationOfCramfsFileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install cramfs", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install cramfs", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfFreevxfsFileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install freevxfs", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install freevxfs", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfHfsFileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install hfs", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install hfs", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfHfsplusFileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install hfsplus", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install hfsplus", g_conf, &reason, log);
     return reason;
 }
 
 static char* AuditEnsureDisabledInstallationOfJffs2FileSystem(OsConfigLogHandle log)
 {
     char* reason = NULL;
-    CheckTextFoundInFolder(g_etcModProbeD, "install jffs2", &reason, log);
+    CheckTextFoundInFolder(g_etcModProbeD, "install jffs2", g_conf, &reason, log);
     return reason;
 }
 
