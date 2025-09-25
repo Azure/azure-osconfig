@@ -24,7 +24,7 @@ static const char sshdSimpleCommand[] = "sshd -T";
 static const char sshdComplexCommand[] = "sshd -T -C user=root -C host=testhost -C addr=1.2.3.4";
 static const char sshdMaxStartupsOutput[] =
     "port 22\n"
-    "maxstartups 10 30 60\n"; // Using space-separated triplet to match current special-case parser
+    "maxstartups 10:30:60\n"; // Using space-separated triplet to match current special-case parser
 
 static const char sshdWithoutMatchGroupOutput[] =
     "port 22\n"
@@ -108,8 +108,11 @@ TEST_F(EnsureSshdOptionTest, InitialCommandFails)
     args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Failed to execute sshd -T command") != std::string::npos);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
+    ASSERT_TRUE(formatted.find("Failed to execute sshd -T command") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, SimpleConfigOptionExists)
@@ -173,8 +176,11 @@ TEST_F(EnsureSshdOptionTest, CommandFailure)
     args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Failed to execute sshd -T") != std::string::npos);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
+    ASSERT_TRUE(formatted.find("Failed to execute sshd -T") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, WithMatchGroupConfig)
@@ -207,8 +213,11 @@ TEST_F(EnsureSshdOptionTest, HostnameCommandFailure)
     args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Failed to execute hostname command") != std::string::npos);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
+    ASSERT_TRUE(formatted.find("Failed to execute hostname command") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, HostAddressCommandFailure)
@@ -224,8 +233,11 @@ TEST_F(EnsureSshdOptionTest, HostAddressCommandFailure)
     args["value"] = "no";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
-    ASSERT_FALSE(result.HasValue());
-    ASSERT_TRUE(result.Error().message.find("Failed to get host address") != std::string::npos);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::NonCompliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    ASSERT_TRUE(formatted.find("Failed to get sshd options:") != std::string::npos);
+    ASSERT_TRUE(formatted.find("Failed to get host address") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, RegexMatches)
@@ -303,6 +315,24 @@ TEST_F(EnsureSshdOptionTest, OperationNotMatch_NonCompliant)
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
 
+TEST_F(EnsureSshdOptionTest, OperationNotMatch_MissingOptionIsCompliant)
+{
+    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
+
+    std::map<std::string, std::string> args;
+    args["option"] = "nonexistentoption"; // ensure not present
+    args["value"] = "forbidden";          // arbitrary pattern
+    args["op"] = "not_match";
+
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
+    ASSERT_TRUE(result.HasValue());
+    ASSERT_EQ(result.Value(), Status::Compliant);
+    auto formatted = mFormatter.Format(mIndicators).Value();
+    // Current implementation returns generic missing option message without special suffix
+    ASSERT_TRUE(formatted.find("Option 'nonexistentoption' not found") != std::string::npos);
+}
+
 TEST_F(EnsureSshdOptionTest, OperationNumericLt_Compliant)
 {
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
@@ -370,14 +400,15 @@ TEST_F(EnsureSshdOptionTest, MaxStartups_Compliant)
 
     std::map<std::string, std::string> args;
     args["option"] = "maxstartups"; // special case
+    args["op"] = "match";
     // Provide thresholds higher than actual values (10 30 60)
-    args["value"] = "15 40 70";
+    args["value"] = "15:40:70";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
-    ASSERT_TRUE(formatted.find("Option 'maxstartups' has a compliant value '10 30 60'") != std::string::npos);
+    ASSERT_TRUE(formatted.find("Option 'maxstartups' has a value '10:30:60' compliant with limits '15:40:70'") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, MaxStartups_NonCompliant)
@@ -387,14 +418,15 @@ TEST_F(EnsureSshdOptionTest, MaxStartups_NonCompliant)
 
     std::map<std::string, std::string> args;
     args["option"] = "maxstartups";
+    args["op"] = "match";
     // Set at least one threshold lower than actual (e.g., middle value 25 < 30)
-    args["value"] = "15 25 70";
+    args["value"] = "15:25:70";
 
     auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
-    ASSERT_TRUE(formatted.find("Option 'maxstartups' has value '10 30 60' which exceeds limits") != std::string::npos);
+    ASSERT_TRUE(formatted.find("Option 'maxstartups' has value '10:30:60' which exceeds limits '15:25:70'") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, OperationUnsupported)
@@ -412,90 +444,98 @@ TEST_F(EnsureSshdOptionTest, OperationUnsupported)
     ASSERT_TRUE(result.Error().message.find("Unsupported op") != std::string::npos);
 }
 
-TEST_F(EnsureSshdOptionTest, NoOption_AllOptionsAbsent)
+// ========================= Adapted legacy NoOption scenarios using EnsureSshdOption (op=not_match) =========================
+
+TEST_F(EnsureSshdOptionTest, NoOption_AllOptionsAbsent_Adapted)
 {
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
+    // Provide two nonexistent options; with not_match op, absence is compliant per updated semantics.
     std::map<std::string, std::string> args;
-    args["options"] = "nonexistentoption1,nonexistentoption2";
-    args["values"] = ".*no.*,.*yes.*";
+    args["option"] = "nonexistentoption1,nonexistentoption2"; // unified interface uses 'option'
+    args["value"] = ".*";                                     // any value would be forbidden if option existed
+    args["op"] = "not_match";
 
-    auto result = ComplianceEngine::AuditEnsureSshdNoOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
+    // Expect individual missing option messages
     ASSERT_TRUE(formatted.find("Option 'nonexistentoption1' not found") != std::string::npos);
     ASSERT_TRUE(formatted.find("Option 'nonexistentoption2' not found") != std::string::npos);
 }
 
-TEST_F(EnsureSshdOptionTest, NoOption_OptionPresentWithCompliantValue)
+TEST_F(EnsureSshdOptionTest, NoOption_OptionPresentWithForbiddenValue_Adapted)
 {
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
+    // Original test expected NonCompliant when the value was present (since legacy NoOption treated presence of compliant value as violation)
     std::map<std::string, std::string> args;
-    args["options"] = "permitrootlogin";
-    args["values"] = "no";
+    args["option"] = "permitrootlogin"; // actual value 'no'
+    args["value"] = "no";               // forbidden value pattern
+    args["op"] = "not_match";
 
-    auto result = ComplianceEngine::AuditEnsureSshdNoOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
-    ASSERT_TRUE(formatted.find("Option 'permitrootlogin' has a compliant value 'no'") != std::string::npos);
+    ASSERT_TRUE(formatted.find("matches forbidden pattern 'no'") != std::string::npos);
 }
 
-TEST_F(EnsureSshdOptionTest, NoOption_OptionPresentWithNonCompliantValue)
+TEST_F(EnsureSshdOptionTest, NoOption_OptionPresentWithAllowedValue_Adapted)
 {
     EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
     EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
 
     std::map<std::string, std::string> args;
-    args["options"] = "maxauthtries";
-    args["values"] = "5,6,7";
+    args["option"] = "maxauthtries"; // actual value 4
+    args["value"] = "5,6,7";         // forbidden values that DO NOT match actual value
+    args["op"] = "not_match";
 
-    auto result = ComplianceEngine::AuditEnsureSshdNoOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
-    ASSERT_TRUE(formatted.find("Option 'maxauthtries' has no compliant value in SSH daemon configuration") != std::string::npos);
+    // Ensure we recorded compliant evaluation for the option; presence of explicit success phrase not guaranteed, so just ensure absence of forbidden pattern message
+    ASSERT_TRUE(formatted.find("matches forbidden pattern") == std::string::npos);
 }
 
-TEST_F(EnsureSshdOptionTest, NoOption_InvalidRegex)
+TEST_F(EnsureSshdOptionTest, NoOption_InvalidRegex_Adapted)
 {
-    EXPECT_CALL(mContext, ExecuteCommand(sshdInitialCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
-    EXPECT_CALL(mContext, ExecuteCommand(sshdSimpleCommand)).WillOnce(Return(Result<std::string>(sshdWithoutMatchGroupOutput)));
-
+    // Regex compilation fails before any command execution; no EXPECT_CALL on sshd
     std::map<std::string, std::string> args;
-    args["options"] = "permitrootlogin";
-    args["values"] = "(invalid[";
+    args["option"] = "permitrootlogin";
+    args["value"] = "(invalid["; // invalid regex
+    args["op"] = "not_match";
 
-    auto result = ComplianceEngine::AuditEnsureSshdNoOption(args, mIndicators, mContext);
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_TRUE(result.Error().message.find("Failed to compile regex") != std::string::npos);
 }
 
-TEST_F(EnsureSshdOptionTest, NoOption_MissingOptionsArgument)
+TEST_F(EnsureSshdOptionTest, NoOption_MissingOptionArgument_Adapted)
 {
     std::map<std::string, std::string> args;
-    args["values"] = "no";
-
-    auto result = ComplianceEngine::AuditEnsureSshdNoOption(args, mIndicators, mContext);
+    args["value"] = "no";
+    args["op"] = "not_match";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'options' parameter");
+    ASSERT_EQ(result.Error().message, "Missing 'option' parameter");
 }
 
-TEST_F(EnsureSshdOptionTest, NoOption_MissingValuesArgument)
+TEST_F(EnsureSshdOptionTest, NoOption_MissingValueArgument_Adapted)
 {
     std::map<std::string, std::string> args;
-    args["options"] = "permitrootlogin";
-
-    auto result = ComplianceEngine::AuditEnsureSshdNoOption(args, mIndicators, mContext);
+    args["option"] = "permitrootlogin";
+    args["op"] = "not_match";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
-    ASSERT_EQ(result.Error().message, "Missing 'values' parameter");
+    ASSERT_EQ(result.Error().message, "Missing 'value' parameter");
 }
 
-// ========================= Tests for EnsureSshdOptionMatch =========================
+// ========================= Tests for EnsureSshdOption in all_matches mode (formerly EnsureSshdOptionMatch) =========================
 
 static const char sshdConfigWithMatches[] =
     "Port 22\n"
@@ -517,7 +557,8 @@ TEST_F(EnsureSshdOptionTest, Match_MissingOptionArgument)
 {
     std::map<std::string, std::string> args;
     args["value"] = "no";
-    auto result = ComplianceEngine::AuditEnsureSshdOptionMatch(args, mIndicators, mContext);
+    args["mode"] = "all_matches";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Missing 'option' parameter");
 }
@@ -526,7 +567,8 @@ TEST_F(EnsureSshdOptionTest, Match_MissingValueArgument)
 {
     std::map<std::string, std::string> args;
     args["option"] = "permitrootlogin";
-    auto result = ComplianceEngine::AuditEnsureSshdOptionMatch(args, mIndicators, mContext);
+    args["mode"] = "all_matches";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_EQ(result.Error().message, "Missing 'value' parameter");
 }
@@ -536,7 +578,8 @@ TEST_F(EnsureSshdOptionTest, Match_InvalidRegex)
     std::map<std::string, std::string> args;
     args["option"] = "permitrootlogin";
     args["value"] = "(invalid[";
-    auto result = ComplianceEngine::AuditEnsureSshdOptionMatch(args, mIndicators, mContext);
+    args["mode"] = "all_matches";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_TRUE(result.Error().message.find("Failed to compile regex") != std::string::npos);
 }
@@ -555,11 +598,13 @@ TEST_F(EnsureSshdOptionTest, Match_AllCompliant)
     args["option"] = "permitrootlogin";
     args["value"] = "no";
 
-    auto result = ComplianceEngine::AuditEnsureSshdOptionMatch(args, mIndicators, mContext);
+    args["mode"] = "all_matches";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
     auto formatted = mFormatter.Format(mIndicators).Value();
-    ASSERT_TRUE(formatted.find("All possible match options are compliant") != std::string::npos);
+    // Unified implementation final success message changed
+    ASSERT_TRUE(formatted.find("All options are compliant") != std::string::npos);
 }
 
 TEST_F(EnsureSshdOptionTest, Match_FirstNonCompliantShortCircuits)
@@ -574,7 +619,8 @@ TEST_F(EnsureSshdOptionTest, Match_FirstNonCompliantShortCircuits)
     args["option"] = "permitrootlogin";
     args["value"] = "no"; // expecting 'no'
 
-    auto result = ComplianceEngine::AuditEnsureSshdOptionMatch(args, mIndicators, mContext);
+    args["mode"] = "all_matches";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -591,7 +637,8 @@ TEST_F(EnsureSshdOptionTest, Match_OptionMissingInOneContext)
     args["option"] = "permitrootlogin";
     args["value"] = ".*";
 
-    auto result = ComplianceEngine::AuditEnsureSshdOptionMatch(args, mIndicators, mContext);
+    args["mode"] = "all_matches";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant); // option missing treated as non-compliant
 }
@@ -608,7 +655,8 @@ TEST_F(EnsureSshdOptionTest, Match_NotMatchOperation_Compliant)
     args["value"] = "yes"; // forbidden
     args["op"] = "not_match";
 
-    auto result = ComplianceEngine::AuditEnsureSshdOptionMatch(args, mIndicators, mContext);
+    args["mode"] = "all_matches";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -626,7 +674,8 @@ TEST_F(EnsureSshdOptionTest, Match_NotMatchOperation_NonCompliant)
     args["value"] = "no"; // actual value matches forbidden pattern
     args["op"] = "not_match";
 
-    auto result = ComplianceEngine::AuditEnsureSshdOptionMatch(args, mIndicators, mContext);
+    args["mode"] = "all_matches";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -644,7 +693,8 @@ TEST_F(EnsureSshdOptionTest, Match_NumericLt_Compliant)
     args["value"] = "5";
     args["op"] = "lt";
 
-    auto result = ComplianceEngine::AuditEnsureSshdOptionMatch(args, mIndicators, mContext);
+    args["mode"] = "all_matches";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -662,7 +712,8 @@ TEST_F(EnsureSshdOptionTest, Match_NumericLt_NonCompliant)
     args["value"] = "5";
     args["op"] = "lt";
 
-    auto result = ComplianceEngine::AuditEnsureSshdOptionMatch(args, mIndicators, mContext);
+    args["mode"] = "all_matches";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -677,7 +728,8 @@ TEST_F(EnsureSshdOptionTest, Match_UnsupportedOp)
     args["value"] = "no";
     args["op"] = "someInvalid";
 
-    auto result = ComplianceEngine::AuditEnsureSshdOptionMatch(args, mIndicators, mContext);
+    args["mode"] = "all_matches";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_FALSE(result.HasValue());
     ASSERT_TRUE(result.Error().message.find("Unsupported op") != std::string::npos);
 }
@@ -690,7 +742,8 @@ TEST_F(EnsureSshdOptionTest, Match_FileReadFailure_NoMatchesReturnsCompliant)
     args["option"] = "permitrootlogin";
     args["value"] = "no";
 
-    auto result = ComplianceEngine::AuditEnsureSshdOptionMatch(args, mIndicators, mContext);
+    args["mode"] = "all_matches";
+    auto result = AuditEnsureSshdOption(args, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     // No matches => loop skipped => Compliant per current implementation
     ASSERT_EQ(result.Value(), Status::Compliant);

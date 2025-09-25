@@ -25,6 +25,7 @@ set(PROCEDURES
     procedures/EnsureNoDuplicateEntriesExistTest.cpp
     procedures/EnsurePasswordChangeIsInPastTest.cpp
     procedures/EnsureRootPathTest.cpp
+    procedures/EnsureSshKeyPermsTest.cpp
     procedures/EnsureSshdOptionTest.cpp
     procedures/EnsureSysctlTest.cpp
     procedures/EnsureSystemAccountsDoNotHaveValidShellTest.cpp
@@ -39,6 +40,14 @@ set(PROCEDURES
     procedures/ufwStatusTest.cpp
     procedures/EnsureShadowContainsTest.cpp
 )
+
+# Check that all globbed procedures are in the PROCEDURES list
+file(GLOB GLOBBED_PROCEDURES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} procedures/*.cpp)
+foreach(proc ${GLOBBED_PROCEDURES})
+    if (NOT proc IN_LIST PROCEDURES)
+        message(SEND_ERROR "Globbed procedure ${proc} is not in the PROCEDURES list.")
+    endif()
+endforeach()
 
 add_executable(complianceenginetests
     Base64Test.cpp
