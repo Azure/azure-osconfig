@@ -18,9 +18,11 @@
 
 #include "ParameterSets.hpp"
 
-namespace Telemetry {
+namespace Telemetry
+{
 
-    class TelemetryManager {
+    class TelemetryManager
+    {
     public:
         static const int CONFIG_DEFAULT_TEARDOWN_TIME = 5; // seconds
 
