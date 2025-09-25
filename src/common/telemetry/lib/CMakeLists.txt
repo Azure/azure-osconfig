@@ -22,8 +22,6 @@ endif()
 # Force vcpkg-only usage - determine vcpkg installed directory
 if (DEFINED ENV{VCPKG_ROOT})
     set(VCPKG_INSTALLED_DIR "$ENV{VCPKG_ROOT}/vcpkg_installed")
-else()
-    set(VCPKG_INSTALLED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../external/vcpkg/vcpkg_installed")
 endif()
 set(VCPKG_PACKAGES_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
 
