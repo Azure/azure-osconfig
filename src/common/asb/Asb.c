@@ -3872,7 +3872,7 @@ static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, OsC
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    if (0 == CheckGroupExists("adm", &reason, log))
+    if (0 == CheckGroupExists("adm", NULL, log))
     {
         return SetEtcConfValue(g_etcRsyslogConf, "$FileGroup", "adm", log);
     }
@@ -3886,7 +3886,7 @@ static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, OsCo
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    if (0 == CheckUserExists("syslog", &reason, log))
+    if (0 == CheckUserExists("syslog", NULL, log))
     {
         return SetEtcConfValue(g_etcRsyslogConf, "$FileOwner", "syslog", log);
     }
