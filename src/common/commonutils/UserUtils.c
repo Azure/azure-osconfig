@@ -3228,8 +3228,8 @@ int CheckUserExists(const char* username, char** reason, OsConfigLogHandle log)
 
 int AddIfMissingSyslogSystemUser(OsConfigLogHandle log)
 {
-    const char* commmand = "useradd -r -s /usr/sbin/nologin -d /nonexistent syslog";
-    result = 0;
+    const char* command = "useradd -r -s /usr/sbin/nologin -d /nonexistent syslog";
+    int result = 0;
 
     if (0 != (result = CheckUserExists("syslog", NULL, log)))
     {
@@ -3248,8 +3248,8 @@ int AddIfMissingSyslogSystemUser(OsConfigLogHandle log)
 
 int AddIfMissingAdmSystemGroup(OsConfigLogHandle log)
 {
-    const char* commmand = "groupadd -r adm";
-    result = 0;
+    const char* command = "groupadd -r adm";
+    int result = 0;
 
     if (0 != (result = CheckGroupExists("adm", NULL, log)))
     {
