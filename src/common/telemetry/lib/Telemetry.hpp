@@ -5,7 +5,6 @@
 #define TELEMETRY_HPP
 
 #include <memory>
-#include <mutex>
 #include <parson.h>
 #include <set>
 #include <string>
@@ -46,7 +45,6 @@ namespace Telemetry
         static OsConfigLogHandle m_log;
         static MAT::ILogger* m_logger;
         static bool m_initialized;
-        static std::mutex m_mutex;
 
         // Initialize telemetry system (private)
         static bool Initialize(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME);

@@ -22,7 +22,6 @@ namespace Telemetry
 OsConfigLogHandle TelemetryManager::m_log = NULL;
 MAT::ILogger* TelemetryManager::m_logger = nullptr;
 bool TelemetryManager::m_initialized = false;
-std::mutex TelemetryManager::m_mutex;
 
 TelemetryManager::~TelemetryManager() noexcept
 {
@@ -40,8 +39,6 @@ void TelemetryManager::SetupConfiguration(bool enableDebug, int teardownTime)
 
 bool TelemetryManager::Initialize(bool enableDebug, int teardownTime)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     if (m_initialized)
     {
         return true;
@@ -91,8 +88,6 @@ void TelemetryManager::EventWrite(Microsoft::Applications::Events::EventProperti
 
 void TelemetryManager::Shutdown()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     if (!m_initialized)
     {
         return;
@@ -118,9 +113,6 @@ void TelemetryManager::Shutdown()
 
 bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    // Auto-initialize if not already initialized
     if (!m_initialized)
     {
         if (!Initialize())
