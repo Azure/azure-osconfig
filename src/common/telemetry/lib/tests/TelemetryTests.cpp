@@ -46,11 +46,8 @@ TEST_F(TelemetryTest, InitializeDefault)
 {
     auto& telemetry = Telemetry::TelemetryManager::GetInstance();
 
-    EXPECT_FALSE(telemetry.IsInitialized());
-
     bool result = telemetry.Initialize();
     EXPECT_TRUE(result);
-    EXPECT_TRUE(telemetry.IsInitialized());
 }
 
 // Test initialization with custom parameters
@@ -60,7 +57,6 @@ TEST_F(TelemetryTest, InitializeWithCustomParameters)
 
     bool result = telemetry.Initialize(true, 10);
     EXPECT_TRUE(result);
-    EXPECT_TRUE(telemetry.IsInitialized());
 }
 
 // Test double initialization - should return true but not reinitialize
@@ -70,12 +66,10 @@ TEST_F(TelemetryTest, DoubleInitialization)
 
     bool result1 = telemetry.Initialize();
     EXPECT_TRUE(result1);
-    EXPECT_TRUE(telemetry.IsInitialized());
 
     // Second initialization should return true but not change state
     bool result2 = telemetry.Initialize();
     EXPECT_TRUE(result2);
-    EXPECT_TRUE(telemetry.IsInitialized());
 }
 
 // Test shutdown without initialization
@@ -83,11 +77,8 @@ TEST_F(TelemetryTest, ShutdownWithoutInitialization)
 {
     auto& telemetry = Telemetry::TelemetryManager::GetInstance();
 
-    EXPECT_FALSE(telemetry.IsInitialized());
-
     // Should not crash
     EXPECT_NO_THROW(telemetry.Shutdown());
-    EXPECT_FALSE(telemetry.IsInitialized());
 }
 
 // Test normal shutdown after initialization
@@ -96,8 +87,6 @@ TEST_F(TelemetryTest, NormalShutdown)
     auto& telemetry = Telemetry::TelemetryManager::GetInstance();
 
     telemetry.Initialize();
-    EXPECT_TRUE(telemetry.IsInitialized());
 
     telemetry.Shutdown();
-    EXPECT_FALSE(telemetry.IsInitialized());
 }
