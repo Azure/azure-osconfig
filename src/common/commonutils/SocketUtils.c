@@ -3,8 +3,6 @@
 
 #include "Internal.h"
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 #define MAX_MPI_URI_LENGTH 32
 
 static char* ReadUntilStringFound(int socketHandle, const char* what, OsConfigLogHandle log)

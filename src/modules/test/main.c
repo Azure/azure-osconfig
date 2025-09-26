@@ -33,17 +33,6 @@
 #define LINE_SEPARATOR "--------------------------------------------------------------------------------"
 #define LINE_SEPARATOR_THICK "================================================================================"
 
-static OSConfigTelemetryHandle g_telemetry = NULL;
-OSConfigTelemetryHandle GetTelemetry(void)
-{
-    if (NULL == g_telemetry)
-    {
-        g_telemetry = OSConfigTelemetryOpen();
-    }
-
-    return g_telemetry;
-}
-
 typedef enum STEP_TYPE
 {
     MODULE = 0,

@@ -49,7 +49,6 @@ static const char* g_deviceInfoModuleInfo = "{\"Name\": \"DeviceInfo\","
     "\"UserAccount\": 0}";
 
 static OsConfigLogHandle g_log = NULL;
-static OSConfigTelemetryHandle g_telemetry = NULL;
 
 static char* g_osName = NULL;
 static char* g_osVersion = NULL;
@@ -88,7 +87,7 @@ static OSConfigTelemetryHandle DeviceInfoGetTelemetry(void)
 void DeviceInfoInitialize(void)
 {
     g_log = OpenLog(g_deviceInfoLogFile, g_deviceInfoRolledLogFile);
-    g_telemetry = OSConfigTelemetryOpen();
+    OSConfigTelemetryOpen(g_log);
 
     g_osName = GetOsName(DeviceInfoGetLog());
     g_osVersion = GetOsVersion(DeviceInfoGetLog());

@@ -4,8 +4,6 @@
 #include "Internal.h"
 #include "UserUtils.h"
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 #define MAX_GROUPS_USER_CAN_BE_IN 32
 #define NUMBER_OF_SECONDS_IN_A_DAY 86400
 

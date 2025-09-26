@@ -3,8 +3,6 @@
 
 #include "Internal.h"
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 #define MAX_DAEMON_NAME_LENGTH 256
 
 // Valid systemd deamon name characters for us, not universal, add more here if necessary in the future

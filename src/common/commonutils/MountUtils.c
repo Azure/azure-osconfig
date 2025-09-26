@@ -3,8 +3,6 @@
 
 #include "Internal.h"
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, OsConfigLogHandle log)
 {
     FILE* mountFileHandle = NULL;

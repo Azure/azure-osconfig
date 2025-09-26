@@ -20,7 +20,6 @@
 #define DEBUG_LOGGING "DebugLogging"
 
 static unsigned int g_lastTime = 0;
-static OSConfigTelemetryHandle g_telemetry = NULL;
 
 extern OsConfigLogHandle g_platformLog;
 
@@ -52,19 +51,6 @@ static int g_refreshSignal = 0;
 #define ERROR_MESSAGE_SIGILL ERROR_MESSAGE_CRASH "illegal instruction (SIGILL)"
 #define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)"
 #define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)"
-
-OSConfigTelemetryHandle GetTelemetry()
-{
-    if (NULL == g_telemetry)
-    {
-        g_telemetry = OSConfigTelemetryOpen();
-        if (NULL == g_telemetry)
-        {
-            OsConfigLogError(GetPlatformLog(), "GetTelemetry: failed to open telemetry handle");
-        }
-    }
-    return g_telemetry;
-}
 
 static void SignalInterrupt(int signal)
 {
@@ -192,6 +178,7 @@ int main(int argc, char* argv[])
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
 
     g_platformLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
+    OSConfigTelemetryOpen(g_platformLog);
 
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetPlatformLog(), "OSConfig version: %s", OSCONFIG_VERSION);
@@ -225,7 +212,7 @@ int main(int argc, char* argv[])
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
 
     TerminatePlatform();
-    OSConfigTelemetryClose(&g_telemetry);
+    OSConfigTelemetryClose();
     CloseLog(&g_platformLog);
 
     return 0;

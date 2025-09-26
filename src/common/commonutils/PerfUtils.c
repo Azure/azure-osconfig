@@ -3,8 +3,6 @@
 
 #include "Internal.h"
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 int StartPerfClock(PerfClock* clock, OsConfigLogHandle log)
 {
     int status = EINVAL;

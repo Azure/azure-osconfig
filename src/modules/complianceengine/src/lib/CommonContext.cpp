@@ -6,9 +6,6 @@
 #include "CommonUtils.h"
 #include "ContextInterface.h"
 
-// Forward declaration
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 namespace ComplianceEngine
 {
 CommonContext::~CommonContext() = default;
@@ -43,11 +40,6 @@ Result<std::string> CommonContext::GetFileContents(const std::string& filePath) 
 std::string CommonContext::GetSpecialFilePath(const std::string& path) const
 {
     return path;
-}
-
-OSConfigTelemetryHandle CommonContext::GetTelemetryHandle() const
-{
-    return GetTelemetry();
 }
 
 } // namespace ComplianceEngine

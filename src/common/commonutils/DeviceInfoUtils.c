@@ -3,8 +3,6 @@
 
 #include "Internal.h"
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 typedef struct OsDistroInfo
 {
     char* id;

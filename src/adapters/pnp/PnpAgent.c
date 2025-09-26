@@ -86,7 +86,6 @@ MPI_HANDLE g_mpiHandle = NULL;
 static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
 
 static OsConfigLogHandle g_agentLog = NULL;
-static OSConfigTelemetryHandle g_agentTelemetry = NULL;
 
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_reportingInterval = DEFAULT_REPORTING_INTERVAL;
@@ -109,11 +108,6 @@ static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
 OsConfigLogHandle GetLog()
 {
     return g_agentLog;
-}
-
-OSConfigTelemetryHandle GetTelemetry()
-{
-    return g_agentTelemetry;
 }
 
 #define EOL_TERMINATOR "\n"
@@ -539,7 +533,7 @@ int main(int argc, char *argv[])
     // Re-open the log
     CloseLog(&g_agentLog);
     g_agentLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
-    g_agentTelemetry = OSConfigTelemetryOpen();
+    OSConfigTelemetryOpen(g_agentLog);
 
     OsConfigLogInfo(GetLog(), "OSConfig Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
@@ -730,7 +724,7 @@ done:
 
     StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog());
     CloseLog(&g_agentLog);
-    OSConfigTelemetryClose(&g_agentTelemetry);
+    OSConfigTelemetryClose();
 
     // Once the SDK is done, we can free these
 

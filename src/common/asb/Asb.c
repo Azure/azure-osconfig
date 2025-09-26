@@ -665,8 +665,6 @@ static bool g_auditOnly = true;
 
 static OsConfigLogHandle g_perfLog = NULL;
 
-static OSConfigTelemetryHandle g_telemetry = NULL;
-
 OsConfigLogHandle GetPerfLog(void)
 {
     return g_perfLog;
@@ -941,7 +939,7 @@ void AsbInitialize(OsConfigLogHandle log)
     unsigned short freeMemoryPercentage = 0;
 
     g_perfLog = OpenLog(PERF_LOG_FILE, ROLLED_PERF_LOG_FILE);
-    g_telemetry = OSConfigTelemetryOpen();
+    OSConfigTelemetryOpen(log);
 
     StartPerfClock(&g_perfClock, GetPerfLog());
 

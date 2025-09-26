@@ -3,8 +3,6 @@
 
 #include "Internal.h"
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, OsConfigLogHandle log)
 {
     const int initialSize = 1024;
