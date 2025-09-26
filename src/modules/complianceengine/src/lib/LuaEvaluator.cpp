@@ -27,20 +27,7 @@ using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::Result;
 using ComplianceEngine::Status;
 
-// Structure to hold context data for Lua wrapper functions
-struct LuaCallContext
-{
-    IndicatorsTree& indicators;
-    ContextInterface& context;
-    const std::string& procedureName;
-    Action action;
-
-    LuaCallContext(IndicatorsTree& indicators, ContextInterface& context, const std::string& procedureName, Action action)
-        : indicators(indicators),
-          context(context),
-          procedureName(procedureName),
-          action(action){};
-};
+// Using unified LuaCallContext from LuaProcedures.h
 
 } // anonymous namespace
 
@@ -73,7 +60,7 @@ Result<Status> LuaEvaluator::Evaluate(const string& script, IndicatorsTree& indi
 
     OsConfigLogInfo(log, "Executing Lua compliance script");
 
-    LuaCallContext callContext(indicators, context, "Lua", action);
+    LuaCallContext callContext{indicators, context, "Lua", action};
 
     lua_pushstring(L, "lua_call_context");
     lua_pushlightuserdata(L, &callContext);
@@ -289,7 +276,7 @@ int LuaEvaluator::LuaProcedureWrapper(lua_State* L)
         lua_error(L);
         return 0;
     }
-    auto log = callContext->context.GetLogHandle();
+    auto log = callContext->ctx.GetLogHandle();
     lua_pushvalue(L, lua_upvalueindex(1));
     if (!lua_isstring(L, -1))
     {
@@ -354,11 +341,11 @@ int LuaEvaluator::LuaProcedureWrapper(lua_State* L)
     }
 
     // Call the actual function
-    auto result = (*actionFunc)(args, callContext->indicators, callContext->context);
+    auto result = (*actionFunc)(args, callContext->indicators, callContext->ctx);
 
     if (result.HasValue())
     {
-        OsConfigLogInfo(callContext->context.GetLogHandle(), "Lua procedure '%s' executed: %scompliant", procedureName.c_str(),
+        OsConfigLogInfo(callContext->ctx.GetLogHandle(), "Lua procedure '%s' executed: %scompliant", procedureName.c_str(),
             (result.Value() == Status::NonCompliant) ? "non-" : "");
         lua_pushboolean(L, result.Value() == ComplianceEngine::Status::Compliant);
 
@@ -369,11 +356,12 @@ int LuaEvaluator::LuaProcedureWrapper(lua_State* L)
     }
     else
     {
-        OsConfigLogWarning(callContext->context.GetLogHandle(), "LUA script execution ended with an error: %s", result.Error().message.c_str());
+        OsConfigLogWarning(callContext->ctx.GetLogHandle(), "LUA script execution ended with an error: %s", result.Error().message.c_str());
         lua_pushstring(L, result.Error().message.c_str());
         lua_error(L);
         return 0;
     }
+    return 0;
 }
 
 } // namespace ComplianceEngine

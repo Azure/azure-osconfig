@@ -3,6 +3,9 @@
 
 #include "LuaProcedures.h"
 
+#include "ContextInterface.h"
+#include "FilesystemScanner.h"
+#include "Result.h"
 #include "lauxlib.h"
 #include "lua.h"
 
@@ -10,12 +13,20 @@
 #include <cstring>
 #include <dirent.h>
 #include <fnmatch.h>
+#include <map>
 #include <memory>
 #include <stack>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <vector>
+
+using ComplianceEngine::FilesystemScanner;
+using ComplianceEngine::Result;
+
+namespace ComplianceEngine
+{
 
 namespace
 {
@@ -200,6 +211,118 @@ static int LuaListDirectory(lua_State* L)
     return 1;
 }
 
+// ---------------- Filesystem permission-filter iterator ----------------
+struct FSCacheIterState
+{
+    std::shared_ptr<const FilesystemScanner::FSCache> cache;
+    std::map<std::string, FilesystemScanner::FSEntry>::const_iterator it;
+    std::map<std::string, FilesystemScanner::FSEntry>::const_iterator end;
+    mode_t hasMask{0};
+    mode_t noMask{0};
+    bool started{false};
+};
+
+static int FSCacheIterNext(lua_State* L)
+{
+    auto holder = reinterpret_cast<FSCacheIterState**>(lua_touserdata(L, lua_upvalueindex(1)));
+    if (!holder || !*holder)
+    {
+        return 0;
+    }
+    FSCacheIterState* st = *holder;
+    while (st->it != st->end)
+    {
+        const auto& kv = *st->it;
+        ++st->it;
+        mode_t m = kv.second.st.st_mode;
+        if (st->hasMask && (m & st->hasMask) != st->hasMask)
+        {
+            continue;
+        }
+        if (st->noMask && (m & st->noMask) != 0)
+        {
+            continue;
+        }
+        lua_pushlstring(L, kv.first.c_str(), kv.first.size());
+        return 1;
+    }
+    return 0;
+}
+
+static int FSCacheIterGC(lua_State* L)
+{
+    auto holder = reinterpret_cast<FSCacheIterState**>(lua_touserdata(L, 1));
+    if (holder && *holder)
+    {
+        delete *holder;
+        *holder = nullptr;
+    }
+    return 0;
+}
+
+static unsigned ParseMaskArg(lua_State* L, int index)
+{
+    if (lua_isnoneornil(L, index))
+    {
+        return 0u;
+    }
+    if (!lua_isnumber(L, index))
+    {
+        luaL_error(L, "expected number or nil for permission mask");
+        return 0u;
+    }
+    lua_Number ln = lua_tonumber(L, index);
+    if (ln < 0 || ln > 0xFFFFFFFFu) // conservative range check
+    {
+        luaL_error(L, "permission mask out of range");
+        return 0u;
+    }
+    unsigned v = static_cast<unsigned>(ln);
+    return v;
+}
+
+static int LuaGetFilesystemEntriesWithPerms(lua_State* L)
+{
+    unsigned hasMask = ParseMaskArg(L, 1);
+    unsigned noMask = ParseMaskArg(L, 2);
+
+    // Fetch call context placed in registry by evaluator to access ContextInterface
+    lua_pushstring(L, "lua_call_context");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    void* cc = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    if (!cc)
+    {
+        luaL_error(L, "internal error: missing call context");
+        return 0;
+    }
+    auto* view = reinterpret_cast<LuaCallContext*>(cc);
+    FilesystemScanner& scanner = view->ctx.GetFilesystemScanner();
+    auto full = scanner.GetFullFilesystem();
+    if (!full)
+    {
+        luaL_error(L, "%s", full.Error().message.c_str());
+        return 0;
+    }
+    auto stateHolder = reinterpret_cast<FSCacheIterState**>(lua_newuserdata(L, sizeof(FSCacheIterState*))); // stack: userdata
+    *stateHolder = new FSCacheIterState();
+    (*stateHolder)->cache = full.Value();
+    (*stateHolder)->it = (*stateHolder)->cache->entries.begin();
+    (*stateHolder)->end = (*stateHolder)->cache->entries.end();
+    (*stateHolder)->hasMask = static_cast<mode_t>(hasMask);
+    (*stateHolder)->noMask = static_cast<mode_t>(noMask);
+
+    if (luaL_newmetatable(L, "FSCacheIterStateMT"))
+    {
+        lua_pushcfunction(L, FSCacheIterGC);
+        lua_setfield(L, -2, "__gc");
+    }
+    lua_setmetatable(L, -2);
+
+    lua_pushcclosure(L, FSCacheIterNext, 1);
+    return 1;
+}
+
 } // anonymous namespace
 
 void RegisterLuaProcedures(lua_State* L)
@@ -227,7 +350,10 @@ void RegisterLuaProcedures(lua_State* L)
     lua_pushcfunction(L, LuaListDirectory);
     lua_setfield(L, -2, "ListDirectory");
 
+    lua_pushcfunction(L, LuaGetFilesystemEntriesWithPerms);
+    lua_setfield(L, -2, "GetFilesystemEntriesWithPerms");
+
     // pop ce and restricted_env
     lua_pop(L, 2);
-} // namespace ComplianceEngine
 }
+} // namespace ComplianceEngine

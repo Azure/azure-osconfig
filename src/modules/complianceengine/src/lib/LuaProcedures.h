@@ -5,6 +5,21 @@
 
 // Forward declare lua_State from Lua headers to avoid pulling them in everywhere
 struct lua_State;
+namespace ComplianceEngine
+{
+
+// Forward declare needed types to avoid heavy includes.
+class ContextInterface;
+struct IndicatorsTree;
+enum class Action : int;
+
+struct LuaCallContext
+{
+    IndicatorsTree& indicators; // reference to indicators root
+    ContextInterface& ctx;      // reference to execution context
+    const char* procedureName;  // optional procedure name
+    Action action;              // current action (Audit/Remediate)
+};
 
 // Registers additional custom helper procedures exposed to Lua under the `ce` table.
 // Currently provides:
@@ -32,5 +47,6 @@ struct lua_State;
 // Notes:
 //   - Snapshot semantics: iterator holds shared_ptr<const FSCache>; unaffected by background refresh.
 //   - Arguments outside unsigned 32-bit range produce Lua error.
-
 void RegisterLuaProcedures(lua_State* L);
+
+} // namespace ComplianceEngine
