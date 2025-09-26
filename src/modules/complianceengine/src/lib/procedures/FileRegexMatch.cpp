@@ -248,7 +248,7 @@ AUDIT_FN(FileRegexMatch, "path:A directory name contining files to check:M", "fi
     if (nullptr == entry && errno != 0)
     {
         int status = errno;
-        OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "readdir", status);
+        OSConfigTelemetryStatusTrace("readdir", status);
         OsConfigLogError(context.GetLogHandle(), "Failed to read directory '%s': %s", path.c_str(), strerror(status));
         return Error("Failed to read directory '" + path + "': " + strerror(status), status);
     }

@@ -100,7 +100,7 @@ AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option:M", "value:Rege
     }
     catch (const regex_error& e)
     {
-        OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "regex", EINVAL);
+        OSConfigTelemetryStatusTrace("regex", EINVAL);
         OsConfigLogError(log, "Regex error: %s", e.what());
         return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
     }
@@ -177,7 +177,7 @@ AUDIT_FN(EnsureSshdNoOption, "options:Name of the SSH daemon options, comma sepa
             }
             catch (const regex_error& e)
             {
-                OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "regex", EINVAL);
+                OSConfigTelemetryStatusTrace("regex", EINVAL);
                 OsConfigLogError(log, "Regex error: %s", e.what());
                 return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
             }

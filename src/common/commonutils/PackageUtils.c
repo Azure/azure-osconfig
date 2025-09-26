@@ -52,7 +52,7 @@ int IsPresent(const char* what, OsConfigLogHandle log)
 
     if (NULL == what)
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "what", EINVAL);
+        OSConfigTelemetryStatusTrace("what", EINVAL);
         OsConfigLogError(log, "IsPresent called with invalid argument");
         return EINVAL;
     }
@@ -66,7 +66,7 @@ int IsPresent(const char* what, OsConfigLogHandle log)
     }
     else
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
+        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "IsPresent: FormatAllocateString failed");
         status = ENOMEM;
     }
@@ -98,14 +98,14 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
 
     if ((NULL == commandTemplate) || (NULL == packageManager) || (NULL == packageName) || ((0 == strlen(packageName))))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "packageName", EINVAL);
+        OSConfigTelemetryStatusTrace("packageName", EINVAL);
         OsConfigLogError(log, "CheckOrInstallPackage called with invalid arguments");
         return EINVAL;
     }
 
     if (NULL == (command = FormatAllocateString(commandTemplate, packageManager, packageName)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
+        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "CheckOrInstallPackage: FormatAllocateString failed");
         return ENOMEM;
     }
@@ -129,14 +129,14 @@ static int CheckAllPackages(const char* commandTemplate, const char* packageMana
 
     if ((NULL == commandTemplate) || (NULL == packageManager) || (NULL == results))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "results", EINVAL);
+        OSConfigTelemetryStatusTrace("results", EINVAL);
         OsConfigLogError(log, "CheckAllPackages called with invalid arguments");
         return EINVAL;
     }
 
     if (NULL == (command = FormatAllocateString(commandTemplate, packageManager)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
+        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "CheckAllPackages: FormatAllocateString failed");
         return ENOMEM;
     }
@@ -199,7 +199,7 @@ static int UpdateInstalledPackagesCache(OsConfigLogHandle log)
         else
         {
             // Leave the cache as-is, just log the error
-            OSConfigTelemetryStatusTrace(GetTelemetry(), "DuplicateString", ENOMEM);
+            OSConfigTelemetryStatusTrace("DuplicateString", ENOMEM);
             OsConfigLogError(log, "UpdateInstalledPackagesCache: out of memory");
             status = ENOMEM;
         }
@@ -227,7 +227,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 
     if ((NULL == packageName) || (0 == strlen(packageName)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "packageName", EINVAL);
+        OSConfigTelemetryStatusTrace("packageName", EINVAL);
         OsConfigLogError(log, "IsPackageInstalled called with an invalid argument");
         return EINVAL;
     }
@@ -246,7 +246,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 
     if (NULL == g_installedPackagesCache)
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "g_installedPackagesCache", ENOENT);
+        OSConfigTelemetryStatusTrace("g_installedPackagesCache", ENOENT);
         OsConfigLogError(log, "IsPackageInstalled: cannot check for '%s' presence without cache", packageName);
         status = ENOENT;
     }
@@ -267,7 +267,7 @@ int IsPackageInstalled(const char* packageName, OsConfigLogHandle log)
 
         if (NULL == searchTarget)
         {
-            OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
+            OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
             OsConfigLogError(log, "IsPackageInstalled: out of memory");
             status = ENOMEM;
         }
@@ -343,7 +343,7 @@ static int ExecuteSimplePackageCommand(const char* command, bool* executed, OsCo
 
     if ((NULL == command) || (NULL == executed))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "command", EINVAL);
+        OSConfigTelemetryStatusTrace("command", EINVAL);
         OsConfigLogError(log, "ExecuteSimplePackageCommand called with invalid arguments");
         return EINVAL;
     }

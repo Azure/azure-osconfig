@@ -41,7 +41,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     if ((NULL == name) || (NULL == request) || (NULL == response) || (NULL == responseSize))
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "name", status);
+        OSConfigTelemetryStatusTrace("name", status);
         OsConfigLogError(log, "CallMpi(%s): invalid arguments (%d)", name, status);
         return status;
     }
@@ -53,7 +53,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     {
         if (0 != (status = SetFileAccess(mpiSocket, 0, 0, 06770, IsDebugLoggingEnabled() ? log : NULL)))
         {
-            OSConfigTelemetryStatusTrace(GetTelemetry(), "SetFileAccess", status);
+            OSConfigTelemetryStatusTrace("SetFileAccess", status);
             OsConfigLogError(log, "CallMpi(%s): access to the MPI socket is not protected, cannot call the MPI (%d)", name, status);
             return status;
         }
@@ -66,7 +66,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     if (NULL == data)
     {
         status = ENOMEM;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", status);
+        OSConfigTelemetryStatusTrace("malloc", status);
         OsConfigLogError(log, "CallMpi(%s): failed to allocate memory for request (%d)", name, status);
         return status;
     }
@@ -77,7 +77,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     if (0 > socketHandle)
     {
         status = errno ? errno : EIO;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "socket", status);
+        OSConfigTelemetryStatusTrace("socket", status);
         OsConfigLogError(log, "CallMpi(%s): failed to open socket '%s' (%d)", name, mpiSocket, status);
     }
     else
@@ -98,7 +98,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         else
         {
             status = errno ? errno : EIO;
-            OSConfigTelemetryStatusTrace(GetTelemetry(), "connect", errno);
+            OSConfigTelemetryStatusTrace("connect", errno);
             OsConfigLogError(log, "CallMpi(%s): failed to connect to socket '%s' (%d)", name, mpiSocket, status);
         }
     }
@@ -111,12 +111,12 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
             status = errno ? errno : EIO;
             if (IsDebugLoggingEnabled())
             {
-                OSConfigTelemetryStatusTrace(GetTelemetry(), "send", errno);
+                OSConfigTelemetryStatusTrace("send", errno);
                 OsConfigLogError(log, "CallMpi(%s): failed to send request '%s' (%d bytes) to socket '%s' (%d)", name, data, actualDataSize, mpiSocket, status);
             }
             else
             {
-                OSConfigTelemetryStatusTrace(GetTelemetry(), "send", errno);
+                OSConfigTelemetryStatusTrace("send", errno);
                 OsConfigLogError(log, "CallMpi(%s): failed to send request to socket '%s' of %d bytes (%d)", name, mpiSocket, actualDataSize, status);
             }
         }
@@ -143,7 +143,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
             {
                 if ((MPI_OK == status) || IsDebugLoggingEnabled())
                 {
-                    OSConfigTelemetryStatusTrace(GetTelemetry(), "read", errno);
+                    OSConfigTelemetryStatusTrace("read", errno);
                     OsConfigLogError(log, "CallMpi(%s): failed to read %d bytes response from socket '%s' (%d)", name, *responseSize, mpiSocket, status);
                 }
                 status = errno ? errno : EIO;
@@ -153,7 +153,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         {
             status = ENOMEM;
             *responseSize = 0;
-            OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", status);
+            OSConfigTelemetryStatusTrace("malloc", status);
             OsConfigLogError(log, "CallMpi(%s): failed to allocate memory for response (%d)", name, status);
         }
     }
@@ -216,7 +216,7 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
 
     if (NULL == clientName)
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "clientName", EINVAL);
+        OSConfigTelemetryStatusTrace("clientName", EINVAL);
         OsConfigLogError(log, "CallMpiOpen: invalid NULL MPI handle");
         return NULL;
     }
@@ -227,7 +227,7 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
     request = (char*)malloc(requestSize);
     if (NULL == request)
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
+        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
         OsConfigLogError(log, "CallMpiOpen(%s, %u): failed to allocate memory for request", clientName, maxPayloadSizeBytes);
         return NULL;
     }
@@ -245,7 +245,7 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
     }
     else if (NULL == (mpiHandleValue = ParseString(log, (char*)mpiHandle)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "ParseString", EINVAL);
+        OSConfigTelemetryStatusTrace("ParseString", EINVAL);
         OsConfigLogError(log, "CallMpiOpen: invalid MPI handle '%s'", (char*)mpiHandle);
         FREE_MEMORY(response);
         mpiHandle = NULL;
@@ -273,7 +273,7 @@ void CallMpiClose(MPI_HANDLE clientSession, OsConfigLogHandle log)
 
     if ((NULL == clientSession) || (0 == strlen((char*)clientSession)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "clientSession", EINVAL);
+        OSConfigTelemetryStatusTrace("clientSession", EINVAL);
         OsConfigLogError(log, "CallMpiClose(%p) called with invalid argument", clientSession);
         FREE_MEMORY(clientSession);
         return;
@@ -284,7 +284,7 @@ void CallMpiClose(MPI_HANDLE clientSession, OsConfigLogHandle log)
     request = (char*)malloc(requestSize);
     if (NULL == request)
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
+        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
         OsConfigLogError(log, "CallMpiClose(%p): failed to allocate memory for request", clientSession);
         FREE_MEMORY(clientSession);
         return;
@@ -316,7 +316,7 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle)))
     {
         status = EPERM;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "g_mpiHandle", status);
+        OSConfigTelemetryStatusTrace("g_mpiHandle", status);
         OsConfigLogError(log, "CallMpiSet: called without a valid MPI handle (%d)", status);
         return status;
     }
@@ -324,7 +324,7 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
     if ((NULL == componentName) || (NULL == propertyName) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "componentName", status);
+        OSConfigTelemetryStatusTrace("componentName", status);
         OsConfigLogError(log, "CallMpiSet: invalid arguments (%d)", status);
         return status;
     }
@@ -335,7 +335,7 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
     if (NULL == request)
     {
         status = ENOMEM;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", status);
+        OSConfigTelemetryStatusTrace("malloc", status);
         OsConfigLogError(log, "CallMpiSet(%s, %s): failed to allocate memory for request (%d)", componentName, propertyName, status);
         return status;
     }
@@ -378,7 +378,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle)))
     {
         status = EPERM;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "g_mpiHandle", status);
+        OSConfigTelemetryStatusTrace("g_mpiHandle", status);
         OsConfigLogError(log, "CallMpiGet: called without a valid MPI handle (%d)", status);
         return status;
     }
@@ -386,7 +386,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
     if ((NULL == componentName) || (NULL == propertyName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "componentName", status);
+        OSConfigTelemetryStatusTrace("componentName", status);
         OsConfigLogError(log, "CallMpiGet: called with invalid arguments (%d)", status);
         return status;
     }
@@ -400,7 +400,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
     if (NULL == request)
     {
         status = ENOMEM;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", status);
+        OSConfigTelemetryStatusTrace("malloc", status);
         OsConfigLogError(log, "CallMpiGet(%s, %s): failed to allocate memory for request (%d)", componentName, propertyName, status);
         return status;
     }
@@ -424,7 +424,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
         }
         else
         {
-            OSConfigTelemetryStatusTrace(GetTelemetry(), "CallMpi", EINVAL);
+            OSConfigTelemetryStatusTrace("CallMpi", EINVAL);
             OsConfigLogError(log, "CallMpiGet(%s, %s): invalid response for HTTP internal server error (500)", componentName, propertyName);
             status = EINVAL;
         }
@@ -432,7 +432,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
     else if ((NULL != *payload) && (*payloadSizeBytes != (int)strlen(*payload)))
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "CallMpi", status);
+        OSConfigTelemetryStatusTrace("CallMpi", status);
         OsConfigLogError(log, "CallMpiGet(%s, %s): invalid response (%d)", componentName, propertyName, status);
 
         FREE_MEMORY(*payload);
@@ -459,7 +459,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes,
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle)))
     {
         status = EPERM;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "g_mpiHandle", status);
+        OSConfigTelemetryStatusTrace("g_mpiHandle", status);
         OsConfigLogError(log, "CallMpiSetDesired: called without a valid MPI handle (%d)", status);
         return status;
     }
@@ -467,7 +467,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes,
     if ((NULL == payload) || (0 >= payloadSizeBytes))
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "payload", status);
+        OSConfigTelemetryStatusTrace("payload", status);
         OsConfigLogError(log, "CallMpiSetDesired: invalid arguments (%d)", status);
         return status;
     }
@@ -478,7 +478,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes,
     if (NULL == request)
     {
         status = ENOMEM;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", status);
+        OSConfigTelemetryStatusTrace("malloc", status);
         OsConfigLogError(log, "CallMpiSetDesired: failed to allocate memory for request (%d)", status);
         return status;
     }
@@ -521,7 +521,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfig
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle)))
     {
         status = EPERM;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "g_mpiHandle", status);
+        OSConfigTelemetryStatusTrace("g_mpiHandle", status);
         OsConfigLogError(log, "CallMpiGetReported: called without a valid MPI handle (%d)", status);
         return status;
     }
@@ -529,7 +529,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfig
     if ((NULL == payload) || (NULL == payloadSizeBytes))
     {
         status = EINVAL;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "payload", status);
+        OSConfigTelemetryStatusTrace("payload", status);
         OsConfigLogError(log, "CallMpiGetReported: called with invalid arguments (%d)", status);
         return status;
     }
@@ -543,7 +543,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfig
     if (NULL == request)
     {
         status = ENOMEM;
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", status);
+        OSConfigTelemetryStatusTrace("malloc", status);
         OsConfigLogError(log, "CallMpiGetReported: failed to allocate memory for request (%d)", status);
         return status;
     }
@@ -564,7 +564,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfig
         }
         else
         {
-            OSConfigTelemetryStatusTrace(GetTelemetry(), "CallMpi", EINVAL);
+            OSConfigTelemetryStatusTrace("CallMpi", EINVAL);
             OsConfigLogError(log, "CallMpiGetReported: invalid response for HTTP internal server error (500)");
             status = EINVAL;
         }
@@ -574,7 +574,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfig
     }
     else if ((NULL != *payload) && (*payloadSizeBytes != (int)strlen(*payload)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "CallMpi", EINVAL);
+        OSConfigTelemetryStatusTrace("CallMpi", EINVAL);
         OsConfigLogError(log, "CallMpiGetReported: invalid response (%p, %d)", *payload, *payloadSizeBytes);
 
         status = EINVAL;

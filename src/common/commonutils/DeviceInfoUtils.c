@@ -426,7 +426,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
 
     if ((NULL == commandTemplate) || (NULL == name) || (0 == strlen(name)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "commandTemplate", EINVAL);
+        OSConfigTelemetryStatusTrace("commandTemplate", EINVAL);
         OsConfigLogError(log, "GetOsReleaseEntry: invalid arguments");
         result = DuplicateString("<error>");
     }
@@ -436,7 +436,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
 
         if (NULL == (command = malloc(commandLength)))
         {
-            OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
+            OSConfigTelemetryStatusTrace("malloc", ENOMEM);
             OsConfigLogError(log, "GetOsReleaseEntry: out of memory");
         }
         else
@@ -624,7 +624,7 @@ int CheckLoginUmask(const char* desired, char** reason, OsConfigLogHandle log)
 
     if ((NULL == desired) || (0 == (length = strlen(desired))))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "desired", EINVAL);
+        OSConfigTelemetryStatusTrace("desired", EINVAL);
         OsConfigLogError(log, "CheckLoginUmask: invalid argument");
         return EINVAL;
     }
@@ -664,7 +664,7 @@ static long GetPasswordDays(const char* name, OsConfigLogHandle log)
 
     if ((NULL == name) || (0 == strlen(name)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "name", EINVAL);
+        OSConfigTelemetryStatusTrace("name", EINVAL);
         OsConfigLogError(log, "GetPasswordDays: invalid argument");
         return -1;
     }
@@ -673,7 +673,7 @@ static long GetPasswordDays(const char* name, OsConfigLogHandle log)
 
     if (NULL == (command = malloc(commandLength)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
+        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
         OsConfigLogError(log, "GetPasswordDays: out of memory");
     }
     else
@@ -724,13 +724,13 @@ static int SetPasswordDays(const char* name, long days, OsConfigLogHandle log)
 
     if ((NULL == name) || (0 == strlen(name)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "name", EINVAL);
+        OSConfigTelemetryStatusTrace("name", EINVAL);
         OsConfigLogError(log, "SetPasswordDays: invalid argument");
         return EINVAL;
     }
     else if (NULL == (value = FormatAllocateString("%ld", days)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
+        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "SetPasswordDays: out of memory");
         return ENOMEM;
     }
@@ -777,7 +777,7 @@ bool IsCurrentOs(const char* name, OsConfigLogHandle log)
 
     if ((NULL == name) || (0 == (nameLength = strlen(name))))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "name", EINVAL);
+        OSConfigTelemetryStatusTrace("name", EINVAL);
         OsConfigLogError(log, "IsCurrentOs called with an invalid argument");
         return result;
     }
