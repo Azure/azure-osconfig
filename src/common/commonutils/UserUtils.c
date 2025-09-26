@@ -3183,8 +3183,8 @@ int CheckGroupExists(const char* name, char** reason, OsConfigLogHandle log)
 
     if (0 != result)
     {
-        OsConfigLogInfo(log, "CheckGroupExists: group '%s' does not exist (errno: %d), automatic remediation is not possible", name, errno);
-        OsConfigCaptureReason(reason, "Group '%s' does not exist (%d), automatic remediation is not possible", name, errno);
+        OsConfigLogInfo(log, "CheckGroupExists: group '%s' does not exist (errno: %d)", name, errno);
+        OsConfigCaptureReason(reason, "Group '%s' does not exist (%d)", name, errno);
     }
 
     return result;
@@ -3219,8 +3219,48 @@ int CheckUserExists(const char* username, char** reason, OsConfigLogHandle log)
 
     if (0 != result)
     {
-        OsConfigLogInfo(log, "UserExists: user '%s' does not exist, automatic remediation is not possible", username);
-        OsConfigCaptureReason(reason, "User '%s' does not exist, automatic remediation is not possible", username);
+        OsConfigLogInfo(log, "UserExists: user '%s' does not exist", username);
+        OsConfigCaptureReason(reason, "User '%s' does not exist", username);
+    }
+
+    return result;
+}
+
+int AddIfMissingSyslogSystemUser(OsConfigLogHandle log)
+{
+    const char* command = "useradd -r -s /usr/sbin/nologin -d /nonexistent syslog";
+    int result = 0;
+
+    if (0 != (result = CheckUserExists("syslog", NULL, log)))
+    {
+        if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "AddMissingSyslogSystemUser: useradd for user 'syslog' failed with %d (errno: %d, %s)", result, errno, strerror(errno));
+        }
+        else
+        {
+            OsConfigLogInfo(log, "AddMissingSyslogSystemUser: user 'syslog' successfully created");
+        }
+    }
+
+    return result;
+}
+
+int AddIfMissingAdmSystemGroup(OsConfigLogHandle log)
+{
+    const char* command = "groupadd -r adm";
+    int result = 0;
+
+    if (0 != (result = CheckGroupExists("adm", NULL, log)))
+    {
+        if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "AddMissingAdmSystemGroup: groupadd for group 'adm' failed with %d (errno: %d, %s)", result, errno, strerror(errno));
+        }
+        else
+        {
+            OsConfigLogInfo(log, "AddMissingAdmSystemGroup: group 'adm' successfully created");
+        }
     }
 
     return result;

@@ -124,6 +124,8 @@ int RestrictSuToRootGroup(OsConfigLogHandle log);
 bool GroupExists(gid_t groupId, OsConfigLogHandle log);
 int CheckGroupExists(const char* name, char** reason, OsConfigLogHandle log);
 int CheckUserExists(const char* username, char** reason, OsConfigLogHandle log);
+int AddIfMissingSyslogSystemUser(OsConfigLogHandle log);
+int AddIfMissingAdmSystemGroup(OsConfigLogHandle log);
 
 #ifdef __cplusplus
 }
