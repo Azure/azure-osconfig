@@ -8,7 +8,6 @@ if (BUILD_TELEMETRY)
         if(NOT GCC5_FOUND)
             message(FATAL_ERROR "gcc-5 not found in PATH, but required for 1DS SDK with GCC < 5.5")
         endif()
-
         find_program(GPP5_FOUND g++-5)
         if(NOT GPP5_FOUND)
             message(FATAL_ERROR "g++-5 not found in PATH, but required for 1DS SDK with GCC < 5.5")
@@ -21,7 +20,7 @@ if (BUILD_TELEMETRY)
         SOURCE_DIR
             ${COMMON_SRC_DIR}/telemetry
         CMAKE_ARGS
-            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}  # use the same toolchain
+            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
             ${CMAKE_ARGS}
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             -DVCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}

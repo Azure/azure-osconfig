@@ -190,7 +190,6 @@ jobs:
         uses: ./.github/actions/check-size
         with:
           package: '${{ steps.normalize.outputs.path }}'
-          # TODO: Adjust size limit as needed
           limit: 5000
 
       - name: Run Guest Configuration Test

@@ -36,9 +36,6 @@ namespace Telemetry
         // Initialize telemetry system
         bool Initialize(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME);
 
-        // Check if telemetry is initialized
-        bool IsInitialized() const;
-
         // Parse JSON file line by line and process events
         bool ProcessJsonFile(const std::string& filePath);
 
