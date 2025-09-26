@@ -29,6 +29,9 @@ namespace Telemetry
         // Parse JSON file line by line and process events
         static bool ProcessJsonFile(const std::string& filePath);
 
+        // Setup configuration
+        static void SetupConfiguration(bool enableDebug, int teardownTime);
+
         ~TelemetryManager() noexcept;
 
     private:
@@ -50,9 +53,6 @@ namespace Telemetry
 
         // Shutdown telemetry system (private)
         static void Shutdown();
-
-        // Initialize configuration (private)
-        static void SetupConfiguration(bool enableDebug, int teardownTime);
 
         // Generic event logging (private)
         static void EventWrite(Microsoft::Applications::Events::EventProperties event);
