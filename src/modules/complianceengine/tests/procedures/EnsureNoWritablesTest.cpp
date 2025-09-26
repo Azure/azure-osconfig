@@ -22,8 +22,7 @@ protected:
     void SetUp() override
     {
         indicators.Push("EnsureNoWritables");
-        rootDir = mContext.GetTempdirPath();
-        rootDir += "/rootfs"; // scanner root
+        rootDir = mContext.GetFilesystemScannerRoot();
     }
 };
 

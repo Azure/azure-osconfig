@@ -27,8 +27,7 @@ protected:
         }
 
         indicators.Push("EnsureNoUnowned");
-        rootDir = mContext.GetTempdirPath();
-        rootDir += "/rootfs";
+        rootDir = mContext.GetFilesystemScannerRoot();
     }
 };
 
