@@ -200,7 +200,7 @@ char* GetFormattedTime(void)
     struct tm result = {0};
     time(&rawTime);
     timeInfo = localtime_r(&rawTime, &result);
-    strftime(g_logTime, ARRAY_SIZE(g_logTime), "%Y-%m-%d %H:%M:%S %z", timeInfo);
+    strftime(g_logTime, ARRAY_SIZE(g_logTime), "%Y-%m-%d %H:%M:%S %z (%Z)", timeInfo);
     return g_logTime;
 }
 
