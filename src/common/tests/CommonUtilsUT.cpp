@@ -2956,6 +2956,35 @@ TEST_F(CommonUtilsTest, GroupExists)
     EXPECT_FALSE(GroupExists(0xFFFFFFFF, nullptr));
 }
 
+TEST_F(CommonUtilsTest, CheckGroupExists)
+{
+    EXPECT_EQ(0, CheckGroupExists("root", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckGroupExists("root ", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckGroupExists("my root", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckGroupExists("-root", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckGroupExists("", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckGroupExists(" ", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckGroupExists("abracadabra", nullptr, nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckUserExists)
+{
+    EXPECT_EQ(0, CheckUserExists("root", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists(nullptr, nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists("0", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists("abracadabra", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists("nulluser", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists("ghostaccount", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists("testcaseonly", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists("xyzzy", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists("nobodyhere", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists("fakeuser123", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists("__void__", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists("root ", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists("  ", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckUserExists("1234567890123456789012345678901234567890123456789012345678901234567890", nullptr, nullptr));
+}
+
 TEST_F(CommonUtilsTest, FindTextInFolder)
 {
     const char* path = "/tmp/~test.conf";
