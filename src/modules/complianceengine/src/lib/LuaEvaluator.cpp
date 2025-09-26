@@ -1,5 +1,6 @@
 #include "LuaEvaluator.h"
 
+#include "LuaProcedures.h"
 #include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
@@ -230,6 +231,9 @@ void LuaEvaluator::RegisterProcedures()
     // Pop ce table then restricted_env to leave stack clean
     lua_pop(L, 1); // ce table
     lua_pop(L, 1); // restricted_env
+
+    // Register additional helper procedures (e.g., ListDirectory)
+    RegisterLuaProcedures(L);
 }
 
 void LuaEvaluator::SecureLuaEnvironment()
