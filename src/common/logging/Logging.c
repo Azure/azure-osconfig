@@ -13,7 +13,7 @@
 #include <limits.h>
 #include "Logging.h"
 
-#define TIME_FORMAT_STRING_LENGTH 20
+#define TIME_FORMAT_STRING_LENGTH 64
 
 struct OsConfigLog
 {
