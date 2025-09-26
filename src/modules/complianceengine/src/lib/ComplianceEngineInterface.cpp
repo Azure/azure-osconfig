@@ -43,13 +43,11 @@ static const std::set<int> g_criticalErrors = {ENOMEM};
 void ComplianceEngineInitialize(OsConfigLogHandle log)
 {
     g_log = log;
-    OSConfigTelemetryOpen(g_log);
 }
 
 // This function is called in library destructor by BaselineInitialize
 void ComplianceEngineShutdown(void)
 {
-    OSConfigTelemetryClose();
 }
 
 MMI_HANDLE ComplianceEngineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)

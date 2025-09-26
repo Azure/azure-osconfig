@@ -60,7 +60,6 @@ static const char* g_configurationModuleInfo = "{\"Name\": \"Configuration\","
     "\"UserAccount\": 0}";
 
 static OsConfigLogHandle g_log = NULL;
-static OSConfigTelemetryHandle g_telemetry = NULL;
 
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_refreshInterval = DEFAULT_REPORTING_INTERVAL;
@@ -81,11 +80,6 @@ static unsigned int g_maxPayloadSizeBytes = 0;
 static OsConfigLogHandle ConfigurationGetLog(void)
 {
     return g_log;
-}
-
-static OSConfigTelemetryHandle ConfigurationGetTelemetry(void)
-{
-    return g_telemetry;
 }
 
 static char* LoadConfigurationFromFile(const char* fileName)

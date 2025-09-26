@@ -79,11 +79,6 @@ static OsConfigLogHandle DeviceInfoGetLog(void)
     return g_log;
 }
 
-static OSConfigTelemetryHandle DeviceInfoGetTelemetry(void)
-{
-    return g_telemetry;
-}
-
 void DeviceInfoInitialize(void)
 {
     g_log = OpenLog(g_deviceInfoLogFile, g_deviceInfoRolledLogFile);
@@ -126,7 +121,6 @@ void DeviceInfoShutdown(void)
 
     OsConfigLogInfo(DeviceInfoGetLog(), "%s shutting down", g_deviceInfoModuleName);
 
-    OSConfigTelemetryClose(&g_telemetry);
     CloseLog(&g_log);
 }
 

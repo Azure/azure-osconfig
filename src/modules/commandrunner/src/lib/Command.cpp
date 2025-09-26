@@ -12,7 +12,6 @@ static const char alphanum[] = "0123456789"\
     "abcdefghijklmnopqrstuvwxyz";
 
 OsConfigLogHandle CommandRunnerLog::m_log = nullptr;
-OSConfigTelemetryHandle CommandRunnerLog::m_telemetry = nullptr;
 
 template<typename T>
 int DeserializeMember(const rapidjson::Value& document, const std::string key, T& value);
