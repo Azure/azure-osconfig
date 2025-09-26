@@ -25,26 +25,20 @@ public:
         return m_log;
     }
 
-    static OSConfigTelemetryHandle GetTelemetry()
-    {
-        return m_telemetry;
-    }
-
     static void OpenLog()
     {
         m_log = ::OpenLog(SAMPLE_LOGFILE, SAMPLE_ROLLEDLOGFILE);
-        m_telemetry = OSConfigTelemetryOpen();
+        OSConfigTelemetryOpen(m_log);
     }
 
     static void CloseLog()
     {
-        OSConfigTelemetryClose(&m_telemetry);
+        OSConfigTelemetryClose();
         ::CloseLog(&m_log);
     }
 
 private:
     static OsConfigLogHandle m_log;
-    static OSConfigTelemetryHandle m_telemetry;
 };
 
 class Sample

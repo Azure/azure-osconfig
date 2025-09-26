@@ -5,8 +5,6 @@
 
 #include <sys/select.h>
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 static long MonotonicTime()
 {
     struct timespec ts;

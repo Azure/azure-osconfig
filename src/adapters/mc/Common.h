@@ -52,6 +52,5 @@
 }\
 
 OsConfigLogHandle GetLog(void);
-OSConfigTelemetryHandle GetTelemetry(void);
 
 #endif

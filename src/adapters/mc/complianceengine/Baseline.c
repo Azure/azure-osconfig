@@ -7,7 +7,7 @@
 static MMI_HANDLE gComplianceEngine = NULL;
 static const char gComponentName[] = "ComplianceEngine";
 
-int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log)
 {
     UNUSED(telemetry);
     UNUSED(resourceId);
@@ -17,21 +17,21 @@ int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, 
     return 0;
 }
 
-int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log)
 {
     UNUSED(telemetry);
     return ComplianceEngineCheckApplicability(gComplianceEngine, payloadKey, log);
 }
 
 // This function is called in library constructor in OsConfigResource.c
-void BaselineInitialize(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+void BaselineInitialize(OsConfigLogHandle log)
 {
     ComplianceEngineInitialize(log, telemetry);
     gComplianceEngine = ComplianceEngineMmiOpen(gComponentName, -1);
 }
 
 // This function is called in library destructor in OsConfigResource.c
-void BaselineShutdown(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+void BaselineShutdown(OsConfigLogHandle log)
 {
     UNUSED(log);
     UNUSED(telemetry);
@@ -45,7 +45,7 @@ void BaselineShutdown(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
     gComplianceEngine = NULL;
 }
 
-int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log)
 {
     UNUSED(telemetry);
     if ((NULL == componentName) || (NULL == objectName))
@@ -71,7 +71,7 @@ int BaselineMmiGet(const char* componentName, const char* objectName, char** pay
     return MMI_OK;
 }
 
-int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
     UNUSED(log);
     UNUSED(telemetry);

@@ -53,6 +53,5 @@
 #define OSCONFIG_MAX_PAYLOAD 4096
 
 OsConfigLogHandle GetLog();
-OSConfigTelemetryHandle GetTelemetry();
 
 #endif // AGENTCOMMON_H

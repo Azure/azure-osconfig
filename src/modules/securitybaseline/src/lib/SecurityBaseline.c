@@ -36,7 +36,6 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
     "\"UserAccount\": 0}";
 
 static OsConfigLogHandle g_log = NULL;
-extern OSConfigTelemetryHandle GetTelemetry(void);
 
 #if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
 static atomic_int g_referenceCount = 0;
@@ -54,6 +53,7 @@ static OsConfigLogHandle SecurityBaselineGetLog(void)
 void SecurityBaselineInitialize(void)
 {
     g_log = OpenLog(g_securityBaselineLogFile, g_securityBaselineRolledLogFile);
+    OSConfigTelemetryOpen(g_log);
     AsbInitialize(SecurityBaselineGetLog());
     OsConfigLogInfo(SecurityBaselineGetLog(), "%s initialized", g_securityBaselineModuleName);
 }
@@ -62,6 +62,7 @@ void SecurityBaselineShutdown(void)
 {
     OsConfigLogInfo(SecurityBaselineGetLog(), "%s shutting down", g_securityBaselineModuleName);
     AsbShutdown(SecurityBaselineGetLog());
+    OSConfigTelemetryClose();
     CloseLog(&g_log);
 }
 

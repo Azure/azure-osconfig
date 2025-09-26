@@ -3,8 +3,6 @@
 
 #include "Internal.h"
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 #if ((defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9)))) || defined(__clang__))
 #include <stdatomic.h>
 #endif
@@ -40,8 +38,6 @@ static atomic_int g_updateInstalledPackagesCache = 0;
 static int g_updateInstalledPackagesCache = 0;
 #endif
 static char* g_installedPackagesCache = NULL;
-
-extern OSConfigTelemetryHandle GetTelemetry(void);
 
 void PackageUtilsCleanup(void)
 {

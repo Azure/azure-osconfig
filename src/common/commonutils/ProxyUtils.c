@@ -3,8 +3,6 @@
 
 #include "Internal.h"
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 static void RemoveProxyStringEscaping(char* value)
 {
     int i = 0;

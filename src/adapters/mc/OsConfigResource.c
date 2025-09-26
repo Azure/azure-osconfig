@@ -37,7 +37,6 @@ static unsigned int g_reportedMpiResult = 0;
 MPI_HANDLE g_mpiHandle = NULL;
 
 static OsConfigLogHandle g_log = NULL;
-static OSConfigTelemetryHandle g_telemetry = NULL;
 
 static const char* g_osconfig = "osconfig";
 static const char* g_mpiServer = "osconfig-platform";
@@ -52,16 +51,6 @@ OsConfigLogHandle GetLog(void)
     }
 
     return g_log;
-}
-
-OSConfigTelemetryHandle GetTelemetry(void)
-{
-    if (NULL == g_telemetry)
-    {
-        g_telemetry = OSConfigTelemetryOpen();
-    }
-
-    return g_telemetry;
 }
 
 void __attribute__((constructor)) Initialize()

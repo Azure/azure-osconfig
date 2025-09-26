@@ -3,8 +3,6 @@
 
 #include "Internal.h"
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 char* DuplicateString(const char* source)
 {
     if (NULL == source)

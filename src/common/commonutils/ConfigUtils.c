@@ -3,9 +3,6 @@
 
 #include "Internal.h"
 
-// Forward declaration for global telemetry function
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 // 1 second
 #define MIN_REPORTING_INTERVAL 1
 

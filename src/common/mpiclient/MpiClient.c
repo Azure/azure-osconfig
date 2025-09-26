@@ -16,8 +16,6 @@
 
 #include "MpiClient.h"
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 #define MPI_MAX_CONTENT_LENGTH 64
 
 #define HTTP_INTERNAL_SERVER_ERROR 500
@@ -369,8 +367,6 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
 
 int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfigLogHandle log)
 {
-    UNUSED(GetTelemetry());
-    UNUSED(GetTelemetry());
     const char *name = "MpiGet";
     const char *requestBodyFormat = "{ \"ClientSession\": %s, \"ComponentName\": \"%s\", \"ObjectName\": \"%s\" }";
 
@@ -450,8 +446,6 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
 
 int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
-    UNUSED(GetTelemetry());
-    UNUSED(GetTelemetry());
     const char *name = "MpiSetDesired";
     static const char *requestBodyFormat = "{ \"ClientSession\": %s, \"Payload\": %s }";
 
@@ -516,8 +510,6 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes,
 
 int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, OsConfigLogHandle log)
 {
-    UNUSED(GetTelemetry());
-    UNUSED(GetTelemetry());
     const char *name = "MpiGetReported";
     static const char *requestBodyFormat = "{ \"ClientSession\": %s }";
 

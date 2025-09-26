@@ -29,7 +29,6 @@ public:
     {
         return mLog;
     }
-    OSConfigTelemetryHandle GetTelemetryHandle() const override;
 
     std::string GetSpecialFilePath(const std::string& path) const override;
 

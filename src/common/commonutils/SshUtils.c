@@ -4,8 +4,6 @@
 #include "Internal.h"
 #include "SshUtils.h"
 
-extern OSConfigTelemetryHandle GetTelemetry(void);
-
 static const char* g_sshServerService = "sshd";
 static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
 static const char* g_sshServerConfigurationBackup = "/etc/ssh/sshd_config.bak";

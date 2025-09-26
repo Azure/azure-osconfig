@@ -14,7 +14,7 @@ extern "C"
 {
 #endif
 
-void ComplianceEngineInitialize(OsConfigLogHandle, OSConfigTelemetryHandle);
+void ComplianceEngineInitialize(OsConfigLogHandle);
 void ComplianceEngineShutdown();
 
 MMI_HANDLE ComplianceEngineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes);
