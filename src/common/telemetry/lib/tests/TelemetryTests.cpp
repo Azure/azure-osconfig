@@ -31,62 +31,51 @@ protected:
     const std::string m_testJsonFile = "/tmp/test_telemetry.json";
 };
 
-// Test singleton behavior
-TEST_F(TelemetryTest, SingletonBehavior)
+// Test processing a non-existent file
+TEST_F(TelemetryTest, ProcessNonExistentFile)
 {
-    auto& instance1 = Telemetry::TelemetryManager::GetInstance();
-    auto& instance2 = Telemetry::TelemetryManager::GetInstance();
-
-    // Both references should point to the same instance
-    EXPECT_EQ(&instance1, &instance2);
+    EXPECT_FALSE(Telemetry::TelemetryManager::ProcessJsonFile("/non/existent/file.json"));
 }
 
-// Test initialization with default parameters
-TEST_F(TelemetryTest, InitializeDefault)
+// Test processing an empty file
+TEST_F(TelemetryTest, ProcessEmptyFile)
 {
-    auto& telemetry = Telemetry::TelemetryManager::GetInstance();
-
-    bool result = telemetry.Initialize();
-    EXPECT_TRUE(result);
+    CreateTestJsonFile("");
+    EXPECT_TRUE(Telemetry::TelemetryManager::ProcessJsonFile(m_testJsonFile)); // Empty file should be processed successfully
 }
 
-// Test initialization with custom parameters
-TEST_F(TelemetryTest, InitializeWithCustomParameters)
+// Test processing a file with valid JSON lines
+TEST_F(TelemetryTest, ProcessValidJsonFile)
 {
-    auto& telemetry = Telemetry::TelemetryManager::GetInstance();
-
-    bool result = telemetry.Initialize(true, 10);
-    EXPECT_TRUE(result);
+    // Create a test file with a valid event
+    std::string validJson = R"({"EventName": "TestEvent", "TestParam": "value"})";
+    CreateTestJsonFile(validJson);
+    EXPECT_TRUE(Telemetry::TelemetryManager::ProcessJsonFile(m_testJsonFile));
 }
 
-// Test double initialization - should return true but not reinitialize
-TEST_F(TelemetryTest, DoubleInitialization)
+// Test processing a file with invalid JSON
+TEST_F(TelemetryTest, ProcessInvalidJsonFile)
 {
-    auto& telemetry = Telemetry::TelemetryManager::GetInstance();
-
-    bool result1 = telemetry.Initialize();
-    EXPECT_TRUE(result1);
-
-    // Second initialization should return true but not change state
-    bool result2 = telemetry.Initialize();
-    EXPECT_TRUE(result2);
+    CreateTestJsonFile("invalid json content");
+    EXPECT_TRUE(Telemetry::TelemetryManager::ProcessJsonFile(m_testJsonFile)); // Method should return true even if individual lines fail
 }
 
-// Test shutdown without initialization
-TEST_F(TelemetryTest, ShutdownWithoutInitialization)
+// Test processing a file with mixed valid and invalid JSON lines
+TEST_F(TelemetryTest, ProcessMixedJsonFile)
 {
-    auto& telemetry = Telemetry::TelemetryManager::GetInstance();
-
-    // Should not crash
-    EXPECT_NO_THROW(telemetry.Shutdown());
+    std::string mixedContent = R"({"EventName": "TestEvent", "TestParam": "value"}
+invalid json line
+{"EventName": "AnotherEvent", "Param": "value2"})";
+    CreateTestJsonFile(mixedContent);
+    EXPECT_TRUE(Telemetry::TelemetryManager::ProcessJsonFile(m_testJsonFile));
 }
 
-// Test normal shutdown after initialization
-TEST_F(TelemetryTest, NormalShutdown)
+// Test processing a file with multiple valid JSON lines
+TEST_F(TelemetryTest, ProcessMultipleValidJsonLines)
 {
-    auto& telemetry = Telemetry::TelemetryManager::GetInstance();
-
-    telemetry.Initialize();
-
-    telemetry.Shutdown();
+    std::string multipleLines = R"({"EventName": "Event1", "Param1": "value1"}
+{"EventName": "Event2", "Param2": "value2"}
+{"EventName": "Event3", "Param3": "value3"})";
+    CreateTestJsonFile(multipleLines);
+    EXPECT_TRUE(Telemetry::TelemetryManager::ProcessJsonFile(m_testJsonFile));
 }
