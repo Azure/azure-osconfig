@@ -26,7 +26,7 @@ Result<Status> FileTreeWalk(const std::string& path, FtwCallback callback, Break
             return Status::Compliant;
         }
 
-        OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "opendir", status);
+        OSConfigTelemetryStatusTrace("opendir", status);
         OsConfigLogError(context.GetLogHandle(), "Failed to open directory '%s': %s", path.c_str(), strerror(status));
         return Error("Failed to open directory '" + path + "': " + strerror(status), status);
     }
@@ -68,7 +68,7 @@ Result<Status> FileTreeWalk(const std::string& path, FtwCallback callback, Break
         if (0 != lstat(directory.c_str(), &sb))
         {
             int status = errno;
-            OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "lstat", status);
+            OSConfigTelemetryStatusTrace("lstat", status);
             OsConfigLogError(context.GetLogHandle(), "Failed to lstat '%s': %s", directory.c_str(), strerror(status));
             result = Error("Failed to lstat '" + directory + "': " + strerror(status), status);
             break;
@@ -102,7 +102,7 @@ Result<Status> FileTreeWalk(const std::string& path, FtwCallback callback, Break
 
     if (0 != status)
     {
-        OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "readdir", status);
+        OSConfigTelemetryStatusTrace("readdir", status);
         OsConfigLogError(context.GetLogHandle(), "Failed to iterate directory '%s': %s", path.c_str(), strerror(status));
         return Error("Failed to iterate directory '" + path + "': " + strerror(status), status);
     }

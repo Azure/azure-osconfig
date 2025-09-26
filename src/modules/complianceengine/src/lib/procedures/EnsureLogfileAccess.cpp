@@ -126,7 +126,7 @@ AUDIT_FN(EnsureLogfileAccess, "path:Path to log directory to check, default /var
 
     if (!result.HasValue())
     {
-        OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "FileTreeWalk", result.Error().code);
+        OSConfigTelemetryStatusTrace("FileTreeWalk", result.Error().code);
         OsConfigLogError(context.GetLogHandle(), "Failed to walk log directory '%s': %s", logPath.c_str(), result.Error().message.c_str());
         return result.Error();
     }
@@ -156,7 +156,7 @@ REMEDIATE_FN(EnsureLogfileAccess, "path:Path to log directory to remediate, defa
 
     if (!result.HasValue())
     {
-        OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "FileTreeWalk", result.Error().code);
+        OSConfigTelemetryStatusTrace("FileTreeWalk", result.Error().code);
         OsConfigLogError(context.GetLogHandle(), "Failed to walk log directory '%s': %s", logPath.c_str(), result.Error().message.c_str());
         return result.Error();
     }

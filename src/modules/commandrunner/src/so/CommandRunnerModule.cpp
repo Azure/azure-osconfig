@@ -47,12 +47,12 @@ int MmiGetInfo(
         {
             if (IsDebugLoggingEnabled())
             {
-                OSConfigTelemetryStatusTrace(CommandRunnerLog::GetTelemetry(), "MmiGetInfo", status);
+                OSConfigTelemetryStatusTrace("MmiGetInfo", status);
                 OsConfigLogError(CommandRunnerLog::Get(), "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
             else
             {
-                OSConfigTelemetryStatusTrace(CommandRunnerLog::GetTelemetry(), "MmiGetInfo", status);
+                OSConfigTelemetryStatusTrace("MmiGetInfo", status);
                 OsConfigLogError(CommandRunnerLog::Get(), "MmiGetInfo(%s, -, %d) returned %d", clientName, *payloadSizeBytes, status);
             }
         }
@@ -79,7 +79,7 @@ MMI_HANDLE MmiOpen(
         }
         else
         {
-            OSConfigTelemetryStatusTrace(CommandRunnerLog::GetTelemetry(), "MmiOpen", status);
+            OSConfigTelemetryStatusTrace("MmiOpen", status);
             OsConfigLogError(CommandRunnerLog::Get(), "MmiOpen(%s, %d) returned: %p, status: %d", clientName, maxPayloadSizeBytes, handle, status);
         }
     }};
@@ -93,13 +93,13 @@ MMI_HANDLE MmiOpen(
         }
         else
         {
-            OSConfigTelemetryStatusTrace(CommandRunnerLog::GetTelemetry(), "commandRunner", ENOMEM);
+            OSConfigTelemetryStatusTrace("commandRunner", ENOMEM);
             OsConfigLogError(CommandRunnerLog::Get(), "MmiOpen failed to allocate memory");
             status = ENOMEM;        }
     }
     else
     {
-        OSConfigTelemetryStatusTrace(CommandRunnerLog::GetTelemetry(), "clientName", EINVAL);
+        OSConfigTelemetryStatusTrace("clientName", EINVAL);
         OsConfigLogError(CommandRunnerLog::Get(), "MmiOpen called with null clientName");
         status = EINVAL;
     }
@@ -139,12 +139,12 @@ int MmiSet(
         {
             if (IsDebugLoggingEnabled())
             {
-                OSConfigTelemetryStatusTrace(CommandRunnerLog::GetTelemetry(), "MmiSet", status);
+                OSConfigTelemetryStatusTrace("MmiSet", status);
                 OsConfigLogError(CommandRunnerLog::Get(), "MmiSet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
             }
             else
             {
-                OSConfigTelemetryStatusTrace(CommandRunnerLog::GetTelemetry(), "MmiSet", status);
+                OSConfigTelemetryStatusTrace("MmiSet", status);
                 OsConfigLogError(CommandRunnerLog::Get(), "MmiSet(%p, %s, %s, -, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, status);
             }
         }
@@ -152,7 +152,7 @@ int MmiSet(
 
     if (nullptr == clientSession)
     {
-        OSConfigTelemetryStatusTrace(CommandRunnerLog::GetTelemetry(), "clientSession", EINVAL);
+        OSConfigTelemetryStatusTrace("clientSession", EINVAL);
         OsConfigLogError(CommandRunnerLog::Get(), "MmiSet called with null clientSession");
         status = EINVAL;
     }
@@ -185,7 +185,7 @@ int MmiGet(
             }
             else
             {
-                OSConfigTelemetryStatusTrace(CommandRunnerLog::GetTelemetry(), "MmiGet", status);
+                OSConfigTelemetryStatusTrace("MmiGet", status);
                 OsConfigLogError(CommandRunnerLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
         }
@@ -193,7 +193,7 @@ int MmiGet(
 
     if (nullptr == clientSession)
     {
-        OSConfigTelemetryStatusTrace(CommandRunnerLog::GetTelemetry(), "clientSession", EINVAL);
+        OSConfigTelemetryStatusTrace("clientSession", EINVAL);
         OsConfigLogError(CommandRunnerLog::Get(), "MmiGet called with null clientSession");
         status = EINVAL;
     }

@@ -42,19 +42,19 @@ static int ExecuteSystemctlCommand(const char* command, const char* daemonName, 
 
     if ((NULL == command) || (NULL == daemonName))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "command", EINVAL);
+        OSConfigTelemetryStatusTrace("command", EINVAL);
         OsConfigLogError(log, "ExecuteSystemctlCommand: invalid arguments");
         return EINVAL;
     }
     else if (false == IsValidDaemonName(daemonName))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "IsValidDaemonName", EINVAL);
+        OSConfigTelemetryStatusTrace("IsValidDaemonName", EINVAL);
         OsConfigLogError(log, "ExecuteSystemctlCommand: invalid daemon name '%s'", daemonName);
         return EINVAL;
     }
     else if (NULL == (formattedCommand = FormatAllocateString(commandTemplate, command, daemonName)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
+        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "ExecuteSystemctlCommand: out of memory");
         return ENOMEM;
     }
@@ -114,7 +114,7 @@ static bool CommandDaemon(const char* command, const char* daemonName, OsConfigL
 
     if (false == IsValidDaemonName(daemonName))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "IsValidDaemonName", EINVAL);
+        OSConfigTelemetryStatusTrace("IsValidDaemonName", EINVAL);
         OsConfigLogError(log, "CommandDaemon: invalid daemon name '%s'", daemonName);
         return false;
     }
@@ -148,14 +148,14 @@ bool EnableAndStartDaemon(const char* daemonName, OsConfigLogHandle log)
 
     if (false == IsValidDaemonName(daemonName))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "IsValidDaemonName", EINVAL);
+        OSConfigTelemetryStatusTrace("IsValidDaemonName", EINVAL);
         OsConfigLogError(log, "EnableAndStartDaemon: invalid daemon name '%s'", daemonName);
         return false;
     }
 
     if (false == EnableDaemon(daemonName, log))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "EnableDaemon", EINVAL);
+        OSConfigTelemetryStatusTrace("EnableDaemon", EINVAL);
         OsConfigLogError(log, "EnableAndStartDaemon: failed to enable service '%s'", daemonName);
     }
     else
@@ -164,7 +164,7 @@ bool EnableAndStartDaemon(const char* daemonName, OsConfigLogHandle log)
         {
             if (false == StartDaemon(daemonName, log))
             {
-                OSConfigTelemetryStatusTrace(GetTelemetry(), "StartDaemon", EINVAL);
+                OSConfigTelemetryStatusTrace("StartDaemon", EINVAL);
                 OsConfigLogError(log, "EnableAndStartDaemon: failed to start service '%s'", daemonName);
             }
             else

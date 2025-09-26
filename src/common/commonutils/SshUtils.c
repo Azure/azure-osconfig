@@ -174,7 +174,7 @@ static char* GetSshServerState(const char* name, OsConfigLogHandle log)
         }
         else
         {
-            OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
+            OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
             OsConfigLogError(log, "GetSshServerState: FormatAllocateString failed");
         }
 
@@ -285,7 +285,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
 
     if (NULL == macs)
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "macs", EINVAL);
+        OSConfigTelemetryStatusTrace("macs", EINVAL);
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: invalid arguments");
         return EINVAL;
     }
@@ -295,7 +295,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
     }
     else if (NULL == (sshMacs = DuplicateStringToLowercase(g_sshMacs)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "DuplicateStringToLowercase", ENOMEM);
+        OSConfigTelemetryStatusTrace("DuplicateStringToLowercase", ENOMEM);
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: failed to duplicate string to lowercase");
         return ENOMEM;
     }
@@ -314,7 +314,7 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
         {
             if (NULL == (value = DuplicateString(&(macsValue[i]))))
             {
-                OSConfigTelemetryStatusTrace(GetTelemetry(), "DuplicateString", ENOMEM);
+                OSConfigTelemetryStatusTrace("DuplicateString", ENOMEM);
                 OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: failed to duplicate string");
                 status = ENOMEM;
                 break;
@@ -361,7 +361,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
 
     if (NULL == ciphers)
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "ciphers", EINVAL);
+        OSConfigTelemetryStatusTrace("ciphers", EINVAL);
         OsConfigLogError(log, "CheckAppropriateCiphersForSsh: invalid argument");
         return EINVAL;
     }
@@ -371,7 +371,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
     }
     else if (NULL == (sshCiphers = DuplicateStringToLowercase(g_sshCiphers)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "DuplicateStringToLowercase", ENOMEM);
+        OSConfigTelemetryStatusTrace("DuplicateStringToLowercase", ENOMEM);
         OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate string to lowercase");
         return ENOMEM;
     }
@@ -391,7 +391,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
         {
             if (NULL == (value = DuplicateString(&(ciphersValue[i]))))
             {
-                OSConfigTelemetryStatusTrace(GetTelemetry(), "DuplicateString", ENOMEM);
+                OSConfigTelemetryStatusTrace("DuplicateString", ENOMEM);
                 OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate string");
                 status = ENOMEM;
                 break;
@@ -420,7 +420,7 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, OsC
         {
             if (NULL == (value = DuplicateString(&(ciphers[i]))))
             {
-                OSConfigTelemetryStatusTrace(GetTelemetry(), "DuplicateString", ENOMEM);
+                OSConfigTelemetryStatusTrace("DuplicateString", ENOMEM);
                 OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate ciphers string");
                 status = ENOMEM;
                 break;
@@ -463,7 +463,7 @@ static int CheckSshOptionIsSet(const char* option, const char* expectedValue, ch
 
     if (NULL == option)
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "option", EINVAL);
+        OSConfigTelemetryStatusTrace("option", EINVAL);
         OsConfigLogError(log, "CheckSshOptionIsSet: invalid argument");
         return EINVAL;
     }
@@ -676,7 +676,7 @@ static char* FormatInclusionForRemediation(OsConfigLogHandle log)
     }
     else
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
+        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
         OsConfigLogError(log, "FormatInclusionForRemediation: out of memory");
     }
 

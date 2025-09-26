@@ -59,7 +59,7 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
     }
     catch (const std::exception& e)
     {
-        OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "regex", EINVAL);
+        OSConfigTelemetryStatusTrace("regex", EINVAL);
         OsConfigLogError(log, "Regex error: %s", e.what());
         return Error("Failed to compile regex '" + sysctlValue + "' error: " + e.what());
     }
@@ -95,7 +95,7 @@ AUDIT_FN(EnsureSysctl, "sysctlName:Name of the sysctl:M:^([a-zA-Z0-9_]+[\\.a-zA-
     auto execResult = context.ExecuteCommand(systemdSysctl);
     if (!execResult.HasValue())
     {
-        OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "ExecuteCommand", execResult.Error().code);
+        OSConfigTelemetryStatusTrace("ExecuteCommand", execResult.Error().code);
         OsConfigLogError(log, "Failed to execute systemd-sysctl command");
         return execResult.Error();
     }

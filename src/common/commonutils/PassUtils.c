@@ -24,7 +24,7 @@ static char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
 
     if (NULL == pamModule)
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "pamModule", EINVAL);
+        OSConfigTelemetryStatusTrace("pamModule", EINVAL);
         OsConfigLogError(log, "FindPamModule: invalid argument");
         return NULL;
     }
@@ -44,7 +44,7 @@ static char* FindPamModule(const char* pamModule, OsConfigLogHandle log)
         }
         else
         {
-            OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
+            OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
             OsConfigLogError(log, "FindPamModule: out of memory");
             break;
         }
@@ -174,7 +174,7 @@ int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log)
     }
     else
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
+        OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
         OsConfigLogError(log, "SetEnsurePasswordReuseIsLimited: out of memory");
         status = ENOMEM;
     }
@@ -201,7 +201,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
 
     if ((NULL == fileName) || (NULL == pamSo))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "fileName", EINVAL);
+        OSConfigTelemetryStatusTrace("fileName", EINVAL);
         OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: invalid arguments");
         return EINVAL;
     }
@@ -212,7 +212,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
     }
     else if (NULL == (line = malloc(lineMax + 1)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
+        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
         OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: out of memory");
         return ENOMEM;
     }
@@ -401,7 +401,7 @@ int SetLockoutForFailedPasswordAttempts(OsConfigLogHandle log)
 
             if (ENOMEM == status)
             {
-                OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
+                OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                 OsConfigLogError(log, "SetLockoutForFailedPasswordAttempts: out of memory");
                 break;
             }
@@ -438,7 +438,7 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
     }
     else if (NULL == (line = malloc(lineMax + 1)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
+        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
         OsConfigLogError(log, "CheckRequirementsForCommonPassword: out of memory");
         return ENOMEM;
     }
@@ -593,7 +593,7 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
 
     if ((NULL == buffer) || (NULL == option) || (NULL == fileName))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "fileName", EINVAL);
+        OSConfigTelemetryStatusTrace("fileName", EINVAL);
         OsConfigLogError(log, "CheckPasswordRequirementFromBuffer: invalid arguments");
         return INT_ENOENT;
     }
@@ -644,7 +644,7 @@ static int CheckRequirementsForPwQualityConf(int retry, int minlen, int minclass
     }
     else if (NULL == (line = malloc(lineMax + 1)))
     {
-        OSConfigTelemetryStatusTrace(GetTelemetry(), "malloc", ENOMEM);
+        OSConfigTelemetryStatusTrace("malloc", ENOMEM);
         OsConfigLogError(log, "CheckRequirementsForPwQualityConf: out of memory");
         return ENOMEM;
     }
@@ -835,7 +835,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
             }
             else
             {
-                OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
+                OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                 OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcPamdCommonPassword);
             }
         }
@@ -868,7 +868,7 @@ int SetPasswordCreationRequirements(int retry, int minlen, int minclass, int dcr
             }
             else
             {
-                OSConfigTelemetryStatusTrace(GetTelemetry(), "FormatAllocateString", ENOMEM);
+                OSConfigTelemetryStatusTrace("FormatAllocateString", ENOMEM);
                 OsConfigLogError(log, "SetPasswordCreationRequirements: out of memory when allocating new line for '%s'", g_etcSecurityPwQualityConf);
             }
         }

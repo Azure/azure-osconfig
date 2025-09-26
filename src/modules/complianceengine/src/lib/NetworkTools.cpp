@@ -64,7 +64,7 @@ Result<std::vector<OpenPort>> GetOpenPorts(ContextInterface& context)
         size_t pos = local.rfind(':');
         if (pos == std::string::npos)
         {
-            OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "local_address_format", EINVAL);
+            OSConfigTelemetryStatusTrace("local_address_format", EINVAL);
             OsConfigLogError(context.GetLogHandle(), "Invalid local address format: %s", local.c_str());
             continue;
         }
@@ -74,7 +74,7 @@ Result<std::vector<OpenPort>> GetOpenPorts(ContextInterface& context)
         }
         catch (const std::exception& e)
         {
-            OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "stoi", EINVAL);
+            OSConfigTelemetryStatusTrace("stoi", EINVAL);
             OsConfigLogError(context.GetLogHandle(), "Invalid port number: %s", local.substr(pos + 1).c_str());
             continue;
         }
@@ -104,7 +104,7 @@ Result<std::vector<OpenPort>> GetOpenPorts(ContextInterface& context)
             r = inet_pton(AF_INET6, ip.c_str(), &openPort.ip6);
             if (r <= 0)
             {
-                OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(), "inet_pton", EINVAL);
+                OSConfigTelemetryStatusTrace("inet_pton", EINVAL);
                 OsConfigLogError(context.GetLogHandle(), "Invalid IP address: %s", ip.c_str());
                 continue;
             }
