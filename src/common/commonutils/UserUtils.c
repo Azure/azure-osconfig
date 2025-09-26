@@ -3225,3 +3225,43 @@ int CheckUserExists(const char* username, char** reason, OsConfigLogHandle log)
 
     return result;
 }
+
+int AddIfMissingSyslogSystemUser(OsConfigLogHandle log)
+{
+    const char* commmand = "useradd -r -s /usr/sbin/nologin -d /nonexistent syslog";
+    result = 0;
+
+    if (0 != (result = CheckUserExists("syslog", NULL, log)))
+    {
+        if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "AddMissingSyslogSystemUser: useradd for user 'syslog' failed with %d (errno: %d, %s)", result, errno, strerror(errno));
+        }
+        else
+        {
+            OsConfigLogInfo(log, "AddMissingSyslogSystemUser: user 'syslog' successfully created");
+        }
+    }
+
+    return result;
+}
+
+int AddIfMissingAdmSystemGroup(OsConfigLogHandle log)
+{
+    const char* commmand = "groupadd -r adm";
+    result = 0;
+
+    if (0 != (result = CheckGroupExists("adm", NULL, log)))
+    {
+        if (0 != (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "AddMissingAdmSystemGroup: groupadd for group 'adm' failed with %d (errno: %d, %s)", result, errno, strerror(errno));
+        }
+        else
+        {
+            OsConfigLogInfo(log, "AddMissingAdmSystemGroup: group 'adm' successfully created");
+        }
+    }
+
+    return result;
+}

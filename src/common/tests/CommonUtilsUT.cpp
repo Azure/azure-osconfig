@@ -3044,6 +3044,12 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
     EXPECT_TRUE(Cleanup(noConfPath));
 }
 
+TEST_F(CommonUtilsTest, AddIfMissingAdmGroupAndSyslogUser)
+{
+    EXPECT_EQ(0, AddIfMissingAdmSystemGroup(nullptr));
+    EXPECT_EQ(0, AddIfMissingSyslogSystemUser(nullptr));
+}
+
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
     const char* emergency = "EMERGENCY";
