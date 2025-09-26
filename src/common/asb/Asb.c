@@ -2234,7 +2234,8 @@ static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(OsConfigLogHandle l
     const char* fileGroup = "$FileGroup adm";
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, fileGroup, &reason, log));
-    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileGroup, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileGroup, &reason, log));
+    CheckGroupExists("adm", &reason, log);
     return reason;
 }
 
@@ -2243,7 +2244,8 @@ static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(OsConfigLogHandle
     const char* fileOwner = "$FileOwner syslog";
     char* reason = NULL;
     RETURN_REASON_IF_NOT_ZERO(CheckTextIsFoundInFile(g_etcRsyslogConf, fileOwner, &reason, log));
-    CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileOwner, &reason, log);
+    RETURN_REASON_IF_NOT_ZERO(CheckLineFoundNotCommentedOut(g_etcRsyslogConf, '#', fileOwner, &reason, log));
+    CheckUserExists("syslog", &reason, log);
     return reason;
 }
 
@@ -3870,12 +3872,14 @@ static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, OsC
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
+    CheckGroupExists("adm", NULL, log);
     return SetEtcConfValue(g_etcRsyslogConf, "$FileGroup", "adm", log);
 }
 
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
+    CheckUserExists("syslog", NULL, log);
     return SetEtcConfValue(g_etcRsyslogConf, "$FileOwner", "syslog", log);
 }
 

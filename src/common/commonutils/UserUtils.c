@@ -3168,3 +3168,60 @@ bool GroupExists(gid_t groupId, OsConfigLogHandle log)
 
     return result;
 }
+
+int CheckGroupExists(const char* name, char** reason, OsConfigLogHandle log)
+{
+    struct group* groupEntry = NULL;
+    int result = ENOENT;
+
+    if ((NULL != name) && (NULL != (groupEntry = getgrnam(name))))
+    {
+        OsConfigLogInfo(log, "CheckGroupExists: group %u exists", (unsigned int)groupEntry->gr_gid);
+        OsConfigCaptureSuccessReason(reason, "Group %u exists", (unsigned int)groupEntry->gr_gid);
+        result = 0;
+    }
+
+    if (0 != result)
+    {
+        OsConfigLogInfo(log, "CheckGroupExists: group '%s' does not exist (errno: %d), automatic remediation is not possible", name, errno);
+        OsConfigCaptureReason(reason, "Group '%s' does not exist (%d), automatic remediation is not possible", name, errno);
+    }
+
+    return result;
+}
+
+int CheckUserExists(const char* username, char** reason, OsConfigLogHandle log)
+{
+    struct passwd* userEntry = NULL;
+    int result = ENOENT;
+
+    if (NULL != username)
+    {
+        setpwent();
+
+        while (NULL != (userEntry = getpwent()))
+        {
+            if (NULL == userEntry->pw_name)
+            {
+                continue;
+            }
+            else if (0 == strcmp(userEntry->pw_name, username))
+            {
+                OsConfigLogInfo(log, "UserExists: user %u exists", userEntry->pw_uid);
+                OsConfigCaptureSuccessReason(reason, "User %u exists", userEntry->pw_uid);
+                result = 0;
+                break;
+            }
+        }
+
+        endpwent();
+    }
+
+    if (0 != result)
+    {
+        OsConfigLogInfo(log, "UserExists: user '%s' does not exist, automatic remediation is not possible", username);
+        OsConfigCaptureReason(reason, "User '%s' does not exist, automatic remediation is not possible", username);
+    }
+
+    return result;
+}
