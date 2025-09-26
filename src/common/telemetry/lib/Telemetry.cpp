@@ -82,12 +82,6 @@ bool TelemetryManager::Initialize(bool enableDebug, int teardownTime)
     }
 }
 
-bool TelemetryManager::IsInitialized() const
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_initialized;
-}
-
 void TelemetryManager::EventWrite(Microsoft::Applications::Events::EventProperties event)
 {
     if (!m_initialized || !m_logger)
