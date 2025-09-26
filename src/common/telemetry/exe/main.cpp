@@ -10,11 +10,31 @@
 
 #include <Telemetry.hpp>
 
-int _exit(OsConfigLogHandle log, int exit_code)
+class LogHandle
 {
-    CloseLog(&log);
-    return exit_code;
-}
+private:
+    OsConfigLogHandle m_log;
+
+public:
+    explicit LogHandle(const char* logPath, const char* rollingFile = nullptr)
+        : m_log(OpenLog(logPath, rollingFile))
+    {
+    }
+
+    ~LogHandle()
+    {
+        if (m_log != nullptr)
+        {
+            CloseLog(&m_log);
+            m_log = nullptr;
+        }
+    }
+
+    OsConfigLogHandle get() const
+    {
+        return m_log;
+    }
+};
 
 void print_usage(const char* program_name)
 {
@@ -29,114 +49,140 @@ void print_usage(const char* program_name)
 
 int main(int argc, char* argv[])
 {
-    OsConfigLogHandle g_log = NULL;
-    g_log = OpenLog("/var/log/osconfig_telemetry_exe.log", NULL);
-
-    // Check if minimum arguments are provided
-    if (argc < 2 || argc > 4)
+    try
     {
-        print_usage(argv[0]);
-        return _exit(g_log, 1);
-    }
+        LogHandle log("/var/log/osconfig_telemetry_exe.log");
 
-    bool verbose = false;
-    std::string filepath;
-    int teardown_time = -1; // Use -1 to indicate default should be used
-    int arg_index = 1;
-
-    // Parse verbose flag
-    if (argc > 1 && (std::string(argv[1]) == "-v" || std::string(argv[1]) == "--verbose"))
-    {
-        verbose = true;
-        arg_index = 2;
-
-        if (argc < 3)
+        // Check if minimum arguments are provided
+        if (argc < 2 || argc > 4)
         {
-            OsConfigLogError(g_log, "Error: JSON file path is required after verbose flag.");
             print_usage(argv[0]);
-            return _exit(g_log, 1);
+            return 1;
         }
-    }
 
-    // Get filepath
-    if (arg_index < argc)
-    {
-        filepath = argv[arg_index];
-        arg_index++;
-    }
-    else
-    {
-        OsConfigLogError(g_log, "Error: JSON file path is required.");
-        print_usage(argv[0]);
-        return _exit(g_log, 1);
-    }
+        bool verbose = false;
+        std::string filepath;
+        int teardown_time = -1; // Use -1 to indicate default should be used
+        int arg_index = 1;
 
-    // Parse teardown time argument
-    if (arg_index < argc)
-    {
+        // Parse verbose flag
         try
         {
-            teardown_time = std::stoi(argv[arg_index]);
-            if (teardown_time < 0)
+            if (argc > 1 && (std::string(argv[1]) == "-v" || std::string(argv[1]) == "--verbose"))
             {
-                OsConfigLogError(g_log, "Error: Teardown time must be a non-negative integer.");
-                return _exit(g_log, 1);
+                verbose = true;
+                arg_index = 2;
+
+                if (argc < 3)
+                {
+                    OsConfigLogError(log.get(), "Error: JSON file path is required after verbose flag.");
+                    print_usage(argv[0]);
+                    return 1;
+                }
             }
-            arg_index++;
         }
         catch (const std::exception& e)
         {
-            OsConfigLogError(g_log, "Error: Invalid teardown time argument '%s'. Must be a valid integer.", argv[arg_index]);
-            return _exit(g_log, 1);
+            OsConfigLogError(log.get(), "Error: Failed to parse verbose flag: %s", e.what());
+            return 1;
         }
-    }
 
-    // Initialize telemetry
-    auto& telemetry = Telemetry::TelemetryManager::GetInstance();
-    std::string init_message = "Initializing telemetry with verbose=" + std::string(verbose ? "true" : "false");
-    if (teardown_time >= 0)
-    {
-        init_message += " and teardown_time=" + std::to_string(teardown_time) + "s";
-    }
-    OsConfigLogInfo(g_log, "%s", init_message.c_str());
-
-    bool init_success;
-    if (teardown_time >= 0)
-    {
-        init_success = telemetry.Initialize(verbose, teardown_time);
-    }
-    else
-    {
-        init_success = telemetry.Initialize(verbose);
-    }
-
-    if (init_success)
-    {
-        OsConfigLogInfo(g_log, "Telemetry initialized successfully!");
-
-        telemetry.ProcessJsonFile(filepath);
-        OsConfigLogInfo(g_log, "Processed telemetry JSON file: %s", filepath.c_str());
-
-        auto start_time = std::chrono::high_resolution_clock::now();
-        telemetry.Shutdown();
-        auto end_time = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-        std::string duration_str = std::to_string(duration.count());
-        OsConfigLogInfo(g_log, "Telemetry shutdown successfully! [%s ms]", duration_str.c_str());
-
-        // Delete the JSON file
-        if (std::remove(filepath.c_str()) != 0)
+        // Get filepath
+        try
         {
-            OsConfigLogError(g_log, "Warning: Failed to delete JSON file: %s", filepath.c_str());
+            if (arg_index < argc)
+            {
+                filepath = argv[arg_index];
+                arg_index++;
+            }
+            else
+            {
+                OsConfigLogError(log.get(), "Error: JSON file path is required.");
+                print_usage(argv[0]);
+                return 1;
+            }
         }
+        catch (const std::exception& e)
+        {
+            OsConfigLogError(log.get(), "Error: Failed to parse JSON file path: %s", e.what());
+            return 1;
+        }
+
+        // Parse teardown time argument
+        if (arg_index < argc)
+        {
+            try
+            {
+                teardown_time = std::stoi(argv[arg_index]);
+                if (teardown_time < 0)
+                {
+                    OsConfigLogError(log.get(), "Error: Teardown time must be a non-negative integer.");
+                    return 1;
+                }
+                arg_index++;
+            }
+            catch (const std::exception& e)
+            {
+                OsConfigLogError(log.get(), "Error: Invalid teardown time argument '%s'. Must be a valid integer.", argv[arg_index]);
+                return 1;
+            }
+        }
+
+        try
+        {
+            std::string init_message = "Initializing telemetry with verbose=" + std::string(verbose ? "true" : "false");
+            if (teardown_time >= 0)
+            {
+                init_message += " and teardown_time=" + std::to_string(teardown_time) + "s";
+            }
+            OsConfigLogInfo(log.get(), "%s", init_message.c_str());
+        }
+        catch (const std::exception& e)
+        {
+            OsConfigLogError(log.get(), "Error: Failed to create initialization message: %s", e.what());
+            return 1;
+        }
+
+        bool init_success = true;
+
+        if (init_success)
+        {
+            try
+            {
+                OsConfigLogInfo(log.get(), "Telemetry initialized successfully!");
+
+                Telemetry::TelemetryManager::SetupConfiguration(verbose, teardown_time);
+                Telemetry::TelemetryManager::ProcessJsonFile(filepath);
+                OsConfigLogInfo(log.get(), "Processed telemetry JSON file: %s", filepath.c_str());
+
+                auto start_time = std::chrono::high_resolution_clock::now();
+                auto end_time = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+                std::string duration_str = std::to_string(duration.count());
+                OsConfigLogInfo(log.get(), "Telemetry shutdown successfully! [%s ms]", duration_str.c_str());
+
+                // Delete the JSON file
+                if (std::remove(filepath.c_str()) != 0)
+                {
+                    OsConfigLogError(log.get(), "Warning: Failed to delete JSON file: %s", filepath.c_str());
+                }
+            }
+            catch (const std::exception& e)
+            {
+                OsConfigLogError(log.get(), "Error: Telemetry operation failed: %s", e.what());
+                return 1;
+            }
+        }
+        else
+        {
+            OsConfigLogError(log.get(), "Error: Failed to initialize telemetry.");
+            return 1;
+        }
+
+        return 0;
     }
-    else
+    catch (...)
     {
-        OsConfigLogError(g_log, "Error: Failed to initialize telemetry.");
-        return _exit(g_log, 1);
+        return 1;
     }
-
-    CloseLog(&g_log);
-
-    return 0;
 }
