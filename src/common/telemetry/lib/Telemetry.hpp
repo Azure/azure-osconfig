@@ -26,43 +26,42 @@ namespace Telemetry
     public:
         static const int CONFIG_DEFAULT_TEARDOWN_TIME = 5; // seconds
 
-        // Singleton pattern - get the global instance
-        static TelemetryManager& GetInstance();
+        // Parse JSON file line by line and process events
+        static bool ProcessJsonFile(const std::string& filePath);
 
-        // Delete copy constructor and assignment operator to enforce singleton
+        ~TelemetryManager() noexcept;
+
+    private:
+        // Private constructor to prevent instantiation
+        TelemetryManager() = delete;
+
+        // Delete copy constructor and assignment operator
         TelemetryManager(const TelemetryManager&) = delete;
         TelemetryManager& operator=(const TelemetryManager&) = delete;
 
-        // Initialize telemetry system
-        bool Initialize(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME);
+        // Private static members and methods for internal implementation
+        static OsConfigLogHandle m_log;
+        static MAT::ILogger* m_logger;
+        static bool m_initialized;
+        static std::mutex m_mutex;
 
-        // Parse JSON file line by line and process events
-        bool ProcessJsonFile(const std::string& filePath);
+        // Initialize telemetry system (private)
+        static bool Initialize(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME);
 
-        // Shutdown telemetry system
-        void Shutdown();
+        // Shutdown telemetry system (private)
+        static void Shutdown();
 
-    private:
-        // Private constructor for singleton
-        TelemetryManager();
+        // Initialize configuration (private)
+        static void SetupConfiguration(bool enableDebug, int teardownTime);
 
         // Generic event logging (private)
-        void EventWrite(Microsoft::Applications::Events::EventProperties event);
+        static void EventWrite(Microsoft::Applications::Events::EventProperties event);
 
         // Validate JSON parameters against event parameter set
-        bool ValidateEventParameters(const std::string& eventName, const std::set<std::string>& jsonKeys) const;
+        static bool ValidateEventParameters(const std::string& eventName, const std::set<std::string>& jsonKeys);
 
-        // Private members
-        MAT::ILogger* m_logger;
-        bool m_initialized;
-        mutable std::mutex m_mutex;
-        static OsConfigLogHandle m_logfileHandle;
-
-        // Initialize configuration
-        void SetupConfiguration(bool enableDebug, int teardownTime);
-
-        // Process a single JSON line
-        void ProcessJsonLine(const std::string& jsonLine);
+        // Process a single JSON line (private)
+        static void ProcessJsonLine(const std::string& jsonLine);
     };
 
 } // namespace Telemetry
