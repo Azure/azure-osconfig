@@ -4,41 +4,34 @@
 #include "../Common.h"
 #include <Asb.h>
 
-int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int BaselineIsValidResourceIdRuleId(const char* resourceId, const char* ruleId, const char* payloadKey, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     return AsbIsValidResourceIdRuleId(resourceId, ruleId, payloadKey, log);
 }
 
-int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int BaselineIsCorrectDistribution(const char* payloadKey, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     UNUSED(payloadKey);
     UNUSED(log);
-    UNUSED(telemetry);
     return 0;
 }
 
-void BaselineInitialize(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+void BaselineInitialize(OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     AsbInitialize(log);
 }
 
-void BaselineShutdown(OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+void BaselineShutdown(OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     AsbShutdown(log);
 }
 
-int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int BaselineMmiGet(const char* componentName, const char* objectName, char** payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     return AsbMmiGet(componentName, objectName, payload, payloadSizeBytes, maxPayloadSizeBytes, log);
 }
 
-int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log, OSConfigTelemetryHandle telemetry)
+int BaselineMmiSet(const char* componentName, const char* objectName, const char* payload, const int payloadSizeBytes, OsConfigLogHandle log)
 {
-    UNUSED(telemetry);
     return AsbMmiSet(componentName, objectName, payload, payloadSizeBytes, log);
 }

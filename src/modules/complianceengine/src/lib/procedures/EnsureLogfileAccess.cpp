@@ -91,8 +91,7 @@ Result<Status> ProcessLogfile(const std::string& path, const std::string& filena
                                         AuditEnsureFilePermissionsHelper(fullPath, args, indicators, context);
     if (!result.HasValue())
     {
-        OSConfigTelemetryStatusTrace(context.GetTelemetryHandle(),
-            remediate ? "RemediateEnsureFilePermissionsHelper" : "AuditEnsureFilePermissionsHelper", result.Error().code);
+        OSConfigTelemetryStatusTrace(remediate ? "RemediateEnsureFilePermissionsHelper" : "AuditEnsureFilePermissionsHelper", result.Error().code);
         OsConfigLogError(context.GetLogHandle(), "Failed to %s permissions for logfile '%s': %s", remediate ? "remediate" : "audit", fullPath.c_str(),
             result.Error().message.c_str());
         return result.Error();
