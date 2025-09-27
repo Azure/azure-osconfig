@@ -178,7 +178,6 @@ int main(int argc, char* argv[])
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
 
     g_platformLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
-    OSConfigTelemetryOpen(g_platformLog);
 
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetPlatformLog(), "OSConfig version: %s", OSCONFIG_VERSION);
@@ -212,7 +211,6 @@ int main(int argc, char* argv[])
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
 
     TerminatePlatform();
-    OSConfigTelemetryClose();
     CloseLog(&g_platformLog);
 
     return 0;

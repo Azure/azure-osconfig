@@ -29,8 +29,8 @@ target_include_directories(commonutils
 target_link_libraries(commonutils
     PUBLIC
         logging
-        telemetryjsonlib
-    PRIVATE
+        telemetry
         parsonlib
+    PRIVATE
         m
 )

@@ -41,13 +41,11 @@ public:
     static void OpenLog()
     {
         m_log = ::OpenLog(COMMANDRUNNER_LOGFILE, COMMADRUNNER_ROLLEDLOGFILE);
-        OSConfigTelemetryOpen(m_log);
     }
 
     static void CloseLog()
     {
         ::CloseLog(&m_log);
-        OSConfigTelemetryClose();
     }
 
     static OsConfigLogHandle m_log;

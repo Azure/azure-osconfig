@@ -82,7 +82,6 @@ static OsConfigLogHandle DeviceInfoGetLog(void)
 void DeviceInfoInitialize(void)
 {
     g_log = OpenLog(g_deviceInfoLogFile, g_deviceInfoRolledLogFile);
-    OSConfigTelemetryOpen(g_log);
 
     g_osName = GetOsName(DeviceInfoGetLog());
     g_osVersion = GetOsVersion(DeviceInfoGetLog());

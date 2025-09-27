@@ -533,7 +533,6 @@ int main(int argc, char *argv[])
     // Re-open the log
     CloseLog(&g_agentLog);
     g_agentLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
-    OSConfigTelemetryOpen(g_agentLog);
 
     OsConfigLogInfo(GetLog(), "OSConfig Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
@@ -724,7 +723,6 @@ done:
 
     StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog());
     CloseLog(&g_agentLog);
-    OSConfigTelemetryClose();
 
     // Once the SDK is done, we can free these
 
