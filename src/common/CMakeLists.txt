@@ -7,6 +7,7 @@ if (BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
+add_subdirectory(telemetry)
 add_subdirectory(logging)
 add_subdirectory(commonutils)
 add_subdirectory(mpiclient)

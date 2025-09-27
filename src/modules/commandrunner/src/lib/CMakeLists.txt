@@ -3,7 +3,7 @@
 
 project(commandrunnerlib)
 add_library(commandrunnerlib STATIC CommandRunner.cpp Command.cpp)
-target_link_libraries(commandrunnerlib PRIVATE logging telemetryjsonlib commonutils)
+target_link_libraries(commandrunnerlib PRIVATE logging commonutils)
 target_include_directories(commandrunnerlib
     PUBLIC
         ${MODULES_INC_DIR}

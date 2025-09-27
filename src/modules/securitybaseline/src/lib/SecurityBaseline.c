@@ -53,7 +53,6 @@ static OsConfigLogHandle SecurityBaselineGetLog(void)
 void SecurityBaselineInitialize(void)
 {
     g_log = OpenLog(g_securityBaselineLogFile, g_securityBaselineRolledLogFile);
-    OSConfigTelemetryOpen(g_log);
     AsbInitialize(SecurityBaselineGetLog());
     OsConfigLogInfo(SecurityBaselineGetLog(), "%s initialized", g_securityBaselineModuleName);
 }
@@ -62,7 +61,6 @@ void SecurityBaselineShutdown(void)
 {
     OsConfigLogInfo(SecurityBaselineGetLog(), "%s shutting down", g_securityBaselineModuleName);
     AsbShutdown(SecurityBaselineGetLog());
-    OSConfigTelemetryClose();
     CloseLog(&g_log);
 }
 
