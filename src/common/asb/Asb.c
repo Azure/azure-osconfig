@@ -2209,7 +2209,7 @@ static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(OsConfigLogHandle l
     if ((0 == ConvertStringToIntegers(g_desiredEnsureFilePermissionsForAllRsyslogLogFiles ? g_desiredEnsureFilePermissionsForAllRsyslogLogFiles :
         g_defaultEnsureFilePermissionsForAllRsyslogLogFiles, ',', &modes, &numberOfModes, 8, log)) && (numberOfModes > 0))
     {
-        CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, g_fileCreateMode, ' ', modes, numberOfModes, &reason, 8, log);
+        CheckIntegerOptionFromFileEqualWithAny(g_etcRsyslogConf, g_fileCreateMode, ' ', '#', modes, numberOfModes, &reason, 8, log);
     }
     else
     {
