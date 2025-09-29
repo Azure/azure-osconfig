@@ -1721,6 +1721,8 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     char* temp = NULL;
     char* result = NULL;
 
+    UNUSED(commentCharacter);
+
     if ((NULL == buffer) || (NULL == option))
     {
         OsConfigLogError(log, "GetStringOptionFromBuffer called with invalid arguments");
@@ -1757,7 +1759,7 @@ int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char sepa
     char* stringValue = NULL;
     int value = INT_ENOENT;
 
-    if (NULL != (stringValue = GetStringOptionFromBuffer(buffer, option, separator, log)))
+    if (NULL != (stringValue = GetStringOptionFromBuffer(buffer, option, separator, commentCharacter, log)))
     {
         value = strtol(stringValue, NULL, base);
         FREE_MEMORY(stringValue);
