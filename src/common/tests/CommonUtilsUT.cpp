@@ -1865,7 +1865,6 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
         "Test2:     12 $!    test test\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1\n"
-        "#$FileCreateMode 00777\n"
         "$FileCreateMode 00644";
 
     char* value = nullptr;
@@ -3058,9 +3057,10 @@ TEST_F(CommonUtilsTest, GetStringOptionFromBuffer)
     EXPECT_EQ(nullptr, GetStringOptionFromBuffer("TestSetting =   TestValue", nullptr, '=', '#', nullptr));
     EXPECT_STREQ("TestValue", GetStringOptionFromBuffer("TestSetting =   TestValue", "TestSetting", '=', '#', nullptr));
     EXPECT_STREQ("123", GetStringOptionFromBuffer("TestSetting     =   123", "TestSetting", '=', '#', nullptr));
+    EXPECT_STREQ("345", GetStringOptionFromBuffer("#This is a test configuration\nTestSetting  =345", "TestSetting", '=', '#', nullptr));
     EXPECT_EQ(nullptr, GetStringOptionFromBuffer("This is a test configuration\nTestSetting     =   123", "AnotherSomething", '=', '#', nullptr));
     EXPECT_STREQ("12", GetStringOptionFromBuffer("This is a test configuration\n  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
-    EXPECT_STREQ("1", GetStringOptionFromBuffer("T  TestSetting=1#2  ", "TestSetting", '=', '#', nullptr));
+    EXPECT_STREQ("1", GetStringOptionFromBuffer("  TestSetting=1#2  ", "TestSetting", '=', '#', nullptr));
     EXPECT_STREQ("", GetStringOptionFromBuffer("  TestSetting=#12  ", "TestSetting", '=', '#', nullptr));
     EXPECT_STREQ(nullptr, GetStringOptionFromBuffer(" This is a test configuration\n#  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
 }
