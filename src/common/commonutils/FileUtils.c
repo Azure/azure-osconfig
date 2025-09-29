@@ -1735,7 +1735,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     }
     else if (commentCharacter == temp[0])
     {
-        OsConfigLogInfo(log, "GetStringOptionFromBuffer: entire line is commented out", errno);
+        OsConfigLogInfo(log, "GetStringOptionFromBuffer: entire line is commented out");
     }
     else if (NULL != (found = strstr(temp, option)))
     {
