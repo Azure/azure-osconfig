@@ -1769,7 +1769,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
             OsConfigLogInfo(log, "GetStringOptionFromBuffer: '%s' is found but commented out with '%c'", option, commentCharacter);
         }
 
-        if ((found + 1) > (temp + strlen(temp)))
+        if ((found += 1) > (temp + strlen(temp)))
         {
             break;
         }
