@@ -1733,8 +1733,13 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     {
         OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate buffer string failed (%d)", errno);
     }
+    else if (commentCharacter == temp[0])
+    {
+        OsConfigLogInfo(log, "GetStringOptionFromBuffer: entire line is commented out", errno);
+    }
     else if (NULL != (found = strstr(temp, option)))
     {
+        TruncateAtFirst(found, commentCharacter);
         RemovePrefixUpTo(found, separator);
         RemovePrefix(found, separator);
         RemovePrefixBlanks(found);
