@@ -1733,25 +1733,29 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     {
         OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate buffer string failed (%d)", errno);
     }
-    else if (NULL != (found = strstr(temp, option)))
+    else 
     {
-        OsConfigLogInfo(log, "#1## %s ####", found); ////////////////////////////
-        TruncateAtFirst(found, commentCharacter);
-        OsConfigLogInfo(log, "#2## %s ####", found); ////////////////////////////
-        RemovePrefixUpTo(found, separator);
-        OsConfigLogInfo(log, "#3## %s ####", found); ////////////////////////////
-        RemovePrefix(found, separator);
-        OsConfigLogInfo(log, "#4## %s ####", found); ////////////////////////////
-        RemovePrefixBlanks(found);
-        RemoveTrailingBlanks(found);
-        TruncateAtFirst(found, EOL);
-        TruncateAtFirst(found, ' ');
+        OsConfigLogInfo(log, "#1## %s ####", temp); ////////////////////////////
+        TruncateAtFirst(temp, commentCharacter);
 
-        OsConfigLogInfo(log, "GetStringOptionFromBuffer: found '%s' for '%s'", found, option);
-
-        if (NULL == (result = DuplicateString(found)))
+        if (NULL != (found = strstr(temp, option)))
         {
-            OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate result string (%d)", errno);
+            OsConfigLogInfo(log, "#2## %s ####", found); ////////////////////////////
+            RemovePrefixUpTo(found, separator);
+            OsConfigLogInfo(log, "#3## %s ####", found); ////////////////////////////
+            RemovePrefix(found, separator);
+            OsConfigLogInfo(log, "#4## %s ####", found); ////////////////////////////
+            RemovePrefixBlanks(found);
+            RemoveTrailingBlanks(found);
+            TruncateAtFirst(found, EOL);
+            TruncateAtFirst(found, ' ');
+
+            OsConfigLogInfo(log, "GetStringOptionFromBuffer: found '%s' for '%s'", found, option);
+
+            if (NULL == (result = DuplicateString(found)))
+            {
+                OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate result string (%d)", errno);
+            }
         }
     }
 
