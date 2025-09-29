@@ -1735,7 +1735,9 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
         return result;
     }
     
-    while (NULL != (found = strstr(temp, option)))
+    found = temp;
+
+    while (NULL != (found = strstr(found, option)))
     {
         lineStart = found;
         while ((lineStart > temp) && (*(lineStart - 1)) != '\n')
@@ -1765,6 +1767,11 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
         else
         {
             OsConfigLogInfo(log, "GetStringOptionFromBuffer: '%s' for '%s' is found but commented out with '%c'", found, option, commentCharacter);
+        }
+
+        if ((found += strlen(found)) > temp)
+        {
+            break;
         }
     }
 
