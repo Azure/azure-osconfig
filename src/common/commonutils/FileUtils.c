@@ -1810,7 +1810,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
         }
         else
         {
-            if (INT_ENOENT != (result = GetIntegerOptionFromBuffer(contents, option, separator, base, log)))
+            if (INT_ENOENT != (result = GetIntegerOptionFromBuffer(contents, option, separator, '#', base, log)))
             {
                 if (8 == base)
                 {
