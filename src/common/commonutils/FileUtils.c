@@ -1719,7 +1719,10 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
 {
     char* found = NULL;
     char* temp = NULL;
+    char* comment = NULL;
     char* result = NULL;
+    int offset = 0;
+
 
     UNUSED(commentCharacter);
 
@@ -1735,16 +1738,12 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     }
     else 
     {
-        OsConfigLogInfo(log, "#1## %s ####", temp); ////////////////////////////
         TruncateAtFirst(temp, commentCharacter);
-
         if (NULL != (found = strstr(temp, option)))
         {
-            OsConfigLogInfo(log, "#2## %s ####", found); ////////////////////////////
+            TruncateAtFirst(temp, commentCharacter);
             RemovePrefixUpTo(found, separator);
-            OsConfigLogInfo(log, "#3## %s ####", found); ////////////////////////////
             RemovePrefix(found, separator);
-            OsConfigLogInfo(log, "#4## %s ####", found); ////////////////////////////
             RemovePrefixBlanks(found);
             RemoveTrailingBlanks(found);
             TruncateAtFirst(found, EOL);

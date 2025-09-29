@@ -3055,14 +3055,14 @@ TEST_F(CommonUtilsTest, AddIfMissingAdmGroupAndSyslogUser)
 TEST_F(CommonUtilsTest, GetStringOptionFromBuffer)
 {
     EXPECT_EQ(nullptr, GetStringOptionFromBuffer(nullptr, "TestSetting", '=', '#', nullptr));
-    EXPECT_EQ(nullptr, GetStringOptionFromBuffer("# This is a test configuration\nTestSetting =   TestValue", nullptr, '=', '#', nullptr));
-    EXPECT_STREQ("TestValue", GetStringOptionFromBuffer("# This is a test configuration\nTestSetting =   TestValue", "TestSetting", '=', '#', nullptr));
-    EXPECT_STREQ("123", GetStringOptionFromBuffer("# This is a test configuration\nTestSetting     =   123", "TestSetting", '=', '#', nullptr));
-    EXPECT_EQ(nullptr, GetStringOptionFromBuffer("# This is a test configuration\nTestSetting     =   123", "AnotherSomething", '=', '#', nullptr));
-    EXPECT_STREQ("12", GetStringOptionFromBuffer("# This is a test configuration\n  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
-    EXPECT_STREQ("1", GetStringOptionFromBuffer("# This is a test configuration\n  TestSetting=1#2  ", "TestSetting", '=', '#', nullptr));
-    EXPECT_STREQ("", GetStringOptionFromBuffer("# This is a test configuration\n  TestSetting=#12  ", "TestSetting", '=', '#', nullptr));
-    EXPECT_STREQ(nullptr, GetStringOptionFromBuffer("# This is a test configuration\n#  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromBuffer("TestSetting =   TestValue", nullptr, '=', '#', nullptr));
+    EXPECT_STREQ("TestValue", GetStringOptionFromBuffer("TestSetting =   TestValue", "TestSetting", '=', '#', nullptr));
+    EXPECT_STREQ("123", GetStringOptionFromBuffer("TestSetting     =   123", "TestSetting", '=', '#', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromBuffer("This is a test configuration\nTestSetting     =   123", "AnotherSomething", '=', '#', nullptr));
+    EXPECT_STREQ("12", GetStringOptionFromBuffer("This is a test configuration\n  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
+    EXPECT_STREQ("1", GetStringOptionFromBuffer("T  TestSetting=1#2  ", "TestSetting", '=', '#', nullptr));
+    EXPECT_STREQ("", GetStringOptionFromBuffer("  TestSetting=#12  ", "TestSetting", '=', '#', nullptr));
+    EXPECT_STREQ(nullptr, GetStringOptionFromBuffer(" This is a test configuration\n#  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
 }
 
 TEST_F(CommonUtilsTest, LoggingOptions)
