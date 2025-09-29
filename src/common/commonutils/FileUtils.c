@@ -1760,7 +1760,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
         }
         else
         {
-            OsConfigLogInfo(log, "GetStringOptionFromBuffer: '%s' for '%s' is found but commented out with '%s'", found, option, commentCharacter);
+            OsConfigLogInfo(log, "GetStringOptionFromBuffer: '%s' for '%s' is found but commented out with '%c'", found, option, commentCharacter);
         }
     }
 
