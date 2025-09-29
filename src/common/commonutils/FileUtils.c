@@ -1740,7 +1740,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     while (NULL != (found = strstr(found, option)))
     {
         lineStart = found;
-        while ((lineStart > temp) && (*(lineStart - 1)) != EOL)
+        while ((lineStart > temp) && ((*(lineStart - 1)) != EOL))
         {
             lineStart--;
         }
