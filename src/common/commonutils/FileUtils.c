@@ -1719,12 +1719,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
 {
     char* found = NULL;
     char* temp = NULL;
-    char* comment = NULL;
     char* result = NULL;
-    int offset = 0;
-
-
-    UNUSED(commentCharacter);
 
     if ((NULL == buffer) || (NULL == option))
     {
@@ -1736,7 +1731,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     {
         OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate buffer string failed (%d)", errno);
     }
-    else 
+    else
     {
         TruncateAtFirst(temp, commentCharacter);
         if (NULL != (found = strstr(temp, option)))
