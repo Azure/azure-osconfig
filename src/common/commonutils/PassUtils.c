@@ -246,7 +246,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
                 continue;
             }
             else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) &&
-                (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) &&
+                (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', '#', log))) && (0 == strcmp(authValue, required)) &&
                 (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', '#', 10, log))) && (deny <= 5) &&
                 (0 < (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', '#', 10, log))))
             {
