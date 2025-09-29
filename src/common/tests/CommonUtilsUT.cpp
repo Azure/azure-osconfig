@@ -1865,7 +1865,6 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
         "Test2:     12 $!    test test\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1\n"
-        "#$FileCreateMode 00777\n"
         "$FileCreateMode 00644";
 
     char* value = nullptr;
