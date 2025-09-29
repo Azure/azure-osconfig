@@ -1781,7 +1781,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
         }
         else
         {
-            if (NULL != (result = GetStringOptionFromBuffer(contents, option, separator, log)))
+            if (NULL != (result = GetStringOptionFromBuffer(contents, option, separator, '#', log)))
             {
                 OsConfigLogInfo(log, "GetStringOptionFromFile: found '%s' in '%s' for '%s'", result, fileName, option);
             }
