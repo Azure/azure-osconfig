@@ -1719,6 +1719,8 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
 {
     char* found = NULL;
     char* temp = NULL;
+    char* lineStart = NULL;
+    char* comment = NULL;
     char* result = NULL;
 
     if ((NULL == buffer) || (NULL == option))
@@ -1731,10 +1733,15 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     {
         OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate buffer string failed (%d)", errno);
     }
-    else
+    else if (NULL != (found = strstr(temp, option)))
     {
-        TruncateAtFirst(temp, commentCharacter);
-        if (NULL != (found = strstr(temp, option)))
+        lineStart = found;
+        while ((lineStart > temp) && (*(lineStart - 1)) != '\n')
+        {
+            lineStart--;
+        }
+
+        if ((NULL == (comment = strchr(lineStart, commentCharacter))) || (comment > found))
         {
             TruncateAtFirst(temp, commentCharacter);
             RemovePrefixUpTo(found, separator);
@@ -1750,6 +1757,10 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
             {
                 OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate result string (%d)", errno);
             }
+        }
+        else
+        {
+            OsConfigLogInfo(log, "GetStringOptionFromBuffer: '%s' for '%s' is found but commented out with '%s'", found, option, commentCharacter);
         }
     }
 
