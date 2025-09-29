@@ -2778,7 +2778,7 @@ TEST_F(CommonUtilsTest, CheckFilePermissionsForAllRsyslogLogFiles)
     const char* testFiles[] = {
         "$FileCreateMode 00640",
         "$FileCreateMode  00640\n",
-        "# This is a test for $FileCreateMode\n",
+        "# This is a test for\n   $FileCreateMode 0640\n",
         "$FileCreateMode 0600\n"
         "$FileCreateMode 600",
         "$FileCreateMode     600"
