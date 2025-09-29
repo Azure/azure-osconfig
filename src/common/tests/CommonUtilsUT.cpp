@@ -1854,7 +1854,7 @@ TEST_F(CommonUtilsTest, CheckTextFoundInCommandOutput)
     EXPECT_EQ(0, CheckTextNotFoundInCommandOutput("echo Test123", "4", nullptr, nullptr));
 }
 
-TEST_F(CommonUtilsTest, GetOptionFromFile)
+/*TEST_F(CommonUtilsTest, GetOptionFromFile)
 {
     const char* testFile =
         "FooEntry1:test\n"
@@ -1929,7 +1929,7 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     EXPECT_EQ(0644, GetIntegerOptionFromFile(m_path, "$FileCreateMode", ' ', '#', 8, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
-}
+}*/
 
 TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 {
@@ -3063,6 +3063,84 @@ TEST_F(CommonUtilsTest, GetStringOptionFromBuffer)
     EXPECT_STREQ("1", GetStringOptionFromBuffer("  TestSetting=1#2  ", "TestSetting", '=', '#', nullptr));
     EXPECT_STREQ("", GetStringOptionFromBuffer("  TestSetting=#12  ", "TestSetting", '=', '#', nullptr));
     EXPECT_STREQ(nullptr, GetStringOptionFromBuffer(" This is a test configuration\n#  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
+    EXPECT_STREQ("88", GetStringOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', nullptr));
+}
+
+TEST_F(CommonUtilsTest, GetOptionFromFile)
+{
+    const char* testFile =
+        "FooEntry1:test\n"
+        " Test1=abc foo=123  \n"
+        "FooEntry2  =     234\n"
+        "FooEntry3 :     2 3 4\n"
+        "abc Test4 0456 # rt 4 $"
+        "Test2:     12 $!    test test\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1\n"
+        "$FileCreateMode 00644";
+
+    char* value = nullptr;
+
+    EXPECT_TRUE(CreateTestFile(m_path, testFile));
+
+    EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, nullptr, ':', '#', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile(nullptr, nullptr, ':', '#', 10, nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile(m_path, nullptr, ':', '#', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile(m_path, nullptr, ':', '#', 10, nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, "Test1", ':', '#', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile(nullptr, "Test1", ':', '#', 8, nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile("~does_not_exist", "Test", '=', '#', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile("~does_not_exist", "Test", '=', '#', 10, nullptr));
+
+    EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1:", ':', '#', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1", ':', '#', nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1=", '=', '#', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1", '=', '#', nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_STREQ("234", value = GetStringOptionFromFile(m_path, "FooEntry2", '=', '#', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(234, GetIntegerOptionFromFile(m_path, "FooEntry2", '=', '#', 10, nullptr));
+
+    EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3 :", ':', '#', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3", ':', '#', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3 :", ':', '#', 10, nullptr));
+    EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3", ':', '#', 10, nullptr));
+
+    EXPECT_STREQ("0456", value = GetStringOptionFromFile(m_path, "Test4", ' ', '#', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(456, GetIntegerOptionFromFile(m_path, "Test4", ' ', '#', 10, nullptr));
+
+    EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2:", ':', '#', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2", ':', '#', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2:", ':', '#', 10, nullptr));
+    EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2", ':', '#', 10, nullptr));
+
+    EXPECT_STREQ("5", value = GetStringOptionFromFile(m_path, "remember=", '=', '#', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_STREQ("5", value = GetStringOptionFromFile(m_path, "remember", '=', '#', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember=", '=', '#', 10, nullptr));
+    EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember", '=', '#', 10, nullptr));
+
+    EXPECT_STREQ("-1", value = GetStringOptionFromFile(m_path, "remembering", '=', '#', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(-1, GetIntegerOptionFromFile(m_path, "remembering", '=', '#', 10, nullptr));
+
+    EXPECT_STREQ("00644", value = GetStringOptionFromFile(m_path, "$FileCreateMode", ' ', '#', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(00644, GetIntegerOptionFromFile(m_path, "$FileCreateMode", ' ', '#', 8, nullptr));
+    EXPECT_EQ(0644, GetIntegerOptionFromFile(m_path, "$FileCreateMode", ' ', '#', 8, nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, LoggingOptions)
