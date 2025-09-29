@@ -1732,8 +1732,10 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     if (NULL == (temp = DuplicateString(buffer)))
     {
         OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate buffer string failed (%d)", errno);
+        return result;
     }
-    else if (NULL != (found = strstr(temp, option)))
+    
+    while (NULL != (found = strstr(temp, option)))
     {
         lineStart = found;
         while ((lineStart > temp) && (*(lineStart - 1)) != '\n')
@@ -1757,6 +1759,8 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
             {
                 OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate result string (%d)", errno);
             }
+
+            break;
         }
         else
         {
