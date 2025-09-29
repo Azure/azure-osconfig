@@ -3051,19 +3051,40 @@ TEST_F(CommonUtilsTest, AddIfMissingAdmGroupAndSyslogUser)
     EXPECT_EQ(0, AddIfMissingSyslogSystemUser(nullptr));
 }
 
-TEST_F(CommonUtilsTest, GetStringOptionFromBuffer)
+TEST_F(CommonUtilsTest, GetOptionFromBuffer)
 {
     EXPECT_EQ(nullptr, GetStringOptionFromBuffer(nullptr, "TestSetting", '=', '#', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromBuffer(nullptr, "TestSetting", '=', '#', 10, nullptr));
+
     EXPECT_EQ(nullptr, GetStringOptionFromBuffer("TestSetting =   TestValue", nullptr, '=', '#', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromBuffer("TestSetting =   TestValue", nullptr, '=', '#', 10, nullptr));
+
     EXPECT_STREQ("TestValue", GetStringOptionFromBuffer("TestSetting =   TestValue", "TestSetting", '=', '#', nullptr));
+    EXPECT_EQ(0, GetIntegerOptionFromBuffer("TestSetting =   TestValue", "TestSetting", '=', '#', 10, nullptr));
+
     EXPECT_STREQ("123", GetStringOptionFromBuffer("TestSetting     =   123", "TestSetting", '=', '#', nullptr));
+    EXPECT_EQ(123, GetIntegerOptionFromBuffer("TestSetting     =   123", "TestSetting", '=', '#', 10, nullptr));
+
     EXPECT_STREQ("345", GetStringOptionFromBuffer("#This is a test configuration\nTestSetting  =345", "TestSetting", '=', '#', nullptr));
+    EXPECT_EQ(345, GetIntegerOptionFromBuffer("#This is a test configuration\nTestSetting  =345", "TestSetting", '=', '#', 10, nullptr));
+
     EXPECT_EQ(nullptr, GetStringOptionFromBuffer("This is a test configuration\nTestSetting     =   123", "AnotherSomething", '=', '#', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromBuffer("This is a test configuration\nTestSetting     =   123", "AnotherSomething", '=', '#', 10, nullptr));
+
     EXPECT_STREQ("12", GetStringOptionFromBuffer("This is a test configuration\n  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
+    EXPECT_EQ(12, GetIntegerOptionFromBuffer("This is a test configuration\n  TestSetting=12  ", "TestSetting", '=', '#', 10, nullptr));
+
     EXPECT_STREQ("1", GetStringOptionFromBuffer("  TestSetting=1#2  ", "TestSetting", '=', '#', nullptr));
+    EXPECT_EQ(1, GetIntegerOptionFromBuffer("  TestSetting=1#2  ", "TestSetting", '=', '#', 10, nullptr));
+
     EXPECT_STREQ("", GetStringOptionFromBuffer("  TestSetting=#12  ", "TestSetting", '=', '#', nullptr));
+    EXPECT_EQ(0, GetIntegerOptionFromBuffer("  TestSetting=#12  ", "TestSetting", '=', '#', 10, nullptr));
+
     EXPECT_STREQ(nullptr, GetStringOptionFromBuffer(" This is a test configuration\n#  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromBuffer(" This is a test configuration\n#  TestSetting=12  ", "TestSetting", '=', '#', 10, nullptr));
+
     EXPECT_STREQ("88", GetStringOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', nullptr));
+    EXPECT_EQ(88, GetIntegerOptionFromBuffer("#This is a TestSetting test configuration for TestSetting\n#TestSetting=100\nTestSetting=88", "TestSetting", '=', '#', 10, nullptr));
 }
 
 TEST_F(CommonUtilsTest, LoggingOptions)
