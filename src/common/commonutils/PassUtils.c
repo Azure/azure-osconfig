@@ -247,8 +247,8 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, const char* pamS
             }
             else if ((NULL != strstr(line, auth)) && (NULL != strstr(line, pamSo)) &&
                 (NULL != (authValue = GetStringOptionFromBuffer(line, auth, ' ', log))) && (0 == strcmp(authValue, required)) &&
-                (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', 10, log))) && (deny <= 5) &&
-                (0 < (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', 10, log))))
+                (0 <= (deny = GetIntegerOptionFromBuffer(line, "deny", '=', '#', 10, log))) && (deny <= 5) &&
+                (0 < (unlockTime = GetIntegerOptionFromBuffer(line, "unlock_time", '=', '#', 10, log))))
             {
                 OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: '%s %s %s' found uncommented with 'deny' set to %d and 'unlock_time' set to %d in '%s'",
                     auth, required, pamSo, deny, unlockTime, fileName);
@@ -472,12 +472,12 @@ static int CheckRequirementsForCommonPassword(int retry, int minlen, int dcredit
             {
                 found = true;
 
-                if ((retry == (retryOption = GetIntegerOptionFromBuffer(line, "retry", '=', 10, log))) &&
-                    (minlen == (minlenOption = GetIntegerOptionFromBuffer(line, "minlen", '=', 10, log))) &&
-                    (dcredit == (dcreditOption = GetIntegerOptionFromBuffer(line, "dcredit", '=', 10, log))) &&
-                    (ucredit == (ucreditOption = GetIntegerOptionFromBuffer(line, "ucredit", '=', 10, log))) &&
-                    (ocredit == (ocreditOption = GetIntegerOptionFromBuffer(line, "ocredit", '=', 10, log))) &&
-                    (lcredit == (lcreditOption = GetIntegerOptionFromBuffer(line, "lcredit", '=', 10, log))))
+                if ((retry == (retryOption = GetIntegerOptionFromBuffer(line, "retry", '=', '#', 10, log))) &&
+                    (minlen == (minlenOption = GetIntegerOptionFromBuffer(line, "minlen", '=', '#', 10, log))) &&
+                    (dcredit == (dcreditOption = GetIntegerOptionFromBuffer(line, "dcredit", '=', '#', 10, log))) &&
+                    (ucredit == (ucreditOption = GetIntegerOptionFromBuffer(line, "ucredit", '=', '#', 10, log))) &&
+                    (ocredit == (ocreditOption = GetIntegerOptionFromBuffer(line, "ocredit", '=', '#', 10, log))) &&
+                    (lcredit == (lcreditOption = GetIntegerOptionFromBuffer(line, "lcredit", '=', '#', 10, log))))
                 {
                     OsConfigLogInfo(log, "CheckRequirementsForCommonPassword: '%s' contains uncommented '%s %s' with "
                         "the expected password creation requirements (retry: %d, minlen: %d, dcredit: %d, ucredit: %d, ocredit: %d, lcredit: %d)",
@@ -599,7 +599,7 @@ static int CheckPasswordRequirementFromBuffer(const char* buffer, const char* op
         return INT_ENOENT;
     }
 
-    if (desired == (value = GetIntegerOptionFromBuffer(buffer, option, separator, 10, log)))
+    if (desired == (value = GetIntegerOptionFromBuffer(buffer, option, separator, '#', 10, log)))
     {
         if (comment == buffer[0])
         {
