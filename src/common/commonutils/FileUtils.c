@@ -1735,9 +1735,13 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
     }
     else if (NULL != (found = strstr(temp, option)))
     {
+        OsConfigLogInfo(log, "#1## %s ####", found); ////////////////////////////
         TruncateAtFirst(found, commentCharacter);
+        OsConfigLogInfo(log, "#2## %s ####", found); ////////////////////////////
         RemovePrefixUpTo(found, separator);
+        OsConfigLogInfo(log, "#3## %s ####", found); ////////////////////////////
         RemovePrefix(found, separator);
+        OsConfigLogInfo(log, "#4## %s ####", found); ////////////////////////////
         RemovePrefixBlanks(found);
         RemoveTrailingBlanks(found);
         TruncateAtFirst(found, EOL);
