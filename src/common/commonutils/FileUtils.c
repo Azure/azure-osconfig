@@ -1768,7 +1768,7 @@ int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char sepa
     return value;
 }
 
-char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, OsConfigLogHandle log)
+char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, char commentCharacter, OsConfigLogHandle log)
 {
     char* contents = NULL;
     char* result = NULL;
@@ -1781,7 +1781,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
         }
         else
         {
-            if (NULL != (result = GetStringOptionFromBuffer(contents, option, separator, '#', log)))
+            if (NULL != (result = GetStringOptionFromBuffer(contents, option, separator, commentCharacter, log)))
             {
                 OsConfigLogInfo(log, "GetStringOptionFromFile: found '%s' in '%s' for '%s'", result, fileName, option);
             }
@@ -1797,7 +1797,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
     return result;
 }
 
-int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, int base, OsConfigLogHandle log)
+int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, char commentCharacter, int base, OsConfigLogHandle log)
 {
     char* contents = NULL;
     int result = INT_ENOENT;
@@ -1810,7 +1810,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
         }
         else
         {
-            if (INT_ENOENT != (result = GetIntegerOptionFromBuffer(contents, option, separator, '#', base, log)))
+            if (INT_ENOENT != (result = GetIntegerOptionFromBuffer(contents, option, separator, commentCharacter, base, log)))
             {
                 if (8 == base)
                 {
@@ -1833,7 +1833,7 @@ int GetIntegerOptionFromFile(const char* fileName, const char* option, char sepa
     return result;
 }
 
-int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, int base, OsConfigLogHandle log)
+int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, char commentCharacter, int* values, int numberOfValues, char** reason, int base, OsConfigLogHandle log)
 {
     int valueFromFile = INT_ENOENT;
     int i = 0;
@@ -1845,7 +1845,7 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
         return EINVAL;
     }
 
-    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, base, log)))
+    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, commentCharacter, base, log)))
     {
         for (i = 0; i < numberOfValues; i++)
         {
@@ -1884,12 +1884,12 @@ int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* opt
     return result;
 }
 
-int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, int base, OsConfigLogHandle log)
+int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, char commentCharacter, int value, char** reason, int base, OsConfigLogHandle log)
 {
     int valueFromFile = INT_ENOENT;
     int result = ENOENT;
 
-    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, base, log)))
+    if (INT_ENOENT != (valueFromFile = GetIntegerOptionFromFile(fileName, option, separator, commentCharacter, base, log)))
     {
         if (valueFromFile <= value)
         {

@@ -76,21 +76,21 @@ int CheckEnsurePasswordReuseIsLimited(int remember, char** reason, OsConfigLogHa
     {
         // On Debian-based systems '/etc/pam.d/common-password' is expected to exist
         status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdCommonPassword, '#', g_remember, reason, log)) &&
-            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', remember, reason, 10, log))) ? 0 : ENOENT;
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdCommonPassword, g_remember, '=', '#', remember, reason, 10, log))) ? 0 : ENOENT;
     }
 
     if (status && (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log)))
     {
         // On Red Hat-based systems '/etc/pam.d/system-auth' is expected to exist
         status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemAuth, '#', g_remember, reason, log)) &&
-            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', remember, reason, 10, log))) ? 0 : ENOENT;
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemAuth, g_remember, '=', '#', remember, reason, 10, log))) ? 0 : ENOENT;
     }
 
     if (status && (0 == CheckFileExists(g_etcPamdSystemAuth, NULL, log)))
     {
         // On Azure Linux '/etc/pam.d/system-password' is expected to exist
         status = ((0 == CheckLineFoundNotCommentedOut(g_etcPamdSystemPassword, '#', g_remember, reason, log)) &&
-            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemPassword, g_remember, '=', remember, reason, 10, log))) ? 0 : ENOENT;
+            (0 == CheckIntegerOptionFromFileLessOrEqualWith(g_etcPamdSystemPassword, g_remember, '=', '#', remember, reason, 10, log))) ? 0 : ENOENT;
     }
 
     if (status)

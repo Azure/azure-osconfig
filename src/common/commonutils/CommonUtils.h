@@ -130,10 +130,10 @@ int SetEnsurePasswordReuseIsLimited(int remember, OsConfigLogHandle log);
 int EnableVirtualMemoryRandomization(OsConfigLogHandle log);
 int RemoveDotsFromPath(OsConfigLogHandle log);
 
-char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, OsConfigLogHandle log);
-int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, int base, OsConfigLogHandle log);
-int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, int* values, int numberOfValues, char** reason, int base, OsConfigLogHandle log);
-int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, int value, char** reason, int base, OsConfigLogHandle log);
+char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, char commentCharacter, OsConfigLogHandle log);
+int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, char commentCharacter, int base, OsConfigLogHandle log);
+int CheckIntegerOptionFromFileEqualWithAny(const char* fileName, const char* option, char separator, char commentCharacter, int* values, int numberOfValues, char** reason, int base, OsConfigLogHandle log);
+int CheckIntegerOptionFromFileLessOrEqualWith(const char* fileName, const char* option, char separator, char commentCharacter, int value, char** reason, int base, OsConfigLogHandle log);
 
 char* DuplicateString(const char* source);
 char* ConcatenateStrings(const char* first, const char* second);
