@@ -116,8 +116,8 @@ int CheckTextFoundInFolder(const char* directory, const char* text, const char* 
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log);
 int CheckLineFoundNotCommentedOut(const char* fileName, char commentMark, const char* text, char** reason, OsConfigLogHandle log);
 int CheckTextFoundInCommandOutput(const char* command, const char* text, char** reason, OsConfigLogHandle log);
-char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, OsConfigLogHandle log);
-int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, int base, OsConfigLogHandle log);
+char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, char commentCharacter, OsConfigLogHandle log);
+int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, char commentCharacter, int base, OsConfigLogHandle log);
 int CheckTextNotFoundInCommandOutput(const char* command, const char* text, char** reason, OsConfigLogHandle log);
 int SetEtcConfValue(const char* file, const char* name, const char* value, OsConfigLogHandle log);
 int SetEtcLoginDefValue(const char* name, const char* value, OsConfigLogHandle log);

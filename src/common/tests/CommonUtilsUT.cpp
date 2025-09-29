@@ -3050,6 +3050,16 @@ TEST_F(CommonUtilsTest, AddIfMissingAdmGroupAndSyslogUser)
     EXPECT_EQ(0, AddIfMissingSyslogSystemUser(nullptr));
 }
 
+TEST_F(CommonUtilsTest, GetStringOptionFromBuffer)
+{
+    EXPECT_EQ(nullptr, GetStringOptionFromBuffer(nullptr, "TestSetting", ' ', '#', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromBuffer("# This is a test configuration\nTestSetting =   TestValue", nullptr, ' ', '#', nullptr));
+    EXPECT_STREQ("TestValue", GetStringOptionFromBuffer("# This is a test configuration\nTestSetting =   TestValue", "TestSetting", ' ', '#', nullptr));
+    EXPECT_STREQ("123", GetStringOptionFromBuffer("# This is a test configuration\nTestSetting     =   123", "TestSetting", ' ', '#', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromBuffer("# This is a test configuration\nTestSetting     =   123", "AnotherSetting", ' ', '#', nullptr));
+    EXPECT_STREQ("123", GetStringOptionFromBuffer("# This is a test configuration\n#TestSetting=123", "TestSetting", ' ', '#', nullptr));
+}
+
 TEST_F(CommonUtilsTest, LoggingOptions)
 {
     const char* emergency = "EMERGENCY";
