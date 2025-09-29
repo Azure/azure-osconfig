@@ -1919,7 +1919,7 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember=", '=', '#', 10, nullptr));
     EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember", '=', '#', 10, nullptr));
 
-    EXPECT_STREQ("-1", value = GetStringOptionFromFile(m_path, "remembering", '=', nullptr));
+    EXPECT_STREQ("-1", value = GetStringOptionFromFile(m_path, "remembering", '=', '#', nullptr));
     FREE_MEMORY(value);
     EXPECT_EQ(-1, GetIntegerOptionFromFile(m_path, "remembering", '=', '#', 10, nullptr));
 
