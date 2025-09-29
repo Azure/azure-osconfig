@@ -1734,7 +1734,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
         OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate buffer string failed (%d)", errno);
         return result;
     }
-    
+
     found = temp;
 
     while (NULL != (found = strstr(found, option)))
@@ -1769,7 +1769,7 @@ char* GetStringOptionFromBuffer(const char* buffer, const char* option, char sep
             OsConfigLogInfo(log, "GetStringOptionFromBuffer: '%s' for '%s' is found but commented out with '%c'", found, option, commentCharacter);
         }
 
-        if ((found += strlen(found)) > temp)
+        if ((found + 1) > temp)
         {
             break;
         }
