@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include <CommonUtils.h>
+#include <EnsureFilePermissions.h>
+#include <EnsureInteractiveUsersDotFilesAccessIsConfigured.h>
 #include <Evaluator.h>
-#include <FilePermissionsHelpers.h>
 #include <FileTreeWalk.h>
 #include <ListValidShells.h>
 #include <Result.h>
 #include <UsersIterator.h>
 #include <fcntl.h>
 #include <fstream>
-#include <ftw.h>
 #include <grp.h>
 #include <pwd.h>
 #include <string>
@@ -21,10 +21,8 @@ namespace ComplianceEngine
 using std::map;
 using std::string;
 
-AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
+Result<Status> AuditEnsureInteractiveUsersDotFilesAccessIsConfigured(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
-
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())
     {
@@ -78,10 +76,28 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
             const auto path = directory + "/" + filename;
 
             // Performs a file permissions check and updates the result in case of error or non-compliance
-            auto checkFile = [pwd, group, &path, &indicators, &context, &result](std::string mask) {
-                map<string, string> arguments = {{"owner", pwd.pw_name}, {"group", group->gr_name}, {"mask", std::move(mask)}};
-                indicators.Push("AuditEnsureFilePermissionsHelper");
-                auto subResult = AuditEnsureFilePermissionsHelper(path, arguments, indicators, context);
+            auto checkFile = [pwd, group, &path, &indicators, &context, &result](const mode_t mask) {
+                auto groupPattern = Pattern::Make(group->gr_name);
+                if (!groupPattern.HasValue())
+                {
+                    result = groupPattern.Error();
+                    return;
+                }
+
+                auto pwdPattern = Pattern::Make(pwd.pw_name);
+                if (!pwdPattern.HasValue())
+                {
+                    result = pwdPattern.Error();
+                    return;
+                }
+
+                EnsureFilePermissionsParams params;
+                params.filename = path;
+                params.owner = {{std::move(pwdPattern.Value())}};
+                params.group = {{std::move(groupPattern.Value())}};
+                params.mask = mask;
+                indicators.Push("AuditEnsureFilePermissions");
+                auto subResult = AuditEnsureFilePermissions(params, indicators, context);
                 if (!subResult.HasValue())
                 {
                     OsConfigLogError(context.GetLogHandle(), "Failed to check permissions for file '%s': %s", path.c_str(), subResult.Error().message.c_str());
@@ -99,17 +115,17 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
 
             if (result.HasValue() && filename == ".netrc")
             {
-                checkFile("177");
+                checkFile(0177);
             }
 
             if (result.HasValue() && filename == ".bash_history")
             {
-                checkFile("177");
+                checkFile(0177);
             }
 
             if (result.HasValue())
             {
-                checkFile("133");
+                checkFile(0133);
             }
 
             return result;
@@ -126,10 +142,8 @@ AUDIT_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
     return status;
 }
 
-REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
+Result<Status> RemediateEnsureInteractiveUsersDotFilesAccessIsConfigured(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
-
     const auto validShells = ListValidShells(context);
     if (!validShells.HasValue())
     {
@@ -184,10 +198,26 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
             const auto path = directory + "/" + filename;
 
             // Performs a file permissions check and updates the result in case of error or non-compliance
-            auto remediateFile = [user, group, &path, &indicators, &context, &result](std::string mask) {
-                map<string, string> arguments = {{"owner", user.pw_name}, {"group", group->gr_name}, {"mask", std::move(mask)}};
-                indicators.Push("RemediateEnsureFilePermissionsHelper");
-                auto subResult = RemediateEnsureFilePermissionsHelper(path, arguments, indicators, context);
+            auto remediateFile = [user, group, &path, &indicators, &context, &result](const mode_t mask) {
+                auto pwdPattern = Pattern::Make(user.pw_name);
+                if (!pwdPattern.HasValue())
+                {
+                    result = pwdPattern.Error();
+                    return;
+                }
+                auto groupPattern = Pattern::Make(group->gr_name);
+                if (!groupPattern.HasValue())
+                {
+                    result = groupPattern.Error();
+                    return;
+                }
+                EnsureFilePermissionsParams params;
+                params.filename = path;
+                params.owner = {{pwdPattern.Value()}};
+                params.group = {{groupPattern.Value()}};
+                params.mask = mask;
+                indicators.Push("RemediateEnsureFilePermissions");
+                auto subResult = RemediateEnsureFilePermissions(params, indicators, context);
                 if (!subResult.HasValue())
                 {
                     OsConfigLogError(context.GetLogHandle(), "Failed to remediate permissions for file '%s': %s", path.c_str(),
@@ -206,13 +236,13 @@ REMEDIATE_FN(EnsureInteractiveUsersDotFilesAccessIsConfigured)
 
             if (result.HasValue() && (filename == ".netrc" || filename == ".bash_history"))
             {
-                remediateFile("177");
+                remediateFile(0177);
             }
 
             if (result.HasValue())
             {
                 // Ths file starts with a dot, so we need to check the permissions
-                remediateFile("133");
+                remediateFile(0133);
             }
 
             return result;

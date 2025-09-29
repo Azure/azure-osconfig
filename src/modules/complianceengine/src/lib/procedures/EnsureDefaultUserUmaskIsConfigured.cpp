@@ -168,9 +168,8 @@ Result<MatchResult> MultilineMatch(const std::string& filename, const regex& val
 }
 } // anonymous namespace
 
-AUDIT_FN(EnsureDefaultUserUmaskIsConfigured, "")
+Result<Status> AuditEnsureDefaultUserUmaskIsConfigured(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
     static const auto fileUmaskPattern = R"(^[ \t]*umask[ \t]+(([0-7]{3,4})|u=([rwx]{0,3}),g=([rwx]{0,3}),o=([rwx]{0,3}))([ \t]*#.*)?$)";
     static const auto pamPattern = R"(^[ \t]*session[ \t]+([^#\n\r]+[ \t]+)?pam_umask\.so[ \t]+([^#\n\r]+[ \t]+)?umask=([0-7]{3,4})\b)";
 

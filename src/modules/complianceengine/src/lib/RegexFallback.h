@@ -101,16 +101,43 @@ class Regex
 
 public:
     Regex() = default;
-    Regex(const Regex&) = delete;
-    Regex(Regex&&) noexcept = default;
-    Regex& operator=(Regex&&) noexcept = default;
+    Regex(const Regex& other)
+        : Regex(other.pattern, other.options)
+    {
+    }
+    Regex(Regex&& other) noexcept
+        : pattern(std::move(other.pattern)),
+          options(other.options),
+          preg(std::move(other.preg))
+    {
+    }
+    Regex& operator=(const Regex& other)
+    {
+        *this = Regex(other.pattern, other.options);
+        return *this;
+    }
+    Regex& operator=(Regex&& other) noexcept
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        pattern = std::move(other.pattern);
+        options = other.options;
+        preg = std::move(other.preg);
+        return *this;
+    }
+
     Regex(const std::string& r, std::regex_constants::syntax_option_type options = std::regex_constants::extended)
+        : pattern(r),
+          options(options)
     {
         preg = std::unique_ptr<regex_t>(new regex_t);
         std::string newR;
-        newR.reserve(r.size() + 1);
+        newR.reserve(pattern.size() + 1);
         bool escapeNext = false;
-        for (const char& c : r)
+        for (const char& c : pattern)
         {
             if (escapeNext)
             {
@@ -163,6 +190,8 @@ public:
             regfree(preg.get());
         }
     }
+    std::string pattern;
+    std::regex_constants::syntax_option_type options;
     std::unique_ptr<regex_t> preg;
 };
 
@@ -171,9 +200,28 @@ class SubMatch
 public:
     SubMatch() = delete;
     SubMatch(const SubMatch&) = default;
-    SubMatch& operator=(const SubMatch&) = default;
+    SubMatch& operator=(const SubMatch& other)
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+        mTarget = other.mTarget;
+        mPmatch = other.mPmatch;
+        return *this;
+    }
     SubMatch(SubMatch&&) = default;
-    SubMatch& operator=(SubMatch&&) = default;
+    SubMatch& operator=(SubMatch&& other)
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        mTarget = other.mTarget;
+        mPmatch = other.mPmatch;
+        return *this;
+    }
 
     const bool matched = false;
     std::string str() const
@@ -279,6 +327,11 @@ public:
     bool ready() const
     {
         return nullptr != mPmatch;
+    }
+
+    bool empty() const
+    {
+        return mSize == 0;
     }
 
     std::size_t position(std::size_t i) const
@@ -388,14 +441,17 @@ inline bool regexMatch(const std::string& s, MatchResults& m, const Regex& r)
     {
         if (matches[0].rm_so != 0)
         {
+            m = MatchResults(s, std::move(matches), 0);
             return false;
         }
 
         if (matches[0].rm_eo != static_cast<regoff_t>(s.length()))
         {
+            m = MatchResults(s, std::move(matches), 0);
             return false;
         }
     }
+
     m = MatchResults(s, std::move(matches), result ? size : 0);
     return result;
 }

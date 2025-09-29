@@ -6,40 +6,17 @@
 
 #include "ContextInterface.h"
 #include "Indicators.h"
-#include "Logging.h"
 #include "MmiResults.h"
 #include "Result.h"
 
 #include <Optional.h>
+#include <functional>
 #include <map>
 #include <memory>
-#include <sstream>
 #include <string>
-#include <vector>
 
 struct json_object_t;
 struct json_value_t;
-
-// Audit and remediation functions are declared using following macros, respectively.
-// The first argument is the name of the procedure, eg ensureFilePermissions.
-// Following arguments define the parameters to the procedure, each parameters encoded as a string with fields
-// separated with ':' :
-// <name>:<description>:<flags>:<pattern>
-// All fields except for name are optional, can be left empty or ommited.
-// - description is a textual description to be put in schema
-// - flags - currently only one flag is supported, 'M' for mandatory parameters
-// - pattern is a regex to validate the value of the parameter.
-// examples:
-// "myParameter:This is my parameter"
-// "myOtherParameter:Another parameter, mandatory:M"
-// "yetanotherparameter:This one is validated::^[0-9]+$"
-
-#define AUDIT_FN(fn_name, parameters...)                                                                                                               \
-    ::ComplianceEngine::Result<::ComplianceEngine::Status> Audit##fn_name(std::map<std::string, std::string> args, IndicatorsTree& indicators, ContextInterface& context)
-
-#define REMEDIATE_FN(fn_name, parameters...)                                                                                                           \
-    ::ComplianceEngine::Result<::ComplianceEngine::Status> Remediate##fn_name(std::map<std::string, std::string> args, IndicatorsTree& indicators,     \
-        ContextInterface& context)
 
 namespace ComplianceEngine
 {
@@ -112,7 +89,7 @@ public:
 };
 
 using ParameterMap = std::map<std::string, std::string>;
-using action_func_t = Result<Status> (*)(ParameterMap, IndicatorsTree&, ContextInterface&);
+using action_func_t = std::function<Result<Status>(const ParameterMap&, IndicatorsTree&, ContextInterface&)>;
 struct ProcedureActions
 {
     action_func_t audit;
@@ -160,6 +137,7 @@ private:
     // Lua evaluator instance for this evaluator
     std::unique_ptr<LuaEvaluator> mLuaEvaluator;
 };
+
 } // namespace ComplianceEngine
 
 #endif // COMPLIANCEENGINE_EVALUATOR_H

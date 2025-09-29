@@ -19,8 +19,7 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "description": "Key type - public or private",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:((public|private))$|(^(public|private)$))"
+                  "description": "Key type - public or private:M:^(public|private)$\""
                 }
               }
             }
@@ -46,8 +45,7 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "description": "Key type - public or private",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:((public|private))$|(^(public|private)$))"
+                  "description": "Key type - public or private:M:^(public|private)$\""
                 }
               }
             }

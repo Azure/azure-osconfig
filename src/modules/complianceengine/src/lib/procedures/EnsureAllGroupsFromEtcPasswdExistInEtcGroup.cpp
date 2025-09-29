@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include <CommonUtils.h>
+#include <EnsureAllGroupsFromEtcPasswdExistInEtcGroup.h>
 #include <Evaluator.h>
 #include <Result.h>
 #include <grp.h>
@@ -10,9 +11,8 @@
 
 namespace ComplianceEngine
 {
-AUDIT_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
+Result<Status> AuditEnsureAllGroupsFromEtcPasswdExistInEtcGroup(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
     UNUSED(context);
 
     struct group* grp = nullptr;
@@ -55,9 +55,9 @@ AUDIT_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
     return result;
 }
 
-REMEDIATE_FN(EnsureAllGroupsFromEtcPasswdExistInEtcGroup)
+Result<Status> RemediateEnsureAllGroupsFromEtcPasswdExistInEtcGroup(IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto result = AuditEnsureAllGroupsFromEtcPasswdExistInEtcGroup(args, indicators, context);
+    auto result = AuditEnsureAllGroupsFromEtcPasswdExistInEtcGroup(indicators, context);
     if (result)
     {
         return indicators.Compliant("Audit passed, remediation not required");

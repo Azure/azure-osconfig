@@ -36,6 +36,10 @@
                 "test_mtab": {
                   "type": "string",
                   "description": "Location of the mtab file"
+                },
+                "test_mount": {
+                  "type": "string",
+                  "description": "Location of the mount binary"
                 }
               }
             }

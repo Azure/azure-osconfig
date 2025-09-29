@@ -4,12 +4,13 @@
 #include "StringTools.h"
 
 #include <CommonUtils.h>
-#include <Evaluator.h>
+#include <EnsureSshdOption.h>
 #include <Regex.h>
 #include <fnmatch.h>
 #include <fts.h>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace ComplianceEngine
 {
@@ -314,60 +315,40 @@ static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string
 }
 } // namespace
 
-AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option, might be a comma-separated list:M:^[a-z0-9]+(,[a-z0-9]+)*$",
-    "value:Regex, list of regexes, string or integer threshold the option value is evaluated against:M",
-    "op:Operation (regex|match|not_match|lt|le|gt|ge) optional, defaults to regex::^(regex|match|not_match|lt|le|gt|ge)$",
-    "mode:Mode, one of (regular|all_matches)::^(regular|all_matches)$")
+Result<Status> AuditEnsureSshdOption(const EnsureSshdOptionParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
-
-    auto it = args.find("option");
-    if (it == args.end())
+    std::vector<std::string> options = params.options.items;
+    if (options.size() == 0)
     {
         return Error("Missing 'option' parameter", EINVAL);
     }
-
-    auto optionList = std::move(it->second);
-    std::transform(optionList.begin(), optionList.end(), optionList.begin(), ::tolower);
-    std::vector<std::string> options;
-    std::istringstream optionsStream(optionList);
-    std::string optionName;
-    while (std::getline(optionsStream, optionName, ','))
-    {
-        options.push_back(optionName);
-    }
-
-    std::string op = "regex";
-    if ((it = args.find("op")) != args.end())
-    {
-        op = it->second;
-        std::transform(op.begin(), op.end(), op.begin(), ::tolower);
-    }
-
-    it = args.find("value");
-    if (it == args.end())
+    if (params.value == "")
     {
         return Error("Missing 'value' parameter", EINVAL);
     }
-    auto value = std::move(it->second);
+    for (auto& option : options)
+    {
+        std::transform(option.begin(), option.end(), option.begin(), ::tolower);
+    }
 
-    // Pre-compile regexes for regex / match / not_match operations
     std::vector<regex> valueRegexes;
+    auto op = params.op.Value();
     if (op == "regex")
     {
         try
         {
-            valueRegexes.push_back(regex(value));
+            valueRegexes.push_back(regex(params.value));
         }
         catch (const regex_error& e)
         {
             OsConfigLogError(log, "Regex error: %s", e.what());
-            return Error("Failed to compile regex '" + value + "' error: " + e.what(), EINVAL);
+            return Error("Failed to compile regex error: " + std::string(e.what()), EINVAL);
         }
     }
     if (op == "match" || op == "not_match")
     {
-        std::istringstream valueStream(value);
+        std::istringstream valueStream(params.value);
         std::string valuePart;
         while (std::getline(valueStream, valuePart, ','))
         {
@@ -384,12 +365,7 @@ AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option, might be a com
     }
 
     std::vector<std::string> matchModes;
-    std::string mode = "regular";
-    if ((it = args.find("mode")) != args.end())
-    {
-        mode = it->second;
-    }
-
+    auto mode = params.mode.Value();
     if (mode == "all_matches")
     {
         auto allMatches = GetAllMatches(context);
@@ -418,8 +394,8 @@ AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option, might be a com
         for (auto const& option : options)
         {
             OsConfigLogInfo(log, "Evaluating SSH daemon option '%s' in mode '%s' with op '%s' against value '%s'", option.c_str(),
-                matchMode.empty() ? "regular" : matchMode.c_str(), op.c_str(), value.c_str());
-            auto result = EvaluateSshdOption(sshdConfig.Value(), option, value, op, valueRegexes, indicators);
+                matchMode.empty() ? "regular" : matchMode.c_str(), op.c_str(), params.value.c_str());
+            auto result = EvaluateSshdOption(sshdConfig.Value(), option, params.value, op, valueRegexes, indicators);
             if (!result.HasValue())
             {
                 return result.Error();
@@ -432,4 +408,5 @@ AUDIT_FN(EnsureSshdOption, "option:Name of the SSH daemon option, might be a com
     }
     return indicators.Compliant("All options are compliant");
 }
+
 } // namespace ComplianceEngine

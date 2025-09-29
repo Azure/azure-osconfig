@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <CommonUtils.h>
+#include <EnsureSshKeyPerms.h>
 #include <Evaluator.h>
 #include <FilePermissionsHelpers.h>
 #include <FileTreeWalk.h>
@@ -111,25 +112,15 @@ Result<Status> EnsureSshKeyPermsHelper(bool isPublic, bool isRemediation, Indica
 }
 } // anonymous namespace
 
-AUDIT_FN(EnsureSshKeyPerms, "type:Key type - public or private:M:^(public|private)$")
+Result<Status> AuditEnsureSshKeyPerms(const EnsureSshKeyPermsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto it = args.find("type");
-    if (it == args.end())
-    {
-        return Error("Missing required parameter 'type'", EINVAL);
-    }
-    bool isPublic = (it->second == "public");
+    bool isPublic = (params.type == "public");
     return EnsureSshKeyPermsHelper(isPublic, false, indicators, context);
 }
 
-REMEDIATE_FN(EnsureSshKeyPerms, "type:Key type - public or private:M:^(public|private)$")
+Result<Status> RemediateEnsureSshKeyPerms(const EnsureSshKeyPermsParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
-    auto it = args.find("type");
-    if (it == args.end())
-    {
-        return Error("Missing required parameter 'type'", EINVAL);
-    }
-    bool isPublic = (it->second == "public");
+    bool isPublic = (params.type == "public");
     return EnsureSshKeyPermsHelper(isPublic, true, indicators, context);
 }
 

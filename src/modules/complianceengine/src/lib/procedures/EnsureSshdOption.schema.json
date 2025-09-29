@@ -13,29 +13,26 @@
             "EnsureSshdOption": {
               "type": "object",
               "required": [
-                "option",
+                "options",
                 "value"
               ],
               "additionalProperties": false,
               "properties": {
-                "option": {
+                "options": {
                   "type": "string",
-                  "description": "Name of the SSH daemon option, might be a comma-separated list",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:([a-z0-9]+(,[a-z0-9]+)*)$|(^[a-z0-9]+(,[a-z0-9]+)*$))"
+                  "description": "Name of the SSH daemon option"
                 },
                 "value": {
                   "type": "string",
-                  "description": "Regex, list of regexes, string or integer threshold the option value is evaluated against"
+                  "description": "One of Regex, list of regexes, string, integer threshold the option value is evaluated against"
                 },
                 "op": {
                   "type": "string",
-                  "description": "Operation (regex|match|not_match|lt|le|gt|ge) optional, defaults to regex",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:((regex|match|not_match|lt|le|gt|ge))$|(^(regex|match|not_match|lt|le|gt|ge)$))"
+                  "description": "(match|not_match|lt|le|gt|ge) optional, defaults to regex::^(regex|match|not_match|lt|le|gt|ge)$"
                 },
                 "mode": {
                   "type": "string",
-                  "description": "Mode, one of (regular|all_matches)",
-                  "pattern": "(^\\$[a-zA-Z0-9_]+:((regular|all_matches))$|(^(regular|all_matches)$))"
+                  "description": "(regular|all_matches) optional, defaults to regular::^(regular|all_matches)"
                 }
               }
             }
