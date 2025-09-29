@@ -3060,7 +3060,7 @@ TEST_F(CommonUtilsTest, GetStringOptionFromBuffer)
     EXPECT_STREQ("123", GetStringOptionFromBuffer("# This is a test configuration\nTestSetting     =   123", "TestSetting", '=', '#', nullptr));
     EXPECT_EQ(nullptr, GetStringOptionFromBuffer("# This is a test configuration\nTestSetting     =   123", "AnotherSomething", '=', '#', nullptr));
     EXPECT_STREQ("12", GetStringOptionFromBuffer("# This is a test configuration\n  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
-    EXPECT_STREQ(1, GetStringOptionFromBuffer("# This is a test configuration\n  TestSetting=1#2  ", "TestSetting", '=', '#', nullptr));
+    EXPECT_STREQ("1", GetStringOptionFromBuffer("# This is a test configuration\n  TestSetting=1#2  ", "TestSetting", '=', '#', nullptr));
     EXPECT_STREQ(nullptr, GetStringOptionFromBuffer("# This is a test configuration\n  TestSetting=#12  ", "TestSetting", '=', '#', nullptr));
     EXPECT_STREQ(nullptr, GetStringOptionFromBuffer("# This is a test configuration\n#  TestSetting=12  ", "TestSetting", '=', '#', nullptr));
 }
