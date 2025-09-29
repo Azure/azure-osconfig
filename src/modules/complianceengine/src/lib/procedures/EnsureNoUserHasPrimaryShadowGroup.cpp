@@ -1,17 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 #include <CommonUtils.h>
+#include <EnsureNoUserHasPrimaryShadowGroup.h>
 #include <Evaluator.h>
 #include <Result.h>
 #include <UsersIterator.h>
 #include <grp.h>
-#include <string>
 
 namespace ComplianceEngine
 {
-AUDIT_FN(EnsureNoUserHasPrimaryShadowGroup)
+Result<Status> AuditEnsureNoUserHasPrimaryShadowGroup(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
     UNUSED(context);
 
     struct group* shadow = getgrnam("shadow");

@@ -3869,14 +3869,14 @@ static int RemediateEnsureLoggerConfigurationFilesAreRestricted(char* value, OsC
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    AddIfMissingAdmSystemGroup(log);
+    CheckGroupExists("adm", NULL, log);
     return SetEtcConfValue(g_etcRsyslogConf, "$FileGroup", "adm", log);
 }
 
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(char* value, OsConfigLogHandle log)
 {
     UNUSED(value);
-    AddIfMissingSyslogSystemUser(log);
+    CheckUserExists("syslog", NULL, log);
     return SetEtcConfValue(g_etcRsyslogConf, "$FileOwner", "syslog", log);
 }
 

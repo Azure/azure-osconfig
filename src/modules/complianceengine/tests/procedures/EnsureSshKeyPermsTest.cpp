@@ -4,8 +4,8 @@
 // Clean minimal test file begins
 #include "Evaluator.h"
 #include "MockContext.h"
-#include "ProcedureMap.h"
 
+#include <EnsureSshKeyPerms.h>
 #include <fstream>
 #include <gtest/gtest.h>
 #include <map>
@@ -13,8 +13,10 @@
 #include <sys/stat.h>
 
 using ComplianceEngine::AuditEnsureSshKeyPerms;
+using ComplianceEngine::EnsureSshKeyPermsParams;
 using ComplianceEngine::IndicatorsTree;
 using ComplianceEngine::RemediateEnsureSshKeyPerms;
+using ComplianceEngine::SshKeyType;
 using ComplianceEngine::Status;
 
 static const char kPublicKeySample[] = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFakeKeyMaterial user@example\n";
@@ -28,6 +30,11 @@ protected:
     std::string mSshDir;
     void SetUp() override
     {
+        if (0 != getuid())
+        {
+            GTEST_SKIP() << "This test suite requires root privileges or fakeroot";
+        }
+
         mIndicators.Push("EnsureSshKeyPerms");
         mSshDir = mContext.GetTempdirPath() + std::string("/rootfs/etc/ssh");
         ::mkdir((mContext.GetTempdirPath() + std::string("/rootfs")).c_str(), 0755);
@@ -63,9 +70,10 @@ TEST_F(EnsureSshKeyPermsTest, PublicKeyCompliant)
     }
     EXPECT_CALL(mContext, GetFileContents(keyPath)).WillOnce(::testing::Return(ComplianceEngine::Result<std::string>(kPublicKeySample)));
     chmod(keyPath.c_str(), (0644 & ~0133));
-    std::map<std::string, std::string> args;
-    args["type"] = "public";
-    auto result = AuditEnsureSshKeyPerms(args, mIndicators, mContext);
+    EnsureSshKeyPermsParams params;
+    params.type = SshKeyType::Public;
+
+    auto result = AuditEnsureSshKeyPerms(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -79,9 +87,9 @@ TEST_F(EnsureSshKeyPermsTest, PublicKeyNonCompliantBitMask)
     }
     EXPECT_CALL(mContext, GetFileContents(keyPath)).WillOnce(::testing::Return(ComplianceEngine::Result<std::string>(kPublicKeySample)));
     chmod(keyPath.c_str(), 0644 | 0020); // forbidden group write bit
-    std::map<std::string, std::string> args;
-    args["type"] = "public";
-    auto result = AuditEnsureSshKeyPerms(args, mIndicators, mContext);
+    EnsureSshKeyPermsParams params;
+    params.type = SshKeyType::Public;
+    auto result = AuditEnsureSshKeyPerms(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::NonCompliant);
 }
@@ -95,9 +103,9 @@ TEST_F(EnsureSshKeyPermsTest, PrivateKeyCompliant)
     }
     EXPECT_CALL(mContext, GetFileContents(keyPath)).WillOnce(::testing::Return(ComplianceEngine::Result<std::string>(std::string(kPrivateKeyHeader) + "...payload...\n")));
     chmod(keyPath.c_str(), 0600);
-    std::map<std::string, std::string> args;
-    args["type"] = "private";
-    auto result = AuditEnsureSshKeyPerms(args, mIndicators, mContext);
+    EnsureSshKeyPermsParams params;
+    params.type = SshKeyType::Private;
+    auto result = AuditEnsureSshKeyPerms(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }
@@ -111,24 +119,24 @@ TEST_F(EnsureSshKeyPermsTest, PrivateKeyRemediation)
     }
     EXPECT_CALL(mContext, GetFileContents(keyPath)).WillRepeatedly(::testing::Return(ComplianceEngine::Result<std::string>(std::string(kPrivateKeyHeader) + "...payload...\n")));
     chmod(keyPath.c_str(), 0777); // bad perms
-    std::map<std::string, std::string> args;
-    args["type"] = "private";
-    auto remediate = RemediateEnsureSshKeyPerms(args, mIndicators, mContext);
+    EnsureSshKeyPermsParams params;
+    params.type = SshKeyType::Private;
+    auto remediate = RemediateEnsureSshKeyPerms(params, mIndicators, mContext);
     ASSERT_TRUE(remediate.HasValue());
     ASSERT_EQ(remediate.Value(), Status::Compliant);
     struct stat st;
     ASSERT_EQ(0, stat(keyPath.c_str(), &st));
     ASSERT_EQ(0u, (st.st_mode & 0137));
-    auto post = AuditEnsureSshKeyPerms(args, mIndicators, mContext);
+    auto post = AuditEnsureSshKeyPerms(params, mIndicators, mContext);
     ASSERT_TRUE(post.HasValue());
     ASSERT_EQ(post.Value(), Status::Compliant);
 }
 
 TEST_F(EnsureSshKeyPermsTest, RemediationNoKeys)
 {
-    std::map<std::string, std::string> args;
-    args["type"] = "public";
-    auto result = RemediateEnsureSshKeyPerms(args, mIndicators, mContext);
+    EnsureSshKeyPermsParams params;
+    params.type = SshKeyType::Public;
+    auto result = RemediateEnsureSshKeyPerms(params, mIndicators, mContext);
     ASSERT_TRUE(result.HasValue());
     ASSERT_EQ(result.Value(), Status::Compliant);
 }

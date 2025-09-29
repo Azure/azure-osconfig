@@ -7,6 +7,7 @@
 // are owned by known UIDs, returns Compliant.
 
 #include <CommonUtils.h>
+#include <EnsureNoUnowned.h>
 #include <Evaluator.h>
 #include <FilesystemScanner.h>
 #include <UsersIterator.h>
@@ -16,10 +17,8 @@
 namespace ComplianceEngine
 {
 
-AUDIT_FN(EnsureNoUnowned)
+Result<Status> AuditEnsureNoUnowned(IndicatorsTree& indicators, ContextInterface& context)
 {
-    UNUSED(args);
-
     // Build set of known user IDs
     std::set<uid_t> knownUids;
     auto usersRange = UsersRange::Make(context.GetSpecialFilePath("/etc/passwd"), context.GetLogHandle());

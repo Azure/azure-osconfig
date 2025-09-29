@@ -25,16 +25,16 @@
                 },
                 "value": {
                   "type": "string",
-                  "description": "Regex, list of regexes, string or integer threshold the option value is evaluated against"
+                  "description": "One of Regex, list of regexes, string or integer threshold the option value is evaluated against"
                 },
                 "op": {
                   "type": "string",
-                  "description": "Operation (regex|match|not_match|lt|le|gt|ge) optional, defaults to regex",
+                  "description": "(regex|match|not_match|lt|le|gt|ge) optional, defaults to 'regex'",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:((regex|match|not_match|lt|le|gt|ge))$|(^(regex|match|not_match|lt|le|gt|ge)$))"
                 },
                 "mode": {
                   "type": "string",
-                  "description": "Mode, one of (regular|all_matches)",
+                  "description": "Mode, one of (regular|all_matches). Optional, defaults to 'regular'",
                   "pattern": "(^\\$[a-zA-Z0-9_]+:((regular|all_matches))$|(^(regular|all_matches)$))"
                 }
               }

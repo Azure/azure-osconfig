@@ -4,6 +4,8 @@
 #ifndef COMPLIANCEENGINE_REGEX_H
 #define COMPLIANCEENGINE_REGEX_H
 
+#include <bits/c++config.h>
+
 // GCC <= 4.8 has broken std::regex support. This is a very
 // ugly hack that uses libc regexes to emulate std::regex
 // for the functionality that we currently need in ComplianceEngine.
