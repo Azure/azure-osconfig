@@ -3073,7 +3073,7 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
         " Test1=abc foo=123  \n"
         "FooEntry2  =     234\n"
         "FooEntry3 :     2 3 4\n"
-        "abc Test4 0456 # rt 4 $"
+        "abc Test4 0456 # rt 4 $\n"
         "Test2:     12 $!    test test\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1\n"
