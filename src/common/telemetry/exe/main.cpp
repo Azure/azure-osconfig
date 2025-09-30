@@ -156,6 +156,7 @@ int main(int argc, char* argv[])
                 OsConfigLogInfo(log.get(), "Processed telemetry JSON file: %s", filepath.c_str());
 
                 auto start_time = std::chrono::high_resolution_clock::now();
+                Telemetry::TelemetryManager::Shutdown();
                 auto end_time = std::chrono::high_resolution_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
                 std::string duration_str = std::to_string(duration.count());

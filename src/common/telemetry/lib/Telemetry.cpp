@@ -35,6 +35,8 @@ void TelemetryManager::SetupConfiguration(bool enableDebug, int teardownTime)
     logConfig[CFG_BOOL_ENABLE_TRACE] = enableDebug;
     logConfig[CFG_INT_TRACE_LEVEL_MIN] = 0;
     logConfig[CFG_INT_MAX_TEARDOWN_TIME] = teardownTime;
+
+    m_logger = LogManager::Initialize(API_KEY);
 }
 
 bool TelemetryManager::Initialize(bool enableDebug, int teardownTime)
@@ -43,6 +45,8 @@ bool TelemetryManager::Initialize(bool enableDebug, int teardownTime)
     {
         return true;
     }
+
+        OsConfigLogInfo(m_log, "Initializing telemetry...");
 
     try
     {
@@ -53,16 +57,14 @@ bool TelemetryManager::Initialize(bool enableDebug, int teardownTime)
 
         SetupConfiguration(enableDebug, teardownTime);
 
-        // Initialize the logger
-        m_logger = LogManager::Initialize(API_KEY);
         if (!m_logger)
         {
             return false;
         }
 
         LogManager::SetTransmitProfile(TransmitProfile::TransmitProfile_RealTime);
-
         m_initialized = true;
+        OsConfigLogInfo(m_log, "Telemetry initialized successfully.");
         return true;
     }
     catch (const std::exception& e)
@@ -93,13 +95,15 @@ void TelemetryManager::Shutdown()
         return;
     }
 
+    OsConfigLogInfo(m_log, "Shutting down telemetry...");
+
     try
     {
         LogManager::UploadNow();
         std::this_thread::sleep_for(std::chrono::seconds(1)); // Without sleep, the upload may not complete
         LogManager::FlushAndTeardown();
-
         m_initialized = false;
+        OsConfigLogInfo(m_log, "Telemetry shutdown complete.");
         CloseLog(&m_log);
     }
     catch (const std::exception& e)
@@ -121,6 +125,8 @@ bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
             return false;
         }
     }
+
+    OsConfigLogInfo(m_log, "Processing JSON file: %s", filePath.c_str());
 
     FILE* file = fopen(filePath.c_str(), "r");
     if (!file)
@@ -160,6 +166,8 @@ bool TelemetryManager::ProcessJsonFile(const std::string& filePath)
         OsConfigLogError(m_log, "Error processing JSON file '%s': %s", filePath.c_str(), e.what());
         success = false;
     }
+
+    OsConfigLogInfo(m_log, "Completed processing JSON file: %s", filePath.c_str());
 
     // Cleanup
     if (line)

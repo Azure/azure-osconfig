@@ -31,6 +31,9 @@ namespace Telemetry
         // Setup configuration
         static void SetupConfiguration(bool enableDebug, int teardownTime);
 
+        // Shutdown telemetry system
+        static void Shutdown();
+
         ~TelemetryManager() noexcept;
 
     private:
@@ -48,9 +51,6 @@ namespace Telemetry
 
         // Initialize telemetry system (private)
         static bool Initialize(bool enableDebug = false, int teardownTime = CONFIG_DEFAULT_TEARDOWN_TIME);
-
-        // Shutdown telemetry system (private)
-        static void Shutdown();
 
         // Generic event logging (private)
         static void EventWrite(Microsoft::Applications::Events::EventProperties event);
