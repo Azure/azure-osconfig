@@ -86,6 +86,8 @@
         "charconv": "cpp",
         "format": "cpp",
         "span": "cpp",
-        "unordered_set": "cpp"
+        "unordered_set": "cpp",
+        "agentcommon.h": "c",
+        "commonutils.h": "c"
     }
 }
