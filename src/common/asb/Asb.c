@@ -1117,6 +1117,7 @@ void AsbShutdown(OsConfigLogHandle log)
     FREE_MEMORY(g_prettyName);
 
     CloseLog(&g_perfLog);
+    OSConfigProcessTelemetryFile();
 
     // When done, allow others access to read the performance log
     SetFileAccess(PERF_LOG_FILE, 0, 0, 0644, NULL);
