@@ -552,7 +552,7 @@ int RemoveDotsFromPath(OsConfigLogHandle log)
                 continue;
             }
 
-            if (NULL != (currentPath = GetStringOptionFromFile(pathLocations[i].location, pathLocations[i].path, ' ', log)))
+            if (NULL != (currentPath = GetStringOptionFromFile(pathLocations[i].location, pathLocations[i].path, ' ', '#', log)))
             {
                 if (NULL != (newPath = RemoveCharacterFromString(currentPath, dot[0], log)))
                 {
