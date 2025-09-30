@@ -13,7 +13,7 @@ namespace ComplianceEngine
 struct EnsureSshdOptionParams
 {
     /// Name of the SSH daemon option
-    Separated<std::string, ','> options;
+    Separated<std::string, ','> option;
 
     /// One of Regex, list of regexes, string, integer threshold the option value is evaluated against
     std::string value;

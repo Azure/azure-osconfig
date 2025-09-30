@@ -51,7 +51,7 @@ const char* Bindings<EnsureShadowContainsParams>::names[] = {"username", "userna
 const char* Bindings<EnsureSshKeyPermsParams>::names[] = {"type"};
 
 // EnsureSshdOption.h:26
-const char* Bindings<EnsureSshdOptionParams>::names[] = {"options", "value", "op", "mode"};
+const char* Bindings<EnsureSshdOptionParams>::names[] = {"option", "value", "op", "mode"};
 
 // EnsureSysctl.h:20
 const char* Bindings<EnsureSysctlParams>::names[] = {"sysctlName", "value"};

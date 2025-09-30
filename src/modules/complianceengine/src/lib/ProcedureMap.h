@@ -340,7 +340,7 @@ struct Bindings<EnsureSshdOptionParams>
     using T = EnsureSshdOptionParams;
     static constexpr size_t size = 4;
     static const char* names[];
-    static constexpr auto members = std::make_tuple(&T::options, &T::value, &T::op, &T::mode);
+    static constexpr auto members = std::make_tuple(&T::option, &T::value, &T::op, &T::mode);
 };
 
 // Defines the bindings for the EnsureSysctlParams structure.

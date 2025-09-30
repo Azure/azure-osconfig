@@ -318,7 +318,7 @@ static Result<Status> EvaluateSshdOption(const std::map<std::string, std::string
 Result<Status> AuditEnsureSshdOption(const EnsureSshdOptionParams& params, IndicatorsTree& indicators, ContextInterface& context)
 {
     auto log = context.GetLogHandle();
-    std::vector<std::string> options = params.options.items;
+    std::vector<std::string> options = params.option.items;
     if (options.size() == 0)
     {
         return Error("Missing 'option' parameter", EINVAL);

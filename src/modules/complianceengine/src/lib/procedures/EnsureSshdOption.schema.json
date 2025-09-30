@@ -13,12 +13,12 @@
             "EnsureSshdOption": {
               "type": "object",
               "required": [
-                "options",
+                "option",
                 "value"
               ],
               "additionalProperties": false,
               "properties": {
-                "options": {
+                "option": {
                   "type": "string",
                   "description": "Name of the SSH daemon option"
                 },
