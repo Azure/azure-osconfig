@@ -631,11 +631,10 @@ static int CheckIntegerOptionFromFileLessOrEqualWith_target(const char* data, st
         return c_skip_input;
     }
 
-    int value1, value2;
+    int value;
     try
     {
-        value1 = std::stoi(integer);
-        value2 = std::stoi(integer);
+        value = std::stoi(integer);
     }
     catch(const std::exception& e)
     {
@@ -644,7 +643,7 @@ static int CheckIntegerOptionFromFileLessOrEqualWith_target(const char* data, st
 
     auto filename = g_context.MakeTemporaryFile(data, size);
     char* reason = nullptr;
-    CheckIntegerOptionFromFileLessOrEqualWith(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), value1, value2, &reason, 10, nullptr);
+    CheckIntegerOptionFromFileLessOrEqualWith(filename.c_str(), option.c_str(), separator.at(0), comment.at(0), value, &reason, 10, nullptr);
     g_context.Remove(filename);
     free(reason);
     return 0;
