@@ -38,7 +38,7 @@ static char* generateRandomFilename(void)
     close(fd);
     if (unlink(temp_template) != 0)
     {
-        perror("Failed to delete temporary file");
+        return NULL;
     }
 
     // Append .json to the unique name
