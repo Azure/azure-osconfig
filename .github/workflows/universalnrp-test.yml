@@ -159,8 +159,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        submodules: recursive
-        clean: true
+        with:
+          submodules: recursive
+          clean: true
 
       - uses: actions/download-artifact@v4
         id: download
